@@ -1,0 +1,12 @@
+packages/
+bin/
+!Asset/Data/Script/bin/
+obj/
+.vs/
+*.csproj.user
+*.suo
+*.tmp
+*.zip
+*.manifest
+.vscode
+publish/
