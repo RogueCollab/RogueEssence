@@ -1,0 +1,156 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Content;
+using RogueElements;
+using RogueEssence.Dungeon;
+using RogueEssence.Data;
+using RogueEssence.Ground;
+
+namespace RogueEssence.Menu
+{
+    public class ItemMenu : MultiPageMenu
+    {
+        private static int defaultChoice;
+
+        public const int ITEM_MENU_WIDTH = 176;
+        private const int SLOTS_PER_PAGE = 8;
+
+        private int replaceSlot;
+
+        ItemSummary summaryMenu;
+
+        //-2 for no replace slot, -1 for replace with ground, positive numbers for replace held team index's item
+        public ItemMenu() : this(-2) { }
+        public ItemMenu(int replaceSlot)
+        {
+            this.replaceSlot = replaceSlot;
+            
+            bool enableHeld = (replaceSlot == -2);
+
+            List<MenuChoice> flatChoices = new List<MenuChoice>();
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                int index = ii;
+                if (activeChar.EquippedItem.ID > -1)
+                    flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), () => { choose(-index - 1); }, enableHeld, !enableHeld ? Color.Red : Color.White));
+            }
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
+            {
+                int index = ii;
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.Inventory[index].GetName(), () => { choose(index); }));
+            }
+
+            int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
+
+            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+
+
+            summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
+                new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
+
+            int startPage = actualChoice / SLOTS_PER_PAGE;
+            int startIndex = actualChoice % SLOTS_PER_PAGE;
+
+            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv.ToArray(), startIndex, startPage, SLOTS_PER_PAGE);
+
+        }
+
+        private void choose(int choice)
+        {
+            //read-only when replaying
+            if (Data.DataManager.Instance.CurrentReplay == null)
+            {
+                if (replaceSlot == -2)
+                {
+                    if (choice < 0)
+                        MenuManager.Instance.AddMenu(new ItemChosenMenu(-choice - 1, true), true);
+                    else
+                        MenuManager.Instance.AddMenu(new ItemChosenMenu(choice, false), true);
+                }
+                else if (replaceSlot == -1)
+                {
+                    MenuManager.Instance.ClearMenus();
+                    MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Drop, Dir8.None, choice));
+                }
+                else
+                {
+                    MenuManager.Instance.ClearMenus();
+                    MenuManager.Instance.EndAction = (GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Give, Dir8.None, choice, replaceSlot)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.Give, Dir8.None, choice, replaceSlot));
+                }
+            }
+        }
+
+        private int getMaxInvPages()
+        {
+            if (DataManager.Instance.Save.ActiveTeam.Inventory.Count == 0)
+                return 0;
+            return (DataManager.Instance.Save.ActiveTeam.Inventory.Count - 1) / SLOTS_PER_PAGE + 1;
+        }
+
+        protected override void ChoiceChanged()
+        {
+            int chosenSlot = CurrentPage * SpacesPerPage + CurrentChoice;
+            defaultChoice = chosenSlot;
+            InvItem item = getChosenItemID(chosenSlot);
+
+            summaryMenu.SetItem(item);
+            base.ChoiceChanged();
+        }
+
+        private InvItem getChosenItemID(int menuIndex)
+        {
+            int countedHeld = 0;
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                if (activeChar.EquippedItem.ID > -1)
+                {
+                    if (countedHeld == menuIndex)
+                        return activeChar.EquippedItem;
+                    countedHeld++;
+                }
+            }
+            menuIndex -= countedHeld;
+            return DataManager.Instance.Save.ActiveTeam.Inventory[menuIndex];
+        }
+
+        protected override void UpdateKeys(InputManager input)
+        {
+            if (input.JustPressed(FrameInput.InputType.SortItems))
+            {
+                if (replaceSlot == -2 && Data.DataManager.Instance.CurrentReplay == null)
+                {
+                    GameManager.Instance.SE("Menu/Sort");
+                    MenuManager.Instance.NextAction = SortCommand();
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
+            }
+            else if (input.JustPressed(FrameInput.InputType.ItemMenu))
+                MenuManager.Instance.ClearMenus();
+            else
+                base.UpdateKeys(input);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            //draw other windows
+            summaryMenu.Draw(spriteBatch);
+        }
+
+
+
+        public IEnumerator<YieldInstruction> SortCommand()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.SortItems, Dir8.None)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.SortItems, Dir8.None)));
+            MenuManager.Instance.ReplaceMenu(new ItemMenu(replaceSlot));
+        }
+    }
+}

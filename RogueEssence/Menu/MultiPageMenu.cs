@@ -1,0 +1,130 @@
+﻿using System;
+using System.Collections.Generic;
+using RogueElements;
+using RogueEssence.Content;
+
+namespace RogueEssence.Menu
+{
+    public abstract class MultiPageMenu : TitledStripMenu
+    {
+        public MenuText PageText;
+        public IChoosable[][] TotalChoices;
+        public int CurrentPage;
+        public int SpacesPerPage;
+        public bool ShowPagesOnSingle;
+
+        protected void Initialize(Loc start, int width, string title, IChoosable[][] totalChoices, int defaultChoice, int defaultPage, int spacesPerPage)
+        {
+            Initialize(start, width, title, totalChoices, defaultChoice, defaultPage, spacesPerPage, true, -1);
+        }
+        protected void Initialize(Loc start, int width, string title, IChoosable[][] totalChoices, int defaultChoice, int defaultPage, int spacesPerPage, bool showPagesOnSingle, int multiSelect)
+        {
+            Initialize(start, width, title, totalChoices, defaultChoice, defaultPage, spacesPerPage, showPagesOnSingle, new IntRange(-1, multiSelect + 1));
+        }
+
+        protected void Initialize(Loc start, int width, string title, IChoosable[][] totalChoices, int defaultChoice, int defaultPage, int spacesPerPage, bool showPagesOnSingle, IntRange multiSelect)
+        {
+            TotalChoices = totalChoices;
+            SpacesPerPage = spacesPerPage;
+            ShowPagesOnSingle = showPagesOnSingle;
+            
+            Bounds = new Rect(start, new Loc(width, spacesPerPage * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset));
+            MultiSelect = multiSelect;
+
+            IncludeTitle(title);
+
+            PageText = new MenuText("", start + new Loc(width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
+            NonChoices.Add(PageText);
+
+            SetPage(defaultPage);
+            CurrentChoice = defaultChoice;
+        }
+
+        protected static List<MenuChoice[]> SortIntoPages(List<MenuChoice> choices, int maxSlots)
+        {
+            int pages = (choices.Count - 1) / maxSlots + 1;
+            int count = 0;
+            List<MenuChoice[]> box = new List<MenuChoice[]>();
+            for (int ii = 0; ii < pages; ii++)
+            {
+                box.Add(new MenuChoice[Math.Min(choices.Count - maxSlots * ii, maxSlots)]);
+                for (int jj = 0; jj < box[ii].Length; jj++)
+                {
+                    box[ii][jj] = choices[count];
+                    count++;
+                }
+            }
+
+            return box;
+        }
+
+        protected void SetPage(int page)
+        {
+            CurrentPage = page;
+            if (TotalChoices.Length == 1 && !ShowPagesOnSingle)
+                PageText.Text = "";
+            else
+                PageText.Text = "(" + (CurrentPage + 1) + "/" + TotalChoices.Length+ ")";
+            IChoosable[] choices = new IChoosable[TotalChoices[CurrentPage].Length];
+            for (int ii = 0; ii < choices.Length; ii++)
+                choices[ii] = TotalChoices[CurrentPage][ii];
+            SetChoices(choices);
+            CurrentChoice = Math.Min(CurrentChoice, choices.Length - 1);
+        }
+
+        protected override void UpdateKeys(InputManager input)
+        {
+            bool moved = false;
+            if (TotalChoices.Length > 1)
+            {
+                if (IsInputting(input, Dir8.Left))
+                {
+                    SetPage((CurrentPage + TotalChoices.Length - 1) % TotalChoices.Length);
+                    moved = true;
+                }
+                else if (IsInputting(input, Dir8.Right))
+                {
+                    SetPage((CurrentPage + 1) % TotalChoices.Length);
+                    moved = true;
+                }
+            }
+            if (moved)
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
+            }
+            else if (input.JustPressed(FrameInput.InputType.Confirm))
+            {
+                if (MultiSelect.Max > 0)
+                {
+                    List<int> slots = new List<int>();
+                    for (int ii = 0; ii < TotalChoices.Length; ii++)
+                    {
+                        for (int jj = 0; jj < TotalChoices[ii].Length; jj++)
+                        {
+                            if (TotalChoices[ii][jj].Selected)
+                                slots.Add(ii * SpacesPerPage + jj);
+                        }
+                    }
+
+                    if (slots.Count >= MultiSelect.Min)
+                    {
+                        if (slots.Count > 0)
+                        {
+                            GameManager.Instance.SE("Menu/Confirm");
+                            ChoseMultiIndex(slots);
+                        }
+                        else
+                            Choices[CurrentChoice].OnConfirm();
+                    }
+                    else
+                        GameManager.Instance.SE("Menu/Cancel");
+                }
+                else
+                    Choices[CurrentChoice].OnConfirm();
+            }
+            else
+                base.UpdateKeys(input);
+        }
+    }
+}
