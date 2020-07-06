@@ -28,9 +28,9 @@ namespace RogueEssence.Menu
                     invItem = DataManager.Instance.Save.ActiveTeam.Players[selections[0].Slot].EquippedItem;
                 else
                     invItem = DataManager.Instance.Save.ActiveTeam.Inventory[selections[0].Slot];
-                Data.ItemData entry = Data.DataManager.Instance.GetItem(invItem.ID);
+                ItemData entry = DataManager.Instance.GetItem(invItem.ID);
 
-                if (entry.UsageType == Data.ItemData.UseType.Learn)
+                if (entry.UsageType == ItemData.UseType.Learn)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), InfoAction));
             }
 

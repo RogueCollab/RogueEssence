@@ -40,9 +40,8 @@ namespace RogueEssence.Menu
                     updatePresence(ii);
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
-            {
                 updatePresence(DataManager.Instance.Save.ActiveTeam.Inventory[ii].ID);
-            }
+
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];

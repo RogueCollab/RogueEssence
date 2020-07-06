@@ -24,13 +24,11 @@ namespace RogueEssence.Menu
 
             int[] itemPresence = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
             for (int ii = 0; ii < itemPresence.Length; ii++)
-            {
                 itemPresence[ii] += DataManager.Instance.Save.ActiveTeam.Storage[ii];
-            }
+
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
-            {
                 itemPresence[DataManager.Instance.Save.ActiveTeam.Inventory[ii].ID]++;
-            }
+
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];

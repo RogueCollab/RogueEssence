@@ -1,4 +1,5 @@
 using System;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dungeon
 {
@@ -9,8 +10,9 @@ namespace RogueEssence.Dungeon
 
         public int SkillNum;
         public int Charges;
-        public bool Sealed;
         public bool Enabled;
+
+        public bool Sealed;
 
         public Skill()
             : this(-1, 0)

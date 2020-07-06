@@ -694,20 +694,6 @@ namespace RogueEssence.Dungeon
 
             Dead = true;
 
-            if (MemberTeam is ExplorerTeam)
-            {
-
-            }
-            else
-            {
-                InvItem heldItem = EquippedItem;
-                if (heldItem.ID > -1)
-                {
-                    DequipItem();
-                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
-                }
-            }
-
             //pre death:
             //defeat message
             //mark as dead
@@ -721,6 +707,20 @@ namespace RogueEssence.Dungeon
             
             if (Dead)
             {
+                if (MemberTeam is ExplorerTeam)
+                {
+
+                }
+                else
+                {
+                    InvItem heldItem = EquippedItem;
+                    if (heldItem.ID > -1)
+                    {
+                        DequipItem();
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
+                    }
+                }
+
                 OnRemove();
 
                 DefeatAt = ZoneManager.Instance.CurrentMap.GetSingleLineName();
@@ -746,21 +746,28 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> RestoreCharges(int charges)
         {
+            yield return CoroutineManager.Instance.StartCoroutine(RestoreCharges(-1, charges, true, true));
+        }
+
+        public IEnumerator<YieldInstruction> RestoreCharges(int skillSlot, int charges, bool effect, bool declare)
+        {
             for (int ii = 0; ii < Skills.Count; ii++)
             {
                 if (Skills[ii].Element.SkillNum > -1)
                     SetSkillCharges(ii, Math.Min(Skills[ii].Element.Charges + charges, DataManager.Instance.GetSkill(Skills[ii].Element.SkillNum).BaseCharges));
             }
 
-            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_RESTORE", Name));
+            if (declare)
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_RESTORE", Name));
 
-            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.RestoreChargeFX));
+            if (effect)
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.RestoreChargeFX));
 
         }
 
-        public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int pp)
+        public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(DeductCharges(skillSlot, pp, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(DeductCharges(skillSlot, charges, true, true));
         }
 
         public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges, bool effect, bool declare)
@@ -1332,7 +1339,9 @@ namespace RogueEssence.Dungeon
             MovementSpeed = 0;
 
             foreach (BackReference<Skill> skillState in Skills)
+            {
                 skillState.Element.Sealed = false;
+            }
         }
         public void RefreshTraits()
         {
@@ -1356,16 +1365,30 @@ namespace RogueEssence.Dungeon
                 yield return new PassiveContext(statusRef.TargetChar.GetStatusEffect(statusRef.ID), statusRef.GetStatusEntry().TargetPassive, defaultPortPriority, statusRef.TargetChar);
 
             //check equipped item
+            Dictionary<int, int> activeItems = new Dictionary<int, int>();
             if (EquippedItem.ID > -1 && !ItemDisabled)
+            {
                 yield return new PassiveContext(EquippedItem, EquippedItem.GetData(), defaultPortPriority, this);
+                activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
+            }
             //check bag items
             if (!ItemDisabled && MemberTeam is ExplorerTeam)
             {
-                for (int ii = 0; ii < ((ExplorerTeam)MemberTeam).Inventory.Count; ii++)
+                ExplorerTeam team = (ExplorerTeam)MemberTeam;
+                for (int ii = 0; ii < team.Inventory.Count; ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(((ExplorerTeam)MemberTeam).Inventory[ii].ID);
+                    ItemData itemData = DataManager.Instance.GetItem(team.Inventory[ii].ID);
                     if (itemData.BagEffect)
-                        yield return new PassiveContext(((ExplorerTeam)MemberTeam).Inventory[ii], ((ExplorerTeam)MemberTeam).Inventory[ii].GetData(), defaultPortPriority, this);
+                    {
+                        if (!activeItems.ContainsKey(team.Inventory[ii].ID))
+                            activeItems.Add(team.Inventory[ii].ID, ii);
+                    }
+                }
+
+                foreach (int key in activeItems.Keys)
+                {
+                    if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
+                        yield return new PassiveContext(team.Inventory[activeItems[key]], team.Inventory[activeItems[key]].GetData(), defaultPortPriority, this);
                 }
             }
             //check intrinsic
@@ -1419,22 +1442,38 @@ namespace RogueEssence.Dungeon
             }
 
             //check eqipped item
+            Dictionary<int, int> activeItems = new Dictionary<int, int>();
             if (EquippedItem.ID > -1 && !ItemDisabled)
             {
                 ProximityPassive proximity = (ProximityPassive)EquippedItem.GetData();
                 if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
+                {
                     yield return new PassiveContext(EquippedItem, proximity.ProximityEvent, portPriority, this);
+                    activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
+                }
             }
+
             // check bag items
             if (!ItemDisabled && MemberTeam is ExplorerTeam)
             {
-                for (int ii = 0; ii < ((ExplorerTeam)MemberTeam).Inventory.Count; ii++)
+                ExplorerTeam team = (ExplorerTeam)MemberTeam;
+                for (int ii = 0; ii < team.Inventory.Count; ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(((ExplorerTeam)MemberTeam).Inventory[ii].ID);
+                    ItemData itemData = DataManager.Instance.GetItem(team.Inventory[ii].ID);
                     if (itemData.BagEffect && itemData.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist4() && (DungeonScene.Instance.GetMatchup(character, this) & itemData.ProximityEvent.TargetAlignments) != Alignment.None)
-                        yield return new PassiveContext(((ExplorerTeam)MemberTeam).Inventory[ii], ((ExplorerTeam)MemberTeam).Inventory[ii].GetData(), portPriority, this);
+                    {
+                        if (!activeItems.ContainsKey(team.Inventory[ii].ID))
+                            activeItems.Add(team.Inventory[ii].ID, ii);
+                    }
+                }
+
+                foreach (int key in activeItems.Keys)
+                {
+                    if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
+                        yield return new PassiveContext(team.Inventory[activeItems[key]], team.Inventory[activeItems[key]].GetData(), portPriority, this);
                 }
             }
+
 
             // check intrinsic
             if (!IntrinsicDisabled)

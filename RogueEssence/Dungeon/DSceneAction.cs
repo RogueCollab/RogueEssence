@@ -139,7 +139,7 @@ namespace RogueEssence.Dungeon
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
                 else
-                    ((ExplorerTeam)context.User.MemberTeam).Inventory.RemoveAt(context.UsageSlot);
+                    ((ExplorerTeam)context.User.MemberTeam).RemoveFromInv(context.UsageSlot);
             }
             else if (context.UsageSlot == BattleContext.EQUIP_ITEM_SLOT)
             {

@@ -79,7 +79,6 @@ namespace RogueEssence.Dungeon
 
         public string Name;
         public List<Character> Assembly;
-        public List<InvItem> Inventory;
         public int[] Storage;
         public List<InvItem> BoxStorage;
         public int Bank;
@@ -87,6 +86,9 @@ namespace RogueEssence.Dungeon
         public int Rank { get; private set; }
         public int Fame;
         public int RankExtra;
+
+
+        public List<InvItem> Inventory;
 
         public ExplorerTeam()
         {
@@ -114,6 +116,41 @@ namespace RogueEssence.Dungeon
                     slots--;
             }
             return slots;
+        }
+
+        public void AddToInv(InvItem invItem)
+        {
+            Inventory.Add(invItem);
+            UpdateInv(null, invItem);
+        }
+        public void RemoveFromInv(int index)
+        {
+            InvItem invItem = Inventory[index];
+            Inventory.RemoveAt(index);
+            UpdateInv(invItem, null);
+        }
+        public void UpdateInv(InvItem oldItem, InvItem newItem)
+        {
+            bool update = false;
+            if (oldItem != null)
+            {
+                ItemData itemEntry = DataManager.Instance.GetItem(oldItem.ID);
+                if (itemEntry.BagEffect)
+                    update = true;
+            }
+            if (newItem != null)
+            {
+                ItemData itemEntry = DataManager.Instance.GetItem(newItem.ID);
+                if (itemEntry.BagEffect)
+                    update = true;
+            }
+            if (oldItem == null && newItem == null)
+                update = true;
+            if (update)
+            {
+                foreach (Character chara in Players)
+                    chara.RefreshTraits();
+            }
         }
 
         public int GetMaxTeam(Zone zone)

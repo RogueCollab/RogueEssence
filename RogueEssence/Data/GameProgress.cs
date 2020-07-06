@@ -250,7 +250,11 @@ namespace RogueEssence.Data
                 {
                     removedItems = true;
                     itemsToStore.Add(ActiveTeam.Inventory[ActiveTeam.Inventory.Count - 1]);
-                    ActiveTeam.Inventory.RemoveAt(ActiveTeam.Inventory.Count - 1);
+                    
+                    if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                        ActiveTeam.Inventory.RemoveAt(ActiveTeam.Inventory.Count - 1);
+                    else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ActiveTeam.RemoveFromInv(ActiveTeam.Inventory.Count - 1);
                 }
                 while (ActiveTeam.Inventory.Count + heldSlots > zone.BagRestrict)
                 {

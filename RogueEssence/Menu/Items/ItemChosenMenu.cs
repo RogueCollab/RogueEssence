@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
                 invItem = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
             else
                 invItem = DataManager.Instance.Save.ActiveTeam.Inventory[slot];
-            Data.ItemData entry = Data.DataManager.Instance.GetItem(invItem.ID);
+            ItemData entry = DataManager.Instance.GetItem(invItem.ID);
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             //able to use if an item is not held, or if an item is held, but the focused character is the holder

@@ -321,7 +321,7 @@ namespace RogueEssence.Dungeon
                     //still some stacks left to take care of
                     if (item.HiddenValue > 0 && ((ExplorerTeam)memberTeam).Inventory.Count < ((ExplorerTeam)memberTeam).GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                     {
-                        ((ExplorerTeam)memberTeam).Inventory.Add(item.MakeInvItem());
+                        ((ExplorerTeam)memberTeam).AddToInv(item.MakeInvItem());
                         item.HiddenValue = 0;
                     }
                     if (item.HiddenValue == 0)
@@ -335,7 +335,7 @@ namespace RogueEssence.Dungeon
                 else
                 {
                     ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
-                    ((ExplorerTeam)memberTeam).Inventory.Add(item.MakeInvItem());
+                    ((ExplorerTeam)memberTeam).AddToInv(item.MakeInvItem());
                     msg = Text.FormatKey("MSG_PICKUP_ITEM", character.Name, item.GetDungeonName());
                 }
                 bool teamCharacter = ActiveTeam.Players.Contains(character);
@@ -420,14 +420,14 @@ namespace RogueEssence.Dungeon
                 {
                     ExplorerTeam memberTeam = (ExplorerTeam)character.MemberTeam;
                     InvItem invItem = memberTeam.Inventory[invSlot];
-                    memberTeam.Inventory.RemoveAt(invSlot);
+                    memberTeam.RemoveFromInv(invSlot);
                     ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
 
                     GameManager.Instance.SE(DataManager.Instance.ReplaceSE);
 
                     LogMsg(Text.FormatKey("MSG_REPLACE_ITEM", item.GetDungeonName(), invItem.GetName()));
 
-                    memberTeam.Inventory.Add(item.MakeInvItem());
+                    memberTeam.AddToInv(item.MakeInvItem());
                 }
 
             }
@@ -445,7 +445,7 @@ namespace RogueEssence.Dungeon
                 {
                     ExplorerTeam memberTeam = (ExplorerTeam)character.MemberTeam;
                     invItem = memberTeam.Inventory[invSlot];
-                    memberTeam.Inventory.RemoveAt(invSlot);
+                    memberTeam.RemoveFromInv(invSlot);
                 }
 
                 ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
@@ -553,7 +553,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 InvItem item = ((ExplorerTeam)memberTeam).Inventory[invSlot];
-                ((ExplorerTeam)memberTeam).Inventory.RemoveAt(invSlot);
+                ((ExplorerTeam)memberTeam).RemoveFromInv(invSlot);
 
                 GameManager.Instance.SE(DataManager.Instance.EquipSE);
 
@@ -561,7 +561,7 @@ namespace RogueEssence.Dungeon
                 {
                     LogMsg(Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetName(), itemChar.EquippedItem.GetName()));
                     //put item in inv
-                    ((ExplorerTeam)memberTeam).Inventory.Add(new InvItem(itemChar.EquippedItem));
+                    ((ExplorerTeam)memberTeam).AddToInv(new InvItem(itemChar.EquippedItem));
                 }
                 else
                     LogMsg(Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetName()));
@@ -593,7 +593,7 @@ namespace RogueEssence.Dungeon
             result.Success = ActionResult.ResultType.TurnTaken;
 
             InvItem item = itemChar.EquippedItem;
-            ((ExplorerTeam)memberTeam).Inventory.Add(item);
+            ((ExplorerTeam)memberTeam).AddToInv(item);
             itemChar.DequipItem();
             GameManager.Instance.SE(DataManager.Instance.EquipSE);
             LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.Name, item.GetName()));
@@ -907,7 +907,7 @@ namespace RogueEssence.Dungeon
                 InvItem heldItem = player.EquippedItem;
                 player.DequipItem();
                 if (ActiveTeam.Inventory.Count + 1 < ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
-                    ActiveTeam.Inventory.Add(heldItem);
+                    ActiveTeam.AddToInv(heldItem);
                 else if (player.Dead)
                     yield return CoroutineManager.Instance.StartCoroutine(DropItem(heldItem, FocusedCharacter.CharLoc));
                 else
@@ -932,7 +932,7 @@ namespace RogueEssence.Dungeon
                 InvItem heldItem = player.EquippedItem;
                 player.DequipItem();
                 if (ActiveTeam.Inventory.Count + 1 < ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
-                    ActiveTeam.Inventory.Add(heldItem);
+                    ActiveTeam.AddToInv(heldItem);
             }
         }
 
