@@ -9,9 +9,9 @@ namespace RogueEssence.Menu
         {
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
-            for (int ii = 0; ii < TextInfo.SUPPORTED_LANGUAGES.Length; ii++)
+            for (int ii = 0; ii < Text.SupportedLangs.Length; ii++)
             {
-                string lang = TextInfo.SUPPORTED_LANGUAGES[ii];
+                string lang = Text.SupportedLangs[ii];
                 choices.Add(new MenuTextChoice(lang.ToName(), () => { choose(lang); }));
             }
             

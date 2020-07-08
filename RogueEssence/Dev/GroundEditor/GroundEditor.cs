@@ -796,7 +796,7 @@ namespace RogueEssence.Dev
                 //Since the dictionary collection doesn't guarantee a particular order, and we know they won't be in order,
                 // lets lookup languages by codes..
                 int curlang = (e.ColumnIndex - 1); //We know at least that we put the languages in the same order as the enum
-                string langcode = RogueEssence.TextInfo.SUPPORTED_LANGUAGES[curlang];
+                string langcode = RogueEssence.Text.SupportedLangs[curlang];
 
                 if (str.ContainsKey(langcode))
                 {
@@ -835,7 +835,7 @@ namespace RogueEssence.Dev
             gvStrings.Columns[0].FillWeight = 1.5f;
 
             //Make language columns
-            foreach (var code in RogueEssence.TextInfo.SUPPORTED_LANGUAGES)
+            foreach (var code in RogueEssence.Text.SupportedLangs)
             {
                 gvStrings.Columns.Add("col_" + code, code);
             }
@@ -852,7 +852,7 @@ namespace RogueEssence.Dev
                 curow.Cells.Add(namecell);
 
                 //Then the values
-                foreach (var code in RogueEssence.TextInfo.SUPPORTED_LANGUAGES)
+                foreach (var code in RogueEssence.Text.SupportedLangs)
                 {
                     DataGridViewTextBoxCell datacell = new DataGridViewTextBoxCell();
                     string codestr = code;
@@ -891,7 +891,7 @@ namespace RogueEssence.Dev
             CurrentStrings = new Dictionary<string, Dictionary<string, string>>();
 
             string FMTStr = String.Format("{0}{1}.{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
-            foreach(string code in RogueEssence.TextInfo.SUPPORTED_LANGUAGES)
+            foreach(string code in RogueEssence.Text.SupportedLangs)
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
                 string path = Path.Combine(stringsdir, fname);
@@ -935,7 +935,7 @@ namespace RogueEssence.Dev
         private void CommitStrings(string stringsdir)
         {
             string FMTStr = String.Format("{0}{1}.{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
-            foreach (string code in RogueEssence.TextInfo.SUPPORTED_LANGUAGES)
+            foreach (string code in RogueEssence.Text.SupportedLangs)
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
                 string path = Path.Combine(stringsdir, fname);

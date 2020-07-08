@@ -47,10 +47,10 @@ namespace RogueEssence.Menu
             {
                 List<string> langChoices = new List<string>();
                 int langIndex = 0;
-                for (int ii = 0; ii < TextInfo.SUPPORTED_LANGUAGES.Length; ii++)
+                for (int ii = 0; ii < Text.SupportedLangs.Length; ii++)
                 {
-                    langChoices.Add(TextInfo.SUPPORTED_LANGUAGES[ii].ToName());
-                    if (DiagManager.Instance.CurSettings.Language == TextInfo.SUPPORTED_LANGUAGES[ii])
+                    langChoices.Add(Text.SupportedLangs[ii].ToName());
+                    if (DiagManager.Instance.CurSettings.Language == Text.SupportedLangs[ii])
                         langIndex = ii;
                 }
 
@@ -82,8 +82,8 @@ namespace RogueEssence.Menu
             bool changeLanguage = false;
             if (!inGame)
             {
-                changeLanguage = DiagManager.Instance.CurSettings.Language != TextInfo.SUPPORTED_LANGUAGES[TotalChoices[5].CurrentChoice];
-                DiagManager.Instance.CurSettings.Language = TextInfo.SUPPORTED_LANGUAGES[TotalChoices[5].CurrentChoice];
+                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[5].CurrentChoice];
+                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[5].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language.ToString());
             }

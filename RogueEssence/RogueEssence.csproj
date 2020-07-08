@@ -495,7 +495,6 @@
     <Compile Include="LevelGen\Zones\ZonePostProcs\ZonePostProc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Content\SoundManager.cs" />
-    <Compile Include="TextInfo.cs" />
     <Compile Include="Text.cs" />
     <Compile Include="Versioning.cs" />
     <Compile Include="XmlExt.cs" />

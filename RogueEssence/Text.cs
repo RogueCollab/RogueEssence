@@ -18,6 +18,58 @@ namespace RogueEssence
         public static Dictionary<string, string> StringsExDefault;
         public static Dictionary<string, string> StringsEx;
         public static CultureInfo Culture;
+        public static string[] SupportedLangs;
+        private static Dictionary<string, string> langNames;
+
+        public static void Init()
+        {
+            string path = DiagManager.ASSET_PATH + "Strings/Languages.xml";
+            List<string> codes = new List<string>();
+            Dictionary<string, string> translations = new Dictionary<string, string>();
+            try
+            {
+                if (File.Exists(path))
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    {
+                        if (xnode.Name == "data")
+                        {
+                            string value = null;
+                            string name = null;
+                            var atname = xnode.Attributes["name"];
+                            if (atname != null)
+                                name = atname.Value;
+
+                            //Get value
+                            XmlNode valnode = xnode.SelectSingleNode("value");
+                            if (valnode != null)
+                                value = valnode.InnerText;
+
+                            if (value != null && name != null)
+                            {
+                                codes.Add(name);
+                                translations[name] = value;
+                            }
+                        }
+                    }
+                }
+                SupportedLangs = codes.ToArray();
+                langNames = translations;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+                SupportedLangs = new string[1] { "en" };
+                langNames["en"] = "English";
+            }
+        }
+
+        public static string ToName(this string lang)
+        {
+            return langNames[lang];
+        }
 
         public static Dictionary<string, string> LoadXmlDoc(string path)
         {
