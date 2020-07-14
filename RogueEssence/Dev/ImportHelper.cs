@@ -226,35 +226,38 @@ namespace RogueEssence.Dev
 
         public static string[] TILE_TITLES = { "wall", "ground", "water" };
 
-        public static void ImportAllTiles(string sourceDir, string cachePattern, bool includeAutotile = false)
+        public static void ImportAllTiles(string sourceDir, string cachePattern, bool includeTile, bool includeAutotile)
         {
-            string[] dirs = Directory.GetFiles(sourceDir, "*.png");
-            //go through each sprite folder, and each form folder
-            for (int ii = 0; ii < dirs.Length; ii++)
+            if (includeTile)
             {
-                string fileName = Path.GetFileNameWithoutExtension(dirs[ii]);
-                string outputFile = String.Format(cachePattern, fileName);
-
-                try
+                string[] dirs = Directory.GetFiles(sourceDir, "*.png");
+                //go through each sprite folder, and each form folder
+                for (int ii = 0; ii < dirs.Length; ii++)
                 {
-                    DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
-                    using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
+                    string fileName = Path.GetFileNameWithoutExtension(dirs[ii]);
+                    string outputFile = String.Format(cachePattern, fileName);
+
+                    try
                     {
-                        List<BaseSheet> tileList = new List<BaseSheet>();
-                        tileList.Add(tileset);
-                        SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
+                        DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
+                        using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
+                        {
+                            List<BaseSheet> tileList = new List<BaseSheet>();
+                            tileList.Add(tileset);
+                            SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
+                        }
                     }
-                }
 
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                    }
                 }
             }
 
             if (includeAutotile)
             {
-                dirs = Directory.GetDirectories(sourceDir);
+                string[] dirs = Directory.GetDirectories(sourceDir);
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {
                     string fileName = Path.GetFileName(dirs[ii]);

@@ -472,7 +472,7 @@ namespace RogueEssence.Dungeon
                             break;
                         }
                     }
-                    if (!(ActiveTeam.Inventory.Count == 0 && !heldItems))
+                    if (!(ActiveTeam.GetInvCount() == 0 && !heldItems))
                     {
                         GameManager.Instance.SE("Menu/Skip");
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ItemMenu()));
@@ -652,7 +652,7 @@ namespace RogueEssence.Dungeon
                             if (skill.SkillNum > -1)
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
-                                ShownHotkeys[ii].SetSkill(skillData.Name.ToLocal(), skillData.Data.Element, skill.Charges, skillData.BaseCharges, skill.Sealed);
+                                ShownHotkeys[ii].SetSkill(skillData.Name.ToLocal(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
                             }
                             else
                                 ShownHotkeys[ii].SetSkill("", 00, 0, 0, false);
@@ -838,7 +838,7 @@ namespace RogueEssence.Dungeon
                         {
                             //if it's a tile on the discovery array, show it
                             bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj));
-                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear || !outOfBounds && ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj] || SeeAll)
+                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear || !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj] == Map.DiscoveryState.Discovered) || SeeAll)
                             {
                                 if (outOfBounds)
                                     ZoneManager.Instance.CurrentMap.DrawBG(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start, new Loc(ii, jj));
@@ -965,7 +965,7 @@ namespace RogueEssence.Dungeon
                     foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
                     {
                         //if it's a tile on the discovery array, show it
-                        if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] || SeeAll)
+                        if ((ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Discovered) || SeeAll)
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                             if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
@@ -980,7 +980,7 @@ namespace RogueEssence.Dungeon
                     foreach (PickupItem item in PickupItems)
                     {
                         //if it's a tile on the discovery array, show it
-                        if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] || SeeAll)
+                        if ((ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Discovered) || SeeAll)
                         {
                             if (CanSeeSprite(ViewRect, item))
                                 item.Draw(spriteBatch, ViewRect.Start);
@@ -1170,7 +1170,10 @@ namespace RogueEssence.Dungeon
                     {
                         for (int jj = startLoc.Y; jj < ZoneManager.Instance.CurrentMap.Height && jj - startLoc.Y < MAX_MINIMAP_HEIGHT; jj++)
                         {
-                            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj] || SeeAll)
+                            Map.DiscoveryState discovery = ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj];
+                            if (SeeAll)
+                                discovery = Map.DiscoveryState.Discovered;
+                            if (discovery != Map.DiscoveryState.None)
                             {
                                 Vector2 destVector = mapStart + (new Vector2(ii, jj) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight);
                                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj];
@@ -1189,16 +1192,16 @@ namespace RogueEssence.Dungeon
                                 {
                                     //draw halls
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj - 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, Color.White);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj + 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, Color.White);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii - 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, Color.White);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii + 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, Color.White);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
                                 }
 
-                                if (tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
+                                if (discovery == Map.DiscoveryState.Discovered && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
                                 {
                                     TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
 
@@ -1212,7 +1215,7 @@ namespace RogueEssence.Dungeon
                     }
                     foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
                     {
-                        if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] || SeeAll)
+                        if ((ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Discovered) || SeeAll)
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                             if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
@@ -1570,7 +1573,7 @@ namespace RogueEssence.Dungeon
             }
 
             //if it's undiscovered, it's black
-            if (!ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y])
+            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] != Map.DiscoveryState.Discovered)
                 return 0f;
 
             //otherwise, use fade value

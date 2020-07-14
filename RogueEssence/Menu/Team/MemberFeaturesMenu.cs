@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
                     ElementData element = DataManager.Instance.GetElement(data.Data.Element);
                     skillString = String.Format("{0}\u2060{1}", element.Symbol, data.Name.ToLocal());
                     skillCharges = skill.Charges.ToString();
-                    totalCharges = "/" + data.BaseCharges;
+                    totalCharges = "/" + (data.BaseCharges + player.ChargeBoost);
                 }
                 Skills[ii * 3] = new MenuText(skillString, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET));
                 Skills[ii * 3 + 1] = new MenuText(skillCharges, new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 16 - GraphicsManager.TextFont.CharSpace, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Right);

@@ -441,10 +441,8 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
             }
             if ((conversionFlags & AssetType.Tile) != AssetType.None)
-            {
-                Dev.ImportHelper.ImportAllTiles(DiagManager.DEV_PATH+"Tiles/", TILE_PATTERN);
-                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
-            }
+                Dev.ImportHelper.ImportAllTiles(DiagManager.DEV_PATH+"Tiles/", TILE_PATTERN, true, false);
+
             if ((conversionFlags & AssetType.Item) != AssetType.None)
                 Dev.ImportHelper.ImportAllItems(DiagManager.DEV_PATH+"Item/", ITEM_PATTERN);
             if ((conversionFlags & AssetType.VFX) != AssetType.None)
@@ -455,6 +453,13 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllNameDirs(DiagManager.DEV_PATH+"Object/", OBJECT_PATTERN);
             if ((conversionFlags & AssetType.BG) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(DiagManager.DEV_PATH+"BG/", BG_PATTERN);
+
+            if ((conversionFlags & AssetType.Autotile) != AssetType.None)
+                Dev.ImportHelper.ImportAllTiles(DiagManager.DEV_PATH + "Tiles/", TILE_PATTERN, false, true);
+
+            if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
+                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
+
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
                 Dev.ImportHelper.ImportAllAutoTiles(DiagManager.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");

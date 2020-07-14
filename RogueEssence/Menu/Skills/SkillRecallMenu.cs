@@ -31,7 +31,8 @@ namespace RogueEssence.Menu
             {
                 Data.SkillData skillEntry = Data.DataManager.Instance.GetSkill(forgottenSkills[ii]);
                 string newSkillString = skillEntry.Name.ToLocal();
-                string newSkillCharges = skillEntry.BaseCharges + "/" + skillEntry.BaseCharges;
+                int maxCharges = skillEntry.BaseCharges + player.ChargeBoost;
+                string newSkillCharges = maxCharges + "/" + maxCharges;
                 int index = ii;
                 MenuText newMenuText = new MenuText(newSkillString, new Loc(2, 1));
                 MenuText newMenuCharges = new MenuText(newSkillCharges, new Loc(menuWidth - 8 * 4, 1), DirH.Right);

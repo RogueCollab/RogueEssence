@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
                 if (selections[0].IsEquipped)
                     invItem = DataManager.Instance.Save.ActiveTeam.Players[selections[0].Slot].EquippedItem;
                 else
-                    invItem = DataManager.Instance.Save.ActiveTeam.Inventory[selections[0].Slot];
+                    invItem = DataManager.Instance.Save.ActiveTeam.GetInv(selections[0].Slot);
                 ItemData entry = DataManager.Instance.GetItem(invItem.ID);
 
                 if (entry.UsageType == ItemData.UseType.Learn)
@@ -53,7 +53,7 @@ namespace RogueEssence.Menu
             if (selections[0].IsEquipped)
                 MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.Players[selections[0].Slot].EquippedItem.ID), false);
             else
-                MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.Inventory[selections[0].Slot].ID), false);
+                MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.GetInv(selections[0].Slot).ID), false);
         }
 
         private void ExitAction()

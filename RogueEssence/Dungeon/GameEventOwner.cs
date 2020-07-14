@@ -73,7 +73,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void AddEffectsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, int maxPriority, ref int nextPriority, PriorityList<T> effectList) where T : GameEvent
+        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, int maxPriority, ref int nextPriority, PriorityList<T> effectList) where T : GameEvent
         {
             foreach(int priority in effectList.GetPriorities())
             {

@@ -38,8 +38,8 @@ namespace RogueEssence.Ground
             else
             {
                 ExplorerTeam memberTeam = DataManager.Instance.Save.ActiveTeam;
-                invItem = memberTeam.Inventory[invSlot];
-                memberTeam.Inventory.RemoveAt(invSlot);
+                invItem = memberTeam.GetInv(invSlot);
+                memberTeam.RemoveFromInv(invSlot);
             }
 
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetName())));
@@ -94,8 +94,8 @@ namespace RogueEssence.Ground
 
             //no curse check in ground mode
 
-            InvItem item = memberTeam.Inventory[invSlot];
-            memberTeam.Inventory.RemoveAt(invSlot);
+            InvItem item = memberTeam.GetInv(invSlot);
+            memberTeam.RemoveFromInv(invSlot);
 
             GameManager.Instance.SE(DataManager.Instance.EquipSE);
 
@@ -103,26 +103,13 @@ namespace RogueEssence.Ground
             {
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetName(), itemChar.EquippedItem.GetName())));
                 //put item in inv
-                memberTeam.Inventory.Add(new InvItem(itemChar.EquippedItem));
+                memberTeam.AddToInv(new InvItem(itemChar.EquippedItem));
             }
             else
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetName())));
 
 
-            itemChar.EquippedItem = item;
-            ItemData entry = DataManager.Instance.GetItem(itemChar.EquippedItem.ID);
-
-            if (item.Cursed)
-            {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_EQUIP_CURSED", item.GetName(), itemChar.Name)));
-            }
-            else if (entry.Cursed)
-            {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_EQUIP_AUTOCURSE", item.GetName(), itemChar.Name)));
-                item.Cursed = true;
-            }
+            itemChar.EquipItem(item);
         }
 
         public IEnumerator<YieldInstruction> ProcessTakeItem(GroundChar character, int teamSlot)
@@ -133,8 +120,8 @@ namespace RogueEssence.Ground
             //no curse check in ground mode
 
             InvItem item = itemChar.EquippedItem;
-            memberTeam.Inventory.Add(item);
-            itemChar.EquippedItem = new InvItem();
+            memberTeam.AddToInv(item);
+            itemChar.DequipItem();
             GameManager.Instance.SE(DataManager.Instance.EquipSE);
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.Name, item.GetName())));
 
@@ -185,15 +172,17 @@ namespace RogueEssence.Ground
         public void SilentSendHome(int index)
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[index];
-            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(player);
-            RemoveChar(index);
 
             if (player.EquippedItem.ID > -1)
             {
                 InvItem heldItem = player.EquippedItem;
-                player.EquippedItem = new InvItem();
-                DataManager.Instance.Save.ActiveTeam.Inventory.Add(heldItem);
+                player.DequipItem();
+                DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
             }
+
+            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(player);
+            RemoveChar(index);
+
         }
 
         /// <summary>

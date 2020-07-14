@@ -173,6 +173,7 @@ namespace RogueEssence.Data
 
     public enum Stat
     {
+        None,
         HP,
         Attack,
         Defense,

@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
             moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + ItemMenu.ITEM_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_SPACE * 2 - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, summaryMenu.Bounds.Top)));
 
-            int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.Inventory.Count;
+            int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
             Initialize(new Loc(16, 16), SELL_MENU_WIDTH, Text.FormatKey("MENU_SHOP_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, buyLimit);
 
         }

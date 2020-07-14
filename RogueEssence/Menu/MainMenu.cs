@@ -20,16 +20,16 @@ namespace RogueEssence.Menu
 
         public MainMenu()
         {
-            bool heldItems = false;
+            bool equippedItems = false;
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 if (!character.Dead && character.EquippedItem.ID > -1)
                 {
-                    heldItems = true;
+                    equippedItems = true;
                     break;
                 }
             }
-            bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.Inventory.Count == 0 && !heldItems);
+            bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !equippedItems);
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SKILLS"), () => { MenuManager.Instance.AddMenu(new SkillMenu(DataManager.Instance.Save.ActiveTeam.LeaderIndex), false); }));

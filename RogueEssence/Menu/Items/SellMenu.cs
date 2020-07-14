@@ -37,12 +37,12 @@ namespace RogueEssence.Menu
                     flatChoices.Add(new MenuElementChoice(() => { choose(new InvSlot(true, index)); }, true, itemText, itemPrice));
                 }
             }
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 int index = ii;
 
-                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.Inventory[index].GetName(), new Loc(2, 1));
-                MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.Inventory[index].GetSellValue().ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
+                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), new Loc(2, 1));
+                MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetSellValue().ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
                 flatChoices.Add(new MenuElementChoice(() => { choose(new InvSlot(false, index)); }, true, itemText, itemPrice));
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
@@ -95,9 +95,9 @@ namespace RogueEssence.Menu
 
         private int getMaxInvPages()
         {
-            if (DataManager.Instance.Save.ActiveTeam.Inventory.Count == 0)
+            if (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0)
                 return 0;
-            return (DataManager.Instance.Save.ActiveTeam.Inventory.Count - 1) / SLOTS_PER_PAGE + 1;
+            return (DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1) / SLOTS_PER_PAGE + 1;
         }
 
         protected override void ChoiceChanged()
@@ -124,7 +124,7 @@ namespace RogueEssence.Menu
                 }
             }
             menuIndex -= countedEquipped;
-            return DataManager.Instance.Save.ActiveTeam.Inventory[menuIndex];
+            return DataManager.Instance.Save.ActiveTeam.GetInv(menuIndex);
         }
 
         protected override void UpdateKeys(InputManager input)

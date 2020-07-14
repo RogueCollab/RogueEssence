@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -52,7 +53,7 @@ namespace RogueEssence.Menu
             Data.BaseMonsterForm entry = Data.DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
             int itemNum = -1;
             if (invSlot > BattleContext.EQUIP_ITEM_SLOT)
-                itemNum = DungeonScene.Instance.ActiveTeam.Inventory[invSlot].ID;
+                itemNum = DungeonScene.Instance.ActiveTeam.GetInv(invSlot).ID;
             else if (invSlot == BattleContext.EQUIP_ITEM_SLOT)
                 itemNum = user.EquippedItem.ID;
             else if (invSlot == BattleContext.FLOOR_ITEM_SLOT)
@@ -87,8 +88,9 @@ namespace RogueEssence.Menu
             {
                 if (character.BaseSkills[ii].SkillNum > -1)
                 {
-                    Skills[ii].Text = Data.DataManager.Instance.GetSkill(character.BaseSkills[ii].SkillNum).Name.ToLocal();
-                    SkillCharges[ii].Text = character.BaseSkills[ii].Charges + "/" + Data.DataManager.Instance.GetSkill(character.BaseSkills[ii].SkillNum).BaseCharges;
+                    SkillData data = DataManager.Instance.GetSkill(character.BaseSkills[ii].SkillNum);
+                    Skills[ii].Text = data.Name.ToLocal();
+                    SkillCharges[ii].Text = character.BaseSkills[ii].Charges + "/" + (data.BaseCharges + character.ChargeBoost);
                 }
                 else
                 {

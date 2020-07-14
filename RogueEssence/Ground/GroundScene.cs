@@ -113,7 +113,7 @@ namespace RogueEssence.Ground
                         break;
                     }
                 }
-                if (!(DataManager.Instance.Save.ActiveTeam.Inventory.Count == 0 && !heldItems))
+                if (!(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !heldItems))
                 {
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ItemMenu()));

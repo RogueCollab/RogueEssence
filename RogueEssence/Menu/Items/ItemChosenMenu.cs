@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
             if (held)
                 invItem = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
             else
-                invItem = DataManager.Instance.Save.ActiveTeam.Inventory[slot];
+                invItem = DataManager.Instance.Save.ActiveTeam.GetInv(slot);
             ItemData entry = DataManager.Instance.GetItem(invItem.ID);
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
@@ -95,7 +95,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                bool invEmpty = (DataManager.Instance.Save.ActiveTeam.Inventory.Count == 0);
+                bool invEmpty = (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0);
                 //item is held
                 if (focus || leader)
                 {
@@ -113,23 +113,26 @@ namespace RogueEssence.Menu
             else if (!held || focus)
             {
                 //actions can be done only if the focused character is the holder, or if it isn't held at all
-                int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(DungeonScene.Instance.FocusedCharacter.CharLoc);
-                string dropString = Text.FormatKey("MENU_ITEM_PLACE");
-                bool disableDrop = false;
-                if (itemSlot > -1)
+                if (!entry.CannotDrop)
                 {
-                    MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[itemSlot];
-                    if (mapItem.IsMoney)
-                        disableDrop = true;
-                    else
-                        dropString = Text.FormatKey("MENU_ITEM_REPLACE");
-                }
-                choices.Add(new MenuTextChoice(dropString, PlaceAction, !disableDrop, disableDrop ? Color.Red : Color.White));
+                    int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(DungeonScene.Instance.FocusedCharacter.CharLoc);
+                    string dropString = Text.FormatKey("MENU_ITEM_PLACE");
+                    bool disableDrop = false;
+                    if (itemSlot > -1)
+                    {
+                        MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[itemSlot];
+                        if (mapItem.IsMoney)
+                            disableDrop = true;
+                        else
+                            dropString = Text.FormatKey("MENU_ITEM_REPLACE");
+                    }
+                    choices.Add(new MenuTextChoice(dropString, PlaceAction, !disableDrop, disableDrop ? Color.Red : Color.White));
 
-                if (entry.UsageType == Data.ItemData.UseType.Throw)
-                    choices.Insert(0, new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
-                else
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
+                    if (entry.UsageType == Data.ItemData.UseType.Throw)
+                        choices.Insert(0, new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
+                    else
+                        choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
+                }
             }
             if (entry.UsageType == Data.ItemData.UseType.Learn)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), InfoAction));
@@ -214,7 +217,7 @@ namespace RogueEssence.Menu
             if (held)
                 MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem.ID), false);
             else
-                MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.Inventory[slot].ID), false);
+                MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.GetInv(slot).ID), false);
         }
 
         private void ExitAction()

@@ -39,6 +39,7 @@ namespace RogueEssence.Dungeon
         public BattleData Data { get; set; }
         public InvItem Item;//the item that is used, and most likely dropped
         public int SkillUsedUp;//the skill whose last charge was used up
+        public AbortStatus TurnCancel;
 
         public string actionMsg;
 
@@ -50,6 +51,7 @@ namespace RogueEssence.Dungeon
 
         public BattleContext(BattleActionType actionType) : base()
         {
+            TurnCancel = new AbortStatus();
             this.ActionType = actionType;
             UsageSlot = BattleContext.DEFAULT_ATTACK_SLOT;
             SkillUsedUp = -1;
@@ -60,6 +62,7 @@ namespace RogueEssence.Dungeon
 
         public BattleContext(BattleContext other, bool copyGlobal) : base(other)
         {
+            TurnCancel = other.TurnCancel;
             if (copyGlobal)
                 GlobalContextStates = other.GlobalContextStates.Clone();
             else
@@ -173,7 +176,7 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.HitTarget(actionContext, charTarget));//hit the character
             }
             //do thing to tile
-            yield return CoroutineManager.Instance.StartCoroutine(actionContext.Data.HitTile(actionContext));
+            yield return CoroutineManager.Instance.StartCoroutine(actionContext.User.HitTile(actionContext));
         }
 
         public IEnumerator<YieldInstruction> ProcessHitTile(Loc loc)
@@ -182,7 +185,7 @@ namespace RogueEssence.Dungeon
             actionContext.TargetTile = loc;
 
             //do thing to tile
-            yield return CoroutineManager.Instance.StartCoroutine(actionContext.Data.HitTile(actionContext));
+            yield return CoroutineManager.Instance.StartCoroutine(actionContext.User.HitTile(actionContext));
         }
     }
 }

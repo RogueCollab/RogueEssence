@@ -24,7 +24,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(context.User.BeforeTryAction(context));
             if (context.CancelState.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(context.User.CharLoc)); yield break; }
 
-            result.Success = ActionResult.ResultType.TurnTaken;
+            context.TurnCancel.Cancel = false;
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteSkill));
@@ -39,7 +39,10 @@ namespace RogueEssence.Dungeon
 
             if (!context.CancelState.Cancel)
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User));
+
+            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+
+            result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
 
 
@@ -65,13 +68,16 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(context.User.BeforeTryAction(context));
             if (context.CancelState.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(context.User.CharLoc)); yield break; }
 
-            result.Success = ActionResult.ResultType.TurnTaken;
+            context.TurnCancel.Cancel = false;
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteItem));
             if (!context.CancelState.Cancel)
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User));
+
+            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+
+            result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
 
         public IEnumerator<YieldInstruction> ProcessThrowItem(Character character, int invSlot, ActionResult result)
@@ -90,13 +96,16 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(context.User.BeforeTryAction(context));
             if (context.CancelState.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(context.User.CharLoc)); yield break; }
 
-            result.Success = ActionResult.ResultType.TurnTaken;
+            context.TurnCancel.Cancel = false;
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteItem));
             if (!context.CancelState.Cancel)
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User));
+
+            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+
+            result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
 
 
@@ -134,7 +143,7 @@ namespace RogueEssence.Dungeon
             //remove the item from the inventory/ground/hold
             if (context.UsageSlot > BattleContext.EQUIP_ITEM_SLOT)
             {
-                InvItem item = ((ExplorerTeam)context.User.MemberTeam).Inventory[context.UsageSlot];
+                InvItem item = ((ExplorerTeam)context.User.MemberTeam).GetInv(context.UsageSlot);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
@@ -270,14 +279,12 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeforeExplosion(BattleContext context)
         {
-            int maxPriority = Int32.MinValue;
-            while (true)
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
             {
-                int nextPriority = Int32.MaxValue;
 
-                StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>> instructionQueue = new StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>>();
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeExplosions);
 
-                context.Data.EnqueueBeforeExplosion(instructionQueue, maxPriority, ref nextPriority, context);
+                context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.BeforeExplosions);
 
                 StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
@@ -285,64 +292,52 @@ namespace RogueEssence.Dungeon
                     if (!character.Dead)
                         charQueue.Enqueue(-character.Speed, character);
                 }
-                int totalPriority = 0;
+                int portPriority = 0;
 
                 while (charQueue.Count > 0)
                 {
                     Character character = charQueue.Dequeue();
-                    character.EnqueueBeforeExplosion(instructionQueue, maxPriority, ref nextPriority, totalPriority, context);
-                    totalPriority++;
+                    foreach (PassiveContext effectContext in character.IterateProximityPassives(context.User, context.ExplosionTile, portPriority))
+                        effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, ((ProximityData)effectContext.EventData).BeforeExplosions);
+
+                    portPriority++;
                 }
 
-                if (instructionQueue.Count == 0)
-                    break;
-                else
-                {
-                    while (instructionQueue.Count > 0)
-                    {
-                        IEnumerator<YieldInstruction> effect = instructionQueue.Dequeue();
-                        yield return CoroutineManager.Instance.StartCoroutine(effect);
-                        if (context.CancelState.Cancel)
-                            yield break;
-                    }
-                    if (nextPriority == Int32.MaxValue)
-                        break;
-                    else
-                        maxPriority = nextPriority + 1;
-                }
+            };
+            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents<BattleEvent>(function))
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                if (context.CancelState.Cancel) yield break;
             }
+
         }
 
         public IEnumerator<YieldInstruction> BeforeHit(BattleContext context)
         {
-            int maxPriority = Int32.MinValue;
-            while (true)
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
             {
-                int nextPriority = Int32.MaxValue;
-
-                StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>> instructionQueue = new StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>>();
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeHits);
 
                 if (context.ActionType != BattleActionType.Trap)
-                    context.User.EnqueueBeforeHitting(instructionQueue, maxPriority, ref nextPriority, context);
-                context.Target.EnqueueBeforeBeingHit(instructionQueue, maxPriority, ref nextPriority, context);
-                
-                if (instructionQueue.Count == 0)
-                    break;
-                else
                 {
-                    while (instructionQueue.Count > 0)
-                    {
-                        IEnumerator<YieldInstruction> effect = instructionQueue.Dequeue();
-                        yield return CoroutineManager.Instance.StartCoroutine(effect);
-                        if (context.CancelState.Cancel)
-                            yield break;
-                    }
-                    if (nextPriority == Int32.MaxValue)
-                        break;
-                    else
-                        maxPriority = nextPriority + 1;
+                    //check the action's effects
+                    context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.BeforeHits);
+
+                    foreach (PassiveContext effectContext in context.User.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeHittings);
+
                 }
+
+                foreach (PassiveContext effectContext in context.Target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeBeingHits);
+
+            };
+            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents<BattleEvent>(function))
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                if (context.CancelState.Cancel) yield break;
             }
+
         }
 
         public IEnumerator<YieldInstruction> HitTarget(BattleContext context, Character target)
@@ -354,11 +349,31 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public static int GetEffectiveness(Character attacker, Character target, BattleData action, int type)
+        public static int GetEffectiveness(Character attacker, Character target, BattleData action, int element)
         {
-            int effectiveness = GetEffectiveness(attacker, target, action.Element, type);
+            int effectiveness = 0;
 
-            action.ModifyElementEffect(type, ref effectiveness);
+            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, int maxPriority, ref int nextPriority) =>
+            {
+                //start with universal
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
+
+                //go through all statuses' element matchup methods
+                if (attacker != null)
+                {
+                    foreach (PassiveContext effectContext in attacker.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.UserElementEffects);
+                }
+                if (target != null)
+                {
+                    foreach (PassiveContext effectContext in target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.TargetElementEffects);
+                }
+
+                action.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, action.ElementEffects);
+            };
+            foreach (Tuple<GameEventOwner, Character, ElementEffectEvent> effect in IterateEvents<ElementEffectEvent>(function))
+                effect.Item3.Apply(effect.Item1, effect.Item2, action.Element, element, ref effectiveness);
 
             return effectiveness;
         }
@@ -367,20 +382,25 @@ namespace RogueEssence.Dungeon
         {
             int effectiveness = 0;
 
-            //start with universal
             EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, int maxPriority, ref int nextPriority) =>
             {
+                //start with universal
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
+
+                //go through all statuses' element matchup methods
+                if (attacker != null)
+                {
+                    foreach (PassiveContext effectContext in attacker.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.UserElementEffects);
+                }
+                if (target != null)
+                {
+                    foreach (PassiveContext effectContext in target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.TargetElementEffects);
+                }
             };
             foreach (Tuple<GameEventOwner, Character, ElementEffectEvent> effect in IterateEvents<ElementEffectEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, attacking, attacking, ref effectiveness);
-
-
-            //go through all statuses' element matchup methods
-            if (attacker != null)
-                attacker.ModifyUserElementEffect(attacking, defending, ref effectiveness);
-            if (target != null)
-                target.ModifyTargetElementEffect(attacking, defending, ref effectiveness);
+                effect.Item3.Apply(effect.Item1, effect.Item2, attacking, defending, ref effectiveness);
 
             return effectiveness;
         }
@@ -436,33 +456,23 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(context.Data.Hit(context));
 
 
-            int maxPriority = Int32.MinValue;
-            while (true)
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
             {
-                int nextPriority = Int32.MaxValue;
-
-                StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>> instructionQueue = new StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>>();
-
                 if (context.ActionType != BattleActionType.Trap)
-                    context.User.EnqueueAfterHitting(instructionQueue, maxPriority, ref nextPriority, context);
-                context.Target.EnqueueAfterBeingHit(instructionQueue, maxPriority, ref nextPriority, context);
-
-                if (instructionQueue.Count == 0)
-                    break;
-                else
                 {
-                    while (instructionQueue.Count > 0)
-                    {
-                        IEnumerator<YieldInstruction> effect = instructionQueue.Dequeue();
-                        yield return CoroutineManager.Instance.StartCoroutine(effect);
-                        if (context.CancelState.Cancel)
-                            yield break;
-                    }
-                    if (nextPriority == Int32.MaxValue)
-                        break;
-                    else
-                        maxPriority = nextPriority + 1;
+                    foreach (PassiveContext effectContext in context.User.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterHittings);
+
                 }
+
+                foreach (PassiveContext effectContext in context.Target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterBeingHits);
+
+            };
+            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents<BattleEvent>(function))
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                if (context.CancelState.Cancel) yield break;
             }
         }
 

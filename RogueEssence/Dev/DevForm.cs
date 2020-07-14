@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using RogueEssence.Ground;
 using RogueEssence.Script;
 using Microsoft.Win32;
 using RogueEssence.Menu;
@@ -343,7 +344,7 @@ namespace RogueEssence.Dev
         private void btnSpawn_Click(object sender, EventArgs e)
         {
             MonsterTeam team = new MonsterTeam();
-            Dungeon.Character focusedChar = Dungeon.DungeonScene.Instance.FocusedCharacter;
+            Character focusedChar = DungeonScene.Instance.FocusedCharacter;
             CharData character = new CharData();
             character.BaseForm = focusedChar.CurrentForm;
             character.Nickname = "Clone";
@@ -355,14 +356,15 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
                 character.BaseIntrinsics[ii] = focusedChar.BaseIntrinsics[ii];
 
-            Dungeon.Character new_mob = new Dungeon.Character(character, team);
+            Character new_mob = new Character(character, team);
             team.Players.Add(new_mob);
             new_mob.CharLoc = focusedChar.CharLoc;
             new_mob.CharDir = focusedChar.CharDir;
             new_mob.Tactic = new AITactic(focusedChar.Tactic);
+            new_mob.EquippedItem = new InvItem(focusedChar.EquippedItem);
             ZoneManager.Instance.CurrentMap.MapTeams.Add(new_mob.MemberTeam);
             new_mob.RefreshTraits();
-            Dungeon.DungeonScene.Instance.PendingDevEvent = new_mob.OnMapStart();
+            DungeonScene.Instance.PendingDevEvent = new_mob.OnMapStart();
         }
 
         private void btnDespawn_Click(object sender, EventArgs e)
@@ -377,7 +379,20 @@ namespace RogueEssence.Dev
             ItemData entry = (ItemData)item.GetData();
             if (entry.MaxStack > 1)
                 item.HiddenValue = entry.MaxStack;
-            Dungeon.DungeonScene.Instance.PendingDevEvent = Dungeon.DungeonScene.Instance.DropItem(item, Dungeon.DungeonScene.Instance.FocusedCharacter.CharLoc);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.DropItem(item, DungeonScene.Instance.FocusedCharacter.CharLoc);
+            else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                if (DataManager.Instance.Save.ActiveTeam.GetInvCount() < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+                {
+                    GameManager.Instance.SE("Menu/Sort");
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
+            }
+            else
+                GameManager.Instance.SE("Menu/Cancel");
         }
 
         private void btnRollSkill_Click(object sender, EventArgs e)

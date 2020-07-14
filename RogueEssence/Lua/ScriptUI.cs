@@ -750,7 +750,7 @@ namespace RogueEssence.Script
             bool exit = false;
             while (!exit)
             {
-                bool hasItems = (DataManager.Instance.Save.ActiveTeam.Inventory.Count > 0);
+                bool hasItems = (DataManager.Instance.Save.ActiveTeam.GetInvCount() > 0);
                 foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
                     hasItems |= (player.EquippedItem.ID > -1);
 
@@ -793,9 +793,9 @@ namespace RogueEssence.Script
                 int existingStack = -1;
                 if (entry.MaxStack > 1)
                 {
-                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.Inventory.Count; jj++)
+                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                     {
-                        if (DataManager.Instance.Save.ActiveTeam.Inventory[jj].ID == item.ID && DataManager.Instance.Save.ActiveTeam.Inventory[jj].HiddenValue < entry.MaxStack)
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
                         {
                             existingStack = jj;
                             break;
@@ -803,9 +803,12 @@ namespace RogueEssence.Script
                     }
                 }
                 if (existingStack > -1)
-                    DataManager.Instance.Save.ActiveTeam.Inventory[existingStack].HiddenValue += item.HiddenValue;
+                {
+                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).HiddenValue += item.HiddenValue;
+                    DataManager.Instance.Save.ActiveTeam.UpdateInv(DataManager.Instance.Save.ActiveTeam.GetInv(existingStack), DataManager.Instance.Save.ActiveTeam.GetInv(existingStack));
+                }
                 else
-                    DataManager.Instance.Save.ActiveTeam.Inventory.Add(item);
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(item);
             }
         }
 

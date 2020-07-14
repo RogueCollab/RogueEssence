@@ -136,36 +136,6 @@ namespace RogueEssence.Data
             }
         }
 
-        public void ModifyElementEffect(int targetType, ref int effectiveness)
-        {
-            DungeonScene.EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, int maxPriority, ref int nextPriority) =>
-            {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
-                AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, ElementEffects);
-            };
-            foreach (Tuple<GameEventOwner, Character, ElementEffectEvent> effect in DungeonScene.IterateEvents<ElementEffectEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, Element, targetType, ref effectiveness);
-        }
-
-        public void EnqueueBeforeExplosion(StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>> instructionQueue, int maxPriority, ref int nextPriority, BattleContext context)
-        {
-            int oldPriority = nextPriority;
-            StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue = new StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>>();
-
-            //include the universal effect here
-            DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeExplosions);
-            AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, BeforeExplosions);
-
-            if (nextPriority != oldPriority)
-                instructionQueue.Clear();
-            while (queue.Count > 0)
-            {
-                GameEventPriority priority = queue.FrontPriority();
-                Tuple<GameEventOwner, Character, BattleEvent> effect = queue.Dequeue();
-                instructionQueue.Enqueue(priority, effect.Item3.Apply(effect.Item1, effect.Item2, context));
-            }
-        }
-
         public IEnumerator<YieldInstruction> Hit(BattleContext context)
         {
             DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
@@ -177,19 +147,6 @@ namespace RogueEssence.Data
             foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
         }
-
-        public IEnumerator<YieldInstruction> HitTile(BattleContext context)
-        {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
-            {
-                //include the universal effect here
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnHitTiles);
-                AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, OnHitTiles);
-            };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
-        }
-
 
 #if EDITORS
         protected override void LoadClassControls(TableLayoutPanel control)

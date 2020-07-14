@@ -48,15 +48,17 @@ namespace RogueEssence.Data
         public int Rarity;
         public int MaxStack;
 
+        public bool CannotDrop;
+
         //a simple bool to determine whether the item activates in bag or on hold
-        //TODO: There is no event that fires when items are given to or taken from the bag, thus RefreshTraits for bag items WILL NOT WORK right now
+        //NOTE: There is no event that fires when items are given to or taken from the bag, thus RefreshTraits for bag items WILL NOT WORK right now
         public bool BagEffect;
 
         [Dev.SubGroup]
         public StateCollection<ItemState> ItemStates;
 
-        //add held effects
-        //(inherited from PassiveEffect; check there.
+        //add equip effects
+        //inherited from PassiveEffect; check there.
 
         public CombatAction UseAction;
         public ExplosionData Explosion;

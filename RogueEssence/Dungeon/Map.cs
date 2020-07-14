@@ -36,6 +36,13 @@ namespace RogueEssence.Dungeon
             Wrap//the map wraps around
         }
 
+        public enum DiscoveryState
+        {
+            None = 0,
+            Hinted,//only shows geography, not tiles/items
+            Discovered//shows all
+        }
+
         public LocalText Name { get; set; }
         public string GetSingleLineName() { return Name.ToLocal().Replace('\n', ' '); }
         public bool Released { get; set; }
@@ -92,7 +99,7 @@ namespace RogueEssence.Dungeon
 
         public TurnState CurrentTurnMap;
 
-        public bool[][] DiscoveryArray;
+        public DiscoveryState[][] DiscoveryArray;
 
         public Map()
         {
@@ -124,9 +131,9 @@ namespace RogueEssence.Dungeon
         public override void CreateNew(int width, int height)
         {
             base.CreateNew(width, height);
-            DiscoveryArray = new bool[width][];
+            DiscoveryArray = new DiscoveryState[width][];
             for (int ii = 0; ii < width; ii++)
-                DiscoveryArray[ii] = new bool[height];
+                DiscoveryArray[ii] = new DiscoveryState[height];
         }
 
 
@@ -375,7 +382,7 @@ namespace RogueEssence.Dungeon
 
         private void discoveryLightOp(int x, int y, float light)
         {
-            DiscoveryArray[x][y] = true;
+            DiscoveryArray[x][y] = DiscoveryState.Discovered;
         }
 
         public void UpdateExploration(Character character)

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
 using RogueEssence.Dungeon;
+using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -25,21 +26,23 @@ namespace RogueEssence.Menu
             this.refuseAction = refuseAction;
 
             List<MenuChoice> char_skills = new List<MenuChoice>();
-            for (int jj = 0; jj < player.BaseSkills.Count; jj++)
+            for (int ii = 0; ii < player.BaseSkills.Count; ii++)
             {
-                SlotSkill skill = player.BaseSkills[jj];
+                SlotSkill skill = player.BaseSkills[ii];
                 if (skill.SkillNum > -1)
                 {
-                    string skillString = Data.DataManager.Instance.GetSkill(skill.SkillNum).Name.ToLocal();
-                    string skillCharges = skill.Charges + "/" + Data.DataManager.Instance.GetSkill(skill.SkillNum).BaseCharges;
-                    int index = jj;
+                    SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
+                    string skillString = data.Name.ToLocal();
+                    string skillCharges = skill.Charges + "/" + (data.BaseCharges + player.ChargeBoost);
+                    int index = ii;
                     MenuText menuText = new MenuText(skillString, new Loc(2, 1));
                     MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirH.Right);
                     char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges));
                 }
             }
-            string newSkillString = Data.DataManager.Instance.GetSkill(skillNum).Name.ToLocal();
-            string newSkillCharges = Data.DataManager.Instance.GetSkill(skillNum).BaseCharges + "/" + Data.DataManager.Instance.GetSkill(skillNum).BaseCharges;
+            string newSkillString = DataManager.Instance.GetSkill(skillNum).Name.ToLocal();
+            int maxCharges = DataManager.Instance.GetSkill(skillNum).BaseCharges + player.ChargeBoost;
+            string newSkillCharges = maxCharges + "/" + maxCharges;
             MenuText newMenuText = new MenuText(newSkillString, new Loc(2, 1));
             MenuText newMenuCharges = new MenuText(newSkillCharges, new Loc(menuWidth - 8 * 4, 1), DirH.Right);
             char_skills.Add(new MenuElementChoice(() => { choose(CharData.MAX_SKILL_SLOTS); }, true, newMenuText, newMenuCharges));

@@ -26,8 +26,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < itemPresence.Length; ii++)
                 itemPresence[ii] += DataManager.Instance.Save.ActiveTeam.Storage[ii];
 
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
-                itemPresence[DataManager.Instance.Save.ActiveTeam.Inventory[ii].ID]++;
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+                itemPresence[DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID]++;
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.Inventory.Count;
+            int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
             Initialize(new Loc(16, 16), ItemMenu.ITEM_MENU_WIDTH, Text.FormatKey("MENU_SHOP_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, new IntRange(openSpaces));
 
         }

@@ -87,14 +87,13 @@ namespace RogueEssence.Dungeon
         public int Fame;
         public int RankExtra;
 
-
-        public List<InvItem> Inventory;
+        private List<InvItem> inventory;
 
         public ExplorerTeam()
         {
             Name = "";
             Assembly = new List<Character>();
-            Inventory = new List<InvItem>();
+            inventory = new List<InvItem>();
             BoxStorage = new List<InvItem>();
             Storage = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
         }
@@ -118,15 +117,31 @@ namespace RogueEssence.Dungeon
             return slots;
         }
 
+        public int GetInvCount()
+        {
+            return inventory.Count;
+        }
+
+        public InvItem GetInv(int slot)
+        {
+            return inventory[slot];
+        }
+
+        public IEnumerable<InvItem> EnumerateInv()
+        {
+            foreach(InvItem item in inventory)
+                yield return item;
+        }
+
         public void AddToInv(InvItem invItem)
         {
-            Inventory.Add(invItem);
+            inventory.Add(invItem);
             UpdateInv(null, invItem);
         }
         public void RemoveFromInv(int index)
         {
-            InvItem invItem = Inventory[index];
-            Inventory.RemoveAt(index);
+            InvItem invItem = inventory[index];
+            inventory.RemoveAt(index);
             UpdateInv(invItem, null);
         }
         public void UpdateInv(InvItem oldItem, InvItem newItem)
@@ -173,19 +188,19 @@ namespace RogueEssence.Dungeon
         {
             List<InvItem> newInv = new List<InvItem>();
             //for each inv item
-            for (int kk = 0; kk < Inventory.Count; kk++)
+            for (int kk = 0; kk < inventory.Count; kk++)
             {
                 //find its new place
                 for (int ii = newInv.Count; ii >= 0; ii--)
                 {
-                    if (ii == 0 || SucceedsInvItem(Inventory[kk], newInv[ii - 1]))
+                    if (ii == 0 || SucceedsInvItem(inventory[kk], newInv[ii - 1]))
                     {
-                        newInv.Insert(ii, Inventory[kk]);
+                        newInv.Insert(ii, inventory[kk]);
                         break;
                     }
                 }
             }
-            Inventory = newInv;
+            inventory = newInv;
         }
 
         public List<InvItem> TakeItems(List<int> indices, bool remove = true)
@@ -263,7 +278,7 @@ namespace RogueEssence.Dungeon
         public int GetInvValue()
         {
             int invValue = 0;
-            foreach (InvItem item in Inventory)
+            foreach (InvItem item in inventory)
                 invValue += item.GetSellValue();
             return invValue;
         }

@@ -4,6 +4,7 @@ using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueElements;
+using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -21,7 +22,7 @@ namespace RogueEssence.Menu
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
-            bool invFull = (DungeonScene.Instance.ActiveTeam.Inventory.Count >= DungeonScene.Instance.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
+            bool invFull = (DungeonScene.Instance.ActiveTeam.GetInvCount() >= DungeonScene.Instance.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
             bool hasItem = (DungeonScene.Instance.FocusedCharacter.EquippedItem.ID > -1);
 
             if (mapItem.IsMoney)
@@ -31,11 +32,11 @@ namespace RogueEssence.Menu
                 Data.ItemData entry = Data.DataManager.Instance.GetItem(mapItem.Value);
                 //disable pick up for full inv
                 //disable swap for empty inv
-                bool canGet = (DungeonScene.Instance.ActiveTeam.Inventory.Count < DungeonScene.Instance.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
+                bool canGet = (DungeonScene.Instance.ActiveTeam.GetInvCount() < DungeonScene.Instance.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
                 if (!canGet && entry.MaxStack > 1)
                 {
                     //find an inventory slot that isn't full stack
-                    foreach (InvItem item in DungeonScene.Instance.ActiveTeam.Inventory)
+                    foreach (InvItem item in DungeonScene.Instance.ActiveTeam.EnumerateInv())
                     {
                         if (item.ID == mapItem.Value && item.Cursed == mapItem.Cursed && item.HiddenValue < entry.MaxStack)
                         {
@@ -44,7 +45,7 @@ namespace RogueEssence.Menu
                         }
                     }
                 }
-                bool hasItems = (DungeonScene.Instance.ActiveTeam.Inventory.Count > 0);
+                bool hasItems = (DungeonScene.Instance.ActiveTeam.GetInvCount() > 0);
 
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_GET"), PickupAction, canGet, canGet ? Color.White : Color.Red));
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_REPLACE"), ReplaceAction, hasItems, hasItems ? Color.White : Color.Red));
@@ -77,7 +78,14 @@ namespace RogueEssence.Menu
                 }
 
                 //hold item
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_HOLD"), HoldAction, (!invFull || hasItem), (!invFull || hasItem) ? Color.White : Color.Red));
+                bool allowHold = (!invFull || hasItem);
+                if (hasItem)
+                {
+                    ItemData equipEntry = DataManager.Instance.GetItem(DungeonScene.Instance.FocusedCharacter.EquippedItem.ID);
+                    if (equipEntry.CannotDrop)
+                        allowHold = false;
+                }
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_HOLD"), HoldAction, allowHold, allowHold ? Color.White : Color.Red));
 
                 if (entry.UsageType == Data.ItemData.UseType.Throw)
                 {

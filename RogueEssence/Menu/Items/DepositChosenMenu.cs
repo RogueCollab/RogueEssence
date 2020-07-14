@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
                 if (selections[0].IsEquipped)
                     invItem = DataManager.Instance.Save.ActiveTeam.Players[selections[0].Slot].EquippedItem;
                 else
-                    invItem = DataManager.Instance.Save.ActiveTeam.Inventory[selections[0].Slot];
+                    invItem = DataManager.Instance.Save.ActiveTeam.GetInv(selections[0].Slot);
                 ItemData entry = DataManager.Instance.GetItem(invItem.ID);
 
                 if (entry.UsageType == ItemData.UseType.Learn)
@@ -45,29 +45,29 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.RemoveMenu();
 
-            bool[] removal = new bool[DataManager.Instance.Save.ActiveTeam.Inventory.Count];
+            bool[] removal = new bool[DataManager.Instance.Save.ActiveTeam.GetInvCount()];
             for (int ii = 0; ii < selections.Count; ii++)
             {
                 if (selections[ii].IsEquipped)
                 {
                     items.Add(DataManager.Instance.Save.ActiveTeam.Players[selections[ii].Slot].EquippedItem);
-                    DataManager.Instance.Save.ActiveTeam.Players[selections[ii].Slot].EquippedItem = new InvItem();
+                    DataManager.Instance.Save.ActiveTeam.Players[selections[ii].Slot].DequipItem();
                 }
                 else
                 {
-                    items.Add(DataManager.Instance.Save.ActiveTeam.Inventory[selections[ii].Slot]);
+                    items.Add(DataManager.Instance.Save.ActiveTeam.GetInv(selections[ii].Slot));
                     removal[selections[ii].Slot] = true;
                 }
             }
             for (int ii = removal.Length - 1; ii >= 0; ii--)
             {
                 if (removal[ii])
-                    DataManager.Instance.Save.ActiveTeam.Inventory.RemoveAt(ii);
+                    DataManager.Instance.Save.ActiveTeam.RemoveFromInv(ii);
             }
 
             DataManager.Instance.Save.ActiveTeam.StoreItems(items);
             //refresh base menu
-            bool hasItems = (DataManager.Instance.Save.ActiveTeam.Inventory.Count > 0);
+            bool hasItems = (DataManager.Instance.Save.ActiveTeam.GetInvCount() > 0);
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
                 hasItems |= (player.EquippedItem.ID > -1);
 
@@ -82,7 +82,7 @@ namespace RogueEssence.Menu
             if (selections[0].IsEquipped)
                 MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.Players[selections[0].Slot].EquippedItem.ID), false);
             else
-                MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.Inventory[selections[0].Slot].ID), false);
+                MenuManager.Instance.AddMenu(new TeachInfoMenu(DataManager.Instance.Save.ActiveTeam.GetInv(selections[0].Slot).ID), false);
         }
 
         private void ExitAction()

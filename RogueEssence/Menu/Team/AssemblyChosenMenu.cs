@@ -34,10 +34,20 @@ namespace RogueEssence.Menu
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));
-            if (DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot].IsFavorite)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_UNFAVORITE"), baseMenu.ToggleFave));
+            if (assembly)
+            {
+                if (DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot].IsFavorite)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_UNFAVORITE"), baseMenu.ToggleFave));
+                else
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_FAVORITE"), baseMenu.ToggleFave));
+            }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_FAVORITE"), baseMenu.ToggleFave));
+            {
+                if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot].IsFavorite)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_UNFAVORITE"), baseMenu.ToggleFave));
+                else
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_FAVORITE"), baseMenu.ToggleFave));
+            }
 
             if (assembly)
             {

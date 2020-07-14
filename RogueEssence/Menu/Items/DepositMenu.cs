@@ -26,10 +26,10 @@ namespace RogueEssence.Menu
                 if (activeChar.EquippedItem.ID > -1)
                     flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), () => { choose(new InvSlot(true, index)); }));
             }
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 int index = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.Inventory[index].GetName(), () => { choose(new InvSlot(false, index)); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), () => { choose(new InvSlot(false, index)); }));
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
@@ -76,9 +76,9 @@ namespace RogueEssence.Menu
 
         private int getMaxInvPages()
         {
-            if (DataManager.Instance.Save.ActiveTeam.Inventory.Count == 0)
+            if (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0)
                 return 0;
-            return (DataManager.Instance.Save.ActiveTeam.Inventory.Count - 1) / SLOTS_PER_PAGE + 1;
+            return (DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1) / SLOTS_PER_PAGE + 1;
         }
 
         protected override void ChoiceChanged()
@@ -105,7 +105,7 @@ namespace RogueEssence.Menu
                 }
             }
             menuIndex -= countedHeld;
-            return DataManager.Instance.Save.ActiveTeam.Inventory[menuIndex];
+            return DataManager.Instance.Save.ActiveTeam.GetInv(menuIndex);
         }
 
         protected override void UpdateKeys(InputManager input)

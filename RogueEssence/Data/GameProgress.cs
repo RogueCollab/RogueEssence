@@ -120,6 +120,7 @@ namespace RogueEssence.Data
         public string Location;
         public List<string> Trail;
         public DungeonStakes Stakes;
+        public bool MidAdventure;
         public ResultType Outcome;
         public string GeneratedAOK;
         public bool AllowRescue;
@@ -246,17 +247,14 @@ namespace RogueEssence.Data
                         heldSlots++;
                 }
                 List<InvItem> itemsToStore = new List<InvItem>();
-                while (ActiveTeam.Inventory.Count + heldSlots > zone.BagRestrict && ActiveTeam.Inventory.Count > 0)
+                while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict && ActiveTeam.GetInvCount() > 0)
                 {
                     removedItems = true;
-                    itemsToStore.Add(ActiveTeam.Inventory[ActiveTeam.Inventory.Count - 1]);
+                    itemsToStore.Add(ActiveTeam.GetInv(ActiveTeam.GetInvCount() - 1));
                     
-                    if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                        ActiveTeam.Inventory.RemoveAt(ActiveTeam.Inventory.Count - 1);
-                    else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                        ActiveTeam.RemoveFromInv(ActiveTeam.Inventory.Count - 1);
+                    ActiveTeam.RemoveFromInv(ActiveTeam.GetInvCount() - 1);
                 }
-                while (ActiveTeam.Inventory.Count + heldSlots > zone.BagRestrict)
+                while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict)
                 {
                     foreach (Character player in ActiveTeam.Players)
                     {
@@ -264,10 +262,7 @@ namespace RogueEssence.Data
                         {
                             removedItems = true;
                             itemsToStore.Add(player.EquippedItem);
-                            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                                player.EquippedItem = new InvItem();
-                            else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                                player.DequipItem();
+                            player.DequipItem();
                             heldSlots--;
                             break;
                         }
@@ -335,10 +330,10 @@ namespace RogueEssence.Data
             BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
             while (character.BaseSkills[0].SkillNum > -1)
-                character.SilentDeleteSkill(0);
+                character.DeleteSkill(0);
             List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
             foreach (int skill in final_skills)
-                character.SilentLearnSkill(skill, true);
+                character.LearnSkill(skill, true);
         }
 
         public IEnumerator<YieldInstruction> RestoreLevel()
@@ -415,21 +410,21 @@ namespace RogueEssence.Data
 
             //restore skills
             while (character.BaseSkills[0].SkillNum > -1)
-                character.SilentDeleteSkill(0);
+                character.DeleteSkill(0);
             for(int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
             {
                 if (charFrom.BaseSkills[ii].SkillNum > -1)
                 {
-                    bool turnedOn = false;
+                    bool enabled = false;
                     foreach (BackReference<Skill> skill in charFrom.Skills)
                     {
                         if (skill.BackRef == ii)
                         {
-                            turnedOn = skill.Element.Enabled;
+                            enabled = skill.Element.Enabled;
                             break;
                         }
                     }
-                    character.SilentLearnSkill(charFrom.BaseSkills[ii].SkillNum, turnedOn);
+                    character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
                 }
             }
 
@@ -452,7 +447,7 @@ namespace RogueEssence.Data
                         character.EquippedItem.HiddenValue = 0;
                 }
             }
-            foreach (InvItem item in ActiveTeam.Inventory)
+            foreach (InvItem item in ActiveTeam.EnumerateInv())
             {
                 item.Cursed = false;
                 ItemData entry = DataManager.Instance.GetItem(item.ID);
@@ -563,12 +558,22 @@ namespace RogueEssence.Data
             //remove money
             save.ActiveTeam.Money = save.ActiveTeam.Money / 2;
             //remove bag items
-            save.ActiveTeam.Inventory.Clear();
+            for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
+            {
+                ItemData entry = DataManager.Instance.GetItem(save.ActiveTeam.GetInv(ii).ID);
+                if (!entry.CannotDrop)
+                    save.ActiveTeam.RemoveFromInv(ii);
+            }
+
             //remove equips
             foreach (Character player in save.ActiveTeam.Players)
             {
                 if (player.EquippedItem.ID > -1)
-                    player.EquippedItem = new InvItem();
+                {
+                    ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
+                    if (!entry.CannotDrop)
+                        player.DequipItem();
+                }
             }
         }
 
@@ -577,7 +582,8 @@ namespace RogueEssence.Data
             ZoneData zone = DataManager.Instance.GetZone(zoneID);
             //restrict team size/bag size/etc
             yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, silentRestrict));
-            
+
+            MidAdventure = true;
             Stakes = stakes;
             //create a copy (from save and load) of the current state and mark it with loss
             DataManager.Instance.SaveMainGameState();
@@ -671,13 +677,14 @@ namespace RogueEssence.Data
             foreach (Character character in ActiveTeam.Players)
             {
                 character.Dead = false;
-                character.SilentRestore();
+                character.FullRestore();
             }
             foreach (Character character in ActiveTeam.Assembly)
             {
                 character.Dead = false;
-                character.SilentRestore();
+                character.FullRestore();
             }
+            MidAdventure = false;
             ClearDungeonItems();
             //clear rescue status
             Rescue = null;
@@ -771,6 +778,7 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
+            MidAdventure = true;
             Stakes = stakes;
 
             if (recorded)
@@ -844,6 +852,7 @@ namespace RogueEssence.Data
             {
                 int completedZone = ZoneManager.Instance.CurrentZoneID;
 
+                MidAdventure = true;
                 ClearDungeonItems();
 
                 //  if there isn't a next area, end the play, display the plaque, return to title screen
@@ -914,7 +923,7 @@ namespace RogueEssence.Data
                         }
 
                         //put the new items into the storage
-                        foreach (InvItem item in ActiveTeam.Inventory)
+                        foreach (InvItem item in ActiveTeam.EnumerateInv())
                             mainSave.ItemsToStore.Add(item);
                         foreach (InvItem item in ActiveTeam.BoxStorage)
                             mainSave.ItemsToStore.Add(item);

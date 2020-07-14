@@ -100,31 +100,20 @@ namespace RogueEssence.Dungeon
             }
 
             //map starts for map statuses
-            int maxPriority = Int32.MinValue;
-            while (true)
+            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
             {
-                int nextPriority = Int32.MaxValue;
+                //start with universal
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts);
 
-                StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>> instructionQueue = new StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>>();
 
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
-                    mapStatus.EnqueueOnAddMapStart(instructionQueue, maxPriority, ref nextPriority);
-
-                if (instructionQueue.Count == 0)
-                    break;
-                else
                 {
-                    while (instructionQueue.Count > 0)
-                    {
-                        IEnumerator<YieldInstruction> effect = instructionQueue.Dequeue();
-                        yield return CoroutineManager.Instance.StartCoroutine(effect);
-                    }
-                    if (nextPriority == Int32.MaxValue)
-                        break;
-                    else
-                        maxPriority = nextPriority + 1;
+                    MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
+                    mapStatus.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStarts);
                 }
-            }
+            };
+            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
 
             //Notify script engine
             LuaEngine.Instance.OnDungeonFloorBegin();
@@ -340,7 +329,7 @@ namespace RogueEssence.Dungeon
                         else if (character == FocusedCharacter)//add just one little wait to slow down the turn-passing when no enemies are in view
                             yield return new WaitForFrames(1);//this will cause 1-frame breaks when waiting with walking characters in view, but it's barely noticable
 
-                        yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character, false, false));
+                        yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character, true, false, false));
                         break;
                     }
                 case GameAction.ActionType.Move:
@@ -897,31 +886,21 @@ namespace RogueEssence.Dungeon
             }
 
             //turn ends for map statuses
-            int maxPriority = Int32.MinValue;
-            while (true)
+            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
             {
-                int nextPriority = Int32.MaxValue;
+                //start with universal
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapTurnEnds);
 
-                StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>> instructionQueue = new StablePriorityQueue<GameEventPriority, IEnumerator<YieldInstruction>>();
 
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
-                    mapStatus.EnqueueOnAddMapTurnEnd(instructionQueue, maxPriority, ref nextPriority);
-
-                if (instructionQueue.Count == 0)
-                    break;
-                else
                 {
-                    while (instructionQueue.Count > 0)
-                    {
-                        IEnumerator<YieldInstruction> effect = instructionQueue.Dequeue();
-                        yield return CoroutineManager.Instance.StartCoroutine(effect);
-                    }
-                    if (nextPriority == Int32.MaxValue)
-                        break;
-                    else
-                        maxPriority = nextPriority + 1;
+                    MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
+                    mapStatus.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.OnMapTurnEnds);
                 }
-            }
+            };
+            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
+
 
             ZoneManager.Instance.CurrentMap.MapTurns++;
             DataManager.Instance.Save.TotalTurns++;

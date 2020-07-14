@@ -56,10 +56,10 @@ namespace RogueEssence.Menu
                         (DataManager.Instance.Save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
                 if (zoneEntry.BagSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.Inventory.Count > zoneEntry.BagSize) ? Color.Red : Color.White));
+                        (DataManager.Instance.Save.ActiveTeam.GetInvCount() > zoneEntry.BagSize) ? Color.Red : Color.White));
                 if (zoneEntry.BagRestrict > -1)
                     rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.Inventory.Count > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                        (DataManager.Instance.Save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
 
                 for (int ii = 0; ii < rules.Count; ii++)
                 {

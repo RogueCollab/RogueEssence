@@ -32,6 +32,7 @@ namespace RogueEssence.Data
         public PriorityList<BattleEvent> BeforeBeingHits;
         public PriorityList<BattleEvent> AfterHittings;
         public PriorityList<BattleEvent> AfterBeingHits;
+        public PriorityList<BattleEvent> OnHitTiles;
         public PriorityList<BattleEvent> AfterActions;
 
         public PriorityList<ElementEffectEvent> UserElementEffects;
@@ -63,6 +64,7 @@ namespace RogueEssence.Data
             BeforeBeingHits = new PriorityList<BattleEvent>();
             AfterHittings = new PriorityList<BattleEvent>();
             AfterBeingHits = new PriorityList<BattleEvent>();
+            OnHitTiles = new PriorityList<BattleEvent>();
             AfterActions = new PriorityList<BattleEvent>();
 
             UserElementEffects = new PriorityList<ElementEffectEvent>();

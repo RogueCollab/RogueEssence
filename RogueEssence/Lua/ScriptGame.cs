@@ -238,14 +238,16 @@ namespace RogueEssence.Script
         public void RemovePlayerTeam(int slot)
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
-            DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
 
             if (player.EquippedItem.ID > -1)
             {
                 InvItem heldItem = player.EquippedItem;
-                player.EquippedItem = new InvItem();
-                DataManager.Instance.Save.ActiveTeam.Inventory.Add(heldItem);
+                player.DequipItem();
+                DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
             }
+
+            DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
+
         }
 
 
@@ -315,17 +317,17 @@ namespace RogueEssence.Script
 
         public void LearnSkill(Character chara, int skillNum)
         {
-            chara.SilentLearnSkill(skillNum, true);
+            chara.LearnSkill(skillNum, true);
         }
 
         public void ForgetSkill(Character chara, int slot)
         {
-            chara.SilentDeleteSkill(slot);
+            chara.DeleteSkill(slot);
         }
 
         public void SetCharacterSkill(Character character, int skillId, int slot)
         {
-            character.SilentReplaceSkill(skillId, slot, true);
+            character.ReplaceSkill(skillId, slot, true);
         }
 
 
@@ -401,11 +403,11 @@ namespace RogueEssence.Script
             newData.Species = branch.Result;
             if (newData.Form >= entry.Forms.Count)
                 newData.Form = 0;
-            character.SilentPromote(newData);
+            character.Promote(newData);
             branch.OnPromote(character, false);
             //remove exception item if there is one...
             if (bypass)
-                character.EquippedItem = new InvItem();
+                character.DequipItem();
         }
 
         //===================================
@@ -425,19 +427,14 @@ namespace RogueEssence.Script
 
             if (inv)
             {
-                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Inventory.Count; ii++)
+                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Inventory[ii].ID == id)
+                    if (DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID == id)
                         return new InvSlot(false, ii);
                 }
             }
 
             return InvSlot.Invalid;
-        }
-
-        public object GetPlayerBag()
-        {
-            return DataManager.Instance.Save.ActiveTeam.Inventory;
         }
 
         public int GetPlayerBagCount()
@@ -446,7 +443,7 @@ namespace RogueEssence.Script
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
                 if (player.EquippedItem.ID > -1) ++nbitems;
 
-            return DataManager.Instance.Save.ActiveTeam.Inventory.Count + nbitems;
+            return DataManager.Instance.Save.ActiveTeam.GetInvCount() + nbitems;
         }
 
         public int GetPlayerBagLimit()
@@ -465,14 +462,14 @@ namespace RogueEssence.Script
             {
                 InvItem item = new InvItem(id, cursed);
                 item.HiddenValue = hiddenval;
-                DataManager.Instance.Save.ActiveTeam.Inventory.Add(item);
+                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
             }
         }
 
 
         public object GetPlayerBagItem(int slot)
         {
-            return DataManager.Instance.Save.ActiveTeam.Inventory[slot];
+            return DataManager.Instance.Save.ActiveTeam.GetInv(slot);
         }
 
         /// <summary>
@@ -480,11 +477,11 @@ namespace RogueEssence.Script
         /// </summary>
         public void TakePlayerBagItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.Inventory.RemoveAt(slot);
+            DataManager.Instance.Save.ActiveTeam.RemoveFromInv(slot);
         }
         public void TakePlayerEquippedItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem = new InvItem();
+            DataManager.Instance.Save.ActiveTeam.Players[slot].DequipItem();
         }
 
         public int GetPlayerStorageCount()

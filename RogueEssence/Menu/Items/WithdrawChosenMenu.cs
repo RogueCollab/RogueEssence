@@ -35,15 +35,15 @@ namespace RogueEssence.Menu
 
                 ItemData entry = DataManager.Instance.GetItem(selectionIndex);
 
-                bool fitsInBag = DataManager.Instance.Save.ActiveTeam.Inventory.Count < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone);
+                bool fitsInBag = DataManager.Instance.Save.ActiveTeam.GetInvCount() < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone);
                 if (entry.MaxStack > 1 && !fitsInBag)
                 {
                     //stackable items can be added to a degree
-                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.Inventory.Count; jj++)
+                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                     {
                         //should we allow refills into held item slots?
                         //ehhh it probably doesn't even matter
-                        if (DataManager.Instance.Save.ActiveTeam.Inventory[jj].ID == selectionIndex && DataManager.Instance.Save.ActiveTeam.Inventory[jj].HiddenValue < entry.MaxStack)
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selectionIndex && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
                         {
                             fitsInBag = true;
                             break;
@@ -80,15 +80,15 @@ namespace RogueEssence.Menu
                 {
                     ItemData entry = DataManager.Instance.GetItem(selections[0]);
 
-                    int openSlots = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.Inventory.Count;
+                    int openSlots = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
                     //stackable items need to be counted differently
                     if (entry.MaxStack > 1)
                     {
                         int residualSlots = 0;
-                        for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.Inventory.Count; jj++)
+                        for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                         {
-                            if (DataManager.Instance.Save.ActiveTeam.Inventory[jj].ID == selections[0] && DataManager.Instance.Save.ActiveTeam.Inventory[jj].HiddenValue < entry.MaxStack)
-                                residualSlots += entry.MaxStack - DataManager.Instance.Save.ActiveTeam.Inventory[jj].HiddenValue;
+                            if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selections[0] && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
+                                residualSlots += entry.MaxStack - DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue;
                         }
                         openSlots = openSlots * entry.MaxStack + residualSlots;
                     }
