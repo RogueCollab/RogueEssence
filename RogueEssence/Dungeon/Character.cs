@@ -189,6 +189,7 @@ namespace RogueEssence.Dungeon
         public Map.SightRange CharSight;
         public bool Invis;
         public bool SeeAllChars;
+        public bool SeeWallItems;
 
         //miscellaneous traits
         public StateCollection<CharState> CharStates;
@@ -1279,6 +1280,7 @@ namespace RogueEssence.Dungeon
 
             Invis = false;
             SeeAllChars = false;
+            SeeWallItems = false;
 
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
@@ -1871,7 +1873,7 @@ namespace RogueEssence.Dungeon
             if (character.Invis)
                 return false;
 
-            if (CanSeeLoc(character.CharLoc, GetCharSight(), false))
+            if (CanSeeLoc(character.CharLoc, GetCharSight()))
                 return true;
             return false;
         }
@@ -1879,7 +1881,7 @@ namespace RogueEssence.Dungeon
         public IEnumerable<Loc> GetLocsVisible() { return currentCharAction.GetLocsVisible(); }
         public IEnumerable<VisionLoc> GetVisionLocs() { return currentCharAction.GetVisionLocs(); }
 
-        public bool CanSeeLoc(Loc loc, Map.SightRange sight, bool extend)
+        public bool CanSeeLoc(Loc loc, Map.SightRange sight)
         {
             //needs to be edited according to FOV
             Loc diffLoc = (CharLoc - loc);

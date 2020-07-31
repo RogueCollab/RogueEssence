@@ -838,7 +838,7 @@ namespace RogueEssence.Dungeon
                         {
                             //if it's a tile on the discovery array, show it
                             bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj));
-                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear || !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj] == Map.DiscoveryState.Discovered) || SeeAll)
+                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear || !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj] == Map.DiscoveryState.Traversed) || SeeAll)
                             {
                                 if (outOfBounds)
                                     ZoneManager.Instance.CurrentMap.DrawBG(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start, new Loc(ii, jj));
@@ -961,29 +961,60 @@ namespace RogueEssence.Dungeon
                         shadowChar.DrawShadow(spriteBatch, ViewRect.Start, terrainShadow);
                     }
 
+
+                    //if it's a tile on the discovery array, show it
+                    bool showHiddenItem = SeeAll;
+
+                    if (!showHiddenItem)
+                    {
+                        foreach (Character member in ActiveTeam.Players)
+                        {
+                            if (member.SeeWallItems)
+                            {
+                                showHiddenItem = true;
+                                break;
+                            }
+                        }
+                    }
+
                     //draw items
                     foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
                     {
-                        //if it's a tile on the discovery array, show it
-                        if ((ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Discovered) || SeeAll)
+                        if (CanSeeSprite(ViewRect, item))
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                             if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
                             {
-                                //do not draw
+                                if (showHiddenItem)
+                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
                             }
-                            else if (CanSeeSprite(ViewRect, item))
-                                item.Draw(spriteBatch, ViewRect.Start);
+                            else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                            {
+                                if (terrain.BlockType == TerrainData.Mobility.Passable)
+                                    item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                                else
+                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
+                            }
                         }
                     }
                     //draw pickup items
                     foreach (PickupItem item in PickupItems)
                     {
-                        //if it's a tile on the discovery array, show it
-                        if ((ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Discovered) || SeeAll)
+                        if (CanSeeSprite(ViewRect, item))
                         {
-                            if (CanSeeSprite(ViewRect, item))
-                                item.Draw(spriteBatch, ViewRect.Start);
+                            TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                            if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                            {
+                                if (showHiddenItem)
+                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                            }
+                            else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                            {
+                                if (terrain.BlockType == TerrainData.Mobility.Passable)
+                                    item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                                else
+                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                            }
                         }
                     }
 
@@ -1172,7 +1203,7 @@ namespace RogueEssence.Dungeon
                         {
                             Map.DiscoveryState discovery = ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj];
                             if (SeeAll)
-                                discovery = Map.DiscoveryState.Discovered;
+                                discovery = Map.DiscoveryState.Traversed;
                             if (discovery != Map.DiscoveryState.None)
                             {
                                 Vector2 destVector = mapStart + (new Vector2(ii, jj) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight);
@@ -1192,16 +1223,16 @@ namespace RogueEssence.Dungeon
                                 {
                                     //draw halls
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj - 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj + 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii - 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii + 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, discovery == Map.DiscoveryState.Discovered ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
                                 }
 
-                                if (discovery == Map.DiscoveryState.Discovered && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
+                                if (discovery == Map.DiscoveryState.Traversed && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
                                 {
                                     TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
 
@@ -1213,18 +1244,37 @@ namespace RogueEssence.Dungeon
                             }
                         }
                     }
+
                     foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
                     {
-                        if ((ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Discovered) || SeeAll)
+                        bool seeItem = false;
+                        if (SeeAll)
+                            seeItem = true;
+                        else
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                            if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed &&
+                                !(terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block))
                             {
-                                //do not draw
+                                seeItem = true;
                             }
                             else
-                                mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(item.TileLoc.X, item.TileLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Cyan);
+                            {
+                                foreach (Character member in ActiveTeam.Players)
+                                {
+                                    if (member.SeeWallItems)
+                                    {
+                                        if (member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
+                                        {
+                                            seeItem = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
+                        if (seeItem)
+                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(item.TileLoc.X, item.TileLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Cyan);
                     }
 
                     foreach (Team team in ZoneManager.Instance.CurrentMap.MapTeams)
@@ -1573,7 +1623,7 @@ namespace RogueEssence.Dungeon
             }
 
             //if it's undiscovered, it's black
-            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] != Map.DiscoveryState.Discovered)
+            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] != Map.DiscoveryState.Traversed)
                 return 0f;
 
             //otherwise, use fade value

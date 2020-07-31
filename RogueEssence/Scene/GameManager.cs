@@ -705,7 +705,7 @@ namespace RogueEssence
             DataManager.Instance.Save.UpdateTeamProfile(true);
 
             DataManager.Instance.Save.ActiveTeam.Leader.IsFounder = true;
-            for (int ii = 0; ii < 100; ii++)
+            for (int ii = 1; ii < 100 && ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
                 DataManager.Instance.Save.ActiveTeam.Assembly.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(ii, 0, 0, Gender.Unknown), DataManager.Instance.MaxLevel / 2, -1, 0));
             }

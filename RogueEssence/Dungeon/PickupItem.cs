@@ -30,12 +30,17 @@ namespace RogueEssence.Dungeon
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
+            Draw(spriteBatch, offset, Color.White);
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Loc offset, Color color)
+        {
             if (SpriteIndex > -1)
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetItem(SpriteIndex);
-                sheet.DrawDir(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y), 0);
+                sheet.DrawDir(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y), 0, Dir8.Down, color);
             }
         }
 

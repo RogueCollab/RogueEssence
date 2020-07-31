@@ -40,7 +40,7 @@ namespace RogueEssence.Dungeon
         {
             None = 0,
             Hinted,//only shows geography, not tiles/items
-            Discovered//shows all
+            Traversed//shows all
         }
 
         public LocalText Name { get; set; }
@@ -382,7 +382,7 @@ namespace RogueEssence.Dungeon
 
         private void discoveryLightOp(int x, int y, float light)
         {
-            DiscoveryArray[x][y] = DiscoveryState.Discovered;
+            DiscoveryArray[x][y] = DiscoveryState.Traversed;
         }
 
         public void UpdateExploration(Character character)
