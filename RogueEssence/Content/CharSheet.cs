@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace RogueEssence.Content
 {
+
     public class CharFrameType
     {
         public string Name;
@@ -18,56 +19,6 @@ namespace RogueEssence.Content
             Name = name;
             IsDash = isDash;
         }
-    }
-
-    public enum FrameType
-    {
-        None = 0,//improvised
-        Idle = 1,
-        Walk = 2,
-        Sleep = 3,
-        Hurt = 4,
-        Attack = 5,//shortened
-        Charge = 6,
-        Shoot = 7,
-        Strike = 8,//shortened
-        Chop = 9,//shortened
-        Scratch = 10,//shortened
-        Punch = 11,//shortened
-        Slap = 12,//shortened
-        Slice = 13,//shortened
-        MultiScratch = 14,//shortened
-        MultiStrike = 15,//shortened
-        Uppercut = 16,//shortened
-        Ricochet = 17,//shortened
-        Bite = 18,//shortened
-        Shake = 19,
-        Jab = 20,//shortened
-        Kick = 21,//shortened
-        Lick = 22,//shortened
-        Slam = 23,//shortened
-        Stomp = 24,//shortened
-        Appeal = 25,
-        Dance = 26,
-        Twirl = 27,
-        TailWhip = 28,
-        Sing = 29,
-        Sound = 30,
-        Rumble = 31,
-        FlapAround = 32,
-        Gas = 33,//shortened
-        Shock = 34,
-        Emit = 35,
-        Special = 36,
-        Withdraw = 37,
-        RearUp = 38,
-        Swell = 39,
-        Swing = 40,
-        Double = 41,
-        Rotate = 42,
-        Spin = 43,//improvised
-        Jump = 44,
-        HighJump = 45,//improvised
     }
 
     public class CharAnimFrame
@@ -119,6 +70,8 @@ namespace RogueEssence.Content
                 Sequences[ii] = new CharAnimSequence();
         }
     }
+
+
 
     public class CharSheet : TileSheet
     {

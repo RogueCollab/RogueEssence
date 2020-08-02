@@ -595,6 +595,12 @@ namespace RogueEssence.Dungeon
                 GameManager.Instance.SE("Menu/Cancel");
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
             }
+            else if (ZoneManager.Instance.CurrentMap.NoSwitching)
+            {
+                GameManager.Instance.SE("Menu/Cancel");
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CANT_SWAP_LEADER", CurrentCharacter.BaseName), false, true);
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
+            }
             else
             {
                 Character character = ActiveTeam.Players[charIndex];

@@ -126,7 +126,7 @@ namespace RogueEssence.Content
             Rectangle tail = getBeamFrame(BeamFrame.Tail, frame);
             Draw(spriteBatch, new Vector2(pos.X + diff.X, pos.Y + diff.Y), tail, color, new Vector2(1), (float)((int)dir * Math.PI / 4));
 
-            diff = dirLoc * (length + offset);
+            diff = dirLoc * (length + offset - 1);
             Rectangle head = getBeamFrame(BeamFrame.Head, frame);
             Draw(spriteBatch, new Vector2(pos.X + diff.X, pos.Y + diff.Y), head, color, new Vector2(1), (float)((int)dir * Math.PI / 4));
         }

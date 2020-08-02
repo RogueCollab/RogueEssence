@@ -628,7 +628,7 @@ namespace RogueEssence.Dungeon
                 return new ItemUnderfootMenu(itemSlot);
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
             if (tile.Effect.ID > -1)
-                return new TileUnderfootMenu(tile.Effect.ID);
+                return new TileUnderfootMenu(tile.Effect.ID, tile.Effect.Danger);
             
             return null;
         }
@@ -1394,6 +1394,31 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character));
         }
 
+        public bool CanTeamSeeChar(Team team, Character character)
+        {
+            foreach (Character player in team.Players)
+            {
+                if (!player.Dead)
+                {
+                    if (player.CanSeeCharacter(character))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        public bool CanTeamSeeLoc(Team team, Loc loc)
+        {
+            foreach (Character player in team.Players)
+            {
+                if (!player.Dead)
+                {
+                    if (player.CanSeeLoc(loc, player.GetTileSight()))
+                        return true;
+                }
+            }
+            return false;
+        }
 
         public bool ShotBlocked(Character character, Loc loc, Dir8 dir, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
         {

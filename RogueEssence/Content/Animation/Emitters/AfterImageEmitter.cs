@@ -50,9 +50,9 @@ namespace RogueEssence.Content
         public override void Update(BaseScene scene, FrameTick elapsedTime)
         {
             CurrentBurstTime += elapsedTime;
-            while (CurrentBurstTime >= BurstTime)
+            while (CurrentBurstTime >= Math.Max(1, BurstTime))
             {
-                CurrentBurstTime -= BurstTime;
+                CurrentBurstTime -= Math.Max(1, BurstTime);
                 scene.Anims[(int)DrawLayer.Normal].Add(new CharAfterImage(Origin + CurrentOffset, CurrentForm, CurrentAnim, CurrentFrame, Dir, CurrentHeight, AnimTime, Alpha, AlphaSpeed));
             }
         }

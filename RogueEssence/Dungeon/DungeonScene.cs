@@ -235,6 +235,13 @@ namespace RogueEssence.Dungeon
                         resultStr += ' ';
                 }
                 LogMsg(resultStr);
+                BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
+                ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
+                ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
+                ActiveTeam.Leader.DefBonus = form.GetMaxStatBonus(Stat.Defense);
+                ActiveTeam.Leader.MAtkBonus = form.GetMaxStatBonus(Stat.MAtk);
+                ActiveTeam.Leader.MDefBonus = form.GetMaxStatBonus(Stat.MDef);
+                ActiveTeam.Leader.SpeedBonus = form.GetMaxStatBonus(Stat.Speed);
             }
 
             if (input.Direction != Dir8.None && input.Direction != input.PrevDirection && input[FrameInput.InputType.Ctrl])
@@ -718,7 +725,7 @@ namespace RogueEssence.Dungeon
                         //the sound is made, and a non-logged message is printed
                         GameManager.Instance.SE(PickupItems[ii].Sound);
                         if (PickupItems[ii].LocalMsg)
-                            LogMsg(PickupItems[ii].PickupMessage, false, true, PickupItems[ii].TileLoc, null);
+                            LogMsg(PickupItems[ii].PickupMessage, false, true, PickupItems[ii].TileLoc, null, null);
                         else
                             LogMsg(PickupItems[ii].PickupMessage, false, true);
                         //the pickup object is removed
@@ -1678,7 +1685,7 @@ namespace RogueEssence.Dungeon
             {
                 //in order to delay pickups to the right time, the following needs to occur:
                 //first, change this log message to internal-only
-                LogMsg(pickup.PickupMessage, true, false, originLoc, null);
+                LogMsg(pickup.PickupMessage, true, false, originLoc, null, null);
                 //then, add to the list in this processor that keeps tabs of picked-up objects
                 //picked up objects are to be stored as a struct containing their sprite, name, and character
                 //hold off actually making the message until after landing
@@ -1687,7 +1694,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 GameManager.Instance.SE(pickup.Sound);
-                LogMsg(pickup.PickupMessage, originLoc);
+                LogMsg(pickup.PickupMessage, false, false, originLoc, null, null);
             }
         }
 
@@ -1696,33 +1703,41 @@ namespace RogueEssence.Dungeon
             LogMsg(msg, false, false);
         }
 
-        public void LogMsg(string msg, Loc? origin)
+        public void LogMsg(string msg, Loc origin)
         {
-            LogMsg(msg, false, false, origin, null);
+            LogMsg(msg, false, false, origin, null, null);
+        }
+        public void LogMsg(string msg, Character targetChar)
+        {
+            LogMsg(msg, false, false, targetChar, null);
+        }
+        public void LogMsg(string msg, bool silent, bool logSilent, Character targetChar, Team team)
+        {
+            LogMsg(msg, silent, logSilent, null, targetChar, team);
         }
 
-        public void LogMsg(string msg, bool silent, bool logSilent, Loc? origin, Team team)
+        public void LogMsg(string msg, bool silent, bool logSilent, Loc? origin, Character targetChar, Team team)
         {
             if (team != null && team != ActiveTeam)
                 return;
+
+            bool heard = false;
+            if (origin == null && targetChar == null)
+                heard = true;
+
             if (origin != null)
             {
-                bool unheard = true;
-
-                foreach (Character player in ActiveTeam.Players)
-                {
-                    if (!player.Dead && player.IsInSightBounds(origin.Value))
-                    {
-                        unheard = false;
-                        break;
-                    }
-                }
-
-                if (unheard)
-                    return;
+                if (CanTeamSeeLoc(ActiveTeam, origin.Value))
+                    heard = true;
+            }
+            if (targetChar != null)
+            {
+                if (CanTeamSeeChar(ActiveTeam, targetChar))
+                    heard = true;
             }
 
-            LogMsg(msg, silent, logSilent);
+            if (heard)
+                LogMsg(msg, silent, logSilent);
         }
 
 

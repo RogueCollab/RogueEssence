@@ -7,45 +7,56 @@ namespace RogueEssence.Menu
 {
     public class LevelUpMenu : InteractableMenu
     {
-        public MenuText Level;
-        public MenuText HP;
-        public MenuText Speed;
-        public MenuText Atk;
-        public MenuText Def;
-        public MenuText MAtk;
-        public MenuText MDef;
+        public MenuText[] Level;
+        public MenuText[] HP;
+        public MenuText[] Speed;
+        public MenuText[] Atk;
+        public MenuText[] Def;
+        public MenuText[] MAtk;
+        public MenuText[] MDef;
 
         public LevelUpMenu(int teamIndex, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef)
         {
-            Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 80, 24), new Loc(GraphicsManager.ScreenWidth / 2 + 80, 160));
+            Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 88, 24), new Loc(GraphicsManager.ScreenWidth / 2 + 88, 160));
 
-            //TODO: align this text properly
             Character player = DungeonScene.Instance.ActiveTeam.Players[teamIndex];
-            Level = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL")+"    " + oldLevel + "    +" + (player.Level - oldLevel) + "    " + player.Level,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.Right);
-            HP = new MenuText(Text.FormatKey("MENU_LABEL", Data.Stat.HP.ToLocal("tiny")) + "    " + oldHP + "    +" + (player.MaxHP - oldHP) + "    " + player.MaxHP,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2), DirH.Right);
-            Atk = new MenuText(Text.FormatKey("MENU_LABEL", Data.Stat.Attack.ToLocal("tiny")) + "    " + oldAtk + "    +" + (player.BaseAtk - oldAtk) + "    " + player.BaseAtk,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3), DirH.Right);
-            Def = new MenuText(Text.FormatKey("MENU_LABEL", Data.Stat.Defense.ToLocal("tiny")) + "    " + oldDef + "    +" + (player.BaseDef - oldDef) + "    " + player.BaseDef,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4), DirH.Right);
-            MAtk = new MenuText(Text.FormatKey("MENU_LABEL", Data.Stat.MAtk.ToLocal("tiny")) + "    " + oldMAtk + "    +" + (player.BaseMAtk - oldMAtk) + "    " + player.BaseMAtk,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), DirH.Right);
-            MDef = new MenuText(Text.FormatKey("MENU_LABEL", Data.Stat.MDef.ToLocal("tiny")) + "    " + oldMDef + "    +" + (player.BaseMDef - oldMDef) + "    " + player.BaseMDef,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6), DirH.Right);
-            Speed = new MenuText(Text.FormatKey("MENU_LABEL", Data.Stat.Speed.ToLocal("tiny")) + "    " + oldSpeed + "    +" + (player.Speed - oldSpeed) + "    " + player.Speed,
-                new Loc(GraphicsManager.ScreenWidth / 2 + 56, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7), DirH.Right);
+            Level = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight, Text.FormatKey("MENU_LABEL", Text.FormatKey("MENU_TEAM_LEVEL")), oldLevel, player.Level - oldLevel, player.Level);
+            HP = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2, Text.FormatKey("MENU_LABEL", Data.Stat.HP.ToLocal("tiny")), oldHP, player.MaxHP - oldHP, player.MaxHP);
+            Atk = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3, Text.FormatKey("MENU_LABEL", Data.Stat.Attack.ToLocal("tiny")), oldAtk, player.BaseAtk - oldAtk, player.BaseAtk);
+            Def = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4, Text.FormatKey("MENU_LABEL", Data.Stat.Defense.ToLocal("tiny")), oldDef, player.BaseDef - oldDef, player.BaseDef);
+            MAtk = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5, Text.FormatKey("MENU_LABEL", Data.Stat.MAtk.ToLocal("tiny")), oldMAtk, player.BaseMAtk - oldMAtk, player.BaseMAtk);
+            MDef = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6, Text.FormatKey("MENU_LABEL", Data.Stat.MDef.ToLocal("tiny")), oldMDef, player.BaseMDef - oldMDef, player.BaseMDef);
+            Speed = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7, Text.FormatKey("MENU_LABEL", Data.Stat.Speed.ToLocal("tiny")), oldSpeed, player.BaseSpeed - oldSpeed, player.BaseSpeed);
+        }
+
+        private MenuText[] genMenuTier(int height, string label, int oldVal, int diff, int newVal)
+        {
+            List<MenuText> texts = new List<MenuText>();
+
+            texts.Add(new MenuText(label, new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, height), DirH.Left));
+            texts.Add(new MenuText(oldVal.ToString(), new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 64, height), DirH.Right));
+            texts.Add(new MenuText("+"+diff.ToString(), new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 32, height), DirH.Right));
+            texts.Add(new MenuText(newVal.ToString(), new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2, height), DirH.Right));
+
+            return texts.ToArray();
         }
 
         public override IEnumerable<IMenuElement> GetElements()
         {
-            yield return Level;
-            yield return HP;
-            yield return Speed;
-            yield return Atk;
-            yield return Def;
-            yield return MAtk;
-            yield return MDef;
+            foreach (MenuText txt in Level)
+                yield return txt;
+            foreach (MenuText txt in HP)
+                yield return txt;
+            foreach (MenuText txt in Atk)
+                yield return txt;
+            foreach (MenuText txt in Def)
+                yield return txt;
+            foreach (MenuText txt in MAtk)
+                yield return txt;
+            foreach (MenuText txt in MDef)
+                yield return txt;
+            foreach (MenuText txt in Speed)
+                yield return txt;
         }
 
         public override void Update(InputManager input)

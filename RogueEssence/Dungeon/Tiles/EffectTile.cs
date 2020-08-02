@@ -29,6 +29,7 @@ namespace RogueEssence.Dungeon
 
         public bool Exposed { get { return true; } }
         public bool Revealed;
+        public bool Danger;
         public TileOwner Owner;
 
         public int ID;
@@ -65,6 +66,7 @@ namespace RogueEssence.Dungeon
         {
             ID = other.ID;
             Revealed = other.Revealed;
+            Danger = other.Danger;
             TileStates = other.TileStates.Clone();
             TileLoc = other.TileLoc;
         }
@@ -72,6 +74,7 @@ namespace RogueEssence.Dungeon
         {
             ID = other.ID;
             Revealed = other.Revealed;
+            Danger = other.Danger;
             TileStates = other.TileStates.Clone();
             TileLoc = loc;
         }

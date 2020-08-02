@@ -27,6 +27,7 @@
     <Compile Include="Content\Animation\MultiAnim.cs" />
     <Compile Include="Content\Animation\WrappedRainAnim.cs" />
     <Compile Include="Content\AnimMath.cs" />
+    <Compile Include="Content\CharSheet.cs" />
     <Compile Include="Data\MonsterForm.cs" />
     <Compile Include="Data\SkinData.cs" />
     <Compile Include="Data\RankData.cs" />
@@ -465,7 +466,6 @@
     <Compile Include="Dungeon\Tiles\AutoTileStacked.cs" />
     <Compile Include="Content\FontSheet.cs" />
     <Compile Include="Content\FrameTick.cs" />
-    <Compile Include="Content\CharSheet.cs" />
     <Compile Include="Content\BaseSheet.cs" />
     <Compile Include="Content\GraphicsManager.cs" />
     <Compile Include="Content\Indices\TileIndex.cs" />

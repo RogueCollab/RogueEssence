@@ -87,6 +87,7 @@ namespace RogueEssence.Dev
             foreach (int index in GetAllNumberedDirs(spriteRootDirectory, ""))
             {
                 DiagManager.Instance.LoadMsg = "Importing Charsheet #" + index;
+                DiagManager.Instance.LogInfo(DiagManager.Instance.LoadMsg);
                 ImportSpecies(spriteRootDirectory + index.ToString("D4") + "/", String.Format(cachePattern, index), BakeCharSheet, index);
             }
         }
@@ -97,7 +98,10 @@ namespace RogueEssence.Dev
             //check to see if files exist
             string[] pngs = Directory.GetFiles(spriteDir, "*.png", SearchOption.TopDirectoryOnly);
             if (pngs.Length < 1)
+            {
+                DiagManager.Instance.LogInfo("Skipped loading from " + Path.GetFullPath(spriteDir));
                 return;
+            }
 
             using (CharSheet sprite = CharSheet.Import(spriteDir))
             {
@@ -111,7 +115,7 @@ namespace RogueEssence.Dev
                     spriteData[formData] = writingBytes;
                 }
             }
-
+            DiagManager.Instance.LogInfo("Loaded " + pngs.Length + " from " + Path.GetFullPath(spriteDir));
         }
 
         public static void ImportAllPortraits(string spriteRootDirectory, string cachePattern)
@@ -119,6 +123,7 @@ namespace RogueEssence.Dev
             foreach (int index in GetAllNumberedDirs(spriteRootDirectory, ""))
             {
                 DiagManager.Instance.LoadMsg = "Importing Portrait #" + index;
+                DiagManager.Instance.LogInfo(DiagManager.Instance.LoadMsg);
                 ImportSpecies(spriteRootDirectory + index.ToString("D4") + "/", String.Format(cachePattern, index), BakePortrait, index);
             }
         }
@@ -128,7 +133,10 @@ namespace RogueEssence.Dev
             //check to see if files exist
             string[] pngs = Directory.GetFiles(spriteDir, "*.png", SearchOption.TopDirectoryOnly);
             if (pngs.Length < 1)
+            {
+                DiagManager.Instance.LogInfo("Skipped loading from " + Path.GetFullPath(spriteDir));
                 return;
+            }
 
             using (PortraitSheet sprite = PortraitSheet.Import(spriteDir))
             {
@@ -140,6 +148,7 @@ namespace RogueEssence.Dev
                     spriteData[formData] = writingBytes;
                 }
             }
+            DiagManager.Instance.LogInfo("Loaded "+pngs.Length+" files from " + Path.GetFullPath(spriteDir));
         }
 
         public static void ImportSpecies(string spriteDir, string destFile, BakeSpecies bakeMethod, int index)
@@ -176,6 +185,8 @@ namespace RogueEssence.Dev
 
                     SaveSpecies(destFile, spriteData);
                 }
+                else
+                    DiagManager.Instance.LogInfo("Couldn't find " + Path.GetFullPath(spriteDir) + " to load from!");
             }
             catch (Exception ex)
             {
@@ -187,7 +198,10 @@ namespace RogueEssence.Dev
         public static void SaveSpecies(string destinationPath, Dictionary<MonsterID, byte[]> spriteData)
         {
             if (spriteData.Count == 0)
+            {
+                DiagManager.Instance.LogInfo("Skipped data for " + Path.GetFullPath(destinationPath));
                 return;
+            }
 
             //generate formtree
             CharaIndexNode guide = new CharaIndexNode();
@@ -221,6 +235,7 @@ namespace RogueEssence.Dev
                         writer.Write(formData);
                 }
             }
+            DiagManager.Instance.LogInfo("Wrote data to " + Path.GetFullPath(destinationPath));
         }
 
 

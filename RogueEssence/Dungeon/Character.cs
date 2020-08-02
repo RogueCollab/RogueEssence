@@ -571,7 +571,7 @@ namespace RogueEssence.Dungeon
                 Loc? earshot = null;
                 if (!anim)
                     earshot = CharLoc;
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HP_RESTORE", Name, hp), true, false, earshot, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HP_RESTORE", Name, hp), true, false, this, null);
 
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10, CharLoc));
             }
@@ -587,7 +587,7 @@ namespace RogueEssence.Dungeon
                 earshot = CharLoc;
             if (takeHP == 0)
             {
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ZERO", Name), false, false, earshot, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ZERO", Name), false, false, this, null);
                 if (anim)
                     GameManager.Instance.SE(DataManager.Instance.NullDmgSE);
                 yield break;
@@ -596,18 +596,18 @@ namespace RogueEssence.Dungeon
             HP -= takeHP;
 
             if (hp < 0)
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_INFINITY", Name), false, false, earshot, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_INFINITY", Name), false, false, this, null);
             else
             {
                 DungeonScene.Instance.MeterChanged(CharLoc, -takeHP, false);
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE", Name, takeHP), true, false, earshot, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE", Name, takeHP), true, false, this, null);
             }
 
             int endureHP = endure ? 1 : 0;
             if (HP < endureHP)
             {
                 if (endure)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ENDURE", Name), false, false, earshot, null);
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ENDURE", Name), false, false, this, null);
                 HP = endureHP;
             }
 
@@ -2082,13 +2082,16 @@ namespace RogueEssence.Dungeon
             int teamStatus = 0;
             if (!DataManager.Instance.Save.CutsceneMode)
             {
-                if (DataManager.Instance.Save.TeamMode)
+                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
                 {
-                    if (DungeonScene.Instance.FocusedCharacter == this && GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(15) % 2 == 0)
+                    if (DataManager.Instance.Save.TeamMode && DungeonScene.Instance.FocusedCharacter == this)
+                    {
+                        if (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(15) % 2 == 0)
+                            teamStatus = 1;
+                    }
+                    else
                         teamStatus = 1;
                 }
-                else if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-                    teamStatus = 1;
             }
             if (terrainShadow == 0)
                 terrainShadow = sheet.ShadowSize;

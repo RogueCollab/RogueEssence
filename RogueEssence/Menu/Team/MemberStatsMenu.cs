@@ -74,8 +74,9 @@ namespace RogueEssence.Menu
             string typeString = String.Format("{0}\u2060{1}", element1.Symbol, element1.Name.ToLocal());
             if (player.Element2 != 00)
                 typeString += "/" + String.Format("{0}\u2060{1}", element2.Symbol, element2.Name.ToLocal());
-            bool origElements = (player.Element1 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element1);
-            origElements &= (player.Element2 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element2);
+            BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
+            bool origElements = (player.Element1 == monsterForm.Element1);
+            origElements &= (player.Element2 == monsterForm.Element2);
             Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
 
             Level = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", player.Level), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
@@ -108,17 +109,17 @@ namespace RogueEssence.Menu
             MDef = new MenuText(player.MDef.ToString(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 72, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, player.ProxyMDef > -1 ? Color.Yellow : Color.White);
             Speed = new MenuText(player.Speed.ToString(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 72, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, player.ProxySpeed > -1 ? Color.Yellow : Color.White);
 
-            int hpLength = calcHPLength(player.MaxHP);
+            int hpLength = calcLength(Stat.HP, monsterForm, player.MaxHP, player.Level);
             HPBar = new MenuStatBar(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), hpLength, calcColor(hpLength));
-            int atkLength = calcLength(player.Atk);
+            int atkLength = calcLength(Stat.Attack, monsterForm, player.Atk, player.Level);
             AttackBar = new MenuStatBar(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), atkLength, calcColor(atkLength));
-            int defLength = calcLength(player.Def);
+            int defLength = calcLength(Stat.Defense, monsterForm, player.Def, player.Level);
             DefenseBar = new MenuStatBar(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), defLength, calcColor(defLength));
-            int mAtkLength = calcLength(player.MAtk);
+            int mAtkLength = calcLength(Stat.MAtk, monsterForm, player.MAtk, player.Level);
             MAtkBar = new MenuStatBar(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8 + TitledStripMenu.TITLE_OFFSET), mAtkLength, calcColor(mAtkLength));
-            int mDefLength = calcLength(player.MDef);
+            int mDefLength = calcLength(Stat.MDef, monsterForm, player.MDef, player.Level);
             MDefBar = new MenuStatBar(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), mDefLength, calcColor(mDefLength));
-            int speedLength = calcLength(player.Speed);
+            int speedLength = calcLength(Stat.Speed, monsterForm, player.Speed, player.Level);
             SpeedBar = new MenuStatBar(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), speedLength, calcColor(speedLength));
 
             ItemDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 12), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
@@ -127,25 +128,14 @@ namespace RogueEssence.Menu
 
         }
 
-        private int calcLength(int stat)
+        private int calcLength(Stat stat, BaseMonsterForm form, int statVal, int level)
         {
-            int totalLevel = 0;
+            int avgLevel = 0;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
-                totalLevel += DataManager.Instance.Save.ActiveTeam.Players[ii].Level;
-            totalLevel /= DataManager.Instance.Save.ActiveTeam.Players.Count;
-            int baseStat = (stat - 5) * DataManager.Instance.MaxLevel / totalLevel - 30;
-
-            return Math.Min(Math.Max(1, baseStat * 140 / 120), 168);
-        }
-
-        private int calcHPLength(int stat)
-        {
-            int totalLevel = 0;
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
-                totalLevel += DataManager.Instance.Save.ActiveTeam.Players[ii].Level;
-            totalLevel /= DataManager.Instance.Save.ActiveTeam.Players.Count;
-            int baseStat = (stat - 10 - totalLevel / 2) * DataManager.Instance.MaxLevel / totalLevel - 100;
-
+                avgLevel += DataManager.Instance.Save.ActiveTeam.Players[ii].Level;
+            avgLevel /= DataManager.Instance.Save.ActiveTeam.Players.Count;
+            int baseStat = form.ReverseGetStat(stat, statVal, level);
+            baseStat = baseStat * level / avgLevel;
             return Math.Min(Math.Max(1, baseStat * 140 / 120), 168);
         }
 

@@ -533,6 +533,7 @@ namespace RogueEssence.Dungeon
         public bool OneTimeSpawnMode { get { return false; } }
 
         public bool NoRescue;
+        public bool NoSwitching;
         public bool DropTitle;
 
         public Tile[][] Tiles;

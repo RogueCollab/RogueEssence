@@ -99,6 +99,7 @@ namespace RogueEssence.Data
 
         public abstract int GetStat(int level, Stat stat, int bonus);
         public abstract int GetMaxStat(Stat stat);
+        public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
         public abstract int GetExp(int level, int recipientLv);
 

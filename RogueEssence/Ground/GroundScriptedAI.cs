@@ -16,7 +16,7 @@ namespace RogueEssence.Ground
         private static readonly string FieldCurrentStateName = "CurrentState";
         private static readonly string FieldNextStateName = "NextState";
         private static readonly string FieldLastStateName = "LastState";
-        private static readonly string FieldStatesName = "States";
+        //private static readonly string FieldStatesName = "States";
 
 
         //Lua function names are stored here

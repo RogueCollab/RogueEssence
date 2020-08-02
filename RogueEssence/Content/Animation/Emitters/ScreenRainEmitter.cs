@@ -51,9 +51,9 @@ namespace RogueEssence.Content
         {
 
             CurrentBurstTime += elapsedTime;
-            while (CurrentBurstTime >= BurstTime)
+            while (CurrentBurstTime >= Math.Max(1, BurstTime))
             {
-                CurrentBurstTime -= BurstTime;
+                CurrentBurstTime -= Math.Max(1, BurstTime);
                 for (int ii = 0; ii < ParticlesPerBurst; ii++)
                 {
                     Loc startLoc = new Loc(MathUtils.Rand.Next(GraphicsManager.ScreenWidth), MathUtils.Rand.Next(GraphicsManager.ScreenHeight * 2));

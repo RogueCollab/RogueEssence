@@ -59,9 +59,9 @@ namespace RogueEssence.Content
         public override void Update(BaseScene scene, FrameTick elapsedTime)
         {
             CurrentBurstTime += elapsedTime;
-            while (CurrentBurstTime >= BurstTime)
+            while (CurrentBurstTime >= Math.Max(1, BurstTime))
             {
-                CurrentBurstTime -= BurstTime;
+                CurrentBurstTime -= Math.Max(1, BurstTime);
                 for (int ii = 0; ii < ParticlesPerBurst; ii++)
                 {
                     int particleSpeed = Speed + MathUtils.Rand.Next(SpeedDiff);

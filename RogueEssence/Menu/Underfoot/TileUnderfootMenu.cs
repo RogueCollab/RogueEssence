@@ -3,15 +3,18 @@ using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework.Graphics;
 using RogueElements;
+using System;
 
 namespace RogueEssence.Menu
 {
     public class TileUnderfootMenu : UnderfootMenu
     {
         TileSummary summaryMenu;
+        bool danger;
 
-        public TileUnderfootMenu(int tileIndex)
+        public TileUnderfootMenu(int tileIndex, bool danger)
         {
+            this.danger = danger;
             Data.TileData entry = Data.DataManager.Instance.GetTile(tileIndex);
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             
@@ -46,7 +49,14 @@ namespace RogueEssence.Menu
                 case 0:
                     {//trigger
                         MenuManager.Instance.ClearMenus();
-                        MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None));
+                        if (danger)
+                        {
+                            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("MSG_DANGER_CONFIRM"),
+                                    () => { MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None)); },
+                                    () => { }), false);
+                        }
+                        else
+                            MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None));
                     }
                     break;
                 case 1:
