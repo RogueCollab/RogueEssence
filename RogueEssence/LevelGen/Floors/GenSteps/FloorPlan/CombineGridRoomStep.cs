@@ -8,12 +8,14 @@ namespace RogueEssence.LevelGen
     {
         //just combine simple squares for now
         public SpawnList<RoomGen<T>> GiantRooms;
+        public ComponentCollection RoomComponents { get; set; }
         public int CombineChance;
         public bool Immutable;
 
         public CombineGridRoomStep()
         {
             GiantRooms = new SpawnList<RoomGen<T>>();
+            RoomComponents = new ComponentCollection();
         }
 
         public CombineGridRoomStep(int combineChance, bool immutable) : this()
@@ -58,14 +60,14 @@ namespace RogueEssence.LevelGen
                         floorPlan.EraseRoom(new Loc(xx + 1, yy + 1));
 
                         //erase the constituent halls
-                        floorPlan.SetHall(new LocRay4(xx, yy, Dir4.Down), null);
-                        floorPlan.SetHall(new LocRay4(xx, yy, Dir4.Right), null);
-                        floorPlan.SetHall(new LocRay4(xx + 1, yy, Dir4.Down), null);
-                        floorPlan.SetHall(new LocRay4(xx, yy + 1, Dir4.Right), null);
+                        floorPlan.SetHall(new LocRay4(xx, yy, Dir4.Down), null, new ComponentCollection());
+                        floorPlan.SetHall(new LocRay4(xx, yy, Dir4.Right), null, new ComponentCollection());
+                        floorPlan.SetHall(new LocRay4(xx + 1, yy, Dir4.Down), null, new ComponentCollection());
+                        floorPlan.SetHall(new LocRay4(xx, yy + 1, Dir4.Right), null, new ComponentCollection());
 
                         //place the room
                         RoomGen<T> gen = GiantRooms.Pick(rand);
-                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), Immutable, false);
+                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), new ComponentCollection(this.RoomComponents), Immutable, false);
                     }
                 }
             }

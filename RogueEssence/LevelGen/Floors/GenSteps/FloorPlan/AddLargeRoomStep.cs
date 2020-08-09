@@ -11,15 +11,19 @@ namespace RogueEssence.LevelGen
         public SpawnList<LargeRoom<T>> GiantRooms;
         public RandRange RoomAmount;
 
+        public ComponentCollection RoomComponents { get; set; }
+
         public AddLargeRoomStep()
             : base()
         {
             GiantRooms = new SpawnList<LargeRoom<T>>();
+            RoomComponents = new ComponentCollection();
         }
         public AddLargeRoomStep(RandRange roomAmount)
             : this()
         {
             RoomAmount = roomAmount;
+            RoomComponents = new ComponentCollection();
         }
 
 
@@ -92,20 +96,20 @@ namespace RogueEssence.LevelGen
                                     //erase halls in vicinity
                                     floorPlan.EraseRoom(loc);
                                     if (xx > 0)
-                                        floorPlan.SetHall(new LocRay4(loc, Dir4.Left), null);
+                                        floorPlan.SetHall(new LocRay4(loc, Dir4.Left), null, new ComponentCollection());
                                     if (yy > 0)
-                                        floorPlan.SetHall(new LocRay4(loc, Dir4.Up), null);
+                                        floorPlan.SetHall(new LocRay4(loc, Dir4.Up), null, new ComponentCollection());
 
                                 }
                             }
 
                             //remove all halls still in the list
                             foreach (LocRay4 rayOut in raysOut)
-                                floorPlan.SetHall(rayOut, null);
+                                floorPlan.SetHall(rayOut, null, new ComponentCollection());
 
 
                             //add room
-                            floorPlan.AddRoom(destRect, chosenRoom.Gen);
+                            floorPlan.AddRoom(destRect, chosenRoom.Gen, new ComponentCollection());
 
                             break;
                         }
