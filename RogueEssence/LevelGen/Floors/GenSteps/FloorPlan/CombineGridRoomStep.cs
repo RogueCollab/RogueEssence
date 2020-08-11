@@ -67,7 +67,7 @@ namespace RogueEssence.LevelGen
 
                         //place the room
                         RoomGen<T> gen = GiantRooms.Pick(rand);
-                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), new ComponentCollection(this.RoomComponents), Immutable, false);
+                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), this.RoomComponents.Clone(), Immutable, false);
                     }
                 }
             }

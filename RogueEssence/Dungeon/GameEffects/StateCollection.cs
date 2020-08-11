@@ -49,7 +49,7 @@ namespace RogueEssence.Dungeon
 
         public bool Contains(Type type)
         {
-            return Contains(type.FullName);
+            return pointers.ContainsKey(type.FullName);
         }
         public bool Contains(string typeFullName)
         {
