@@ -66,6 +66,8 @@
     <Compile Include="LevelGen\Floors\GenSteps\MapTextureStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\MapNameStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\NoRescueStep.cs" />
+    <Compile Include="LevelGen\Spawning\DisconnectedSpawnStep.cs" />
+    <Compile Include="LevelGen\Spawning\PlaceMobsStep\PlaceDisconnectedMobsStep.cs" />
     <Compile Include="Menu\Items\TradeItemMenu.cs" />
     <Compile Include="Menu\Items\OfferItemsMenu.cs" />
     <Compile Include="Menu\Network\MailChosenMenu.cs" />
@@ -216,12 +218,10 @@
     <Compile Include="LevelGen\Floors\GenSteps\FloorPlan\AddLargeRoomStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\FloorPlan\MarkAsHallStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\FloorPlan\CombineGridRoomStep.cs" />
-    <Compile Include="LevelGen\Floors\GenSteps\DisconnectedSpawnStep.cs" />
     <Compile Include="LevelGen\Spawning\MoneySpawn.cs" />
     <Compile Include="LevelGen\Spawning\MoneyDivSpawner.cs" />
     <Compile Include="LevelGen\Spawning\MoneySpawnRange.cs" />
     <Compile Include="LevelGen\Spawning\TeamStepSpawner\TeamContextSpawner.cs" />
-    <Compile Include="LevelGen\Spawning\PlaceMobsStep\PlaceDisconnectedMobsStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\ReachableBlobWaterStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\Rooms\RoomGenEdgeIn.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\Rooms\RoomGenCoated.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 
 namespace RogueEssence.LevelGen
@@ -12,10 +13,13 @@ namespace RogueEssence.LevelGen
         public int CombineChance;
         public bool Immutable;
 
+        public List<BaseRoomFilter> Filters { get; set; }
+
         public CombineGridRoomStep()
         {
             GiantRooms = new SpawnList<RoomGen<T>>();
             RoomComponents = new ComponentCollection();
+            Filters = new List<BaseRoomFilter>();
         }
 
         public CombineGridRoomStep(int combineChance, bool immutable) : this()
@@ -83,6 +87,9 @@ namespace RogueEssence.LevelGen
                 return false;
             if (plan.Immutable)
                 return false;
+            if (!BaseRoomFilter.PassesAllFilters(plan, this.Filters))
+                return false;
+
             return true;
         }
 

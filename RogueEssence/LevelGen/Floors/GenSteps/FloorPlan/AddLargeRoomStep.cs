@@ -13,17 +13,21 @@ namespace RogueEssence.LevelGen
 
         public ComponentCollection RoomComponents { get; set; }
 
+        public List<BaseRoomFilter> Filters { get; set; }
+
         public AddLargeRoomStep()
             : base()
         {
             GiantRooms = new SpawnList<LargeRoom<T>>();
             RoomComponents = new ComponentCollection();
+            Filters = new List<BaseRoomFilter>();
         }
         public AddLargeRoomStep(RandRange roomAmount)
             : this()
         {
             RoomAmount = roomAmount;
             RoomComponents = new ComponentCollection();
+            Filters = new List<BaseRoomFilter>();
         }
 
 
@@ -133,6 +137,8 @@ namespace RogueEssence.LevelGen
                     if (plan.Bounds.Area > 1)
                         return false;
                     if (plan.Immutable)
+                        return false;
+                    if (!BaseRoomFilter.PassesAllFilters(plan, this.Filters))
                         return false;
                 }
             }

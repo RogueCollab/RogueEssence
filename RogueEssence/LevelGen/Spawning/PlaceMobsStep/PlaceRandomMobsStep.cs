@@ -14,14 +14,18 @@ namespace RogueEssence.LevelGen
         public RandRange Amount;
         public int ClumpFactor;
 
+        public List<BaseRoomFilter> Filters { get; set; }
+
         public PlaceRandomMobsStep()
         {
+            Filters = new List<BaseRoomFilter>();
         }
 
-        public PlaceRandomMobsStep(ITeamStepSpawner<T> spawn) : base(spawn) { }
+        public PlaceRandomMobsStep(ITeamStepSpawner<T> spawn) : base(spawn) { Filters = new List<BaseRoomFilter>(); }
 
         public PlaceRandomMobsStep(ITeamStepSpawner<T> spawn, RandRange amount, int clumpFactor) : base(spawn)
         {
+            Filters = new List<BaseRoomFilter>();
             Amount = amount;
             ClumpFactor = clumpFactor;
         }
@@ -38,6 +42,9 @@ namespace RogueEssence.LevelGen
                 for (int ii = 0; ii < map.RoomPlan.RoomCount; ii++)
                 {
                     IRoomGen room = map.RoomPlan.GetRoom(ii);
+
+                    if (!BaseRoomFilter.PassesAllFilters(map.RoomPlan.GetRoomPlan(ii), this.Filters))
+                        continue;
 
                     spawningRooms.Add(ii, 10000);
                 }

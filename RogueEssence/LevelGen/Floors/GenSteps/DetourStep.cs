@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Dungeon;
-
+//Delet this but need to make a new class for sealing marked rooms off
 namespace RogueEssence.LevelGen
 {
     [Serializable]
