@@ -22,12 +22,12 @@ namespace RogueEssence.LevelGen
             RoomComponents = new ComponentCollection();
             Filters = new List<BaseRoomFilter>();
         }
-        public AddLargeRoomStep(RandRange roomAmount)
+        public AddLargeRoomStep(RandRange roomAmount, List<BaseRoomFilter> filters)
             : this()
         {
             RoomAmount = roomAmount;
             RoomComponents = new ComponentCollection();
-            Filters = new List<BaseRoomFilter>();
+            Filters = filters;
         }
 
 
@@ -135,8 +135,6 @@ namespace RogueEssence.LevelGen
                     if (plan == null)
                         continue;
                     if (plan.Bounds.Area > 1)
-                        return false;
-                    if (plan.Immutable)
                         return false;
                     if (!BaseRoomFilter.PassesAllFilters(plan, this.Filters))
                         return false;

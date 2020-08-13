@@ -11,7 +11,6 @@ namespace RogueEssence.LevelGen
         public SpawnList<RoomGen<T>> GiantRooms;
         public ComponentCollection RoomComponents { get; set; }
         public int CombineChance;
-        public bool Immutable;
 
         public List<BaseRoomFilter> Filters { get; set; }
 
@@ -22,10 +21,12 @@ namespace RogueEssence.LevelGen
             Filters = new List<BaseRoomFilter>();
         }
 
-        public CombineGridRoomStep(int combineChance, bool immutable) : this()
+        public CombineGridRoomStep(int combineChance, List<BaseRoomFilter> filters)
         {
             CombineChance = combineChance;
-            Immutable = immutable;
+            GiantRooms = new SpawnList<RoomGen<T>>();
+            RoomComponents = new ComponentCollection();
+            Filters = filters;
         }
 
 
@@ -71,7 +72,7 @@ namespace RogueEssence.LevelGen
 
                         //place the room
                         RoomGen<T> gen = GiantRooms.Pick(rand);
-                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), this.RoomComponents.Clone(), Immutable, false);
+                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), this.RoomComponents.Clone(), false);
                     }
                 }
             }
@@ -84,8 +85,6 @@ namespace RogueEssence.LevelGen
             if (plan == null)
                 return false;
             if (plan.Bounds.Area > 1)
-                return false;
-            if (plan.Immutable)
                 return false;
             if (!BaseRoomFilter.PassesAllFilters(plan, this.Filters))
                 return false;

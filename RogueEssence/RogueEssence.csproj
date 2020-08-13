@@ -66,6 +66,7 @@
     <Compile Include="LevelGen\Floors\GenSteps\MapTextureStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\MapNameStep.cs" />
     <Compile Include="LevelGen\Floors\GenSteps\NoRescueStep.cs" />
+    <Compile Include="LevelGen\Floors\GenSteps\Rooms\ImmutableRoom.cs" />
     <Compile Include="LevelGen\Spawning\DisconnectedSpawnStep.cs" />
     <Compile Include="LevelGen\Spawning\PlaceMobsStep\PlaceDisconnectedMobsStep.cs" />
     <Compile Include="Menu\Items\TradeItemMenu.cs" />

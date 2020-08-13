@@ -67,7 +67,11 @@ namespace RogueEssence.LevelGen
             {
                 //TODO: add alternative room placement methods for other contexts.  ListMapGenContext, etc.
                 AddGridSpecialRoomStep<MapGenContext> specialStep = new AddGridSpecialRoomStep<MapGenContext>();
+                specialStep.RoomComponents.Set(new ImmutableRoom());
+                specialStep.Filters.Add(new RoomFilterComponent(true, new ImmutableRoom()));
                 AddSpecialRoomStep<ListMapGenContext> listSpecialStep = new AddSpecialRoomStep<ListMapGenContext>();
+                listSpecialStep.RoomComponents.Set(new ImmutableRoom());
+                listSpecialStep.Filters.Add(new RoomFilterComponent(true, new ImmutableRoom()));
                 RoomGenOption genDuo = Spawns.Pick(context.Rand);
                 if (specialStep.CanApply(context))
                 {
