@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Dungeon;
-//Delet this
+
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T> where T : ListMapGenContext
+    public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T> where T : StairsMapGenContext
     {
         public RandRange Amount;
 

@@ -65,7 +65,7 @@ namespace RogueEssence.LevelGen
             //NOTE: if a room-based generator is not found as the generation step, it will just skip this floor but treat it as though it was placed.
             if (dropPoints.Contains(zoneContext.CurrentID))
             {
-                //TODO: add alternative room placement methods for other contexts.  ListMapGenContext, etc.
+                //TODO: allow arbitrary components to be added
                 AddGridSpecialRoomStep<MapGenContext> specialStep = new AddGridSpecialRoomStep<MapGenContext>();
                 specialStep.RoomComponents.Set(new ImmutableRoom());
                 specialStep.Filters.Add(new RoomFilterComponent(true, new ImmutableRoom()));
