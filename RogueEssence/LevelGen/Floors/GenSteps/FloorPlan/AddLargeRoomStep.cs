@@ -126,7 +126,7 @@ namespace RogueEssence.LevelGen
 
         private bool spaceViable(GridPlan floorPlan, Rect rect)
         {
-            //all tiles must be ABSENT, or SINGLE AND immutable
+            //all tiles must be ABSENT, or SINGLE AND not immutable
             for(int xx = rect.Start.X; xx < rect.End.X; xx++)
             {
                 for (int yy = rect.Start.Y; yy < rect.End.Y; yy++)

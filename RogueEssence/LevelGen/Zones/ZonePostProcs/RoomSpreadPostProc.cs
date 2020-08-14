@@ -66,21 +66,21 @@ namespace RogueEssence.LevelGen
             if (dropPoints.Contains(zoneContext.CurrentID))
             {
                 //TODO: allow arbitrary components to be added
-                AddGridSpecialRoomStep<MapGenContext> specialStep = new AddGridSpecialRoomStep<MapGenContext>();
-                specialStep.RoomComponents.Set(new ImmutableRoom());
-                specialStep.Filters.Add(new RoomFilterComponent(true, new ImmutableRoom()));
-                AddSpecialRoomStep<ListMapGenContext> listSpecialStep = new AddSpecialRoomStep<ListMapGenContext>();
-                listSpecialStep.RoomComponents.Set(new ImmutableRoom());
-                listSpecialStep.Filters.Add(new RoomFilterComponent(true, new ImmutableRoom()));
                 RoomGenOption genDuo = Spawns.Pick(context.Rand);
+                AddGridSpecialRoomStep<MapGenContext> specialStep = new AddGridSpecialRoomStep<MapGenContext>();
+                AddSpecialRoomStep<ListMapGenContext> listSpecialStep = new AddSpecialRoomStep<ListMapGenContext>();
+
+                specialStep.Filters = genDuo.Filters;
                 if (specialStep.CanApply(context))
                 {
                     specialStep.Rooms = new PresetPicker<RoomGen<MapGenContext>>(genDuo.GridOption);
+                    specialStep.RoomComponents.Set(new ImmutableRoom());
                     queue.Enqueue(PriorityGrid, specialStep);
                 }
                 else if (listSpecialStep.CanApply(context))
                 {
                     listSpecialStep.Rooms = new PresetPicker<RoomGen<ListMapGenContext>>(genDuo.ListOption);
+                    listSpecialStep.RoomComponents.Set(new ImmutableRoom());
                     PresetPicker<PermissiveRoomGen<ListMapGenContext>> picker = new PresetPicker<PermissiveRoomGen<ListMapGenContext>>();
                     picker.ToSpawn = new RoomGenAngledHall<ListMapGenContext>(0);
                     listSpecialStep.Halls = picker;
@@ -96,10 +96,13 @@ namespace RogueEssence.LevelGen
         public RoomGen<MapGenContext> GridOption;
         public RoomGen<ListMapGenContext> ListOption;
 
-        public RoomGenOption(RoomGen<MapGenContext> gridOption, RoomGen<ListMapGenContext> listOption)
+        public List<BaseRoomFilter> Filters;
+
+        public RoomGenOption(RoomGen<MapGenContext> gridOption, RoomGen<ListMapGenContext> listOption, List<BaseRoomFilter> filters)
         {
             GridOption = gridOption;
             ListOption = listOption;
+            Filters = filters;
         }
     }
 }
