@@ -67,8 +67,8 @@ namespace RogueEssence.LevelGen
             {
                 //TODO: allow arbitrary components to be added
                 RoomGenOption genDuo = Spawns.Pick(context.Rand);
-                AddGridSpecialRoomStep<MapGenContext> specialStep = new AddGridSpecialRoomStep<MapGenContext>();
-                AddSpecialRoomStep<ListMapGenContext> listSpecialStep = new AddSpecialRoomStep<ListMapGenContext>();
+                SetGridSpecialRoomStep<MapGenContext> specialStep = new SetGridSpecialRoomStep<MapGenContext>();
+                SetSpecialRoomStep<ListMapGenContext> listSpecialStep = new SetSpecialRoomStep<ListMapGenContext>();
 
                 specialStep.Filters = genDuo.Filters;
                 if (specialStep.CanApply(context))
