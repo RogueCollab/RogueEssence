@@ -5,6 +5,10 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Mostly obsolete; use regular spawning and pick rooms marked as disconnected
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T> where T : StairsMapGenContext
     {

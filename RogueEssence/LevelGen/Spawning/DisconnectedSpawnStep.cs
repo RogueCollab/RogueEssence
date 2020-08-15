@@ -4,6 +4,10 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Mostly obsolete; use regular spawning and pick rooms marked as disconnected
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class DisconnectedSpawnStep<T, E, F> : BaseSpawnStep<T, E>
         where T : class, ITiledGenContext, IPlaceableGenContext<E>, IViewPlaceableGenContext<F>
