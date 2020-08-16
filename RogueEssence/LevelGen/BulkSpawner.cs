@@ -1,39 +1,42 @@
-﻿using System;
+﻿using RogueElements;
+using System;
 using System.Collections.Generic;
 
-namespace RogueElements
+namespace RogueEssence
 {
 
     [Serializable]
-    public class BulkSpawner<T> where T : ISpawnable
+    public class BulkSpawner<TGenContext, TSpawnable> :  IStepSpawner<TGenContext, TSpawnable>
+        where TGenContext : IGenContext
+        where TSpawnable : ISpawnable
     {
-        public List<T> SpecificSpawns;
+        public List<TSpawnable> SpecificSpawns;
 
         public int SpawnAmount;
-        public SpawnList<T> RandomSpawns;
+        public SpawnList<TSpawnable> RandomSpawns;
 
         public BulkSpawner()
         {
-            SpecificSpawns = new List<T>();
-            RandomSpawns = new SpawnList<T>();
+            SpecificSpawns = new List<TSpawnable>();
+            RandomSpawns = new SpawnList<TSpawnable>();
         }
-        protected BulkSpawner(BulkSpawner<T> other) : this()
+        protected BulkSpawner(BulkSpawner<TGenContext, TSpawnable> other) : this()
         {
-            foreach (T specificSpawn in other.SpecificSpawns)
-                SpecificSpawns.Add((T)specificSpawn.Copy());
+            foreach (TSpawnable specificSpawn in other.SpecificSpawns)
+                SpecificSpawns.Add((TSpawnable)specificSpawn.Copy());
             SpawnAmount = other.SpawnAmount;
             for (int ii = 0; ii < other.RandomSpawns.Count; ii++)
-                RandomSpawns.Add((T)other.RandomSpawns.GetSpawn(ii).Copy(), other.RandomSpawns.GetSpawnRate(ii));
+                RandomSpawns.Add((TSpawnable)other.RandomSpawns.GetSpawn(ii).Copy(), other.RandomSpawns.GetSpawnRate(ii));
         }
-        public BulkSpawner<T> Copy() { return new BulkSpawner<T>(this); }
+        public BulkSpawner<TGenContext, TSpawnable> Copy() { return new BulkSpawner<TGenContext, TSpawnable>(this); }
 
-        public List<T> GetSpawnedList(IRandom rand)
+        public List<TSpawnable> GetSpawns(TGenContext map)
         {
-            List<T> spawns = new List<T>();
-            foreach (T element in SpecificSpawns)
+            List<TSpawnable> spawns = new List<TSpawnable>();
+            foreach (TSpawnable element in SpecificSpawns)
                 spawns.Add(element);
             for (int ii = 0; ii < SpawnAmount; ii++)
-                spawns.Add(RandomSpawns.Pick(rand));
+                spawns.Add(RandomSpawns.Pick(map.Rand));
             
             return spawns;
         }
