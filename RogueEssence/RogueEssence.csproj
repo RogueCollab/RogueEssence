@@ -69,6 +69,8 @@
     <Compile Include="LevelGen\Floors\GenSteps\Rooms\ImmutableRoom.cs" />
     <Compile Include="LevelGen\Spawning\DisconnectedSpawnStep.cs" />
     <Compile Include="LevelGen\Spawning\PlaceMobsStep\PlaceDisconnectedMobsStep.cs" />
+    <Compile Include="LevelGen\Tiles\FillImpassableStep.cs" />
+    <Compile Include="LevelGen\Tiles\MinimizeBarrierStep.cs" />
     <Compile Include="Menu\Items\TradeItemMenu.cs" />
     <Compile Include="Menu\Items\OfferItemsMenu.cs" />
     <Compile Include="Menu\Network\MailChosenMenu.cs" />
@@ -517,8 +519,6 @@
     <EmbeddedResource Include="Dev\SpriteBrowser.resx" />
     <EmbeddedResource Include="Dev\TileBrowser.resx" />
     <EmbeddedResource Include="Dev\TilePreview.resx" />
-  </ItemGroup>
-  <ItemGroup>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="0.8.3.1" />

@@ -409,11 +409,11 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public Character GetCharAtLoc(Loc loc)
+        public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
             foreach (Character character in IterateCharacters())
             {
-                if (!character.Dead && character.CharLoc == loc)
+                if (!character.Dead && character.CharLoc == loc && exclude != character)
                     return character;
             }
             return null;
@@ -454,8 +454,8 @@ namespace RogueEssence.Dungeon
                     if (TileBlocked(testLoc, character.Mobility))
                         return false;
 
-                    Character locChar = GetCharAtLoc(testLoc);
-                    if (locChar != null && locChar != character)
+                    Character locChar = GetCharAtLoc(testLoc, character);
+                    if (locChar != null)
                         return false;
                     return true;
                 },

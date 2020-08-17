@@ -10,5 +10,10 @@ namespace RogueEssence.LevelGen
     {
 
         public override RoomComponent Clone() { return new ImmutableRoom(); }
+
+        public override string ToString()
+        {
+            return "Immutable";
+        }
     }
 }
