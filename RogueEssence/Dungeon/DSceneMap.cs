@@ -970,7 +970,7 @@ namespace RogueEssence.Dungeon
                     if (!silent)
                     {
                         LogMsg(Text.FormatKey("MSG_MAP_ITEM_LOST", itemName));
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc * GraphicsManager.TileSize, loc * GraphicsManager.TileSize, Dir8.Down, DataManager.Instance.ItemLostFX));
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
                     }
                     yield break;
                 }
@@ -1002,7 +1002,7 @@ namespace RogueEssence.Dungeon
                     if (!silent)
                     {
                         LogMsg(Text.FormatKey("MSG_MAP_ITEM_LOST", itemName));
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc * Content.GraphicsManager.TileSize, loc * Content.GraphicsManager.TileSize, Dir8.Down, DataManager.Instance.ItemLostFX));
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
                     }
                 }
                 else if (terrain.BlockType == TerrainData.Mobility.Abyss)

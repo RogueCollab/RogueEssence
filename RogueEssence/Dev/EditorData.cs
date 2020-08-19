@@ -343,6 +343,7 @@ namespace RogueEssence.Dev
                     NumericUpDown nudValue = new NumericUpDown();
                     nudValue.Dock = DockStyle.Fill;
                     nudValue.Size = new Size(0, 21);
+                    nudValue.DecimalPlaces = 3;
                     nudValue.Minimum = Int32.MinValue;
                     nudValue.Maximum = Int32.MaxValue;
                     NumberRangeAttribute attribute = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
@@ -362,6 +363,7 @@ namespace RogueEssence.Dev
                     NumericUpDown nudValue = new NumericUpDown();
                     nudValue.Dock = DockStyle.Fill;
                     nudValue.Size = new Size(0, 21);
+                    nudValue.DecimalPlaces = 3;
                     nudValue.Minimum = Int32.MinValue;
                     nudValue.Maximum = Int32.MaxValue;
                     NumberRangeAttribute attribute = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
