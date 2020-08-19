@@ -202,6 +202,13 @@ namespace RogueEssence
                 val = Text.StringsExDefault[Key];
             return Regex.Unescape(val);
         }
+
+        public override string ToString()
+        {
+            if (Key != null)
+                return Key;
+            return "";
+        }
     }
 
 
