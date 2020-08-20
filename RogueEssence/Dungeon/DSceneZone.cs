@@ -59,8 +59,6 @@ namespace RogueEssence.Dungeon
 
             focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
 
-            GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
-
             //refresh everyone's traits
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.RefreshTraits();

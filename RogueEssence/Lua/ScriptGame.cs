@@ -42,15 +42,15 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
-        public void EnterGroundMap(int id, int idxentrypoint)
+        public void EnterGroundMap(int id, int idxentrypoint, bool preserveMusic = false)
         {
             //Leave current map and enter specific groundmap at the specified entry point
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, new SegLoc(ZoneManager.Instance.CurrentMapID.Segment, id), idxentrypoint));
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, new SegLoc(ZoneManager.Instance.CurrentMapID.Segment, id), idxentrypoint), false, preserveMusic);
         }
 
-        public void EnterGroundMap(string name, string entrypoint)
+        public void EnterGroundMap(string name, string entrypoint, bool preserveMusic = false)
         {
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(name, entrypoint);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(name, entrypoint, preserveMusic);
         }
 
 
