@@ -82,12 +82,12 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
-            foreach (Character character in ActiveTeam.Players)
-                yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
-
             //process map-start events (dialogue, map condition announcement, etc)
             foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
+
+            foreach (Character character in ActiveTeam.Players)
+                yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
 
             //process player happenings
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
@@ -629,7 +629,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> SpecialIntro(Character chara)
         {
-            SkinData skin = DataManager.Instance.GetSkin(ActiveTeam.Leader.Appearance.Skin);
+            SkinData skin = DataManager.Instance.GetSkin(chara.Appearance.Skin);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(chara, chara, skin.LeaderFX));
         }
 
