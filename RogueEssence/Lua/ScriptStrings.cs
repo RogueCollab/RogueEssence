@@ -10,7 +10,7 @@ namespace RogueEssence.Script
     /// <summary>
     /// Class for handling loading localized string via xml, because lua xml libs sucks
     /// </summary>
-    class ScriptStrings : ILuaEngineComponent
+    public class ScriptStrings : ILuaEngineComponent
     {
         public const string STRINGS_FILE_NAME = "strings";
         public const string STRINGS_FILE_EXT = "resx";
