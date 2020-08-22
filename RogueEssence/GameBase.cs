@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Threading;
 using RogueEssence.Content;
+using RogueEssence.Dev;
 using RogueEssence.Script;
 using RogueElements;
 #endregion
@@ -108,22 +109,6 @@ namespace RogueEssence
                 backgroundLoaded = true;
         }
 
-#if EDITORS
-        void DevLoad()
-        {
-            try
-            {
-                System.Windows.Forms.Application.EnableVisualStyles();
-                Dev.DevForm panel = new Dev.DevForm();
-                panel.Show();
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-        }
-#endif
-
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -170,9 +155,8 @@ namespace RogueEssence
                         if (DiagManager.Instance.DevMode)
                         {
 #if EDITORS
-                            DevLoad();
-
-                            while (!Dev.DevForm.EditorLoaded)
+                            DiagManager.Instance.DevEditor.Load();
+                            while (!DiagManager.Instance.DevEditor.Loaded)
                                 Thread.Sleep(10);
 #endif
                             CurrentPhase = LoadPhase.Ready;

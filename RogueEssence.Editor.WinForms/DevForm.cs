@@ -11,12 +11,15 @@ using RogueEssence.Menu;
 
 namespace RogueEssence.Dev
 {
-    public partial class DevForm : Form
+    public partial class DevForm : Form, IRootEditor
     {
-        public static bool EditorLoaded;
+        public bool Loaded { get; private set; }
 
-        public static MapEditor CurrentMapEditor;
-        public static GroundEditor CurrentGroundEditor;
+        private MapEditor mapEditor;
+        private GroundEditor groundEditor;
+
+        public IMapEditor MapEditor => mapEditor;
+        public IGroundEditor GroundEditor => groundEditor;
 
         public DevForm()
         {
@@ -101,6 +104,11 @@ namespace RogueEssence.Dev
             m_lastcommands = new Stack<string>();
         }
 
+        void IRootEditor.Load()
+        {
+            Show();
+        }
+
         private void chkShowSprites_CheckedChanged(object sender, EventArgs e)
         {
             DataManager.Instance.HideChars = !chkShowSprites.Checked;
@@ -171,17 +179,18 @@ namespace RogueEssence.Dev
 
         private void btnMapEditor_Click(object sender, EventArgs e)
         {
-            if (ZoneManager.Instance.CurrentMap != null && CurrentMapEditor == null)
+            if (ZoneManager.Instance.CurrentMap != null && mapEditor == null)
             {
-                CurrentMapEditor = new MapEditor();
-                CurrentMapEditor.Show();
+                mapEditor = new MapEditor();
+                mapEditor.FormClosed += (sender, e) => mapEditor = null;
+                mapEditor.Show();
             }
         }
 
 
         private void btnGroundEditor_Click(object sender, EventArgs e)
         {
-            if (CurrentGroundEditor == null)
+            if (groundEditor == null)
             {
                 MenuManager.Instance.ClearMenus();
                 if (ZoneManager.Instance.CurrentGround != null)
@@ -192,19 +201,18 @@ namespace RogueEssence.Dev
 
         }
 
-        public static void OpenGround()
+        public void OpenGround()
         {
-            CurrentGroundEditor = new GroundEditor();
-            CurrentGroundEditor.Show();
+            groundEditor = new GroundEditor();
+            groundEditor.FormClosed += (sender, e) => groundEditor = null;
+            groundEditor.Show();
         }
 
-        public static void CloseGround()
+        public void CloseGround()
         {
-            if (CurrentGroundEditor != null)
-                CurrentGroundEditor.Close();
+            if (groundEditor != null)
+                groundEditor.Close();
         }
-
-
 
         private void btnEditMonster_Click(object sender, EventArgs e)
         {
@@ -326,7 +334,7 @@ namespace RogueEssence.Dev
 
         private void DevWindow_Load(object sender, EventArgs e)
         {
-            EditorLoaded = true;
+            Loaded = true;
         }
 
         private void DevWindow_FormClosed(object sender, FormClosedEventArgs e)

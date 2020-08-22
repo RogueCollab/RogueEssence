@@ -5,6 +5,7 @@ using System.Xml;
 using Microsoft.Xna.Framework.Input;
 using System.Text;
 using System.Diagnostics;
+using RogueEssence.Dev;
 
 namespace RogueEssence
 {
@@ -45,6 +46,8 @@ namespace RogueEssence
         public int DebugReplayIndex;
 
         public bool DevMode;
+        public IRootEditor DevEditor;
+
         public Settings CurSettings;
 
         private string loadMessage;

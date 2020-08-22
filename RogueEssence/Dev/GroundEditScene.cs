@@ -31,61 +31,63 @@ namespace RogueEssence.Dev
             InputManager input = GameManager.Instance.MetaInputManager;
 
 #if EDITORS
-            if (Dev.GroundEditor.MapEditing)
+            var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
+
+            if (groundEditor.Active)
             {
                 if (Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
                 {
-                    if (Dev.GroundEditor.ChosenEditMode == Dev.GroundEditor.TileEditMode.Draw)
+                    if (groundEditor.Mode == IGroundEditor.TileEditMode.Draw)
                     {
                         if (input[FrameInput.InputType.LeftMouse])
-                            Dev.GroundEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), Dev.DevForm.CurrentGroundEditor.GetBrush());
+                            groundEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), groundEditor.GetBrush());
                         else if (input[FrameInput.InputType.RightMouse])
-                            Dev.GroundEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
+                            groundEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
 
                     }
-                    else if (Dev.GroundEditor.ChosenEditMode == Dev.GroundEditor.TileEditMode.Eyedrop)
+                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.Eyedrop)
                     {
                         if (input[FrameInput.InputType.LeftMouse])
-                            Dev.DevForm.CurrentGroundEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
+                            groundEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
                         else if (input[FrameInput.InputType.LeftMouse])
                         {
 
                         }
                     }
-                    else if (Dev.GroundEditor.ChosenEditMode == Dev.GroundEditor.TileEditMode.Fill)
+                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.Fill)
                     {
                         if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            Dev.GroundEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), Dev.DevForm.CurrentGroundEditor.GetBrush());
+                            groundEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), groundEditor.GetBrush());
                         else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            Dev.GroundEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
+                            groundEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
                     }
-                    else if (Dev.GroundEditor.ChosenEditMode == Dev.GroundEditor.TileEditMode.PlaceEntity)
+                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.PlaceEntity)
                     {
                         Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
                         if (input.JustReleased(FrameInput.InputType.LeftMouse))
                         {
-                            Dev.DevForm.CurrentGroundEditor.PlaceEntity(coords);
+                            groundEditor.PlaceEntity(coords);
                         }
                         //else if (input.JustReleased(FrameInput.InputType.RightMouse))
                     }
-                    else if (Dev.GroundEditor.ChosenEditMode == Dev.GroundEditor.TileEditMode.PlaceTemplateEntity)
+                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.PlaceTemplateEntity)
                     {
                         Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
                         if (input.JustReleased(FrameInput.InputType.LeftMouse))
                         {
-                            Dev.DevForm.CurrentGroundEditor.PlaceTemplateEntity(coords);
+                            groundEditor.PlaceTemplateEntity(coords);
                         }
                         //else if (input.JustReleased(FrameInput.InputType.RightMouse))
                     }
-                    else if (Dev.GroundEditor.ChosenEditMode == Dev.GroundEditor.TileEditMode.SelectEntity)
+                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.SelectEntity)
                     {
                         Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
                         //GraphicsManager.GraphicsDevice.Viewport.Bounds.Contains(input.MouseLoc.X, input.MouseLoc.Y)
 
                         if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            Dev.DevForm.CurrentGroundEditor.SelectEntity(coords);
+                            groundEditor.SelectEntity(coords);
                         else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            Dev.DevForm.CurrentGroundEditor.EntityContext(input.MouseLoc, coords);
+                            groundEditor.EntityContext(input.MouseLoc, coords);
                     }
                 }
             }
@@ -157,7 +159,7 @@ namespace RogueEssence.Dev
             //When in editor mode, we want to display an overlay over some entities
             //
 #if EDITORS
-            if (Dev.GroundEditor.MapEditing && ZoneManager.Instance.CurrentGround != null)
+            if (DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
             {
 
                 if (!DataManager.Instance.HideGrid)
@@ -214,14 +216,14 @@ namespace RogueEssence.Dev
                 FocusedLoc = entry.Loc;
             }
 #if EDITORS
-            Dev.DevForm.OpenGround();
+            DiagManager.Instance.DevEditor.OpenGround();
 #endif
         }
 
         public override void Exit()
         {
 #if EDITORS
-            Dev.DevForm.CloseGround();
+            DiagManager.Instance.DevEditor.CloseGround();
 #endif
         }
     }

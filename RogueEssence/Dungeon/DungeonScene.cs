@@ -5,6 +5,7 @@ using RogueEssence.LevelGen;
 using RogueEssence.Content;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -268,33 +269,35 @@ namespace RogueEssence.Dungeon
             }
             
 #if EDITORS
-            if (Dev.MapEditor.MapEditing)
+            var mapEditor = DiagManager.Instance.DevEditor.MapEditor;
+
+            if (mapEditor.Active)
             {
                 if (Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
                 {
-                    if (Dev.MapEditor.ChosenEditMode == Dev.MapEditor.TileEditMode.Draw)
+                    if (mapEditor.Mode == IMapEditor.TileEditMode.Draw)
                     {
                         if (input[FrameInput.InputType.LeftMouse])
-                            Dev.MapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), Dev.DevForm.CurrentMapEditor.GetBrush());
+                            mapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), mapEditor.GetBrush());
                         else if (input[FrameInput.InputType.RightMouse])
-                            Dev.MapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
+                            mapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
 
                     }
-                    else if (Dev.MapEditor.ChosenEditMode == Dev.MapEditor.TileEditMode.Eyedrop)
+                    else if (mapEditor.Mode == IMapEditor.TileEditMode.Eyedrop)
                     {
                         if (input[FrameInput.InputType.LeftMouse])
-                            Dev.DevForm.CurrentMapEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
+                            mapEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
                         else if (input[FrameInput.InputType.LeftMouse])
                         {
 
                         }
                     }
-                    else if (Dev.MapEditor.ChosenEditMode == Dev.MapEditor.TileEditMode.Fill)
+                    else if (mapEditor.Mode == IMapEditor.TileEditMode.Fill)
                     {
                         if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            Dev.MapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), Dev.DevForm.CurrentMapEditor.GetBrush());
+                            mapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), mapEditor.GetBrush());
                         else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            Dev.MapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
+                            mapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
                     }
                 }
             }

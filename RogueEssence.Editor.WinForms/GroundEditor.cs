@@ -5,6 +5,7 @@ using System.IO;
 using RogueEssence.Dungeon;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 using RogueEssence.Ground;
 using System.Resources;
 using System.Collections;
@@ -14,26 +15,15 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Dev
 {
-    public partial class GroundEditor : Form
+    public partial class GroundEditor : Form, IGroundEditor
     {
-        public static bool MapEditing;
+        public bool Active { get; private set; }
 
-        private static string CurrentFile;
+        private string CurrentFile;
 
-        public static bool ShowDataLayer;
+        public bool ShowDataLayer;
 
-        public enum TileEditMode
-        {
-            Draw = 0,
-            Fill = 1,
-            Eyedrop = 2,
-            PlaceEntity = 3,
-            PlaceTemplateEntity = 4,
-            SelectEntity = 5,
-            MoveEntity = 6,
-            Disabled, //Added this so on tabs that don't interact with the map, people don't accidently paint or place entities.
-        }
-        public static TileEditMode ChosenEditMode;
+        public IGroundEditor.TileEditMode Mode { get; private set; }
 
 
         /// <summary>
@@ -372,22 +362,21 @@ namespace RogueEssence.Dev
             openFileDialog.InitialDirectory = mapDir;
             saveMapFileDialog.InitialDirectory = mapDir;
 
-            chkFill.Checked = ChosenEditMode == TileEditMode.Fill;
-            chkTexEyeDropper.Checked = ChosenEditMode == TileEditMode.Eyedrop;
-            //btnEntitySelect.Checked = ChosenEditMode == TileEditMode.SelectEntity;
+            chkFill.Checked = Mode == IGroundEditor.TileEditMode.Fill;
+            chkTexEyeDropper.Checked = Mode == IGroundEditor.TileEditMode.Eyedrop;
+            //btnEntitySelect.Checked = Mode == IGroundEditor.TileEditMode.SelectEntity;
 
             ReloadMusic();
 
             LoadMapProperties();
             LoadAndSetupStrings();
 
-            MapEditing = true;
+            Active = true;
         }
 
         private void GroundEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            DevForm.CurrentGroundEditor = null;
-            MapEditing = false;
+            Active = false;
 
             //move to the previous scene or the title, if there was none
             if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())
@@ -462,20 +451,20 @@ namespace RogueEssence.Dev
         private void chkTexEyeDropper_CheckedChanged(object sender, EventArgs e)
         {
             if (chkTexEyeDropper.Checked)
-                ChangeEditorMode(TileEditMode.Eyedrop);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Eyedrop);
             else
-                ChangeEditorMode(TileEditMode.Draw);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Draw);
         }
 
         private void chkFill_CheckedChanged(object sender, EventArgs e)
         {
             if (chkFill.Checked)
-                ChangeEditorMode(TileEditMode.Fill);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Fill);
             else
-                ChangeEditorMode(TileEditMode.Draw);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Draw);
         }
 
-        public static void PaintTile(Loc loc, TileLayer anim)
+        public void PaintTile(Loc loc, TileLayer anim)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
@@ -497,7 +486,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void FillTile(Loc loc, TileLayer anim)
+        public void FillTile(Loc loc, TileLayer anim)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
@@ -514,14 +503,14 @@ namespace RogueEssence.Dev
         private void tabMapOptions_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabMapOptions.SelectedTab.Name == tabTextures.Name)
-                ChangeEditorMode(TileEditMode.Draw);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Draw);
             else if (tabMapOptions.SelectedTab.Name == tabEntities.Name)
             {
-                //ChangeEditorMode(TileEditMode.SelectEntity);
+                //ChangeEditorMode(IGroundEditor.TileEditMode.SelectEntity);
                 cmbEntityType.Enabled = true;
             }
             //else
-            //    ChangeEditorMode(TileEditMode.Disabled);
+            //    ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
 
@@ -529,9 +518,9 @@ namespace RogueEssence.Dev
         /// Meant to handle transition between editor modes all in one place
         /// </summary>
         /// <param name="ty"></param>
-        private void ChangeEditorMode(TileEditMode ty )
+        private void ChangeEditorMode(IGroundEditor.TileEditMode ty )
         {
-            ChosenEditMode = ty;
+            Mode = ty;
 
             //Set the entire toolbar to unchecked first to save time:
             toolbtnDraw.Checked = false;
@@ -545,7 +534,7 @@ namespace RogueEssence.Dev
             //Then handle mode specific stuff here
             switch (ty)
             {
-                case TileEditMode.Draw:
+                case IGroundEditor.TileEditMode.Draw:
                     {
                         DeselectEntity();
                         placeableEntity = null;
@@ -558,7 +547,7 @@ namespace RogueEssence.Dev
                         toolbtnDraw.Checked = true;
                         break;
                     }
-                case TileEditMode.Eyedrop:
+                case IGroundEditor.TileEditMode.Eyedrop:
                     {
                         DeselectEntity();
                         placeableEntity = null;
@@ -571,7 +560,7 @@ namespace RogueEssence.Dev
                         toolbtnEyedrop.Checked = true;
                         break;
                     }
-                case TileEditMode.Fill:
+                case IGroundEditor.TileEditMode.Fill:
                     {
                         DeselectEntity();
                         placeableEntity = null;
@@ -584,7 +573,7 @@ namespace RogueEssence.Dev
                         toolbtnFill.Checked = true;
                         break;
                     }
-                case TileEditMode.PlaceEntity:
+                case IGroundEditor.TileEditMode.PlaceEntity:
                     {
                         DeselectEntity();
                         //btnPlaceTemplate.Checked = false;
@@ -597,7 +586,7 @@ namespace RogueEssence.Dev
                         MakePlaceableEntity();
                         break;
                     }
-                case TileEditMode.PlaceTemplateEntity:
+                case IGroundEditor.TileEditMode.PlaceTemplateEntity:
                     {
                         DeselectEntity();
                         //btnPlace.Checked = false;
@@ -610,7 +599,7 @@ namespace RogueEssence.Dev
                         MakePlaceableTemplateEntity();
                         break;
                     }
-                case TileEditMode.SelectEntity:
+                case IGroundEditor.TileEditMode.SelectEntity:
                     {
                         placeableEntity = null;
                         //btnPlace.Checked = false;
@@ -622,7 +611,7 @@ namespace RogueEssence.Dev
                         toolbtnSelect.Checked = true;
                         break;
                     }
-                case TileEditMode.MoveEntity:
+                case IGroundEditor.TileEditMode.MoveEntity:
                     {
                         placeableEntity = null;
                         //btnPlace.Checked = false;
@@ -634,7 +623,7 @@ namespace RogueEssence.Dev
                         toolbtnMove.Checked = true;
                         break;
                     }
-                case TileEditMode.Disabled:
+                case IGroundEditor.TileEditMode.Disabled:
                     {
                         DeselectEntity();
                         placeableEntity = null;
@@ -1320,17 +1309,17 @@ namespace RogueEssence.Dev
         //private void btnPlace_Click(object sender, EventArgs e)
         //{
         //    if (btnPlace.Checked)
-        //        ChangeEditorMode(TileEditMode.PlaceEntity);
+        //        ChangeEditorMode(IGroundEditor.TileEditMode.PlaceEntity);
         //    else
-        //        ChangeEditorMode(TileEditMode.Disabled);
+        //        ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         //}
 
         //private void btnPlaceTemplate_Click(object sender, EventArgs e)
         //{
         //    if (btnPlaceTemplate.Checked)
-        //        ChangeEditorMode(TileEditMode.PlaceTemplateEntity);
+        //        ChangeEditorMode(IGroundEditor.TileEditMode.PlaceTemplateEntity);
         //    else
-        //        ChangeEditorMode(TileEditMode.Disabled);
+        //        ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         //}
 
         public GroundEntity GetCurrentPlaceableEntity()
@@ -1367,7 +1356,7 @@ namespace RogueEssence.Dev
                 ZoneManager.Instance.CurrentGround.AddSpawner((GroundSpawner)placeableEntity);
 
             placeableEntity = null;
-            ChangeEditorMode(TileEditMode.Disabled);
+            ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         public void PlaceTemplateEntity(Loc position)
@@ -1387,7 +1376,7 @@ namespace RogueEssence.Dev
                 ZoneManager.Instance.CurrentGround.AddSpawner((GroundSpawner)placeableEntity);
 
                 placeableEntity = null;
-            ChangeEditorMode(TileEditMode.Disabled);
+            ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         /// <summary>
@@ -1900,57 +1889,57 @@ namespace RogueEssence.Dev
         private void toolbtnDraw_Click(object sender, EventArgs e)
         {
             if (toolbtnDraw.Checked)
-                ChangeEditorMode(TileEditMode.Draw);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Draw);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnFill_Click(object sender, EventArgs e)
         {
             if (toolbtnFill.Checked)
-                ChangeEditorMode(TileEditMode.Fill);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Fill);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnEyedrop_Click(object sender, EventArgs e)
         {
             if (toolbtnEyedrop.Checked)
-                ChangeEditorMode(TileEditMode.Eyedrop);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Eyedrop);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnSelect_Click(object sender, EventArgs e)
         {
             if (toolbtnSelect.Checked)
-                ChangeEditorMode(TileEditMode.SelectEntity);
+                ChangeEditorMode(IGroundEditor.TileEditMode.SelectEntity);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnPlace_Click(object sender, EventArgs e)
         {
             if (toolbtnPlace.Checked)
-                ChangeEditorMode(TileEditMode.PlaceEntity);
+                ChangeEditorMode(IGroundEditor.TileEditMode.PlaceEntity);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnPlaceTemplate_Click(object sender, EventArgs e)
         {
             if (toolbtnPlaceTemplate.Checked)
-                ChangeEditorMode(TileEditMode.PlaceTemplateEntity);
+                ChangeEditorMode(IGroundEditor.TileEditMode.PlaceTemplateEntity);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnMove_Click(object sender, EventArgs e)
         {
             if (toolbtnMove.Checked)
-                ChangeEditorMode(TileEditMode.MoveEntity);
+                ChangeEditorMode(IGroundEditor.TileEditMode.MoveEntity);
             else
-                ChangeEditorMode(TileEditMode.Disabled);
+                ChangeEditorMode(IGroundEditor.TileEditMode.Disabled);
         }
 
         private void toolbtnRemoveEnt_Click(object sender, EventArgs e)
