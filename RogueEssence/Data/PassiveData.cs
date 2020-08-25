@@ -5,7 +5,7 @@ using RogueElements;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class PassiveData : Dev.EditorData
+    public class PassiveData
     {
 
         public PriorityList<StatusGivenEvent> BeforeStatusAdds;

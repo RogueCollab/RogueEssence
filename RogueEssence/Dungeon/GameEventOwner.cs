@@ -5,7 +5,7 @@ using RogueElements;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class GameEventOwner : Dev.EditorData
+    public abstract class GameEventOwner
     {
         public abstract GameEventPriority.EventCause GetEventCause();
 

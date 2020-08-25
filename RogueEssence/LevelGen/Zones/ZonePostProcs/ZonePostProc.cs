@@ -4,7 +4,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public abstract class ZonePostProc : Dev.EditorData
+    public abstract class ZonePostProc
     {
         /// <summary>
         /// Shallow copy + Initialize any runtime variables

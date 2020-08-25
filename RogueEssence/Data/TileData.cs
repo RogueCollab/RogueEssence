@@ -7,13 +7,8 @@ using Microsoft.Xna.Framework;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class TileData : Dev.EditorData, IDescribedData
+    public class TileData : IDescribedData
     {
-        public override string ToString()
-        {
-            return Name.DefaultText;
-        }
-
         public enum TriggerType
         {
             None,

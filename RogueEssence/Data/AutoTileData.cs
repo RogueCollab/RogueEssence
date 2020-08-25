@@ -4,7 +4,7 @@ using RogueEssence.Dungeon;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class AutoTileData : Dev.EditorData, IEntryData
+    public class AutoTileData : IEntryData
     {
         public override string ToString()
         {
@@ -24,6 +24,5 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Comment = "";
         }
-
     }
 }

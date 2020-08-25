@@ -256,8 +256,8 @@ namespace RogueEssence.Dev
         }
 
         private delegate string[] GetEntryNames();
-        private delegate Dev.EditorData GetEntry(int entryNum);
-        private delegate Dev.EditorData CreateEntry();
+        private delegate IEntryData GetEntry(int entryNum);
+        private delegate IEntryData CreateEntry();
         private void OpenList(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
         {
 #if EDITORS

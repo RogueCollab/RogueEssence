@@ -4,7 +4,7 @@ using RogueEssence.Content;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class SkinData : Dev.EditorData, IEntryData
+    public class SkinData : IEntryData
     {
         public override string ToString()
         {
@@ -29,6 +29,5 @@ namespace RogueEssence.Data
             Symbol = symbol;
             LeaderFX  = new BattleFX();
         }
-
     }
 }

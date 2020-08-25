@@ -8,7 +8,7 @@ namespace RogueEssence.Data
 
 
     [Serializable]
-    public class AITactic : Dev.EditorData, IEntryData
+    public class AITactic : IEntryData
     {
         public override string ToString()
         {

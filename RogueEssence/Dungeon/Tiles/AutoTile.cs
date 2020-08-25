@@ -7,7 +7,7 @@ using RogueEssence.Content;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class AutoTile : Dev.EditorData
+    public class AutoTile
     {
         public List<TileLayer> Layers;
 
@@ -42,6 +42,5 @@ namespace RogueEssence.Dungeon
             foreach (TileLayer anim in Layers)
                 anim.Draw(spriteBatch, pos, GraphicsManager.TotalFrameTick);
         }
-
     }
 }

@@ -423,12 +423,12 @@ namespace RogueEssence.Data
                 DataIndices[type] = new EntryDataIndex();
             }
         }
-        public void LoadIndexFull<T>(DataType type, Dictionary<int, T> cache) where T : Dev.EditorData, IEntryData
+        public void LoadIndexFull<T>(DataType type, Dictionary<int, T> cache) where T : IEntryData
         {
             LoadIndex(type);
             LoadCacheFull(type, cache);
         }
-        public void LoadCacheFull<T>(DataType type, Dictionary<int, T> cache) where T : Dev.EditorData, IEntryData
+        public void LoadCacheFull<T>(DataType type, Dictionary<int, T> cache) where T : IEntryData
         {
             cache.Clear();
             for (int ii = 0; ii < DataIndices[type].Count; ii++)
@@ -454,9 +454,9 @@ namespace RogueEssence.Data
         }
 
 
-        public static Dev.EditorData LoadData(int indexNum, string subPath)
+        public static IEntryData LoadData(int indexNum, string subPath)
         {
-            return (Dev.EditorData)LoadData(DataManager.DATA_PATH + subPath + "/" + indexNum + ".bin");
+            return (IEntryData)LoadData(DataManager.DATA_PATH + subPath + "/" + indexNum + ".bin");
         }
 
         public static object LoadData(string path, SerializationBinder binder = null)
@@ -474,7 +474,7 @@ namespace RogueEssence.Data
         }
 
 
-        public static void SaveData(int indexNum, string subPath, Dev.EditorData entry)
+        public static void SaveData(int indexNum, string subPath, IEntryData entry)
         {
             if (!Directory.Exists(DataManager.DATA_PATH + subPath))
                 Directory.CreateDirectory(DataManager.DATA_PATH + subPath);

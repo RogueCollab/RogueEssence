@@ -36,7 +36,7 @@ namespace RogueEssence.Data
     }
 
     [Serializable]
-    public class LearnableSkill : Dev.EditorData
+    public class LearnableSkill
     {
         [Dev.DataType(0, DataManager.DataType.Skill, false)]
         public int Skill;

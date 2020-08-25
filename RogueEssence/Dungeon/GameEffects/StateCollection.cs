@@ -4,22 +4,18 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Drawing;
 using System.Text;
-using RogueEssence.Dev;
-#if EDITORS
-using System.Windows.Forms;
-#endif
 
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class GameplayState : EditorData
+    public abstract class GameplayState
     {
         public T Clone<T>() where T : GameplayState { return (T)Clone(); }
         public abstract GameplayState Clone();
     }
 
     [Serializable]
-    public class StateCollection<T> : Dev.EditorData, IEnumerable<T> where T : GameplayState
+    public class StateCollection<T> : IEnumerable<T> where T : GameplayState
     {
         [NonSerialized]
         private Dictionary<string, T> pointers;
@@ -114,73 +110,6 @@ namespace RogueEssence.Dungeon
             }
             return builder.ToString();
         }
-
-#if EDITORS
-        protected override void LoadClassControls(TableLayoutPanel control)
-        {
-            CollectionBox lbxValue = new CollectionBox();
-            lbxValue.Dock = DockStyle.Fill;
-            lbxValue.Size = new Size(0, 150);
-            List<T> states = new List<T>();
-            foreach (T state in pointers.Values)
-                states.Add(state);
-            lbxValue.LoadFromList(typeof(List<T>), states);
-            control.Controls.Add(lbxValue);
-
-            Type elementType = typeof(T);
-            //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
-            {
-                ElementForm frmData = new ElementForm();
-                if (element == null)
-                    frmData.Text = "New " + elementType.Name;
-                else
-                    frmData.Text = element.ToString();
-
-                staticLoadMemberControl(frmData.ControlPanel, "(StateCollection) [" + index + "]", elementType, new object[0] { }, element, true);
-
-                frmData.OnOK += (object okSender, EventArgs okE) =>
-                {
-                    staticSaveMemberControl(frmData.ControlPanel, "StateCollection", elementType, new object[0] { }, ref element, true);
-
-                    bool itemExists = false;
-                    for (int ii = 0; ii < lbxValue.Collection.Count; ii++)
-                    {
-                        if (ii != index)
-                        {
-                            if (lbxValue.Collection[ii].GetType() == element.GetType())
-                                itemExists = true;
-                        }
-                    }
-
-                    if (itemExists)
-                        MessageBox.Show("Cannot add duplicate states.", "Entry already exists.", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    else
-                    {
-                        op(index, element);
-                        frmData.Close();
-                    }
-                };
-                frmData.OnCancel += (object okSender, EventArgs okE) =>
-                {
-                    frmData.Close();
-                };
-
-                frmData.Show();
-            };
-        }
-
-
-        protected override void SaveClassControls(TableLayoutPanel control)
-        {
-            CollectionBox lbxValue = (CollectionBox)control.Controls[0];
-
-            pointers = new Dictionary<string, T>();
-            for (int ii = 0; ii < lbxValue.Collection.Count; ii++)
-                pointers[lbxValue.Collection[ii].GetType().FullName] = (T)lbxValue.Collection[ii];
-        }
-
-#endif
 
         private List<T> serializationObjects;
 

@@ -50,7 +50,7 @@ namespace RogueEssence.Content
     }
 
     [Serializable]
-    public abstract class BaseAnim : Dev.EditorData, IFinishableSprite
+    public abstract class BaseAnim : IFinishableSprite
     {
         [NonSerialized]
         protected Loc mapLoc;

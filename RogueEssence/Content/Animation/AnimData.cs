@@ -109,7 +109,7 @@ namespace RogueEssence.Content
     }
 
     [Serializable]
-    public abstract class AnimDataBase : Dev.EditorData
+    public abstract class AnimDataBase
     {
         public abstract string AnimIndex { get; set; }
         /// <summary>

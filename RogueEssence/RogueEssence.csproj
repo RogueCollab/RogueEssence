@@ -1,11 +1,10 @@
-﻿<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{F22CC8D0-B26B-458E-9F6E-A3AC20A57827}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>RogueEssence</RootNamespace>
     <AssemblyName>RogueEssence</AssemblyName>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
@@ -21,10 +20,10 @@
       <Name>RogueElements</Name>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;EDITORS</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;EDITORS</DefineConstants>
   </PropertyGroup>
 </Project>

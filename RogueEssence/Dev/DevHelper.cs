@@ -13,7 +13,7 @@ namespace RogueEssence.Dev
         {
             foreach (string dir in Directory.GetFiles(dataPath, "*.bin"))
             {
-                EditorData data = (EditorData)DataManager.LoadData(dir, binder);
+                IEntryData data = (IEntryData)DataManager.LoadData(dir, binder);
                 DataManager.SaveData(dir, data);
             }
         }

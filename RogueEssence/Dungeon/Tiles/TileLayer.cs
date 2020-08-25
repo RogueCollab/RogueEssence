@@ -8,7 +8,7 @@ using RogueEssence.Content;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class TileLayer : Dev.EditorData
+    public class TileLayer
     {
         public List<TileFrame> Frames;
         public int FrameLength;

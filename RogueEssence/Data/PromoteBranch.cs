@@ -5,7 +5,7 @@ using RogueEssence.Dungeon;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class PromoteBranch : Dev.EditorData
+    public class PromoteBranch
     {
         [Dev.DataType(0, DataManager.DataType.Monster, false)]
         public int Result;
@@ -56,7 +56,7 @@ namespace RogueEssence.Data
     }
 
     [Serializable]
-    public abstract class PromoteDetail : Dev.EditorData
+    public abstract class PromoteDetail
     {
         public virtual int GiveItem { get { return -1; } }
         public virtual string GetReqString() { return ""; }

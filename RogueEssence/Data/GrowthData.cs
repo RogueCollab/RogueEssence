@@ -3,7 +3,7 @@
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class GrowthData : Dev.EditorData, IEntryData
+    public class GrowthData : IEntryData
     {
         public override string ToString()
         {
