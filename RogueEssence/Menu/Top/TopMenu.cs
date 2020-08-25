@@ -165,10 +165,7 @@ namespace RogueEssence.Menu
             if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                 GameManager.Instance.MoveToScene(DungeonScene.Instance);
             else
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
                 GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
-            }
 
             if (DataManager.Instance.Save.NextDest.IsValid())
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
@@ -178,6 +175,8 @@ namespace RogueEssence.Menu
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
                 else
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
 
                 Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());

@@ -436,7 +436,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessBattleFX(Character user, Character target, BattleFX fx)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(user.MapLoc, target.MapLoc, target.CharDir, fx));
+            yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(user.CharLoc, target.CharLoc, target.CharDir, fx));
         }
         public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx)
         {
@@ -444,7 +444,7 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.BattleSE(fx.Sound);
             //the animation
             FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
-            fxEmitter.SetupEmit(targetLoc, userLoc, userDir);
+            fxEmitter.SetupEmit(targetLoc * GraphicsManager.TileSize, userLoc * GraphicsManager.TileSize, userDir);
             CreateAnim(fxEmitter, DrawLayer.NoDraw);
             SetScreenShake(new ScreenMover(fx.ScreenMovement));
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, targetLoc));

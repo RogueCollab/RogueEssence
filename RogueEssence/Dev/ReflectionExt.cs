@@ -225,13 +225,15 @@ namespace RogueEssence.Dev
         public static Type[] GetAssignableTypes(this Type type)
         {
             List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
-            return GetAssignableTypes(false, 2, dependentAssemblies.ToArray(), type);
+            List<Type> types = getAssignableTypes(false, 2, dependentAssemblies.ToArray(), type);
+            types.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
+            return types.ToArray();
         }
 
-        public static Type[] GetAssignableTypes(bool allowAbstract, int recursionDepth, Assembly[] searchAssemblies, params Type[] constraints)
+        private static List<Type> getAssignableTypes(bool allowAbstract, int recursionDepth, Assembly[] searchAssemblies, params Type[] constraints)
         {
             if (recursionDepth == 0)
-                return new Type[0] { };
+                return new List<Type>();
 
             List<Type> children = new List<Type>();
 
@@ -300,7 +302,7 @@ namespace RogueEssence.Dev
                 }
             }
 
-            return children.ToArray();
+            return children;
         }
 
         private static void defSpecifiedGenericParameter(List<Type> children, int recursionDepth, Assembly[] searchAssemblies, Type checkType, Type[] checkArgs, Type[] chosenParams, Stack<Type[]> pendingParams, Stack<int> typeIndex, Stack<Type[]> constraints, Stack<int> constraintIndex)
@@ -549,7 +551,7 @@ namespace RogueEssence.Dev
                 if (hasOpenConstraint(chosenParams, tpConstraints))
                     continue;
                 
-                possibleParams[jj] = GetAssignableTypes(true, recursionDepth-1, searchAssemblies, tpConstraints);
+                possibleParams[jj] = getAssignableTypes(true, recursionDepth-1, searchAssemblies, tpConstraints).ToArray();
             }
 
             recurseTypeParams(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, openTypes, possibleParams, 0);

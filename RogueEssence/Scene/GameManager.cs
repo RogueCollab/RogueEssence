@@ -370,7 +370,7 @@ namespace RogueEssence
             yield break;
         }
 
-        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone = false)
+        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone = false, bool preserveMusic = false)
         {
             bool newGround = (destId.StructID.Segment <= -1);
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
@@ -399,6 +399,9 @@ namespace RogueEssence
 
             if (newGround)
             {
+                if (!preserveMusic)
+                    BGM(ZoneManager.Instance.CurrentGround.Music, true);
+
                 GroundScene.Instance.EnterGround(destId.EntryPoint);
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround());
                 //no fade; the script handles that itself
@@ -406,6 +409,9 @@ namespace RogueEssence
             }
             else
             {
+                if (!preserveMusic)
+                    BGM(ZoneManager.Instance.CurrentMap.Music, true);
+
                 DungeonScene.Instance.EnterFloor(destId.EntryPoint);
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.PrepareFloor());
 
@@ -434,7 +440,7 @@ namespace RogueEssence
         /// </summary>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
-        public IEnumerator<YieldInstruction> MoveToGround(string mapname, string entrypoint)
+        public IEnumerator<YieldInstruction> MoveToGround(string mapname, string entrypoint, bool preserveMusic)
         {
             exitMap(GroundScene.Instance);
 
@@ -453,6 +459,8 @@ namespace RogueEssence
                 LuaEngine.Instance.OnGroundModeBegin();
             }
 
+            if (!preserveMusic)
+                BGM(ZoneManager.Instance.CurrentGround.Music, true);
 
             GroundScene.Instance.EnterGround(entrypoint);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueEssence.Content;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Data
 {
@@ -16,6 +17,7 @@ namespace RogueEssence.Data
         public string Comment { get; set; }
 
         public char Symbol;
+        public Color MinimapColor;
         public BattleFX LeaderFX;
         public bool Challenge;
 

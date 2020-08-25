@@ -53,8 +53,6 @@ namespace RogueEssence.Ground
 
         public void ResetGround()
         {
-            GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
-
             GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
             ZoneManager.Instance.CurrentGround.ViewCenter = null;
             ZoneManager.Instance.CurrentGround.ViewOffset = new Loc();

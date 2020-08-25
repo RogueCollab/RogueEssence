@@ -37,7 +37,7 @@ namespace RogueEssence.Dungeon
 
         public bool SeeAll;
         public int DebugEmote;
-                
+        
         public ExplorerTeam ActiveTeam {  get { return ZoneManager.Instance.CurrentMap.ActiveTeam; } }
 
         
@@ -1303,7 +1303,10 @@ namespace RogueEssence.Dungeon
                                     }
                                 }
                                 if (seen || SeeAll)
-                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Red);
+                                {
+                                    SkinData skinData = DataManager.Instance.GetSkin(character.Appearance.Skin);
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, skinData.MinimapColor);
+                                }
                             }
                         }
                     }
