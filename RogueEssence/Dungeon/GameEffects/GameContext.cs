@@ -39,7 +39,7 @@ namespace RogueEssence.Dungeon
 
         public int GetContextStateInt<T>(int defaultVal) where T : ContextIntState
         {
-            ContextIntState countState = ContextStates.Get<T>();
+            ContextIntState countState = ContextStates.GetWithDefault<T>();
             if (countState == null)
                 return defaultVal;
             else
@@ -48,7 +48,7 @@ namespace RogueEssence.Dungeon
 
         public void AddContextStateInt<T>(int addedVal) where T : ContextIntState
         {
-            ContextIntState countState = ContextStates.Get<T>();
+            ContextIntState countState = ContextStates.GetWithDefault<T>();
             if (countState == null)
             {
                 T newCount = (T)Activator.CreateInstance(typeof(T));

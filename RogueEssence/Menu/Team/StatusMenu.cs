@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
                     Data.MapStatusData statusData = Data.DataManager.Instance.GetMapStatus(status);
                     mapIndices.Add(status);
                     MenuText statusName = statusName = new MenuText(statusData.Name.ToLocal(), new Loc(2, 1));
-                    MapCountDownState countDown = statusInstance.StatusStates.Get<MapCountDownState>();
+                    MapCountDownState countDown = statusInstance.StatusStates.GetWithDefault<MapCountDownState>();
                     if (countDown != null && countDown.Counter > 0)
                         flatChoices.Add(new MenuElementChoice(() => { }, true, statusName, new MenuText("[" + countDown.Counter + "]", new Loc(menuWidth - 8 * 4, 1), DirH.Right)));
                     else
@@ -43,13 +43,13 @@ namespace RogueEssence.Menu
                 {
                     indices.Add(status);
                     MenuText statusName = null;
-                    StackState stack = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.Get<StackState>();
+                    StackState stack = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.GetWithDefault<StackState>();
                     if (stack != null)
                         statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).Name.ToLocal() + (stack.Stack < 0 ? " " : " +") + stack.Stack, new Loc(2, 1));
                     else
                         statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).Name.ToLocal(), new Loc(2, 1));
 
-                    CountDownState countDown = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.Get<CountDownState>();
+                    CountDownState countDown = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.GetWithDefault<CountDownState>();
                     if (countDown != null && countDown.Counter > 0)
                         flatChoices.Add(new MenuElementChoice(() => { }, true, statusName, new MenuText("[" + countDown.Counter + "]", new Loc(menuWidth - 8 * 4, 1), DirH.Right)));
                     else

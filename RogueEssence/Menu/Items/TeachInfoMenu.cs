@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
             Bounds = Rect.FromPoints(new Loc(16, 24), new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 72));
             
             ItemData itemData = DataManager.Instance.GetItem(itemNum);
-            ItemIndexState effect = itemData.ItemStates.Get<ItemIndexState>();
+            ItemIndexState effect = itemData.ItemStates.GetWithDefault<ItemIndexState>();
 
             SkillData skillEntry = DataManager.Instance.GetSkill(effect.Index);
             ElementData elementEntry = DataManager.Instance.GetElement(skillEntry.Data.Element);
@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
             SkillElement = new MenuText(Text.FormatKey("MENU_SKILLS_ELEMENT", String.Format("{0}\u2060{1}", elementEntry.Symbol, skillEntry.Data.Element)), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
             SkillCategory = new MenuText(Text.FormatKey("MENU_SKILLS_CATEGORY", skillEntry.Data.Category), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
 
-            BasePowerState powerState = skillEntry.Data.SkillStates.Get<BasePowerState>();
+            BasePowerState powerState = skillEntry.Data.SkillStates.GetWithDefault<BasePowerState>();
             SkillPower = new MenuText(Text.FormatKey("MENU_SKILLS_POWER", (powerState != null ? powerState.Power.ToString() : "---")), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
             SkillHitRate = new MenuText(Text.FormatKey("MENU_SKILLS_HIT_RATE", (skillEntry.Data.HitRate > -1 ? skillEntry.Data.HitRate + "%" : "---")), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
 

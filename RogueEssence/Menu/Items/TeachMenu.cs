@@ -65,7 +65,7 @@ namespace RogueEssence.Menu
             }
                 
             Data.ItemData itemData = Data.DataManager.Instance.GetItem(itemNum);
-            ItemIndexState effect = itemData.ItemStates.Get<ItemIndexState>();
+            ItemIndexState effect = itemData.ItemStates.GetWithDefault<ItemIndexState>();
 
             //check for already knowing the skill
             for(int ii = 0; ii < character.BaseSkills.Count; ii++)

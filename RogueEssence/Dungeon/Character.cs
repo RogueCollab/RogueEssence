@@ -2113,7 +2113,7 @@ namespace RogueEssence.Dungeon
                 foreach (StatusEffect status in StatusEffects.Values)
                 {
                     StatusData entry = (StatusData)status.GetData();
-                    StackState stack = status.StatusStates.Get<StackState>();
+                    StackState stack = status.StatusStates.GetWithDefault<StackState>();
                     int emote = -1;
                     if (stack != null && stack.Stack < 0)
                             emote = entry.DropEmoticon;

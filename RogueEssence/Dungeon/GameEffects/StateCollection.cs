@@ -32,6 +32,22 @@ namespace RogueEssence.Dungeon
         }
         public StateCollection<T> Clone() { return new StateCollection<T>(this); }
 
+
+        public bool ContainsName(string typeFullName)
+        {
+            return pointers.ContainsKey(typeFullName);
+        }
+
+        public K GetWithDefault<K>() where K : T
+        {
+            Type type = typeof(K);
+            T state;
+            if (pointers.TryGetValue(type.AssemblyQualifiedName, out state))
+                return (K)state;
+            return default(K);
+        }
+
+
         public void Clear()
         {
             pointers.Clear();
@@ -48,19 +64,6 @@ namespace RogueEssence.Dungeon
             return pointers.ContainsKey(type.AssemblyQualifiedName);
         }
 
-        public bool ContainsName(string typeFullName)
-        {
-            return pointers.ContainsKey(typeFullName);
-        }
-
-        public K Get<K>() where K : T
-        {
-            Type type = typeof(K);
-            T state;
-            if (pointers.TryGetValue(type.AssemblyQualifiedName, out state))
-                return (K)state;
-            return default(K);
-        }
 
         public T Get(Type type)
         {
