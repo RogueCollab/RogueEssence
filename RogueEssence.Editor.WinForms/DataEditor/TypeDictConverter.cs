@@ -10,9 +10,9 @@ using RogueElements;
 
 namespace RogueEssence.Dev
 {
-    public class StateCollectionConverter : EditorConverter<IStateCollection>
+    public class TypeDictConverter : EditorConverter<ITypeDict>
     {
-        public override void LoadClassControls(IStateCollection obj, TableLayoutPanel control)
+        public override void LoadClassControls(ITypeDict obj, TableLayoutPanel control)
         {
             CollectionBox lbxValue = new CollectionBox();
             lbxValue.Dock = DockStyle.Fill;
@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
             lbxValue.LoadFromList(typeof(List<object>), states);
             control.Controls.Add(lbxValue);
 
-            Type elementType = obj.GetType().GetGenericArguments()[0];
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), obj.GetType(), 0);
             //add lambda expression for editing a single element
             lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
             {
@@ -67,7 +67,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(IStateCollection obj, TableLayoutPanel control)
+        public override void SaveClassControls(ITypeDict obj, TableLayoutPanel control)
         {
             CollectionBox lbxValue = (CollectionBox)control.Controls[0];
 

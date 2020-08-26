@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
             lbxValue.LoadFromList(obj.GetType(), obj);
             control.Controls.Add(lbxValue);
 
-            Type elementType = obj.GetType().GetGenericArguments()[0];
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), obj.GetType(), 0);
             //add lambda expression for editing a single element
             lbxValue.OnEditItem = (int index, object element, SpawnListBox.EditElementOp op) =>
             {

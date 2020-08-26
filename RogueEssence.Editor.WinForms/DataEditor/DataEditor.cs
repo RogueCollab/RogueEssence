@@ -28,11 +28,11 @@ namespace RogueEssence.Dev
             AddConverter(new CircleSquareEmitterConverter());
             AddConverter(new CombatActionConverter());
             AddConverter(new ExplosionDataConverter());
-            AddConverter(new ItemDataConverter());
+            //AddConverter(new ItemDataConverter());
             AddConverter(new ShootingEmitterConverter());
             AddConverter(new SkillDataConverter());
             AddConverter(new SpawnListConverter());
-            AddConverter(new StateCollectionConverter());
+            AddConverter(new TypeDictConverter());
             AddConverter(new StaticAnimConverter());
         }
 
@@ -746,7 +746,7 @@ namespace RogueEssence.Dev
                             preview.SetChosenAnim(((IList<TileLayer>)lbxValue.Collection).Count > 0 ? ((IList<TileLayer>)lbxValue.Collection)[0] : new TileLayer());
                     };
 
-                    Type elementType = type.GetGenericArguments()[0];
+
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
                     {
@@ -879,7 +879,7 @@ namespace RogueEssence.Dev
                     lbxValue.LoadFromList(type, (IList)member);
                     control.Controls.Add(lbxValue);
 
-                    Type elementType = type.GetGenericArguments()[0];
+                    Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), type, 0);
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
                     {
@@ -915,8 +915,8 @@ namespace RogueEssence.Dev
                     lbxValue.LoadFromDictionary(type, (IDictionary)member);
                     control.Controls.Add(lbxValue);
 
-                    Type keyType = type.GetGenericArguments()[0];
-                    Type elementType = type.GetGenericArguments()[1];
+                    Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
+                    Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (object key, object element, DictionaryBox.EditElementOp op) =>
@@ -980,7 +980,7 @@ namespace RogueEssence.Dev
                     lbxValue.LoadFromList(type, (IPriorityList)member);
                     control.Controls.Add(lbxValue);
 
-                    Type elementType = type.GetGenericArguments()[0];
+                    Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (int priority, int index, object element, PriorityListBox.EditElementOp op) =>
                     {

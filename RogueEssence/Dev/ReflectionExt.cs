@@ -222,6 +222,20 @@ namespace RogueEssence.Dev
             }
         }
 
+        /// <summary>
+        /// Use case: Child type inherits from generic parent type.  What generic argument did it use for the parent?
+        /// This method finds the answer.
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="parent"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public static Type GetBaseTypeArg(Type parent, Type child, int index)
+        {
+            Type genericWithArgs = getAssignableFromGeneric(parent, child);
+            return genericWithArgs.GetGenericArguments()[index];
+        }
+
         public static Type[] GetAssignableTypes(this Type type)
         {
             List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
@@ -500,13 +514,13 @@ namespace RogueEssence.Dev
         /// <param name="genericType">A non-constructed generic type</param>
         /// <param name="genericOther">Any generic type</param>
         /// <returns></returns>
-        private static Type getAssignableFromGeneric(Type type, Type other)
+        private static Type getAssignableFromGeneric(Type parent, Type child)
         {
-            Type genericType = type.GetGenericTypeDefinition();
+            Type genericType = parent.GetGenericTypeDefinition();
 
             if (genericType.IsInterface)
             {
-                Type[] interfaceTypes = other.GetInterfaces();
+                Type[] interfaceTypes = child.GetInterfaces();
 
                 foreach (Type baseOther in interfaceTypes)
                 {
@@ -517,7 +531,7 @@ namespace RogueEssence.Dev
             }
             else
             {
-                Type baseOther = other;
+                Type baseOther = child;
                 while (baseOther != null)
                 {
                     if (baseOther.IsGenericType && baseOther.GetGenericTypeDefinition() == genericType)
