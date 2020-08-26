@@ -39,6 +39,8 @@ namespace RogueEssence
             return Type;
         }
 
+        public string AssemblyQualifiedName => String.Format("{0}, {1}", Type, Assembly);
+
         public override int GetHashCode()
         {
             return (Assembly == null ? 0 : Assembly.GetHashCode()) ^ (Type == null ? 0 : Type.GetHashCode());

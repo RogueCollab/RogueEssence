@@ -76,7 +76,7 @@ namespace RogueEssence.Menu
                 string weather = DataManager.Instance.GetMapStatus(0).Name.ToLocal();
                 foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
-                    if (status.StatusStates.Get<MapWeatherState>() != null)
+                    if (status.StatusStates.Contains<MapWeatherState>())
                     {
                         MapStatusData entry = (MapStatusData)status.GetData();
                         weather = entry.Name.ToLocal();

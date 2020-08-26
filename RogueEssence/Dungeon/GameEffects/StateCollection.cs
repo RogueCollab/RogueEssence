@@ -45,9 +45,10 @@ namespace RogueEssence.Dungeon
 
         public bool Contains(Type type)
         {
-            return pointers.ContainsKey(type.FullName);
+            return pointers.ContainsKey(type.AssemblyQualifiedName);
         }
-        public bool Contains(string typeFullName)
+
+        public bool ContainsName(string typeFullName)
         {
             return pointers.ContainsKey(typeFullName);
         }
@@ -56,22 +57,19 @@ namespace RogueEssence.Dungeon
         {
             Type type = typeof(K);
             T state;
-            if (pointers.TryGetValue(type.FullName, out state))
+            if (pointers.TryGetValue(type.AssemblyQualifiedName, out state))
                 return (K)state;
             return default(K);
         }
 
         public T Get(Type type)
         {
-            T state;
-            if (pointers.TryGetValue(type.FullName, out state))
-                return state;
-            return default(T);
+            return pointers[type.AssemblyQualifiedName];
         }
 
         public void Set(T value)
         {
-            pointers[value.GetType().FullName] = value;
+            pointers[value.GetType().AssemblyQualifiedName] = value;
         }
 
         public void Remove<K>() where K : T
@@ -82,7 +80,7 @@ namespace RogueEssence.Dungeon
 
         public void Remove(Type type)
         {
-            pointers.Remove(type.FullName);
+            pointers.Remove(type.AssemblyQualifiedName);
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { return pointers.Values.GetEnumerator(); }
@@ -128,7 +126,7 @@ namespace RogueEssence.Dungeon
         {
             pointers = new Dictionary<string, T>();
             for (int ii = 0; ii < serializationObjects.Count; ii++)
-                pointers[serializationObjects[ii].GetType().FullName] = serializationObjects[ii];
+                pointers[serializationObjects[ii].GetType().AssemblyQualifiedName] = serializationObjects[ii];
         }
     }
 
