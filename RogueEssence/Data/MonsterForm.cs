@@ -7,7 +7,7 @@ namespace RogueEssence.Data
 {
 
     [Serializable]
-    public abstract class BaseMonsterForm : Dev.EditorData
+    public abstract class BaseMonsterForm
     {
         public LocalText FormName;
 

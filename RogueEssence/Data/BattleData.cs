@@ -4,9 +4,6 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Dev;
-#if EDITORS
-using System.Windows.Forms;
-#endif
 
 namespace RogueEssence.Data
 {
@@ -147,42 +144,5 @@ namespace RogueEssence.Data
             foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
         }
-
-#if EDITORS
-        protected override void LoadClassControls(TableLayoutPanel control)
-        {
-            int initialHeight = control.Height;
-            base.LoadClassControls(control);
-
-            int totalHeight = control.Height - initialHeight;
-
-            Button btnTest = new System.Windows.Forms.Button();
-            btnTest.Name = "btnTest";
-            btnTest.Dock = DockStyle.Fill;
-            btnTest.Size = new System.Drawing.Size(0, 29);
-            btnTest.TabIndex = 0;
-            btnTest.Text = "Test";
-            btnTest.UseVisualStyleBackColor = true;
-            btnTest.Click += new System.EventHandler(btnTest_Click);
-            control.Controls.Add(btnTest);
-        }
-
-
-
-
-        private void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                BattleData data = new BattleData();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessEndAnim(player, player, data);
-            }
-        }
-
-#endif //WINDOWS
     }
 }

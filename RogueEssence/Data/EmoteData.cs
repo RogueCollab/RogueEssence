@@ -4,7 +4,7 @@ using RogueEssence.Content;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class EmoteData : Dev.EditorData, IEntryData
+    public class EmoteData : IEntryData
     {
         public override string ToString()
         {

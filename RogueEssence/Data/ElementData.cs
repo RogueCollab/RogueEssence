@@ -3,7 +3,7 @@
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class ElementData : Dev.EditorData, IEntryData
+    public class ElementData : IEntryData
     {
         public override string ToString()
         {
@@ -25,6 +25,5 @@ namespace RogueEssence.Data
             Name = name;
             Symbol = symbol;
         }
-
     }
 }

@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-#if EDITORS
 using System.Windows.Forms;
-#endif
 using System.Reflection;
 using System.Drawing;
 using RogueEssence.Content;
@@ -14,17 +12,43 @@ using System.IO;
 
 namespace RogueEssence.Dev
 {
-    [Serializable]
-    public abstract class EditorData
+    public static class DataEditor
     {
-        protected const int LABEL_HEIGHT = 14;
+        private const int LABEL_HEIGHT = 14;
 
-        public override string ToString()
+        private static List<IEditorConverter> converters;
+
+        public static void Init()
         {
-            return GetType().Name;
+            converters = new List<IEditorConverter>();
+            AddConverter(new AutoTileBaseConverter());
+            AddConverter(new BaseEmitterConverter());
+            AddConverter(new BattleDataConverter());
+            AddConverter(new BattleFXConverter());
+            AddConverter(new CircleSquareEmitterConverter());
+            AddConverter(new CombatActionConverter());
+            AddConverter(new ExplosionDataConverter());
+            AddConverter(new ItemDataConverter());
+            AddConverter(new ShootingEmitterConverter());
+            AddConverter(new SkillDataConverter());
+            AddConverter(new SpawnListConverter());
+            AddConverter(new StateCollectionConverter());
+            AddConverter(new StaticAnimConverter());
         }
 
-#if EDITORS
+        public static void AddConverter(IEditorConverter converter)
+        {
+            //maintain inheritance order
+            for (int ii = 0; ii < converters.Count; ii++)
+            {
+                if (converter.GetConvertingType().IsSubclassOf(converters[ii].GetConvertingType()))
+                {
+                    converters.Insert(ii, converter);
+                    return;
+                }
+            }
+            converters.Add(converter);
+        }
 
 
         public static void LoadDataControls(object obj, TableLayoutPanel control)
@@ -34,18 +58,22 @@ namespace RogueEssence.Dev
 
         private static void loadClassControls(object obj, TableLayoutPanel control)
         {
-            if (obj.GetType().IsSubclassOf(typeof(EditorData)))
-                ((EditorData)obj).LoadClassControls(control);
-            else
-                staticLoadClassControls(obj, control);
+            Type objType = obj.GetType();
+            Type[] interfaces = objType.GetInterfaces();
+            foreach (IEditorConverter converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    converter.LoadClassControls(obj, control);
+                    return;
+                }
+            }
+            
+            StaticLoadClassControls(obj, control);
         }
 
-        protected virtual void LoadClassControls(TableLayoutPanel control)
-        {
-            staticLoadClassControls(this, control);
-        }
-
-        private static void staticLoadClassControls(object obj, TableLayoutPanel control)
+        public static void StaticLoadClassControls(object obj, TableLayoutPanel control)
         {
             //go through all members and add for them
             //control starts off clean; this is the control that will have all member controls on it
@@ -132,8 +160,8 @@ namespace RogueEssence.Dev
 
 
         private delegate void CreateMethod();
-     
-        protected static void loadLabelControl(TableLayoutPanel control, string name)
+
+        public static void LoadLabelControl(TableLayoutPanel control, string name)
         {
             Label lblName = new Label();
             lblName.Dock = DockStyle.Fill;
@@ -152,21 +180,25 @@ namespace RogueEssence.Dev
         }
 
 
-        protected static void loadMemberControl(object obj, TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        private static void loadMemberControl(object obj, TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
-            if (obj.GetType().IsSubclassOf(typeof(EditorData)))
-                ((EditorData)obj).LoadMemberControl(control, name, type, attributes, member, isWindow);
-            else
-                staticLoadMemberControl(control, name, type, attributes, member, isWindow);
+            Type objType = obj.GetType();
+            Type[] interfaces = objType.GetInterfaces();
+            foreach (IEditorConverter converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    converter.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
+                    return;
+                }
+            }
+            StaticLoadMemberControl(control, name, type, attributes, member, isWindow);
         }
 
-        protected virtual void LoadMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
-        {
-            staticLoadMemberControl(control, name, type, attributes, member, isWindow);
-        }
 
         //overload this method in children to account for structs such as loc
-        protected static void staticLoadMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void StaticLoadMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
 
             //members are set when control values are changed?
@@ -174,7 +206,7 @@ namespace RogueEssence.Dev
             {
                 if (type.IsEnum)
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
 
                     Array enums = type.GetEnumValues();
@@ -234,7 +266,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(byte))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     IntNumericUpDown nudValue = new IntNumericUpDown();
                     nudValue.Dock = DockStyle.Fill;
@@ -252,7 +284,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(Int32))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
                     FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
@@ -319,7 +351,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(byte))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     IntNumericUpDown nudValue = new IntNumericUpDown();
                     nudValue.Dock = DockStyle.Fill;
@@ -338,12 +370,11 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(Single))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     NumericUpDown nudValue = new NumericUpDown();
                     nudValue.Dock = DockStyle.Fill;
                     nudValue.Size = new Size(0, 21);
-                    nudValue.DecimalPlaces = 3;
                     nudValue.Minimum = Int32.MinValue;
                     nudValue.Maximum = Int32.MaxValue;
                     NumberRangeAttribute attribute = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
@@ -358,12 +389,11 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(Double))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     NumericUpDown nudValue = new NumericUpDown();
                     nudValue.Dock = DockStyle.Fill;
                     nudValue.Size = new Size(0, 21);
-                    nudValue.DecimalPlaces = 3;
                     nudValue.Minimum = Int32.MinValue;
                     nudValue.Maximum = Int32.MaxValue;
                     NumberRangeAttribute attribute = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
@@ -427,7 +457,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(String))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
                     if (animAtt != null)
@@ -503,7 +533,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(Microsoft.Xna.Framework.Color))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(4);
                     control.Controls.Add(innerPanel);
@@ -563,7 +593,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(Loc))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(2);
                     control.Controls.Add(innerPanel);
@@ -597,7 +627,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(SegLoc))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(2);
                     control.Controls.Add(innerPanel);
@@ -631,7 +661,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(IntRange))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(2);
                     control.Controls.Add(innerPanel);
@@ -665,7 +695,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type == typeof(TileLayer))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     TilePreview preview = new TilePreview();
                     preview.Dock = DockStyle.Fill;
@@ -679,7 +709,7 @@ namespace RogueEssence.Dev
 
                         Rectangle boxRect = new Rectangle(new Point(), new Size(654, 502 + LABEL_HEIGHT));
                         int box_down = 0;
-                        loadLabelControl(frmData.ControlPanel, name);
+                        LoadLabelControl(frmData.ControlPanel, name);
                         box_down += 16;
                         //for enums, use a combobox
                         TileBrowser browser = new TileBrowser();
@@ -694,7 +724,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type.GetInterfaces().Contains(typeof(IList<TileLayer>)))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     TilePreview preview = new TilePreview();
                     preview.Dock = DockStyle.Fill;
@@ -725,7 +755,7 @@ namespace RogueEssence.Dev
 
                         Rectangle boxRect = new Rectangle(new Point(), new Size(654, 502 + LABEL_HEIGHT));
                         int box_down = 0;
-                        loadLabelControl(frmData.ControlPanel, name);
+                        LoadLabelControl(frmData.ControlPanel, name);
                         box_down += 16;
                         //for enums, use a combobox
                         TileBrowser browser = new TileBrowser();
@@ -804,7 +834,7 @@ namespace RogueEssence.Dev
                     for(int ii = 0; ii < array.Length; ii++)
                         objList.Add(array.GetValue(ii));
 
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     CollectionBox lbxValue = new CollectionBox();
                     lbxValue.Dock = DockStyle.Fill;
@@ -822,11 +852,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Text = name + "/" + element.ToString();
 
-                        staticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
-                            staticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
                             op(index, element);
                             frmData.Close();
                         };
@@ -841,7 +871,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type.GetInterfaces().Contains(typeof(IList)))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     CollectionBox lbxValue = new CollectionBox();
                     lbxValue.Dock = DockStyle.Fill;
@@ -859,11 +889,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Text = name + "/" + element.ToString();
 
-                        staticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
-                            staticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref element, true);
                             op(index, element);
                             frmData.Close();
                         };
@@ -877,7 +907,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type.GetInterfaces().Contains(typeof(IDictionary)))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     DictionaryBox lbxValue = new DictionaryBox();
                     lbxValue.Dock = DockStyle.Fill;
@@ -898,12 +928,12 @@ namespace RogueEssence.Dev
                         else
                             frmData.Text = name + "/" + element.ToString();
 
-                        staticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
-                            staticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
                             op(key, element);
                             frmData.Close();
                         };
@@ -923,12 +953,12 @@ namespace RogueEssence.Dev
                         else
                             frmKey.Text = name + "/" + element.ToString();
 
-                        staticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
+                        StaticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
 
 
                         frmKey.OnOK += (object okSender, EventArgs okE) =>
                         {
-                            staticSaveMemberControl(frmKey.ControlPanel, name, keyType, new object[0] { }, ref key, true);
+                            StaticSaveMemberControl(frmKey.ControlPanel, name, keyType, new object[0] { }, ref key, true);
                             op(key, element);
                             frmKey.Close();
                         };
@@ -942,7 +972,7 @@ namespace RogueEssence.Dev
                 }
                 else if (type.GetInterfaces().Contains(typeof(IPriorityList)))
                 {
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     PriorityListBox lbxValue = new PriorityListBox();
                     lbxValue.Dock = DockStyle.Fill;
@@ -960,11 +990,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Text = name + "/" + element.ToString();
 
-                        staticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
-                            staticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
                             op(priority, index, element);
                             frmData.Close();
                         };
@@ -979,7 +1009,7 @@ namespace RogueEssence.Dev
                 else if (!isWindow && ReflectionExt.FindAttribute<SubGroupAttribute>(attributes) == null)
                 {
                     //in all cases where the class itself isn't being rendered to the window, simply represent as an editable object
-                    loadLabelControl(control, name);
+                    LoadLabelControl(control, name);
 
                     if (member == null)
                     {
@@ -1004,12 +1034,12 @@ namespace RogueEssence.Dev
                         ElementForm frmData = new ElementForm();
                         frmData.Text = name + "/" + type.Name;
 
-                        staticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
-                            staticSaveMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
                             op(element);
                             frmData.Close();
                         };
@@ -1161,18 +1191,21 @@ namespace RogueEssence.Dev
 
         private static void saveClassControls(object obj, TableLayoutPanel control)
         {
-            if (obj.GetType().IsSubclassOf(typeof(EditorData)))
-                ((EditorData)obj).SaveClassControls(control);
-            else
-                staticSaveClassControls(obj, control);
+            Type objType = obj.GetType();
+            Type[] interfaces = objType.GetInterfaces();
+            foreach (IEditorConverter converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    converter.SaveClassControls(obj, control);
+                    return;
+                }
+            }
+            StaticSaveClassControls(obj, control);
         }
 
-        protected virtual void SaveClassControls(TableLayoutPanel control)
-        {
-            staticSaveClassControls(this, control);
-        }
-
-        private static void staticSaveClassControls(object obj, TableLayoutPanel control)
+        public static void StaticSaveClassControls(object obj, TableLayoutPanel control)
         {
             try
             {
@@ -1236,20 +1269,24 @@ namespace RogueEssence.Dev
 
 
 
-        protected static void saveMemberControl(object obj, TableLayoutPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
+        private static void saveMemberControl(object obj, TableLayoutPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
         {
-            if (obj.GetType().IsSubclassOf(typeof(EditorData)))
-                ((EditorData)obj).SaveMemberControl(control, name, type, attributes, ref member, isWindow);
-            else
-                staticSaveMemberControl(control, name, type, attributes, ref member, isWindow);
+            Type objType = obj.GetType();
+            Type[] interfaces = objType.GetInterfaces();
+            foreach (IEditorConverter converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    converter.SaveMemberControl(obj, control, name, type, attributes, ref member, isWindow);
+                    return;
+                }
+            }
+            
+            StaticSaveMemberControl(control, name, type, attributes, ref member, isWindow);
         }
 
-        protected virtual void SaveMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
-        {
-            staticSaveMemberControl(control, name, type, attributes, ref member, isWindow);
-        }
-
-        protected static void staticSaveMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
+        public static void StaticSaveMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
         {
             //do not set anything
             //on save, write value to object
@@ -1572,201 +1609,7 @@ namespace RogueEssence.Dev
             if (box.SelectedIndex > 0)
                 GameManager.Instance.BattleSE((string)box.SelectedItem);
         }
-#endif
 
-
-
-        //SpawnList
-        //#if EDITORS
-        //        public override void LoadClassControls(Control control, Rectangle rect)
-        //        {
-        //            //go through all members and add for them
-        //            //control starts off clean; this is the control that will have all member controls on it
-        //            try
-        //            {
-        //                //create panel and place in rect
-        //                Panel main_panel = new Panel();
-        //                main_panel.AutoScroll = true;
-        //                main_panel.Location = rect.Location;
-        //                main_panel.Size = rect.Size;
-        //                //set panel's tag to a new list
-        //                List<SpawnRate> tag_list = new List<SpawnRate>();
-        //                foreach (SpawnRate tuple in spawns)
-        //                    tag_list.Add(new SpawnRate(tuple.Spawn, tuple.Rate));
-        //                //populate list with tuples created from tuples in the current list
-        //                main_panel.Tag = tag_list;
-        //                control.Controls.Add(main_panel);
-        //                Button add_button = new Button();
-
-        //                for (int ii = 0; ii < tag_list.Count; ii++)
-        //                {
-        //                    AddPanel(main_panel, add_button, tag_list, ii);
-        //                }
-        //                //add "add" button
-        //                add_button.Text = "Add";
-        //                add_button.Location = new Point(0, 70 * tag_list.Count);
-        //                add_button.Size = new Size(50, 23);
-        //                //clicking "add" creates an element form to choose with
-        //                add_button.Click += (object sender, EventArgs e) =>
-        //                {
-        //                    Dev.ElementForm frmData = new Dev.ElementForm();
-        //                    frmData.Text = "Edit Element";
-        //                    int index = tag_list.Count;
-        //                    Rectangle boxRect = new Rectangle(new Point(), GetMemberControlSize(typeof(T), null, null));
-        //                    LoadMemberControl(frmData.ControlPanel, "(SpawnRate) " /*+ name*/ + "[" + index + "]", typeof(T), null, null, boxRect);
-        //                    frmData.ResizeForPanelSize(boxRect.Size);
-
-        //                    //if selected OK, adds object to list, inserts new panel, and loads it
-        //                    if (frmData.ShowDialog() == DialogResult.OK)
-        //                    {
-        //                        int controlIndex = 0;
-        //                        object spawn = null;
-        //                        SaveMemberControl(frmData.ControlPanel, typeof(T), null, ref spawn, ref controlIndex);
-        //                        SpawnRate tuple = new SpawnRate((T)spawn, 10);
-        //                        tag_list.Add(tuple);
-        //                        AddPanel(main_panel, add_button, tag_list, tag_list.Count - 1);
-        //                        add_button.Location = new Point(0, tag_list.Count * 70);
-        //                        //then modify chances of all the other panels
-        //                        UpdateTotalChance(main_panel, tag_list);
-        //                    }
-        //                };
-        //                main_panel.Controls.Add(add_button);
-        //                UpdateTotalChance(main_panel, tag_list);
-        //            }
-        //            catch (Exception e)
-        //            {
-        //                DiagManager.Instance.LogError(e);
-        //            }
-        //        }
-
-        //        public override int PanelWidth { get { return 260; } }
-        //        public override int GetClassHeight() { return 340; }
-
-
-        //        public override void SaveClassControls(Control control)
-        //        {
-        //            try
-        //            {
-        //                //set list to panel tag
-        //                Panel panel = (Panel)control.Controls[0];
-        //                spawns = (List<SpawnRate>)panel.Tag;
-        //                //update spawn total
-        //                spawnTotal = ListTotal(spawns);
-        //            }
-        //            catch (Exception e)
-        //            {
-        //                DiagManager.Instance.LogError(e);
-        //            }
-        //        }
-
-        //        void AddPanel(Panel main_panel, Button add_button, List<SpawnRate> tag_list, int ii)
-        //        {
-        //            //add panel to main panel
-        //            Panel panel = new Panel();
-        //            panel.Location = new Point(0, ii * 70);
-        //            panel.Size = new Size(main_panel.Size.Width - 18, 70);
-
-        //            SpawnRate tuple = tag_list[ii];
-
-        //            //set up name and calculated percent
-        //            Label spawn_name = new Label();
-        //            spawn_name.Location = new System.Drawing.Point(0, 5);
-        //            spawn_name.AutoEllipsis = true;
-        //            spawn_name.Size = new Size(panel.Size.Width - 60, 13);
-        //            spawn_name.Text = tuple.Spawn.ToString();
-
-        //            Label spawn_weight = new Label();
-        //            spawn_weight.Location = new System.Drawing.Point(panel.Size.Width - 60, 53);
-        //            spawn_weight.AutoSize = true;
-        //            spawn_weight.Text = "Weight: " + tuple.Rate;
-
-        //            Label spawn_chance = new Label();
-        //            spawn_chance.Location = new System.Drawing.Point(panel.Size.Width - 50, 5);
-        //            spawn_chance.AutoSize = true;
-        //            spawn_chance.Text = "%";
-        //            spawn_chance.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-
-        //            //set up buttons:
-        //            Button edit_button = new Button();
-        //            edit_button.Text = "Edit";
-        //            edit_button.Location = new Point(0, 48);
-        //            edit_button.Size = new Size(34, 21);
-        //            //clicking edit opens the element form
-        //            edit_button.Click += (object sender, EventArgs e) =>
-        //            {
-        //                Dev.ElementForm frmData = new Dev.ElementForm();
-        //                frmData.Text = "Edit Element";
-        //                int index = tag_list.IndexOf(tuple);
-        //                Rectangle boxRect = new Rectangle(new Point(), GetMemberControlSize(typeof(T), null, tuple.Spawn));
-        //                LoadMemberControl(frmData.ControlPanel, "(SpawnRate) " /*+ name*/ + "[" + index + "]", typeof(T), null, tuple.Spawn, boxRect);
-        //                frmData.ResizeForPanelSize(boxRect.Size);
-        //                //if selected OK, sets object in list, modifies label name
-        //                if (frmData.ShowDialog() == DialogResult.OK)
-        //                {
-        //                    int controlIndex = 0;
-        //                    object spawn = tuple.Spawn;
-        //                    SaveMemberControl(frmData.ControlPanel, typeof(T), null, ref spawn, ref controlIndex);
-        //                    tuple.Spawn = (T)spawn;
-        //                }
-        //            };
-
-        //            Button delete_button = new Button();
-        //            delete_button.Text = "Delete";
-        //            delete_button.Location = new Point(34, 48);
-        //            delete_button.Size = new Size(34, 21);
-        //            //clicking delete removes the object, and removes panel and shifts all controls after this one up
-        //            delete_button.Click += (object sender, EventArgs e) =>
-        //            {
-        //                int index = tag_list.IndexOf(tuple);
-        //                tag_list.RemoveAt(index);
-        //                main_panel.Controls.RemoveAt(index);
-        //                for (int jj = index; jj < tag_list.Count; jj++)
-        //                {
-        //                    Panel shift_panel = (Panel)main_panel.Controls[jj];
-        //                    shift_panel.Location = new Point(0, jj * 70);
-        //                }
-        //                UpdateTotalChance(main_panel, tag_list);
-        //                add_button.Location = new Point(0, tag_list.Count * 70);
-        //            };
-
-        //            //set up trackbar to spawn rate
-        //            //when trackbar changes, set appearance rate for all panels
-        //            TrackBar trackBar = new TrackBar();
-        //            trackBar.LargeChange = 10;
-        //            trackBar.Location = new System.Drawing.Point(0, 20);
-        //            trackBar.Maximum = 100;
-        //            trackBar.Minimum = 1;
-        //            trackBar.Size = new System.Drawing.Size(panel.Size.Width, 45);
-        //            trackBar.TickFrequency = 10;
-        //            trackBar.Value = tuple.Rate;
-        //            trackBar.ValueChanged += (object sender, EventArgs e) =>
-        //            {
-        //                spawnTotal = spawnTotal - tuple.Rate + trackBar.Value;//MUST UPDATE THE SPAWNTOTAL TO STAY IN SYNC
-        //                tuple.Rate = trackBar.Value;
-        //                spawn_weight.Text = "Weight: " + trackBar.Value;
-        //                UpdateTotalChance(main_panel, tag_list);
-        //            };
-
-        //            panel.Controls.Add(delete_button);
-        //            panel.Controls.Add(edit_button);
-        //            panel.Controls.Add(spawn_weight);
-        //            panel.Controls.Add(spawn_chance);
-        //            panel.Controls.Add(spawn_name);
-        //            panel.Controls.Add(trackBar);
-        //            main_panel.Controls.Add(panel);
-        //            main_panel.Controls.SetChildIndex(panel, ii);
-        //        }
-
-        //        void UpdateTotalChance(Panel main_panel, List<SpawnRate> tag_list)
-        //        {
-        //            int total = ListTotal(tag_list);
-        //            for (int jj = 0; jj < tag_list.Count; jj++)
-        //            {
-        //                Label label = (Label)main_panel.Controls[jj].Controls[3];
-        //                label.Text = ((decimal)tag_list[jj].Rate / total).ToString("P2");
-        //            }
-        //        }
-        //#endif
 
     }
 }

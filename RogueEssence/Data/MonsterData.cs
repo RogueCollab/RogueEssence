@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class MonsterData : Dev.EditorData, IEntryData
+    public class MonsterData : IEntryData
     {
 
         public override string ToString()

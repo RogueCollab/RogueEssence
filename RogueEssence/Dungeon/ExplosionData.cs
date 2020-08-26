@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
-#if EDITORS
-using System.Windows.Forms;
-#endif
 
 namespace RogueEssence.Dungeon
 {
@@ -17,7 +14,7 @@ namespace RogueEssence.Dungeon
     //NOTE: there is still some strangeness that will happen when boomerang and explosion combine: tiles and enemies that are "returned" to are hit
     //regardless of whether the character or wall is there anymore
     [Serializable]
-    public class ExplosionData : Dev.EditorData
+    public class ExplosionData
     {
         public Alignment TargetAlignments;
 
@@ -101,46 +98,5 @@ namespace RogueEssence.Dungeon
         {
             return Text.FormatKey("RANGE_AREA_FULL", Range, CombatAction.GetTargetsString(true, TargetAlignments)); ;
         }
-
-
-
-#if EDITORS
-        protected override void LoadClassControls(TableLayoutPanel control)
-        {
-            int initialHeight = control.Height;
-            base.LoadClassControls(control);
-
-            int totalHeight = control.Height - initialHeight;
-
-            Button btnTest = new System.Windows.Forms.Button();
-            btnTest.Name = "btnTest";
-            btnTest.Dock = DockStyle.Fill;
-            btnTest.Size = new System.Drawing.Size(0, 29);
-            btnTest.TabIndex = 0;
-            btnTest.Text = "Test";
-            btnTest.UseVisualStyleBackColor = true;
-            btnTest.Click += new System.EventHandler(btnTest_Click);
-            control.Controls.Add(btnTest);
-        }
-
-
-
-
-        private void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                ExplosionData data = new ExplosionData();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = data.ReleaseExplosion(player.CharLoc, player, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
-            }
-        }
-
-#endif //WINDOWS
-
     }
-
 }

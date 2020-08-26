@@ -28,7 +28,7 @@ namespace RogueEssence.Data
     /// <summary>
     /// Base class for templates
     /// </summary>
-    abstract class BaseTemplate
+    public abstract class BaseTemplate
     {
         public virtual string        Name { get; set; }
         public virtual ETemplateType Type { get; set; }
@@ -41,7 +41,7 @@ namespace RogueEssence.Data
     /// Its meant to allow mappers and scripters to quickly instantiate recurring ground objects.
     /// </summary>
     [Serializable]
-    class ObjectTemplate : BaseTemplate
+    public class ObjectTemplate : BaseTemplate
     {
         public Rect     Rect        { get; set; }
         public ObjAnimData Anim        { get; set; }
@@ -61,7 +61,7 @@ namespace RogueEssence.Data
     /// Its meant to allow mappers and scripters to quickly instantiate recurring ground characters.
     /// </summary>
     [Serializable]
-    class CharacterTemplate : BaseTemplate //!#FIXME: Serialising this won't work, because they're stored as their base class.. Will need to look into it!
+    public class CharacterTemplate : BaseTemplate //!#FIXME: Serialising this won't work, because they're stored as their base class.. Will need to look into it!
     {
         public Character Chara { get; set; }
         public override ETemplateType Type { get { return ETemplateType.Character; } }
@@ -76,7 +76,7 @@ namespace RogueEssence.Data
     /// This handles all templates for the game, and handle serialization for them too!
     /// </summary>
     [Serializable]
-    class TemplateManager
+    public class TemplateManager
     {
         public static readonly List<string> TemplateTypeNames = new List<string>
         {

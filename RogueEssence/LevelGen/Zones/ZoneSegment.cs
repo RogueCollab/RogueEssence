@@ -150,7 +150,7 @@ namespace RogueEssence.LevelGen
 
 
     [Serializable]
-    public abstract class ZoneSegmentBase : Dev.EditorData
+    public abstract class ZoneSegmentBase
     {
         public bool IsRelevant;
         public abstract int FloorCount { get; }

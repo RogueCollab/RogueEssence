@@ -5,13 +5,8 @@ using RogueElements;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class TerrainData : Dev.EditorData, IEntryData
+    public class TerrainData : IEntryData
     {
-        public override string ToString()
-        {
-            return Name.DefaultText;
-        }
-
         public enum Mobility
         {
             Impassable = -1,

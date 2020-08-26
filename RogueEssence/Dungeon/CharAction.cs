@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Graphics;
-#if EDITORS
-using System.Windows.Forms;
-#endif
-
 
 namespace RogueEssence.Dungeon
 {
@@ -42,7 +38,7 @@ namespace RogueEssence.Dungeon
     }
 
     [Serializable]
-    public abstract class CharAction : Dev.EditorData
+    public abstract class CharAction
     {
         public const int MAX_RANGE = 80;
 
@@ -225,46 +221,6 @@ namespace RogueEssence.Dungeon
             
             return base.ToString() + ": " + GetDescription();
         }
-
-
-#if EDITORS
-        protected override void LoadClassControls(TableLayoutPanel control)
-        {
-            int initialHeight = control.Height;
-            base.LoadClassControls(control);
-
-            int totalHeight = control.Height - initialHeight;
-
-            Button btnTest = new System.Windows.Forms.Button();
-            btnTest.Name = "btnTest";
-            btnTest.Dock = DockStyle.Fill;
-            btnTest.Size = new System.Drawing.Size(0, 29);
-            btnTest.TabIndex = 0;
-            btnTest.Text = "Test";
-            btnTest.UseVisualStyleBackColor = true;
-            btnTest.Click += new System.EventHandler(btnTest_Click);
-            control.Controls.Add(btnTest);
-        }
-
-
-
-
-        private void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                CombatAction data = this.Clone();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = player.MockCharAction(data, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
-            }
-        }
-
-#endif //WINDOWS
-
-
     }
 
 

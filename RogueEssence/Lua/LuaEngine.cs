@@ -21,7 +21,7 @@ namespace RogueEssence.Script
     /// <summary>
     /// Class each components of the lua engine should implement
     /// </summary>
-    abstract class ILuaEngineComponent
+    public abstract class ILuaEngineComponent
     {
         /// <summary>
         /// Setups any extra functionalities for this object written on the lua side.

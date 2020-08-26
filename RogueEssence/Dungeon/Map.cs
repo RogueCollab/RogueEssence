@@ -521,7 +521,7 @@ namespace RogueEssence.Dungeon
     }
 
     [Serializable]
-    public abstract class BaseMap : Dev.EditorData, IMobSpawnMap
+    public abstract class BaseMap : IMobSpawnMap
     {
 
         //includes all start points

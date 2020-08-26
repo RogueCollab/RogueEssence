@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using Microsoft.Win32;
+using RogueEssence.Dev;
 using RogueEssence.Dungeon;
 using RogueElements;
 using RogueEssence.Data;
@@ -10,24 +11,16 @@ using System.Collections.Generic;
 
 namespace RogueEssence.Dev
 {
-    public partial class MapEditor : Form
+    public partial class MapEditor : Form, IMapEditor
     {
 
-        public static bool MapEditing;
+        public bool Active { get; private set; }
 
-        private static string CurrentFile;
+        private string CurrentFile;
 
-        public static bool ShowDataLayer;
-        
-        public enum TileEditMode
-        {
-            Draw = 0,
-            Fill = 1,
-            Eyedrop = 2
-        }
-        public static TileEditMode ChosenEditMode;
+        public bool ShowDataLayer;
 
-
+        public IMapEditor.TileEditMode Mode { get; private set; }
 
         public MapEditor()
         {
@@ -216,8 +209,8 @@ namespace RogueEssence.Dev
             openMapFileDialog.InitialDirectory = mapDir;
             saveMapFileDialog.InitialDirectory = mapDir;
 
-            chkFill.Checked = ChosenEditMode == TileEditMode.Fill;
-            chkTexEyeDropper.Checked = ChosenEditMode == TileEditMode.Eyedrop;
+            chkFill.Checked = Mode == IMapEditor.TileEditMode.Fill;
+            chkTexEyeDropper.Checked = Mode == IMapEditor.TileEditMode.Eyedrop;
             nudTimeLimit.Maximum = Int32.MaxValue;
 
             for (int ii = 0; ii < 4; ii++)
@@ -230,7 +223,7 @@ namespace RogueEssence.Dev
 
             LoadMapProperties();
 
-            MapEditing = true;
+            Active = true;
         }
 
         private void MapEditor_FormClosing(object sender, FormClosingEventArgs e)
@@ -240,10 +233,7 @@ namespace RogueEssence.Dev
 
         private void MapEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            DevForm.CurrentMapEditor = null;
-
-
-            MapEditing = false;
+            Active = false;
         }
 
 
@@ -323,11 +313,11 @@ namespace RogueEssence.Dev
             if (chkTexEyeDropper.Checked)
             {
                 chkFill.Checked = false;
-                ChosenEditMode = TileEditMode.Eyedrop;
+                Mode = IMapEditor.TileEditMode.Eyedrop;
             }
             else
             {
-                ChosenEditMode = TileEditMode.Draw;
+                Mode = IMapEditor.TileEditMode.Draw;
             }
         }
 
@@ -336,15 +326,15 @@ namespace RogueEssence.Dev
             if (chkFill.Checked)
             {
                 chkTexEyeDropper.Checked = false;
-                ChosenEditMode = TileEditMode.Fill;
+                Mode = IMapEditor.TileEditMode.Fill;
             }
             else
             {
-                ChosenEditMode = TileEditMode.Draw;
+                Mode = IMapEditor.TileEditMode.Draw;
             }
         }
 
-        public static void PaintTile(Loc loc, TileLayer anim)
+        public void PaintTile(Loc loc, TileLayer anim)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                 return;
@@ -365,7 +355,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void FillTile(Loc loc, TileLayer anim)
+        public void FillTile(Loc loc, TileLayer anim)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                 return;

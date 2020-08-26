@@ -1,13 +1,9 @@
 ﻿using System;
-#if EDITORS
-using System.Windows.Forms;
-#endif
-using RogueEssence.Dungeon;
 
 namespace RogueEssence.Content
 {
     [Serializable]
-    public class BattleFX : Dev.EditorData
+    public class BattleFX
     {
         public int Delay;
 
@@ -52,44 +48,5 @@ namespace RogueEssence.Content
                 result += " +" + Delay;
             return result;
         }
-
-#if EDITORS
-        protected override void LoadClassControls(TableLayoutPanel control)
-        {
-            int initialHeight = control.Height;
-            base.LoadClassControls(control);
-
-            int totalHeight = control.Height - initialHeight;
-
-            Button btnTest = new System.Windows.Forms.Button();
-            btnTest.Name = "btnTest";
-            btnTest.Dock = DockStyle.Fill;
-            btnTest.Size = new System.Drawing.Size(0, 29);
-            btnTest.TabIndex = 0;
-            btnTest.Text = "Test";
-            btnTest.UseVisualStyleBackColor = true;
-            btnTest.Click += new System.EventHandler(btnTest_Click);
-            control.Controls.Add(btnTest);
-        }
-
-
-
-
-        private void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                BattleFX data = new BattleFX();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessBattleFX(player, player, data);
-            }
-        }
-
-#endif //WINDOWS
-
     }
-
 }

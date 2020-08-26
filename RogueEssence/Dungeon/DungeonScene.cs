@@ -5,6 +5,7 @@ using RogueEssence.LevelGen;
 using RogueEssence.Content;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -267,38 +268,6 @@ namespace RogueEssence.Dungeon
                 }
             }
             
-#if EDITORS
-            if (Dev.MapEditor.MapEditing)
-            {
-                if (Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                {
-                    if (Dev.MapEditor.ChosenEditMode == Dev.MapEditor.TileEditMode.Draw)
-                    {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            Dev.MapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), Dev.DevForm.CurrentMapEditor.GetBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
-                            Dev.MapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
-
-                    }
-                    else if (Dev.MapEditor.ChosenEditMode == Dev.MapEditor.TileEditMode.Eyedrop)
-                    {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            Dev.DevForm.CurrentMapEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
-                        else if (input[FrameInput.InputType.LeftMouse])
-                        {
-
-                        }
-                    }
-                    else if (Dev.MapEditor.ChosenEditMode == Dev.MapEditor.TileEditMode.Fill)
-                    {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            Dev.MapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), Dev.DevForm.CurrentMapEditor.GetBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            Dev.MapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
-                    }
-                }
-            }
-#endif
         }
 
 

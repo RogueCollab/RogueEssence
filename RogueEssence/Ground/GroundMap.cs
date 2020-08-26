@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework;
 namespace RogueEssence.Ground
 {
     [Serializable]
-    public class GroundMap : Dev.EditorData, IWorld, IEntryData
+    public class GroundMap : IWorld, IEntryData
     {
         public const int SUB_TILES = 3;
 

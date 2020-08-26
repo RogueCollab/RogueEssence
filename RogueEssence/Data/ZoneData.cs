@@ -29,7 +29,7 @@ namespace RogueEssence.Data
     }
 
     [Serializable]
-    public class ZoneData : Dev.EditorData, IEntryData
+    public class ZoneData : IEntryData
     {
 
         public LocalText Name { get; set; }

@@ -6,7 +6,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public abstract class MobSpawnExtra : Dev.EditorData
+    public abstract class MobSpawnExtra
     {
         public abstract MobSpawnExtra Copy();
         public abstract void ApplyFeature(IRandom rand, Character newChar);

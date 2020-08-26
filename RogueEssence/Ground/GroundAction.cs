@@ -9,7 +9,7 @@ namespace RogueEssence.Ground
 {
 
     [Serializable]
-    public abstract class GroundAction : Dev.EditorData
+    public abstract class GroundAction
     {
         public const int HITBOX_WIDTH = 16;
         public const int HITBOX_HEIGHT = 16;

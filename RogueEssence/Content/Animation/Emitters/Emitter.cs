@@ -2,15 +2,11 @@
 using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
-#if EDITORS
-using System.Windows.Forms;
-using RogueEssence.Dungeon;
-#endif
 
 namespace RogueEssence.Content
 {
     [Serializable]
-    public abstract class BaseEmitter : Dev.EditorData
+    public abstract class BaseEmitter
     {
         protected BaseEmitter()
         {
@@ -77,46 +73,8 @@ namespace RogueEssence.Content
 
         public virtual Loc GetDrawLoc(Loc offset) { return Origin - offset; }
         public virtual Loc GetDrawSize() { return new Loc(); }
-
-
-#if EDITORS
-        protected override void LoadClassControls(TableLayoutPanel control)
-        {
-            int initialHeight = control.Height;
-            base.LoadClassControls(control);
-
-            int totalHeight = control.Height - initialHeight;
-
-            Button btnTest = new Button();
-            btnTest.Name = "btnTest";
-            btnTest.Dock = DockStyle.Fill;
-            btnTest.Size = new System.Drawing.Size(0, 29);
-            btnTest.TabIndex = 0;
-            btnTest.Text = "Test";
-            btnTest.UseVisualStyleBackColor = true;
-            btnTest.Click += new System.EventHandler(btnTest_Click);
-            control.Controls.Add(btnTest);
-        }
-
-
-
-
-        protected virtual void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                EndingEmitter data = (EndingEmitter)this.Clone();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-                data.SetupEmit(player.MapLoc, player.MapLoc, player.CharDir);
-                DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
-            }
-        }
-
-#endif //WINDOWS
-
     }
+
     [Serializable]
     public abstract class FiniteEmitter : EndingEmitter, IEmittable
     {
@@ -129,6 +87,7 @@ namespace RogueEssence.Content
             return endingEmitter;
         }
     }
+
     [Serializable]
     public class EmptyFiniteEmitter : FiniteEmitter
     {
@@ -141,6 +100,7 @@ namespace RogueEssence.Content
             return "---";
         }
     }
+
     [Serializable]
     public abstract class CircleSquareEmitter : EndingEmitter
     {
@@ -167,24 +127,8 @@ namespace RogueEssence.Content
             Range = range;
             Speed = speed;
         }
-
-
-#if EDITORS
-        protected override void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                CircleSquareEmitter data = (CircleSquareEmitter)this.Clone();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-                data.SetupEmit(player.MapLoc, player.CharDir, Hitbox.AreaLimit.Full, 2 * GraphicsManager.TileSize + GraphicsManager.TileSize / 2, 10 * GraphicsManager.TileSize);
-                DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
-            }
-        }
-
-#endif //WINDOWS
     }
+
     [Serializable]
     public class EmptyCircleSquareEmitter : CircleSquareEmitter
     {
@@ -197,6 +141,7 @@ namespace RogueEssence.Content
             return "---";
         }
     }
+
     [Serializable]
     public abstract class ShootingEmitter : EndingEmitter
     {
@@ -211,24 +156,8 @@ namespace RogueEssence.Content
             Range = range;
             Speed = speed;
         }
-
-
-#if EDITORS
-        protected override void btnTest_Click(object sender, EventArgs e)
-        {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                ShootingEmitter data = (ShootingEmitter)this.Clone();
-                data.SaveClassControls((TableLayoutPanel)((Button)sender).Parent);
-                data.SetupEmit(player.MapLoc, player.CharDir, 4 * GraphicsManager.TileSize + GraphicsManager.TileSize / 2, 10 * GraphicsManager.TileSize);
-                DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
-            }
-        }
-
-#endif //WINDOWS
     }
+
     [Serializable]
     public class EmptyShootingEmitter : ShootingEmitter
     {
@@ -241,6 +170,7 @@ namespace RogueEssence.Content
             return "---";
         }
     }
+
     [Serializable]
     public abstract class AttachPointEmitter : BaseEmitter
     {
@@ -248,6 +178,7 @@ namespace RogueEssence.Content
         public int LocHeight;
         public virtual void SetupEmit(ICharSprite user, Loc origin, Loc dest, Dir8 dir, int locHeight) { SetupEmit(origin, dest, dir); LocHeight = locHeight; }
     }
+
     [Serializable]
     public class EmptyAttachEmitter : AttachPointEmitter
     {
@@ -265,6 +196,7 @@ namespace RogueEssence.Content
     {
         public abstract void SwitchOff();
     }
+
     [Serializable]
     public class EmptySwitchOffEmitter : SwitchOffEmitter
     {

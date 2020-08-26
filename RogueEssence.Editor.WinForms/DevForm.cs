@@ -11,12 +11,15 @@ using RogueEssence.Menu;
 
 namespace RogueEssence.Dev
 {
-    public partial class DevForm : Form
+    public partial class DevForm : Form, IRootEditor
     {
-        public static bool EditorLoaded;
+        public bool Loaded { get; private set; }
 
-        public static MapEditor CurrentMapEditor;
-        public static GroundEditor CurrentGroundEditor;
+        private MapEditor mapEditor;
+        private GroundEditor groundEditor;
+
+        public IMapEditor MapEditor => mapEditor;
+        public IGroundEditor GroundEditor => groundEditor;
 
         public DevForm()
         {
@@ -25,6 +28,10 @@ namespace RogueEssence.Dev
             InitializeComponent();
             
 
+        }
+
+        void IRootEditor.Load()
+        {
             string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
             for (int ii = 0; ii < item_names.Length; ii++)
                 cbSpawnItem.Items.Add(ii + " - " + item_names[ii]);
@@ -35,7 +42,7 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < skill_names.Length; ii++)
                 cbSkills.Items.Add(ii + " - " + skill_names[ii]);
             regVal = Registry.GetValue(DiagManager.REG_PATH, "SkillChoice", 0);
-            cbSkills.SelectedIndex = Math.Min(cbSkills.Items.Count-1, (regVal != null) ? (int)regVal : 0);
+            cbSkills.SelectedIndex = Math.Min(cbSkills.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
 
             string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
             for (int ii = 0; ii < intrinsic_names.Length; ii++)
@@ -58,12 +65,12 @@ namespace RogueEssence.Dev
             string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
                 cbSkin.Items.Add(skin_names[ii]);
-            
+
             cbSkin.SelectedIndex = 0;
 
             for (int ii = 0; ii < 3; ii++)
                 cbGender.Items.Add(((Gender)ii).ToString());
-            
+
             cbGender.SelectedIndex = 0;
 
             chkShowSprites.Checked = !DataManager.Instance.HideChars;
@@ -74,7 +81,7 @@ namespace RogueEssence.Dev
             cbAnim.SelectedIndex = 0;
 
             ZoneData zone = DataManager.Instance.GetZone(1);
-            for(int ii = 0; ii < zone.GroundMaps.Count; ii++)
+            for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
                 cbMaps.Items.Add(zone.GroundMaps[ii]);
 
             regVal = Registry.GetValue(DiagManager.REG_PATH, "MapChoice", 0);
@@ -84,13 +91,13 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < dungeon_names.Length; ii++)
                 cbZones.Items.Add(dungeon_names[ii]);
             regVal = Registry.GetValue(DiagManager.REG_PATH, "ZoneChoice", 0);
-            cbZones.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbZones.Items.Count-1);
+            cbZones.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbZones.Items.Count - 1);
 
             regVal = Registry.GetValue(DiagManager.REG_PATH, "StructChoice", 0);
-            cbStructure.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbStructure.Items.Count-1);
+            cbStructure.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbStructure.Items.Count - 1);
 
             regVal = Registry.GetValue(DiagManager.REG_PATH, "FloorChoice", 0);
-            cbFloor.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbFloor.Items.Count-1);
+            cbFloor.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbFloor.Items.Count - 1);
 
 
             chkGrid.Checked = !DataManager.Instance.HideGrid;
@@ -99,6 +106,8 @@ namespace RogueEssence.Dev
             //Script tab
             m_cntDownArrow = 0;
             m_lastcommands = new Stack<string>();
+
+            Show();
         }
 
         private void chkShowSprites_CheckedChanged(object sender, EventArgs e)
@@ -171,17 +180,18 @@ namespace RogueEssence.Dev
 
         private void btnMapEditor_Click(object sender, EventArgs e)
         {
-            if (ZoneManager.Instance.CurrentMap != null && CurrentMapEditor == null)
+            if (ZoneManager.Instance.CurrentMap != null && mapEditor == null)
             {
-                CurrentMapEditor = new MapEditor();
-                CurrentMapEditor.Show();
+                mapEditor = new MapEditor();
+                mapEditor.FormClosed += (sender, e) => mapEditor = null;
+                mapEditor.Show();
             }
         }
 
 
         private void btnGroundEditor_Click(object sender, EventArgs e)
         {
-            if (CurrentGroundEditor == null)
+            if (groundEditor == null)
             {
                 MenuManager.Instance.ClearMenus();
                 if (ZoneManager.Instance.CurrentGround != null)
@@ -192,19 +202,18 @@ namespace RogueEssence.Dev
 
         }
 
-        public static void OpenGround()
+        public void OpenGround()
         {
-            CurrentGroundEditor = new GroundEditor();
-            CurrentGroundEditor.Show();
+            groundEditor = new GroundEditor();
+            groundEditor.FormClosed += (sender, e) => groundEditor = null;
+            groundEditor.Show();
         }
 
-        public static void CloseGround()
+        public void CloseGround()
         {
-            if (CurrentGroundEditor != null)
-                CurrentGroundEditor.Close();
+            if (groundEditor != null)
+                groundEditor.Close();
         }
-
-
 
         private void btnEditMonster_Click(object sender, EventArgs e)
         {
@@ -248,11 +257,11 @@ namespace RogueEssence.Dev
         }
 
         private delegate string[] GetEntryNames();
-        private delegate Dev.EditorData GetEntry(int entryNum);
-        private delegate Dev.EditorData CreateEntry();
+        private delegate IEntryData GetEntry(int entryNum);
+        private delegate IEntryData CreateEntry();
         private void OpenList(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
         {
-#if EDITORS
+
             DataList choices = new DataList();
             choices.Text = dataType.ToString();
             string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
@@ -263,14 +272,14 @@ namespace RogueEssence.Dev
                     ElementForm editor = new ElementForm();
                     int entryNum = choices.ChosenEntry;
                     editor.Text = entries[entryNum];
-                    EditorData data = entryOp(entryNum);
+                    IEntryData data = entryOp(entryNum);
                     editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                    EditorData.LoadDataControls(data, editor.ControlPanel);
+                    DataEditor.LoadDataControls(data, editor.ControlPanel);
 
                     editor.OnOK += (object okSender, EventArgs okE) => {
                         object obj = data;
-                        EditorData.SaveDataControls(ref obj, editor.ControlPanel);
-                        data = (EditorData)obj;
+                        DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                        data = (IEntryData)obj;
                         DataManager.SaveData(entryNum, dataType.ToString(), data);
                         DataManager.Instance.ClearCache(dataType);
                         IEntryData entryData = ((IEntryData)data);
@@ -291,14 +300,14 @@ namespace RogueEssence.Dev
                 ElementForm editor = new ElementForm();
                 int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
                 editor.Text = "New " + dataType.ToString();
-                EditorData data = createOp();
+                IEntryData data = createOp();
                 editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                EditorData.LoadDataControls(data, editor.ControlPanel);
+                DataEditor.LoadDataControls(data, editor.ControlPanel);
 
                 editor.OnOK += (object okSender, EventArgs okE) => {
                     object obj = data;
-                    EditorData.SaveDataControls(ref obj, editor.ControlPanel);
-                    data = (EditorData)obj;
+                    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                    data = (IEntryData)obj;
                     DataManager.SaveData(entryNum, dataType.ToString(), data);
                     DataManager.Instance.ClearCache(dataType);
                     IEntryData entryData = ((IEntryData)data);
@@ -316,7 +325,7 @@ namespace RogueEssence.Dev
                 editor.Show();
             };
             choices.Show();
-#endif
+
         }
 
         private void chkGrid_CheckedChanged(object sender, EventArgs e)
@@ -326,7 +335,7 @@ namespace RogueEssence.Dev
 
         private void DevWindow_Load(object sender, EventArgs e)
         {
-            EditorLoaded = true;
+            Loaded = true;
         }
 
         private void DevWindow_FormClosed(object sender, FormClosedEventArgs e)

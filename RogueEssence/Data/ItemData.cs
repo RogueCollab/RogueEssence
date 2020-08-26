@@ -1,8 +1,4 @@
 ﻿using System;
-#if EDITORS
-using System.Windows.Forms;
-#endif
-using System.Drawing;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Data
@@ -20,11 +16,6 @@ namespace RogueEssence.Data
             Drink,
             Learn,
             Box
-        }
-
-        public override string ToString()
-        {
-            return Name.DefaultText;
         }
 
         public LocalText Name { get; set; }
@@ -76,7 +67,6 @@ namespace RogueEssence.Data
         //define an AnimData for the custom graphic when flying (-1 for using the item graphic itself)
         public Content.AnimData ThrowAnim;
         
-
         public ItemData()
         {
             Name = new LocalText();
@@ -91,41 +81,6 @@ namespace RogueEssence.Data
             UseEvent = new BattleData();
             ThrowAnim = new Content.AnimData();
         }
-        
-#if EDITORS
-        protected override void LoadMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
-        {
-            if (name == "Sprite")
-            {
-                loadLabelControl(control, name);
-                //for strings, use an edit textbox
-                Dev.SpriteBrowser browser = new Dev.SpriteBrowser();
-                browser.Size = new Size(210, 256);
-                browser.ChosenPic = (int)member;
-                control.Controls.Add(browser);
-            }
-            else
-            {
-                base.LoadMemberControl(control, name, type, attributes, member, isWindow);
-            }
-        }
-
-        protected override void SaveMemberControl(TableLayoutPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
-        {
-            if (name == "Sprite")
-            {
-                int controlIndex = 0;
-                controlIndex++;
-                Dev.SpriteBrowser browser = (Dev.SpriteBrowser)control.Controls[controlIndex];
-                member = browser.ChosenPic;
-                controlIndex++;
-            }
-            else
-            {
-                base.SaveMemberControl(control, name, type, attributes, ref member, isWindow);
-            }
-        }
-#endif
     }
 
 
@@ -145,6 +100,4 @@ namespace RogueEssence.Data
             UsageType = useType;
         }
     }
-
 }
-
