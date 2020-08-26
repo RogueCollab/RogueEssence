@@ -26,8 +26,6 @@ namespace RogueEssence.Dev
             floorIDs = new List<int>();
 
             InitializeComponent();
-            
-
         }
 
         void IRootEditor.Load()

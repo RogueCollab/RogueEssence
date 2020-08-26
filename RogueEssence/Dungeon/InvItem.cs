@@ -51,6 +51,15 @@ namespace RogueEssence.Dungeon
                 return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal();
         }
 
+        public override string ToString()
+        {
+            Data.ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            if (entry.MaxStack > 1)
+                return (Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
+            else
+                return (Cursed ? "[X]" : "") + entry.Name.ToLocal();
+        }
+
         public int GetSellValue()
         {
             Data.ItemData entry = Data.DataManager.Instance.GetItem(ID);

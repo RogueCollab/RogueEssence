@@ -109,5 +109,10 @@ namespace RogueEssence.LevelGen
             return newChar;
         }
 
+        public override string ToString()
+        {
+            MonsterData entry = DataManager.Instance.GetMonster(BaseForm.Species);
+            return String.Format("{0} Lv.{1}", entry.Name.ToLocal(), Level);
+        }
     }
 }
