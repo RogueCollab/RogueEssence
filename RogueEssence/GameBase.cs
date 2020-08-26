@@ -154,11 +154,11 @@ namespace RogueEssence
                     {
                         if (DiagManager.Instance.DevMode)
                         {
-#if EDITORS
+
                             DiagManager.Instance.DevEditor.Load();
                             while (!DiagManager.Instance.DevEditor.Loaded)
                                 Thread.Sleep(10);
-#endif
+
                             CurrentPhase = LoadPhase.Ready;
                         }
                         else if (fadeFrames == 0)

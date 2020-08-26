@@ -30,7 +30,6 @@ namespace RogueEssence.Dev
         {
             InputManager input = GameManager.Instance.MetaInputManager;
 
-#if EDITORS
             var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
 
             if (groundEditor.Active)
@@ -91,7 +90,6 @@ namespace RogueEssence.Dev
                     }
                 }
             }
-#endif
         }
 
 
@@ -158,7 +156,7 @@ namespace RogueEssence.Dev
             //
             //When in editor mode, we want to display an overlay over some entities
             //
-#if EDITORS
+
             if (DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
             {
 
@@ -203,7 +201,7 @@ namespace RogueEssence.Dev
                     //And don't draw bounds of entities that have a graphics representation
                 }
             }
-#endif
+
             base.DrawDev(spriteBatch);
         }
 
@@ -215,16 +213,16 @@ namespace RogueEssence.Dev
                 LocRay8 entry = ZoneManager.Instance.CurrentGround.GetEntryPoint(entryPoint);
                 FocusedLoc = entry.Loc;
             }
-#if EDITORS
+
             DiagManager.Instance.DevEditor.OpenGround();
-#endif
+
         }
 
         public override void Exit()
         {
-#if EDITORS
+
             DiagManager.Instance.DevEditor.CloseGround();
-#endif
+
         }
     }
 }

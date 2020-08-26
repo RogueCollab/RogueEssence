@@ -268,40 +268,6 @@ namespace RogueEssence.Dungeon
                 }
             }
             
-#if EDITORS
-            var mapEditor = DiagManager.Instance.DevEditor.MapEditor;
-
-            if (mapEditor.Active)
-            {
-                if (Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                {
-                    if (mapEditor.Mode == IMapEditor.TileEditMode.Draw)
-                    {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            mapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), mapEditor.GetBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
-                            mapEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
-
-                    }
-                    else if (mapEditor.Mode == IMapEditor.TileEditMode.Eyedrop)
-                    {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            mapEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
-                        else if (input[FrameInput.InputType.LeftMouse])
-                        {
-
-                        }
-                    }
-                    else if (mapEditor.Mode == IMapEditor.TileEditMode.Fill)
-                    {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            mapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), mapEditor.GetBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            mapEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
-                    }
-                }
-            }
-#endif
         }
 
 

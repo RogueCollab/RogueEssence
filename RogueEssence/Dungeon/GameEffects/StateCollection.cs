@@ -15,7 +15,7 @@ namespace RogueEssence.Dungeon
     }
 
     [Serializable]
-    public class StateCollection<T> : IEnumerable<T> where T : GameplayState
+    public class StateCollection<T> : IEnumerable<T>, IStateCollection where T : GameplayState
     {
         [NonSerialized]
         private Dictionary<string, T> pointers;
@@ -69,9 +69,9 @@ namespace RogueEssence.Dungeon
             return default(T);
         }
 
-        public void Set(T state)
+        public void Set(T value)
         {
-            pointers[state.GetType().FullName] = state;
+            pointers[value.GetType().FullName] = value;
         }
 
         public void Remove<K>() where K : T
@@ -88,6 +88,8 @@ namespace RogueEssence.Dungeon
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { return pointers.Values.GetEnumerator(); }
         IEnumerator IEnumerable.GetEnumerator() { return pointers.Values.GetEnumerator(); }
 
+        void IStateCollection.Set(object value) { Set((T)value); }
+        object IStateCollection.Get(Type type) { return Get(type); }
 
         public override string ToString()
         {
@@ -129,4 +131,19 @@ namespace RogueEssence.Dungeon
                 pointers[serializationObjects[ii].GetType().FullName] = serializationObjects[ii];
         }
     }
+
+
+    public interface IStateCollection : IEnumerable
+    {
+
+        void Set(object value);
+        object Get(Type type);
+
+        void Clear();
+
+        bool Contains(Type type);
+
+        void Remove(Type type);
+    }
+
 }

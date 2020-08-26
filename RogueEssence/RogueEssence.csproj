@@ -21,9 +21,9 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;EDITORS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;EDITORS</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 </Project>
