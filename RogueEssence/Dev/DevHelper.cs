@@ -9,12 +9,35 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
-        public static void ReserializeData(string dataPath, SerializationBinder binder)
+        public static void Reserialize(DataManager.DataType conversionFlags, SerializationBinder binder)
         {
-            foreach (string dir in Directory.GetFiles(dataPath, "*.bin"))
+            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+            {
+                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
+                    ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, binder);
+            }
+        }
+
+        public static void ReserializeData(string dataPath, string ext, SerializationBinder binder)
+        {
+            foreach (string dir in Directory.GetFiles(dataPath, "*"+ext))
             {
                 IEntryData data = (IEntryData)DataManager.LoadData(dir, binder);
                 DataManager.SaveData(dir, data);
+            }
+        }
+
+
+        /// <summary>
+        /// Bakes all assets from the "Work files" directory specified in the flags.
+        /// </summary>
+        /// <param name="conversionFlags">Chooses which asset type to bake</param>
+        public static void RunIndexing(DataManager.DataType conversionFlags)
+        {
+            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+            {
+                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
+                    IndexNamedData(DataManager.DATA_PATH + type.ToString() + "/");
             }
         }
 
@@ -25,7 +48,7 @@ namespace RogueEssence.Dev
             {
                 EntryDataIndex fullGuide = new EntryDataIndex();
 
-                foreach (string dir in Directory.GetFiles(dataPath, "*.bin"))
+                foreach (string dir in Directory.GetFiles(dataPath, "*"+DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file);
@@ -50,6 +73,25 @@ namespace RogueEssence.Dev
             }
         }
 
+        public static void DemoAllData(DataManager.DataType conversionFlags)
+        {
 
+            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+            {
+                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
+                    DemoData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT);
+            }
+        }
+
+        public static void DemoData(string dataPath, string ext)
+        {
+            foreach (string dir in Directory.GetFiles(dataPath, "*" + ext))
+            {
+                IEntryData data = (IEntryData)DataManager.LoadData(dir);
+                if (!data.Released)
+                    data = (IEntryData)ReflectionExt.CreateMinimalInstance(data.GetType());
+                DataManager.SaveData(dir, data);
+            }
+        }
     }
 }

@@ -56,8 +56,9 @@ namespace RogueEssence.Data
         public const string DATA_PATH = DiagManager.ASSET_PATH + "Data/";
         public const string MAP_PATH = DATA_PATH + "Map/";
         public const string GROUND_PATH = DATA_PATH + "Ground/";
-        public const string MAP_EXTENSION = ".rsmap";
-        public const string GROUND_EXTENSION = ".rsground";
+        public const string DATA_EXT = ".bin";
+        public const string MAP_EXT = ".rsmap";
+        public const string GROUND_EXT = ".rsground";
         public const string FX_PATH = DATA_PATH + "SystemFX/";
 
         public const string MUSIC_PATH = DiagManager.CONTENT_PATH + "Music/";
@@ -380,30 +381,6 @@ namespace RogueEssence.Data
         }
 
 
-
-        public static void Reserialize(DataType conversionFlags, SerializationBinder binder)
-        {
-            foreach (DataType type in Enum.GetValues(typeof(DataType)))
-            {
-                if (type != DataManager.DataType.All && (conversionFlags & type) != DataType.None)
-                    Dev.DevHelper.ReserializeData(DATA_PATH + type.ToString() + "/", binder);
-            }
-        }
-
-        /// <summary>
-        /// Bakes all assets from the "Work files" directory specified in the flags.
-        /// </summary>
-        /// <param name="conversionFlags">Chooses which asset type to bake</param>
-        public static void RunIndexing(DataType conversionFlags)
-        {
-            foreach (DataType type in Enum.GetValues(typeof(DataType)))
-            {
-                if (type != DataManager.DataType.All && (conversionFlags & type) != DataType.None)
-                    Dev.DevHelper.IndexNamedData(DATA_PATH + type.ToString() + "/");
-            }
-        }
-
-
         public void LoadIndex(DataType type)
         {
             try
@@ -433,7 +410,7 @@ namespace RogueEssence.Data
             cache.Clear();
             for (int ii = 0; ii < DataIndices[type].Count; ii++)
             {
-                if (File.Exists(DataManager.DATA_PATH + type.ToString() + "/" + ii + ".bin"))
+                if (File.Exists(DataManager.DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT))
                 {
                     T data = (T)LoadData(ii, type.ToString());
                     cache.Add(ii, data);
@@ -456,7 +433,7 @@ namespace RogueEssence.Data
 
         public static IEntryData LoadData(int indexNum, string subPath)
         {
-            return (IEntryData)LoadData(DataManager.DATA_PATH + subPath + "/" + indexNum + ".bin");
+            return (IEntryData)LoadData(DataManager.DATA_PATH + subPath + "/" + indexNum + DataManager.DATA_EXT);
         }
 
         public static object LoadData(string path, SerializationBinder binder = null)
@@ -478,7 +455,7 @@ namespace RogueEssence.Data
         {
             if (!Directory.Exists(DataManager.DATA_PATH + subPath))
                 Directory.CreateDirectory(DataManager.DATA_PATH + subPath);
-            SaveData(DataManager.DATA_PATH + subPath + "/" + indexNum + ".bin", entry);
+            SaveData(DataManager.DATA_PATH + subPath + "/" + indexNum + DataManager.DATA_EXT, entry);
         }
 
         public static void SaveData(string path, object entry)
@@ -501,7 +478,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Zone.ToString() + "/" + index + ".bin"))
+                if (File.Exists(DataManager.DATA_PATH + DataType.Zone.ToString() + "/" + index + DataManager.DATA_EXT))
                 {
                     data = (ZoneData)LoadData(index, DataType.Zone.ToString());
                     return data;
@@ -577,7 +554,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Item.ToString() + "/" + index + ".bin"))
+                if (File.Exists(DataManager.DATA_PATH + DataType.Item.ToString() + "/" + index + DataManager.DATA_EXT))
                 {
                     data = (ItemData)LoadData(index, DataType.Item.ToString());
                     itemCache.Add(index, data);
@@ -636,7 +613,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Status.ToString() + "/" + index + ".bin"))
+                if (File.Exists(DataManager.DATA_PATH + DataType.Status.ToString() + "/" + index + DataManager.DATA_EXT))
                 {
                     data = (StatusData)LoadData(index, DataType.Status.ToString());
                     statusCache.Add(index, data);
@@ -659,7 +636,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Intrinsic.ToString() + "/" + index + ".bin"))
+                if (File.Exists(DataManager.DATA_PATH + DataType.Intrinsic.ToString() + "/" + index + DataManager.DATA_EXT))
                 {
                     data = (IntrinsicData)LoadData(index, DataType.Intrinsic.ToString());
                     intrinsicCache.Add(index, data);
@@ -682,7 +659,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.MapStatus.ToString() + "/" + index + ".bin"))
+                if (File.Exists(DataManager.DATA_PATH + DataType.MapStatus.ToString() + "/" + index + DataManager.DATA_EXT))
                 {
                     data = (MapStatusData)LoadData(index, DataType.MapStatus.ToString());
                     mapStatusCache.Add(index, data);
