@@ -274,6 +274,26 @@ namespace RogueEssence.Dev
                     editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
                     DataEditor.LoadDataControls(data, editor.ControlPanel);
 
+                    editor.OnCopy += (object copySender, EventArgs copyE) => {
+                        object obj = null;
+                        DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                        Clipboard.SetDataObject(obj);
+                    };
+                    editor.OnPaste += (object copySender, EventArgs copyE) => {
+                        IDataObject clip = Clipboard.GetDataObject();
+                        string[] formats = clip.GetFormats();
+                        object clipObj = clip.GetData(formats[0]);
+                        Type type1 = clipObj.GetType();
+                        Type type2 = data.GetType();
+                        if (type1 == type2)
+                        {
+                            editor.ControlPanel.Controls.Clear();
+                            DataEditor.LoadDataControls(clipObj, editor.ControlPanel);
+                        }
+                        else
+                            MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    };
+
                     editor.OnOK += (object okSender, EventArgs okE) => {
                         object obj = data;
                         DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
@@ -301,6 +321,26 @@ namespace RogueEssence.Dev
                 IEntryData data = createOp();
                 editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
                 DataEditor.LoadDataControls(data, editor.ControlPanel);
+
+                editor.OnCopy += (object copySender, EventArgs copyE) => {
+                    object obj = null;
+                    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                    Clipboard.SetDataObject(obj);
+                };
+                editor.OnPaste += (object copySender, EventArgs copyE) => {
+                    IDataObject clip = Clipboard.GetDataObject();
+                    string[] formats = clip.GetFormats();
+                    object clipObj = clip.GetData(formats[0]);
+                    Type type1 = clipObj.GetType();
+                    Type type2 = data.GetType();
+                    if (type1 == type2)
+                    {
+                        editor.ControlPanel.Controls.Clear();
+                        DataEditor.LoadDataControls(clipObj, editor.ControlPanel);
+                    }
+                    else
+                        MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                };
 
                 editor.OnOK += (object okSender, EventArgs okE) => {
                     object obj = data;

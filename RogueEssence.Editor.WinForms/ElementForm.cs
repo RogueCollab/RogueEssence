@@ -24,12 +24,30 @@ namespace RogueEssence.Dev
             remove { btnCancel.Click -= value; }
         }
 
+        public event EventHandler OnCopy
+        {
+            add { this.copyToolStripMenuItem.Click += value; }
+            remove { this.copyToolStripMenuItem.Click -= value; }
+        }
+
+        public event EventHandler OnPaste
+        {
+            add { this.pasteToolStripMenuItem.Click += value; }
+            remove { this.pasteToolStripMenuItem.Click -= value; }
+        }
+
         public ElementForm()
         {
             InitializeComponent();
 
             Screen myScreen = Screen.FromControl(this);
             ControlPanel.MaximumSize = new Size(0, myScreen.WorkingArea.Height - 200);
+        }
+
+        public void DisableClipboard()
+        {
+            copyToolStripMenuItem.Enabled = false;
+            pasteToolStripMenuItem.Enabled = false;
         }
     }
 }

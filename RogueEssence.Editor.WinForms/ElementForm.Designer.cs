@@ -28,23 +28,28 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ElementForm));
+            this.components = new System.ComponentModel.Container();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.panel = new System.Windows.Forms.TableLayoutPanel();
             this.outerPanel = new System.Windows.Forms.TableLayoutPanel();
             this.bottomPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.copyPasteStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outerPanel.SuspendLayout();
             this.bottomPanel.SuspendLayout();
+            this.copyPasteStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnOK
             // 
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnOK.Location = new System.Drawing.Point(3, 3);
+            this.btnOK.Location = new System.Drawing.Point(4, 5);
+            this.btnOK.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(133, 26);
+            this.btnOK.Size = new System.Drawing.Size(201, 38);
             this.btnOK.TabIndex = 4;
             this.btnOK.Text = "OK";
             this.btnOK.UseVisualStyleBackColor = true;
@@ -53,9 +58,10 @@
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnCancel.Location = new System.Drawing.Point(142, 3);
+            this.btnCancel.Location = new System.Drawing.Point(213, 5);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(133, 26);
+            this.btnCancel.Size = new System.Drawing.Size(201, 38);
             this.btnCancel.TabIndex = 5;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -67,14 +73,15 @@
             this.panel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panel.ColumnCount = 1;
             this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.panel.ContextMenuStrip = this.copyPasteStrip;
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel.Location = new System.Drawing.Point(0, 0);
             this.panel.Margin = new System.Windows.Forms.Padding(0);
-            this.panel.MinimumSize = new System.Drawing.Size(300, 0);
+            this.panel.MinimumSize = new System.Drawing.Size(450, 0);
             this.panel.Name = "panel";
             this.panel.RowCount = 1;
             this.panel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.panel.Size = new System.Drawing.Size(300, 173);
+            this.panel.Size = new System.Drawing.Size(450, 267);
             this.panel.TabIndex = 3;
             // 
             // outerPanel
@@ -87,11 +94,12 @@
             this.outerPanel.Controls.Add(this.panel, 0, 0);
             this.outerPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.outerPanel.Location = new System.Drawing.Point(0, 0);
+            this.outerPanel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.outerPanel.Name = "outerPanel";
             this.outerPanel.RowCount = 2;
             this.outerPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.outerPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 38F));
-            this.outerPanel.Size = new System.Drawing.Size(284, 211);
+            this.outerPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 58F));
+            this.outerPanel.Size = new System.Drawing.Size(426, 325);
             this.outerPanel.TabIndex = 6;
             // 
             // bottomPanel
@@ -102,24 +110,46 @@
             this.bottomPanel.Controls.Add(this.btnOK, 0, 0);
             this.bottomPanel.Controls.Add(this.btnCancel, 1, 0);
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bottomPanel.Location = new System.Drawing.Point(3, 176);
+            this.bottomPanel.Location = new System.Drawing.Point(4, 272);
+            this.bottomPanel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.bottomPanel.Name = "bottomPanel";
             this.bottomPanel.RowCount = 1;
             this.bottomPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.bottomPanel.Size = new System.Drawing.Size(278, 32);
+            this.bottomPanel.Size = new System.Drawing.Size(418, 48);
             this.bottomPanel.TabIndex = 0;
+            // 
+            // copyPasteStrip
+            // 
+            this.copyPasteStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.copyPasteStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyToolStripMenuItem,
+            this.pasteToolStripMenuItem});
+            this.copyPasteStrip.Name = "copyPasteStrip";
+            this.copyPasteStrip.Size = new System.Drawing.Size(241, 101);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(240, 32);
+            this.copyToolStripMenuItem.Text = "Copy";
+            // 
+            // pasteToolStripMenuItem
+            // 
+            this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(240, 32);
+            this.pasteToolStripMenuItem.Text = "Paste";
             // 
             // ElementForm
             // 
             this.AcceptButton = this.btnOK;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(284, 211);
+            this.ClientSize = new System.Drawing.Size(426, 325);
             this.Controls.Add(this.outerPanel);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ElementForm";
@@ -127,6 +157,7 @@
             this.outerPanel.ResumeLayout(false);
             this.outerPanel.PerformLayout();
             this.bottomPanel.ResumeLayout(false);
+            this.copyPasteStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -139,5 +170,8 @@
         private System.Windows.Forms.TableLayoutPanel panel;
         private System.Windows.Forms.TableLayoutPanel outerPanel;
         private System.Windows.Forms.TableLayoutPanel bottomPanel;
+        private System.Windows.Forms.ContextMenuStrip copyPasteStrip;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
     }
 }
