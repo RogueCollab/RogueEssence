@@ -27,12 +27,6 @@ namespace RogueEssence.Dungeon
         }
         public StateCollection<T> Clone() { return new StateCollection<T>(this); }
 
-
-        public bool ContainsName(string typeFullName)
-        {
-            return Contains(Type.GetType(typeFullName));
-        }
-
         public K GetWithDefault<K>() where K : T
         {
             K state;
@@ -40,7 +34,6 @@ namespace RogueEssence.Dungeon
                 return state;
             return default;
         }
-
 
         public override string ToString()
         {

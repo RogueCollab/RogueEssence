@@ -448,7 +448,7 @@ namespace RogueEssence.Dev
                             Type childType = children[ii];
                             cbValue.Items.Add(childType.GetDisplayName());
 
-                            if (childType.FullName == ((FlagType)member).Type && childType.Assembly.FullName == ((FlagType)member).Assembly)
+                            if (childType == ((FlagType)member).FullType)
                                 cbValue.SelectedIndex = ii;
                         }
                         if (cbValue.SelectedIndex == -1)

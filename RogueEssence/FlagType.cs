@@ -5,25 +5,31 @@ namespace RogueEssence
 {
 
     [Serializable]
-    public struct FlagType
+    public class FlagType
     {
-        public string Assembly;
-        public string Type;
+        [NonSerialized]
+        private Type fullType;
+
+        public Type FullType => fullType;
+
+        private readonly string assembly;
+        private readonly string type;
 
         public FlagType(Type type)
         {
-            Assembly = type.Assembly.FullName;
-            Type = type.FullName;
+            fullType = type;
+            assembly = type.Assembly.FullName;
+            this.type = type.FullName;
         }
 
 
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            if (Type != null)
+            if (type != null)
             {
-                Type type = System.Type.GetType(String.Format("{0}, {1}", Type, Assembly));
-                if (type == null)
+                fullType = System.Type.GetType(String.Format("{0}, {1}", type, assembly));
+                if (fullType == null)
                 {
                     throw new Exception();
                     //string newType = typeof(int).FullName;
@@ -36,14 +42,12 @@ namespace RogueEssence
 
         public override string ToString()
         {
-            return Type;
+            return type;
         }
-
-        public string AssemblyQualifiedName => String.Format("{0}, {1}", Type, Assembly);
 
         public override int GetHashCode()
         {
-            return (Assembly == null ? 0 : Assembly.GetHashCode()) ^ (Type == null ? 0 : Type.GetHashCode());
+            return (assembly == null ? 0 : assembly.GetHashCode()) ^ (type == null ? 0 : type.GetHashCode());
         }
     }
 }
