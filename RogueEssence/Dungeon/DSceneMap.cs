@@ -1198,6 +1198,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> Pounce(Character character, Dir8 dir, Loc startLoc, int range)
         {
+            if (dir == Dir8.None)
+                throw new ArgumentException(String.Format("Can't pounce in direction: {0}", dir));
+
             //face direction
             character.CharDir = dir;
             Loc charStart = character.CharLoc;
@@ -1238,6 +1241,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> KnockBack(Character character, Dir8 dir, int range)
         {
+            if (dir == Dir8.None)
+                throw new ArgumentException(String.Format("Can't knock back in direction: {0}", dir));
+
             //face direction
             character.CharDir = dir.Reverse();
 
