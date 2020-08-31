@@ -193,7 +193,7 @@ namespace RogueEssence.Data
         {
             Dex[index] = UnlockState.Completed;
         }
-        public abstract IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool silentRestrict);
+        public abstract IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
 
 
@@ -577,11 +577,12 @@ namespace RogueEssence.Data
             }
         }
 
-        public override IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public override IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             ZoneData zone = DataManager.Instance.GetZone(zoneID);
             //restrict team size/bag size/etc
-            yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, silentRestrict));
+            if (!noRestrict)
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
 
             MidAdventure = true;
             Stakes = stakes;
@@ -598,7 +599,8 @@ namespace RogueEssence.Data
             }
 
             //set everyone's levels and mark them for backreferral
-            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, silentRestrict));
+            if (!noRestrict)
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false));
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;
@@ -776,7 +778,7 @@ namespace RogueEssence.Data
             base.RegisterMonster(index);
         }
 
-        public override IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public override IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             MidAdventure = true;
             Stakes = stakes;
