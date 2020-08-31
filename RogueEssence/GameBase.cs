@@ -17,7 +17,7 @@ namespace RogueEssence
     /// </summary>
     public class GameBase : Game
     {
-        private const int TOTAL_SPLASH_FRAMES = 1000;
+        private const int SPLASH_BLINK_FRAMES = 40;
         private const int SPLASH_FADE_FRAMES = 20;
 
         public enum LoadPhase
@@ -106,7 +106,8 @@ namespace RogueEssence
             {
                 DiagManager.Instance.LogError(ex);
             }
-                backgroundLoaded = true;
+            backgroundLoaded = true;
+            DiagManager.Instance.LoadMsg = "Press any key to continue";
         }
 
         /// <summary>
@@ -163,7 +164,7 @@ namespace RogueEssence
                         }
                         else if (fadeFrames == 0)
                         {
-                            if (Keyboard.GetState().GetPressedKeys().Length > 0 || GamePad.GetState(PlayerIndex.One).IsButtonDown((Buttons)Int32.MaxValue) || splashFrames > TOTAL_SPLASH_FRAMES)
+                            if (Keyboard.GetState().GetPressedKeys().Length > 0 || GamePad.GetState(PlayerIndex.One).Buttons != new GamePadButtons())
                                 fadeFrames++;
                         }
                         else
@@ -247,6 +248,12 @@ namespace RogueEssence
                         GraphicsManager.SysFont.DrawText(spriteBatch, 0, GraphicsManager.ScreenHeight,
                                     DiagManager.Instance.LoadMsg, null, DirV.Down, DirH.Left);
                     }
+                    else if (backgroundLoaded && fadeFrames == 0 && splashFrames / SPLASH_BLINK_FRAMES % 2 == 0)
+                    {
+                        GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight - 2,
+                                       DiagManager.Instance.LoadMsg, null, DirV.Down, DirH.None);
+                    }
+
 
                     spriteBatch.End();
                 }

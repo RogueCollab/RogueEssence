@@ -33,7 +33,7 @@ namespace RogueEssence
 
         public override IEnumerator<YieldInstruction> ProcessInput()
         {
-            if (!hideTitle && GameManager.Instance.InputManager.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Enter) || GameManager.Instance.InputManager.BaseButtonPressed(Microsoft.Xna.Framework.Input.Buttons.Start))
+            if (!hideTitle && GameManager.Instance.InputManager.AnyKeyPressed() || GameManager.Instance.InputManager.AnyButtonPressed())
             {
                 GameManager.Instance.SE("Menu/Confirm");
                 hideTitle = true;

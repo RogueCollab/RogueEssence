@@ -93,6 +93,13 @@ namespace RogueEssence
             return false;
         }
 
+        public bool AnyKeyPressed()
+        {
+            if (PrevInput.Active && CurrentInput.Active)
+                return (CurrentInput.BaseKeyState.GetPressedKeys().Length > 0 && PrevInput.BaseKeyState.GetPressedKeys().Length == 0);
+            return false;
+        }
+
         public bool BaseButtonDown(Buttons button)
         {
             return CurrentInput.BaseGamepadState.IsButtonDown(button);
@@ -102,6 +109,16 @@ namespace RogueEssence
         {
             if (PrevInput.Active && CurrentInput.Active)
                 return (CurrentInput.BaseGamepadState.IsButtonDown(button) && !PrevInput.BaseGamepadState.IsButtonDown(button));
+            return false;
+        }
+
+        public bool AnyButtonPressed()
+        {
+            if (PrevInput.Active && CurrentInput.Active)
+            {
+                GamePadButtons untouchedButtons = new GamePadButtons();
+                return (CurrentInput.BaseGamepadState.Buttons != untouchedButtons && PrevInput.BaseGamepadState.Buttons == untouchedButtons);
+            }
             return false;
         }
     }
