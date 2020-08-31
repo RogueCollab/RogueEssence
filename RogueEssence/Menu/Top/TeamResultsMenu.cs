@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
                     Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 Stats[ii * 4 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level),
                     new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 24, Bounds.Y + GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
-                if (DataManager.Instance.Save.UUID == character.OriginalUUID)
+                if (Ending.UUID == character.OriginalUUID)
                 {
                     Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),
                     Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
