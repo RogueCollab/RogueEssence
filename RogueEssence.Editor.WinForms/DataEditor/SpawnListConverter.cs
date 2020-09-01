@@ -32,6 +32,7 @@ namespace RogueEssence.Dev
 
                 DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(SpawnList) [" + index + "]", elementType, new object[0] { }, element, true);
 
+                frmData.SetObjectName(elementType.Name);
                 frmData.OnCopy += (object copySender, EventArgs copyE) => {
                     object obj = null;
                     DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "SpawnList", elementType, new object[0] { }, ref obj, true);

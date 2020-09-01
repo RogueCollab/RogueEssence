@@ -58,6 +58,7 @@ namespace RogueEssence.Dev
 
         private static void loadClassControls(object obj, TableLayoutPanel control)
         {
+            control.SuspendLayout();
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
             foreach (IEditorConverter converter in converters)
@@ -66,11 +67,13 @@ namespace RogueEssence.Dev
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
                     converter.LoadClassControls(obj, control);
+                    control.ResumeLayout(false);
                     return;
                 }
             }
             
             StaticLoadClassControls(obj, control);
+            control.ResumeLayout(false);
         }
 
         public static void StaticLoadClassControls(object obj, TableLayoutPanel control)
@@ -108,9 +111,10 @@ namespace RogueEssence.Dev
                     {
                         TableLayoutPanel sharedRowPanel = getSharedRowPanel(tieredFields[ii].Count);
                         control.Controls.Add(sharedRowPanel);
-
+                        sharedRowPanel.SuspendLayout();
                         for (int jj = 0; jj < tieredFields[ii].Count; jj++)
                             staticLoadClassControl(obj, sharedRowPanel, tieredFields[ii][jj]);
+                        sharedRowPanel.ResumeLayout(false);
                     }
                 }
             }
@@ -182,6 +186,7 @@ namespace RogueEssence.Dev
 
         private static void loadMemberControl(object obj, TableLayoutPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
+            control.SuspendLayout();
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
             foreach (IEditorConverter converter in converters)
@@ -190,10 +195,12 @@ namespace RogueEssence.Dev
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
                     converter.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
+                    control.ResumeLayout(false);
                     return;
                 }
             }
             StaticLoadMemberControl(control, name, type, attributes, member, isWindow);
+            control.ResumeLayout(false);
         }
 
 
@@ -213,7 +220,7 @@ namespace RogueEssence.Dev
                     if (type.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0)
                     {
                         TableLayoutPanel innerPanel = getSharedRowPanel(2);
-                        control.Controls.Add(innerPanel);
+                        innerPanel.SuspendLayout();
 
                         int amount = 0;
                         for (int ii = 0; ii < enums.Length; ii++)
@@ -237,6 +244,8 @@ namespace RogueEssence.Dev
                                 amount++;
                             }
                         }
+                        control.Controls.Add(innerPanel);
+                        innerPanel.ResumeLayout(false);
                     }
                     else
                     {
@@ -417,6 +426,8 @@ namespace RogueEssence.Dev
                         Type[] children = baseType.GetAssignableTypes();
 
                         TableLayoutPanel sharedRowPanel = new TableLayoutPanel();
+                        sharedRowPanel.SuspendLayout();
+
                         sharedRowPanel.AutoSize = true;
                         sharedRowPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                         sharedRowPanel.ColumnCount = 2;
@@ -427,7 +438,7 @@ namespace RogueEssence.Dev
                         sharedRowPanel.Margin = new Padding(0, 0, 0, 0);
                         sharedRowPanel.RowCount = 1;
                         sharedRowPanel.RowStyles.Add(new RowStyle());
-                        control.Controls.Add(sharedRowPanel);
+
 
                         Label lblType = new Label();
                         lblType.Dock = DockStyle.Fill;
@@ -453,6 +464,9 @@ namespace RogueEssence.Dev
                         }
                         if (cbValue.SelectedIndex == -1)
                             cbValue.SelectedIndex = 0;
+
+                        control.Controls.Add(sharedRowPanel);
+                        sharedRowPanel.ResumeLayout(false);
                     }
                 }
                 else if (type == typeof(String))
@@ -536,7 +550,7 @@ namespace RogueEssence.Dev
                     LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(4);
-                    control.Controls.Add(innerPanel);
+                    innerPanel.SuspendLayout();
 
                     Label lblR = new Label();
                     lblR.Dock = DockStyle.Fill;
@@ -590,13 +604,17 @@ namespace RogueEssence.Dev
                     nudValueA.Maximum = byte.MaxValue;
                     nudValueA.Value = (member == null) ? 0 : ((Microsoft.Xna.Framework.Color)member).A;
                     innerPanel.Controls.Add(nudValueA);
+
+                    control.Controls.Add(innerPanel);
+                    innerPanel.ResumeLayout(false);
+
                 }
                 else if (type == typeof(Loc))
                 {
                     LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(2);
-                    control.Controls.Add(innerPanel);
+                    innerPanel.SuspendLayout();
 
                     Label lblX = new Label();
                     lblX.Dock = DockStyle.Fill;
@@ -624,13 +642,16 @@ namespace RogueEssence.Dev
                     nudValueY.Maximum = Int32.MaxValue;
                     nudValueY.Value = (member == null) ? 0 : ((Loc)member).Y;
                     innerPanel.Controls.Add(nudValueY);
+
+                    control.Controls.Add(innerPanel);
+                    innerPanel.ResumeLayout(false);
                 }
                 else if (type == typeof(SegLoc))
                 {
                     LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(2);
-                    control.Controls.Add(innerPanel);
+                    innerPanel.SuspendLayout();
 
                     Label lblX = new Label();
                     lblX.Dock = DockStyle.Fill;
@@ -658,13 +679,16 @@ namespace RogueEssence.Dev
                     nudValueY.Value = (member == null) ? 0 : ((SegLoc)member).ID;
                     innerPanel.Controls.Add(nudValueY);
 
+                    control.Controls.Add(innerPanel);
+                    innerPanel.ResumeLayout(false);
+
                 }
                 else if (type == typeof(IntRange))
                 {
                     LoadLabelControl(control, name);
 
                     TableLayoutPanel innerPanel = getSharedRowPanel(2);
-                    control.Controls.Add(innerPanel);
+                    innerPanel.SuspendLayout();
 
                     Label lblX = new Label();
                     lblX.Dock = DockStyle.Fill;
@@ -692,6 +716,8 @@ namespace RogueEssence.Dev
                     nudValueY.Value = (member == null) ? 0 : ((IntRange)member).Max;
                     innerPanel.Controls.Add(nudValueY);
 
+                    control.Controls.Add(innerPanel);
+                    innerPanel.ResumeLayout(false);
                 }
                 else if (type == typeof(TileLayer))
                 {
@@ -764,7 +790,6 @@ namespace RogueEssence.Dev
                         browser.Location = new Point(boxRect.Left, box_down);
                         browser.Size = new Size(boxRect.Width, boxRect.Height);
                         browser.SetBrush(element != null ? (TileLayer)element : new TileLayer());
-                        frmData.ControlPanel.Controls.Add(browser);
 
                         frmData.DisableClipboard();
 
@@ -778,6 +803,8 @@ namespace RogueEssence.Dev
                             frmData.Close();
                         };
 
+                        frmData.ControlPanel.Controls.Add(browser);
+
                         frmData.Show();
                     };
 
@@ -790,6 +817,8 @@ namespace RogueEssence.Dev
                     Type[] children = baseType.GetAssignableTypes();
 
                     TableLayoutPanel sharedRowPanel = new TableLayoutPanel();
+                    sharedRowPanel.SuspendLayout();
+
                     sharedRowPanel.AutoSize = true;
                     sharedRowPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                     sharedRowPanel.ColumnCount = 2;
@@ -800,7 +829,6 @@ namespace RogueEssence.Dev
                     sharedRowPanel.Margin = new Padding(0, 0, 0, 0);
                     sharedRowPanel.RowCount = 1;
                     sharedRowPanel.RowStyles.Add(new RowStyle());
-                    control.Controls.Add(sharedRowPanel);
 
                     Label lblType = new Label();
                     lblType.Dock = DockStyle.Fill;
@@ -826,6 +854,10 @@ namespace RogueEssence.Dev
                     }
                     if (cbValue.SelectedIndex == -1)
                         cbValue.SelectedIndex = 0;
+
+                    control.Controls.Add(sharedRowPanel);
+                    sharedRowPanel.ResumeLayout(false);
+
                 }
                 else if (type.IsArray)
                 {
@@ -857,6 +889,7 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
+                        frmData.SetObjectName(elementType.Name);
                         frmData.OnCopy += (object copySender, EventArgs copyE) => {
                             object obj = null;
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref obj, true);
@@ -914,6 +947,7 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
+                        frmData.SetObjectName(elementType.Name);
                         frmData.OnCopy += (object copySender, EventArgs copyE) => {
                             object obj = null;
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref obj, true);
@@ -973,6 +1007,7 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
+                        frmData.SetObjectName(elementType.Name);
                         frmData.OnCopy += (object copySender, EventArgs copyE) => {
                             object obj = null;
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref obj, true);
@@ -1017,6 +1052,7 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
 
+                        frmKey.SetObjectName(keyType.Name);
                         frmKey.OnCopy += (object copySender, EventArgs copyE) => {
                             object obj = null;
                             StaticSaveMemberControl(frmKey.ControlPanel, name, keyType, new object[0] { }, ref obj, true);
@@ -1073,6 +1109,7 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
+                        frmData.SetObjectName(elementType.Name);
                         frmData.OnCopy += (object copySender, EventArgs copyE) => {
                             object obj = null;
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref obj, true);
@@ -1137,6 +1174,7 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
+                        frmData.SetObjectName(type.Name);
                         frmData.OnCopy += (object copySender, EventArgs copyE) => {
                             object obj = null;
                             StaticSaveMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref obj, true);
@@ -1188,11 +1226,12 @@ namespace RogueEssence.Dev
                     else if (children.Count() == 1)
                     {
                         GroupBox groupBox = new GroupBox();
+                        groupBox.SuspendLayout();
+
                         groupBox.AutoSize = true;
                         groupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                         groupBox.Dock = DockStyle.Fill;
                         groupBox.Text = name;
-                        control.Controls.Add(groupBox);
 
                         TableLayoutPanel groupBoxPanel = new TableLayoutPanel();
                         groupBoxPanel.AutoSize = true;
@@ -1205,9 +1244,21 @@ namespace RogueEssence.Dev
                         groupBoxPanel.RowCount = 1;
                         groupBoxPanel.RowStyles.Add(new RowStyle());
 
-                        groupBox.Controls.Add(groupBoxPanel);
+                        //var copyPasteStrip = new System.Windows.Forms.ContextMenuStrip();
+                        //copyPasteStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
+                        //copyPasteStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                        //    copyToolStripMenuItem,
+                        //    pasteToolStripMenuItem});
+                        //copyPasteStrip.Name = "copyPasteStrip";
+                        //copyPasteStrip.Size = new System.Drawing.Size(241, 101);
+
 
                         loadClassControls(member, groupBoxPanel);
+
+                        groupBox.Controls.Add(groupBoxPanel);
+                        control.Controls.Add(groupBox);
+                        groupBox.ResumeLayout(false);
+
                     }
                     else
                     {
@@ -1219,6 +1270,8 @@ namespace RogueEssence.Dev
 
 
                         TableLayoutPanel sharedRowPanel = new TableLayoutPanel();
+                        sharedRowPanel.SuspendLayout();
+
                         sharedRowPanel.AutoSize = true;
                         sharedRowPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                         sharedRowPanel.ColumnCount = 2;
@@ -1229,7 +1282,6 @@ namespace RogueEssence.Dev
                         sharedRowPanel.Margin = new Padding(0, 0, 0, 0);
                         sharedRowPanel.RowCount = 1;
                         sharedRowPanel.RowStyles.Add(new RowStyle());
-                        control.Controls.Add(sharedRowPanel);
 
                         Label lblType = new Label();
                         lblType.Dock = DockStyle.Fill;
@@ -1245,12 +1297,16 @@ namespace RogueEssence.Dev
                         cbValue.FormattingEnabled = true;
                         sharedRowPanel.Controls.Add(cbValue);
 
+                        control.Controls.Add(sharedRowPanel);
+                        sharedRowPanel.ResumeLayout(false);
+
                         GroupBox groupBox = new GroupBox();
+                        groupBox.SuspendLayout();
+
                         groupBox.AutoSize = true;
                         groupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                         groupBox.Dock = DockStyle.Fill;
                         groupBox.Text = name;
-                        control.Controls.Add(groupBox);
 
 
                         TableLayoutPanel groupBoxPanel = new TableLayoutPanel();
@@ -1264,9 +1320,6 @@ namespace RogueEssence.Dev
                         groupBoxPanel.RowCount = 1;
                         groupBoxPanel.RowStyles.Add(new RowStyle());
                         
-
-                        groupBox.Controls.Add(groupBoxPanel);
-
                         loadClassControls(member, groupBoxPanel);
 
                         List<CreateMethod> createMethods = new List<CreateMethod>();
@@ -1295,6 +1348,11 @@ namespace RogueEssence.Dev
                         {
                             createMethods[cbValue.SelectedIndex]();
                         };
+
+                        groupBox.Controls.Add(groupBoxPanel);
+                        control.Controls.Add(groupBox);
+
+                        groupBox.ResumeLayout(false);
                     }
                 }
             }

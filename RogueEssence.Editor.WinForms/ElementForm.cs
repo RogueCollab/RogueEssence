@@ -36,6 +36,12 @@ namespace RogueEssence.Dev
             remove { this.pasteToolStripMenuItem.Click -= value; }
         }
 
+        public void SetObjectName(string name)
+        {
+            this.copyToolStripMenuItem.Text = "Copy " + name;
+            this.pasteToolStripMenuItem.Text = "Paste " + name;
+        }
+
         public ElementForm()
         {
             InitializeComponent();

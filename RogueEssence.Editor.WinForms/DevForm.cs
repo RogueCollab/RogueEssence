@@ -274,6 +274,7 @@ namespace RogueEssence.Dev
                     editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
                     DataEditor.LoadDataControls(data, editor.ControlPanel);
 
+                    editor.SetObjectName(data.GetType().Name);
                     editor.OnCopy += (object copySender, EventArgs copyE) => {
                         object obj = null;
                         DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
@@ -322,6 +323,7 @@ namespace RogueEssence.Dev
                 editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
                 DataEditor.LoadDataControls(data, editor.ControlPanel);
 
+                editor.SetObjectName(data.GetType().Name);
                 editor.OnCopy += (object copySender, EventArgs copyE) => {
                     object obj = null;
                     DataEditor.SaveDataControls(ref obj, editor.ControlPanel);

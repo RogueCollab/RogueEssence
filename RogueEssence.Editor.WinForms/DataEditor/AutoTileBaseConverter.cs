@@ -30,6 +30,7 @@ namespace RogueEssence.Dev
                     Rectangle boxRect = new Rectangle(new Point(), frmData.Size);
                     DataEditor.StaticLoadMemberControl(frmData.ControlPanel, name, type, attributes, preview.Tag, true);
 
+                    frmData.SetObjectName(type.Name);
                     frmData.OnCopy += (object copySender, EventArgs copyE) => {
                         object obj = null;
                         DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, type, attributes, ref obj, true);
