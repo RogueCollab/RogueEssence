@@ -48,6 +48,7 @@ namespace RogueEssence.Ground
 
                 ZoneManager.Instance.CurrentGround.SetPlayerChar(null);
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
+                ResetAnims();
             }
         }
 
@@ -60,6 +61,10 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> InitGround()
         {
+            //start emitters for existing map status
+            foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentGround.Status.Values)
+                mapStatus.StartEmitter(Anims);
+
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
         }
 

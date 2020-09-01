@@ -72,6 +72,10 @@ namespace RogueEssence.Dungeon
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
 
+            //start emitters for existing map status
+            foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
+                mapStatus.StartEmitter(Anims);
+
             //process events before the map fades in
             foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.PrepareEvents)
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));

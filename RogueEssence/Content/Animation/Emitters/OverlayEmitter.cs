@@ -30,6 +30,9 @@ namespace RogueEssence.Content
 
         public int Offset;
         public BGAnimData Anim;
+        /// <summary>
+        /// Pixels per second
+        /// </summary>
         public Loc Movement;
         public int TotalTime;
         public DrawLayer Layer;
@@ -42,6 +45,8 @@ namespace RogueEssence.Content
                 scene.Anims[(int)Layer].Add(new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, false, Movement, TotalTime));
             finished = true;
         }
+
+
     }
     [Serializable]
     public class OverlayEmitter : SwitchOffEmitter
@@ -68,6 +73,9 @@ namespace RogueEssence.Content
 
         public int Offset;
         public BGAnimData Anim;
+        /// <summary>
+        /// Pixels per second
+        /// </summary>
         public Loc Movement;
         public DrawLayer Layer;
         public Color Color;

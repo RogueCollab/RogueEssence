@@ -30,7 +30,7 @@ namespace RogueEssence.Content
         public FrameTick Time;
 
         /// <summary>
-        /// In pixels per frame
+        /// In pixels per second
         /// </summary>
         public Loc Movement;
 
@@ -56,7 +56,7 @@ namespace RogueEssence.Content
             DirSheet sheet = GraphicsManager.GetBackground(Anim.AnimIndex);
 
             int frame = Time.ToFrames();
-            Loc diff = Movement * frame - offset;
+            Loc diff = Movement * frame / 60 - offset;
             float fade = 1f;// (float)Math.Min(Math.Min(FadeTime, frame), (TotalTime > 0) ? Math.Min(FadeTime, TotalTime - frame) : FadeTime) / FadeTime;
             if (sheet.Width == 1 && sheet.Height == 1)
                 sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color * ((float)Anim.Alpha * fade / 255f));

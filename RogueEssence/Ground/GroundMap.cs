@@ -23,7 +23,7 @@ namespace RogueEssence.Ground
         private GroundWall[][] obstacles;
 
 
-        public int Weather;
+        public Dictionary<int, MapStatus> Status;
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> ScriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
 
         public BGAnimData BGAnim;
@@ -86,7 +86,7 @@ namespace RogueEssence.Ground
             GroundObjects = new List<GroundObject>();
             Markers       = new List<GroundMarker>();
 
-            Weather = -1;
+            Status = new Dictionary<int, MapStatus>();
 
             BGAnim = new BGAnimData();
             MapChars = new List<GroundChar>();

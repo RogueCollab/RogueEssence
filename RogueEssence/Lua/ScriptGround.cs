@@ -261,6 +261,18 @@ namespace RogueEssence.Script
             GroundScene.Instance.SetScreenShake(new ScreenMover(mover));
         }
 
+        public void AddMapStatus(int statusIdx)
+        {
+            MapStatus status = new MapStatus(statusIdx);
+            status.LoadFromData();
+            GroundScene.Instance.AddMapStatus(status);
+        }
+
+        public void RemoveMapStatus(int statusIdx)
+        {
+            GroundScene.Instance.RemoveMapStatus(statusIdx);
+        }
+
 
 
 

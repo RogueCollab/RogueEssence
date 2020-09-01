@@ -205,9 +205,30 @@ namespace RogueEssence.Ground
 
         //public IEnumerator<YieldInstruction> DropMapItem(MapItem item, Loc loc, Loc start)
 
-        //public IEnumerator<YieldInstruction> AddMapStatus(MapStatus status, bool msg = true)
 
-        //public IEnumerator<YieldInstruction> RemoveMapStatus(int id, bool msg = true)
+        public void AddMapStatus(MapStatus status)
+        {
+            MapStatus statusToCheck;
+            if (ZoneManager.Instance.CurrentGround.Status.TryGetValue(status.ID, out statusToCheck))
+            {
+
+            }
+            else
+            {
+                ZoneManager.Instance.CurrentGround.Status.Add(status.ID, status);
+                status.StartEmitter(Anims);
+            }
+        }
+
+        public void RemoveMapStatus(int id)
+        {
+            MapStatus statusToRemove;
+            if (ZoneManager.Instance.CurrentGround.Status.TryGetValue(id, out statusToRemove))
+            {
+                ZoneManager.Instance.CurrentGround.Status.Remove(statusToRemove.ID);
+                statusToRemove.EndEmitter();
+            }
+        }
 
         //public IEnumerator<YieldInstruction> PointWarp(Character character, Loc loc, bool msg)
 
