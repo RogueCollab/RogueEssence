@@ -96,7 +96,16 @@ namespace RogueEssence
         public bool AnyKeyPressed()
         {
             if (PrevInput.Active && CurrentInput.Active)
-                return (CurrentInput.BaseKeyState.GetPressedKeys().Length > 0 && PrevInput.BaseKeyState.GetPressedKeys().Length == 0);
+            {
+                if (PrevInput.BaseKeyState.GetPressedKeys().Length == 0)
+                {
+                    foreach (Keys key in CurrentInput.BaseKeyState.GetPressedKeys())
+                    {
+                        if (key < Keys.F1 || key > Keys.F24)
+                            return true;
+                    }
+                }
+            }
             return false;
         }
 
