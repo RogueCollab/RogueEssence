@@ -28,18 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.panel = new System.Windows.Forms.TableLayoutPanel();
             this.outerPanel = new System.Windows.Forms.TableLayoutPanel();
             this.bottomPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.copyPasteStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outerPanel.SuspendLayout();
             this.bottomPanel.SuspendLayout();
-            this.copyPasteStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnOK
@@ -73,7 +68,6 @@
             this.panel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panel.ColumnCount = 1;
             this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.panel.ContextMenuStrip = this.copyPasteStrip;
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel.Location = new System.Drawing.Point(0, 0);
             this.panel.Margin = new System.Windows.Forms.Padding(0);
@@ -118,27 +112,6 @@
             this.bottomPanel.Size = new System.Drawing.Size(418, 48);
             this.bottomPanel.TabIndex = 0;
             // 
-            // copyPasteStrip
-            // 
-            this.copyPasteStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
-            this.copyPasteStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.copyToolStripMenuItem,
-            this.pasteToolStripMenuItem});
-            this.copyPasteStrip.Name = "copyPasteStrip";
-            this.copyPasteStrip.Size = new System.Drawing.Size(241, 101);
-            // 
-            // copyToolStripMenuItem
-            // 
-            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(240, 32);
-            this.copyToolStripMenuItem.Text = "Copy";
-            // 
-            // pasteToolStripMenuItem
-            // 
-            this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(240, 32);
-            this.pasteToolStripMenuItem.Text = "Paste";
-            // 
             // ElementForm
             // 
             this.AcceptButton = this.btnOK;
@@ -157,7 +130,6 @@
             this.outerPanel.ResumeLayout(false);
             this.outerPanel.PerformLayout();
             this.bottomPanel.ResumeLayout(false);
-            this.copyPasteStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -170,8 +142,5 @@
         private System.Windows.Forms.TableLayoutPanel panel;
         private System.Windows.Forms.TableLayoutPanel outerPanel;
         private System.Windows.Forms.TableLayoutPanel bottomPanel;
-        private System.Windows.Forms.ContextMenuStrip copyPasteStrip;
-        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
     }
 }

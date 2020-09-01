@@ -744,8 +744,6 @@ namespace RogueEssence.Dev
                         browser.SetBrush(preview.GetChosenAnim());
                         frmData.ControlPanel.Controls.Add(browser);
 
-                        frmData.DisableClipboard();
-
                         if (frmData.ShowDialog() == DialogResult.OK)
                             preview.SetChosenAnim(browser.GetBrush());
                     };
@@ -790,8 +788,6 @@ namespace RogueEssence.Dev
                         browser.Location = new Point(boxRect.Left, box_down);
                         browser.Size = new Size(boxRect.Width, boxRect.Height);
                         browser.SetBrush(element != null ? (TileLayer)element : new TileLayer());
-
-                        frmData.DisableClipboard();
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
@@ -889,27 +885,6 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
-                        frmData.SetObjectName(elementType.Name);
-                        frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                            object obj = null;
-                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref obj, true);
-                            Clipboard.SetDataObject(obj);
-                        };
-                        frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                            IDataObject clip = Clipboard.GetDataObject();
-                            string[] formats = clip.GetFormats();
-                            object clipObj = clip.GetData(formats[0]);
-                            Type type1 = clipObj.GetType();
-                            Type type2 = elementType;
-                            if (type2.IsAssignableFrom(type1))
-                            {
-                                frmData.ControlPanel.Controls.Clear();
-                                StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), clipObj, true);
-                            }
-                            else
-                                MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        };
-
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
@@ -946,27 +921,6 @@ namespace RogueEssence.Dev
                             frmData.Text = name + "/" + element.ToString();
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
-
-                        frmData.SetObjectName(elementType.Name);
-                        frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                            object obj = null;
-                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref obj, true);
-                            Clipboard.SetDataObject(obj);
-                        };
-                        frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                            IDataObject clip = Clipboard.GetDataObject();
-                            string[] formats = clip.GetFormats();
-                            object clipObj = clip.GetData(formats[0]);
-                            Type type1 = clipObj.GetType();
-                            Type type2 = elementType;
-                            if (type2.IsAssignableFrom(type1))
-                            {
-                                frmData.ControlPanel.Controls.Clear();
-                                StaticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), clipObj, true);
-                            }
-                            else
-                                MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        };
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
@@ -1007,27 +961,6 @@ namespace RogueEssence.Dev
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
-                        frmData.SetObjectName(elementType.Name);
-                        frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                            object obj = null;
-                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref obj, true);
-                            Clipboard.SetDataObject(obj);
-                        };
-                        frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                            IDataObject clip = Clipboard.GetDataObject();
-                            string[] formats = clip.GetFormats();
-                            object clipObj = clip.GetData(formats[0]);
-                            Type type1 = clipObj.GetType();
-                            Type type2 = elementType;
-                            if (type2.IsAssignableFrom(type1))
-                            {
-                                frmData.ControlPanel.Controls.Clear();
-                                StaticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), clipObj, true);
-                            }
-                            else
-                                MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        };
-
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
@@ -1051,27 +984,6 @@ namespace RogueEssence.Dev
                             frmKey.Text = name + "/" + element.ToString();
 
                         StaticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
-
-                        frmKey.SetObjectName(keyType.Name);
-                        frmKey.OnCopy += (object copySender, EventArgs copyE) => {
-                            object obj = null;
-                            StaticSaveMemberControl(frmKey.ControlPanel, name, keyType, new object[0] { }, ref obj, true);
-                            Clipboard.SetDataObject(obj);
-                        };
-                        frmKey.OnPaste += (object copySender, EventArgs copyE) => {
-                            IDataObject clip = Clipboard.GetDataObject();
-                            string[] formats = clip.GetFormats();
-                            object clipObj = clip.GetData(formats[0]);
-                            Type type1 = clipObj.GetType();
-                            Type type2 = keyType;
-                            if (type2.IsAssignableFrom(type1))
-                            {
-                                frmKey.ControlPanel.Controls.Clear();
-                                StaticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, clipObj, true);
-                            }
-                            else
-                                MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        };
 
                         frmKey.OnOK += (object okSender, EventArgs okE) =>
                         {
@@ -1108,27 +1020,6 @@ namespace RogueEssence.Dev
                             frmData.Text = name + "/" + element.ToString();
 
                         StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
-
-                        frmData.SetObjectName(elementType.Name);
-                        frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                            object obj = null;
-                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref obj, true);
-                            Clipboard.SetDataObject(obj);
-                        };
-                        frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                            IDataObject clip = Clipboard.GetDataObject();
-                            string[] formats = clip.GetFormats();
-                            object clipObj = clip.GetData(formats[0]);
-                            Type type1 = clipObj.GetType();
-                            Type type2 = elementType;
-                            if (type2.IsAssignableFrom(type1))
-                            {
-                                frmData.ControlPanel.Controls.Clear();
-                                StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), clipObj, true);
-                            }
-                            else
-                                MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        };
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
@@ -1173,27 +1064,6 @@ namespace RogueEssence.Dev
                         frmData.Text = name + "/" + type.Name;
 
                         StaticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
-
-                        frmData.SetObjectName(type.Name);
-                        frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                            object obj = null;
-                            StaticSaveMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref obj, true);
-                            Clipboard.SetDataObject(obj);
-                        };
-                        frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                            IDataObject clip = Clipboard.GetDataObject();
-                            string[] formats = clip.GetFormats();
-                            object clipObj = clip.GetData(formats[0]);
-                            Type type1 = clipObj.GetType();
-                            Type type2 = type;
-                            if (type2.IsAssignableFrom(type1))
-                            {
-                                frmData.ControlPanel.Controls.Clear();
-                                StaticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), clipObj, true);
-                            }
-                            else
-                                MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        };
 
                         frmData.OnOK += (object okSender, EventArgs okE) =>
                         {
@@ -1244,14 +1114,49 @@ namespace RogueEssence.Dev
                         groupBoxPanel.RowCount = 1;
                         groupBoxPanel.RowStyles.Add(new RowStyle());
 
-                        //var copyPasteStrip = new System.Windows.Forms.ContextMenuStrip();
-                        //copyPasteStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
-                        //copyPasteStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                        //    copyToolStripMenuItem,
-                        //    pasteToolStripMenuItem});
-                        //copyPasteStrip.Name = "copyPasteStrip";
-                        //copyPasteStrip.Size = new System.Drawing.Size(241, 101);
+                        {
+                            ContextMenuStrip copyPasteStrip = new ContextMenuStrip();
 
+                            ToolStripMenuItem copyToolStripMenuItem = new ToolStripMenuItem();
+                            ToolStripMenuItem pasteToolStripMenuItem = new ToolStripMenuItem();
+
+                            copyPasteStrip.ImageScalingSize = new Size(24, 24);
+                            copyPasteStrip.Items.AddRange(new ToolStripItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+                            copyPasteStrip.Size = new Size(241, 101);
+
+                            copyToolStripMenuItem.Size = new Size(240, 32);
+                            copyToolStripMenuItem.Text = "Copy " + type.Name;
+
+                            pasteToolStripMenuItem.Size = new Size(240, 32);
+                            pasteToolStripMenuItem.Text = "Paste " + type.Name;
+
+
+                            copyToolStripMenuItem.Click += (object copySender, EventArgs copyE) => {
+                                object obj = ReflectionExt.CreateMinimalInstance(children[0]);
+                                saveClassControls(obj, groupBoxPanel);
+                                Clipboard.SetDataObject(obj);
+                            };
+                            pasteToolStripMenuItem.Click += (object copySender, EventArgs copyE) => {
+                                IDataObject clip = Clipboard.GetDataObject();
+                                string[] formats = clip.GetFormats();
+                                object clipObj = clip.GetData(formats[0]);
+                                Type type1 = clipObj.GetType();
+                                Type type2 = type;
+                                if (type2.IsAssignableFrom(type1))
+                                {
+                                    groupBoxPanel.SuspendLayout();
+                                    groupBoxPanel.Controls.Clear();
+                                    loadClassControls(clipObj, groupBoxPanel);
+                                    groupBoxPanel.ResumeLayout(true);
+                                }
+                                else
+                                    MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            };
+
+                            groupBox.ContextMenuStrip = copyPasteStrip;
+                        }
 
                         loadClassControls(member, groupBoxPanel);
 
@@ -1320,9 +1225,9 @@ namespace RogueEssence.Dev
                         groupBoxPanel.RowCount = 1;
                         groupBoxPanel.RowStyles.Add(new RowStyle());
                         
-                        loadClassControls(member, groupBoxPanel);
-
                         List<CreateMethod> createMethods = new List<CreateMethod>();
+
+                        bool refreshPanel = true;
 
                         for (int ii = 0; ii < children.Length; ii++)
                         {
@@ -1331,12 +1236,14 @@ namespace RogueEssence.Dev
 
                             createMethods.Add(() =>
                             {
-                                groupBoxPanel.Controls.Clear();
-                                object emptyMember = ReflectionExt.CreateMinimalInstance(childType);
-                                loadClassControls(emptyMember, groupBoxPanel);//TODO: POTENTIAL INFINITE RECURSION
-                                //for some reason the parent control needs the following calls to prevent a strange autoscroll bug
-                                control.AutoScroll = false;
-                                control.AutoScroll = true;
+                                if (refreshPanel)
+                                {
+                                    groupBoxPanel.SuspendLayout();
+                                    groupBoxPanel.Controls.Clear();
+                                    object emptyMember = ReflectionExt.CreateMinimalInstance(childType);
+                                    loadClassControls(emptyMember, groupBoxPanel);//TODO: POTENTIAL INFINITE RECURSION
+                                    groupBoxPanel.ResumeLayout(true);
+                                }
                             });
                             if (childType == member.GetType())
                                 cbValue.SelectedIndex = ii;
@@ -1348,6 +1255,65 @@ namespace RogueEssence.Dev
                         {
                             createMethods[cbValue.SelectedIndex]();
                         };
+
+                        {
+                            ContextMenuStrip copyPasteStrip = new ContextMenuStrip();
+
+                            ToolStripMenuItem copyToolStripMenuItem = new ToolStripMenuItem();
+                            ToolStripMenuItem pasteToolStripMenuItem = new ToolStripMenuItem();
+
+                            copyPasteStrip.ImageScalingSize = new Size(24, 24);
+                            copyPasteStrip.Items.AddRange(new ToolStripItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+                            copyPasteStrip.Size = new Size(241, 101);
+
+                            copyToolStripMenuItem.Size = new Size(240, 32);
+                            copyToolStripMenuItem.Text = "Copy " + type.Name;
+
+                            pasteToolStripMenuItem.Size = new Size(240, 32);
+                            pasteToolStripMenuItem.Text = "Paste " + type.Name;
+
+
+                            copyToolStripMenuItem.Click += (object copySender, EventArgs copyE) => {
+                                object obj = ReflectionExt.CreateMinimalInstance(children[cbValue.SelectedIndex]);
+                                saveClassControls(obj, groupBoxPanel);
+                                Clipboard.SetDataObject(obj);
+                            };
+                            pasteToolStripMenuItem.Click += (object copySender, EventArgs copyE) => {
+                                IDataObject clip = Clipboard.GetDataObject();
+                                string[] formats = clip.GetFormats();
+                                object clipObj = clip.GetData(formats[0]);
+                                Type type1 = clipObj.GetType();
+                                Type type2 = type;
+                                int type_idx = -1;
+                                for (int ii = 0; ii < children.Length; ii++)
+                                {
+                                    if (children[ii] == type1)
+                                    {
+                                        type_idx = ii;
+                                        break;
+                                    }
+                                }
+                                if (type_idx > -1)
+                                {
+                                    refreshPanel = false;
+                                    cbValue.SelectedIndex = type_idx;
+                                    refreshPanel = true;
+
+                                    groupBoxPanel.SuspendLayout();
+                                    groupBoxPanel.Controls.Clear();
+                                    loadClassControls(clipObj, groupBoxPanel);
+                                    groupBoxPanel.ResumeLayout(true);
+                                }
+                                else
+                                    MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            };
+
+                            groupBox.ContextMenuStrip = copyPasteStrip;
+                        }
+
+                        loadClassControls(member, groupBoxPanel);
 
                         groupBox.Controls.Add(groupBoxPanel);
                         control.Controls.Add(groupBox);
@@ -1759,14 +1725,14 @@ namespace RogueEssence.Dev
                     //get the panel for the index
                     //save using THAT panel
 
-                    if (children.Length > 1)
+                    if (children.Length == 1)
+                        member = ReflectionExt.CreateMinimalInstance(children[0]);
+                    else
                     {
                         ComboBox cbValue = (ComboBox)control.Controls[controlIndex].Controls[1];
                         member = ReflectionExt.CreateMinimalInstance(children[cbValue.SelectedIndex]);
                         controlIndex++;
                     }
-                    else
-                        member = ReflectionExt.CreateMinimalInstance(children[0]);
 
                     GroupBox groupBox = (GroupBox)control.Controls[controlIndex];
                     saveClassControls(member, (TableLayoutPanel)groupBox.Controls[0]);

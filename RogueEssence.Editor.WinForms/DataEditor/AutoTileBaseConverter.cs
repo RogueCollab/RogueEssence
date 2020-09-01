@@ -30,27 +30,6 @@ namespace RogueEssence.Dev
                     Rectangle boxRect = new Rectangle(new Point(), frmData.Size);
                     DataEditor.StaticLoadMemberControl(frmData.ControlPanel, name, type, attributes, preview.Tag, true);
 
-                    frmData.SetObjectName(type.Name);
-                    frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                        object obj = null;
-                        DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, type, attributes, ref obj, true);
-                        Clipboard.SetDataObject(obj);
-                    };
-                    frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                        IDataObject clip = Clipboard.GetDataObject();
-                        string[] formats = clip.GetFormats();
-                        object clipObj = clip.GetData(formats[0]);
-                        Type type1 = clipObj.GetType();
-                        Type type2 = type;
-                        if (type1 == type2)
-                        {
-                            frmData.ControlPanel.Controls.Clear();
-                            DataEditor.StaticLoadMemberControl(frmData.ControlPanel, name, type, attributes, clipObj, true);
-                        }
-                        else
-                            MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    };
-
                     if (frmData.ShowDialog() == DialogResult.OK)
                     {
                         object element = preview.Tag;

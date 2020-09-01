@@ -35,27 +35,6 @@ namespace RogueEssence.Dev
 
                 DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(StateCollection) [" + index + "]", elementType, new object[0] { }, element, true);
 
-                frmData.SetObjectName(elementType.Name);
-                frmData.OnCopy += (object copySender, EventArgs copyE) => {
-                    object obj = null;
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "StateCollection", elementType, new object[0] { }, ref obj, true);
-                    Clipboard.SetDataObject(obj);
-                };
-                frmData.OnPaste += (object copySender, EventArgs copyE) => {
-                    IDataObject clip = Clipboard.GetDataObject();
-                    string[] formats = clip.GetFormats();
-                    object clipObj = clip.GetData(formats[0]);
-                    Type type1 = clipObj.GetType();
-                    Type type2 = elementType;
-                    if (type2.IsAssignableFrom(type1))
-                    {
-                        frmData.ControlPanel.Controls.Clear();
-                        DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(StateCollection) [" + index + "]", elementType, new object[0] { }, clipObj, true);
-                    }
-                    else
-                        MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                };
-
                 frmData.OnOK += (object okSender, EventArgs okE) =>
                 {
                     DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "StateCollection", elementType, new object[0] { }, ref element, true);
