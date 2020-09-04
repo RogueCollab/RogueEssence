@@ -69,14 +69,14 @@ namespace RogueEssence
 
         public bool JustPressed(FrameInput.InputType input)
         {
-            if (PrevInput.Active && CurrentInput.Active)
+            if (CurrentInput.Active)
                 return !PrevInput[input] && CurrentInput[input];
             return false;
         }
 
         public bool JustReleased(FrameInput.InputType input)
         {
-            if (PrevInput.Active && CurrentInput.Active)
+            if (CurrentInput.Active)
                 return PrevInput[input] && !CurrentInput[input];
             return false;
         }
@@ -88,14 +88,14 @@ namespace RogueEssence
 
         public bool BaseKeyPressed(Keys key)
         {
-            if (PrevInput.Active && CurrentInput.Active)
+            if (CurrentInput.Active)
                 return (CurrentInput.BaseKeyState.IsKeyDown(key) && !PrevInput.BaseKeyState.IsKeyDown(key));
             return false;
         }
 
         public bool AnyKeyPressed()
         {
-            if (PrevInput.Active && CurrentInput.Active)
+            if (CurrentInput.Active)
             {
                 if (PrevInput.BaseKeyState.GetPressedKeys().Length == 0)
                 {
@@ -116,14 +116,14 @@ namespace RogueEssence
 
         public bool BaseButtonPressed(Buttons button)
         {
-            if (PrevInput.Active && CurrentInput.Active)
+            if (CurrentInput.Active)
                 return (CurrentInput.BaseGamepadState.IsButtonDown(button) && !PrevInput.BaseGamepadState.IsButtonDown(button));
             return false;
         }
 
         public bool AnyButtonPressed()
         {
-            if (PrevInput.Active && CurrentInput.Active)
+            if (CurrentInput.Active)
             {
                 GamePadButtons untouchedButtons = new GamePadButtons();
                 return (CurrentInput.BaseGamepadState.Buttons != untouchedButtons && PrevInput.BaseGamepadState.Buttons == untouchedButtons);

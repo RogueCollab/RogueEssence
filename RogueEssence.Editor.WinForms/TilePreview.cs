@@ -78,10 +78,7 @@ namespace RogueEssence.Dev
                         UpdatePreviewTile();
                     }
                 }
-                for (int ii = 0; ii < chosenAnim.FrameLength; ii++)
-                {
-                    Thread.Sleep(1);
-                }
+                Thread.Sleep(chosenAnim.FrameLength * 1000 / 60);
             }
         }
 

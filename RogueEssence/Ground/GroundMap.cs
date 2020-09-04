@@ -726,31 +726,56 @@ namespace RogueEssence.Ground
             List<GroundEntity> found = new List<GroundEntity>();
             Rect Intersection = new Rect(pos.X, pos.Y, 1, 1);
 
-            foreach ( GroundChar c in IterateCharacters() )
+            foreach (GroundEntity c in IterateEntities())
             {
                 if (c.Bounds.Intersects(Intersection))
                     found.Add(c);
             }
 
-            foreach(GroundObject o in GroundObjects)
-            {
-                if (o.Bounds.Intersects(Intersection))
-                    found.Add(o);
-            }
-
-            foreach (var m in Markers)
-            {
-                if (m.Bounds.Intersects(Intersection))
-                    found.Add(m);
-            }
-
-            foreach(var s in Spawners)
-            {
-                if (s.Bounds.Intersects(Intersection))
-                    found.Add(s);
-            }
-
             return found;
+        }
+
+
+        public string FindNonConflictingName(string inputStr)
+        {
+            //TODO: account for equivalent values such as with leading zeroes
+
+            string prefix = inputStr;
+            int origIndex = -1;
+            int lastUnderscore = inputStr.LastIndexOf('_');
+            if (lastUnderscore > -1)
+            {
+                string substr = inputStr.Substring(lastUnderscore + 1);
+                if (int.TryParse(substr, out origIndex))
+                    prefix = inputStr.Substring(0, lastUnderscore);
+            }
+
+            Dictionary<int, GroundEntity> found = new Dictionary<int, GroundEntity>();
+            foreach (GroundEntity c in IterateEntities())
+            {
+                if (c.EntName == prefix)
+                    found[-1] = c;
+                else if (c.EntName.StartsWith(prefix + "_"))
+                {
+                    int val;
+                    if (Int32.TryParse(c.EntName.Substring(prefix.Length+1), out val))
+                        found[val] = c;
+                }
+            }
+
+            if (!found.ContainsKey(origIndex))
+                return inputStr;
+
+            int copy_index = 1;
+            while (copy_index < Int32.MaxValue)
+            {
+                if (!found.ContainsKey(copy_index))
+                    break;
+
+                copy_index++;
+            }
+
+            return prefix + "_" + copy_index.ToString();
         }
 
         public GroundEntity FindEntity(string name)

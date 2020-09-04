@@ -310,6 +310,21 @@ namespace RogueEssence.Ground
             return loc;
         }
 
+
+        public Loc ScreenCoordsToBlockCoords(Loc loc)
+        {
+            int blockSize = GraphicsManager.TileSize / GroundMap.SUB_TILES;
+
+            loc.X = (int)(loc.X / scale / windowScale);
+            loc.Y = (int)(loc.Y / scale / windowScale);
+            loc += ViewRect.Start;
+            loc = loc - (ViewRect.Start / blockSize * blockSize) + new Loc(blockSize);
+            loc /= blockSize;
+            loc = loc + (ViewRect.Start / blockSize) - new Loc(1);
+
+            return loc;
+        }
+
         static Loc getDrawSight()
         {
             return Character.GetSightDims() * 2 + new Loc(1, 2);

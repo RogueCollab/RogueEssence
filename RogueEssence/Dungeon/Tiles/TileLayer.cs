@@ -65,7 +65,7 @@ namespace RogueEssence.Dungeon
 
         public bool Equals(TileLayer other)
         {
-            if (other == null)
+            if (Object.ReferenceEquals(other, null))
                 return false;
 
             if (FrameLength != other.FrameLength)
@@ -84,6 +84,16 @@ namespace RogueEssence.Dungeon
         public override bool Equals(object obj)
         {
             return (obj != null) && Equals(obj as TileLayer);
+        }
+
+        public static bool operator ==(TileLayer value1, TileLayer value2)
+        {
+            return value1.Equals(value2);
+        }
+
+        public static bool operator !=(TileLayer value1, TileLayer value2)
+        {
+            return !(value1 == value2);
         }
 
         public override int GetHashCode()

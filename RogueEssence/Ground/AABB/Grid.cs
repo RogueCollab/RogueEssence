@@ -68,7 +68,11 @@
 		public Cell[,] Cells { get; private set; }
 
         public IEnumerable<Cell> QueryCells(int x, int y, int w, int h)
-		{
+        {
+            List<Cell> result = new List<Cell>();
+            if (w == 0 && h == 0)
+                return result;
+
 			var minX = (x / this.CellSize);
 			var minY = (y / this.CellSize);
 			var maxX = ((x + w - 1) / this.CellSize);
@@ -78,8 +82,6 @@
 			minY = Math.Max(0, minY);
 			maxX = Math.Min(this.Columns - 1, maxX);
 			maxY = Math.Min(this.Rows - 1, maxY);
-
-			List<Cell> result = new List<Cell>();
 
 			for (int ix = minX; ix <= maxX; ix++)
 			{

@@ -42,5 +42,32 @@ namespace RogueEssence.Dungeon
             foreach (TileLayer anim in Layers)
                 anim.Draw(spriteBatch, pos, GraphicsManager.TotalFrameTick);
         }
+
+
+        public bool Equals(AutoTile other)
+        {
+            if (other == null)
+                return false;
+
+            if (AutoTileset > -1)
+                return (AutoTileset == other.AutoTileset && BorderTileset == other.BorderTileset);
+
+            if (Layers.Count != other.Layers.Count)
+                return false;
+
+            for (int ii = 0; ii < Layers.Count; ii++)
+            {
+                if (Layers[ii] != other.Layers[ii])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj != null) && Equals(obj as AutoTile);
+        }
+
     }
 }

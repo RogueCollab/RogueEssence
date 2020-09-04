@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
         string currentTileset;
         string chosenTileset;
         Loc chosenTile;
+        public TileEditMode TexMode { get; private set; }
 
         List<string> tileIndices;
 
@@ -30,6 +31,7 @@ namespace RogueEssence.Dev
 
             InitializeComponent();
 
+            slbTilesets.SetName("Tilesets");
         }
 
         public TileLayer GetBrush()
@@ -52,6 +54,29 @@ namespace RogueEssence.Dev
                 //refresh
                 RefreshTileSelect();
             }
+        }
+
+        public void UpdateTilesList()
+        {
+            tileIndices.Clear();
+            slbTilesets.Clear();
+
+            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
+            {
+                tileIndices.Add(name);
+                slbTilesets.AddItem(name);
+            }
+            chosenTileset = tileIndices[0];
+            currentTileset = tileIndices[0];
+
+            slbTilesets.SelectedIndex = 0;
+
+            RefreshAnimControls();
+
+            tilePreview.SetChosenAnim(new TileLayer(chosenTile, chosenTileset));
+
+            //refresh
+            RefreshTileSelect();
         }
 
         void RefreshTileset()
@@ -193,13 +218,8 @@ namespace RogueEssence.Dev
         {
             bool show = inAnimMode;
 
-            lblFrameLength.Visible = show;
+            pnlAnimation.Visible = show;
             nudFrameLength.Value = tilePreview.GetChosenAnim().FrameLength;
-            nudFrameLength.Visible = show;
-            lblFrames.Visible = show;
-            lbxFrames.Visible = show;
-            btnAddFrame.Visible = show;
-            btnRemoveFrame.Visible = show;
         }
 
 
@@ -364,9 +384,32 @@ namespace RogueEssence.Dev
             slbTilesets.SelectedIndex = 0;
 
             RefreshAnimControls();
-            
+
+            tilePreview.SetChosenAnim(new TileLayer(chosenTile, chosenTileset));
+
+            //refresh
+            RefreshTileSelect();
         }
 
 
+        private void rbDraw_CheckedChanged(object sender, EventArgs e)
+        {
+            TexMode = TileEditMode.Draw;
+        }
+
+        private void rbRectangle_CheckedChanged(object sender, EventArgs e)
+        {
+            TexMode = TileEditMode.Rectangle;
+        }
+
+        private void rbFill_CheckedChanged(object sender, EventArgs e)
+        {
+            TexMode = TileEditMode.Fill;
+        }
+
+        private void rbEyedrop_CheckedChanged(object sender, EventArgs e)
+        {
+            TexMode = TileEditMode.Eyedrop;
+        }
     }
 }

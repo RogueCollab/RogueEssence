@@ -7,6 +7,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace RogueEssence.Dev
 {
@@ -20,11 +21,45 @@ namespace RogueEssence.Dev
         }
         public static GroundEditScene Instance { get { return instance; } }
 
+        static Keys[] DirKeys = new Keys[4] { Keys.S, Keys.A, Keys.W, Keys.D };
 
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
+        public Loc MouseLoc;
+        public AutoTile AutoTileInProgress;
+        public bool? BlockInProgress;
+        public Rect RectInProgress;
 
+        public Rect TileRectPreview()
+        {
+            return RectPreview(GraphicsManager.TileSize);
+        }
+        public Rect BlockRectPreview()
+        {
+            return RectPreview(GraphicsManager.TileSize / GroundMap.SUB_TILES);
+        }
+        public Rect RectPreview(int size)
+        {
+            Rect resultRect = new Rect(RectInProgress.Start / size, RectInProgress.Size / size);
+            if (resultRect.Size.X <= 0)
+            {
+                resultRect.Start = new Loc(resultRect.Start.X + resultRect.Size.X, resultRect.Start.Y);
+                resultRect.Size = new Loc(-resultRect.Size.X + 1, resultRect.Size.Y);
+            }
+            else
+                resultRect.Size = new Loc(resultRect.Size.X + 1, resultRect.Size.Y);
+
+            if (resultRect.Size.Y <= 0)
+            {
+                resultRect.Start = new Loc(resultRect.Start.X, resultRect.Start.Y + resultRect.Size.Y);
+                resultRect.Size = new Loc(resultRect.Size.X, -resultRect.Size.Y + 1);
+            }
+            else
+                resultRect.Size = new Loc(resultRect.Size.X, resultRect.Size.Y + 1);
+
+            return resultRect;
+        }
 
         public override void UpdateMeta()
         {
@@ -34,86 +69,24 @@ namespace RogueEssence.Dev
 
             if (groundEditor.Active)
             {
-                if (Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                {
-                    if (groundEditor.Mode == IGroundEditor.TileEditMode.Draw)
-                    {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            groundEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), groundEditor.GetBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
-                            groundEditor.PaintTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
-
-                    }
-                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.Eyedrop)
-                    {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            groundEditor.EyedropTile(ScreenCoordsToMapCoords(input.MouseLoc));
-                        else if (input[FrameInput.InputType.LeftMouse])
-                        {
-
-                        }
-                    }
-                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.Fill)
-                    {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            groundEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), groundEditor.GetBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            groundEditor.FillTile(ScreenCoordsToMapCoords(input.MouseLoc), new TileLayer());
-                    }
-                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.PlaceEntity)
-                    {
-                        Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                        {
-                            groundEditor.PlaceEntity(coords);
-                        }
-                        //else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                    }
-                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.PlaceTemplateEntity)
-                    {
-                        Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                        {
-                            groundEditor.PlaceTemplateEntity(coords);
-                        }
-                        //else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                    }
-                    else if (groundEditor.Mode == IGroundEditor.TileEditMode.SelectEntity)
-                    {
-                        Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
-                        //GraphicsManager.GraphicsDevice.Viewport.Bounds.Contains(input.MouseLoc.X, input.MouseLoc.Y)
-
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            groundEditor.SelectEntity(coords);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            groundEditor.EntityContext(input.MouseLoc, coords);
-                    }
-                }
+                groundEditor.ProcessInput(input);
             }
         }
 
 
+
         protected override IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
-            GameAction action = new GameAction(GameAction.ActionType.None, Dir8.None);
+            Loc dirLoc = Loc.Zero;
+            bool fast = !input.BaseKeyDown(Keys.LeftShift);
 
-            bool run = input[FrameInput.InputType.Run];
-
-            if (input.Direction != Dir8.None)
+            for (int ii = 0; ii < DirKeys.Length; ii++)
             {
-                GameAction.ActionType cmdType = GameAction.ActionType.Dir;
-
-                //if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(2)) //TODO: ensure that it does not freeze when transitioning walk to run and vice versa
-                cmdType = GameAction.ActionType.Move;
-
-                action = new GameAction(cmdType, input.Direction);
-
-                if (cmdType == GameAction.ActionType.Move)
-                    action.AddArg(input[FrameInput.InputType.Run] ? 1 : 0);
+                if (input.BaseKeyDown(DirKeys[ii]))
+                    dirLoc = dirLoc + ((Dir4)ii).GetLoc();
             }
 
-            if (action.Type != GameAction.ActionType.None)
-                DiffLoc = action.Dir.GetLoc() * (action[0] == 1 ? 1 : 8);
+            DiffLoc = dirLoc * (fast ? 8 : 1);
 
             yield break;
         }
@@ -159,6 +132,40 @@ namespace RogueEssence.Dev
 
             if (DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
             {
+                if (AutoTileInProgress != null)
+                {
+                    for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                    {
+                        for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                        {
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)) &&
+                                Collision.InBounds(TileRectPreview(), new Loc(ii, jj)))
+                            {
+                                if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
+                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
+                                else
+                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
+                            }
+                        }
+                    }
+                }
+
+                //draw the blocks
+                for (int jj = viewTileRect.Y * GroundMap.SUB_TILES; jj < viewTileRect.End.Y * GroundMap.SUB_TILES; jj++)
+                {
+                    for (int ii = viewTileRect.X * GroundMap.SUB_TILES; ii < viewTileRect.End.X * GroundMap.SUB_TILES; ii++)
+                    {
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * GroundMap.SUB_TILES, ZoneManager.Instance.CurrentGround.Height * GroundMap.SUB_TILES, new Loc(ii, jj)))
+                        {
+                            bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
+                            if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
+                                blocked = BlockInProgress.Value;
+
+                            if (blocked)
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize / GroundMap.SUB_TILES - ViewRect.X, jj * GraphicsManager.TileSize / GroundMap.SUB_TILES - ViewRect.Y, GraphicsManager.TileSize / GroundMap.SUB_TILES, GraphicsManager.TileSize / GroundMap.SUB_TILES), null, Color.Red * 0.5f);
+                        }
+                    }
+                }
 
                 if (!DataManager.Instance.HideGrid)
                 {
@@ -203,6 +210,20 @@ namespace RogueEssence.Dev
             }
 
             base.DrawDev(spriteBatch);
+        }
+
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
+                Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
+                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Block X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+            }
         }
 
 
