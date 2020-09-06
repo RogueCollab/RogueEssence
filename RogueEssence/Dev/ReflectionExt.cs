@@ -8,6 +8,7 @@ namespace RogueEssence.Dev
 {
     public static class ReflectionExt
     {
+        public delegate string TypeStringConv(object member);
 
         public static object CreateMinimalInstance(Type type)
         {

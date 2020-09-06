@@ -1,15 +1,20 @@
 ﻿using System;
 using RogueElements;
 using System.Collections.Generic;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
     [Serializable]
     public class PoolTeamSpawner : TeamSpawner
     {
+        [SubGroup]
         public SpawnList<MobSpawn> LeaderSpawns;
+        [SubGroup]
         public SpawnList<MobSpawn> LonerSpawns;
+        [SubGroup]
         public SpawnList<MobSpawn> PartnerSpawns;
+        [SubGroup]
         public SpawnList<int> TeamSizes;
 
         public PoolTeamSpawner()

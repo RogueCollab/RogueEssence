@@ -25,10 +25,18 @@ namespace RogueEssence.Dev
         public delegate void ElementOp(int index, object element, EditElementOp op);
 
         public ElementOp OnEditItem;
+        public ReflectionExt.TypeStringConv StringConv;
 
         public CollectionBox()
         {
             InitializeComponent();
+
+            StringConv = DefaultStringConv;
+        }
+
+        private string DefaultStringConv(object obj)
+        {
+            return obj.ToString();
         }
 
         public void LoadFromList(Type type, IList source)
@@ -38,21 +46,21 @@ namespace RogueEssence.Dev
                 Collection.Add(obj);
 
             foreach (object obj in Collection)
-                lbxCollection.Items.Add(obj.ToString());
+                lbxCollection.Items.Add(StringConv(obj));
         }
 
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
             Collection[index] = element;
-            lbxCollection.Items[index] = element.ToString();
+            lbxCollection.Items[index] = StringConv(element);
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count+1);
             Collection.Insert(index, element);
-            lbxCollection.Items.Insert(index, element.ToString());
+            lbxCollection.Items.Insert(index, StringConv(element));
         }
 
         private void lbxCollection_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -88,8 +96,8 @@ namespace RogueEssence.Dev
             object obj = Collection[a];
             Collection[a] = Collection[b];
             Collection[b] = obj;
-            lbxCollection.Items[a] = Collection[a].ToString();
-            lbxCollection.Items[b] = Collection[b].ToString();
+            lbxCollection.Items[a] = StringConv(Collection[a]);
+            lbxCollection.Items[b] = StringConv(Collection[b]);
 
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
@@ -9,6 +10,7 @@ namespace RogueEssence.LevelGen
         public int RespawnTime;
         public int MaxFoes;
 
+        [SubGroup]
         public SpawnList<TeamSpawner> Spawns;
 
         public MobSpawnStep()

@@ -13,10 +13,17 @@ namespace RogueEssence.Dev
 
         public ElementOp OnEditKey;
         public ElementOp OnEditItem;
+        public ReflectionExt.TypeStringConv StringConv;
 
         public DictionaryBox()
         {
             InitializeComponent();
+            StringConv = DefaultStringConv;
+        }
+
+        private string DefaultStringConv(object obj)
+        {
+            return obj.ToString();
         }
 
         public void LoadFromDictionary(Type type, IDictionary source)
@@ -27,7 +34,7 @@ namespace RogueEssence.Dev
 
 
             foreach (object obj in Dictionary.Keys)
-                lbxDictionary.Items.Add("[" + obj.ToString() + "] " + Dictionary[obj].ToString());
+                lbxDictionary.Items.Add("[" + obj.ToString() + "] " + StringConv(Dictionary[obj]));
         }
 
 
@@ -36,7 +43,7 @@ namespace RogueEssence.Dev
         {
             int index = getIndexFromKey(key);
             Dictionary[key] = element;
-            lbxDictionary.Items[index] = "[" + key.ToString() + "] " + Dictionary[key].ToString();
+            lbxDictionary.Items[index] = "[" + key.ToString() + "] " + StringConv(Dictionary[key]);
         }
 
         private void insertKey(object key, object element)
@@ -52,7 +59,7 @@ namespace RogueEssence.Dev
         private void insertItem(object key, object element)
         {
             Dictionary.Add(key, element);
-            lbxDictionary.Items.Add("[" + key.ToString() + "] " + element.ToString());
+            lbxDictionary.Items.Add("[" + key.ToString() + "] " + StringConv(element));
         }
 
 

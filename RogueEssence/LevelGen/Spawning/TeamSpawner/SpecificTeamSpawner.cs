@@ -26,7 +26,7 @@ namespace RogueEssence.LevelGen
         {
             SpawnList<MobSpawn> spawnerList = new SpawnList<MobSpawn>();
             foreach (MobSpawn spawner in Spawns)
-                spawnerList.Add(spawner);
+                spawnerList.Add(spawner, 100);
 
             return spawnerList;
         }

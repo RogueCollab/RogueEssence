@@ -32,6 +32,7 @@ namespace RogueEssence.Dev
             AddConverter(new ShootingEmitterConverter());
             AddConverter(new SkillDataConverter());
             AddConverter(new SpawnListConverter());
+            AddConverter(new SpawnRangeListConverter());
             AddConverter(new TypeDictConverter());
             AddConverter(new StaticAnimConverter());
         }
@@ -860,20 +861,14 @@ namespace RogueEssence.Dev
                     //TODO: 2D array grid support
                     //if (type.GetElementType().IsArray)
 
-                    Array array = ((Array)member);
-                    List<object> objList = new List<object>();
-                    for(int ii = 0; ii < array.Length; ii++)
-                        objList.Add(array.GetValue(ii));
-
                     LoadLabelControl(control, name);
 
                     CollectionBox lbxValue = new CollectionBox();
                     lbxValue.Dock = DockStyle.Fill;
                     lbxValue.Size = new Size(0, 150);
-                    lbxValue.LoadFromList(objList.GetType(), objList);
-                    control.Controls.Add(lbxValue);
 
                     Type elementType = type.GetElementType();
+                    lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
                     {
@@ -899,6 +894,14 @@ namespace RogueEssence.Dev
                         frmData.Show();
                     };
 
+
+                    Array array = ((Array)member);
+                    List<object> objList = new List<object>();
+                    for (int ii = 0; ii < array.Length; ii++)
+                        objList.Add(array.GetValue(ii));
+
+                    lbxValue.LoadFromList(objList.GetType(), objList);
+                    control.Controls.Add(lbxValue);
                 }
                 else if (type.GetInterfaces().Contains(typeof(IList)))
                 {
@@ -907,10 +910,9 @@ namespace RogueEssence.Dev
                     CollectionBox lbxValue = new CollectionBox();
                     lbxValue.Dock = DockStyle.Fill;
                     lbxValue.Size = new Size(0, 150);
-                    lbxValue.LoadFromList(type, (IList)member);
-                    control.Controls.Add(lbxValue);
 
                     Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), type, 0);
+                    lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
                     {
@@ -935,6 +937,9 @@ namespace RogueEssence.Dev
 
                         frmData.Show();
                     };
+
+                    lbxValue.LoadFromList(type, (IList)member);
+                    control.Controls.Add(lbxValue);
                 }
                 else if (type.GetInterfaces().Contains(typeof(IDictionary)))
                 {
@@ -943,12 +948,11 @@ namespace RogueEssence.Dev
                     DictionaryBox lbxValue = new DictionaryBox();
                     lbxValue.Dock = DockStyle.Fill;
                     lbxValue.Size = new Size(0, 150);
-                    lbxValue.LoadFromDictionary(type, (IDictionary)member);
-                    control.Controls.Add(lbxValue);
 
                     Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
                     Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
+                    lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (object key, object element, DictionaryBox.EditElementOp op) =>
                     {
@@ -998,6 +1002,9 @@ namespace RogueEssence.Dev
 
                         frmKey.Show();
                     };
+
+                    lbxValue.LoadFromDictionary(type, (IDictionary)member);
+                    control.Controls.Add(lbxValue);
                 }
                 else if (type.GetInterfaces().Contains(typeof(IPriorityList)))
                 {
@@ -1006,10 +1013,9 @@ namespace RogueEssence.Dev
                     PriorityListBox lbxValue = new PriorityListBox();
                     lbxValue.Dock = DockStyle.Fill;
                     lbxValue.Size = new Size(0, 150);
-                    lbxValue.LoadFromList(type, (IPriorityList)member);
-                    control.Controls.Add(lbxValue);
 
                     Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
+                    lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
                     //add lambda expression for editing a single element
                     lbxValue.OnEditItem = (int priority, int index, object element, PriorityListBox.EditElementOp op) =>
                     {
@@ -1034,6 +1040,9 @@ namespace RogueEssence.Dev
 
                         frmData.Show();
                     };
+
+                    lbxValue.LoadFromList(type, (IPriorityList)member);
+                    control.Controls.Add(lbxValue);
                 }
                 else if (!isWindow && ReflectionExt.FindAttribute<SubGroupAttribute>(attributes) == null)
                 {
@@ -1752,6 +1761,26 @@ namespace RogueEssence.Dev
                 GameManager.Instance.BattleSE((string)box.SelectedItem);
         }
 
+        //TODO: WPF data binding would invalidate this
+
+        public static ReflectionExt.TypeStringConv GetStringRep(Type type, object[] attributes)
+        {
+            if (type == typeof(Int32))
+            {
+                DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
+                FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
+                if (dataAtt != null)
+                {
+                    Data.EntryDataIndex nameIndex = Data.DataManager.Instance.DataIndices[dataAtt.DataType];
+                    return (obj) => { return ((int)obj >= 0 & (int)obj < nameIndex.Count) ? nameIndex.Entries[(int)obj].GetLocalString(false) : "---"; };
+                }
+                else if (frameAtt != null)
+                {
+                    return (obj) => { return ((int)obj >= 0 & (int)obj < GraphicsManager.Actions.Count) ? GraphicsManager.Actions[(int)obj].Name : "---"; };
+                }
+            }
+            return (obj) => { return obj == null ? "[NULL]" : obj.ToString(); };
+        }
 
     }
 }

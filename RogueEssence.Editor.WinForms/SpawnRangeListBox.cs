@@ -5,10 +5,10 @@ using RogueElements;
 
 namespace RogueEssence.Dev
 {
-    public partial class SpawnListBox : UserControl
+    public partial class SpawnRangeListBox : UserControl
     {
         private bool dragging;
-        public ISpawnList Collection { get; private set; }
+        public ISpawnRangeList Collection { get; private set; }
 
         public int SelectedIndex
         {
@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
         public ElementOp OnEditItem;
         public ReflectionExt.TypeStringConv StringConv;
 
-        public SpawnListBox()
+        public SpawnRangeListBox()
         {
             InitializeComponent();
             StringConv = DefaultStringConv;
@@ -33,14 +33,15 @@ namespace RogueEssence.Dev
             return obj.ToString();
         }
 
-        public void LoadFromList(Type type, ISpawnList source)
+        public void LoadFromList(Type type, ISpawnRangeList source)
         {
-            Collection = (ISpawnList)Activator.CreateInstance(type);
+            Collection = (ISpawnRangeList)Activator.CreateInstance(type);
             for (int ii = 0; ii < source.Count; ii++)
             {
                 object obj = source.GetSpawn(ii);
                 int rate = source.GetSpawnRate(ii);
-                Collection.Add(obj, rate);
+                IntRange range = source.GetSpawnRange(ii);
+                Collection.Add(obj, range, rate);
             }
             for (int ii = 0; ii < source.Count; ii++)
                 lbxCollection.Items.Add(getSpawnString(ii));
@@ -56,7 +57,7 @@ namespace RogueEssence.Dev
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count+1);
-            Collection.Insert(index, element, 10);
+            Collection.Insert(index, element, new IntRange(0), 10);
             lbxCollection.Items.Insert(index, getSpawnString(index));
         }
 
@@ -98,7 +99,6 @@ namespace RogueEssence.Dev
             Collection.SetSpawnRate(b, rate);
             updateSpawnString(a);
             updateSpawnString(b);
-
         }
 
         private void btnUp_Click(object sender, EventArgs e)
@@ -125,7 +125,8 @@ namespace RogueEssence.Dev
         {
             object obj = Collection.GetSpawn(index);
             int rate = Collection.GetSpawnRate(index);
-            return String.Format("[{1}] {2:0.0}% {0}", StringConv(obj), rate, (decimal)rate * 100 / Collection.SpawnTotal);
+            IntRange range = Collection.GetSpawnRange(index);
+            return String.Format("{2}-{3} [{1}] {0}", StringConv(obj), rate, range.Min, range.Max-1);
         }
 
         private void spawnRateTrackBar_Scroll(object sender, EventArgs e)
@@ -136,8 +137,7 @@ namespace RogueEssence.Dev
             {
                 int index = lbxCollection.SelectedIndex;
                 Collection.SetSpawnRate(index, spawnRateTrackBar.Value);
-                for (int ii = 0; ii < lbxCollection.Items.Count; ii++)
-                    updateSpawnString(ii);
+                updateSpawnString(index);
                 spawnRateTrackBar.Focus();
             }
         }
@@ -154,8 +154,7 @@ namespace RogueEssence.Dev
             if (index > -1)
             {
                 Collection.SetSpawnRate(index, spawnRateTrackBar.Value);
-                for (int ii = 0; ii < lbxCollection.Items.Count; ii++)
-                    updateSpawnString(ii);
+                updateSpawnString(index);
                 spawnRateTrackBar.Focus();
             }
         }
@@ -172,19 +171,54 @@ namespace RogueEssence.Dev
         {
             if (updating)
                 return;
-            if (lbxCollection.SelectedIndex > -1)
+            int index = lbxCollection.SelectedIndex;
+            if (index > -1)
             {
-                spawnRateTrackBar.Value = Collection.GetSpawnRate(lbxCollection.SelectedIndex);
+                spawnRateTrackBar.Value = Collection.GetSpawnRate(index);
                 spawnRateTrackBar.Enabled = true;
+                IntRange range = Collection.GetSpawnRange(index);
+                nudStart.Value = range.Min;
+                nudEnd.Value = range.Max-1;
+                nudStart.Enabled = true;
+                nudEnd.Enabled = true;
                 lblWeight.Text = String.Format("Weight:\n{0}", spawnRateTrackBar.Value);
             }
             else
             {
                 spawnRateTrackBar.Value = 1;
                 spawnRateTrackBar.Enabled = false;
+                nudStart.Value = 0;
+                nudEnd.Value = 1;
+                nudStart.Enabled = false;
+                nudEnd.Enabled = false;
                 lblWeight.Text = String.Format("Weight:\n---");
             }
         }
 
+        private void nudStart_ValueChanged(object sender, EventArgs e)
+        {
+            if (nudEnd.Value < nudStart.Value)
+                nudEnd.Value = nudStart.Value;
+
+            int index = lbxCollection.SelectedIndex;
+            if (index > -1)
+            {
+                Collection.SetSpawnRange(index, new IntRange((int)nudStart.Value, (int)nudEnd.Value+1));
+                updateSpawnString(index);
+            }
+        }
+
+        private void nudEnd_ValueChanged(object sender, EventArgs e)
+        {
+            if (nudEnd.Value < nudStart.Value)
+                nudStart.Value = nudEnd.Value;
+
+            int index = lbxCollection.SelectedIndex;
+            if (index > -1)
+            {
+                Collection.SetSpawnRange(index, new IntRange((int)nudStart.Value, (int)nudEnd.Value + 1));
+                updateSpawnString(index);
+            }
+        }
     }
 }

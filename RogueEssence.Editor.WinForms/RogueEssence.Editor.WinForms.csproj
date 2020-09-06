@@ -7,6 +7,11 @@
   <ItemGroup>
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="SpawnRangeListBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>

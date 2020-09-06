@@ -39,10 +39,17 @@ namespace RogueEssence.Dev
         public delegate void ElementOp(int priority, int index, object element, EditElementOp op);
 
         public ElementOp OnEditItem;
+        public ReflectionExt.TypeStringConv StringConv;
 
         public PriorityListBox()
         {
             InitializeComponent();
+            StringConv = DefaultStringConv;
+        }
+
+        private string DefaultStringConv(object obj)
+        {
+            return obj.ToString();
         }
 
         public void LoadFromList(Type type, IPriorityList source)
@@ -82,7 +89,7 @@ namespace RogueEssence.Dev
             }
             boxIndex += index;
 
-            lbxCollection.Items[index] = getEntryString(priority, element.ToString());
+            lbxCollection.Items[index] = getEntryString(priority, element);
         }
 
         private void insertItem(int priority, int index, object element)
@@ -112,7 +119,7 @@ namespace RogueEssence.Dev
                 keys.Add(priority);
             boxIndex += index;
 
-            lbxCollection.Items.Insert(boxIndex, getEntryString(priority, element.ToString()));
+            lbxCollection.Items.Insert(boxIndex, getEntryString(priority, element));
         }
 
         private void lbxCollection_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -184,7 +191,7 @@ namespace RogueEssence.Dev
 
         private string getEntryString(int priority, object obj)
         {
-            return priority + ": " + obj.ToString();
+            return priority + ": " + StringConv(obj);
         }
 
         private void btnUp_Click(object sender, EventArgs e)

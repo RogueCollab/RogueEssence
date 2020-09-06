@@ -17,13 +17,9 @@ namespace RogueEssence.Dev
             CollectionBox lbxValue = new CollectionBox();
             lbxValue.Dock = DockStyle.Fill;
             lbxValue.Size = new Size(0, 150);
-            List<object> states = new List<object>();
-            foreach (object state in obj)
-                states.Add(state);
-            lbxValue.LoadFromList(typeof(List<object>), states);
-            control.Controls.Add(lbxValue);
 
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), obj.GetType(), 0);
+            lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
             lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
             {
@@ -64,6 +60,12 @@ namespace RogueEssence.Dev
 
                 frmData.Show();
             };
+
+            List<object> states = new List<object>();
+            foreach (object state in obj)
+                states.Add(state);
+            lbxValue.LoadFromList(typeof(List<object>), states);
+            control.Controls.Add(lbxValue);
         }
 
 

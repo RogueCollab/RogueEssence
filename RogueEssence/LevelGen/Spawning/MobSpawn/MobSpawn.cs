@@ -27,7 +27,7 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(1, DataManager.DataType.Skill, false)]
         public List<int> SpecifiedSkills;
 
-        [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
+        [Dev.DataType(0, DataManager.DataType.Intrinsic, true)]
         public int Intrinsic;
 
         public List<MobSpawnExtra> SpawnFeatures;

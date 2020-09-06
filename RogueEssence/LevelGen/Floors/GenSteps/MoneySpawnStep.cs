@@ -1,11 +1,13 @@
 ﻿using System;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
     [Serializable]
     public class MoneySpawnStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        [SubGroup]
         public MoneySpawnRange MoneyRange;
 
         public MoneySpawnStep() { }

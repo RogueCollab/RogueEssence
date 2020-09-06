@@ -10,18 +10,18 @@ using RogueElements;
 
 namespace RogueEssence.Dev
 {
-    public class SpawnListConverter : EditorConverter<ISpawnList>
+    public class SpawnRangeListConverter : EditorConverter<ISpawnRangeList>
     {
-        public override void LoadClassControls(ISpawnList obj, TableLayoutPanel control)
+        public override void LoadClassControls(ISpawnRangeList obj, TableLayoutPanel control)
         {
-            SpawnListBox lbxValue = new SpawnListBox();
+            SpawnRangeListBox lbxValue = new SpawnRangeListBox();
             lbxValue.Dock = DockStyle.Fill;
-            lbxValue.Size = new Size(0, 200);
+            lbxValue.Size = new Size(0, 250);
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), obj.GetType(), 0);
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), obj.GetType(), 0);
             lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (int index, object element, SpawnListBox.EditElementOp op) =>
+            lbxValue.OnEditItem = (int index, object element, SpawnRangeListBox.EditElementOp op) =>
             {
                 ElementForm frmData = new ElementForm();
                 if (element == null)
@@ -29,11 +29,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Text = element.ToString();
 
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(SpawnList) [" + index + "]", elementType, new object[0] { }, element, true);
+                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(SpawnRangeList) [" + index + "]", elementType, new object[0] { }, element, true);
 
                 frmData.OnOK += (object okSender, EventArgs okE) =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "SpawnList", elementType, new object[0] { }, ref element, true);
+                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "SpawnRangeList", elementType, new object[0] { }, ref element, true);
 
                     op(index, element);
                     frmData.Close();
@@ -51,12 +51,12 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(ISpawnList obj, TableLayoutPanel control)
+        public override void SaveClassControls(ISpawnRangeList obj, TableLayoutPanel control)
         {
-            SpawnListBox lbxValue = (SpawnListBox)control.Controls[0];
+            SpawnRangeListBox lbxValue = (SpawnRangeListBox)control.Controls[0];
 
             for (int ii = 0; ii < lbxValue.Collection.Count; ii++)
-                obj.Add(lbxValue.Collection.GetSpawn(ii), lbxValue.Collection.GetSpawnRate(ii));
+                obj.Add(lbxValue.Collection.GetSpawn(ii), lbxValue.Collection.GetSpawnRange(ii), lbxValue.Collection.GetSpawnRate(ii));
         }
     }
 }
