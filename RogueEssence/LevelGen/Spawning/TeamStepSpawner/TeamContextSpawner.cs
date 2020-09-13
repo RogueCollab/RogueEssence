@@ -11,7 +11,7 @@ namespace RogueEssence.LevelGen
         
         public Team GetSpawn(T map)
         {
-            return map.MobSpawns.Pick(map.Rand).Spawn(map);
+            return map.TeamSpawns.Pick(map.Rand).Spawn(map);
         }
     }
 }

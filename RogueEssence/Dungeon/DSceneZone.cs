@@ -86,6 +86,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
+            ZoneManager.Instance.CurrentMap.Begun = true;
             //process map-start events (dialogue, map condition announcement, etc)
             foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));

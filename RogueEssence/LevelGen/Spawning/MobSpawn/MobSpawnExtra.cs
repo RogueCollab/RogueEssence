@@ -9,7 +9,7 @@ namespace RogueEssence.LevelGen
     public abstract class MobSpawnExtra
     {
         public abstract MobSpawnExtra Copy();
-        public abstract void ApplyFeature(IRandom rand, Character newChar);
+        public abstract void ApplyFeature(IMobSpawnMap map, Character newChar);
     }
 
 
@@ -29,9 +29,9 @@ namespace RogueEssence.LevelGen
         }
         public override MobSpawnExtra Copy() { return new MobSpawnStatus(this); }
 
-        public override void ApplyFeature(IRandom rand, Character newChar)
+        public override void ApplyFeature(IMobSpawnMap map, Character newChar)
         {
-            StatusEffect status = Statuses.Pick(rand).Clone();//Clone Use Case; convert to Instantiate?
+            StatusEffect status = Statuses.Pick(map.Rand).Clone();//Clone Use Case; convert to Instantiate?
             status.LoadFromData();
             StatusData entry = (StatusData)status.GetData();
             if (!entry.Targeted)//no targeted statuses allowed

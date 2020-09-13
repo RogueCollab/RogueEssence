@@ -1,40 +1,41 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class FloorChancePostProc : ZonePostProc
+    public class SpreadStepPostProc : ZonePostProc
     {
         public SpreadPlanBase SpreadPlan;
-        public SpawnList<GenPriority<IGenStep>> Spawns;
+        public SpawnList<IGenPriority> Spawns;
 
         //spreads an item through the floors
         //ensures that the space in floors between occurrences is kept tame
-        public FloorChancePostProc()
+        public SpreadStepPostProc()
         {
-            Spawns = new SpawnList<GenPriority<IGenStep>>();
+            Spawns = new SpawnList<IGenPriority>();
         }
 
-        public FloorChancePostProc(SpreadPlanBase plan) : this()
+        public SpreadStepPostProc(SpreadPlanBase plan) : this()
         {
             SpreadPlan = plan;
         }
-        protected FloorChancePostProc(FloorChancePostProc other, ulong seed)
+
+        protected SpreadStepPostProc(SpreadStepPostProc other, ulong seed) : this()
         {
             Spawns = other.Spawns;
             SpreadPlan = other.SpreadPlan.Instantiate(seed);
         }
+        public override ZonePostProc Instantiate(ulong seed) { return new SpreadStepPostProc(this, seed); }
 
-        public override ZonePostProc Instantiate(ulong seed) { return new FloorChancePostProc(this, seed); }
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<int, IGenStep> queue)
         {
             if (SpreadPlan.CheckIfDistributed(zoneContext, context))
             {
-                //TODO: add a way to clamp the type of mapgencontext processed up to BaseMapGen
-                GenPriority<IGenStep> step = Spawns.Pick(context.Rand);
-                queue.Enqueue(step.Priority, step.Item);
+                IGenPriority genStep = Spawns.Pick(context.Rand);
+                queue.Enqueue(genStep.Priority, genStep.GetItem());
             }
         }
     }

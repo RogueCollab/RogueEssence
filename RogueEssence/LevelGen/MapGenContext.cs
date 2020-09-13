@@ -24,7 +24,7 @@ namespace RogueEssence.LevelGen
 
         public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
         public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
-        public SpawnList<TeamSpawner> MobSpawns { get { return Map.MobSpawns; } }
+        public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
 
         public MoneySpawnRange MoneyAmount { get { return Map.MoneyAmount; } set { Map.MoneyAmount = value; } }
         IRandPicker<MoneySpawn> ISpawningGenContext<MoneySpawn>.Spawner { get { return Map.MoneyAmount; } }
@@ -33,7 +33,7 @@ namespace RogueEssence.LevelGen
 
 
         public IRandom Rand { get { return Map.Rand; } }
-        public bool OneTimeSpawnMode { get { return false; } }
+        public bool Begun { get { return Map.Begun; } }
         public bool NoRescue { get { return Map.NoRescue; } set { Map.NoRescue = value; } }
         public bool DropTitle { get { return Map.DropTitle; } set { Map.DropTitle = value; } }
 
@@ -71,7 +71,6 @@ namespace RogueEssence.LevelGen
 
         public void InitSeed(ulong seed)
         {
-            DiagManager.Instance.LogInfo("Map Seed: " + seed);
             Map.LoadRand(new ReRandom(seed));
         }
         public void LoadRand(ReRandom rand)

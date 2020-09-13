@@ -69,5 +69,9 @@ namespace RogueEssence.Dungeon
             return (obj != null) && Equals(obj as AutoTile);
         }
 
+        public override int GetHashCode()
+        {
+            return AutoTileset.GetHashCode() ^ BorderTileset.GetHashCode() ^ Layers.GetHashCode();
+        }
     }
 }

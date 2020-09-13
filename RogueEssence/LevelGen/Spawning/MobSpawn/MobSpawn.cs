@@ -104,7 +104,7 @@ namespace RogueEssence.LevelGen
             newChar.Tactic = new AITactic(tactic);
 
             foreach (MobSpawnExtra spawnExtra in SpawnFeatures)
-                spawnExtra.ApplyFeature(map.Rand, newChar);
+                spawnExtra.ApplyFeature(map, newChar);
 
             return newChar;
         }

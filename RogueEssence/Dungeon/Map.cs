@@ -10,7 +10,7 @@ namespace RogueEssence.Dungeon
     public interface IMobSpawnMap
     {
         IRandom Rand { get; }
-        bool OneTimeSpawnMode { get; }
+        bool Begun { get; }
     }
 
     //Contains all data within a dungeon map, and a few helper functions
@@ -66,7 +66,7 @@ namespace RogueEssence.Dungeon
         //if maps are to be separated into their own chunks, these members would be specific to each chunk
         public int MaxFoes;
         public int RespawnTime;
-        public SpawnList<TeamSpawner> MobSpawns;
+        public SpawnList<TeamSpawner> TeamSpawns;
 
         public MoneySpawnRange MoneyAmount;
         public SpawnList<InvItem> ItemSpawns;
@@ -110,7 +110,7 @@ namespace RogueEssence.Dungeon
             TileSight = SightRange.Clear;
             CharSight = SightRange.Clear;
 
-            MobSpawns = new SpawnList<TeamSpawner>();
+            TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new SpawnList<InvItem>();
 
             BlankBG = new AutoTile();
@@ -140,7 +140,7 @@ namespace RogueEssence.Dungeon
         public List<Character> RespawnMob()
         {
             List<Character> respawns = new List<Character>();
-            if (MobSpawns.Count > 0)
+            if (TeamSpawns.Count > 0)
             {
                 bool[][] traversedGrid = new bool[Width][];
                 for (int xx = 0; xx < Width; xx++)
@@ -187,7 +187,7 @@ namespace RogueEssence.Dungeon
                 {
                     for (int ii = 0; ii < 10; ii++)
                     {
-                        Team newTeam = MobSpawns.Pick(Rand).Spawn(this);
+                        Team newTeam = TeamSpawns.Pick(Rand).Spawn(this);
                         if (newTeam == null)
                             continue;
                         Loc trialLoc = freeTiles[Rand.Next(freeTiles.Count)];
@@ -529,8 +529,8 @@ namespace RogueEssence.Dungeon
 
         protected ReRandom rand;
         public ReRandom Rand { get { return rand; } }
-        IRandom IMobSpawnMap.Rand { get { return rand;} }
-        public bool OneTimeSpawnMode { get { return false; } }
+        IRandom IMobSpawnMap.Rand { get { return rand; } }
+        public bool Begun { get; set; }
 
         public bool NoRescue;
         public bool NoSwitching;

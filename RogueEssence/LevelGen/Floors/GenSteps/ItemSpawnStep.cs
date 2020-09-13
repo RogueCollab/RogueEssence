@@ -22,7 +22,6 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(T map)
         {
-            map.ItemSpawns.Clear();
             for (int ii = 0; ii < Spawns.Count; ii++)
             {
                 map.ItemSpawns.Add(new InvItem(Spawns.GetSpawn(ii)), Spawns.GetSpawnRate(ii));
