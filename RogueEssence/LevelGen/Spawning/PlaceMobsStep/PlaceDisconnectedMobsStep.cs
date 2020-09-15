@@ -10,19 +10,27 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T> where T : StairsMapGenContext
+    public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T>
+        where T : StairsMapGenContext, ITiledGenContext
     {
         public RandRange Amount;
 
+        public List<ITile> AcceptedTiles;
+
         public PlaceDisconnectedMobsStep()
         {
+            AcceptedTiles = new List<ITile>();
         }
 
-        public PlaceDisconnectedMobsStep(ITeamStepSpawner<T> spawn) : base(spawn) { }
+        public PlaceDisconnectedMobsStep(ITeamStepSpawner<T> spawn) : base(spawn)
+        {
+            AcceptedTiles = new List<ITile>();
+        }
 
         public PlaceDisconnectedMobsStep(ITeamStepSpawner<T> spawn, RandRange amount) : base(spawn)
         {
             Amount = amount;
+            AcceptedTiles = new List<ITile>();
         }
 
         public override void Apply(T map)
@@ -43,7 +51,15 @@ namespace RogueEssence.LevelGen
                 Grid.FloodFill(new Rect(0, 0, map.Width, map.Height),
                 (Loc testLoc) =>
                 {
-                    return (connectionGrid[testLoc.X][testLoc.Y] || !map.GetTile(testLoc).TileEquivalent(map.RoomTerrain));
+                    if (connectionGrid[testLoc.X][testLoc.Y])
+                        return true;
+
+                    foreach (ITile tile in AcceptedTiles)
+                    {
+                        if (map.GetTile(testLoc).TileEquivalent(tile))
+                            return false;
+                    }
+                    return true;
                 },
                 (Loc testLoc) =>
                 {
@@ -63,8 +79,17 @@ namespace RogueEssence.LevelGen
                 {
                     for (int yy = 0; yy < map.Height; yy++)
                     {
-                        if (((IGroupPlaceableGenContext<Team>)map).CanPlaceItem(new Loc(xx, yy)) && !connectionGrid[xx][yy])
-                            freeTiles.Add(new Loc(xx, yy));
+                        if (!connectionGrid[xx][yy])
+                        {
+                            bool allowPlacement = false;
+                            foreach (ITile tile in AcceptedTiles)
+                            {
+                                if (map.GetTile(new Loc(xx, yy)).TileEquivalent(tile))
+                                    allowPlacement = true;
+                            }
+                            if (allowPlacement)
+                                freeTiles.Add(new Loc(xx, yy));
+                        }
                     }
                 }
 

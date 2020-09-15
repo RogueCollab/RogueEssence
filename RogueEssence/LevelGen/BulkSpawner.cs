@@ -6,7 +6,7 @@ namespace RogueEssence
 {
 
     [Serializable]
-    public class BulkSpawner<TGenContext, TSpawnable> :  IStepSpawner<TGenContext, TSpawnable>
+    public class BulkSpawner<TGenContext, TSpawnable> : IStepSpawner<TGenContext, TSpawnable>
         where TGenContext : IGenContext
         where TSpawnable : ISpawnable
     {

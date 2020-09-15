@@ -977,55 +977,45 @@ namespace RogueEssence.Dungeon
                 else
                     loc = newLoc.Value;
             }
-            if (loc == start)
+            if (loc != start)
             {
-                mapItem.TileLoc = loc;
-                ZoneManager.Instance.CurrentMap.Items.Add(mapItem);
                 if (!silent)
                 {
-                    LogMsg(Text.FormatKey("MSG_MAP_ITEM_GROUND", itemName));
-                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
+                    ItemAnim itemAnim = new ItemAnim(start, loc, item.IsMoney ? MapItem.MONEY_SPRITE : Data.DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    CreateAnim(itemAnim, DrawLayer.Normal);
+                    yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }
+            }
+            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y];
+            TerrainData terrain = tile.Data.GetData();
+            if (terrain.BlockType == TerrainData.Mobility.Lava)
+            {
+                if (!silent)
+                {
+                    LogMsg(Text.FormatKey("MSG_MAP_ITEM_LOST", itemName));
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
+                }
+            }
+            else if (terrain.BlockType == TerrainData.Mobility.Abyss)
+            {
+                if (!silent)
+                    LogMsg(Text.FormatKey("MSG_MAP_ITEM_FALL", itemName));
             }
             else
             {
-                if (!silent)
-                {
-                    ItemAnim itemAnim = new ItemAnim(start, loc, item.IsMoney ? MapItem.MONEY_SPRITE : Data.DataManager.Instance.GetItem(item.Value).Sprite);
-                    CreateAnim(itemAnim, DrawLayer.Normal);
-                    yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME - 1);
-                }
-                Tile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y];
-                TerrainData terrain = tile.Data.GetData();
-                if (terrain.BlockType == TerrainData.Mobility.Lava)
-                {
-                    if (!silent)
-                    {
-                        LogMsg(Text.FormatKey("MSG_MAP_ITEM_LOST", itemName));
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
-                    }
-                }
-                else if (terrain.BlockType == TerrainData.Mobility.Abyss)
-                {
-                    if (!silent)
-                        LogMsg(Text.FormatKey("MSG_MAP_ITEM_FALL", itemName));
-                }
-                else
-                {
-                    mapItem.TileLoc = loc;
-                    ZoneManager.Instance.CurrentMap.Items.Add(mapItem);
+                mapItem.TileLoc = loc;
+                ZoneManager.Instance.CurrentMap.Items.Add(mapItem);
 
-                    if (!silent)
-                    {
-                        if (terrain.BlockType == TerrainData.Mobility.Water)
-                            LogMsg(Text.FormatKey("MSG_MAP_ITEM_WATER", itemName));
-                        else
-                            LogMsg(Text.FormatKey("MSG_MAP_ITEM_GROUND", itemName));
-                    }
-                }
                 if (!silent)
-                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
+                {
+                    if (terrain.BlockType == TerrainData.Mobility.Water)
+                        LogMsg(Text.FormatKey("MSG_MAP_ITEM_WATER", itemName));
+                    else
+                        LogMsg(Text.FormatKey("MSG_MAP_ITEM_GROUND", itemName));
+                }
             }
+            if (!silent)
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
         }
 
         public IEnumerator<YieldInstruction> AddMapStatus(MapStatus status, bool msg = true)
