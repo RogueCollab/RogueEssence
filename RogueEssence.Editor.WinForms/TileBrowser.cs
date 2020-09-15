@@ -314,9 +314,9 @@ namespace RogueEssence.Dev
         {
             TileLayer chosenAnim = tilePreview.GetChosenAnim();
             if (lbxFrames.SelectedIndex > -1)
-                chosenAnim.Frames.Insert(lbxFrames.SelectedIndex, new TileFrame());
+                chosenAnim.Frames.Insert(lbxFrames.SelectedIndex, new TileFrame(chosenTile, chosenTileset));
             else
-                chosenAnim.Frames.Add(new TileFrame());
+                chosenAnim.Frames.Add(new TileFrame(chosenTile, chosenTileset));
             tilePreview.SetChosenAnim(chosenAnim);
 
             UpdateAnimFrames();

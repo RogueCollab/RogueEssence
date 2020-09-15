@@ -380,6 +380,38 @@ namespace RogueEssence.Ground
             obstacles[x][y].Tags = tags;
         }
 
+        public void ResizeJustified(int width, int height, Dir8 anchorDir)
+        {
+            RogueElements.Grid.LocAction changeOp = (Loc effectLoc) => { };
+            RogueElements.Grid.LocAction newOp = (Loc effectLoc) => { Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
+
+            Loc diff = RogueElements.Grid.ResizeJustified(ref Tiles,
+                width, height, anchorDir.Reverse(), changeOp, newOp);
+
+            int divSize = GraphicsManager.TileSize / SUB_TILES;
+            RogueElements.Grid.LocAction blockChangeOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y].Bounds = new Rect(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
+            RogueElements.Grid.LocAction blocknewOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y] = new GroundWall(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
+
+            RogueElements.Grid.ResizeJustified(ref obstacles,
+                width * SUB_TILES, height * SUB_TILES, anchorDir.Reverse(), blockChangeOp, blocknewOp);
+
+            foreach (GroundChar character in ZoneManager.Instance.CurrentGround.IterateCharacters())
+            {
+                Loc newLoc = character.MapLoc + diff * GraphicsManager.TileSize;
+                if (newLoc.X < 0)
+                    newLoc.X = 0;
+                else if (newLoc.X >= width)
+                    newLoc.X = width - 1;
+                if (newLoc.Y < 0)
+                    newLoc.Y = 0;
+                else if (newLoc.Y >= height)
+                    newLoc.Y = height - 1;
+
+                character.SetMapLoc(newLoc);
+                character.UpdateFrame();
+            }
+        }
+
         public GroundSpawner GetSpawner(string name)
         {
             GroundSpawner found = Spawners.Find((GroundSpawner ch) => { return ch.EntName == name; });

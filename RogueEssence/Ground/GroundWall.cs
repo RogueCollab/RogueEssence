@@ -15,14 +15,8 @@ namespace RogueEssence.Ground
 
         public GroundWall(int x, int y, int width, int height)
         {
-            this.bounds = new Rect(x, y, width, height);
+            this.Bounds = new Rect(x, y, width, height);
         }
-
-        #endregion
-
-        #region Fields
-        
-        private Rect bounds;
 
         #endregion
 
@@ -30,7 +24,7 @@ namespace RogueEssence.Ground
 
         public Rect Bounds
         {
-            get { return bounds; }
+            get; set;
         }
         
         public int Height { get { return Bounds.Height; } }

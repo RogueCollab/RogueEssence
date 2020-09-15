@@ -371,25 +371,7 @@ namespace RogueEssence.Dev
             Grid.LocAction changeOp = (Loc effectLoc) => { };
             Grid.LocAction newOp = (Loc effectLoc) => { ZoneManager.Instance.CurrentGround.Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
 
-            Loc diff = Grid.ResizeJustified(ref ZoneManager.Instance.CurrentGround.Tiles,
-                newSize.X, newSize.Y, Dir8.None, changeOp, newOp);
-
-            foreach (GroundChar character in ZoneManager.Instance.CurrentGround.IterateCharacters())
-            {
-                Loc newLoc = character.MapLoc + diff * Content.GraphicsManager.TileSize;
-                if (newLoc.X < 0)
-                    newLoc.X = 0;
-                else if (newLoc.X >= newSize.X)
-                    newLoc.X = newSize.X - 1;
-                if (newLoc.Y < 0)
-                    newLoc.Y = 0;
-                else if (newLoc.Y >= newSize.Y)
-                    newLoc.Y = newSize.Y - 1;
-
-                character.SetMapLoc(newLoc);
-                character.UpdateFrame();
-            }
-
+            ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.None);
 
             //set tilesets
             for (int yy = 0; yy < newSize.Y; yy++)
@@ -582,28 +564,7 @@ namespace RogueEssence.Dev
                 DiagManager.Instance.LoadMsg = "Resizing Map...";
                 DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-
-                Grid.LocAction changeOp = (Loc effectLoc) => {  };
-                Grid.LocAction newOp = (Loc effectLoc) => { ZoneManager.Instance.CurrentGround.Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
-
-                Loc diff = Grid.ResizeJustified(ref ZoneManager.Instance.CurrentGround.Tiles,
-                    window.MapWidth, window.MapHeight, window.ResizeDir.Reverse(), changeOp, newOp);
-
-                foreach(GroundChar character in ZoneManager.Instance.CurrentGround.IterateCharacters())
-                {
-                    Loc newLoc = character.MapLoc + diff * Content.GraphicsManager.TileSize;
-                    if (newLoc.X < 0)
-                        newLoc.X = 0;
-                    else if (newLoc.X >= window.MapWidth)
-                        newLoc.X = window.MapWidth - 1;
-                    if (newLoc.Y < 0)
-                        newLoc.Y = 0;
-                    else if (newLoc.Y >= window.MapHeight)
-                        newLoc.Y = window.MapHeight - 1;
-
-                    character.SetMapLoc(newLoc);
-                    character.UpdateFrame();
-                }
+                ZoneManager.Instance.CurrentGround.ResizeJustified(window.MapWidth, window.MapHeight, window.ResizeDir);
 
                 DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
             }

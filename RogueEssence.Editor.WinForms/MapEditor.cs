@@ -281,7 +281,7 @@ namespace RogueEssence.Dev
                 DiagManager.Instance.LoadMsg = "Resizing Map...";
                 DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-
+                //TODO: move this into map class
                 Grid.LocAction changeOp = (Loc effectLoc) => { ZoneManager.Instance.CurrentMap.Tiles[effectLoc.X][effectLoc.Y].Effect.UpdateTileLoc(effectLoc); };
                 Grid.LocAction newOp = (Loc effectLoc) => { ZoneManager.Instance.CurrentMap.Tiles[effectLoc.X][effectLoc.Y] = new Tile(0, effectLoc); };
 
