@@ -1465,6 +1465,7 @@
             this.btnOpenScriptDir.TabIndex = 2;
             this.btnOpenScriptDir.Text = "Open script directory";
             this.btnOpenScriptDir.UseVisualStyleBackColor = true;
+            this.btnOpenScriptDir.Click += new System.EventHandler(this.btnOpenScriptDir_Click);
             // 
             // groupBox4
             // 
@@ -1506,7 +1507,7 @@
             this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
             this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(854, 587);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(836, 443);
             this.flowLayoutPanel2.TabIndex = 4;
             // 
             // label3
@@ -1531,7 +1532,7 @@
             this.gvStrings.RowTemplate.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.gvStrings.RowTemplate.Height = 32;
             this.gvStrings.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.gvStrings.Size = new System.Drawing.Size(640, 441);
+            this.gvStrings.Size = new System.Drawing.Size(640, 382);
             this.gvStrings.TabIndex = 0;
             this.gvStrings.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvStrings_CellValueChanged);
             // 
@@ -1542,7 +1543,7 @@
             this.flowLayoutPanel3.Controls.Add(this.btnReloadStrings);
             this.flowLayoutPanel3.Controls.Add(this.btnStringAdd);
             this.flowLayoutPanel3.Controls.Add(this.btnStringRem);
-            this.flowLayoutPanel3.Location = new System.Drawing.Point(3, 463);
+            this.flowLayoutPanel3.Location = new System.Drawing.Point(3, 404);
             this.flowLayoutPanel3.Name = "flowLayoutPanel3";
             this.flowLayoutPanel3.Size = new System.Drawing.Size(369, 29);
             this.flowLayoutPanel3.TabIndex = 6;

@@ -12,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using RogueEssence.Script;
 using RogueEssence.Content;
+using System.Diagnostics;
 
 namespace RogueEssence.Dev
 {
@@ -46,7 +47,7 @@ namespace RogueEssence.Dev
             SetupLayerVisibility();
 
             InitializeComponent();
-            DisableStringsIO();
+            UpdateHasScriptFolder(false);
 
             for (int ii = 0; ii < (int)GroundEntity.EEntTypes.Count; ii++)
                 cmbEntityType.Items.Add(((GroundEntity.EEntTypes)ii).ToLocal());
@@ -275,9 +276,9 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < chklstScriptMapCallbacks.Items.Count; ii++)
                 chklstScriptMapCallbacks.SetItemChecked(ii, true);
 
-            DisableStringsIO(); //Don't let people save the strings if the map hasn't been written to disk yet!
-
             CurrentFile = "";
+
+            UpdateHasScriptFolder(false);
 
             //Schedule the map creation
             GroundEditScene.Instance.PendingDevEvent = DoNew();
@@ -315,6 +316,8 @@ namespace RogueEssence.Dev
                 else
                 {
                     CurrentFile = openFileDialog.FileName;
+
+                    UpdateHasScriptFolder(true);
 
                     //Schedule the map load
                     GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(openFileDialog.FileName));
@@ -404,7 +407,7 @@ namespace RogueEssence.Dev
             //Actually create the script folder, and default script file.
             CreateOrCopyScriptData(oldfname, CurrentFile);
             //Strings will have to be created on demand!
-            EnableStringsIO();
+            UpdateHasScriptFolder(true);
 
             RefreshTitle();
 
@@ -776,6 +779,24 @@ namespace RogueEssence.Dev
             LuaEngine.Instance.ReInit();
         }
 
+
+        /// <summary>
+        /// Open script dir
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnOpenScriptDir_Click(object sender, EventArgs e)
+        {
+            if (CurrentFile == "")
+            {
+
+                return;
+            }
+            string mapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(CurrentFile));
+            mapscriptdir = Path.GetFullPath(mapscriptdir);
+            Process.Start("explorer.exe", mapscriptdir);
+        }
+
         /// <summary>
         /// Called when callbacks for the map are added or removed
         /// </summary>
@@ -802,21 +823,15 @@ namespace RogueEssence.Dev
         private bool ProcessStringCellChanged = true; //!FIXME: Is that even used anymore?
 
         /// <summary>
-        /// Call this when the strings are safe to save/load! Aka when the map has a script folder.
+        /// Calls this when the map's status as a new, unsaved map has changed.
         /// </summary>
-        private void EnableStringsIO()
+        private void UpdateHasScriptFolder(bool hasFolder)
         {
-            btnCommitStrings.Enabled = true;
-            btnReloadStrings.Enabled = true;
-        }
-
-        /// <summary>
-        /// Calls this when the strings shouldn't be saved or loaded, aka when the map hasn't been saved yet.
-        /// </summary>
-        private void DisableStringsIO()
-        {
-            btnCommitStrings.Enabled = false;
-            btnReloadStrings.Enabled = false;
+            btnCommitStrings.Enabled = hasFolder;
+            btnReloadStrings.Enabled = hasFolder;
+            btnOpenScriptDir.Enabled = hasFolder;
+            btnMapReloadScripts.Enabled = hasFolder;
+            chklstEntScriptCallbacks.Enabled = hasFolder;
         }
 
         /// <summary>
@@ -933,7 +948,6 @@ namespace RogueEssence.Dev
         {
             LoadStrings(MakeCurrentStringsPath());
             SetupStringsDisplay();
-            EnableStringsIO();
         }
 
         /// <summary>
