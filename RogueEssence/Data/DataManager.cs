@@ -228,7 +228,6 @@ namespace RogueEssence.Data
 
             UniversalEvent = (ActiveEffect)LoadData(DATA_PATH + "Universal.bin", null);
             LoadStartParams();
-            LoadStartTeams();
 
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -343,34 +342,6 @@ namespace RogueEssence.Data
             StartChars.Add(0);
             StartTeams = new List<string>();
         }
-
-        private void LoadStartTeams()
-        {
-            string path = DATA_PATH + "StartTeams.xml";
-            //try to load from file
-            if (File.Exists(path))
-            {
-                try
-                {
-                    StartTeams = new List<string>();
-
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    XmlNode startTeams = xmldoc.SelectSingleNode("StartTeams");
-                    foreach (XmlNode startTeam in startTeams.SelectNodes("StartTeam"))
-                        StartTeams.Add(startTeam.InnerText);
-
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
-            }
-            StartTeams = new List<string>();
-        }
-
 
 
         public void Unload()

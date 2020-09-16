@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
+using SDL2;
 
 
 namespace RogueEssence.Menu
@@ -22,6 +23,7 @@ namespace RogueEssence.Menu
             
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_REPLAY"), ReplayAction));
+            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_SEED"), SeedAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE"), DeleteAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
@@ -56,6 +58,18 @@ namespace RogueEssence.Menu
 
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = Replay(replay);
+            }
+        }
+
+        private void SeedAction()
+        {
+            GameProgress ending = DataManager.Instance.GetRecord(recordDir);
+            if (ending == null)
+                cannotRead();
+            else
+            {
+                SDL.SDL_SetClipboardText(ending.Rand.FirstSeed.ToString("X"));
+                GameManager.Instance.SE("Menu/Sort");
             }
         }
 

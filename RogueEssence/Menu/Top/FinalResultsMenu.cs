@@ -69,14 +69,30 @@ namespace RogueEssence.Menu
                 new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             InvValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_INV_VALUE", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.GetInvValue())),
                 new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-            StorageValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-            TotalTally = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_SCORE", Ending.ActiveTeam.GetTotalScore()),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             TotalTurns = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_TURNS", Ending.TotalTurns),
                 new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-            Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+
+
+            bool rogue = Ending is RogueProgress;
+
+            if (rogue)
+            {
+                StorageValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
+                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                TotalTally = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_SCORE", Ending.ActiveTeam.GetTotalScore()),
+                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
+                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            }
+            else
+            {
+                StorageValueTally = new MenuText("",
+                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                TotalTally = new MenuText("",
+                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                Seed = new MenuText("",
+                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            }
 
             base.Initialize();
         }
