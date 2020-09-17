@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Globalization;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
@@ -12,6 +14,8 @@ namespace RogueEssence.Menu
 
         DungeonSummary summaryMenu;
         private List<int> dungeonIndices;
+        private SeedSummary infoMenu;
+        private ulong? seed;
 
         public RogueDestMenu()
         {
@@ -45,6 +49,9 @@ namespace RogueEssence.Menu
 
             summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
+            infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            UpdateExtraInfo("");
+
             Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
         }
 
@@ -69,13 +76,40 @@ namespace RogueEssence.Menu
 
             //draw other windows
             summaryMenu.Draw(spriteBatch);
+
+            infoMenu.Draw(spriteBatch);
         }
 
         private void choose(int choice)
         {
-            MenuManager.Instance.AddMenu(new RogueTeamMenu(choice), false);
+            MenuManager.Instance.AddMenu(new RogueTeamInputMenu(choice, seed), false);
         }
 
 
+        protected override void UpdateKeys(InputManager input)
+        {
+            //when entering the customization choice, limit the actual choice to the defaults
+            //allow the player to choose any combination of traits within a given species
+            //however, when switching between species, the settings are kept even if invalid for new species, just display legal substitutes in those cases
+            if (input.JustPressed(FrameInput.InputType.SortItems))
+            {
+                GameManager.Instance.SE("Menu/Confirm");
+                SeedInputMenu menu = new SeedInputMenu(UpdateExtraInfo, seed);
+                MenuManager.Instance.AddMenu(menu, false);
+            }
+            else
+                base.UpdateKeys(input);
+        }
+
+        public void UpdateExtraInfo(string text)
+        {
+            ulong newSeed;
+            if (UInt64.TryParse(text, NumberStyles.HexNumber, null, out newSeed))
+                seed = newSeed;
+            else
+                seed = null;
+
+            infoMenu.SetDetails(seed);
+        }
     }
 }

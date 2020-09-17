@@ -22,8 +22,9 @@ namespace RogueEssence.Menu
         private CharaSummary infoMenu;
         public SpeakerPortrait Portrait;
         private List<int> startChars;
+        private ulong? seed;
 
-        public CharaChoiceMenu(string teamName, int chosenDungeon)
+        public CharaChoiceMenu(string teamName, int chosenDungeon, ulong? seed)
         {
             GenderSetting = Gender.Unknown;
             SkinSetting = 0;
@@ -55,6 +56,7 @@ namespace RogueEssence.Menu
 
             team = teamName;
             chosenDest = chosenDungeon;
+            this.seed = seed;
 
             Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 64), true);
 
@@ -179,7 +181,7 @@ namespace RogueEssence.Menu
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
-            GameProgress save = new RogueProgress(MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper());
+            GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
                 save.DungeonUnlocks[ii] = DataManager.Instance.Save.DungeonUnlocks[ii];
             DataManager.Instance.SetProgress(save);

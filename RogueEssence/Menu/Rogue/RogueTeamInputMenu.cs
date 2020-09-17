@@ -4,15 +4,17 @@ using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
-    public class RogueTeamMenu : TextInputMenu
+    public class RogueTeamInputMenu : TextInputMenu
     {
         public override int MaxLength { get { return 96; } }
 
         private int chosenDest;
+        private ulong? seed;
 
-        public RogueTeamMenu(int chosenDungeon)
+        public RogueTeamInputMenu(int chosenDungeon, ulong? seed)
         {
             chosenDest = chosenDungeon;
+            this.seed = seed;
             Initialize(RogueEssence.Text.FormatKey("INPUT_TEAM_TITLE"), RogueEssence.Text.FormatKey("INPUT_TEAM_DESC"), 256);
         }
 
@@ -38,7 +40,7 @@ namespace RogueEssence.Menu
                 Text.Text = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
                 UpdatePickerPos();
             }
-            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, chosenDest), false);
+            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, chosenDest, seed), false);
         }
     }
 }

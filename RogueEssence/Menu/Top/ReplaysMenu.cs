@@ -17,10 +17,10 @@ namespace RogueEssence.Menu
             foreach (RecordHeaderData record in records)
             {
                 string fileName = record.Path.Substring(record.Path.LastIndexOf('/') + 1);
-                if (record.Valid)
+                //if (record.ScoreValid)
                     flatChoices.Add(new MenuTextChoice(record.Name + " (" + fileName + ")", () => { choose(record.Path); }));
-                else
-                    flatChoices.Add(new MenuTextChoice("(" + fileName + ")", () => { choose(record.Path); }, true, Color.Red));
+                //else
+                //    flatChoices.Add(new MenuTextChoice("(" + fileName + ")", () => { choose(record.Path); }, true, Color.Red));
             }
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 

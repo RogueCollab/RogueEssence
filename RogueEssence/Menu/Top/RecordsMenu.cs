@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
@@ -13,10 +14,16 @@ namespace RogueEssence.Menu
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             if (DataManager.Instance.FoundRecords(DataManager.REPLAY_PATH))
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAYS_TITLE"), () => { MenuManager.Instance.AddMenu(new ReplaysMenu(), false); }));
-            List<RecordHeaderData> scores = RecordHeaderData.LoadHighScores();
+            Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
             if (scores.Count > 0)
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SCORES_TITLE"), () => { MenuManager.Instance.AddMenu(new ScoreMenu(scores, null), false); }));
+                int minDungeon = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count;
+                foreach (int key in scores.Keys)
+                {
+                    if (key < minDungeon)
+                        minDungeon = key;
+                }
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SCORES_TITLE"), () => { MenuManager.Instance.AddMenu(new ScoreMenu(scores, minDungeon, null), false); }));
             }
 
             if (DataManager.Instance.Save != null)

@@ -606,7 +606,7 @@ namespace RogueEssence.Data
             RescuesLeft = zone.Rescues;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH);
+                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH, zoneID, false);
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
@@ -763,11 +763,14 @@ namespace RogueEssence.Data
     [Serializable]
     public class RogueProgress : GameProgress
     {
+        public bool Seeded { get; set; }
 
         public RogueProgress()
         { }
-        public RogueProgress(ulong seed, string uuid) : base(seed, uuid)
-        { }
+        public RogueProgress(ulong seed, string uuid, bool seeded) : base(seed, uuid)
+        {
+            Seeded = seeded;
+        }
 
         public override void SeenMonster(int index)
         {
@@ -784,7 +787,7 @@ namespace RogueEssence.Data
             Stakes = stakes;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION);
+                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION, zoneID, !Seeded);
 
             yield break;
         }
@@ -834,8 +837,8 @@ namespace RogueEssence.Data
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
 
-                    List<RecordHeaderData> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ending.StartDate)));
+                    Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, DataManager.REPLAY_PATH + recordFile)));
 
                 }
 
@@ -882,7 +885,7 @@ namespace RogueEssence.Data
 
                 if (recorded)
                 {
-                    GameProgress ending = DataManager.Instance.GetRecord(Data.DataManager.REPLAY_PATH + recordFile);
+                    GameProgress ending = DataManager.Instance.GetRecord(DataManager.REPLAY_PATH + recordFile);
 
                     if (fanfare)
                     {
@@ -897,12 +900,12 @@ namespace RogueEssence.Data
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
 
-                    List<RecordHeaderData> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ending.StartDate)));
+                    Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, DataManager.REPLAY_PATH + recordFile)));
                 }
 
-
-                if (state != null && Stakes != DungeonStakes.None)
+                //ask to transfer if the dungeon records progress, and it is NOT a seeded run.
+                if (state != null && Stakes != DungeonStakes.None && !Seeded)
                 {
                     bool allowTransfer = false;
                     QuestionDialog question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),

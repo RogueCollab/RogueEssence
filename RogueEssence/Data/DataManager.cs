@@ -765,7 +765,7 @@ namespace RogueEssence.Data
 
         }
 
-        public void BeginPlay(string filePath)
+        public void BeginPlay(string filePath, int zoneId, bool scoreValid)
         {
             try
             {
@@ -782,7 +782,9 @@ namespace RogueEssence.Data
                 replayWriter.Write(version.Build);
                 replayWriter.Write(version.Revision);
                 replayWriter.Write(0L);//pointer to epitaph location, 0 for now
-                replayWriter.Write(0);
+                replayWriter.Write(0);//final score, 0 for now
+                replayWriter.Write(zoneId);
+                replayWriter.Write(scoreValid);
                 replayWriter.Write(Save.ActiveTeam.GetReferenceName());
                 replayWriter.Write(Save.StartDate);
                 replayWriter.Write(Save.Rand.FirstSeed);
@@ -1018,10 +1020,12 @@ namespace RogueEssence.Data
                         reader.ReadInt64();
                         //read score
                         record.Score = reader.ReadInt32();
+                        //read zone ID
+                        record.Zone = reader.ReadInt32();
+                        record.ScoreValid = reader.ReadBoolean();
                         //name, date
                         record.Name = reader.ReadString();
                         record.DateTimeString = reader.ReadString();
-                        record.Valid = true;
                         return record;
                     }
                 }
@@ -1081,6 +1085,10 @@ namespace RogueEssence.Data
                             throw new Exception("Cannot quickload a completed file!");
                         //read score
                         reader.ReadInt32();
+                        //read zone
+                        reader.ReadInt32();
+                        //read score validity
+                        reader.ReadBoolean();
                         //read name
                         reader.ReadString();
                         //read startdate

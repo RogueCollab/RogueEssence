@@ -8,9 +8,10 @@ namespace RogueEssence.Data
 
         public string Name;
         public string DateTimeString;
+        public int Zone;
         public int Score;
         public string Path;
-        public bool Valid;
+        public bool ScoreValid;
 
         public RecordHeaderData(string path)
         {
@@ -22,27 +23,35 @@ namespace RogueEssence.Data
 
 
 
-        public static List<RecordHeaderData> LoadHighScores()
+        /// <summary>
+        /// Generate all high score tables in real time, organized by dungeon, by going through all replays
+        /// </summary>
+        /// <returns></returns>
+        public static Dictionary<int, List<RecordHeaderData>> LoadHighScores()
         {
-            List<RecordHeaderData> highScores = new List<RecordHeaderData>();
+            Dictionary<int, List<RecordHeaderData>> highScores = new Dictionary<int, List<RecordHeaderData>>();
 
-            //generate the high scores in real time by going through all the replays
-            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(Data.DataManager.REPLAY_PATH);
+            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(DataManager.REPLAY_PATH);
             
             foreach (RecordHeaderData record in records)
             {
-                if (record.Valid)
+                if (record.ScoreValid)
                 {
+                    if (!highScores.ContainsKey(record.Zone))
+                        highScores[record.Zone] = new List<RecordHeaderData>();
+
+                    List<RecordHeaderData> dungeonHighScore = highScores[record.Zone];
+
                     int placing = 0;
-                    for (int ii = 0; ii < highScores.Count; ii++)
+                    for (int ii = 0; ii < dungeonHighScore.Count; ii++)
                     {
-                        if (highScores[ii].Score <= record.Score)
+                        if (dungeonHighScore[ii].Score <= record.Score)
                             break;
                         placing++;
                     }
-                    highScores.Insert(placing, record);
-                    if (highScores.Count > RecordHeaderData.MAX_HIGH_SCORES)
-                        highScores.RemoveRange(RecordHeaderData.MAX_HIGH_SCORES, highScores.Count - RecordHeaderData.MAX_HIGH_SCORES);
+                    dungeonHighScore.Insert(placing, record);
+                    if (dungeonHighScore.Count > RecordHeaderData.MAX_HIGH_SCORES)
+                        dungeonHighScore.RemoveRange(RecordHeaderData.MAX_HIGH_SCORES, dungeonHighScore.Count - RecordHeaderData.MAX_HIGH_SCORES);
                 }
             }
 

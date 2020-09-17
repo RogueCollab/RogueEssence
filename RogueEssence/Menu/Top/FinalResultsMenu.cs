@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
@@ -72,17 +74,18 @@ namespace RogueEssence.Menu
             TotalTurns = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_TURNS", Ending.TotalTurns),
                 new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
+            Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
+                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
-            bool rogue = Ending is RogueProgress;
+            RogueProgress rogue = Ending as RogueProgress;
 
-            if (rogue)
+            if (rogue != null)
             {
                 StorageValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
                     new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_SCORE", Ending.ActiveTeam.GetTotalScore()),
                     new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-                Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
-                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                Seed.Color = rogue.Seeded ? TextBlue : Color.White;
             }
             else
             {
@@ -90,8 +93,6 @@ namespace RogueEssence.Menu
                     new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText("",
                     new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-                Seed = new MenuText("",
-                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             }
 
             base.Initialize();
