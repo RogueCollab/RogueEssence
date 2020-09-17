@@ -203,9 +203,23 @@ namespace RogueEssence.Dev
         public void OpenGround()
         {
             groundEditor = new GroundEditor();
-            groundEditor.FormClosed += (sender, e) => groundEditor = null;
+            groundEditor.FormClosed += groundEditorClosed;
             groundEditor.Show();
         }
+
+        public void groundEditorClosed(object sender, EventArgs e)
+        {
+            GameManager.Instance.SceneOutcome = resetEditors();
+        }
+
+
+        private IEnumerator<YieldInstruction> resetEditors()
+        {
+            groundEditor = null;
+            mapEditor = null;
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
+        }
+
 
         public void CloseGround()
         {
