@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RogueEssence
+namespace RogueEssence.LevelGen
 {
 
     [Serializable]

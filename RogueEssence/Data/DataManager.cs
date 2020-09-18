@@ -115,6 +115,7 @@ namespace RogueEssence.Data
 
         public List<int> StartChars;
         public List<string> StartTeams;
+        public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
         public int StartPersonality;
         public ZoneLoc StartMap;
@@ -228,6 +229,7 @@ namespace RogueEssence.Data
 
             UniversalEvent = (ActiveEffect)LoadData(DATA_PATH + "Universal.bin", null);
             LoadStartParams();
+            LoadRarity();
 
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -294,6 +296,46 @@ namespace RogueEssence.Data
             MoneySE = "";
             LeaderSE = "";
             ReviveSE = "";
+        }
+
+        private void LoadRarity()
+        {
+            RarityMap = new Dictionary<(int, int), List<int>>();
+
+            string path = DataManager.DATA_PATH + "Rarity.xml";
+            //try to load from file
+            if (File.Exists(path))
+            {
+                try
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+
+                    foreach (XmlNode speciesNode in xmldoc.DocumentElement.SelectNodes("Species"))
+                    {
+                        int species = Int32.Parse(speciesNode.Attributes.GetNamedItem("name").Value);
+                        foreach (XmlNode rarityNode in speciesNode.SelectNodes("Rarity"))
+                        {
+                            int rarity = Int32.Parse(rarityNode.Attributes.GetNamedItem("name").Value);
+
+                            foreach (XmlNode itemNode in rarityNode.SelectNodes("Item"))
+                            {
+                                int item = Int32.Parse(itemNode.InnerText);
+
+                                if (!RarityMap.ContainsKey((species, rarity)))
+                                    RarityMap[(species, rarity)] = new List<int>();
+
+                                RarityMap[(species, rarity)].Add(item);
+                            }
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
         }
 
         private void LoadStartParams()
@@ -522,7 +564,6 @@ namespace RogueEssence.Data
             if (itemCache.TryGetValue(index, out data))
                 return data;
 
-
             try
             {
                 if (File.Exists(DataManager.DATA_PATH + DataType.Item.ToString() + "/" + index + DataManager.DATA_EXT))
@@ -603,7 +644,6 @@ namespace RogueEssence.Data
             IntrinsicData data;
             if (intrinsicCache.TryGetValue(index, out data))
                 return data;
-
 
             try
             {
