@@ -1573,7 +1573,7 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs);
             };
             foreach (Tuple<GameEventOwner, Character, HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, true, ref hpChange);
+                effect.Item3.Apply(effect.Item1, effect.Item2, ref hpChange);
         }
 
         public void OnRestoreHP(ref int hpChange)
@@ -1586,7 +1586,7 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs);
             };
             foreach (Tuple<GameEventOwner, Character, HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, false, ref hpChange);
+                effect.Item3.Apply(effect.Item1, effect.Item2, ref hpChange);
         }
 
         private void OnSkillsChanged(int[] skillIndices)
