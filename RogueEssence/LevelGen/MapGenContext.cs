@@ -16,6 +16,8 @@ namespace RogueEssence.LevelGen
         public ITile WallTerrain { get { return new Tile(2); } }
         public ITile UnbreakableTerrain { get { return new Tile(1); } }
 
+        public int ID { get { return Map.ID; } }
+
         public int Width { get { return Map.Width; } }
         public int Height { get { return Map.Height; } }
 

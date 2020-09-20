@@ -11,6 +11,8 @@ namespace RogueEssence.Dungeon
     {
         IRandom Rand { get; }
         bool Begun { get; }
+
+        int ID { get; }
     }
 
     //Contains all data within a dungeon map, and a few helper functions
@@ -531,6 +533,8 @@ namespace RogueEssence.Dungeon
         public ReRandom Rand { get { return rand; } }
         IRandom IMobSpawnMap.Rand { get { return rand; } }
         public bool Begun { get; set; }
+
+        public int ID { get; set; }
 
         public bool NoRescue;
         public bool NoSwitching;
