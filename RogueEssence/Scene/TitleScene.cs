@@ -49,7 +49,8 @@ namespace RogueEssence
                 {
                     List<IInteractable> save = TitleMenuSaveState;
                     TitleMenuSaveState = null;
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.LoadMenuState(save));
+                    MenuManager.Instance.LoadMenuState(save);
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine());
                 }
             }
             else

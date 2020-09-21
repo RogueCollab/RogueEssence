@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
         public IEnumerator<YieldInstruction> NextAction;
         public IEnumerator<YieldInstruction> EndAction;
 
-        private bool freeMode;
+        private int menuModeDepth;
 
         private static MenuManager instance;
         public static void InitInstance()
@@ -32,8 +32,8 @@ namespace RogueEssence.Menu
 
         public void AddMenu(IInteractable menu, bool stackOn)
         {
-            if (!freeMode)
-                throw new Exception("Can't add menu while in coroutine mode");
+            if (menuModeDepth == 0)
+                throw new Exception("Can't add menu while not in menu mode");
 
             if (menus.Count > 0)
                 menus[menus.Count - 1].Inactive = true;
@@ -43,8 +43,8 @@ namespace RogueEssence.Menu
 
         public void ReplaceMenu(IInteractable menu)
         {
-            if (!freeMode)
-                throw new Exception("Can't replace menu while in coroutine mode");
+            if (menuModeDepth == 0)
+                throw new Exception("Can't replace menu while not in menu mode");
 
             menu.BlockPrevious = menus[menus.Count - 1].BlockPrevious;
             menus.RemoveAt(menus.Count - 1);
@@ -53,8 +53,8 @@ namespace RogueEssence.Menu
 
         public void RemoveMenu()
         {
-            if (!freeMode)
-                throw new Exception("Can't remove menu while in coroutine mode");
+            if (menuModeDepth == 0)
+                throw new Exception("Can't remove menu while not in menu mode");
 
             menus.RemoveAt(menus.Count - 1);
             if (menus.Count > 0)
@@ -80,6 +80,12 @@ namespace RogueEssence.Menu
 
             menu.BlockPrevious = true;
             menus.Add(menu);
+            yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine());
+        }
+
+
+        public IEnumerator<YieldInstruction> ProcessMenuCoroutine()
+        {
             yield return CoroutineManager.Instance.StartCoroutine(processInternalCoroutine());
         }
 
@@ -90,12 +96,11 @@ namespace RogueEssence.Menu
             return save;
         }
 
-        public IEnumerator<YieldInstruction> LoadMenuState(List<IInteractable> save)
+        public void LoadMenuState(List<IInteractable> save)
         {
             if (menus.Count > 0)
                 throw new Exception("Must load menus from empty.");
             menus.AddRange(save);
-            yield return CoroutineManager.Instance.StartCoroutine(processInternalCoroutine());
         }
 
         public void DrawMenus(SpriteBatch spriteBatch)
@@ -246,10 +251,7 @@ namespace RogueEssence.Menu
 
         private IEnumerator<YieldInstruction> processInternalCoroutine()
         {
-            if (freeMode)
-                yield break;
-
-            freeMode = true;
+            menuModeDepth++;
             while (MenuCount > 0)
             {
                 yield return new WaitForFrames(1);
@@ -262,7 +264,7 @@ namespace RogueEssence.Menu
                     yield return CoroutineManager.Instance.StartCoroutine(action);
                 }
             }
-            freeMode = false;
+            menuModeDepth--;
 
             if (EndAction != null)
             {

@@ -114,7 +114,7 @@ namespace RogueEssence.Menu
 
                 MenuManager.Instance.ClearMenus();
                 //send home
-                MenuManager.Instance.EndAction = SendHomeEndAction(teamSlot, save);
+                MenuManager.Instance.NextAction = SendHomeEndAction(teamSlot, save);
 
             }, () => { }), false);
         }
@@ -127,10 +127,7 @@ namespace RogueEssence.Menu
             save[save.Count - 1] = new TeamMenu(false);
             save[save.Count - 1].BlockPrevious = true;
 
-            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                DungeonScene.Instance.PendingLeaderAction = MenuManager.Instance.LoadMenuState(save);
-            else
-                GroundScene.Instance.PendingLeaderAction = MenuManager.Instance.LoadMenuState(save);
+            MenuManager.Instance.LoadMenuState(save);
         }
 
         private void ExitAction()
