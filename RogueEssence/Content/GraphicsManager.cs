@@ -204,6 +204,8 @@ namespace RogueEssence.Content
 
         public static AssetType NeedReload;
 
+        public static bool Loaded;
+
         public static void InitParams()
         {
             string path = DiagManager.CONTENT_PATH + "GFXParams.xml";
@@ -373,6 +375,7 @@ namespace RogueEssence.Content
             PortraitIndex = LoadCharaIndices(DiagManager.CONTENT_PATH + "Portrait/");
             TileIndex = LoadTileIndices(DiagManager.CONTENT_PATH + "Tile/");
 
+            Loaded = true;
             //Notify script engine
             LuaEngine.Instance.OnGraphicsLoad();
         }
@@ -418,6 +421,7 @@ namespace RogueEssence.Content
             Pixel.Dispose();
             defaultTex.Dispose();
 
+            Loaded = false;
             //Notify script engine
             LuaEngine.Instance.OnGraphicsUnload();
         }

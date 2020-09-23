@@ -65,6 +65,11 @@ namespace RogueEssence.Dev
             foreach (LuaEngine.EMapCallbacks v in LuaEngine.EnumerateCallbackTypes())
                 chklstScriptMapCallbacks.Items.Add(v.ToString());
 
+
+            for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
+                cbScrollEdge.Items.Add(((Map.ScrollEdge)ii).ToLocal());
+
+
             tabctrlEntData.TabPages.Clear();
             cmbEntityType.SelectedIndex = 0;
             cmbEntCharGender.SelectedIndex = 0;
@@ -481,6 +486,8 @@ namespace RogueEssence.Dev
         private void LoadMapProperties()
         {
             txtMapName.Text = ZoneManager.Instance.CurrentGround.Name.DefaultText;
+            cbScrollEdge.SelectedIndex = (int)ZoneManager.Instance.CurrentGround.EdgeView;
+
 
             for (int ii = 0; ii < lbxMusic.Items.Count; ii++)
             {
@@ -531,7 +538,6 @@ namespace RogueEssence.Dev
                 GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
         }
 
-
         private void btnReloadSongs_Click(object sender, EventArgs e)
         {
             ReloadMusic();
@@ -541,6 +547,12 @@ namespace RogueEssence.Dev
         private void txtMapName_TextChanged(object sender, EventArgs e)
         {
             ZoneManager.Instance.CurrentGround.Name.DefaultText = txtMapName.Text;
+        }
+
+
+        private void cbScrollEdge_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ZoneManager.Instance.CurrentGround.EdgeView = (Map.ScrollEdge)cbScrollEdge.SelectedIndex;
         }
 
         private void lbxMusic_SelectedIndexChanged(object sender, EventArgs e)
@@ -819,8 +831,6 @@ namespace RogueEssence.Dev
         //=========================================================================
         //  Strings Tab
         //=========================================================================
-        private Dictionary<string, Dictionary<string, string>> CurrentStrings = new Dictionary<string, Dictionary<string, string>>(); //{ "StringName", { {"LangCode", "TEXT"}, {"LangCode2", "TEXT"} } }
-        private bool ProcessStringCellChanged = true; //!FIXME: Is that even used anymore?
 
         /// <summary>
         /// Calls this when the map's status as a new, unsaved map has changed.
@@ -834,65 +844,35 @@ namespace RogueEssence.Dev
             chklstEntScriptCallbacks.Enabled = hasFolder;
         }
 
-        /// <summary>
-        /// Called whenever the content of a localized string's cell is changed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void gvStrings_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            //Gotta check whether the name or the strings got changed and commit the changes!
 
-            //This occurs when we're adding a new row
-            if (!ProcessStringCellChanged)
+        private void gvStrings_CellValidating(object sender, System.Windows.Forms.DataGridViewCellValidatingEventArgs e)
+        {
+            if (gvStrings.Rows[e.RowIndex].IsNewRow)
+                return;
+            if (e.ColumnIndex != 0)
                 return;
 
-            string rowname = gvStrings.Rows[e.RowIndex].Cells[0].Value as string;
-            if(rowname == null)
+            string newVal = e.FormattedValue.ToString();
+
+            for (int ii = 0; ii < gvStrings.Rows.Count;ii++)
             {
-                rowname = String.Format("String_{0}", e.RowIndex); //In this case, we're adding a new row, but the user filled in the text before the name! So we're giving it a default name
-            }
+                if (ii == e.RowIndex)
+                    continue;
 
+                string key = gvStrings.Rows[ii].Cells[0].Value as string;
 
-            Dictionary<string,string> str = null;
-            if (e.RowIndex >= CurrentStrings.Count)
-            {
-                CurrentStrings.Add(rowname, new Dictionary<string, string>());
-                return; //Since we add new rows by name, we don't need to continue!
-            }
-            str = CurrentStrings[rowname];
-
-            if (e.ColumnIndex > 0)
-            {
-                //Since the dictionary collection doesn't guarantee a particular order, and we know they won't be in order,
-                // lets lookup languages by codes..
-                int curlang = (e.ColumnIndex - 1); //We know at least that we put the languages in the same order as the enum
-                string langcode = RogueEssence.Text.SupportedLangs[curlang];
-
-                if (str.ContainsKey(langcode))
+                if (newVal == key)
                 {
-                    str[langcode] = gvStrings.Rows[e.RowIndex].Cells[e.ColumnIndex].Value as string;
+                    e.Cancel = true;
+                    break;
                 }
-                else
-                {
-                    str.Add(langcode, gvStrings.Rows[e.RowIndex].Cells[e.ColumnIndex].Value as string);
-                }
-            }
-            else
-            {
-                //We changed the name of the string!
-                string newkey = gvStrings.Rows[e.RowIndex].Cells[e.ColumnIndex].Value as string;
-
-                //Make a new key and copy the old key's data, then delete the old keyval pair
-                CurrentStrings.Add(newkey, str);
-                CurrentStrings.Remove(rowname);
             }
         }
 
         /// <summary>
         /// Prepares the view for displaying the current map's localized strings.
         /// </summary>
-        private void SetupStringsDisplay()
+        private void SetupStringsDisplay(Dictionary<string, Dictionary<string, string>> CurrentStrings)
         {
             //Create the rows for each individual strings, and the columns for each individual languages
 
@@ -946,19 +926,17 @@ namespace RogueEssence.Dev
         /// </summary>
         private void LoadAndSetupStrings()
         {
-            LoadStrings(MakeCurrentStringsPath());
-            SetupStringsDisplay();
+            SetupStringsDisplay(LoadStrings(MakeCurrentStringsPath()));
         }
 
         /// <summary>
         /// Loads the strings files content into the data grid view for editing
         /// </summary>
         /// <param name="stringsdir">Directory in which string resx files are stored!</param>
-        private void LoadStrings(string stringsdir)
+        private Dictionary<string, Dictionary<string, string>> LoadStrings(string stringsdir)
         {
             //Clear old strings
-            var olddic = CurrentStrings;
-            CurrentStrings = new Dictionary<string, Dictionary<string, string>>();
+            Dictionary<string, Dictionary<string, string>> CurrentStrings = new Dictionary<string, Dictionary<string, string>>();
 
             string FMTStr = String.Format("{0}{1}.{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
             foreach(string code in RogueEssence.Text.SupportedLangs)
@@ -994,16 +972,37 @@ namespace RogueEssence.Dev
 
             }
 
-            if (CurrentStrings.Count == 0)
-                CurrentStrings = olddic; //Just reload what was in previously, so we don't end up with the user losing data by accident!
+            return CurrentStrings;
+        }
+
+        private Dictionary<string, Dictionary<string, string>> SaveStrings()
+        {
+            //Clear old strings
+            Dictionary<string, Dictionary<string, string>> CurrentStrings = new Dictionary<string, Dictionary<string, string>>();
+
+            foreach (DataGridViewRow row in gvStrings.Rows)
+            {
+                string key = row.Cells[0].Value as string;
+                Dictionary<string, string> translations = new Dictionary<string, string>();
+                for (int ii = 0; ii < RogueEssence.Text.SupportedLangs.Length; ii++)
+                {
+                    string val = row.Cells[ii + 1].Value as string;
+                    if (val != null)
+                        translations[RogueEssence.Text.SupportedLangs[ii]] = val;
+                }
+                CurrentStrings[key] = translations;
+            }
+
+            return CurrentStrings;
         }
 
         /// <summary>
         /// Writes the content of the dataview into a set of resx files for each languages
         /// </summary>
         /// <param name="stringsdir">Directory into which we save the string files</param>
-        private void CommitStrings(string stringsdir)
+        private void CommitStrings(string stringsdir, Dictionary<string, Dictionary<string, string>> CurrentStrings)
         {
+
             string FMTStr = String.Format("{0}{1}.{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
             foreach (string code in RogueEssence.Text.SupportedLangs)
             {
@@ -1015,9 +1014,9 @@ namespace RogueEssence.Dev
                     foreach (var str in CurrentStrings)
                     {
                         if (str.Value.ContainsKey(code))
-                            resx.AddResource(str.Key, str.Value[code]);
+                            resx.AddResource(new ResXDataNode(str.Key, str.Value[code]) { Comment = "" });
                         else
-                            resx.AddResource(str.Key, ""); //Put an empty string by default
+                            resx.AddResource(new ResXDataNode(str.Key, "") { Comment = "" }); //Put an empty string by default
                     }
                     resx.Generate();
                     resx.Close();
@@ -1028,7 +1027,7 @@ namespace RogueEssence.Dev
         private void btnCommitStrings_Click(object sender, EventArgs e)
         {
             if (!String.IsNullOrEmpty(CurrentFile))
-                CommitStrings(MakeCurrentStringsPath());
+                CommitStrings(MakeCurrentStringsPath(), SaveStrings());
             else
                 MessageBox.Show(this, "Please save the map at least once before trying to commit the strings!!", "Please save first!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
@@ -1037,8 +1036,7 @@ namespace RogueEssence.Dev
         {
             if (!String.IsNullOrEmpty(CurrentFile))
             {
-                LoadStrings(MakeCurrentStringsPath());
-                SetupStringsDisplay();
+                LoadAndSetupStrings();
             }
             else
                 MessageBox.Show(this, "Please save the map and commit the strings at least once before trying to reload the strings!!", "Please save and commit strings first!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -1053,14 +1051,6 @@ namespace RogueEssence.Dev
         {
             string defname = String.Format("String_{0}", gvStrings.Rows.Count);
             gvStrings.Rows.Add(defname);
-            try
-            {
-                CurrentStrings.Add(defname, new Dictionary<string, string>());
-            }
-            catch(Exception ex)
-            {
-                DiagManager.Instance.LogInfo("GroundEditor.btnStringAdd_Click(): " + ex.Message);
-            }
             gvStrings.AutoResizeColumn(0);
             int lastrow = gvStrings.Rows.GetLastRow(DataGridViewElementStates.Visible);
             gvStrings.CurrentCell = gvStrings.Rows[lastrow].Cells[0];
@@ -1069,8 +1059,6 @@ namespace RogueEssence.Dev
         private void btnStringRem_Click(object sender, EventArgs e)
         {
             string currowname = gvStrings.CurrentRow.Cells[0].Value as string;
-            if (CurrentStrings.ContainsKey(currowname))
-                CurrentStrings.Remove(currowname);
             gvStrings.Rows.Remove(gvStrings.CurrentRow);
             gvStrings.AutoResizeColumn(0);
         }

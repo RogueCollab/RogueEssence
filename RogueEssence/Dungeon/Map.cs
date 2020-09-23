@@ -35,7 +35,6 @@ namespace RogueEssence.Dungeon
         {
             Blank = 0,//displays a black void, or the BlankBG texture
             Clamp,//does not scroll past the edge of the map
-            Wrap//the map wraps around
         }
 
         public enum DiscoveryState

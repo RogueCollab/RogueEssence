@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
 using RogueEssence.Dungeon;
+using RogueEssence.Content;
 
 namespace RogueEssence.Dev
 {
@@ -61,7 +62,7 @@ namespace RogueEssence.Dev
             {
                 lock (drawLock)
                 {
-                    if (!runningAnim)
+                    if (!runningAnim || !GraphicsManager.Loaded)
                         return;
 
                     if (chosenAnim.Frames.Count > 1)

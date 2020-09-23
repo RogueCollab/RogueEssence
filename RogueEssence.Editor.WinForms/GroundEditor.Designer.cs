@@ -144,6 +144,9 @@
             this.btnReloadStrings = new System.Windows.Forms.Button();
             this.btnStringAdd = new System.Windows.Forms.Button();
             this.btnStringRem = new System.Windows.Forms.Button();
+            this.tableLayoutPanel10 = new System.Windows.Forms.TableLayoutPanel();
+            this.label23 = new System.Windows.Forms.Label();
+            this.cbScrollEdge = new System.Windows.Forms.ComboBox();
             this.mnuMenu.SuspendLayout();
             this.tabMapOptions.SuspendLayout();
             this.tabTextures.SuspendLayout();
@@ -184,6 +187,7 @@
             this.flowLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvStrings)).BeginInit();
             this.flowLayoutPanel3.SuspendLayout();
+            this.tableLayoutPanel10.SuspendLayout();
             this.SuspendLayout();
             // 
             // mnuMenu
@@ -306,7 +310,7 @@
             this.tabTextures.Controls.Add(this.tileBrowser);
             this.tabTextures.Location = new System.Drawing.Point(4, 22);
             this.tabTextures.Name = "tabTextures";
-            this.tabTextures.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabTextures.Padding = new System.Windows.Forms.Padding(3);
             this.tabTextures.Size = new System.Drawing.Size(842, 449);
             this.tabTextures.TabIndex = 0;
             this.tabTextures.Text = "Textures";
@@ -326,7 +330,7 @@
             this.tabBlock.Controls.Add(this.tblBlockModes);
             this.tabBlock.Controls.Add(this.lblBlockMode);
             this.tabBlock.Location = new System.Drawing.Point(4, 22);
-            this.tabBlock.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabBlock.Margin = new System.Windows.Forms.Padding(2);
             this.tabBlock.Name = "tabBlock";
             this.tabBlock.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabBlock.Size = new System.Drawing.Size(860, 593);
@@ -346,7 +350,7 @@
             this.tblBlockModes.Controls.Add(this.rbBlockRectangle, 1, 0);
             this.tblBlockModes.Controls.Add(this.rbBlockFill, 2, 0);
             this.tblBlockModes.Location = new System.Drawing.Point(5, 17);
-            this.tblBlockModes.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tblBlockModes.Margin = new System.Windows.Forms.Padding(2);
             this.tblBlockModes.Name = "tblBlockModes";
             this.tblBlockModes.RowCount = 1;
             this.tblBlockModes.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -359,7 +363,7 @@
             this.rbBlockDraw.Checked = true;
             this.rbBlockDraw.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbBlockDraw.Location = new System.Drawing.Point(2, 2);
-            this.rbBlockDraw.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rbBlockDraw.Margin = new System.Windows.Forms.Padding(2);
             this.rbBlockDraw.Name = "rbBlockDraw";
             this.rbBlockDraw.Size = new System.Drawing.Size(186, 16);
             this.rbBlockDraw.TabIndex = 0;
@@ -373,7 +377,7 @@
             this.rbBlockRectangle.AutoSize = true;
             this.rbBlockRectangle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbBlockRectangle.Location = new System.Drawing.Point(192, 2);
-            this.rbBlockRectangle.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rbBlockRectangle.Margin = new System.Windows.Forms.Padding(2);
             this.rbBlockRectangle.Name = "rbBlockRectangle";
             this.rbBlockRectangle.Size = new System.Drawing.Size(186, 16);
             this.rbBlockRectangle.TabIndex = 1;
@@ -386,7 +390,7 @@
             this.rbBlockFill.AutoSize = true;
             this.rbBlockFill.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbBlockFill.Location = new System.Drawing.Point(382, 2);
-            this.rbBlockFill.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rbBlockFill.Margin = new System.Windows.Forms.Padding(2);
             this.rbBlockFill.Name = "rbBlockFill";
             this.rbBlockFill.Size = new System.Drawing.Size(186, 16);
             this.rbBlockFill.TabIndex = 2;
@@ -430,7 +434,7 @@
             this.tableLayoutPanel8.Controls.Add(this.rbEntPlace, 1, 0);
             this.tableLayoutPanel8.Controls.Add(this.rbEntMove, 2, 0);
             this.tableLayoutPanel8.Location = new System.Drawing.Point(5, 16);
-            this.tableLayoutPanel8.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel8.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel8.Name = "tableLayoutPanel8";
             this.tableLayoutPanel8.RowCount = 1;
             this.tableLayoutPanel8.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -443,7 +447,7 @@
             this.rbEntSelect.Checked = true;
             this.rbEntSelect.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbEntSelect.Location = new System.Drawing.Point(2, 2);
-            this.rbEntSelect.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rbEntSelect.Margin = new System.Windows.Forms.Padding(2);
             this.rbEntSelect.Name = "rbEntSelect";
             this.rbEntSelect.Size = new System.Drawing.Size(206, 16);
             this.rbEntSelect.TabIndex = 0;
@@ -457,7 +461,7 @@
             this.rbEntPlace.AutoSize = true;
             this.rbEntPlace.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbEntPlace.Location = new System.Drawing.Point(212, 2);
-            this.rbEntPlace.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rbEntPlace.Margin = new System.Windows.Forms.Padding(2);
             this.rbEntPlace.Name = "rbEntPlace";
             this.rbEntPlace.Size = new System.Drawing.Size(206, 16);
             this.rbEntPlace.TabIndex = 1;
@@ -470,7 +474,7 @@
             this.rbEntMove.AutoSize = true;
             this.rbEntMove.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbEntMove.Location = new System.Drawing.Point(422, 2);
-            this.rbEntMove.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rbEntMove.Margin = new System.Windows.Forms.Padding(2);
             this.rbEntMove.Name = "rbEntMove";
             this.rbEntMove.Size = new System.Drawing.Size(207, 16);
             this.rbEntMove.TabIndex = 3;
@@ -499,7 +503,7 @@
             this.tableLayoutPanel7.Controls.Add(this.groupBox1, 0, 0);
             this.tableLayoutPanel7.Controls.Add(this.groupBox2, 1, 0);
             this.tableLayoutPanel7.Location = new System.Drawing.Point(0, 38);
-            this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel7.Name = "tableLayoutPanel7";
             this.tableLayoutPanel7.RowCount = 1;
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -634,7 +638,7 @@
             this.tabEntObjDisplay.Controls.Add(this.tableLayoutPanel5);
             this.tabEntObjDisplay.Location = new System.Drawing.Point(4, 22);
             this.tabEntObjDisplay.Name = "tabEntObjDisplay";
-            this.tabEntObjDisplay.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabEntObjDisplay.Padding = new System.Windows.Forms.Padding(3);
             this.tabEntObjDisplay.Size = new System.Drawing.Size(411, 305);
             this.tabEntObjDisplay.TabIndex = 0;
             this.tabEntObjDisplay.Text = "Display[Object]";
@@ -808,7 +812,7 @@
             this.cbEntObjSpriteID.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbEntObjSpriteID.FormattingEnabled = true;
             this.cbEntObjSpriteID.Location = new System.Drawing.Point(204, 2);
-            this.cbEntObjSpriteID.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cbEntObjSpriteID.Margin = new System.Windows.Forms.Padding(2);
             this.cbEntObjSpriteID.Name = "cbEntObjSpriteID";
             this.cbEntObjSpriteID.Size = new System.Drawing.Size(199, 21);
             this.cbEntObjSpriteID.TabIndex = 8;
@@ -1355,9 +1359,8 @@
             // 
             // tabProperties
             // 
-            this.tabProperties.Controls.Add(this.txtMapName);
+            this.tabProperties.Controls.Add(this.tableLayoutPanel10);
             this.tabProperties.Controls.Add(this.btnReloadSongs);
-            this.tabProperties.Controls.Add(this.lblMapName);
             this.tabProperties.Controls.Add(this.lbxMusic);
             this.tabProperties.Controls.Add(this.lblMusic);
             this.tabProperties.Location = new System.Drawing.Point(4, 22);
@@ -1370,9 +1373,10 @@
             // 
             // txtMapName
             // 
-            this.txtMapName.Location = new System.Drawing.Point(9, 30);
+            this.txtMapName.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtMapName.Location = new System.Drawing.Point(3, 18);
             this.txtMapName.Name = "txtMapName";
-            this.txtMapName.Size = new System.Drawing.Size(324, 20);
+            this.txtMapName.Size = new System.Drawing.Size(341, 20);
             this.txtMapName.TabIndex = 6;
             this.txtMapName.TextChanged += new System.EventHandler(this.txtMapName_TextChanged);
             // 
@@ -1389,11 +1393,13 @@
             // lblMapName
             // 
             this.lblMapName.AutoSize = true;
-            this.lblMapName.Location = new System.Drawing.Point(6, 12);
+            this.lblMapName.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblMapName.Location = new System.Drawing.Point(3, 0);
             this.lblMapName.Name = "lblMapName";
-            this.lblMapName.Size = new System.Drawing.Size(59, 13);
+            this.lblMapName.Size = new System.Drawing.Size(341, 15);
             this.lblMapName.TabIndex = 1;
             this.lblMapName.Text = "Map Name";
+            this.lblMapName.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // lbxMusic
             // 
@@ -1432,7 +1438,7 @@
             this.flowLayoutPanel5.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel5.Location = new System.Drawing.Point(3, 3);
             this.flowLayoutPanel5.Name = "flowLayoutPanel5";
-            this.flowLayoutPanel5.Size = new System.Drawing.Size(854, 587);
+            this.flowLayoutPanel5.Size = new System.Drawing.Size(836, 443);
             this.flowLayoutPanel5.TabIndex = 2;
             this.flowLayoutPanel5.WrapContents = false;
             // 
@@ -1534,7 +1540,7 @@
             this.gvStrings.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.gvStrings.Size = new System.Drawing.Size(640, 382);
             this.gvStrings.TabIndex = 0;
-            this.gvStrings.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvStrings_CellValueChanged);
+            this.gvStrings.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.gvStrings_CellValidating);
             // 
             // flowLayoutPanel3
             // 
@@ -1589,6 +1595,46 @@
             this.btnStringRem.Text = "Remove String";
             this.btnStringRem.UseVisualStyleBackColor = true;
             this.btnStringRem.Click += new System.EventHandler(this.btnStringRem_Click);
+            // 
+            // tableLayoutPanel10
+            // 
+            this.tableLayoutPanel10.ColumnCount = 1;
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel10.Controls.Add(this.lblMapName, 0, 0);
+            this.tableLayoutPanel10.Controls.Add(this.txtMapName, 0, 1);
+            this.tableLayoutPanel10.Controls.Add(this.label23, 0, 2);
+            this.tableLayoutPanel10.Controls.Add(this.cbScrollEdge, 0, 3);
+            this.tableLayoutPanel10.Location = new System.Drawing.Point(8, 12);
+            this.tableLayoutPanel10.Name = "tableLayoutPanel10";
+            this.tableLayoutPanel10.RowCount = 4;
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15.84158F));
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 27.47253F));
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 29.67033F));
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 28.57143F));
+            this.tableLayoutPanel10.Size = new System.Drawing.Size(347, 102);
+            this.tableLayoutPanel10.TabIndex = 7;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label23.Location = new System.Drawing.Point(3, 42);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(341, 29);
+            this.label23.TabIndex = 7;
+            this.label23.Text = "Scroll Edge";
+            this.label23.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            // 
+            // cbScrollEdge
+            // 
+            this.cbScrollEdge.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbScrollEdge.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbScrollEdge.FormattingEnabled = true;
+            this.cbScrollEdge.Location = new System.Drawing.Point(3, 74);
+            this.cbScrollEdge.Name = "cbScrollEdge";
+            this.cbScrollEdge.Size = new System.Drawing.Size(341, 21);
+            this.cbScrollEdge.TabIndex = 8;
+            this.cbScrollEdge.SelectedIndexChanged += new System.EventHandler(this.cbScrollEdge_SelectedIndexChanged);
             // 
             // GroundEditor
             // 
@@ -1656,6 +1702,8 @@
             this.flowLayoutPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvStrings)).EndInit();
             this.flowLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel10.ResumeLayout(false);
+            this.tableLayoutPanel10.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1779,5 +1827,8 @@
         private System.Windows.Forms.ComboBox cbEntObjSpriteID;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel9;
         private System.Windows.Forms.Button btnLoadFromTemplate;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel10;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.ComboBox cbScrollEdge;
     }
 }

@@ -15,6 +15,8 @@ namespace RogueEssence
         {
             get
             {
+                if (!CurrentInput.Active || !PrevInput.Active)
+                    return 0;
                 int diff = CurrentInput.MouseWheel - PrevInput.MouseWheel;
                 if (diff > Int32.MaxValue / 2)
                     diff = (PrevInput.MouseWheel - Int32.MinValue) + (Int32.MaxValue - CurrentInput.MouseWheel);
