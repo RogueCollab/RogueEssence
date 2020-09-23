@@ -25,8 +25,7 @@ namespace RogueEssence.Menu
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             if ((GameManager.Instance.CurrentScene == DungeonScene.Instance) && teamIndex == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_USE"), useAction));
-            else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_SWITCH"), switchAction));
+            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_SWITCH"), switchAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_UP"), () => { shiftPosition(false); }, shiftUp, shiftUp ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), () => { shiftPosition(true); }, shiftDown, shiftDown ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), MenuManager.Instance.RemoveMenu));
