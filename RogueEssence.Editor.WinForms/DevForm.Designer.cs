@@ -44,8 +44,8 @@
             this.btnDespawnAll = new System.Windows.Forms.Button();
             this.btnToggleStatus = new System.Windows.Forms.Button();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
-            this.chkShowSprites = new System.Windows.Forms.CheckBox();
-            this.chkGrid = new System.Windows.Forms.CheckBox();
+            this.chkSprites = new System.Windows.Forms.CheckBox();
+            this.chkObject = new System.Windows.Forms.CheckBox();
             this.btnSpawnItem = new System.Windows.Forms.Button();
             this.cbSpawnItem = new System.Windows.Forms.ComboBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
@@ -312,8 +312,8 @@
             this.tableLayoutPanel5.ColumnCount = 2;
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel5.Controls.Add(this.chkShowSprites, 1, 0);
-            this.tableLayoutPanel5.Controls.Add(this.chkGrid, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.chkSprites, 1, 0);
+            this.tableLayoutPanel5.Controls.Add(this.chkObject, 0, 0);
             this.tableLayoutPanel5.Location = new System.Drawing.Point(6, 6);
             this.tableLayoutPanel5.Name = "tableLayoutPanel5";
             this.tableLayoutPanel5.RowCount = 1;
@@ -324,25 +324,25 @@
             // 
             // chkShowSprites
             // 
-            this.chkShowSprites.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chkShowSprites.Location = new System.Drawing.Point(130, 3);
-            this.chkShowSprites.Name = "chkShowSprites";
-            this.chkShowSprites.Size = new System.Drawing.Size(121, 17);
-            this.chkShowSprites.TabIndex = 5;
-            this.chkShowSprites.Text = "Show Sprites";
-            this.chkShowSprites.UseVisualStyleBackColor = true;
-            this.chkShowSprites.CheckedChanged += new System.EventHandler(this.chkShowSprites_CheckedChanged);
+            this.chkSprites.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chkSprites.Location = new System.Drawing.Point(130, 3);
+            this.chkSprites.Name = "chkSprites";
+            this.chkSprites.Size = new System.Drawing.Size(121, 17);
+            this.chkSprites.TabIndex = 5;
+            this.chkSprites.Text = "Hide Sprites";
+            this.chkSprites.UseVisualStyleBackColor = true;
+            this.chkSprites.CheckedChanged += new System.EventHandler(this.chkShowSprites_CheckedChanged);
             // 
             // chkGrid
             // 
-            this.chkGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chkGrid.Location = new System.Drawing.Point(3, 3);
-            this.chkGrid.Name = "chkGrid";
-            this.chkGrid.Size = new System.Drawing.Size(121, 17);
-            this.chkGrid.TabIndex = 1;
-            this.chkGrid.Text = "Show Grid";
-            this.chkGrid.UseVisualStyleBackColor = true;
-            this.chkGrid.CheckedChanged += new System.EventHandler(this.chkGrid_CheckedChanged);
+            this.chkObject.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.chkObject.Location = new System.Drawing.Point(3, 3);
+            this.chkObject.Name = "chkObject";
+            this.chkObject.Size = new System.Drawing.Size(121, 17);
+            this.chkObject.TabIndex = 1;
+            this.chkObject.Text = "Hide Objects";
+            this.chkObject.UseVisualStyleBackColor = true;
+            this.chkObject.CheckedChanged += new System.EventHandler(this.chkObject_CheckedChanged);
             // 
             // btnSpawnItem
             // 
@@ -1111,7 +1111,7 @@
         #endregion
 
         private System.Windows.Forms.TabPage tabGame;
-        private System.Windows.Forms.CheckBox chkGrid;
+        private System.Windows.Forms.CheckBox chkObject;
         private System.Windows.Forms.TabControl tabOptions;
         private System.Windows.Forms.TabPage tabSprite;
         private System.Windows.Forms.ComboBox cbAnim;
@@ -1130,7 +1130,7 @@
         private System.Windows.Forms.Button btnSpawnClone;
         private System.Windows.Forms.Button btnEditItem;
         private System.Windows.Forms.Button btnEditZone;
-        private System.Windows.Forms.CheckBox chkShowSprites;
+        private System.Windows.Forms.CheckBox chkSprites;
         private System.Windows.Forms.Button btnEditMonster;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Button btnSpawnItem;

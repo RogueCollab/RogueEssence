@@ -822,7 +822,7 @@ namespace RogueEssence.Dungeon
                                 {
                                     ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start, new Loc(ii, jj));
                                     EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Effect;
-                                    if (effect.ID > -1 && effect.Exposed)
+                                    if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
                                     {
                                         if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
                                             AddToDraw(otherDraw, effect);
@@ -832,9 +832,9 @@ namespace RogueEssence.Dungeon
                                     if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), FocusedCharacter.Mobility))
                                     {
                                         if (Collision.InFront(FocusedCharacter.CharLoc, new Loc(ii, jj), FocusedCharacter.CharDir, -1))
-                                            GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 2, 0);
-                                        else
                                             GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                                        else
+                                            GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
                                     }
                                 }
                             }
@@ -954,42 +954,45 @@ namespace RogueEssence.Dungeon
                     }
 
                     //draw items
-                    foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
+                    if (!DataManager.Instance.HideObjects)
                     {
-                        if (CanSeeSprite(ViewRect, item))
+                        foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
                         {
-                            TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                            if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                            if (CanSeeSprite(ViewRect, item))
                             {
-                                if (showHiddenItem)
-                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
-                            }
-                            else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
-                            {
-                                if (terrain.BlockType == TerrainData.Mobility.Passable)
-                                    item.Draw(spriteBatch, ViewRect.Start, Color.White);
-                                else
-                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
+                                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                                if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                                {
+                                    if (showHiddenItem)
+                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
+                                }
+                                else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                                {
+                                    if (terrain.BlockType == TerrainData.Mobility.Passable)
+                                        item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                                    else
+                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
+                                }
                             }
                         }
-                    }
-                    //draw pickup items
-                    foreach (PickupItem item in PickupItems)
-                    {
-                        if (CanSeeSprite(ViewRect, item))
+                        //draw pickup items
+                        foreach (PickupItem item in PickupItems)
                         {
-                            TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                            if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                            if (CanSeeSprite(ViewRect, item))
                             {
-                                if (showHiddenItem)
-                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
-                            }
-                            else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
-                            {
-                                if (terrain.BlockType == TerrainData.Mobility.Passable)
-                                    item.Draw(spriteBatch, ViewRect.Start, Color.White);
-                                else
-                                    item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                                if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                                {
+                                    if (showHiddenItem)
+                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                                }
+                                else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                                {
+                                    if (terrain.BlockType == TerrainData.Mobility.Passable)
+                                        item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                                    else
+                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                                }
                             }
                         }
                     }
@@ -1353,18 +1356,6 @@ namespace RogueEssence.Dungeon
 
         public virtual void DrawDev(SpriteBatch spriteBatch)
         {
-
-            if (DataManager.Instance.HideGrid)
-            {
-                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
-                {
-                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
-                    {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
-                            GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
-                    }
-                }
-            }
 
         }
 

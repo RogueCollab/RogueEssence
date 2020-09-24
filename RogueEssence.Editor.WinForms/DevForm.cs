@@ -71,7 +71,7 @@ namespace RogueEssence.Dev
 
             cbGender.SelectedIndex = 0;
 
-            chkShowSprites.Checked = !DataManager.Instance.HideChars;
+            chkSprites.Checked = DataManager.Instance.HideChars;
 
             for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
                 cbAnim.Items.Add(GraphicsManager.Actions[ii].Name);
@@ -98,7 +98,7 @@ namespace RogueEssence.Dev
             cbFloor.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbFloor.Items.Count - 1);
 
 
-            chkGrid.Checked = !DataManager.Instance.HideGrid;
+            chkObject.Checked = DataManager.Instance.HideObjects;
 
 
             //Script tab
@@ -110,7 +110,7 @@ namespace RogueEssence.Dev
 
         private void chkShowSprites_CheckedChanged(object sender, EventArgs e)
         {
-            DataManager.Instance.HideChars = !chkShowSprites.Checked;
+            DataManager.Instance.HideChars = !chkSprites.Checked;
         }
 
         private void cbDexNum_SelectedIndexChanged(object sender, EventArgs e)
@@ -340,9 +340,9 @@ namespace RogueEssence.Dev
 
         }
 
-        private void chkGrid_CheckedChanged(object sender, EventArgs e)
+        private void chkObject_CheckedChanged(object sender, EventArgs e)
         {
-            DataManager.Instance.HideGrid = !chkGrid.Checked;
+            DataManager.Instance.HideObjects = chkObject.Checked;
         }
 
         private void DevWindow_Load(object sender, EventArgs e)

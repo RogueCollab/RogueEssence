@@ -47,6 +47,9 @@ namespace RogueEssence.Dev
             SetupLayerVisibility();
 
             InitializeComponent();
+
+            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+
             UpdateHasScriptFolder(false);
 
             for (int ii = 0; ii < (int)GroundEntity.EEntTypes.Count; ii++)
@@ -265,6 +268,7 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevNewGround();
 
+            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
             RefreshTitle();
             LoadMapProperties();
@@ -299,6 +303,7 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
+            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
             RefreshTitle();
             LoadMapProperties();
@@ -343,7 +348,7 @@ namespace RogueEssence.Dev
             {
                 List<BaseSheet> tileList = new List<BaseSheet>();
                 tileList.Add(tileset);
-                ImportHelper.SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
+                ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
             }
 
 
@@ -488,16 +493,19 @@ namespace RogueEssence.Dev
             txtMapName.Text = ZoneManager.Instance.CurrentGround.Name.DefaultText;
             cbScrollEdge.SelectedIndex = (int)ZoneManager.Instance.CurrentGround.EdgeView;
 
-
+            bool foundSong = false;
             for (int ii = 0; ii < lbxMusic.Items.Count; ii++)
             {
                 string song = (string)lbxMusic.Items[ii];
                 if (song == ZoneManager.Instance.CurrentGround.Music)
                 {
                     lbxMusic.SelectedIndex = ii;
+                    foundSong = true;
                     break;
                 }
             }
+            if (!foundSong)
+                lbxMusic.SelectedIndex = -1;
 
             FillInMapScriptData(ZoneManager.Instance.CurrentGround);
         }
@@ -585,6 +593,23 @@ namespace RogueEssence.Dev
             }
         }
 
+        private void retileMapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MapRetileWindow window = new MapRetileWindow(ZoneManager.Instance.CurrentGround.TileSize);
+
+            if (window.ShowDialog() == DialogResult.OK)
+            {
+                DiagManager.Instance.LoadMsg = "Retiling Map...";
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+
+                ZoneManager.Instance.CurrentGround.Retile(window.TileSize / GraphicsManager.TEX_SIZE);
+
+                tileBrowser.SetTileSize(window.TileSize);
+
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+            }
+        }
+
         public void PaintTile(Loc loc, TileLayer anim)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
@@ -647,7 +672,7 @@ namespace RogueEssence.Dev
 
         public void PaintBlockTile(Loc loc, bool block)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * GroundMap.SUB_TILES, ZoneManager.Instance.CurrentGround.Height * GroundMap.SUB_TILES, loc))
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
                 return;
 
             ZoneManager.Instance.CurrentGround.SetObstacle(loc.X, loc.Y, block ? 1u : 0u);
@@ -659,7 +684,7 @@ namespace RogueEssence.Dev
             {
                 for (int yy = rect.Y; yy < rect.End.Y; yy++)
                 {
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * GroundMap.SUB_TILES, ZoneManager.Instance.CurrentGround.Height * GroundMap.SUB_TILES, new Loc(xx, yy)))
+                    if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, new Loc(xx, yy)))
                         continue;
 
                     ZoneManager.Instance.CurrentGround.SetObstacle(xx, yy, block ? 1u : 0u);
@@ -670,12 +695,12 @@ namespace RogueEssence.Dev
 
         public void FillBlockTile(Loc loc, bool block)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * GroundMap.SUB_TILES, ZoneManager.Instance.CurrentGround.Height * GroundMap.SUB_TILES, loc))
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
                 return;
 
             uint tile = ZoneManager.Instance.CurrentGround.GetObstacle(loc.X, loc.Y);
 
-            Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width * GroundMap.SUB_TILES, ZoneManager.Instance.CurrentGround.Height * GroundMap.SUB_TILES),
+            Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight),
                     (Loc testLoc) =>
                     {
                         return tile != ZoneManager.Instance.CurrentGround.GetObstacle(testLoc.X, testLoc.Y);

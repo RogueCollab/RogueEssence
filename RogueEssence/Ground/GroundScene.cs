@@ -232,29 +232,29 @@ namespace RogueEssence.Ground
             ZoneManager.Instance.CurrentGround.DrawDebug(ViewRect.X, ViewRect.Y, ViewRect.Width, ViewRect.Height,
                 (int x, int y, int w, int h, float alpha) =>
                 {
-                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * windowScale), (int)((y - ViewRect.Y) * windowScale), (int)(w * windowScale), 1), null, Color.White * alpha);
-                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * windowScale), (int)((y - ViewRect.Y) * windowScale), 1, (int)(h * windowScale)), null, Color.White * alpha);
+                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), (int)(w * windowScale * scale), 1), null, Color.White * alpha);
+                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), 1, (int)(h * windowScale * scale)), null, Color.White * alpha);
                 },
                 (AABB.IObstacle box) =>
                 {
                     if (box is GroundWall)
-                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale), (int)(box.Bounds.Width * windowScale), (int)(box.Bounds.Height * windowScale)), null, Color.Red * 0.3f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Red * 0.3f);
                     else if (box is GroundChar)
                     {
                         if (((GroundChar)box).EntEnabled)
-                            blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale), (int)(box.Bounds.Width * windowScale), (int)(box.Bounds.Height * windowScale)), null, Color.Yellow * 0.7f);
+                            blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Yellow * 0.7f);
                     }
                     else if (box is GroundObject)
                     {
                         if (((GroundObject)box).EntEnabled)
-                            blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale), (int)(box.Bounds.Width * windowScale), (int)(box.Bounds.Height * windowScale)), null, Color.Cyan * 0.5f);
+                            blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Cyan * 0.5f);
                     }
                     else
-                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale), (int)(box.Bounds.Width * windowScale), (int)(box.Bounds.Height * windowScale)), null, Color.Gray * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Gray * 0.5f);
                 }, (string message, int x, int y, float alpha) =>
                 {
                     int size = GraphicsManager.SysFont.SubstringWidth(message);
-                    GraphicsManager.SysFont.DrawText(spriteBatch, (int)((x - ViewRect.X) * windowScale), (int)((y - ViewRect.Y) * windowScale), message, null, DirV.None, DirH.None);
+                    GraphicsManager.SysFont.DrawText(spriteBatch, (int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), message, null, DirV.None, DirH.None);
                 });
             
             if (FocusedCharacter != null)

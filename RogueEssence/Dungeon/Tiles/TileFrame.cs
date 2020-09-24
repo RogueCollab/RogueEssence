@@ -6,6 +6,8 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public struct TileFrame
     {
+        public static readonly TileFrame Empty = new TileFrame(new Loc(), "");
+
         public string Sheet;
         public Loc TexLoc;
 

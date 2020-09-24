@@ -16,8 +16,6 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundMap : IWorld, IEntryData
     {
-        public const int SUB_TILES = 3;
-
         [NonSerialized]
         private AABB.Grid grid;
         private GroundWall[][] obstacles;
@@ -31,11 +29,19 @@ namespace RogueEssence.Ground
 
         public AutoTile[][] Tiles;
 
+        /// <summary>
+        /// Size in tex units (8x8 tiles)
+        /// </summary>
+        public int TexSize { get; private set; }
+        public int TileSize { get { return TexSize * GraphicsManager.TEX_SIZE; } }
         public int Width { get { return Tiles.Length; } }
         public int Height { get { return Tiles[0].Length; } }
 
-        public int GroundWidth { get { return Tiles.Length * GraphicsManager.TileSize; } }
-        public int GroundHeight { get { return Tiles[0].Length * GraphicsManager.TileSize; } }
+        public int TexWidth { get { return Tiles.Length * TexSize; } }
+        public int TexHeight { get { return Tiles[0].Length * TexSize; } }
+
+        public int GroundWidth { get { return Tiles.Length * TileSize; } }
+        public int GroundHeight { get { return Tiles[0].Length * TileSize; } }
 
         /// <summary>
         /// the internal name of the map, no spaces or special characters, never localized.
@@ -202,8 +208,9 @@ namespace RogueEssence.Ground
         }
 
 
-        public void CreateNew(int width, int height)
+        public void CreateNew(int width, int height, int texSize)
         {
+            TexSize = texSize;
             Tiles = new AutoTile[width][];
             for (int ii = 0; ii < width; ii++)
             {
@@ -212,11 +219,11 @@ namespace RogueEssence.Ground
                     Tiles[ii][jj] = new AutoTile();
             }
 
-            int divSize = GraphicsManager.TileSize / SUB_TILES;
-            obstacles = new GroundWall[width * SUB_TILES][];
+            int divSize = GraphicsManager.TEX_SIZE;
+            obstacles = new GroundWall[width * TexSize][];
             for (int ii = 0; ii < obstacles.Length; ii++)
             {
-                obstacles[ii] = new GroundWall[height * SUB_TILES];
+                obstacles[ii] = new GroundWall[height * TexSize];
                 for (int jj = 0; jj < obstacles[ii].Length; jj++)
                     obstacles[ii][jj] = new GroundWall(ii * divSize, jj * divSize, divSize, divSize);
             }
@@ -388,16 +395,16 @@ namespace RogueEssence.Ground
             Loc diff = RogueElements.Grid.ResizeJustified(ref Tiles,
                 width, height, anchorDir.Reverse(), changeOp, newOp);
 
-            int divSize = GraphicsManager.TileSize / SUB_TILES;
+            int divSize = GraphicsManager.TEX_SIZE;
             RogueElements.Grid.LocAction blockChangeOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y].Bounds = new Rect(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
             RogueElements.Grid.LocAction blocknewOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y] = new GroundWall(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
 
             RogueElements.Grid.ResizeJustified(ref obstacles,
-                width * SUB_TILES, height * SUB_TILES, anchorDir.Reverse(), blockChangeOp, blocknewOp);
+                width * TexSize, height * TexSize, anchorDir.Reverse(), blockChangeOp, blocknewOp);
 
             foreach (GroundChar character in ZoneManager.Instance.CurrentGround.IterateCharacters())
             {
-                Loc newLoc = character.MapLoc + diff * GraphicsManager.TileSize;
+                Loc newLoc = character.MapLoc + diff * TileSize;
                 if (newLoc.X < 0)
                     newLoc.X = 0;
                 else if (newLoc.X >= width)
@@ -410,6 +417,33 @@ namespace RogueEssence.Ground
                 character.SetMapLoc(newLoc);
                 character.UpdateFrame();
             }
+
+            this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
+        }
+
+        public void Retile(int texSize)
+        {
+            int newWidth = (Width * TexSize - 1) / texSize + 1;
+            int newHeight = (Height * TexSize - 1) / texSize + 1;
+
+            TexSize = texSize;
+
+            Tiles = new AutoTile[newWidth][];
+            for (int ii = 0; ii < newWidth; ii++)
+            {
+                Tiles[ii] = new AutoTile[newHeight];
+                for (int jj = 0; jj < newHeight; jj++)
+                    Tiles[ii][jj] = new AutoTile();
+            }
+
+            int divSize = GraphicsManager.TEX_SIZE;
+            RogueElements.Grid.LocAction blockChangeOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y].Bounds = new Rect(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
+            RogueElements.Grid.LocAction blocknewOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y] = new GroundWall(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
+
+            RogueElements.Grid.ResizeJustified(ref obstacles,
+                newWidth * TexSize, newHeight * TexSize, Dir8.DownRight, blockChangeOp, blocknewOp);
+
+            this.grid = new AABB.Grid(newWidth, newHeight, GraphicsManager.TileSize);
         }
 
         public GroundSpawner GetSpawner(string name)
@@ -452,7 +486,7 @@ namespace RogueEssence.Ground
             w = Math.Max(0, Math.Min(w, this.GroundWidth - x));
             h = Math.Max(0, Math.Min(h, this.GroundHeight - y));
 
-            int divSize = GraphicsManager.TileSize / SUB_TILES;
+            int divSize = GraphicsManager.TEX_SIZE;
             var minX = (x / divSize);
             var minY = (y / divSize);
             var maxX = ((x + w - 1) / divSize);

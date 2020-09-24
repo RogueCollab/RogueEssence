@@ -103,7 +103,10 @@ namespace RogueEssence.Content
         public const string BG_PATTERN = DiagManager.CONTENT_PATH + "BG/{0}.dir";
 
 
-        public static int TileSize;
+        public const int TEX_SIZE = 8;
+
+        public static int DungeonTexSize;
+        public static int TileSize { get { return DungeonTexSize * TEX_SIZE; } }
         public static int ScreenWidth;
         public static int ScreenHeight;
         public static int PortraitSize;
@@ -124,7 +127,7 @@ namespace RogueEssence.Content
         private const int VFX_CACHE_SIZE = 100;
         private const int ICON_CACHE_SIZE = 100;
         private const int ITEM_CACHE_SIZE = 100;
-        private const int TILE_CACHE_SIZE = 1000;
+        private const int TILE_CACHE_SIZE = 2000;
         private const int OBJECT_CACHE_SIZE = 500;
         private const int BG_CACHE_SIZE = 10;
 
@@ -219,7 +222,7 @@ namespace RogueEssence.Content
                     xmldoc.Load(path);
 
                     XmlNode tileSize = xmldoc.DocumentElement.SelectSingleNode("TileSize");
-                    TileSize = Int32.Parse(tileSize.InnerText);
+                    DungeonTexSize = Int32.Parse(tileSize.InnerText) / TEX_SIZE;
 
                     XmlNode portraitSize = xmldoc.DocumentElement.SelectSingleNode("PortraitSize");
                     PortraitSize = Int32.Parse(portraitSize.InnerText);

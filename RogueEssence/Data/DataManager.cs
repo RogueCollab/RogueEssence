@@ -152,7 +152,7 @@ namespace RogueEssence.Data
         public List<string> MsgLog;
 
 
-        public bool HideGrid;
+        public bool HideObjects;
         public bool HideChars;
 
         public bool RecordingReplay { get { return (replayWriter != null); } }

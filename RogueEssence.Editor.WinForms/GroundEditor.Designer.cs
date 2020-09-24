@@ -37,6 +37,7 @@
             this.importFromPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resizeMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.retileMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
@@ -254,6 +255,7 @@
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.resizeMapToolStripMenuItem,
+            this.retileMapToolStripMenuItem,
             this.undoToolStripMenuItem,
             this.redoToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
@@ -266,6 +268,13 @@
             this.resizeMapToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.resizeMapToolStripMenuItem.Text = "Resize Map";
             this.resizeMapToolStripMenuItem.Click += new System.EventHandler(this.resizeMapToolStripMenuItem_Click);
+            // 
+            // retileMapToolStripMenuItem
+            // 
+            this.retileMapToolStripMenuItem.Name = "retileMapToolStripMenuItem";
+            this.retileMapToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.retileMapToolStripMenuItem.Text = "Re-Tile Map";
+            this.retileMapToolStripMenuItem.Click += new System.EventHandler(this.retileMapToolStripMenuItem_Click);
             // 
             // undoToolStripMenuItem
             // 
@@ -1730,6 +1739,7 @@
         private System.Windows.Forms.TextBox txtMapName;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resizeMapToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem retileMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
         private TileBrowser tileBrowser;
         private System.Windows.Forms.TabPage tabEntities;

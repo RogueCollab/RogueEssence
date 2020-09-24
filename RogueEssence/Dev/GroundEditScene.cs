@@ -33,11 +33,11 @@ namespace RogueEssence.Dev
 
         public Rect TileRectPreview()
         {
-            return RectPreview(GraphicsManager.TileSize);
+            return RectPreview(ZoneManager.Instance.CurrentGround.TileSize);
         }
         public Rect BlockRectPreview()
         {
-            return RectPreview(GraphicsManager.TileSize / GroundMap.SUB_TILES);
+            return RectPreview(GraphicsManager.TEX_SIZE);
         }
         public Rect RectPreview(int size)
         {
@@ -110,11 +110,11 @@ namespace RogueEssence.Dev
 
 
                 if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                    FocusedLoc = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.Width * GraphicsManager.TileSize - GraphicsManager.ScreenWidth / 2)),
-                        Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.Height * GraphicsManager.TileSize - GraphicsManager.ScreenHeight / 2)));
+                    FocusedLoc = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth - GraphicsManager.ScreenWidth / 2)),
+                        Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight - GraphicsManager.ScreenHeight / 2)));
                 else
-                    FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.Width * GraphicsManager.TileSize)),
-                        Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.Height * GraphicsManager.TileSize)));
+                    FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth)),
+                        Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight)));
 
                 UpdateCam(FocusedLoc);
 
@@ -124,11 +124,13 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void DrawDev(SpriteBatch spriteBatch)
+        public override void DrawGame(SpriteBatch spriteBatch)
         {
             //
             //When in editor mode, we want to display an overlay over some entities
             //
+            base.DrawGame(spriteBatch);
+
 
             if (DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
             {
@@ -142,42 +144,32 @@ namespace RogueEssence.Dev
                                 Collision.InBounds(TileRectPreview(), new Loc(ii, jj)))
                             {
                                 if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
-                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
+                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.X, jj * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize, ZoneManager.Instance.CurrentGround.TileSize), null, Color.Black);
                                 else
-                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
+                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
                             }
                         }
                     }
                 }
 
                 //draw the blocks
-                for (int jj = viewTileRect.Y * GroundMap.SUB_TILES; jj < viewTileRect.End.Y * GroundMap.SUB_TILES; jj++)
+                int texSize = ZoneManager.Instance.CurrentGround.TexSize;
+                for (int jj = viewTileRect.Y * texSize; jj < viewTileRect.End.Y * texSize; jj++)
                 {
-                    for (int ii = viewTileRect.X * GroundMap.SUB_TILES; ii < viewTileRect.End.X * GroundMap.SUB_TILES; ii++)
+                    for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * GroundMap.SUB_TILES, ZoneManager.Instance.CurrentGround.Height * GroundMap.SUB_TILES, new Loc(ii, jj)))
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
                         {
                             bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
                             if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
                                 blocked = BlockInProgress.Value;
 
                             if (blocked)
-                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize / GroundMap.SUB_TILES - ViewRect.X, jj * GraphicsManager.TileSize / GroundMap.SUB_TILES - ViewRect.Y, GraphicsManager.TileSize / GroundMap.SUB_TILES, GraphicsManager.TileSize / GroundMap.SUB_TILES), null, Color.Red * 0.5f);
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.5f);
                         }
                     }
                 }
 
-                if (!DataManager.Instance.HideGrid)
-                {
-                    for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
-                    {
-                        for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
-                        {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)))
-                                GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
-                        }
-                    }
-                }
 
                 //DevHasGraphics()
                 //Draw Entity bounds
@@ -209,9 +201,31 @@ namespace RogueEssence.Dev
                 }
             }
 
-            base.DrawDev(spriteBatch);
         }
 
+
+        public override void DrawDev(SpriteBatch spriteBatch)
+        {
+            BaseSheet blank = GraphicsManager.Pixel;
+            int tileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+            {
+                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                {
+                    if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)))
+                    {
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), (int)(tileSize * windowScale * scale), 1), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), 1, (int)(tileSize * windowScale * scale)), null, Color.White * 0.5f);
+                    }
+                    else if (ii == ZoneManager.Instance.CurrentGround.Width && Collision.InBounds(ZoneManager.Instance.CurrentGround.Height, jj))
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), 1, (int)(tileSize * windowScale * scale)), null, Color.White * 0.5f);
+                    else if (jj == ZoneManager.Instance.CurrentGround.Height && Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ii))
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), (int)(tileSize * windowScale * scale), 1), null, Color.White * 0.5f);
+                }
+            }
+
+            base.DrawDev(spriteBatch);
+        }
 
         public override void DrawDebug(SpriteBatch spriteBatch)
         {

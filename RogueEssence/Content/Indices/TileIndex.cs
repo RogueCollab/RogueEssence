@@ -7,6 +7,8 @@ namespace RogueEssence.Content
 {
     public class TileIndexNode
     {
+        public int TileSize;
+
         public Dictionary<Loc, long> Positions;
 
         public TileIndexNode()
@@ -17,6 +19,7 @@ namespace RogueEssence.Content
         public static TileIndexNode Load(BinaryReader reader)
         {
             TileIndexNode node = new TileIndexNode();
+            node.TileSize = reader.ReadInt32();
             int count = reader.ReadInt32();
             for (int ii = 0; ii < count; ii++)
             {
@@ -29,6 +32,7 @@ namespace RogueEssence.Content
 
         public void Save(BinaryWriter writer)
         {
+            writer.Write(TileSize);
             writer.Write(Positions.Count);
             foreach (Loc key in Positions.Keys)
             {
@@ -86,6 +90,15 @@ namespace RogueEssence.Content
                 return node.GetTileDims();
             else
                 return new Loc();
+        }
+
+        public int GetTileSize(string sheetNum)
+        {
+            TileIndexNode node;
+            if (Nodes.TryGetValue(sheetNum, out node))
+                return node.TileSize;
+            else
+                return 0;
         }
 
 

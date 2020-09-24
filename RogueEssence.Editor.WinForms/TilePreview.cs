@@ -21,6 +21,16 @@ namespace RogueEssence.Dev
             return new TileLayer(chosenAnim);
         }
 
+        public void SetTileSize(int tileSize)
+        {
+            lock (drawLock)
+            {
+                Image img = new Bitmap(tileSize, tileSize);
+                pictureBox.Image = img;
+                pictureBox.Size = img.Size;
+            }
+        }
+
         public void SetChosenAnim(TileLayer anim)
         {
             lock (drawLock)
@@ -89,8 +99,11 @@ namespace RogueEssence.Dev
             Image endTileImage = new Bitmap(pictureBox.Width, pictureBox.Height);
             if (chosenAnim.Frames.Count > 0)
             {
-                using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(endTileImage))
-                    graphics.DrawImage(DevTileManager.Instance.GetTile(chosenAnim.Frames[animFrame]), 0, 0);
+                if (chosenAnim.Frames[animFrame] != TileFrame.Empty)
+                {
+                    using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(endTileImage))
+                        graphics.DrawImage(DevTileManager.Instance.GetTile(chosenAnim.Frames[animFrame]), 0, 0);
+                }
             }
             pictureBox.Image = endTileImage;
         }

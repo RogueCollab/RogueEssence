@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
         string currentTileset;
         string chosenTileset;
         Loc chosenTile;
+        int tileSize;
         public TileEditMode TexMode { get; private set; }
 
         List<string> tileIndices;
@@ -56,6 +57,12 @@ namespace RogueEssence.Dev
             }
         }
 
+        public void SetTileSize(int tileSize)
+        {
+            this.tileSize = tileSize;
+            UpdateTilesList();
+        }
+
         public void UpdateTilesList()
         {
             tileIndices.Clear();
@@ -63,13 +70,27 @@ namespace RogueEssence.Dev
 
             foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
             {
-                tileIndices.Add(name);
-                slbTilesets.AddItem(name);
+                if (GraphicsManager.TileIndex.GetTileSize(name) == tileSize)
+                {
+                    tileIndices.Add(name);
+                    slbTilesets.AddItem(name);
+                }
             }
-            chosenTileset = tileIndices[0];
-            currentTileset = tileIndices[0];
 
-            slbTilesets.SelectedIndex = 0;
+            if (tileIndices.Count > 0)
+            {
+
+                chosenTileset = tileIndices[0];
+                currentTileset = tileIndices[0];
+
+                slbTilesets.SelectedIndex = 0;
+
+            }
+            else
+            {
+                chosenTileset = "";
+                currentTileset = "";
+            }
 
             RefreshAnimControls();
 
@@ -83,14 +104,14 @@ namespace RogueEssence.Dev
         {
             RefreshScrollMaximums();
 
-            RefreshPic();
+            RefreshTilesetPic();
         }
 
 
-        void RefreshPic()
+        void RefreshTilesetPic()
         {
-            int picX = picTileset.Size.Width / GraphicsManager.TileSize;
-            int picY = picTileset.Size.Height / GraphicsManager.TileSize;
+            int picX = picTileset.Size.Width / tileSize;
+            int picY = picTileset.Size.Height / tileSize;
 
             Loc tilePos = GraphicsManager.TileIndex.GetTileDims(currentTileset);
 
@@ -123,7 +144,7 @@ namespace RogueEssence.Dev
                         {
                             Bitmap img = DevTileManager.Instance.GetTile(new TileFrame(new Loc(x + hScroll.Value, y + vScroll.Value), currentTileset));
                             if (img != null)
-                                graphics.DrawImage(img, x * GraphicsManager.TileSize, y * GraphicsManager.TileSize);
+                                graphics.DrawImage(img, x * tileSize, y * tileSize);
                         }
                     }
 
@@ -132,9 +153,9 @@ namespace RogueEssence.Dev
                         chosenTile.X >= hScroll.Value && chosenTile.X < hScroll.Value + picX &&
                         chosenTile.Y >= vScroll.Value && chosenTile.Y < vScroll.Value + picY)
                     {
-                        graphics.DrawRectangle(new Pen(Color.Red, 2), new Rectangle((chosenTile.X - hScroll.Value) * GraphicsManager.TileSize + 1,
-                            (chosenTile.Y - vScroll.Value) * GraphicsManager.TileSize + 1,
-                            GraphicsManager.TileSize - 2, GraphicsManager.TileSize - 2));
+                        graphics.DrawRectangle(new Pen(Color.Red, 2), new Rectangle((chosenTile.X - hScroll.Value) * tileSize + 1,
+                            (chosenTile.Y - vScroll.Value) * tileSize + 1,
+                            tileSize - 2, tileSize - 2));
                     }
                 }
                 picTileset.Image = endImage;
@@ -154,8 +175,8 @@ namespace RogueEssence.Dev
             RefreshScrollMaximums();
 
 
-            int picX = picTileset.Size.Width / GraphicsManager.TileSize;
-            int picY = picTileset.Size.Height / GraphicsManager.TileSize;
+            int picX = picTileset.Size.Width / tileSize;
+            int picY = picTileset.Size.Height / tileSize;
 
             bool refreshedPic = false;
 
@@ -178,15 +199,14 @@ namespace RogueEssence.Dev
             }
 
             if (!refreshedPic)
-                RefreshPic();
+                RefreshTilesetPic();
 
         }
 
         void RefreshScrollMaximums()
         {
-
-            int picX = picTileset.Size.Width / GraphicsManager.TileSize;
-            int picY = picTileset.Size.Height / GraphicsManager.TileSize;
+            int picX = picTileset.Size.Width / tileSize;
+            int picY = picTileset.Size.Height / tileSize;
 
             Loc tilePos = GraphicsManager.TileIndex.GetTileDims(currentTileset);
 
@@ -241,12 +261,12 @@ namespace RogueEssence.Dev
 
         private void vScroll_Scroll(object sender, ScrollEventArgs e)
         {
-            RefreshPic();
+            RefreshTilesetPic();
         }
 
         private void hScroll_Scroll(object sender, ScrollEventArgs e)
         {
-            RefreshPic();
+            RefreshTilesetPic();
         }
 
 
@@ -254,15 +274,14 @@ namespace RogueEssence.Dev
         {
             MouseEventArgs args = e as MouseEventArgs;
 
-
-            int clickedX = args.X / GraphicsManager.TileSize + hScroll.Value;
-            int clickedY = args.Y / GraphicsManager.TileSize + vScroll.Value;
+            int clickedX = args.X / tileSize + hScroll.Value;
+            int clickedY = args.Y / tileSize + vScroll.Value;
 
             if (GraphicsManager.TileIndex.GetPosition(currentTileset, new Loc(clickedX, clickedY)) > 0)
             {
                 chosenTileset = currentTileset;
                 chosenTile = new Loc(clickedX, clickedY);
-                RefreshPic();
+                RefreshTilesetPic();
 
                 if (!inAnimMode)
                     tilePreview.SetChosenAnim(new TileLayer(chosenTile, chosenTileset));

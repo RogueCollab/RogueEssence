@@ -241,77 +241,106 @@ namespace RogueEssence.Dev
 
         public static string[] TILE_TITLES = { "wall", "ground", "water" };
 
+        public static int GetDirSize(string dirString)
+        {
+            string fileName = Path.GetFileName(dirString);
+
+            string[] sides = fileName.Split("x");
+            if (sides.Length != 2)
+                return 0;
+
+            if (sides[0] != sides[1])
+                return 0;
+
+            int tileSize = 0;
+            if (!Int32.TryParse(sides[0], out tileSize))
+                return 0;
+
+            if (tileSize % 8 != 0)
+                return 0;
+
+            return tileSize;
+        }
+
         public static void ImportAllTiles(string sourceDir, string cachePattern, bool includeTile, bool includeAutotile)
         {
-            if (includeTile)
+            string[] sizeDirs = Directory.GetDirectories(sourceDir);
+            foreach (string sizeDir in sizeDirs)
             {
-                string[] dirs = Directory.GetFiles(sourceDir, "*.png");
-                //go through each sprite folder, and each form folder
-                for (int ii = 0; ii < dirs.Length; ii++)
+                int tileSize = GetDirSize(sizeDir);
+                if (tileSize == 0)
+                    continue;
+
+                if (includeTile)
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(dirs[ii]);
-                    string outputFile = String.Format(cachePattern, fileName);
-
-                    try
+                    string[] dirs = Directory.GetFiles(sizeDir, "*.png");
+                    //go through each sprite folder, and each form folder
+                    for (int ii = 0; ii < dirs.Length; ii++)
                     {
-                        DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
-                        using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
+                        string fileName = Path.GetFileNameWithoutExtension(dirs[ii]);
+                        string outputFile = String.Format(cachePattern, fileName);
+
+                        try
                         {
-                            List<BaseSheet> tileList = new List<BaseSheet>();
-                            tileList.Add(tileset);
-                            SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
-                        }
-                    }
-
-                    catch (Exception ex)
-                    {
-                        DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
-                    }
-                }
-            }
-
-            if (includeAutotile)
-            {
-                string[] dirs = Directory.GetDirectories(sourceDir);
-                for (int ii = 0; ii < dirs.Length; ii++)
-                {
-                    string fileName = Path.GetFileName(dirs[ii]);
-                    string[] info = fileName.Split('.');
-                    string outputFile = String.Format(cachePattern, info[0]);
-                    DiagManager.Instance.LoadMsg = "Importing " + info[0];
-
-                    try
-                    {
-                        List<BaseSheet> tileList = new List<BaseSheet>();
-                        foreach (string tileTitle in TILE_TITLES)
-                        {
-                            int layerIndex = 0;
-                            while (true)
+                            DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
+                            using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
                             {
-                                string[] layers = Directory.GetFiles(dirs[ii], tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
-                                if (layers.Length == 1)
-                                {
-                                    BaseSheet tileset = BaseSheet.Import(layers[0]);
-                                    tileList.Add(tileset);
-                                }
-                                else if (layers.Length > 1)
-                                {
-                                    throw new Exception("More files than expected");
-                                }
-                                else
-                                {
-                                    break;
-                                }
-                                layerIndex++;
+                                List<BaseSheet> tileList = new List<BaseSheet>();
+                                tileList.Add(tileset);
+                                SaveTileSheet(tileList, outputFile, tileSize);
                             }
                         }
-                        SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
-                        foreach (BaseSheet tex in tileList)
-                            tex.Dispose();
+
+                        catch (Exception ex)
+                        {
+                            DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                        }
                     }
-                    catch (Exception ex)
+                }
+
+                if (includeAutotile)
+                {
+                    string[] dirs = Directory.GetDirectories(sizeDir);
+                    for (int ii = 0; ii < dirs.Length; ii++)
                     {
-                        DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                        string fileName = Path.GetFileName(dirs[ii]);
+                        string[] info = fileName.Split('.');
+                        string outputFile = String.Format(cachePattern, info[0]);
+                        DiagManager.Instance.LoadMsg = "Importing " + info[0];
+
+                        try
+                        {
+                            List<BaseSheet> tileList = new List<BaseSheet>();
+                            foreach (string tileTitle in TILE_TITLES)
+                            {
+                                int layerIndex = 0;
+                                while (true)
+                                {
+                                    string[] layers = Directory.GetFiles(dirs[ii], tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
+                                    if (layers.Length == 1)
+                                    {
+                                        BaseSheet tileset = BaseSheet.Import(layers[0]);
+                                        tileList.Add(tileset);
+                                    }
+                                    else if (layers.Length > 1)
+                                    {
+                                        throw new Exception("More files than expected");
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                    layerIndex++;
+                                }
+                            }
+                            SaveTileSheet(tileList, outputFile, tileSize);
+                            foreach (BaseSheet tex in tileList)
+                                tex.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                        }
                     }
                 }
             }
@@ -366,6 +395,7 @@ namespace RogueEssence.Dev
 
             //generate tileguide
             TileIndexNode tileGuide = new TileIndexNode();
+            tileGuide.TileSize = tileSize;
             Dictionary<Loc, long> spritePositions = new Dictionary<Loc, long>();
             long currentPosition = 0;
             foreach (Loc key in tileData.Keys)
@@ -533,48 +563,6 @@ namespace RogueEssence.Dev
             }
         }
 
-
-        public static BaseSheet BuildTileSheet(List<BaseSheet> frames)
-        {
-            int frameHeight = 0;
-            int frameWidth = 0;
-            int totalSurfaceWidth = 0;
-            int lastX = 0;
-
-            //check frames
-            for (int ii = 0; ii < frames.Count; ii++)
-            {
-                BaseSheet frame = frames[ii];
-                if (frameHeight == 0)
-                    frameHeight = frame.Height;
-                else if (frameHeight != frame.Height)
-                    throw new Exception("Frameheight mismatch: " + ii + " (" + frameHeight + " vs. " + frame.Height + ")");
-
-                if (frameWidth == 0)
-                    frameWidth = frame.Width;
-                else if (frameWidth != frame.Width)
-                    throw new Exception("Framewidth mismatch: " + ii + " (" + frameWidth + " vs. " + frame.Width + ")");
-
-                totalSurfaceWidth += frame.Width;
-            }
-
-            if (totalSurfaceWidth > 0)
-            {
-                BaseSheet animSheet = new BaseSheet(totalSurfaceWidth, frameHeight);
-                foreach (BaseSheet frame in frames)
-                {
-                    animSheet.Blit(frame, 0, 0, frame.Width, frame.Height, lastX, 0);
-
-                    lastX += frame.Width;
-                    frame.Dispose();
-                }
-
-                return animSheet;
-            }
-            else
-                return null;
-        }
-
         public static IEnumerable<int> GetAllNumberedDirs(string spriteRootDirectory, string dirName)
         {
             string[] dirs = Directory.GetDirectories(spriteRootDirectory, dirName + "*", SearchOption.TopDirectoryOnly);
@@ -597,150 +585,160 @@ namespace RogueEssence.Dev
         {
             //TODO: create a version for one tile import
             int index = 0;
-            string[] dirs = Directory.GetDirectories(sourceDir);
-            for (int ii = 0; ii < dirs.Length; ii++)
+
+            string[] sizeDirs = Directory.GetDirectories(sourceDir);
+            foreach (string sizeDir in sizeDirs)
             {
-                string fileName = Path.GetFileName(dirs[ii]);
-                //string[] info = fileName.Split('.');
-                string outputName = fileName;
+                int tileSize = GetDirSize(sizeDir);
+                if (tileSize == 0)
+                    continue;
 
 
-                DiagManager.Instance.LoadMsg = "Importing " + outputName;
-
-                int TOTAL_TILES = 47;
-
-                try
+                string[] dirs = Directory.GetDirectories(sizeDir);
+                for (int ii = 0; ii < dirs.Length; ii++)
                 {
-                    int currentTier = 0;
-                    foreach (string tileTitle in TILE_TITLES)
+                    string fileName = Path.GetFileName(dirs[ii]);
+                    //string[] info = fileName.Split('.');
+                    string outputName = fileName;
+
+
+                    DiagManager.Instance.LoadMsg = "Importing " + outputName;
+
+                    int TOTAL_TILES = 47;
+
+                    try
                     {
-                        AutoTileData autoTile = new AutoTileData();
-                        AutoTileAdjacent entry = new AutoTileAdjacent();
-
-                        List<TileLayer>[][] totalArray = new List<TileLayer>[48][];
-
-                        for (int jj = 0; jj < TOTAL_TILES; jj++)
+                        int currentTier = 0;
+                        foreach (string tileTitle in TILE_TITLES)
                         {
-                            totalArray[jj] = new List<TileLayer>[3];
-                            for (int kk = 0; kk < 3; kk++)
-                                totalArray[jj][kk] = new List<TileLayer>();
-                        }
+                            AutoTileData autoTile = new AutoTileData();
+                            AutoTileAdjacent entry = new AutoTileAdjacent();
 
-                        int layerIndex = 0;
-                        while (true)
-                        {
-                            string[] layers = Directory.GetFiles(dirs[ii] + "/", tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
-                            if (layers.Length == 1)
+                            List<TileLayer>[][] totalArray = new List<TileLayer>[48][];
+
+                            for (int jj = 0; jj < TOTAL_TILES; jj++)
                             {
-                                string layerName = Path.GetFileNameWithoutExtension(layers[0]);
-                                string[] layerInfo = layerName.Split('.');
+                                totalArray[jj] = new List<TileLayer>[3];
+                                for (int kk = 0; kk < 3; kk++)
+                                    totalArray[jj][kk] = new List<TileLayer>();
+                            }
 
-                                using (BaseSheet tileset = BaseSheet.Import(layers[0]))
+                            int layerIndex = 0;
+                            while (true)
+                            {
+                                string[] layers = Directory.GetFiles(dirs[ii] + "/", tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
+                                if (layers.Length == 1)
                                 {
-                                    int frameLength = Convert.ToInt32(layerInfo[2]);
-                                    if (frameLength == 0)
-                                        frameLength = 60;
-                                    int maxVariants = Convert.ToInt32(layerInfo[3]);
+                                    string layerName = Path.GetFileNameWithoutExtension(layers[0]);
+                                    string[] layerInfo = layerName.Split('.');
 
-
-                                    int maxFrames = tileset.Width / GraphicsManager.TileSize / maxVariants;
-
-                                    for (int jj = 0; jj < TOTAL_TILES; jj++)
+                                    using (BaseSheet tileset = BaseSheet.Import(layers[0]))
                                     {
-                                        for (int kk = 0; kk < maxVariants; kk++)
+                                        int frameLength = Convert.ToInt32(layerInfo[2]);
+                                        if (frameLength == 0)
+                                            frameLength = 60;
+                                        int maxVariants = Convert.ToInt32(layerInfo[3]);
+
+
+                                        int maxFrames = tileset.Width / tileSize / maxVariants;
+
+                                        for (int jj = 0; jj < TOTAL_TILES; jj++)
                                         {
-                                            //go through each layer
-                                            TileLayer anim = new TileLayer();
-                                            anim.FrameLength = frameLength;
-
-                                            for (int mm = 0; mm < maxFrames; mm++)
+                                            for (int kk = 0; kk < maxVariants; kk++)
                                             {
-                                                //keep adding more tiles to the anim until end of blank spot is found
-                                                if (!tileset.IsBlank((kk * maxFrames + mm) * GraphicsManager.TileSize, jj * GraphicsManager.TileSize, GraphicsManager.TileSize, GraphicsManager.TileSize))
-                                                    anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm, jj + currentTier * 47), outputName));
-                                            }
+                                                //go through each layer
+                                                TileLayer anim = new TileLayer();
+                                                anim.FrameLength = frameLength;
 
-                                            if (anim.Frames.Count > 0)
-                                                totalArray[jj][kk].Add(anim);
+                                                for (int mm = 0; mm < maxFrames; mm++)
+                                                {
+                                                    //keep adding more tiles to the anim until end of blank spot is found
+                                                    if (!tileset.IsBlank((kk * maxFrames + mm) * tileSize, jj * tileSize, tileSize, tileSize))
+                                                        anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm, jj + currentTier * 47), outputName));
+                                                }
+
+                                                if (anim.Frames.Count > 0)
+                                                    totalArray[jj][kk].Add(anim);
+                                            }
                                         }
                                     }
                                 }
+                                else if (layers.Length > 1)
+                                {
+                                    throw new Exception("More files than expected");
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                layerIndex++;
+                                currentTier++;
                             }
-                            else if (layers.Length > 1)
+
+                            if (layerIndex > 0)
                             {
-                                throw new Exception("More files than expected");
+                                ImportTileVariant(entry.Tilex00, totalArray[0]);
+                                ImportTileVariant(entry.Tilex01, totalArray[1]);
+                                ImportTileVariant(entry.Tilex02, totalArray[2]);
+                                ImportTileVariant(entry.Tilex03, totalArray[3]);
+                                ImportTileVariant(entry.Tilex13, totalArray[4]);
+                                ImportTileVariant(entry.Tilex04, totalArray[5]);
+                                ImportTileVariant(entry.Tilex05, totalArray[6]);
+                                ImportTileVariant(entry.Tilex06, totalArray[7]);
+                                ImportTileVariant(entry.Tilex26, totalArray[8]);
+                                ImportTileVariant(entry.Tilex07, totalArray[9]);
+                                ImportTileVariant(entry.Tilex17, totalArray[10]);
+                                ImportTileVariant(entry.Tilex27, totalArray[11]);
+                                ImportTileVariant(entry.Tilex37, totalArray[12]);
+                                ImportTileVariant(entry.Tilex08, totalArray[13]);
+                                ImportTileVariant(entry.Tilex09, totalArray[14]);
+                                ImportTileVariant(entry.Tilex89, totalArray[15]);
+                                ImportTileVariant(entry.Tilex0A, totalArray[16]);
+                                ImportTileVariant(entry.Tilex0B, totalArray[17]);
+                                ImportTileVariant(entry.Tilex1B, totalArray[18]);
+                                ImportTileVariant(entry.Tilex8B, totalArray[19]);
+                                ImportTileVariant(entry.Tilex9B, totalArray[20]);
+                                ImportTileVariant(entry.Tilex0C, totalArray[21]);
+                                ImportTileVariant(entry.Tilex4C, totalArray[22]);
+                                ImportTileVariant(entry.Tilex0D, totalArray[23]);
+                                ImportTileVariant(entry.Tilex4D, totalArray[24]);
+                                ImportTileVariant(entry.Tilex8D, totalArray[25]);
+                                ImportTileVariant(entry.TilexCD, totalArray[26]);
+                                ImportTileVariant(entry.Tilex0E, totalArray[27]);
+                                ImportTileVariant(entry.Tilex2E, totalArray[28]);
+                                ImportTileVariant(entry.Tilex4E, totalArray[29]);
+                                ImportTileVariant(entry.Tilex6E, totalArray[30]);
+                                ImportTileVariant(entry.Tilex0F, totalArray[31]);
+                                ImportTileVariant(entry.Tilex1F, totalArray[32]);
+                                ImportTileVariant(entry.Tilex2F, totalArray[33]);
+                                ImportTileVariant(entry.Tilex3F, totalArray[34]);
+                                ImportTileVariant(entry.Tilex4F, totalArray[35]);
+                                ImportTileVariant(entry.Tilex5F, totalArray[36]);
+                                ImportTileVariant(entry.Tilex6F, totalArray[37]);
+                                ImportTileVariant(entry.Tilex7F, totalArray[38]);
+                                ImportTileVariant(entry.Tilex8F, totalArray[39]);
+                                ImportTileVariant(entry.Tilex9F, totalArray[40]);
+                                ImportTileVariant(entry.TilexAF, totalArray[41]);
+                                ImportTileVariant(entry.TilexBF, totalArray[42]);
+                                ImportTileVariant(entry.TilexCF, totalArray[43]);
+                                ImportTileVariant(entry.TilexDF, totalArray[44]);
+                                ImportTileVariant(entry.TilexEF, totalArray[45]);
+                                ImportTileVariant(entry.TilexFF, totalArray[46]);
+
+                                autoTile.Tiles = entry;
+
+                                autoTile.Name = new LocalText(outputName + tileTitle);
+
+                                DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
+                                Debug.WriteLine(String.Format("{0:D3}: {1}", index, autoTile.Name));
+                                index++;
                             }
-                            else
-                            {
-                                break;
-                            }
-                            layerIndex++;
-                            currentTier++;
-                        }
-
-                        if (layerIndex > 0)
-                        {
-                            ImportTileVariant(entry.Tilex00, totalArray[0]);
-                            ImportTileVariant(entry.Tilex01, totalArray[1]);
-                            ImportTileVariant(entry.Tilex02, totalArray[2]);
-                            ImportTileVariant(entry.Tilex03, totalArray[3]);
-                            ImportTileVariant(entry.Tilex13, totalArray[4]);
-                            ImportTileVariant(entry.Tilex04, totalArray[5]);
-                            ImportTileVariant(entry.Tilex05, totalArray[6]);
-                            ImportTileVariant(entry.Tilex06, totalArray[7]);
-                            ImportTileVariant(entry.Tilex26, totalArray[8]);
-                            ImportTileVariant(entry.Tilex07, totalArray[9]);
-                            ImportTileVariant(entry.Tilex17, totalArray[10]);
-                            ImportTileVariant(entry.Tilex27, totalArray[11]);
-                            ImportTileVariant(entry.Tilex37, totalArray[12]);
-                            ImportTileVariant(entry.Tilex08, totalArray[13]);
-                            ImportTileVariant(entry.Tilex09, totalArray[14]);
-                            ImportTileVariant(entry.Tilex89, totalArray[15]);
-                            ImportTileVariant(entry.Tilex0A, totalArray[16]);
-                            ImportTileVariant(entry.Tilex0B, totalArray[17]);
-                            ImportTileVariant(entry.Tilex1B, totalArray[18]);
-                            ImportTileVariant(entry.Tilex8B, totalArray[19]);
-                            ImportTileVariant(entry.Tilex9B, totalArray[20]);
-                            ImportTileVariant(entry.Tilex0C, totalArray[21]);
-                            ImportTileVariant(entry.Tilex4C, totalArray[22]);
-                            ImportTileVariant(entry.Tilex0D, totalArray[23]);
-                            ImportTileVariant(entry.Tilex4D, totalArray[24]);
-                            ImportTileVariant(entry.Tilex8D, totalArray[25]);
-                            ImportTileVariant(entry.TilexCD, totalArray[26]);
-                            ImportTileVariant(entry.Tilex0E, totalArray[27]);
-                            ImportTileVariant(entry.Tilex2E, totalArray[28]);
-                            ImportTileVariant(entry.Tilex4E, totalArray[29]);
-                            ImportTileVariant(entry.Tilex6E, totalArray[30]);
-                            ImportTileVariant(entry.Tilex0F, totalArray[31]);
-                            ImportTileVariant(entry.Tilex1F, totalArray[32]);
-                            ImportTileVariant(entry.Tilex2F, totalArray[33]);
-                            ImportTileVariant(entry.Tilex3F, totalArray[34]);
-                            ImportTileVariant(entry.Tilex4F, totalArray[35]);
-                            ImportTileVariant(entry.Tilex5F, totalArray[36]);
-                            ImportTileVariant(entry.Tilex6F, totalArray[37]);
-                            ImportTileVariant(entry.Tilex7F, totalArray[38]);
-                            ImportTileVariant(entry.Tilex8F, totalArray[39]);
-                            ImportTileVariant(entry.Tilex9F, totalArray[40]);
-                            ImportTileVariant(entry.TilexAF, totalArray[41]);
-                            ImportTileVariant(entry.TilexBF, totalArray[42]);
-                            ImportTileVariant(entry.TilexCF, totalArray[43]);
-                            ImportTileVariant(entry.TilexDF, totalArray[44]);
-                            ImportTileVariant(entry.TilexEF, totalArray[45]);
-                            ImportTileVariant(entry.TilexFF, totalArray[46]);
-
-                            autoTile.Tiles = entry;
-
-                            autoTile.Name = new LocalText(outputName + tileTitle);
-
-                            DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
-                            Debug.WriteLine(String.Format("{0:D3}: {1}", index, autoTile.Name));
-                            index++;
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(new Exception("Error importing " + outputName + "\n", ex));
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(new Exception("Error importing " + outputName + "\n", ex));
+                    }
                 }
             }
         }
