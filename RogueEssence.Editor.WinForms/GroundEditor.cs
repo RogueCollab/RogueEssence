@@ -50,6 +50,7 @@ namespace RogueEssence.Dev
 
             InitializeComponent();
 
+            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
             tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
             UpdateHasScriptFolder(false);
@@ -270,6 +271,7 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevNewGround();
 
+            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
             tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
             RefreshTitle();
@@ -305,6 +307,7 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
+            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
             tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
             RefreshTitle();
@@ -745,6 +748,45 @@ namespace RogueEssence.Dev
                     }
             }
         }
+
+
+        private void lbxLayers_OnAddItem(int index, object element, LayerBox.EditCheckElementOp op)
+        {
+            MapLayer layer = new MapLayer("New Layer");
+            layer.CreateNew(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+            op(index, layer, layer.Visible);
+        }
+
+        private void lbxLayers_OnDuplicateItem(int index, object element, LayerBox.EditCheckElementOp op)
+        {
+            MapLayer layer = element as MapLayer;
+            op(index, layer.Clone(), layer.Visible);
+        }
+
+        private void lbxLayers_OnEditItem(int index, object element, LayerBox.EditElementOp op)
+        {
+            MapLayer layer = element as MapLayer;
+
+            MapLayerWindow window = new MapLayerWindow(layer.Name, layer.Front);
+
+            if (window.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                layer.Name = window.LayerName;
+                layer.Front = window.Front;
+                op(index, layer);
+            }
+        }
+
+        private void lbxLayers_CheckChanged(object sender, ItemCheckEventArgs e)
+        {
+            ZoneManager.Instance.CurrentGround.Layers[e.Index].Visible = (e.NewValue == CheckState.Checked);
+        }
+
+        public bool IsLayerChecked(object element)
+        {
+            return ((MapLayer)element).Visible;
+        }
+
 
         #region MAP_SCRIPT_TAB
         //=========================================================================

@@ -233,7 +233,7 @@ namespace RogueEssence.Dev
 
         private void btnDown_Click(object sender, EventArgs e)
         {
-            if (lbxCollection.SelectedIndex < 0)
+            if (lbxCollection.SelectedIndex < 0 || lbxCollection.SelectedIndex >= lbxCollection.Items.Count - 1)
                 return;
 
             PriorityListIndex index = getListBoxIndex();

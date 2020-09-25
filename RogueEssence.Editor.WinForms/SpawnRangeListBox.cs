@@ -113,7 +113,7 @@ namespace RogueEssence.Dev
 
         private void btnDown_Click(object sender, EventArgs e)
         {
-            if (lbxCollection.SelectedIndex > -1)
+            if (lbxCollection.SelectedIndex > -1 && lbxCollection.SelectedIndex < lbxCollection.Items.Count - 1)
             {
                 int index = lbxCollection.SelectedIndex;
                 Switch(lbxCollection.SelectedIndex, lbxCollection.SelectedIndex + 1);

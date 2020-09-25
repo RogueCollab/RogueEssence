@@ -14,40 +14,6 @@ using Microsoft.Xna.Framework;
 namespace RogueEssence.Ground
 {
     [Serializable]
-    public class MapLayer
-    {
-        public string Name;
-        public bool Front;
-
-        public AutoTile[][] Tiles;
-
-        public MapLayer(string name)
-        {
-            Name = name;
-        }
-
-        public void CreateNew(int width, int height)
-        {
-            Tiles = new AutoTile[width][];
-            for (int ii = 0; ii < width; ii++)
-            {
-                Tiles[ii] = new AutoTile[height];
-                for (int jj = 0; jj < height; jj++)
-                    Tiles[ii][jj] = new AutoTile();
-            }
-        }
-
-        public void ResizeJustified(int width, int height, Dir8 anchorDir)
-        {
-            RogueElements.Grid.LocAction changeOp = (Loc effectLoc) => { };
-            RogueElements.Grid.LocAction newOp = (Loc effectLoc) => { Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
-
-            Loc diff = RogueElements.Grid.ResizeJustified(ref Tiles,
-                width, height, anchorDir.Reverse(), changeOp, newOp);
-        }
-    }
-
-    [Serializable]
     public class GroundMap : IWorld, IEntryData
     {
         [NonSerialized]
@@ -674,7 +640,7 @@ namespace RogueEssence.Ground
         {
             foreach (MapLayer layer in Layers)
             {
-                if (layer.Front == front)
+                if (layer.Front == front && layer.Visible)
                     layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
             }
         }
