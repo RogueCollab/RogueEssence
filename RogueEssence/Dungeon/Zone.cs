@@ -176,7 +176,7 @@ namespace RogueEssence.Dungeon
             exitMap();
 
             CurrentGround = new GroundMap();
-            CurrentGround.CreateNew(30, 30, RogueEssence.Content.GraphicsManager.DungeonTexSize);
+            CurrentGround.CreateNew(16, 16, Content.GraphicsManager.DungeonTexSize);
             CurrentMapID = new SegLoc(-1, -1);
         }
 

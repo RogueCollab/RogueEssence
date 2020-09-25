@@ -36,6 +36,8 @@ namespace RogueEssence.Dev
         private EntEditMode EntMode;
         private TileEditMode BlockMode;
 
+        private int currentLayer;
+
         /// <summary>
         /// The currently selected entity.
         /// The entity is either selected using select mode, or move mode!
@@ -380,17 +382,13 @@ namespace RogueEssence.Dev
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-
-            Grid.LocAction changeOp = (Loc effectLoc) => { };
-            Grid.LocAction newOp = (Loc effectLoc) => { ZoneManager.Instance.CurrentGround.Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
-
-            ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.None);
+            ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.UpLeft);
 
             //set tilesets
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentGround.Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                    ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
@@ -615,7 +613,7 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            ZoneManager.Instance.CurrentGround.Tiles[loc.X][loc.Y] = new AutoTile(anim);
+            ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y] = new AutoTile(anim);
         }
 
         public void RectTile(Rect rect, TileLayer anim)
@@ -627,7 +625,7 @@ namespace RogueEssence.Dev
                     if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(xx, yy)))
                         continue;
 
-                    ZoneManager.Instance.CurrentGround.Tiles[xx][yy] = new AutoTile(anim);
+                    ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[xx][yy] = new AutoTile(anim);
                 }
             }
         }
@@ -637,7 +635,7 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            tileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Tiles[loc.X][loc.Y].Layers[0]);//TODO: an anim can have multiple layers if they're an autotile, we nee to somehow pick up autotiles
+            tileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y].Layers[0]);//TODO: an anim can have multiple layers if they're an autotile, we nee to somehow pick up autotiles
         }
 
 
@@ -646,12 +644,12 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            AutoTile tile = ZoneManager.Instance.CurrentGround.Tiles[loc.X][loc.Y].Copy();
+            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y].Copy();
 
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height),
                     (Loc testLoc) =>
                     {
-                        return !tile.Equals(ZoneManager.Instance.CurrentGround.Tiles[testLoc.X][testLoc.Y]);
+                        return !tile.Equals(ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[testLoc.X][testLoc.Y]);
                     },
                     (Loc testLoc) =>
                     {
@@ -659,7 +657,7 @@ namespace RogueEssence.Dev
                     },
                     (Loc testLoc) =>
                     {
-                        ZoneManager.Instance.CurrentGround.Tiles[testLoc.X][testLoc.Y] = new AutoTile(anim);
+                        ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[testLoc.X][testLoc.Y] = new AutoTile(anim);
                     },
                 loc);
         }

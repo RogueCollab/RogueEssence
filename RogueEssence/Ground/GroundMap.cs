@@ -14,6 +14,40 @@ using Microsoft.Xna.Framework;
 namespace RogueEssence.Ground
 {
     [Serializable]
+    public class MapLayer
+    {
+        public string Name;
+        public bool Front;
+
+        public AutoTile[][] Tiles;
+
+        public MapLayer(string name)
+        {
+            Name = name;
+        }
+
+        public void CreateNew(int width, int height)
+        {
+            Tiles = new AutoTile[width][];
+            for (int ii = 0; ii < width; ii++)
+            {
+                Tiles[ii] = new AutoTile[height];
+                for (int jj = 0; jj < height; jj++)
+                    Tiles[ii][jj] = new AutoTile();
+            }
+        }
+
+        public void ResizeJustified(int width, int height, Dir8 anchorDir)
+        {
+            RogueElements.Grid.LocAction changeOp = (Loc effectLoc) => { };
+            RogueElements.Grid.LocAction newOp = (Loc effectLoc) => { Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
+
+            Loc diff = RogueElements.Grid.ResizeJustified(ref Tiles,
+                width, height, anchorDir.Reverse(), changeOp, newOp);
+        }
+    }
+
+    [Serializable]
     public class GroundMap : IWorld, IEntryData
     {
         [NonSerialized]
@@ -27,21 +61,21 @@ namespace RogueEssence.Ground
         public BGAnimData BGAnim;
         public Loc BGMovement;
 
-        public AutoTile[][] Tiles;
+        public List<MapLayer> Layers;
 
         /// <summary>
         /// Size in tex units (8x8 tiles)
         /// </summary>
         public int TexSize { get; private set; }
         public int TileSize { get { return TexSize * GraphicsManager.TEX_SIZE; } }
-        public int Width { get { return Tiles.Length; } }
-        public int Height { get { return Tiles[0].Length; } }
+        public int Width { get { return Layers[0].Tiles.Length; } }
+        public int Height { get { return Layers[0].Tiles[0].Length; } }
 
-        public int TexWidth { get { return Tiles.Length * TexSize; } }
-        public int TexHeight { get { return Tiles[0].Length * TexSize; } }
+        public int TexWidth { get { return Width * TexSize; } }
+        public int TexHeight { get { return Height * TexSize; } }
 
-        public int GroundWidth { get { return Tiles.Length * TileSize; } }
-        public int GroundHeight { get { return Tiles[0].Length * TileSize; } }
+        public int GroundWidth { get { return Width * TileSize; } }
+        public int GroundHeight { get { return Height * TileSize; } }
 
         /// <summary>
         /// the internal name of the map, no spaces or special characters, never localized.
@@ -101,6 +135,8 @@ namespace RogueEssence.Ground
             Name = new LocalText();
             Comment = "";
             Music = "";
+
+            Layers = new List<MapLayer>();
 
             Anims = new List<GroundAnim>();
             AssetName = "";
@@ -211,13 +247,11 @@ namespace RogueEssence.Ground
         public void CreateNew(int width, int height, int texSize)
         {
             TexSize = texSize;
-            Tiles = new AutoTile[width][];
-            for (int ii = 0; ii < width; ii++)
-            {
-                Tiles[ii] = new AutoTile[height];
-                for (int jj = 0; jj < height; jj++)
-                    Tiles[ii][jj] = new AutoTile();
-            }
+
+            Layers.Clear();
+            MapLayer layer = new MapLayer("New Layer");
+            layer.CreateNew(width, height);
+            Layers.Add(layer);
 
             int divSize = GraphicsManager.TEX_SIZE;
             obstacles = new GroundWall[width * TexSize][];
@@ -389,22 +423,19 @@ namespace RogueEssence.Ground
 
         public void ResizeJustified(int width, int height, Dir8 anchorDir)
         {
-            RogueElements.Grid.LocAction changeOp = (Loc effectLoc) => { };
-            RogueElements.Grid.LocAction newOp = (Loc effectLoc) => { Tiles[effectLoc.X][effectLoc.Y] = new AutoTile(); };
-
-            Loc diff = RogueElements.Grid.ResizeJustified(ref Tiles,
-                width, height, anchorDir.Reverse(), changeOp, newOp);
+            foreach (MapLayer layer in Layers)
+                layer.ResizeJustified(width, height, anchorDir);
 
             int divSize = GraphicsManager.TEX_SIZE;
             RogueElements.Grid.LocAction blockChangeOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y].Bounds = new Rect(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
             RogueElements.Grid.LocAction blocknewOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y] = new GroundWall(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
 
-            RogueElements.Grid.ResizeJustified(ref obstacles,
+            Loc texDiff = RogueElements.Grid.ResizeJustified(ref obstacles,
                 width * TexSize, height * TexSize, anchorDir.Reverse(), blockChangeOp, blocknewOp);
 
             foreach (GroundChar character in ZoneManager.Instance.CurrentGround.IterateCharacters())
             {
-                Loc newLoc = character.MapLoc + diff * TileSize;
+                Loc newLoc = character.MapLoc + texDiff * divSize;
                 if (newLoc.X < 0)
                     newLoc.X = 0;
                 else if (newLoc.X >= width)
@@ -428,13 +459,8 @@ namespace RogueEssence.Ground
 
             TexSize = texSize;
 
-            Tiles = new AutoTile[newWidth][];
-            for (int ii = 0; ii < newWidth; ii++)
-            {
-                Tiles[ii] = new AutoTile[newHeight];
-                for (int jj = 0; jj < newHeight; jj++)
-                    Tiles[ii][jj] = new AutoTile();
-            }
+            foreach (MapLayer layer in Layers)
+                layer.CreateNew(newWidth, newHeight);
 
             int divSize = GraphicsManager.TEX_SIZE;
             RogueElements.Grid.LocAction blockChangeOp = (Loc effectLoc) => { obstacles[effectLoc.X][effectLoc.Y].Bounds = new Rect(effectLoc.X * divSize, effectLoc.Y * divSize, divSize, divSize); };
@@ -444,6 +470,13 @@ namespace RogueEssence.Ground
                 newWidth * TexSize, newHeight * TexSize, Dir8.DownRight, blockChangeOp, blocknewOp);
 
             this.grid = new AABB.Grid(newWidth, newHeight, GraphicsManager.TileSize);
+        }
+
+        public void AddLayer()
+        {
+            MapLayer layer = new MapLayer("");
+            layer.CreateNew(Width, Height);
+            Layers.Add(layer);
         }
 
         public GroundSpawner GetSpawner(string name)
@@ -637,9 +670,13 @@ namespace RogueEssence.Ground
             return destination;
         }
 
-        public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc)
+        public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
         {
-            Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
+            foreach (MapLayer layer in Layers)
+            {
+                if (layer.Front == front)
+                    layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
+            }
         }
 
         public void DrawBG(SpriteBatch spriteBatch)

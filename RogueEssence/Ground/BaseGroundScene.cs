@@ -155,7 +155,7 @@ namespace RogueEssence.Ground
                     bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
 
                     if (!outOfBounds)
-                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj));
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), false);
                 }
             }
 
@@ -275,8 +275,18 @@ namespace RogueEssence.Ground
                 charIndex++;
             }
 
-            //TODO: draw map effects
+            //draw tiles in front
+            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+            {
+                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                {
+                    //if it's a tile on the discovery array, show it
+                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
 
+                    if (!outOfBounds)
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), true);
+                }
+            }
 
             //draw effects in foreground
             otherDraw.Clear();
