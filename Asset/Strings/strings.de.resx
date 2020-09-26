@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment></comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment></comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="_ENUM_BattleSpeed_Fast" xml:space="preserve">
+    <value>Schnell</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_BattleSpeed_Normal" xml:space="preserve">
+    <value>Normal</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_BattleSpeed_Slow" xml:space="preserve">
+    <value>Langsam</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_BattleSpeed_VeryFast" xml:space="preserve">
+    <value>Sehr Schnell</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_BattleSpeed_VerySlow" xml:space="preserve">
+    <value>Sehr Langsam</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_Dir4_Down" xml:space="preserve">
+    <value>Unten</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_Dir4_Left" xml:space="preserve">
+    <value>Links</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_Dir4_Right" xml:space="preserve">
+    <value>Rechts</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_Dir4_Up" xml:space="preserve">
+    <value>Oben</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_DisconnectReason_ConnectionFailed_msg" xml:space="preserve">
+    <value>Verbindung fehlgeschlagen.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_DisconnectReason_ConnectionRejected_msg" xml:space="preserve">
+    <value>Verbindung wurde abgelehnt.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_DisconnectReason_HostUnreachable_msg" xml:space="preserve">
+    <value>Host ist nicht erreichbar.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_DisconnectReason_InvalidProtocol_msg" xml:space="preserve">
+    <value>Falsches Protokoll.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_DisconnectReason_RemoteConnectionClose_msg" xml:space="preserve">
+    <value>Die Serververbindung wurde geschlossen.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_DisconnectReason_Timeout_msg" xml:space="preserve">
+    <value>Verbindungsversuch fehlgeschlagen.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_ExchangeState_Exchange_msg" xml:space="preserve">
+    <value>Tausche...</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_ExchangeState_Ready_msg" xml:space="preserve">
+    <value>Bereit!</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_ExchangeState_Selecting_msg" xml:space="preserve">
+    <value>Wählt aus...</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_ExchangeState_Viewing_msg" xml:space="preserve">
+    <value>Sieht sich um...</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_ExchangeState_Waiting_msg" xml:space="preserve">
+    <value>Wartet...</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Double" xml:space="preserve">
+    <value>Doppelt</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Eighth" xml:space="preserve">
+    <value>Achtel</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Fourth" xml:space="preserve">
+    <value>Viertel</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Half" xml:space="preserve">
+    <value>Halbiert</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Normal" xml:space="preserve">
+    <value>Normal</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Octuple" xml:space="preserve">
+    <value>Achtfach</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_GameSpeed_Quadruple" xml:space="preserve">
+    <value>Vierfach</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Attack" xml:space="preserve">
+    <value>Angriff</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Diagonal" xml:space="preserve">
+    <value>Diagonal</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_ItemMenu" xml:space="preserve">
+    <value>Item Menü</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_LeaderSwap1" xml:space="preserve">
+    <value>Anführerwechsel 1</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_LeaderSwap2" xml:space="preserve">
+    <value>Anführerwechsel 2</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_LeaderSwap3" xml:space="preserve">
+    <value>Anführerwechsel 3</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_LeaderSwap4" xml:space="preserve">
+    <value>Anführerwechsel 4</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_LeaderSwapBack" xml:space="preserve">
+    <value>Anführerwechsel zurück</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_LeaderSwapForth" xml:space="preserve">
+    <value>Anführerwechsel vorwärts</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Menu" xml:space="preserve">
+    <value>Menü</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Minimap" xml:space="preserve">
+    <value>Karte</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_MsgLog" xml:space="preserve">
+    <value>Nachrichtenverlauf</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Run" xml:space="preserve">
+    <value>Laufen</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_SelectItems" xml:space="preserve">
+    <value>Items auswählen</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Skill1" xml:space="preserve">
+    <value>Attacke 1</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Skill2" xml:space="preserve">
+    <value>Attacke 2</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Skill3" xml:space="preserve">
+    <value>Attacke 3</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Skill4" xml:space="preserve">
+    <value>Attacke 4</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_SkillMenu" xml:space="preserve">
+    <value>Attacken Menü</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Skills" xml:space="preserve">
+    <value>Attacken</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_SortItems" xml:space="preserve">
+    <value>Items sortieren</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Start" xml:space="preserve">
+    <value>Start</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_InputType_Turn" xml:space="preserve">
+    <value>Runde</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_Keys_Escape" xml:space="preserve">
+    <value>Esc</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_NetCloseReason_AlreadyConnected_msg" xml:space="preserve">
+    <value>Du bist bereits verbunden mit einem weiteren Programm.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_NetCloseReason_DifferentActivity_msg" xml:space="preserve">
+    <value>Der andere Spieler sucht nach einer anderen Aktivität.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_NetCloseReason_OtherEnded_msg" xml:space="preserve">
+    <value>Der andere Spieler hat sich entschieden, die Verbindung zu trennen.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_NetCloseReason_PeerIDMismatch_msg" xml:space="preserve">
+    <value>Einer der Spieler hat sich nicht mit der richtigen Team ID verbunden.</value>
+    <comment></comment>  </data>
+  <data name="_ENUM_NetCloseReason_ServerShutdown_msg" xml:space="preserve">
+    <value>Der Server wurde geschlossen.</value>
+    <comment></comment>  </data>
+  <data name="ADD_END" xml:space="preserve">
+    <value> und</value>
+  <data name="DLG_CHOICE_NO" xml:space="preserve">
+    <value>Nein</value>
+    <comment></comment>  </data>
+  <data name="DLG_CHOICE_YES" xml:space="preserve">
+    <value>Ja</value>
+    <comment></comment>  </data>
+  <data name="DLG_ERR_READ_FILE" xml:space="preserve">
+    <value>Die Datei kann nicht gelesen werden, da sie das falsche Format hat oder beschädigt ist.</value>
+    <comment></comment>  </data>
+  <data name="DLG_ERR_READ_FILE_FALLBACK" xml:space="preserve">
+    <value>Bitte lösche sie oder verschiebe sie aus {0}.</value>
+    <comment></comment>  </data>
+  <data name="DLG_ERR_READ_SAVE" xml:space="preserve">
+    <value>Die Speicherdatei konnte nicht gelesen werden, da sie das falsche Format hat oder beschädigt wurde.</value>
+    <comment></comment>  </data>
+  <data name="DLG_ERR_READ_SAVE_FALLBACK" xml:space="preserve">
+    <value>Die jetzigen Spieldaten werden von nun an als neue permanente Spieldaten verwendet.</value>
+    <comment></comment>  </data>
+  <data name="DLG_LANGUAGE_SET" xml:space="preserve">
+    <value>Die Sprache wurde auf {0} geändert.</value>
+    <comment></comment>  </data>
+  <data name="DLG_REPLAY_DESYNC" xml:space="preserve">
+    <value>Die Wiederholung ist unsynchron geworden. [pause=0] Kehre zum Menü zurück.</value>
+    <comment></comment>  </data>
+  <data name="MENU_CANCEL" xml:space="preserve">
+    <value>Abbrechen</value>
+    <comment></comment>  </data>
+  <data name="MENU_CONTROLS_CHOOSE_BUTTON" xml:space="preserve">
+    <value>DRÜCKE EINEN KNOPF</value>
+    <comment></comment>  </data>
+  <data name="MENU_CONTROLS_CHOOSE_KEY" xml:space="preserve">
+    <value>DRÜCKE EINE TASTE</value>
+    <comment></comment>  </data>
+</root>

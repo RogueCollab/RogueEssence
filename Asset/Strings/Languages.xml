@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="en" xml:space="preserve">
+    <value>English</value>
+    <comment></comment>  </data>
+  <data name="de" xml:space="preserve">
+    <value>Deutsch</value>
+    <comment></comment>  </data>
+</root>

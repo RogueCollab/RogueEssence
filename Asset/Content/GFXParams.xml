@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+<TileSize>24</TileSize>
+<PortraitSize>256</PortraitSize>
+<ScreenWidth>320</ScreenWidth>
+<ScreenHeight>240</ScreenHeight>
+<Emotions>
+  <Emotion>Normal</Emotion>
+</Emotions>
+<SOSEmotion>0</SOSEmotion>
+<AOKEmotion>0</AOKEmotion>
+<Actions>
+  <Action>
+    <Name>None</Name>
+    <Dash>false</Dash>
+  </Action>
+  <Action>
+    <Name>Idle</Name>
+    <Dash>false</Dash>
+  </Action>
+  <Action>
+    <Name>Walk</Name>
+    <Dash>false</Dash>
+  </Action>
+  <Action>
+    <Name>Sleep</Name>
+    <Dash>false</Dash>
+  </Action>
+  <Action>
+    <Name>Hit</Name>
+    <Dash>false</Dash>
+  </Action>
+  <Action>
+    <Name>Attack</Name>
+    <Dash>true</Dash>
+  </Action>
+  <Action>
+    <Name>Charge</Name>
+    <Dash>false</Dash>
+  </Action>
+</Actions>
+<HurtAction>4</HurtAction>
+<WalkAction>2</WalkAction>
+<IdleAction>1</IdleAction>
+<SleepAction>3</SleepAction>
+<ChargeAction>6</ChargeAction>
+</root>
