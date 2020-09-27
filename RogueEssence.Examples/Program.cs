@@ -8,6 +8,8 @@ using RogueEssence.Dev;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
 using RogueEssence;
+using System.Reflection;
+using Microsoft.Xna.Framework;
 #endregion
 
 namespace RogueEssence.Examples
@@ -23,6 +25,7 @@ namespace RogueEssence.Examples
         [STAThread]
         static void Main()
         {
+            InitDllMap();
             //TODO: figure out how to set this switch in appconfig
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.SerializationGuard.AllowFileWrites", true);
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
@@ -193,5 +196,17 @@ namespace RogueEssence.Examples
                 throw ex;
             }
         }
+
+        // TheSpyDog's branch on resolving dllmap for DotNetCore
+        // https://github.com/FNA-XNA/FNA/pull/315
+        public static void InitDllMap()
+        {
+            if (Type.GetType("System.Runtime.InteropServices.NativeLibrary, System.Runtime.InteropServices") != null)
+            {
+                Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
+                CoreDllMap.Register(fnaAssembly);
+            }
+        }
     }
+
 }
