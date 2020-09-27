@@ -293,6 +293,7 @@
     <comment></comment>  </data>
   <data name="ADD_END" xml:space="preserve">
     <value> und</value>
+    <comment></comment>  </data>
   <data name="DLG_CHOICE_NO" xml:space="preserve">
     <value>Nein</value>
     <comment></comment>  </data>
