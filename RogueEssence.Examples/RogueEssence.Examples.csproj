@@ -16,11 +16,6 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == ''">
-    <Content Include="runtimes\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.Core.csproj" />
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
