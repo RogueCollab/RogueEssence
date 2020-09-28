@@ -36,8 +36,6 @@ namespace RogueEssence.Dev
         private EntEditMode EntMode;
         private TileEditMode BlockMode;
 
-        private int currentLayer;
-
         /// <summary>
         /// The currently selected entity.
         /// The entity is either selected using select mode, or move mode!
@@ -121,7 +119,7 @@ namespace RogueEssence.Dev
                                 if (input[FrameInput.InputType.LeftMouse])
                                     PaintTile(tileCoords, GetBrush());
                                 else if (input[FrameInput.InputType.RightMouse])
-                                    PaintTile(tileCoords, new TileLayer());
+                                    PaintTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
                             }
                             break;
                         case TileEditMode.Rectangle:
@@ -129,14 +127,14 @@ namespace RogueEssence.Dev
                                 Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
                                 if (input.JustPressed(FrameInput.InputType.LeftMouse))
                                 {
-                                    GroundEditScene.Instance.AutoTileInProgress = new AutoTile(GetBrush());
+                                    GroundEditScene.Instance.AutoTileInProgress = new AutoTile(GetBrush().Layer);
                                     GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
                                 }
                                 else if (input[FrameInput.InputType.LeftMouse])
                                     GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
                                 else if (input.JustReleased(FrameInput.InputType.LeftMouse))
                                 {
-                                    RectTile(GroundEditScene.Instance.TileRectPreview(), GetBrush());
+                                    RectTile(GroundEditScene.Instance.TileRectPreview(), GetBrush().Layer);
                                     GroundEditScene.Instance.AutoTileInProgress = null;
                                 }
                                 else if (input.JustPressed(FrameInput.InputType.RightMouse))
@@ -156,7 +154,7 @@ namespace RogueEssence.Dev
                         case TileEditMode.Fill:
                             {
                                 if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                                    FillTile(tileCoords, GetBrush());
+                                    FillTile(tileCoords, GetBrush().Layer);
                                 else if (input.JustReleased(FrameInput.InputType.RightMouse))
                                     FillTile(tileCoords, new TileLayer());
                             }
@@ -377,9 +375,12 @@ namespace RogueEssence.Dev
             GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
 
             tileBrowser.UpdateTilesList();
+            tileBrowser.SelectTileset(sheetName);
+            yield break;
+        }
 
-            //update the map
-
+        private IEnumerator<YieldInstruction> DoImportTileset(string sheetName)
+        {
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -391,7 +392,7 @@ namespace RogueEssence.Dev
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                    ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
@@ -399,6 +400,13 @@ namespace RogueEssence.Dev
             yield break;
         }
 
+        private void importFromTilesetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (tileBrowser.CurrentTileset == "")
+                MessageBox.Show(String.Format("No tileset to import!"), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else
+                GroundEditScene.Instance.PendingDevEvent = DoImportTileset(tileBrowser.CurrentTileset);
+        }
 
         private void importFromPngToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -611,12 +619,24 @@ namespace RogueEssence.Dev
             }
         }
 
-        public void PaintTile(Loc loc, TileLayer anim)
+        public void PaintTile(Loc loc, TileBrush brush)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y] = new AutoTile(anim);
+            if (brush.MultiSelect == Loc.One)
+                ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X][loc.Y] = new AutoTile(brush.Layer);
+            else
+            {
+                for (int xx = 0; xx < brush.MultiSelect.X; xx++)
+                {
+                    for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
+                    {
+                        TileFrame frame = brush.Layer.Frames[0];
+                        ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X + xx][loc.Y + yy] = new AutoTile(new TileLayer(frame.TexLoc + new Loc(xx, yy), frame.Sheet));
+                    }
+                }
+            }
         }
 
         public void RectTile(Rect rect, TileLayer anim)
@@ -628,7 +648,7 @@ namespace RogueEssence.Dev
                     if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(xx, yy)))
                         continue;
 
-                    ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[xx][yy] = new AutoTile(anim);
+                    ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[xx][yy] = new AutoTile(anim);
                 }
             }
         }
@@ -638,7 +658,7 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            tileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y].Layers[0]);//TODO: an anim can have multiple layers if they're an autotile, we nee to somehow pick up autotiles
+            tileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X][loc.Y].Layers[0]);//TODO: an anim can have multiple layers if they're an autotile, we nee to somehow pick up autotiles
         }
 
 
@@ -647,12 +667,12 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y].Copy();
+            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X][loc.Y].Copy();
 
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height),
                     (Loc testLoc) =>
                     {
-                        return !tile.Equals(ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[testLoc.X][testLoc.Y]);
+                        return !tile.Equals(ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[testLoc.X][testLoc.Y]);
                     },
                     (Loc testLoc) =>
                     {
@@ -660,12 +680,12 @@ namespace RogueEssence.Dev
                     },
                     (Loc testLoc) =>
                     {
-                        ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[testLoc.X][testLoc.Y] = new AutoTile(anim);
+                        ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[testLoc.X][testLoc.Y] = new AutoTile(anim);
                     },
                 loc);
         }
 
-        public TileLayer GetBrush()
+        public TileBrush GetBrush()
         {
             return tileBrowser.GetBrush();
         }

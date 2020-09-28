@@ -34,6 +34,7 @@
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importFromTilesetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importFromPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resizeMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -217,6 +218,7 @@
             this.openToolStripMenuItem,
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
+            this.importFromTilesetToolStripMenuItem,
             this.importFromPngToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 22);
@@ -252,9 +254,16 @@
             // 
             // importFromPngToolStripMenuItem
             // 
+            this.importFromTilesetToolStripMenuItem.Name = "importFromTilesetToolStripMenuItem";
+            this.importFromTilesetToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.importFromTilesetToolStripMenuItem.Text = "Load Tileset to Map";
+            this.importFromTilesetToolStripMenuItem.Click += new System.EventHandler(this.importFromTilesetToolStripMenuItem_Click);
+            // 
+            // importFromPngToolStripMenuItem
+            // 
             this.importFromPngToolStripMenuItem.Name = "importFromPngToolStripMenuItem";
             this.importFromPngToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            this.importFromPngToolStripMenuItem.Text = "Import From Png";
+            this.importFromPngToolStripMenuItem.Text = "Import  Tileset from Png";
             this.importFromPngToolStripMenuItem.Click += new System.EventHandler(this.importFromPngToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
@@ -1888,6 +1897,7 @@
         private System.Windows.Forms.Label lblScriptSecondaryCallbacks;
         private System.Windows.Forms.CheckedListBox chklstScriptSecondaryCallbacks;
         private System.Windows.Forms.ToolStripMenuItem importFromPngToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importFromTilesetToolStripMenuItem;
         private System.Windows.Forms.TabPage tabBlock;
         private System.Windows.Forms.Label lblBlockMode;
         private System.Windows.Forms.TableLayoutPanel tblBlockModes;
