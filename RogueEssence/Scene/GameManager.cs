@@ -785,23 +785,8 @@ namespace RogueEssence
                 Zoom -= MetaInputManager.MouseWheelDiff / 120;
                 if (Zoom < GraphicsManager.GameZoom.x8Near)
                     Zoom = GraphicsManager.GameZoom.x8Near;
-                if (Zoom > GraphicsManager.GameZoom.x16Far)
-                    Zoom = GraphicsManager.GameZoom.x16Far;
-
-                if (ZoneManager.Instance.CurrentGround != null)
-                {
-                    int tileSize = ZoneManager.Instance.CurrentGround.TileSize;
-                    int estimation = 2200 / (GraphicsManager.ScreenWidth * GraphicsManager.ScreenHeight / tileSize / tileSize);
-
-                    if (estimation < 4 && Zoom > GraphicsManager.GameZoom.x1)
-                        Zoom = GraphicsManager.GameZoom.x1;
-                    if (estimation < 16 && Zoom > GraphicsManager.GameZoom.x2Far)
-                        Zoom = GraphicsManager.GameZoom.x2Far;
-                    if (estimation < 64 && Zoom > GraphicsManager.GameZoom.x4Far)
-                        Zoom = GraphicsManager.GameZoom.x4Far;
-                    if (estimation < 256 && Zoom > GraphicsManager.GameZoom.x8Far)
-                        Zoom = GraphicsManager.GameZoom.x8Far;
-                }
+                if (Zoom > GraphicsManager.GameZoom.x8Far)
+                    Zoom = GraphicsManager.GameZoom.x8Far;
             }
 
             CurrentScene.UpdateMeta();

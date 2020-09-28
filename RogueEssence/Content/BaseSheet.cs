@@ -16,7 +16,6 @@ namespace RogueEssence.Content
         public int Width { get { return baseTexture.Width; } }
         public int Height { get { return baseTexture.Height; } }
 
-        //doesn't work right now.  you've been warned.
         public long MemSize { get; private set; }
 
         public static void InitBase(GraphicsDevice graphicsDevice, Texture2D tex)

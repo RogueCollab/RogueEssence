@@ -41,7 +41,6 @@ namespace RogueEssence.Content
             x2Far = 1,
             x4Far = 2,
             x8Far = 3,
-            x16Far = 4
         }
 
         public static int ConvertZoom(this GameZoom zoom, int amount)
@@ -60,8 +59,6 @@ namespace RogueEssence.Content
                     return amount / 4;
                 case GameZoom.x8Far:
                     return amount / 8;
-                case GameZoom.x16Far:
-                    return amount / 16;
                 default:
                     return amount;
             }
@@ -83,8 +80,6 @@ namespace RogueEssence.Content
                     return 0.25f;
                 case GameZoom.x8Far:
                     return 0.125f;
-                case GameZoom.x16Far:
-                    return 0.0625f;
                 default:
                     return 1.0f;
             }
@@ -127,7 +122,7 @@ namespace RogueEssence.Content
         private const int VFX_CACHE_SIZE = 100;
         private const int ICON_CACHE_SIZE = 100;
         private const int ITEM_CACHE_SIZE = 100;
-        private const int TILE_CACHE_SIZE = 2200;
+        private const int TILE_CACHE_SIZE_PIXELS = 5000000;
         private const int OBJECT_CACHE_SIZE = 500;
         private const int BG_CACHE_SIZE = 10;
 
@@ -366,7 +361,8 @@ namespace RogueEssence.Content
             iconCache.OnItemRemoved = DisposeCachedObject;
             itemCache = new LRUCache<string, DirSheet>(ITEM_CACHE_SIZE);
             itemCache.OnItemRemoved = DisposeCachedObject;
-            tileCache = new LRUCache<TileFrame, BaseSheet>(TILE_CACHE_SIZE);
+            tileCache = new LRUCache<TileFrame, BaseSheet>(TILE_CACHE_SIZE_PIXELS);
+            tileCache.ItemCount = CountPixels;
             tileCache.OnItemRemoved = DisposeCachedObject;
             bgCache = new LRUCache<string, DirSheet>(BG_CACHE_SIZE);
             bgCache.OnItemRemoved = DisposeCachedObject;
@@ -903,6 +899,11 @@ namespace RogueEssence.Content
             BaseSheet newSheet = BaseSheet.LoadError();
             tileCache.Add(tileTex, newSheet);
             return newSheet;
+        }
+
+        public static int CountPixels(BaseSheet obj)
+        {
+            return obj.Width * obj.Height;
         }
 
         public static void DisposeCachedObject(IDisposable obj)
