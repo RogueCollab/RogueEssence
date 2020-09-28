@@ -324,7 +324,8 @@ namespace RogueEssence.Data
             character.MDefBonus = 0;
             character.SpeedBonus = 0;
 
-            character.HP = character.MaxHP;
+            if (!character.Dead)
+                character.HP = character.MaxHP;
             
             //reroll skills
             BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
