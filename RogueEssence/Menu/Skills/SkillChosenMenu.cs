@@ -23,8 +23,12 @@ namespace RogueEssence.Menu
             bool shiftDown = (skillSlot < DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills.Count - 1) && (DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills[skillSlot + 1].Element.SkillNum > -1);
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
-            if ((GameManager.Instance.CurrentScene == DungeonScene.Instance) && teamIndex == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_USE"), useAction));
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                if (turnChar.Team == -1 && turnChar.Char == teamIndex)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_USE"), useAction));
+            }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_SWITCH"), switchAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_UP"), () => { shiftPosition(false); }, shiftUp, shiftUp ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), () => { shiftPosition(true); }, shiftDown, shiftDown ? Color.White : Color.Red));

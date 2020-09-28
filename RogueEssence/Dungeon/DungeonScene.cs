@@ -435,7 +435,10 @@ namespace RogueEssence.Dungeon
                 {
                     ShowActions = false;
                     GameManager.Instance.SE("Menu/Skip");
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(ActiveTeam.LeaderIndex)));
+
+                    CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                    if (turnChar.Team == -1)
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
                 }
                 else if (input.JustPressed(FrameInput.InputType.ItemMenu))
                 {
