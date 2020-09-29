@@ -459,9 +459,6 @@ namespace RogueEssence.Data
 
         public static void SaveMainData(BinaryWriter writer, GameProgress save)
         {
-            //notify script engine
-            LuaEngine.Instance.SaveData(save);
-
             using (MemoryStream classStream = new MemoryStream())
             {
                 IFormatter formatter = new BinaryFormatter();
@@ -596,7 +593,7 @@ namespace RogueEssence.Data
                 if (Stakes == DungeonStakes.Risk)
                     LossPenalty(state.Save);
 
-                DataManager.Instance.SaveMainGameState(state);
+                DataManager.Instance.SaveGameState(state);
             }
 
             //set everyone's levels and mark them for backreferral
@@ -817,7 +814,7 @@ namespace RogueEssence.Data
                 if (state != null)
                 {
                     newRecruits = MergeDexTo(state.Save);
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
                 }
 
 
@@ -879,7 +876,7 @@ namespace RogueEssence.Data
                 {
                     MergeDexTo(state.Save);
                     state.Save.DungeonUnlocks[completedZone] = UnlockState.Completed;
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
                 }
 
 
@@ -939,7 +936,7 @@ namespace RogueEssence.Data
                         mainSave.MoneyToStore = state.Save.ActiveTeam.Money + state.Save.ActiveTeam.Bank;
                     }
 
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
 
                     if (allowTransfer)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));

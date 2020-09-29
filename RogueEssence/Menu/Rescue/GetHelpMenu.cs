@@ -142,7 +142,7 @@ namespace RogueEssence.Menu
                             //deduct your reward and save it to the base file
                             GameState state = DataManager.Instance.LoadMainGameState();
                             state.Save.Rescue.SOS.OfferedItem = getHelp.OfferedMail.OfferedItem;
-                            DataManager.Instance.SaveMainGameState(state);
+                            DataManager.Instance.SaveGameState(state);
 
                             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_RESCUE_GOT_AOK", getHelp.TargetInfo.Data.TeamName), Text.FormatKey("DLG_RESCUE_GOT_AOK_REWARD")), false);
                         }

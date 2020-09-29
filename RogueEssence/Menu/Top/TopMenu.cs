@@ -94,7 +94,7 @@ namespace RogueEssence.Menu
             if (state.Save.Rescue != null)
             {
                 state.Save.Rescue = null;
-                DataManager.Instance.SaveMainGameState(state);
+                DataManager.Instance.SaveGameState(state);
             }
             MenuManager.Instance.ClearMenus();
             GameManager.Instance.SceneOutcome = continueMain(state);

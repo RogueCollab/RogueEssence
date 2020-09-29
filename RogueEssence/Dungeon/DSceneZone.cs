@@ -289,8 +289,7 @@ namespace RogueEssence.Dungeon
             if (action.Dir == Dir8.None)
                 action.Dir = CurrentCharacter.CharDir;
 
-            //hold on to the pending action (keep track of its direction)?
-            //if a new action comes along, and it uses default direction, AND there was a previous pending action, have it inherit the old direction
+            //extraneous directions are removed
 
             ActionResult result = new ActionResult();//denotes if a turn was taken
             yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(action, CurrentCharacter, result));

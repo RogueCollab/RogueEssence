@@ -863,7 +863,7 @@ namespace RogueEssence.Data
                 {
                     //serialize the entire save data to mark the start of the dungeon
                     replayWriter.Write((byte)ReplayData.ReplayLog.StateLog);
-                    SaveGameState(replayWriter);
+                    SaveMainGameState(replayWriter);
 
                     replayWriter.Flush();
                 }
@@ -886,7 +886,7 @@ namespace RogueEssence.Data
 
                     //serialize the entire save data to mark the start of the dungeon
                     replayWriter.Write((byte)ReplayData.ReplayLog.QuicksaveLog);
-                    SaveGameState(replayWriter);
+                    SaveMainGameState(replayWriter);
 
                     replayWriter.Flush();
                 }
@@ -1337,9 +1337,26 @@ namespace RogueEssence.Data
             GameState state = new GameState();
             state.Save = Save;
             state.Zone = ZoneManager.Instance;
-            SaveMainGameState(state);
+
+            //notify script engine
+            LuaEngine.Instance.SaveData(state.Save);
+
+            SaveGameState(state);
         }
-        public void SaveMainGameState(GameState state)
+
+        public void SaveMainGameState(BinaryWriter writer)
+        {
+            GameState state = new GameState();
+            state.Save = Save;
+            state.Zone = ZoneManager.Instance;
+
+            //notify script engine
+            LuaEngine.Instance.SaveData(state.Save);
+
+            SaveGameState(writer, state);
+        }
+
+        public void SaveGameState(GameState state)
         {
             using (Stream stream = new FileStream(SAVE_FILE_PATH, FileMode.Create, FileAccess.Write, FileShare.None))
             {
@@ -1349,13 +1366,6 @@ namespace RogueEssence.Data
             }
         }
 
-        public void SaveGameState(BinaryWriter writer)
-        {
-            GameState state = new GameState();
-            state.Save = Save;
-            state.Zone = ZoneManager.Instance;
-            SaveGameState(writer, state);
-        }
         public void SaveGameState(BinaryWriter writer, GameState state)
         {
             GameProgress.SaveMainData(writer, state.Save);
@@ -1394,6 +1404,10 @@ namespace RogueEssence.Data
             
         }
 
+        /// <summary>
+        /// Returns game progress and current zone.
+        /// </summary>
+        /// <returns></returns>
         public GameState LoadMainGameState()
         {
             if (File.Exists(SAVE_FILE_PATH))

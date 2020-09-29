@@ -630,7 +630,7 @@ namespace RogueEssence
                     GameState state = DataManager.Instance.LoadMainGameState();
                     SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, Versioning.GetVersion());
                     state.Save.Rescue = new RescueState(awaiting, false);
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
 
 
                     DataManager.SaveRescueMail(DataManager.RESCUE_OUT_PATH + DataManager.SOS_PATH, state.Save.Rescue.SOS, true);
