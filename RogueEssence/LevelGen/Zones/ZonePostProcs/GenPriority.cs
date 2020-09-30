@@ -6,7 +6,7 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class GenPriority<T> : IGenPriority where T : IGenStep
     {
-        public int Priority { get; set; }
+        public Priority Priority { get; set; }
         public T Item;
 
         public GenPriority() { }
@@ -14,7 +14,7 @@ namespace RogueEssence.LevelGen
         {
             Item = effect;
         }
-        public GenPriority(int priority, T effect)
+        public GenPriority(Priority priority, T effect)
         {
             Priority = priority;
             Item = effect;
@@ -25,7 +25,7 @@ namespace RogueEssence.LevelGen
 
     public interface IGenPriority
     {
-        int Priority { get; set; }
+        Priority Priority { get; set; }
         IGenStep GetItem();
     }
 }

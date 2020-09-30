@@ -12,6 +12,6 @@ namespace RogueEssence.LevelGen
         /// <param name="seed"></param>
         /// <returns></returns>
         public abstract ZonePostProc Instantiate(ulong seed);
-        public abstract void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<int, IGenStep> queue);
+        public abstract void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue);
     }
 }

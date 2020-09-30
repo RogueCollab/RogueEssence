@@ -88,7 +88,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> InteractWithTile(Character character)
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
                 AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.InteractWithTiles);
@@ -99,7 +99,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
                 AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.LandedOnTiles);

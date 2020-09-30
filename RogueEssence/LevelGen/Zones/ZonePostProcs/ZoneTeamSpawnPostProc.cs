@@ -12,7 +12,7 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class ZoneTeamSpawnPostProc : ZonePostProc
     {
-        public int Priority;
+        public Priority Priority;
 
         [SubGroup]
         public SpawnRangeList<MobSpawn> NormalSpawns;
@@ -53,7 +53,7 @@ namespace RogueEssence.LevelGen
         public override ZonePostProc Instantiate(ulong seed) { return new ZoneTeamSpawnPostProc(this, seed); }
 
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<int, IGenStep> queue)
+        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
             MobSpawnStep<BaseMapGenContext> spawnStep = new MobSpawnStep<BaseMapGenContext>();
 

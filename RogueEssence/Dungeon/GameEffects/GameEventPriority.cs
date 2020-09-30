@@ -1,4 +1,5 @@
 ﻿using System;
+using RogueElements;
 
 namespace RogueEssence.Dungeon
 {
@@ -20,13 +21,13 @@ namespace RogueEssence.Dungeon
             Intrinsic
         }
 
-        public int Priority;//dev specified; lowest first
+        public Priority Priority;//dev specified; lowest first
         public int PortPriority;//user (-2), target (-1), everyone else (0+)
         public EventCause TypeID;//tiebreaker order of enum
         public int ID;//tiebreaker: the ID of the owning passive/battle effect
         public int ListIndex;//last tiebreaker: location in the list
 
-        public GameEventPriority(int priority, int portPriority, EventCause typeId, int id, int listIndex)
+        public GameEventPriority(Priority priority, int portPriority, EventCause typeId, int id, int listIndex)
         {
             Priority = priority;
             PortPriority = portPriority;

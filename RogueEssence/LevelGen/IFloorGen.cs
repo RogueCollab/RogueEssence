@@ -57,8 +57,8 @@ namespace RogueEssence.LevelGen
             GenContextDebug.DebugInit(map);
 
             //postprocessing steps:
-            StablePriorityQueue<int, IGenStep> queue = new StablePriorityQueue<int, IGenStep>();
-            foreach (int priority in GenSteps.GetPriorities())
+            StablePriorityQueue<Priority, IGenStep> queue = new StablePriorityQueue<Priority, IGenStep>();
+            foreach (Priority priority in GenSteps.GetPriorities())
             {
                 foreach (IGenStep genStep in GenSteps.GetItems(priority))
                     queue.Enqueue(priority, genStep);

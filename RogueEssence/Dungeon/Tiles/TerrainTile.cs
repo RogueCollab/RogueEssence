@@ -40,7 +40,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TerrainData entry = DataManager.Instance.GetTerrain(ID);
                 AddEventsToQueue(queue, maxPriority, ref nextPriority, entry.LandedOnTiles);

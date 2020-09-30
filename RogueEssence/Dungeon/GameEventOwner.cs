@@ -12,9 +12,9 @@ namespace RogueEssence.Dungeon
         public abstract int GetID();
         public abstract string GetName();
 
-        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, int maxPriority, ref int nextPriority, PriorityList<T> effectList) where T : GameEvent
+        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList) where T : GameEvent
         {
-            foreach(int priority in effectList.GetPriorities())
+            foreach(Priority priority in effectList.GetPriorities())
             {
                 //if an item has the same priority variable as the nextPriority, enqueue it
                 //if an item has a higher priority variable than nextPriority, ignore it
@@ -23,11 +23,11 @@ namespace RogueEssence.Dungeon
                 {
                     if (priority == nextPriority)
                         queue.Enqueue(new GameEventPriority(priority, GameEventPriority.USER_PORT_PRIORITY, GetEventCause(), GetID(), ii), new Tuple<GameEventOwner, Character, T>(this, null, effectList.Get(priority, ii)));
-                    else if (priority < nextPriority)
+                    else if (priority < nextPriority || nextPriority == Priority.Invalid)
                     {
                         //if the item has a lower priority variable than maxPriority, ignore it
-                        //if the item has an equal or higher priority variable than maxPriority, clear the queue and add the new item
-                        if (priority >= maxPriority)
+                        //if the item has a higher priority variable than maxPriority, clear the queue and add the new item
+                        if (priority > maxPriority || maxPriority == Priority.Invalid)
                         {
                             nextPriority = priority;
                             queue.Clear();
@@ -73,9 +73,9 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, int maxPriority, ref int nextPriority, PriorityList<T> effectList) where T : GameEvent
+        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList) where T : GameEvent
         {
-            foreach(int priority in effectList.GetPriorities())
+            foreach(Priority priority in effectList.GetPriorities())
             {
                 //if an item has the same priority variable as the nextPriority, enqueue it
                 //if an item has a higher priority variable than nextPriority, ignore it
@@ -84,11 +84,11 @@ namespace RogueEssence.Dungeon
                 {
                     if (priority == nextPriority)
                         queue.Enqueue(new GameEventPriority(priority, PortPriority, Passive.GetEventCause(), Passive.GetID(), ii), new Tuple<GameEventOwner, Character, T>(Passive, EventChar, effectList.Get(priority, ii)));
-                    else if (priority < nextPriority)
+                    else if (priority < nextPriority || nextPriority == Priority.Invalid)
                     {
                         //if the item has a lower priority variable than maxPriority, ignore it
                         //if the item has an equal or higher priority variable than maxPriority, clear the queue and add the new item
-                        if (priority >= maxPriority)
+                        if (priority > maxPriority || maxPriority == Priority.Invalid)
                         {
                             nextPriority = priority;
                             queue.Clear();

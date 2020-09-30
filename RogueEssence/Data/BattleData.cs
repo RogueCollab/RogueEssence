@@ -126,7 +126,7 @@ namespace RogueEssence.Data
         {
             if (init)
                 effectsTo = new PriorityList<T>();
-            foreach (int priority in effectsFrom.GetPriorities())
+            foreach (Priority priority in effectsFrom.GetPriorities())
             {
                 foreach(T effect in effectsFrom.GetItems(priority))
                     effectsTo.Add(priority, (T)effect.Clone());
@@ -135,7 +135,7 @@ namespace RogueEssence.Data
 
         public IEnumerator<YieldInstruction> Hit(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //include the universal effect here
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnHits);
