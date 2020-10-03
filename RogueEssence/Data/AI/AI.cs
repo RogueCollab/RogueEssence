@@ -58,12 +58,14 @@ namespace RogueEssence.Data
         public AITactic()
         {
             Name = new LocalText();
+            Comment = "";
             Plans = new List<BasePlan>();
         }
 
         public AITactic(AITactic other) : this()
         {
             Name = new LocalText(other.Name);
+            Comment = other.Comment;
             foreach (BasePlan plan in other.Plans)
                 Plans.Add(plan.CreateNew());
             ID = other.ID;

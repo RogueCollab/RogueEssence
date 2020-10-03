@@ -269,6 +269,36 @@ namespace RogueEssence.Dev
             OpenList(DataManager.DataType.AutoTile, DataManager.Instance.GetAutoTile, () => { return new AutoTileData(); });
         }
 
+        private void btnEditEmote_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Emote, DataManager.Instance.GetEmote, () => { return new EmoteData(); });
+        }
+
+        private void btnEditElement_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Element, DataManager.Instance.GetElement, () => { return new ElementData(); });
+        }
+
+        private void btnEditGrowthGroup_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.GrowthGroup, DataManager.Instance.GetGrowth, () => { return new GrowthData(); });
+        }
+
+        private void btnEditSkillGroup_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.SkillGroup, DataManager.Instance.GetSkillGroup, () => { return new SkillGroupData(); });
+        }
+
+        private void btnEditRank_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Rank, DataManager.Instance.GetRank, () => { return new RankData(); });
+        }
+
+        private void btnEditSkin_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Skin, DataManager.Instance.GetSkin, () => { return new SkinData(); });
+        }
+
         private delegate string[] GetEntryNames();
         private delegate IEntryData GetEntry(int entryNum);
         private delegate IEntryData CreateEntry();

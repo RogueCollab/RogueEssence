@@ -23,11 +23,16 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
-        public SkinData() { }
+        public SkinData()
+        {
+            Name = new LocalText();
+            Comment = "";
+        }
 
         public SkinData(LocalText name, char symbol)
         {
             Name = name;
+            Comment = "";
             Symbol = symbol;
             LeaderFX  = new BattleFX();
         }

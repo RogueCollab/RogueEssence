@@ -213,11 +213,11 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="chara"></param>
         /// <param name="emoteid"></param>
-        /// <param name="duration"></param>
-        public void CharSetEmote(GroundChar chara, int emoteid, int duration)
+        /// <param name="cycles"></param>
+        public void CharSetEmote(GroundChar chara, int emoteid, int cycles)
         {
             if (chara != null)
-                chara.StartEmote(DataManager.Instance.GetEmote(emoteid), duration);
+                chara.StartEmote(DataManager.Instance.GetEmote(emoteid), cycles);
         }
 
         /// <summary>

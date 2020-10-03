@@ -19,11 +19,16 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
-        public RankData() { }
+        public RankData()
+        {
+            Name = new LocalText();
+            Comment = "";
+        }
 
         public RankData(LocalText name, int bagSize, int fameToNext)
         {
             Name = name;
+            Comment = "";
             BagSize = bagSize;
             FameToNext = fameToNext;
         }

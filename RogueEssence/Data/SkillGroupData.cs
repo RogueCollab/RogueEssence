@@ -16,11 +16,16 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
-        public SkillGroupData() { }
+        public SkillGroupData()
+        {
+            Name = new LocalText();
+            Comment = "";
+        }
 
         public SkillGroupData(LocalText name)
         {
             Name = name;
+            Comment = "";
         }
     }
 }
