@@ -311,7 +311,6 @@
             // 
             // saveMapFileDialog
             // 
-            this.saveMapFileDialog.Filter = "map files (*.rsground)|*.rsground";
             this.saveMapFileDialog.RestoreDirectory = true;
             // 
             // tabMapOptions

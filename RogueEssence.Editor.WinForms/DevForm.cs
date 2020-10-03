@@ -204,6 +204,7 @@ namespace RogueEssence.Dev
         {
             groundEditor = new GroundEditor();
             groundEditor.FormClosed += groundEditorClosed;
+            groundEditor.LoadFromCurrentGround();
             groundEditor.Show();
         }
 

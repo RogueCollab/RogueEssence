@@ -51,7 +51,9 @@ namespace RogueEssence.Dev
             lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
             tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
-            UpdateHasScriptFolder(false);
+            UpdateHasScriptFolder();
+
+            saveMapFileDialog.Filter = "map files (*" + DataManager.GROUND_EXT + ")|*" + DataManager.GROUND_EXT;
 
             for (int ii = 0; ii < (int)GroundEntity.EEntTypes.Count; ii++)
                 cmbEntityType.Items.Add(((GroundEntity.EEntTypes)ii).ToLocal());
@@ -269,13 +271,8 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevNewGround();
 
-            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            loadEditorSettings();
 
-            RefreshTitle();
-            LoadMapProperties();
-            SetupLayerVisibility();
-            LoadAndSetupStrings();
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
             yield break;
@@ -288,8 +285,6 @@ namespace RogueEssence.Dev
                 chklstScriptMapCallbacks.SetItemChecked(ii, true);
 
             CurrentFile = "";
-
-            UpdateHasScriptFolder(false);
 
             //Schedule the map creation
             GroundEditScene.Instance.PendingDevEvent = DoNew();
@@ -305,32 +300,47 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
-            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            loadEditorSettings();
 
-            RefreshTitle();
-            LoadMapProperties();
-            SetupLayerVisibility();
-            LoadAndSetupStrings();
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
             yield break;
         }
 
+        public void LoadFromCurrentGround()
+        {
+            if (ZoneManager.Instance.CurrentGround.AssetName != "")
+                CurrentFile = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
+            else
+                CurrentFile = "";
+
+            loadEditorSettings();
+        }
+
+        private void loadEditorSettings()
+        {
+            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
+            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+
+            RefreshTitle();
+            UpdateHasScriptFolder();
+            LoadMapProperties();
+            SetupLayerVisibility();
+            LoadAndSetupStrings();
+        }
+
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openFileDialog.Filter = "map files (*.rsground)|*.rsground";
+            openFileDialog.Filter = "map files (*" + DataManager.GROUND_EXT + ")|*" + DataManager.GROUND_EXT;
             DialogResult result = openFileDialog.ShowDialog();
 
             if (result == DialogResult.OK)
             {
-                if (!ComparePaths(Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH, Path.GetDirectoryName(openFileDialog.FileName)))
-                    MessageBox.Show(String.Format("Map can only be loaded from {0}!", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!ComparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(openFileDialog.FileName)))
+                    MessageBox.Show(String.Format("Map can only be loaded from {0}!", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else
                 {
                     CurrentFile = openFileDialog.FileName;
-
-                    UpdateHasScriptFolder(true);
 
                     //Schedule the map load
                     GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(openFileDialog.FileName));
@@ -426,7 +436,7 @@ namespace RogueEssence.Dev
             //Actually create the script folder, and default script file.
             CreateOrCopyScriptData(oldfname, CurrentFile);
             //Strings will have to be created on demand!
-            UpdateHasScriptFolder(true);
+            UpdateHasScriptFolder();
 
             RefreshTitle();
 
@@ -470,12 +480,9 @@ namespace RogueEssence.Dev
                 CurrentFile = "";
 
             if (CurrentFile == "")
-                this.Text = "New Map";
+                this.Text = "New Ground";
             else
-            {
-                string[] fileEnd = CurrentFile.Split('/');
-                this.Text = fileEnd[fileEnd.Length - 1];
-            }
+                this.Text = Path.GetFileNameWithoutExtension(CurrentFile);
         }
 
 
@@ -920,8 +927,9 @@ namespace RogueEssence.Dev
         /// <summary>
         /// Calls this when the map's status as a new, unsaved map has changed.
         /// </summary>
-        private void UpdateHasScriptFolder(bool hasFolder)
+        private void UpdateHasScriptFolder()
         {
+            bool hasFolder = CurrentFile != "";
             btnCommitStrings.Enabled = hasFolder;
             btnReloadStrings.Enabled = hasFolder;
             btnOpenScriptDir.Enabled = hasFolder;
@@ -1186,31 +1194,33 @@ namespace RogueEssence.Dev
             cmbEntityDir.Items.Clear();
 
             //Pick appropriate direction list
-            List<string> dirlist = null;
+            List<Dir8> dirlist = new List<Dir8>();
             switch (cmbEntityType.SelectedIndex)
             {
                 //Entities with non-NONE direction
                 case (int)GroundEntity.EEntTypes.Character:
                 case (int)GroundEntity.EEntTypes.Spawner:
                     {
-                        dirlist = new List<string>();
                         for (int ii = 0; ii <= (int)Dir8.DownRight; ii++)
-                            dirlist.Add(((Dir8)ii).ToLocal());
-                        break;
+                            dirlist.Add((Dir8)ii);
                     }
+                    break;
                 //Entities that accept NONE as direction
                 default:
                     {
-                        dirlist = new List<string>();
                         for (int ii = -1; ii <= (int)Dir8.DownRight; ii++)
-                            dirlist.Add(((Dir8)ii).ToLocal());
+                            dirlist.Add((Dir8)ii);
                     }
                     break;
             }
 
             //Update valid directions
-            for (int ii = 0; ii <= (int)Dir8.DownRight; ii++)
-                cmbEntityDir.Items.Add(((Dir8)ii).ToLocal());
+            for (int ii = 0; ii < dirlist.Count; ii++)
+            {
+                cmbEntityDir.Items.Add(dirlist[ii].ToLocal());
+            }
+
+            cmbEntityDir.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -1235,8 +1245,8 @@ namespace RogueEssence.Dev
                         tabctrlEntData.TabPages.Add(tabEntCharDisplay);
 
                         btnAddToTemplates.Enabled = true;
-                        numEntHeight.Enabled = true;
-                        numEntWidth.Enabled = true;
+                        numEntHeight.Enabled = false;
+                        numEntWidth.Enabled = false;
                         break;
                     }
                 case (int)GroundEntity.EEntTypes.Object:
@@ -1303,7 +1313,7 @@ namespace RogueEssence.Dev
 
         private void txtEntityName_Leave(object sender, EventArgs e)
         {
-            string resultName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(txtEntityName.Text);
+            string resultName = txtEntityName.Text;
             if (selectedEntity != null)
             {
                 //We changed the selected entity's name
@@ -1475,7 +1485,6 @@ namespace RogueEssence.Dev
             else if (placeableEntity.GetEntityType() == GroundEntity.EEntTypes.Spawner)
                 ZoneManager.Instance.CurrentGround.AddSpawner((GroundSpawner)placeableEntity);
 
-            txtEntityName.Text = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
         }
 
         /// <summary>
