@@ -1454,6 +1454,9 @@ namespace RogueEssence.Dev
 
         public void RemoveEntity(GroundEntity ent)
         {
+            if (ent == null)
+                return;
+
             if (ent.GetEntityType() == GroundEntity.EEntTypes.Character)
                 ZoneManager.Instance.CurrentGround.RemoveMapChar((GroundChar)ent);
             else if (ent.GetEntityType() == GroundEntity.EEntTypes.Object)
