@@ -223,7 +223,7 @@ namespace RogueEssence.Content
                     {
                         Texture2D newSheet = null;
                         using (FileStream fileStream = new FileStream(path + frameType.Name.ToString() + ".png", FileMode.Open, FileAccess.Read, FileShare.Read))
-                            newSheet = Texture2D.FromStream(device, fileStream);
+                            newSheet = ImportTex(fileStream);
 
                         CharAnimGroup sequence = new CharAnimGroup();
                         //automatically calculate frame durations and use preset offsets
@@ -295,7 +295,7 @@ namespace RogueEssence.Content
             {
                 Texture2D tex = null;
                 using (FileStream fileStream = new FileStream(path + "sheet.png", FileMode.Open, FileAccess.Read, FileShare.Read))
-                    tex = Texture2D.FromStream(device, fileStream);
+                    tex = ImportTex(fileStream);
 
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path + "Animations.xml");
@@ -372,7 +372,7 @@ namespace RogueEssence.Content
         public static void Export(CharSheet sheet, string baseDirectory)
         {
             using (Stream stream = new FileStream(baseDirectory + "sheet.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                sheet.baseTexture.SaveAsPng(stream, sheet.baseTexture.Width, sheet.baseTexture.Height);
+                ExportTex(stream, sheet.baseTexture);
 
 
             XmlDocument doc = new XmlDocument();

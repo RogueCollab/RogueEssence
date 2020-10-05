@@ -465,8 +465,8 @@ namespace RogueEssence.Content
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
-                Dev.ImportHelper.ImportAllAutoTiles(DiagManager.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
-                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
+                //Dev.ImportHelper.ImportAllAutoTiles(DiagManager.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
+                //Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
             }
         }
 

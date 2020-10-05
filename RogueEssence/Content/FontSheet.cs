@@ -61,7 +61,7 @@ namespace RogueEssence.Content
                     int png = Convert.ToInt32(Path.GetFileNameWithoutExtension(dir), 16);
                     Texture2D newSheet = null;
                     using (FileStream fileStream = new FileStream(dir, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        newSheet = Texture2D.FromStream(device, fileStream);
+                        newSheet = ImportTex(fileStream);
 
                     sheets.Add(new ImageInfo(png, newSheet));
                 }

@@ -46,7 +46,7 @@ namespace RogueEssence.Content
                 {
                     using (FileStream fileStream = new FileStream(path + ((BeamFrame)ii).ToString() + ".png", FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        Texture2D newSheet = Texture2D.FromStream(device, fileStream);
+                        Texture2D newSheet = ImportTex(fileStream);
 
                         for (int jj = 0; jj < totalFrames; jj++)
                             rects[ii * totalFrames + jj] = new Rectangle(newSheet.Width / totalFrames * jj, maxHeight, newSheet.Width / totalFrames, newSheet.Height);

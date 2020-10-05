@@ -155,7 +155,7 @@ namespace RogueEssence.Dev
                 picTileset.Visible = true;
 
                 Image endImage = new Bitmap(picTileset.Width, picTileset.Height);
-                using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(endImage))
+                using (Graphics graphics = Graphics.FromImage(endImage))
                 {
                     int width = picX;
                     if (tilePos.X - hScroll.Value < width)
