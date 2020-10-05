@@ -539,7 +539,7 @@ namespace RogueEssence.Dev
 
             //string mapDir = (string)Registry.GetValue(DiagManager.REG_PATH, "MapDir", "");
             //if (String.IsNullOrEmpty(mapDir))
-            string mapDir = Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH;
+            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
             openFileDialog.InitialDirectory = mapDir;
             saveMapFileDialog.InitialDirectory = mapDir;
 

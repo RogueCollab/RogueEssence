@@ -1122,9 +1122,14 @@ namespace RogueEssence.Dungeon
 
             if (upState.BackRef > -1 && downState.BackRef > -1)
             {
-                SlotSkill skill = BaseSkills[slot];
-                BaseSkills.RemoveAt(slot);
-                BaseSkills.Insert(slot + 1, skill);
+                int upRef = upState.BackRef;
+                int downRef = downState.BackRef;
+                SlotSkill upSkill = BaseSkills[upState.BackRef];
+                SlotSkill downSkill = BaseSkills[downState.BackRef];
+                BaseSkills[upState.BackRef] = downSkill;
+                BaseSkills[downState.BackRef] = upSkill;
+                upState.BackRef = downRef;
+                downState.BackRef = upRef;
             }
 
             //need to switch relevant statuses around
