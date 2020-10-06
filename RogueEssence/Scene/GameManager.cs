@@ -552,7 +552,7 @@ namespace RogueEssence
                         GameAction nextAction = DataManager.Instance.CurrentReplay.ReadCommand();
                         if (nextAction.Type == GameAction.ActionType.Rescue)
                             rescued = nextAction;
-                        else//we shouldn't be hitting this point!  give an error notification!
+                        else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
                             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
                     }
 

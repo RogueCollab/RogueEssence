@@ -604,7 +604,7 @@ namespace RogueEssence.Data
             RescuesLeft = zone.Rescues;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH, zoneID, false);
+                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH, zoneID, false, false);
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
@@ -785,7 +785,7 @@ namespace RogueEssence.Data
             Stakes = stakes;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION, zoneID, !Seeded);
+                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION, zoneID, true, Seeded);
 
             yield break;
         }
