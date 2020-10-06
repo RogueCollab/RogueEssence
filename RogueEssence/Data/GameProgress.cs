@@ -582,6 +582,15 @@ namespace RogueEssence.Data
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
 
+            foreach (Character player in ActiveTeam)
+            {
+                if (player.Tactic == null)
+                {
+                    AITactic tactic = DataManager.Instance.GetAITactic(0);
+                    player.Tactic = new AITactic(tactic);
+                }
+            }
+
             MidAdventure = true;
             Stakes = stakes;
             //create a copy (from save and load) of the current state and mark it with loss
@@ -738,7 +747,12 @@ namespace RogueEssence.Data
                 MergeDexTo(destProgress);
 
             foreach (CharData charData in CharsToStore)
-                destProgress.ActiveTeam.Assembly.Add(new Character(charData, ActiveTeam, new Loc(), Dir8.Down));
+            {
+                Character chara = new Character(charData, ActiveTeam);
+                AITactic tactic = DataManager.Instance.GetAITactic(0);
+                chara.Tactic = new AITactic(tactic);
+                destProgress.ActiveTeam.Assembly.Add(chara);
+            }
             CharsToStore.Clear();
 
             destProgress.ActiveTeam.StoreItems(ItemsToStore);
