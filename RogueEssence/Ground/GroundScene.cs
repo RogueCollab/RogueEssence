@@ -72,6 +72,16 @@ namespace RogueEssence.Ground
                 PendingLeaderAction = test();
             }
 
+            if (input.JustReleased(FrameInput.InputType.RightMouse) && input[FrameInput.InputType.Ctrl])
+            {
+                Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
+                //DataManager.Instance.Save.ViewCenter = coords * GraphicsManager.TILE_SIZE;
+                if (Collision.InBounds(ZoneManager.Instance.CurrentGround.GroundWidth, ZoneManager.Instance.CurrentGround.GroundHeight, coords))
+                {
+                    FocusedCharacter.SetMapLoc(coords);
+                    FocusedCharacter.UpdateFrame();
+                }
+            }
         }
 
 
@@ -267,7 +277,7 @@ namespace RogueEssence.Ground
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", anim.ToString(), FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
             }
 
