@@ -13,18 +13,27 @@ namespace RogueEssence.LevelGen
     public class ItemSpawnStep<T> : GenStep<T> where T : BaseMapGenContext
     {
         [SubGroup]
-        public SpawnList<InvItem> Spawns;
+        public SpawnDict<string, SpawnList<InvItem>> Spawns;
 
         public ItemSpawnStep()
         {
-            Spawns = new SpawnList<InvItem>();
+            Spawns = new SpawnDict<string, SpawnList<InvItem>>();
         }
 
         public override void Apply(T map)
         {
-            for (int ii = 0; ii < Spawns.Count; ii++)
+            foreach (string key in Spawns.GetKeys())
             {
-                map.ItemSpawns.Add(new InvItem(Spawns.GetSpawn(ii)), Spawns.GetSpawnRate(ii));
+                SpawnList<InvItem> itemList = Spawns.GetSpawn(key);
+                if (itemList.CanPick)
+                {
+                    if (!map.ItemSpawns.Spawns.ContainsKey(key))
+                        map.ItemSpawns.Spawns.Add(key, new SpawnList<InvItem>(), Spawns.GetSpawnRate(key));
+
+                    SpawnList<InvItem> destList = map.ItemSpawns.Spawns.GetSpawn(key);
+                    for (int ii = 0; ii < itemList.Count; ii++)
+                        destList.Add(new InvItem(itemList.GetSpawn(ii)), itemList.GetSpawnRate(ii));
+                }
             }
         }
     }

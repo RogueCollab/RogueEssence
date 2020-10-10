@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Dungeon;
@@ -30,7 +31,7 @@ namespace RogueEssence.LevelGen
 
         public MoneySpawnRange MoneyAmount { get { return Map.MoneyAmount; } set { Map.MoneyAmount = value; } }
         IRandPicker<MoneySpawn> ISpawningGenContext<MoneySpawn>.Spawner { get { return Map.MoneyAmount; } }
-        public SpawnList<InvItem> ItemSpawns { get { return Map.ItemSpawns; } }
+        public CategorySpawnChooser<InvItem> ItemSpawns { get { return Map.ItemSpawns; } }
         IRandPicker<InvItem> ISpawningGenContext<InvItem>.Spawner { get { return Map.ItemSpawns; } }
 
 

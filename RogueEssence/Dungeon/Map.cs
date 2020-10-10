@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
@@ -70,7 +71,7 @@ namespace RogueEssence.Dungeon
         public SpawnList<TeamSpawner> TeamSpawns;
 
         public MoneySpawnRange MoneyAmount;
-        public SpawnList<InvItem> ItemSpawns;
+        public CategorySpawnChooser<InvItem> ItemSpawns;
 
         public AutoTile BlankBG;
         public AutoTile FloorBG;
@@ -112,7 +113,7 @@ namespace RogueEssence.Dungeon
             CharSight = SightRange.Clear;
 
             TeamSpawns = new SpawnList<TeamSpawner>();
-            ItemSpawns = new SpawnList<InvItem>();
+            ItemSpawns = new CategorySpawnChooser<InvItem>();
 
             BlankBG = new AutoTile();
 
@@ -728,5 +729,79 @@ namespace RogueEssence.Dungeon
             Tiles[loc.X][loc.Y].FloorTile.Draw(spriteBatch, drawPos);
             Tiles[loc.X][loc.Y].Data.TileTex.Draw(spriteBatch, drawPos);
         }  
+    }
+
+    // TODO: probably make this more generic; this is made specifically for item categories in maps at present.
+    [Serializable]
+    public class CategorySpawnChooser<T> : IRandPicker<T>
+    {
+        public SpawnDict<string, SpawnList<T>> Spawns;
+
+        public CategorySpawnChooser()
+        {
+            Spawns = new SpawnDict<string, SpawnList<T>>();
+        }
+        public CategorySpawnChooser(SpawnDict<string, SpawnList<T>> spawns)
+        {
+            Spawns = spawns;
+        }
+        public CategorySpawnChooser(CategorySpawnChooser<T> other)
+        {
+            Spawns = new SpawnDict<string, SpawnList<T>>();
+            foreach (string key in other.Spawns.GetKeys())
+            {
+                SpawnList<T> list = new SpawnList<T>();
+                SpawnList<T> otherList = other.Spawns.GetSpawn(key);
+                for (int ii = 0; ii < otherList.Count; ii++)
+                    list.Add(otherList.GetSpawn(ii), otherList.GetSpawnRate(ii));
+                Spawns.Add(key, list, other.Spawns.GetSpawnRate(key));
+            }
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (SpawnList<T> element in Spawns)
+            {
+                foreach (T item in element)
+                    yield return item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+        public T Pick(IRandom rand)
+        {
+            SpawnDict<string, SpawnList<T>> tempSpawn = new SpawnDict<string, SpawnList<T>>();
+            foreach (string key in Spawns.GetKeys())
+            {
+                SpawnList<T> otherList = Spawns.GetSpawn(key);
+                if (!otherList.CanPick)
+                    continue;
+                tempSpawn.Add(key, otherList, Spawns.GetSpawnRate(key));
+            }
+            SpawnList<T> choice = tempSpawn.Pick(rand);
+            return choice.Pick(rand);
+        }
+
+        public bool ChangesState => false;
+        public bool CanPick
+        {
+            get
+            {
+                if (!Spawns.CanPick)
+                    return false;
+                foreach (SpawnList<T> spawn in Spawns)
+                {
+                    if (spawn.CanPick)
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public IRandPicker<T> CopyState()
+        {
+            return new CategorySpawnChooser<T>(this);
+        }
     }
 }
