@@ -8,7 +8,7 @@ namespace RogueEssence
     {
         public static Version GetVersion()
         {
-            return Assembly.GetExecutingAssembly().GetName().Version;
+            return Assembly.GetEntryAssembly().GetName().Version;
         }
 
         public static string GetDotNetInfo()

@@ -40,11 +40,10 @@ namespace RogueEssence
             }
             if (hideTitle)
             {
+                DataManager.Instance.SetProgress(null);
+                DataManager.Instance.LoadProgress();
                 if (TitleMenuSaveState == null)
-                {
-                    DataManager.Instance.SetProgress(null);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TopMenu()));
-                }
                 else
                 {
                     List<IInteractable> save = TitleMenuSaveState;

@@ -13,7 +13,6 @@ namespace RogueEssence.Menu
         {
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
-            DataManager.Instance.LoadProgress();
             if (DataManager.Instance.Save != null)
             {
                 if (DataManager.Instance.Save.Rescue != null)
