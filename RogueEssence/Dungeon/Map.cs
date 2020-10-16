@@ -166,6 +166,8 @@ namespace RogueEssence.Dungeon
                     {
                         traversedGrid[testLoc.X][testLoc.Y] = true;
 
+                        if (Grid.GetForkDirs(testLoc, TileBlocked, TileBlocked).Count >= 2)
+                            return;
                         //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
                         foreach (Character character in ActiveTeam.Players)
                         {
