@@ -12,12 +12,11 @@ namespace RogueEssence.Menu
 
         public CharaSummary(Rect bounds) : base(bounds)
         {
-            Details = new MenuText(Text.FormatKey("MENU_CHARA_CUSTOMIZE", DiagManager.Instance.CurSettings.ActionKeys[(int)FrameInput.InputType.SortItems].ToLocal()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            Details = new MenuText(Text.FormatKey("MENU_CHARA_CUSTOMIZE", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Details);
             MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE),
                 Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
-
         }
 
         public void SetDetails(string formString, int skinSetting, Gender genderSetting, string intrinsicString)

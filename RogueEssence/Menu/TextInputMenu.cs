@@ -175,13 +175,12 @@ namespace RogueEssence.Menu
             if (input.BaseKeyPressed(Keys.Space))
                 charInput[0] = true;
 
-            bool holdCtrl = (input.BaseKeyDown(Keys.LeftControl) || input.BaseKeyDown(Keys.RightControl));
             bool pressAlt = (input.BaseKeyPressed(Keys.LeftAlt) || input.BaseKeyPressed(Keys.RightAlt));
             bool pressEsc = input.BaseKeyPressed(Keys.Escape) || input.BaseButtonPressed(Buttons.Back);
             bool pressEnter = input.BaseKeyPressed(Keys.Enter) || input.BaseButtonPressed(Buttons.Start);
             bool pressBack = input.BaseKeyPressed(Keys.Back);
 
-            if (input.BaseKeyPressed(Keys.V) && holdCtrl)
+            if (PressedPaste(input))
             {
                 string paste = GetRenderableString(SDL.SDL_GetClipboardText());
                 if (paste != "")
@@ -291,7 +290,18 @@ namespace RogueEssence.Menu
             MenuManager.Instance.RemoveMenu();
         }
 
+        protected bool PressedPaste(InputManager input)
+        {
+            bool holdCtrl = false;
+            if (CoreDllMap.OS == "osx")
+                holdCtrl = (input.BaseKeyDown(Keys.LeftWindows) || input.BaseKeyDown(Keys.RightWindows));
+            else
+                holdCtrl = (input.BaseKeyDown(Keys.LeftControl) || input.BaseKeyDown(Keys.RightControl));
 
+            if (holdCtrl && input.BaseKeyPressed(Keys.V))
+                return true;
+            return false;
+        }
 
         protected static string GetRecentChars(bool[] charInput)
         {

@@ -95,7 +95,8 @@ namespace RogueEssence.Menu
                         if (textPause.Time > 0)
                             continueText = CurrentTextTime >= textPause.Time;
                         else
-                            continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]);
+                            continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                                || input.JustPressed(FrameInput.InputType.LeftMouse));
                     }
                     else
                         continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);

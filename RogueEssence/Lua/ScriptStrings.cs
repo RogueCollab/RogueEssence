@@ -103,7 +103,7 @@ namespace RogueEssence.Script
         {
             try
             {
-                return DiagManager.Instance.CurSettings.ActionKeys[index].ToLocal();//TODO: LUA 5.3: do regex unescape here
+                return DiagManager.Instance.GetControlString((FrameInput.InputType)index);//TODO: LUA 5.3: do regex unescape here
                 //return System.Text.RegularExpressions.Regex.Unescape(DiagManager.Instance.CurSettings.ActionKeys[index].ToLocal());
             }
             catch (Exception ex)

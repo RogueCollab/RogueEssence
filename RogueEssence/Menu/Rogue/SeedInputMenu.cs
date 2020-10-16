@@ -52,13 +52,12 @@ namespace RogueEssence.Menu
                     charInput['0' - 32 + ii] = true;
             }
 
-            bool holdCtrl = (input.BaseKeyDown(Keys.LeftControl) || input.BaseKeyDown(Keys.RightControl));
             bool pressEsc = input.BaseKeyPressed(Keys.Escape) || input.BaseButtonPressed(Buttons.Back);
             bool pressEnter = input.BaseKeyPressed(Keys.Enter) || input.BaseButtonPressed(Buttons.Start);
             bool pressBack = input.BaseKeyPressed(Keys.Back);
 
 
-            if (input.BaseKeyPressed(Keys.V) && holdCtrl)
+            if (PressedPaste(input))
             {
                 ulong seed;
                 if (UInt64.TryParse(SDL.SDL_GetClipboardText(), NumberStyles.HexNumber, null, out seed))

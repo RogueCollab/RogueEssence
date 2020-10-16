@@ -48,6 +48,7 @@ namespace RogueEssence
         public bool DevMode;
         public IRootEditor DevEditor;
 
+        public bool GamePadActive;
         public Settings CurSettings;
 
         private string loadMessage;
@@ -462,6 +463,14 @@ namespace RogueEssence
                 xmldoc.Save("Contacts.xml");
             }
         }
+
+        public string GetControlString(FrameInput.InputType inputType)
+        {
+            if (GamePadActive)
+                return "(" + CurSettings.ActionButtons[(int)inputType].ToLocal() + ")";
+            return "[" + CurSettings.ActionKeys[(int)inputType].ToLocal() + "]";
+        }
+
 
         private static void loadContactNode(XmlNode contact, ContactInfo info)
         {
