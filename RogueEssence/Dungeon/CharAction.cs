@@ -609,7 +609,7 @@ namespace RogueEssence.Dungeon
         {
             //create the area hitbox(es) and toss them into the wild
             yield return CoroutineManager.Instance.StartCoroutine(PassEmitter(actionContext.User));
-            Loc groundZero = actionContext.User.CharLoc + HitOffset + actionContext.User.CharDir.GetLoc() * GetModRange(0);
+            Loc groundZero = GetLanding(actionContext.User.CharLoc, actionContext.User.CharDir, 0);
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ReleaseHitboxes(actionContext.User,
                 new CircleSquareHitbox(actionContext.User, TargetAlignments, HitTiles, BurstTiles, groundZero, TileEmitter, Emitter,
                     (HitArea == OffsetArea.Tile) ? 0 : 1, Speed, LagBehindTime, (HitArea == OffsetArea.Sides) ? Hitbox.AreaLimit.Sides : Hitbox.AreaLimit.Full, actionContext.User.CharDir),
@@ -619,7 +619,7 @@ namespace RogueEssence.Dungeon
 
         public override IEnumerable<Loc> GetPreTargets(Character owner, Dir8 dir, int rangeMod)
         {
-            Loc groundZero = owner.CharLoc + dir.GetLoc() * GetModRange(rangeMod);
+            Loc groundZero = GetLanding(owner.CharLoc, dir, rangeMod);
             CircleSquareHitbox hitbox = new CircleSquareHitbox(owner, TargetAlignments, HitTiles, BurstTiles, groundZero, TileEmitter, Emitter,
                 (HitArea == OffsetArea.Tile) ? 0 : 1, Speed, LagBehindTime, (HitArea == OffsetArea.Sides) ? Hitbox.AreaLimit.Sides : Hitbox.AreaLimit.Full, dir);
 
@@ -633,28 +633,21 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public static List<Character> GetTargetsInArea(Character user, Loc loc, Alignment targetAlignments, int range)
+        private Loc GetLanding(Loc ownerLoc, Dir8 dir, int mod)
         {
-            return GetTargetsInArea(user, loc, targetAlignments, range, Hitbox.AreaLimit.Full);
-        }
-        public static List<Character> GetTargetsInArea(Character user, Loc loc, Alignment targetAlignments, int range, Hitbox.AreaLimit hitArea)
-        {
-            List<Character> targets = new List<Character>();
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
-                if (IsTargetedInArea(user, loc, user.CharDir, targetAlignments, range, hitArea, character))
-                    targets.Add(character);
-            }
-            return targets;
-        }
-        public static bool IsTargetedInArea(Character user, Loc loc, Dir8 dir, Alignment targetAlignments, int range, Hitbox.AreaLimit hitArea, Character target)
-        {
-            Loc diff = loc - target.CharLoc;
-            if (DungeonScene.Instance.IsTargeted(user, target, targetAlignments) && Hitbox.IsInCircleSquareHitbox(target.CharLoc, loc, range * 2, range, hitArea, dir))
-                return true;
+            int modRange = GetModRange(mod);
 
-            return false;
+            Loc targetLoc = ownerLoc;
+            Loc addLoc = dir.GetLoc();
+            for (int ii = 0; ii < modRange; ii++)
+            {
+                targetLoc += addLoc;
+                if (ZoneManager.Instance.CurrentMap.TileBlocked(targetLoc, true))
+                    break;
+            }
+            return targetLoc + HitOffset;
         }
+
         public override bool IsWide()
         {
             return (HitArea != OffsetArea.Tile);
@@ -1058,6 +1051,7 @@ namespace RogueEssence.Dungeon
         }
         private Loc GetLanding(Character owner, Loc ownerLoc, Dir8 dir, int mod)
         {
+            int modRange = GetModRange(mod);
             //find the closest target to land on
             if (Coverage != ArcCoverage.Single)
             {
@@ -1067,12 +1061,20 @@ namespace RogueEssence.Dungeon
                     if (DungeonScene.Instance.IsTargeted(owner, character, TargetAlignments))
                         targets.Add(character);
                 }
-                Character target = GetTarget(owner, ownerLoc, dir, Coverage == ArcCoverage.WideAngle, GetModRange(mod), targets);
+                Character target = GetTarget(owner, ownerLoc, dir, Coverage == ArcCoverage.WideAngle, modRange, targets);
                 if (target != null)
                     return target.CharLoc;
             }
+
             //if impossible to find, use the default farthest landing spot
-            Loc targetLoc = ownerLoc + dir.GetLoc() * GetModRange(mod);
+            Loc targetLoc = ownerLoc;
+            Loc addLoc = dir.GetLoc();
+            for (int ii = 0; ii < modRange; ii++)
+            {
+                targetLoc += addLoc;
+                if (ZoneManager.Instance.CurrentMap.TileBlocked(targetLoc, true))
+                    break;
+            }
             return targetLoc;
         }
         public override IEnumerable<Loc> GetPreTargets(Character owner, Dir8 dir, int rangeMod)
@@ -1097,21 +1099,39 @@ namespace RogueEssence.Dungeon
         public static Character GetTarget(Character owner, Loc ownerLoc, Dir8 dir, bool wide, int range, IEnumerable<Character> targets)
         {
             Loc targetLoc = ownerLoc;
-            for (int front = 0; front < range; front++)
+            List<bool> sideL = new List<bool>();
+            List<bool> sideR = new List<bool>();
+            bool sideM = true;
+            for (int front = 1; front < range; front++)
             {
                 targetLoc = targetLoc + dir.GetLoc();
 
-                //check directly forward
-                foreach (Character character in targets)
+                if (sideM)
                 {
-                    if (targetLoc == character.CharLoc)
-                        return character;
+                    //check directly forward
+                    foreach (Character character in targets)
+                    {
+                        if (targetLoc == character.CharLoc)
+                            return character;
+                    }
                 }
 
                 if (wide)
                 {
                     Loc leftLoc = targetLoc;
                     Loc rightLoc = targetLoc;
+
+                    if (front == 1)
+                    {
+                        sideL.Add(sideM);
+                        sideR.Add(sideM);
+                    }
+                    else
+                    {
+                        sideL.Add(sideL[sideL.Count - 1]);
+                        sideR.Add(sideR[sideR.Count - 1]);
+                    }
+
                     for (int side = 0; side < front; side++)
                     {
                         if (dir.IsDiagonal())
@@ -1125,19 +1145,34 @@ namespace RogueEssence.Dungeon
                             rightLoc = rightLoc + DirExt.AddAngles(dir, Dir8.Left).GetLoc();
                         }
 
-                        //check sides
-                        foreach (Character character in targets)
+                        if (sideL[side])
                         {
-                            if (leftLoc == character.CharLoc)
-                                return character;
+                            //check sides
+                            foreach (Character character in targets)
+                            {
+                                if (leftLoc == character.CharLoc)
+                                    return character;
+                            }
                         }
-                        foreach (Character character in targets)
+                        if (sideR[side])
                         {
-                            if (rightLoc == character.CharLoc)
-                                return character;
+                            foreach (Character character in targets)
+                            {
+                                if (rightLoc == character.CharLoc)
+                                    return character;
+                            }
                         }
+
+
+                        if (ZoneManager.Instance.CurrentMap.TileBlocked(leftLoc, true))
+                            sideL[side] = false;
+                        if (ZoneManager.Instance.CurrentMap.TileBlocked(rightLoc, true))
+                            sideR[side] = false;
                     }
                 }
+
+                if (ZoneManager.Instance.CurrentMap.TileBlocked(targetLoc, true))
+                    sideM = false;
             }
             return null;
         }
