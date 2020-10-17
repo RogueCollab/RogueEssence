@@ -1102,7 +1102,7 @@ namespace RogueEssence.Dungeon
             List<bool> sideL = new List<bool>();
             List<bool> sideR = new List<bool>();
             bool sideM = true;
-            for (int front = 1; front < range; front++)
+            for (int front = 0; front < range; front++)
             {
                 targetLoc = targetLoc + dir.GetLoc();
 
@@ -1126,7 +1126,7 @@ namespace RogueEssence.Dungeon
                         sideL.Add(sideM);
                         sideR.Add(sideM);
                     }
-                    else
+                    else if (front > 1)
                     {
                         sideL.Add(sideL[sideL.Count - 1]);
                         sideR.Add(sideR[sideR.Count - 1]);

@@ -446,7 +446,7 @@ namespace RogueEssence.Dungeon
             tilesToHit.Enqueue(calculateTimeToHit(Origin) + delay, Origin);
 
             Loc backup = Origin;
-            if (ZoneManager.Instance.CurrentMap.TileBlocked(Origin, true))
+            if (MaxRadius > 0 && ZoneManager.Instance.CurrentMap.TileBlocked(Origin, true))
                 backup += Dir.Reverse().GetLoc();
 
             Grid.FloodFill(new Rect(Origin - new Loc(MaxRadius), new Loc(MaxRadius * 2 + 1)),
