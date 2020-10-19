@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueElements", "RogueEleme
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaypointServer", "WaypointServer\WaypointServer.csproj", "{E7F9BD44-2223-4D92-9C68-EF03618F4304}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEssence.Editor.WinForms", "RogueEssence.Editor.WinForms\RogueEssence.Editor.WinForms.csproj", "{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEssence.Editor.WinForms", "RogueEssence.Editor.WinForms\RogueEssence.Editor.WinForms.csproj", "{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEssence.Editor.WPF", "RogueEssence.Editor.WPF\RogueEssence.Editor.WPF.csproj", "{6DCAF641-C489-4C95-910B-08B5B325C40E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,14 @@ Global
 		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|x64.ActiveCfg = Release|Any CPU
 		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|x64.Build.0 = Release|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Debug|x64.Build.0 = Debug|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Release|x64.ActiveCfg = Release|Any CPU
+		{6DCAF641-C489-4C95-910B-08B5B325C40E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

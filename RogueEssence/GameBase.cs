@@ -157,7 +157,7 @@ namespace RogueEssence
                         {
 
                             DiagManager.Instance.DevEditor.Load();
-                            while (!DiagManager.Instance.DevEditor.Loaded)
+                            while (!DiagManager.Instance.DevEditor.LoadComplete)
                                 Thread.Sleep(10);
 
                             CurrentPhase = LoadPhase.Ready;

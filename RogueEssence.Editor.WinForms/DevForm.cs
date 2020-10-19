@@ -13,7 +13,7 @@ namespace RogueEssence.Dev
 {
     public partial class DevForm : Form, IRootEditor
     {
-        public bool Loaded { get; private set; }
+        public bool LoadComplete { get; private set; }
 
         private MapEditor mapEditor;
         private GroundEditor groundEditor;
@@ -378,7 +378,7 @@ namespace RogueEssence.Dev
 
         private void DevWindow_Load(object sender, EventArgs e)
         {
-            Loaded = true;
+            LoadComplete = true;
         }
 
         private void DevWindow_FormClosed(object sender, FormClosedEventArgs e)
