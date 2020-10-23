@@ -103,7 +103,7 @@ namespace RogueEssence.Dungeon
             }
 
             //map starts for map statuses
-            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts);
@@ -289,8 +289,7 @@ namespace RogueEssence.Dungeon
             if (action.Dir == Dir8.None)
                 action.Dir = CurrentCharacter.CharDir;
 
-            //hold on to the pending action (keep track of its direction)?
-            //if a new action comes along, and it uses default direction, AND there was a previous pending action, have it inherit the old direction
+            //extraneous directions are removed
 
             ActionResult result = new ActionResult();//denotes if a turn was taken
             yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(action, CurrentCharacter, result));
@@ -895,7 +894,7 @@ namespace RogueEssence.Dungeon
             }
 
             //turn ends for map statuses
-            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapTurnEnds);

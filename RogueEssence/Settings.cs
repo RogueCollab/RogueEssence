@@ -86,8 +86,15 @@ namespace RogueEssence
             ForbiddenKeys = new HashSet<Keys>();
             for (int ii = 0; ii < 24; ii++)
                 ForbiddenKeys.Add(Keys.F1 + ii);
+            ForbiddenKeys.Add(Keys.Enter);
             ForbiddenKeys.Add(Keys.LeftShift);
             ForbiddenKeys.Add(Keys.RightShift);
+            ForbiddenKeys.Add(Keys.LeftControl);
+            ForbiddenKeys.Add(Keys.RightControl);
+            ForbiddenKeys.Add(Keys.LeftAlt);
+            ForbiddenKeys.Add(Keys.RightAlt);
+            ForbiddenKeys.Add(Keys.LeftWindows);
+            ForbiddenKeys.Add(Keys.RightWindows);
             for (int ii = 0; ii < 10; ii++)
                 ForbiddenKeys.Add(Keys.NumPad0 + ii);
 
@@ -182,10 +189,10 @@ namespace RogueEssence
                 actionButtons[(int)FrameInput.InputType.Minimap] = Buttons.Back;
                 actionButtons[(int)FrameInput.InputType.LeaderSwapBack] = Buttons.LeftShoulder;
                 actionButtons[(int)FrameInput.InputType.LeaderSwapForth] = Buttons.RightShoulder;
-                actionButtons[(int)FrameInput.InputType.Skill1] = Buttons.Y;
-                actionButtons[(int)FrameInput.InputType.Skill2] = Buttons.X;
-                actionButtons[(int)FrameInput.InputType.Skill3] = Buttons.B;
-                actionButtons[(int)FrameInput.InputType.Skill4] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Skill1] = Buttons.X;
+                actionButtons[(int)FrameInput.InputType.Skill2] = Buttons.Y;
+                actionButtons[(int)FrameInput.InputType.Skill3] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Skill4] = Buttons.B;
                 actionButtons[(int)FrameInput.InputType.SortItems] = Buttons.X;
                 actionButtons[(int)FrameInput.InputType.SelectItems] = Buttons.LeftTrigger;
             }
@@ -275,7 +282,7 @@ namespace RogueEssence
         {
             List<string> enumStrings = new List<string>();
             foreach (FrameInput.InputType t in Enums)
-                enumStrings.Add(DiagManager.Instance.CurSettings.ActionKeys[(int)t].ToLocal());
+                enumStrings.Add(DiagManager.Instance.GetControlString(t));
             return String.Format(Key.ToLocal(), enumStrings.ToArray());
         }
     }

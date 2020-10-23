@@ -58,13 +58,12 @@ namespace RogueEssence.Menu
             if (input.BaseKeyPressed(Keys.Subtract))
                 charInput['-' - 32] = true;
 
-            bool holdCtrl = (input.BaseKeyDown(Keys.LeftControl) || input.BaseKeyDown(Keys.RightControl));
             bool pressEsc = input.BaseKeyPressed(Keys.Escape) || input.BaseButtonPressed(Buttons.Back);
             bool pressEnter = input.BaseKeyPressed(Keys.Enter) || input.BaseButtonPressed(Buttons.Start);
             bool pressBack = input.BaseKeyPressed(Keys.Back);
 
 
-            if (input.BaseKeyPressed(Keys.V) && holdCtrl)
+            if (PressedPaste(input))
             {
                 Guid resultGuid;
                 if (Guid.TryParse(SDL.SDL_GetClipboardText(), out resultGuid))

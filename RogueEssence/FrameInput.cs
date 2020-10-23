@@ -73,6 +73,8 @@ namespace RogueEssence
         public int MouseWheel { get; private set; }
         public bool Active { get; private set; }
 
+        public bool HasGamePad => BaseGamepadState.IsConnected;
+
         public FrameInput()
         {
             inputStates = new bool[(int)InputType.Count];
@@ -152,6 +154,7 @@ namespace RogueEssence
             for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
                 inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
 
+            inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
             inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
 
             inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);

@@ -56,7 +56,7 @@ namespace RogueEssence.LevelGen
 
                     foreach (ITile tile in AcceptedTiles)
                     {
-                        if (map.GetTile(testLoc).TileEquivalent(tile))
+                        if (map.GetTile(testLoc).TileEquivalent(tile) || map.GetTile(testLoc).TileEquivalent(map.RoomTerrain))
                             return false;
                     }
                     return true;

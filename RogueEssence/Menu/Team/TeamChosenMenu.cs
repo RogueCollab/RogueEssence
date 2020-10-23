@@ -44,13 +44,16 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_STATUS_TITLE"), StatusAction, hasStatus, hasStatus ? Color.White : Color.Red));
 
-            bool canAct = (GameManager.Instance.CurrentScene != DungeonScene.Instance) || (Data.DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.FocusedCharacter == DungeonScene.Instance.ActiveTeam.Leader);
+            bool canAct = (GameManager.Instance.CurrentScene != DungeonScene.Instance) || (Data.DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.CurrentCharacter == DungeonScene.Instance.ActiveTeam.Leader);
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_UP"), ShiftUpAction, canAct && (teamSlot > 0), canAct && (teamSlot > 0) ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), ShiftDownAction, canAct && (teamSlot < DataManager.Instance.Save.ActiveTeam.Players.Count - 1), canAct && (teamSlot < DataManager.Instance.Save.ActiveTeam.Players.Count - 1) ? Color.White : Color.Red));
 
             if (teamSlot == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_MODE"), TeamModeAction, canAct, canAct ? Color.White : Color.Red));
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_MODE"), TeamModeAction, canAct, canAct ? Color.White : Color.Red));
+            }
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction, canAct, canAct ? Color.White : Color.Red));
 

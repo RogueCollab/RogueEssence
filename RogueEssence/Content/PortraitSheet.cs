@@ -76,7 +76,8 @@ namespace RogueEssence.Content
                     {
                         Texture2D newSheet = null;
                         using (FileStream fileStream = new FileStream(baseDirectory + emotion + ".png", FileMode.Open, FileAccess.Read, FileShare.Read))
-                            newSheet = Texture2D.FromStream(device, fileStream);
+                            newSheet = ImportTex(fileStream);
+
                         animData.Add(ii, new PortraitData(sheets.Count, hasReverse));
                         if (newSheet.Width != GraphicsManager.PortraitSize || newSheet.Height != GraphicsManager.PortraitSize)
                             throw new InvalidOperationException(baseDirectory + emotion + ".png has incorrect dimensions for portrait.");
@@ -87,7 +88,8 @@ namespace RogueEssence.Content
                     {
                         Texture2D newSheet = null;
                         using (FileStream fileStream = new FileStream(baseDirectory + emotion + "^.png", FileMode.Open, FileAccess.Read, FileShare.Read))
-                            newSheet = Texture2D.FromStream(device, fileStream);
+                            newSheet = ImportTex(fileStream);
+
                         if (newSheet.Width != GraphicsManager.PortraitSize || newSheet.Height != GraphicsManager.PortraitSize)
                             throw new InvalidOperationException(baseDirectory + emotion + ".png has incorrect dimensions for portrait.");
                         sheets.Add(newSheet);
@@ -119,7 +121,7 @@ namespace RogueEssence.Content
                     Texture2D tex = new Texture2D(device, GraphicsManager.PortraitSize, GraphicsManager.PortraitSize);
                     BaseSheet.Blit(sheet.baseTexture, tex, ii % sheet.TotalX * GraphicsManager.PortraitSize, ii / sheet.TotalX * GraphicsManager.PortraitSize, GraphicsManager.PortraitSize, GraphicsManager.PortraitSize, 0, 0);
                     using (Stream stream = new FileStream(baseDirectory + emotion + ".png", FileMode.Create, FileAccess.Write, FileShare.None))
-                        tex.SaveAsPng(stream, tex.Width, tex.Height);
+                        ExportTex(stream, tex);
                     tex.Dispose();
                 }
 
@@ -129,7 +131,7 @@ namespace RogueEssence.Content
                     Texture2D tex2 = new Texture2D(device, GraphicsManager.PortraitSize, GraphicsManager.PortraitSize);
                     BaseSheet.Blit(sheet.baseTexture, tex2, ii % sheet.TotalX * GraphicsManager.PortraitSize, ii / sheet.TotalX * GraphicsManager.PortraitSize, GraphicsManager.PortraitSize, GraphicsManager.PortraitSize, 0, 0);
                     using (Stream stream = new FileStream(baseDirectory + emotion + "^.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                        tex2.SaveAsPng(stream, tex2.Width, tex2.Height);
+                        ExportTex(stream, tex2);
                     tex2.Dispose();
                 }
 

@@ -25,6 +25,9 @@ namespace RogueEssence.Menu
             flatChoices.Add(new MenuTextChoice("---", () => { choose(""); }));
             foreach (string song in files)
             {
+                if (!DataManager.IsNonTrivialFile(song))
+                    continue;
+
                 flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(song), () => { choose(Path.GetFileName(song)); }));
             }
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using RogueElements;
 using RogueEssence.Data;
+using System.IO;
 
 namespace RogueEssence.Menu
 {
@@ -11,16 +12,28 @@ namespace RogueEssence.Menu
 
         public QuicksaveMenu()
         {
-            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(DataManager.ROGUE_PATH);
+            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(DataManager.ROGUE_PATH, DataManager.QUICKSAVE_EXTENSION);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             foreach (RecordHeaderData record in records)
             {
-                string fileName = record.Path.Substring(record.Path.LastIndexOf('/') + 1);
-                if (record.ScoreValid)
-                    flatChoices.Add(new MenuTextChoice(record.Name + " (" + fileName + ")", () => { choose(record.Path); }));
+                string fileName = Path.GetFileNameWithoutExtension(record.Path);
+                if (record.Name != "")
+                {
+                    LocalText zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[record.Zone].Name;
+                    string rogueSign = "";
+                    if (record.IsRogue)
+                    {
+                        if (record.IsSeeded)
+                            rogueSign = "\uE10D";
+                        else
+                            rogueSign = "\uE10C";
+                    }
+                    //also include an indicator of the floors traversed, if possible
+                    flatChoices.Add(new MenuTextChoice(rogueSign + record.Name + ": " + zoneName.ToLocal(), () => { choose(record.Path); }));
+                }
                 else
-                    flatChoices.Add(new MenuTextChoice("(" + fileName + ")", () => { choose(record.Path); }, true, Color.Red));
+                    flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
             }
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 

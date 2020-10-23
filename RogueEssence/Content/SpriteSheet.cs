@@ -37,7 +37,8 @@ namespace RogueEssence.Content
             {
                 Texture2D newSheet = null;
                 using (FileStream fileStream = new FileStream(dir, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    newSheet = Texture2D.FromStream(device, fileStream);
+                    newSheet = ImportTex(fileStream);
+
                 sheets.Add(new ImageInfo(index, newSheet));
                 index++;
             }

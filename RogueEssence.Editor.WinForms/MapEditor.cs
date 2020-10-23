@@ -344,7 +344,7 @@ namespace RogueEssence.Dev
 
         public TileLayer GetBrush()
         {
-            return tileBrowser.GetBrush();
+            return tileBrowser.GetBrush().Layer;
         }
 
         public void EyedropTile(Loc loc)

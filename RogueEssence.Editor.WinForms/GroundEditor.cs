@@ -36,8 +36,6 @@ namespace RogueEssence.Dev
         private EntEditMode EntMode;
         private TileEditMode BlockMode;
 
-        private int currentLayer;
-
         /// <summary>
         /// The currently selected entity.
         /// The entity is either selected using select mode, or move mode!
@@ -53,7 +51,9 @@ namespace RogueEssence.Dev
             lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
             tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
-            UpdateHasScriptFolder(false);
+            UpdateHasScriptFolder();
+
+            saveMapFileDialog.Filter = "map files (*" + DataManager.GROUND_EXT + ")|*" + DataManager.GROUND_EXT;
 
             for (int ii = 0; ii < (int)GroundEntity.EEntTypes.Count; ii++)
                 cmbEntityType.Items.Add(((GroundEntity.EEntTypes)ii).ToLocal());
@@ -121,7 +121,7 @@ namespace RogueEssence.Dev
                                 if (input[FrameInput.InputType.LeftMouse])
                                     PaintTile(tileCoords, GetBrush());
                                 else if (input[FrameInput.InputType.RightMouse])
-                                    PaintTile(tileCoords, new TileLayer());
+                                    PaintTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
                             }
                             break;
                         case TileEditMode.Rectangle:
@@ -129,14 +129,14 @@ namespace RogueEssence.Dev
                                 Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
                                 if (input.JustPressed(FrameInput.InputType.LeftMouse))
                                 {
-                                    GroundEditScene.Instance.AutoTileInProgress = new AutoTile(GetBrush());
+                                    GroundEditScene.Instance.AutoTileInProgress = new AutoTile(GetBrush().Layer);
                                     GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
                                 }
                                 else if (input[FrameInput.InputType.LeftMouse])
                                     GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
                                 else if (input.JustReleased(FrameInput.InputType.LeftMouse))
                                 {
-                                    RectTile(GroundEditScene.Instance.TileRectPreview(), GetBrush());
+                                    RectTile(GroundEditScene.Instance.TileRectPreview(), GetBrush().Layer);
                                     GroundEditScene.Instance.AutoTileInProgress = null;
                                 }
                                 else if (input.JustPressed(FrameInput.InputType.RightMouse))
@@ -156,7 +156,7 @@ namespace RogueEssence.Dev
                         case TileEditMode.Fill:
                             {
                                 if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                                    FillTile(tileCoords, GetBrush());
+                                    FillTile(tileCoords, GetBrush().Layer);
                                 else if (input.JustReleased(FrameInput.InputType.RightMouse))
                                     FillTile(tileCoords, new TileLayer());
                             }
@@ -271,13 +271,8 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevNewGround();
 
-            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            loadEditorSettings();
 
-            RefreshTitle();
-            LoadMapProperties();
-            SetupLayerVisibility();
-            LoadAndSetupStrings();
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
             yield break;
@@ -290,8 +285,6 @@ namespace RogueEssence.Dev
                 chklstScriptMapCallbacks.SetItemChecked(ii, true);
 
             CurrentFile = "";
-
-            UpdateHasScriptFolder(false);
 
             //Schedule the map creation
             GroundEditScene.Instance.PendingDevEvent = DoNew();
@@ -307,32 +300,47 @@ namespace RogueEssence.Dev
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
-            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            loadEditorSettings();
 
-            RefreshTitle();
-            LoadMapProperties();
-            SetupLayerVisibility();
-            LoadAndSetupStrings();
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
             yield break;
         }
 
+        public void LoadFromCurrentGround()
+        {
+            if (ZoneManager.Instance.CurrentGround.AssetName != "")
+                CurrentFile = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
+            else
+                CurrentFile = "";
+
+            loadEditorSettings();
+        }
+
+        private void loadEditorSettings()
+        {
+            lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
+            tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+
+            RefreshTitle();
+            UpdateHasScriptFolder();
+            LoadMapProperties();
+            SetupLayerVisibility();
+            LoadAndSetupStrings();
+        }
+
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openFileDialog.Filter = "map files (*.rsground)|*.rsground";
+            openFileDialog.Filter = "map files (*" + DataManager.GROUND_EXT + ")|*" + DataManager.GROUND_EXT;
             DialogResult result = openFileDialog.ShowDialog();
 
             if (result == DialogResult.OK)
             {
-                if (!ComparePaths(Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH, Path.GetDirectoryName(openFileDialog.FileName)))
-                    MessageBox.Show(String.Format("Map can only be loaded from {0}!", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!ComparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(openFileDialog.FileName)))
+                    MessageBox.Show(String.Format("Map can only be loaded from {0}!", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else
                 {
                     CurrentFile = openFileDialog.FileName;
-
-                    UpdateHasScriptFolder(true);
 
                     //Schedule the map load
                     GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(openFileDialog.FileName));
@@ -377,9 +385,12 @@ namespace RogueEssence.Dev
             GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
 
             tileBrowser.UpdateTilesList();
+            tileBrowser.SelectTileset(sheetName);
+            yield break;
+        }
 
-            //update the map
-
+        private IEnumerator<YieldInstruction> DoImportTileset(string sheetName)
+        {
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -391,7 +402,7 @@ namespace RogueEssence.Dev
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                    ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
@@ -399,6 +410,13 @@ namespace RogueEssence.Dev
             yield break;
         }
 
+        private void importFromTilesetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (tileBrowser.CurrentTileset == "")
+                MessageBox.Show(String.Format("No tileset to import!"), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else
+                GroundEditScene.Instance.PendingDevEvent = DoImportTileset(tileBrowser.CurrentTileset);
+        }
 
         private void importFromPngToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -418,7 +436,7 @@ namespace RogueEssence.Dev
             //Actually create the script folder, and default script file.
             CreateOrCopyScriptData(oldfname, CurrentFile);
             //Strings will have to be created on demand!
-            UpdateHasScriptFolder(true);
+            UpdateHasScriptFolder();
 
             RefreshTitle();
 
@@ -462,12 +480,9 @@ namespace RogueEssence.Dev
                 CurrentFile = "";
 
             if (CurrentFile == "")
-                this.Text = "New Map";
+                this.Text = "New Ground";
             else
-            {
-                string[] fileEnd = CurrentFile.Split('/');
-                this.Text = fileEnd[fileEnd.Length - 1];
-            }
+                this.Text = Path.GetFileNameWithoutExtension(CurrentFile);
         }
 
 
@@ -524,7 +539,7 @@ namespace RogueEssence.Dev
 
             //string mapDir = (string)Registry.GetValue(DiagManager.REG_PATH, "MapDir", "");
             //if (String.IsNullOrEmpty(mapDir))
-            string mapDir = Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH;
+            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
             openFileDialog.InitialDirectory = mapDir;
             saveMapFileDialog.InitialDirectory = mapDir;
 
@@ -611,12 +626,24 @@ namespace RogueEssence.Dev
             }
         }
 
-        public void PaintTile(Loc loc, TileLayer anim)
+        public void PaintTile(Loc loc, TileBrush brush)
         {
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y] = new AutoTile(anim);
+            if (brush.MultiSelect == Loc.One)
+                ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X][loc.Y] = new AutoTile(brush.Layer);
+            else
+            {
+                for (int xx = 0; xx < brush.MultiSelect.X; xx++)
+                {
+                    for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
+                    {
+                        TileFrame frame = brush.Layer.Frames[0];
+                        ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X + xx][loc.Y + yy] = new AutoTile(new TileLayer(frame.TexLoc + new Loc(xx, yy), frame.Sheet));
+                    }
+                }
+            }
         }
 
         public void RectTile(Rect rect, TileLayer anim)
@@ -628,7 +655,7 @@ namespace RogueEssence.Dev
                     if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(xx, yy)))
                         continue;
 
-                    ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[xx][yy] = new AutoTile(anim);
+                    ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[xx][yy] = new AutoTile(anim);
                 }
             }
         }
@@ -638,7 +665,7 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            tileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y].Layers[0]);//TODO: an anim can have multiple layers if they're an autotile, we nee to somehow pick up autotiles
+            tileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X][loc.Y].Layers[0]);//TODO: an anim can have multiple layers if they're an autotile, we nee to somehow pick up autotiles
         }
 
 
@@ -647,12 +674,12 @@ namespace RogueEssence.Dev
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[loc.X][loc.Y].Copy();
+            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[loc.X][loc.Y].Copy();
 
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height),
                     (Loc testLoc) =>
                     {
-                        return !tile.Equals(ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[testLoc.X][testLoc.Y]);
+                        return !tile.Equals(ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[testLoc.X][testLoc.Y]);
                     },
                     (Loc testLoc) =>
                     {
@@ -660,12 +687,12 @@ namespace RogueEssence.Dev
                     },
                     (Loc testLoc) =>
                     {
-                        ZoneManager.Instance.CurrentGround.Layers[currentLayer].Tiles[testLoc.X][testLoc.Y] = new AutoTile(anim);
+                        ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[testLoc.X][testLoc.Y] = new AutoTile(anim);
                     },
                 loc);
         }
 
-        public TileLayer GetBrush()
+        public TileBrush GetBrush()
         {
             return tileBrowser.GetBrush();
         }
@@ -900,8 +927,9 @@ namespace RogueEssence.Dev
         /// <summary>
         /// Calls this when the map's status as a new, unsaved map has changed.
         /// </summary>
-        private void UpdateHasScriptFolder(bool hasFolder)
+        private void UpdateHasScriptFolder()
         {
+            bool hasFolder = CurrentFile != "";
             btnCommitStrings.Enabled = hasFolder;
             btnReloadStrings.Enabled = hasFolder;
             btnOpenScriptDir.Enabled = hasFolder;
@@ -1166,31 +1194,33 @@ namespace RogueEssence.Dev
             cmbEntityDir.Items.Clear();
 
             //Pick appropriate direction list
-            List<string> dirlist = null;
+            List<Dir8> dirlist = new List<Dir8>();
             switch (cmbEntityType.SelectedIndex)
             {
                 //Entities with non-NONE direction
                 case (int)GroundEntity.EEntTypes.Character:
                 case (int)GroundEntity.EEntTypes.Spawner:
                     {
-                        dirlist = new List<string>();
                         for (int ii = 0; ii <= (int)Dir8.DownRight; ii++)
-                            dirlist.Add(((Dir8)ii).ToLocal());
-                        break;
+                            dirlist.Add((Dir8)ii);
                     }
+                    break;
                 //Entities that accept NONE as direction
                 default:
                     {
-                        dirlist = new List<string>();
                         for (int ii = -1; ii <= (int)Dir8.DownRight; ii++)
-                            dirlist.Add(((Dir8)ii).ToLocal());
+                            dirlist.Add((Dir8)ii);
                     }
                     break;
             }
 
             //Update valid directions
-            for (int ii = 0; ii <= (int)Dir8.DownRight; ii++)
-                cmbEntityDir.Items.Add(((Dir8)ii).ToLocal());
+            for (int ii = 0; ii < dirlist.Count; ii++)
+            {
+                cmbEntityDir.Items.Add(dirlist[ii].ToLocal());
+            }
+
+            cmbEntityDir.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -1215,8 +1245,8 @@ namespace RogueEssence.Dev
                         tabctrlEntData.TabPages.Add(tabEntCharDisplay);
 
                         btnAddToTemplates.Enabled = true;
-                        numEntHeight.Enabled = true;
-                        numEntWidth.Enabled = true;
+                        numEntHeight.Enabled = false;
+                        numEntWidth.Enabled = false;
                         break;
                     }
                 case (int)GroundEntity.EEntTypes.Object:
@@ -1283,7 +1313,7 @@ namespace RogueEssence.Dev
 
         private void txtEntityName_Leave(object sender, EventArgs e)
         {
-            string resultName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(txtEntityName.Text);
+            string resultName = txtEntityName.Text;
             if (selectedEntity != null)
             {
                 //We changed the selected entity's name
@@ -1424,6 +1454,9 @@ namespace RogueEssence.Dev
 
         public void RemoveEntity(GroundEntity ent)
         {
+            if (ent == null)
+                return;
+
             if (ent.GetEntityType() == GroundEntity.EEntTypes.Character)
                 ZoneManager.Instance.CurrentGround.RemoveMapChar((GroundChar)ent);
             else if (ent.GetEntityType() == GroundEntity.EEntTypes.Object)
@@ -1455,7 +1488,6 @@ namespace RogueEssence.Dev
             else if (placeableEntity.GetEntityType() == GroundEntity.EEntTypes.Spawner)
                 ZoneManager.Instance.CurrentGround.AddSpawner((GroundSpawner)placeableEntity);
 
-            txtEntityName.Text = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
         }
 
         /// <summary>

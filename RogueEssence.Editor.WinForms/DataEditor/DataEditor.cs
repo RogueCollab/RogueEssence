@@ -610,6 +610,17 @@ namespace RogueEssence.Dev
                     innerPanel.ResumeLayout(false);
 
                 }
+                else if (type == typeof(Priority))
+                {
+                    LoadLabelControl(control, name);
+
+                    //for strings, use an edit textbox
+                    TextBox txtValue = new TextBox();
+                    txtValue.Dock = DockStyle.Fill;
+                    txtValue.Size = new Size(0, 20);
+                    txtValue.Text = (member == null) ? "" : member.ToString();
+                    control.Controls.Add(txtValue);
+                }
                 else if (type == typeof(Loc))
                 {
                     LoadLabelControl(control, name);
@@ -1017,7 +1028,7 @@ namespace RogueEssence.Dev
                     Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
                     lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
                     //add lambda expression for editing a single element
-                    lbxValue.OnEditItem = (int priority, int index, object element, PriorityListBox.EditElementOp op) =>
+                    lbxValue.OnEditItem = (Priority priority, int index, object element, PriorityListBox.EditElementOp op) =>
                     {
                         ElementForm frmData = new ElementForm();
                         if (element == null)
@@ -1031,6 +1042,27 @@ namespace RogueEssence.Dev
                         {
                             StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
                             op(priority, index, element);
+                            frmData.Close();
+                        };
+                        frmData.OnCancel += (object okSender, EventArgs okE) =>
+                        {
+                            frmData.Close();
+                        };
+
+                        frmData.Show();
+                    };
+                    lbxValue.OnEditPriority = (Priority priority, int index, PriorityListBox.EditPriorityOp op) =>
+                    {
+                        ElementForm frmData = new ElementForm();
+                        frmData.Text = name + "/" + "New Priority";
+
+                        StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
+
+                        frmData.OnOK += (object okSender, EventArgs okE) =>
+                        {
+                            object priorityObj = priority;
+                            StaticSaveMemberControl(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), ref priorityObj, true);
+                            op(priority, index, (Priority)priorityObj);
                             frmData.Close();
                         };
                         frmData.OnCancel += (object okSender, EventArgs okE) =>
@@ -1610,6 +1642,28 @@ namespace RogueEssence.Dev
                     IntNumericUpDown nudValueA = (IntNumericUpDown)innerControl.Controls[innerControlIndex];
                     member = new Microsoft.Xna.Framework.Color((int)nudValueR.Value, (int)nudValueG.Value, (int)nudValueB.Value, (int)nudValueA.Value);
                     innerControlIndex++;
+                }
+                else if (type == typeof(Priority))
+                {
+                    controlIndex++;
+                    //attempt to parse
+                    //TODO: enforce validation
+                    TextBox txtValue = (TextBox)control.Controls[controlIndex];
+                    string[] divText = txtValue.Text.Split('.');
+                    int[] divNums = new int[divText.Length];
+                    for (int ii = 0; ii < divText.Length; ii++)
+                    {
+                        int res;
+                        if (int.TryParse(divText[ii], out res))
+                            divNums[ii] = res;
+                        else
+                        {
+                            divNums = null;
+                            break;
+                        }
+                    }
+                    member = new Priority(divNums);
+                    controlIndex++;
                 }
                 else if (type == typeof(Loc))
                 {

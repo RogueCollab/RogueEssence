@@ -552,7 +552,7 @@ namespace RogueEssence
                         GameAction nextAction = DataManager.Instance.CurrentReplay.ReadCommand();
                         if (nextAction.Type == GameAction.ActionType.Rescue)
                             rescued = nextAction;
-                        else//we shouldn't be hitting this point!  give an error notification!
+                        else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
                             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
                     }
 
@@ -630,7 +630,7 @@ namespace RogueEssence
                     GameState state = DataManager.Instance.LoadMainGameState();
                     SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, Versioning.GetVersion());
                     state.Save.Rescue = new RescueState(awaiting, false);
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
 
 
                     DataManager.SaveRescueMail(DataManager.RESCUE_OUT_PATH + DataManager.SOS_PATH, state.Save.Rescue.SOS, true);
@@ -785,23 +785,8 @@ namespace RogueEssence
                 Zoom -= MetaInputManager.MouseWheelDiff / 120;
                 if (Zoom < GraphicsManager.GameZoom.x8Near)
                     Zoom = GraphicsManager.GameZoom.x8Near;
-                if (Zoom > GraphicsManager.GameZoom.x16Far)
-                    Zoom = GraphicsManager.GameZoom.x16Far;
-
-                if (ZoneManager.Instance.CurrentGround != null)
-                {
-                    int tileSize = ZoneManager.Instance.CurrentGround.TileSize;
-                    int estimation = 2200 / (GraphicsManager.ScreenWidth * GraphicsManager.ScreenHeight / tileSize / tileSize);
-
-                    if (estimation < 4 && Zoom > GraphicsManager.GameZoom.x1)
-                        Zoom = GraphicsManager.GameZoom.x1;
-                    if (estimation < 16 && Zoom > GraphicsManager.GameZoom.x2Far)
-                        Zoom = GraphicsManager.GameZoom.x2Far;
-                    if (estimation < 64 && Zoom > GraphicsManager.GameZoom.x4Far)
-                        Zoom = GraphicsManager.GameZoom.x4Far;
-                    if (estimation < 256 && Zoom > GraphicsManager.GameZoom.x8Far)
-                        Zoom = GraphicsManager.GameZoom.x8Far;
-                }
+                if (Zoom > GraphicsManager.GameZoom.x8Far)
+                    Zoom = GraphicsManager.GameZoom.x8Far;
             }
 
             CurrentScene.UpdateMeta();

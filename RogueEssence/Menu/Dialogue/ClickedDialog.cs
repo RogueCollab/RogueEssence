@@ -21,7 +21,8 @@ namespace RogueEssence.Menu
             //needs to update the cursor's flashing?
             //do we need this cursor to be separate from the mid-message pauses?
 
-            if (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel])
+            if (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                || input.JustPressed(FrameInput.InputType.LeftMouse))
             {
                 //close this
                 MenuManager.Instance.RemoveMenu();

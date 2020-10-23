@@ -111,7 +111,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> InitActionData(BattleContext context)
         {
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.InitActionData);
             };
@@ -189,7 +189,7 @@ namespace RogueEssence.Dungeon
             //    yield return CoroutinesManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
 
             //TODO: test to make sure everything is consistent with the erasure of handling movement in here
-            //first, splash needs to work properly, because the hopping will call its own tile landing
+            //first, hopping needs to work properly, because the it will call its own tile landing
             //dash attacks will also handle their own tile landing.
             //for now, since all dash moves hit tiles, that means they will all activate the tile
 
@@ -279,7 +279,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeforeExplosion(BattleContext context)
         {
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
 
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeExplosions);
@@ -314,7 +314,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeforeHit(BattleContext context)
         {
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeHits);
 
@@ -353,7 +353,7 @@ namespace RogueEssence.Dungeon
         {
             int effectiveness = 0;
 
-            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
@@ -382,7 +382,7 @@ namespace RogueEssence.Dungeon
         {
             int effectiveness = 0;
 
-            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
@@ -456,7 +456,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(context.Data.Hit(context));
 
 
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, int maxPriority, ref int nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 if (context.ActionType != BattleActionType.Trap)
                 {
@@ -546,13 +546,22 @@ namespace RogueEssence.Dungeon
 
 
 
-        public delegate void EventEnqueueFunction<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, int maxPriority, ref int nextPriority) where T : GameEvent;
+        public delegate void EventEnqueueFunction<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, Priority maxPriority, ref Priority nextPriority) where T : GameEvent;
+        
+        /// <summary>
+        /// Iterates through all GameEvents gathered by the enqueue function, in order of priority.
+        /// Each individual tier of priority is gathered and processed before searching for the next one.
+        /// This is done so that GameEffects that affect other GameEffects at a further priority can take effect immediately.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enqueueFunction"></param>
+        /// <returns></returns>
         public static IEnumerable<Tuple<GameEventOwner, Character, T>> IterateEvents<T>(EventEnqueueFunction<T> enqueueFunction) where T : GameEvent
         {
-            int maxPriority = Int32.MinValue;
+            Priority maxPriority = Priority.Invalid;
             while (true)
             {
-                int nextPriority = Int32.MaxValue;
+                Priority nextPriority = Priority.Invalid;
 
                 StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue = new StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>>();
 
@@ -567,10 +576,8 @@ namespace RogueEssence.Dungeon
                         Tuple<GameEventOwner, Character, T> effect = queue.Dequeue();
                         yield return effect;
                     }
-                    if (nextPriority == Int32.MaxValue)
-                        break;
-                    else
-                        maxPriority = nextPriority + 1;
+
+                    maxPriority = nextPriority;
                 }
             }
         }

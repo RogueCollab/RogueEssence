@@ -14,6 +14,7 @@ namespace RogueEssence.Menu
         public MenuText[] Def;
         public MenuText[] MAtk;
         public MenuText[] MDef;
+        public MenuDivider[] Divs;
 
         public LevelUpMenu(int teamIndex, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef)
         {
@@ -27,6 +28,11 @@ namespace RogueEssence.Menu
             MAtk = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5, Text.FormatKey("MENU_LABEL", Data.Stat.MAtk.ToLocal("tiny")), oldMAtk, player.BaseMAtk - oldMAtk, player.BaseMAtk);
             MDef = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6, Text.FormatKey("MENU_LABEL", Data.Stat.MDef.ToLocal("tiny")), oldMDef, player.BaseMDef - oldMDef, player.BaseMDef);
             Speed = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7, Text.FormatKey("MENU_LABEL", Data.Stat.Speed.ToLocal("tiny")), oldSpeed, player.BaseSpeed - oldSpeed, player.BaseSpeed);
+
+            Divs = new MenuDivider[6];
+            Divs[0] = new MenuDivider(new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.Width - 8 * 4);
+            for (int ii = 1; ii < 6; ii++)
+                Divs[ii] = new MenuDivider(new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + LINE_SPACE + VERT_SPACE * (ii+1)), Bounds.Width - 8 * 4);
         }
 
         private MenuText[] genMenuTier(int height, string label, int oldVal, int diff, int newVal)
@@ -57,6 +63,8 @@ namespace RogueEssence.Menu
                 yield return txt;
             foreach (MenuText txt in Speed)
                 yield return txt;
+            foreach (MenuDivider div in Divs)
+                yield return div;
         }
 
         public override void Update(InputManager input)

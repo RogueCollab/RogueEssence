@@ -18,11 +18,16 @@ namespace RogueEssence.Data
 
         public int[] EXPTable;
 
-        public GrowthData() { }
+        public GrowthData()
+        {
+            Name = new LocalText();
+            Comment = "";
+        }
 
         public GrowthData(LocalText name, int[] expTable)
         {
             Name = name;
+            Comment = "";
             EXPTable = expTable;
         }
 

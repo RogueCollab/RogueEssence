@@ -324,7 +324,8 @@ namespace RogueEssence.Data
             character.MDefBonus = 0;
             character.SpeedBonus = 0;
 
-            character.HP = character.MaxHP;
+            if (!character.Dead)
+                character.HP = character.MaxHP;
             
             //reroll skills
             BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
@@ -458,9 +459,6 @@ namespace RogueEssence.Data
 
         public static void SaveMainData(BinaryWriter writer, GameProgress save)
         {
-            //notify script engine
-            LuaEngine.Instance.SaveData(save);
-
             using (MemoryStream classStream = new MemoryStream())
             {
                 IFormatter formatter = new BinaryFormatter();
@@ -595,7 +593,7 @@ namespace RogueEssence.Data
                 if (Stakes == DungeonStakes.Risk)
                     LossPenalty(state.Save);
 
-                DataManager.Instance.SaveMainGameState(state);
+                DataManager.Instance.SaveGameState(state);
             }
 
             //set everyone's levels and mark them for backreferral
@@ -606,7 +604,7 @@ namespace RogueEssence.Data
             RescuesLeft = zone.Rescues;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH, zoneID, false);
+                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH, zoneID, false, false);
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
@@ -740,7 +738,12 @@ namespace RogueEssence.Data
                 MergeDexTo(destProgress);
 
             foreach (CharData charData in CharsToStore)
-                destProgress.ActiveTeam.Assembly.Add(new Character(charData, ActiveTeam, new Loc(), Dir8.Down));
+            {
+                Character chara = new Character(charData, ActiveTeam);
+                AITactic tactic = DataManager.Instance.GetAITactic(0);
+                chara.Tactic = new AITactic(tactic);
+                destProgress.ActiveTeam.Assembly.Add(chara);
+            }
             CharsToStore.Clear();
 
             destProgress.ActiveTeam.StoreItems(ItemsToStore);
@@ -787,7 +790,7 @@ namespace RogueEssence.Data
             Stakes = stakes;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION, zoneID, !Seeded);
+                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION, zoneID, true, Seeded);
 
             yield break;
         }
@@ -816,7 +819,7 @@ namespace RogueEssence.Data
                 if (state != null)
                 {
                     newRecruits = MergeDexTo(state.Save);
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
                 }
 
 
@@ -878,7 +881,7 @@ namespace RogueEssence.Data
                 {
                     MergeDexTo(state.Save);
                     state.Save.DungeonUnlocks[completedZone] = UnlockState.Completed;
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
                 }
 
 
@@ -938,7 +941,7 @@ namespace RogueEssence.Data
                         mainSave.MoneyToStore = state.Save.ActiveTeam.Money + state.Save.ActiveTeam.Bank;
                     }
 
-                    DataManager.Instance.SaveMainGameState(state);
+                    DataManager.Instance.SaveGameState(state);
 
                     if (allowTransfer)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));

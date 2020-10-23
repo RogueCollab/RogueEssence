@@ -55,7 +55,7 @@ namespace RogueEssence.Content
             {
                 using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    Texture2D tex = Texture2D.FromStream(device, fileStream);
+                    Texture2D tex = ImportTex(fileStream);
                     return new DirSheet(tex, tex.Width / frames, tex.Height, RotateType.None);
                 }
             }
@@ -80,7 +80,7 @@ namespace RogueEssence.Content
                 }
                 using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    Texture2D tex = Texture2D.FromStream(device, fileStream);
+                    Texture2D tex = ImportTex(fileStream);
                     int tileWidth = tex.Height / div;
                     return new DirSheet(tex, tileWidth, tileWidth, dirs);
                 }

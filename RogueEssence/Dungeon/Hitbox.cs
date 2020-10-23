@@ -437,17 +437,47 @@ namespace RogueEssence.Dungeon
         }
         private void preCalculateCoverage(StablePriorityQueue<int, Loc> tilesToHit, int delay)
         {
-            for (int ii = -MaxRadius; ii <= MaxRadius; ii++)
+            Loc topLeft = Origin - new Loc(MaxRadius);
+            bool[][] connectionGrid = new bool[MaxRadius * 2 + 1][];
+            for (int xx = 0; xx < connectionGrid.Length; xx++)
+                connectionGrid[xx] = new bool[MaxRadius * 2 + 1];
+
+            connectionGrid[Origin.X - topLeft.X][Origin.Y - topLeft.Y] = true;
+            tilesToHit.Enqueue(calculateTimeToHit(Origin) + delay, Origin);
+
+            Loc backup = Origin;
+            if (MaxRadius > 0 && ZoneManager.Instance.CurrentMap.TileBlocked(Origin, true))
+                backup += Dir.Reverse().GetLoc();
+
+            Grid.FloodFill(new Rect(Origin - new Loc(MaxRadius), new Loc(MaxRadius * 2 + 1)),
+            (Loc testLoc) =>
             {
-                for (int jj = -MaxRadius; jj <= MaxRadius; jj++)
+                if (connectionGrid[testLoc.X - topLeft.X][testLoc.Y - topLeft.Y])
+                    return true;
+                if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
+                    return true;
+                if (!IsInSquareHitbox(testLoc, Origin, MaxRadius, HitArea, Dir))
+                    return true;
+                if (ZoneManager.Instance.CurrentMap.TileBlocked(testLoc, true))
+                    return true;
+
+                return false;
+            },
+            (Loc testLoc) =>
+            {
+                return false;
+            },
+            (Loc fillLoc) =>
+            {
+                if (fillLoc != Origin)
                 {
-                    Loc candTile = new Loc(ii, jj) + Origin;
-                    if (IsInSquareHitbox(candTile, Origin, MaxRadius, HitArea, Dir) &&
-                    Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, candTile))
-                        tilesToHit.Enqueue(calculateTimeToHit(candTile) + delay, candTile);
+                    connectionGrid[fillLoc.X - topLeft.X][fillLoc.Y - topLeft.Y] = true;
+                    tilesToHit.Enqueue(calculateTimeToHit(fillLoc) + delay, fillLoc);
                 }
-            }
+            },
+            backup);
         }
+
         public override TargetHitType IsValidTileTarget(Loc loc)
         {
             if (DungeonScene.Instance.IsTargeted(loc, BurstTiles))

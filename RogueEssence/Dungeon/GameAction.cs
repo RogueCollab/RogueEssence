@@ -63,5 +63,9 @@ namespace RogueEssence.Dungeon
             args.Add(arg);
         }
 
+        public override string ToString()
+        {
+            return String.Format("{0} {1} [{2}]", Type.ToString(), Dir.ToString(), String.Join(", ", args));
+        }
     }
 }

@@ -18,11 +18,16 @@ namespace RogueEssence.Data
 
         public char Symbol;
 
-        public ElementData() { }
+        public ElementData()
+        {
+            Name = new LocalText();
+            Comment = "";
+        }
 
         public ElementData(LocalText name, char symbol)
         {
             Name = name;
+            Comment = "";
             Symbol = symbol;
         }
     }

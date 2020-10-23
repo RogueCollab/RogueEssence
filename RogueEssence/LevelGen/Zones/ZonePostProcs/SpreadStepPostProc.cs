@@ -30,7 +30,7 @@ namespace RogueEssence.LevelGen
         public override ZonePostProc Instantiate(ulong seed) { return new SpreadStepPostProc(this, seed); }
 
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<int, IGenStep> queue)
+        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
             if (SpreadPlan.CheckIfDistributed(zoneContext, context))
             {

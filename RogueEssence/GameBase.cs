@@ -157,7 +157,7 @@ namespace RogueEssence
                         {
 
                             DiagManager.Instance.DevEditor.Load();
-                            while (!DiagManager.Instance.DevEditor.Loaded)
+                            while (!DiagManager.Instance.DevEditor.LoadComplete)
                                 Thread.Sleep(10);
 
                             CurrentPhase = LoadPhase.Ready;
@@ -197,6 +197,7 @@ namespace RogueEssence
 
                     if (DiagManager.Instance.ActiveDebugReplay == null)
                         DiagManager.Instance.LogInput(input);
+                    DiagManager.Instance.GamePadActive = input.HasGamePad;
                     GameManager.Instance.SetMetaInput(input);
                     GameManager.Instance.UpdateMeta();
                     GameManager.Instance.SetFrameInput(input);

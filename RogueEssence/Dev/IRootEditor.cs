@@ -2,7 +2,7 @@ namespace RogueEssence.Dev
 {
     public interface IRootEditor
     {
-        bool Loaded { get; }
+        bool LoadComplete { get; }
         IGroundEditor GroundEditor { get; }
         IMapEditor MapEditor { get; }
 

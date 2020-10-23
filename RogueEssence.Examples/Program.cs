@@ -201,11 +201,9 @@ namespace RogueEssence.Examples
         // https://github.com/FNA-XNA/FNA/pull/315
         public static void InitDllMap()
         {
-            //if (Type.GetType("System.Runtime.InteropServices.NativeLibrary, System.Runtime.InteropServices") != null)
-            //{
-                Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
-                CoreDllMap.Register(fnaAssembly);
-            //}
+            CoreDllMap.Init();
+            Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
+            CoreDllMap.Register(fnaAssembly);
         }
     }
 

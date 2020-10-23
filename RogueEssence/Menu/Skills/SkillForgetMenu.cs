@@ -36,7 +36,13 @@ namespace RogueEssence.Menu
                     int index = ii;
                     MenuText menuText = new MenuText(skillString, new Loc(2, 1));
                     MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirH.Right);
-                    char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges));
+                    if (ii < Character.MAX_SKILL_SLOTS - 1)
+                    {
+                        MenuDivider div = new MenuDivider(new Loc(0, LINE_SPACE), menuWidth - 8 * 4);
+                        char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges, div));
+                    }
+                    else
+                        char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges));
                 }
             }
 

@@ -1,0 +1,46 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.DevTabData">
+  <Design.DataContext>
+    <vm:DevTabDataViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Button Name="btnEditMonster" Command="{Binding btnEditMonster_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Monster</Button>
+    <Button Name="btnEditZone" Command="{Binding btnEditZone_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Zones</Button>
+    <Button Name="btnEditItem" Command="{Binding btnEditItem_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Items</Button>
+    <Button Name="btnEditSkill" Command="{Binding btnEditSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1" >Skills</Button>
+    <Button Name="btnEditIntrinsics" Command="{Binding btnEditIntrinsics_Click}" Margin="4" Grid.Row="2" Grid.Column="0" >Intrinsics</Button>
+    <Button Name="btnEditStatuses" Command="{Binding btnEditStatuses_Click}" Margin="4" Grid.Row="2" Grid.Column="1" >Statuses</Button>
+    <Button Name="btnEditMapStatuses" Command="{Binding btnEditMapStatuses_Click}" Margin="4" Grid.Row="3" Grid.Column="0" >Map Statuses</Button>
+    <Button Name="btnEditAutoTile" Command="{Binding btnEditAutoTile_Click}" Margin="4" Grid.Row="3" Grid.Column="1" >AutoTiles</Button>
+    <Button Name="btnEditTiles" Command="{Binding btnEditTiles_Click}" Margin="4" Grid.Row="4" Grid.Column="0" >Tiles</Button>
+    <Button Name="btnEditTerrain" Command="{Binding btnEditTerrain_Click}" Margin="4" Grid.Row="4" Grid.Column="1" >Terrain</Button>
+    <Button Name="btnEditEmote" Command="{Binding btnEditEmote_Click}" Margin="4" Grid.Row="5" Grid.Column="0" >Emote</Button>
+    <Button Name="btnEditElement" Command="{Binding btnEditElement_Click}" Margin="4" Grid.Row="5" Grid.Column="1" >Element</Button>
+    <Button Name="btnEditGrowthGroup" Command="{Binding btnEditGrowthGroup_Click}" Margin="4" Grid.Row="6" Grid.Column="0" >Growth Groups</Button>
+    <Button Name="btnEditSkillGroup" Command="{Binding btnEditSkillGroup_Click}" Margin="4" Grid.Row="6" Grid.Column="1" >Skill Groups</Button>
+    <Button Name="btnEditRank" Command="{Binding btnEditRank_Click}" Margin="4" Grid.Row="7" Grid.Column="0" >Rank</Button>
+    <Button Name="btnEditSkin" Command="{Binding btnEditSkin_Click}" Margin="4" Grid.Row="7" Grid.Column="1" >Skin</Button>
+    <Button Name="btnMapEditor" Command="{Binding btnMapEditor_Click}" Margin="4" Grid.Row="8" Grid.Column="0" >Edit Map</Button>
+    <Button Name="btnGroundEditor" Command="{Binding btnGroundEditor_Click}" Margin="4" Grid.Row="8" Grid.Column="1" >Edit Ground</Button>
+  </Grid>
+</UserControl>

@@ -33,6 +33,9 @@ using System.Xml;
 
 public static class CoreDllMap
 {
+    public static string OS => os;
+    public static string CPU => cpu;
+
     private static string os;
     private static string cpu;
 
@@ -42,17 +45,18 @@ public static class CoreDllMap
     private static Dictionary<string, string> mapDictionary
         = new Dictionary<string, string>();
 
+    public static void Init()
+    {
+        // Get platform and CPU
+        os = GetCurrentPlatform();
+        cpu = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+    }
+
     public static void Register(Assembly assembly)
     {
         // An assembly can only be registered once
         if (registeredAssemblies.ContainsKey(assembly))
-        {
             return;
-        }
-
-        // Get platform and CPU
-        os = GetCurrentPlatform();
-        cpu = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
         // Read config XML and store details within MapDictionary
         string xmlPath = Path.Combine(

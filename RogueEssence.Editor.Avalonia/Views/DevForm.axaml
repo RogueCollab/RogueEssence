@@ -1,0 +1,36 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="RogueEssence.Dev.Views.DevForm"
+        Title="Dev Controls" Height="480" Width="460" Opened="Window_Loaded" Closed="Window_Closed">
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+        <vm:DevFormViewModel/>
+    </Design.DataContext>
+  <Grid>
+    <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="4" >
+      <TabItem Name="tabGame" Header="Game" >
+        <views:DevTabGame DataContext="{Binding Game}"/>
+      </TabItem>
+      <TabItem Name="tabSprite" Header="Player" >
+        <views:DevTabPlayer DataContext="{Binding Player}"/>
+      </TabItem>
+      <TabItem Name="tabData" Header="Data" >
+        <views:DevTabData DataContext="{Binding Data}"/>
+      </TabItem>
+      <TabItem Name="tabSprites" Header="Sprites" >
+        <views:DevTabSprites DataContext="{Binding Sprites}"/>
+      </TabItem>
+      <TabItem Name="tabScript" Header="Script" >
+        <views:DevTabScript DataContext="{Binding Script}"/>
+      </TabItem>
+      <TabItem Name="tabTravel" Header="Travel" >
+        <views:DevTabTravel DataContext="{Binding Travel}"/>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</Window>

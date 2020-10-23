@@ -11,14 +11,28 @@ using System.Collections.Generic;
 
 namespace RogueEssence.Dev
 {
+    public class TileBrush
+    {
+        public TileLayer Layer;
+        public Loc MultiSelect;
+
+        public TileBrush(TileLayer layer, Loc multiSelect)
+        {
+            Layer = layer;
+            MultiSelect = multiSelect;
+        }
+    }
+
     public partial class TileBrowser : UserControl
     {
         bool inAnimMode;
         string currentTileset;
         string chosenTileset;
         Loc chosenTile;
+        Loc multiSelect;
         int tileSize;
         public TileEditMode TexMode { get; private set; }
+        public string CurrentTileset { get { return currentTileset; } }
 
         List<string> tileIndices;
 
@@ -27,17 +41,19 @@ namespace RogueEssence.Dev
         public TileBrowser()
         {
             inAnimMode = false;
-            chosenTile = new Loc();
+            chosenTile = Loc.Zero;
+            multiSelect = Loc.One;
             tileIndices = new List<string>();
 
             InitializeComponent();
+            nudFrameLength.Maximum = Int32.MaxValue;
 
             slbTilesets.SetName("Tilesets");
         }
 
-        public TileLayer GetBrush()
+        public TileBrush GetBrush()
         {
-            return tilePreview.GetChosenAnim();
+            return new TileBrush(tilePreview.GetChosenAnim(), multiSelect);
         }
 
         public void SetBrush(TileLayer anim)
@@ -47,14 +63,20 @@ namespace RogueEssence.Dev
                 chosenTileset = anim.Frames[0].Sheet;
                 currentTileset = chosenTileset;
                 chosenTile = anim.Frames[0].TexLoc;
-
+                multiSelect = Loc.One;
                 inAnimMode = (anim.Frames.Count > 1);
 
-                tilePreview.SetChosenAnim(anim);
+                tilePreview.SetChosenAnim(new TileBrush(anim, multiSelect));
 
                 //refresh
                 RefreshTileSelect();
             }
+        }
+
+        public void SelectTileset(string sheetName)
+        {
+            slbTilesets.SearchText = "";
+            slbTilesets.SelectedIndex = tileIndices.FindIndex(str => (str == sheetName));
         }
 
         public void SetTileSize(int tileSize)
@@ -84,20 +106,23 @@ namespace RogueEssence.Dev
                 currentTileset = tileIndices[0];
 
                 slbTilesets.SelectedIndex = 0;
-
             }
             else
             {
                 chosenTileset = "";
                 currentTileset = "";
             }
+            chosenTile = Loc.Zero;
+            multiSelect = Loc.One;
 
             RefreshAnimControls();
 
-            tilePreview.SetChosenAnim(new TileLayer(chosenTile, chosenTileset));
+            tilePreview.SetChosenAnim(new TileBrush(new TileLayer(chosenTile, chosenTileset), multiSelect));
 
             //refresh
             RefreshTileSelect();
+
+
         }
 
         void RefreshTileset()
@@ -120,7 +145,9 @@ namespace RogueEssence.Dev
             else
             {
                 lblTileInfo.Visible = true;
-                lblTileInfo.Text = "X:" + chosenTile.X + "  Y:" + chosenTile.Y + "  Tile:" + chosenTileset;
+                lblTileInfo.Text = "X:" + chosenTile.X + "  Y:" + chosenTile.Y + "  Set:" + chosenTileset;
+                if (multiSelect != Loc.One)
+                    lblTileInfo.Text += "\n" + multiSelect.X + "x" + multiSelect.Y;
             }
 
             if (tilePos.X > 0 && tilePos.Y > 0)
@@ -128,7 +155,7 @@ namespace RogueEssence.Dev
                 picTileset.Visible = true;
 
                 Image endImage = new Bitmap(picTileset.Width, picTileset.Height);
-                using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(endImage))
+                using (Graphics graphics = Graphics.FromImage(endImage))
                 {
                     int width = picX;
                     if (tilePos.X - hScroll.Value < width)
@@ -149,13 +176,11 @@ namespace RogueEssence.Dev
                     }
 
                     //draw red square
-                    if (currentTileset == chosenTileset &&
-                        chosenTile.X >= hScroll.Value && chosenTile.X < hScroll.Value + picX &&
-                        chosenTile.Y >= vScroll.Value && chosenTile.Y < vScroll.Value + picY)
+                    if (currentTileset == chosenTileset && Collision.Collides(new Rect(hScroll.Value, vScroll.Value, picX, picY), new Rect(chosenTile, multiSelect)))
                     {
                         graphics.DrawRectangle(new Pen(Color.Red, 2), new Rectangle((chosenTile.X - hScroll.Value) * tileSize + 1,
                             (chosenTile.Y - vScroll.Value) * tileSize + 1,
-                            tileSize - 2, tileSize - 2));
+                            tileSize * multiSelect.X - 2, tileSize * multiSelect.Y - 2));
                     }
                 }
                 picTileset.Image = endImage;
@@ -173,7 +198,6 @@ namespace RogueEssence.Dev
             slbTilesets.SelectedIndex = tileIndices.FindIndex(str => (str == currentTileset));
 
             RefreshScrollMaximums();
-
 
             int picX = picTileset.Size.Width / tileSize;
             int picY = picTileset.Size.Height / tileSize;
@@ -208,9 +232,9 @@ namespace RogueEssence.Dev
             int picX = picTileset.Size.Width / tileSize;
             int picY = picTileset.Size.Height / tileSize;
 
-            Loc tilePos = GraphicsManager.TileIndex.GetTileDims(currentTileset);
+            Loc tileDims = GraphicsManager.TileIndex.GetTileDims(currentTileset);
 
-            if (tilePos.X - picX <= 0)
+            if (tileDims.X - picX <= 0)
             {
                 hScroll.Maximum = 0;
                 hScroll.Enabled = false;
@@ -218,10 +242,10 @@ namespace RogueEssence.Dev
             else
             {
                 hScroll.Enabled = true;
-                hScroll.Maximum = tilePos.X - picX + 1;
+                hScroll.Maximum = tileDims.X - picX + 1;
             }
 
-            if (tilePos.Y - picY <= 0)
+            if (tileDims.Y - picY <= 0)
             {
                 vScroll.Maximum = 0;
                 vScroll.Enabled = false;
@@ -229,8 +253,23 @@ namespace RogueEssence.Dev
             else
             {
                 vScroll.Enabled = true;
-                vScroll.Maximum = tilePos.Y - picY + 1;
+                vScroll.Maximum = tileDims.Y - picY + 1;
             }
+        }
+
+        void RefreshChosenTile()
+        {
+            Loc tileDims = GraphicsManager.TileIndex.GetTileDims(currentTileset);
+
+            if (chosenTile.X >= tileDims.X)
+                chosenTile.X = tileDims.X - 1;
+            if (chosenTile.Y >= tileDims.Y)
+                chosenTile.Y = tileDims.Y - 1;
+
+            if (chosenTile.X + multiSelect.X > tileDims.X)
+                multiSelect.X = tileDims.X - chosenTile.X;
+            if (chosenTile.Y + multiSelect.Y > tileDims.Y)
+                multiSelect.Y = tileDims.Y - chosenTile.Y;
         }
 
 
@@ -280,20 +319,37 @@ namespace RogueEssence.Dev
             if (GraphicsManager.TileIndex.GetPosition(currentTileset, new Loc(clickedX, clickedY)) > 0)
             {
                 chosenTileset = currentTileset;
-                chosenTile = new Loc(clickedX, clickedY);
-                RefreshTilesetPic();
 
-                if (!inAnimMode)
-                    tilePreview.SetChosenAnim(new TileLayer(chosenTile, chosenTileset));
+                if ((Control.ModifierKeys & Keys.Shift) != 0)
+                {
+                    chkAnimationMode.Checked = false;
+
+                    //multiselect
+                    Loc endTile = new Loc(clickedX, clickedY);
+                    multiSelect = endTile - chosenTile + Loc.One;
+                    RefreshTilesetPic();
+
+                    tilePreview.SetChosenAnim(new TileBrush(new TileLayer(chosenTile, chosenTileset), multiSelect));
+                    
+                }
                 else
                 {
-                    TileLayer chosenAnim = tilePreview.GetChosenAnim();
-                    if (lbxFrames.SelectedIndex > -1)
-                        chosenAnim.Frames[lbxFrames.SelectedIndex] = new TileFrame(chosenTile, chosenTileset);
+                    chosenTile = new Loc(clickedX, clickedY);
+                    multiSelect = Loc.One;
+                    RefreshTilesetPic();
+
+                    if (!inAnimMode)
+                        tilePreview.SetChosenAnim(new TileBrush(new TileLayer(chosenTile, chosenTileset), multiSelect));
                     else
-                        chosenAnim.Frames.Add(new TileFrame(chosenTile, chosenTileset));
-                    tilePreview.SetChosenAnim(chosenAnim);
-                    UpdateAnimFrames();
+                    {
+                        TileLayer chosenAnim = tilePreview.GetChosenAnim();
+                        if (lbxFrames.SelectedIndex > -1)
+                            chosenAnim.Frames[lbxFrames.SelectedIndex] = new TileFrame(chosenTile, chosenTileset);
+                        else
+                            chosenAnim.Frames.Add(new TileFrame(chosenTile, chosenTileset));
+                        tilePreview.SetChosenAnim(new TileBrush(chosenAnim, multiSelect));
+                        UpdateAnimFrames();
+                    }
                 }
             }
         }
@@ -305,14 +361,8 @@ namespace RogueEssence.Dev
                 inAnimMode = chkAnimationMode.Checked;
                 if (!inAnimMode)
                 {
-                    TileLayer chosenAnim = tilePreview.GetChosenAnim();
-                    chosenAnim.Frames.RemoveRange(1, chosenAnim.Frames.Count - 1);
-
-                    tilePreview.SetChosenAnim(chosenAnim);
-
-                    chosenTile = chosenAnim.Frames[0].TexLoc;
-                    chosenTileset = chosenAnim.Frames[0].Sheet;
-                    currentTileset = chosenTileset;
+                    multiSelect = Loc.One;
+                    tilePreview.SetChosenAnim(new TileBrush(new TileLayer(chosenTile, chosenTileset), multiSelect));
                 }
             }
             UpdateAnimFrames();
@@ -326,7 +376,7 @@ namespace RogueEssence.Dev
             int frames = nudFrameLength.GetIntFromNumeric();
             TileLayer chosenAnim = tilePreview.GetChosenAnim();
             chosenAnim.FrameLength = frames;
-            tilePreview.SetChosenAnim(chosenAnim);
+            tilePreview.SetChosenAnim(new TileBrush(chosenAnim, multiSelect));
         }
 
         private void btnAddFrame_Click(object sender, EventArgs e)
@@ -336,7 +386,7 @@ namespace RogueEssence.Dev
                 chosenAnim.Frames.Insert(lbxFrames.SelectedIndex, new TileFrame(chosenTile, chosenTileset));
             else
                 chosenAnim.Frames.Add(new TileFrame(chosenTile, chosenTileset));
-            tilePreview.SetChosenAnim(chosenAnim);
+            tilePreview.SetChosenAnim(new TileBrush(chosenAnim, multiSelect));
 
             UpdateAnimFrames();
         }
@@ -350,7 +400,7 @@ namespace RogueEssence.Dev
                     chosenAnim.Frames.RemoveAt(lbxFrames.SelectedIndex);
                 else
                     chosenAnim.Frames.RemoveAt(lbxFrames.Items.Count - 1);
-                tilePreview.SetChosenAnim(chosenAnim);
+                tilePreview.SetChosenAnim(new TileBrush(chosenAnim, multiSelect));
             }
 
             UpdateAnimFrames();
@@ -363,6 +413,7 @@ namespace RogueEssence.Dev
                 TileLayer chosenAnim = tilePreview.GetChosenAnim();
                 chosenTileset = chosenAnim.Frames[lbxFrames.SelectedIndex].Sheet;
                 currentTileset = chosenTileset;
+                multiSelect = Loc.One;
                 chosenTile = chosenAnim.Frames[lbxFrames.SelectedIndex].TexLoc;
                 RefreshTileSelect();
             }
@@ -373,6 +424,7 @@ namespace RogueEssence.Dev
             if (slbTilesets.SelectedIndex > -1)
             {
                 currentTileset = tileIndices[slbTilesets.InternalIndex];
+                multiSelect = Loc.One;
 
                 RefreshTileset();
             }
@@ -390,24 +442,7 @@ namespace RogueEssence.Dev
             saveTileFileDialog.InitialDirectory = tileDir;
 
 
-            nudFrameLength.Maximum = Int32.MaxValue;
-
-            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
-            {
-                tileIndices.Add(name);
-                slbTilesets.AddItem(name);
-            }
-            chosenTileset = tileIndices[0];
-            currentTileset = tileIndices[0];
-
-            slbTilesets.SelectedIndex = 0;
-
-            RefreshAnimControls();
-
-            tilePreview.SetChosenAnim(new TileLayer(chosenTile, chosenTileset));
-
-            //refresh
-            RefreshTileSelect();
+            UpdateTilesList();
         }
 
 

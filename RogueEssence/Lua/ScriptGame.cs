@@ -408,6 +408,7 @@ namespace RogueEssence.Script
             //remove exception item if there is one...
             if (bypass)
                 character.DequipItem();
+            DataManager.Instance.Save.RegisterMonster(character.BaseForm.Species);
         }
 
         //===================================

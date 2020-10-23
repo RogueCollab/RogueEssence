@@ -127,7 +127,7 @@ namespace RogueEssence.Menu
 
             GameState state = DataManager.Instance.LoadMainGameState();
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
-            DataManager.Instance.SaveMainGameState(state);
+            DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
         }
 
@@ -141,7 +141,7 @@ namespace RogueEssence.Menu
 
             GameState state = DataManager.Instance.LoadMainGameState();
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
-            DataManager.Instance.SaveMainGameState(state);
+            DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
         }
 
@@ -151,7 +151,7 @@ namespace RogueEssence.Menu
 
             GameState state = DataManager.Instance.LoadMainGameState();
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
-            DataManager.Instance.SaveMainGameState(state);
+            DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
         }
 
@@ -230,7 +230,7 @@ namespace RogueEssence.Menu
             state.Save.Rescue.SOS.RescuingTeam = testingMail.RescuingProfile;
             state.Save.Rescue.SOS.RescuingPersonalities = testingMail.RescuingPersonalities;
             state.Save.Rescue.SOS.FinalStatement = testingMail.FinalStatement;
-            DataManager.Instance.SaveMainGameState(state);
+            DataManager.Instance.SaveGameState(state);
 
             //delete the SOS and AOK files if applicable
             if (File.Exists(testingPath))

@@ -20,7 +20,12 @@ namespace RogueEssence.Data
         public int LocHeight;
         public AnimData Anim;
 
-        public EmoteData() { }
+        public EmoteData()
+        {
+            Name = new LocalText();
+            Comment = "";
+            Anim = new AnimData();
+        }
 
         public EmoteData(LocalText name, AnimData anim, int locHeight)
         {

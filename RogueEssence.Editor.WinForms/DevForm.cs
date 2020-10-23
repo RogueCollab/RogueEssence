@@ -13,7 +13,7 @@ namespace RogueEssence.Dev
 {
     public partial class DevForm : Form, IRootEditor
     {
-        public bool Loaded { get; private set; }
+        public bool LoadComplete { get; private set; }
 
         private MapEditor mapEditor;
         private GroundEditor groundEditor;
@@ -204,6 +204,7 @@ namespace RogueEssence.Dev
         {
             groundEditor = new GroundEditor();
             groundEditor.FormClosed += groundEditorClosed;
+            groundEditor.LoadFromCurrentGround();
             groundEditor.Show();
         }
 
@@ -266,6 +267,36 @@ namespace RogueEssence.Dev
         private void btnEditAutoTile_Click(object sender, EventArgs e)
         {
             OpenList(DataManager.DataType.AutoTile, DataManager.Instance.GetAutoTile, () => { return new AutoTileData(); });
+        }
+
+        private void btnEditEmote_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Emote, DataManager.Instance.GetEmote, () => { return new EmoteData(); });
+        }
+
+        private void btnEditElement_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Element, DataManager.Instance.GetElement, () => { return new ElementData(); });
+        }
+
+        private void btnEditGrowthGroup_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.GrowthGroup, DataManager.Instance.GetGrowth, () => { return new GrowthData(); });
+        }
+
+        private void btnEditSkillGroup_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.SkillGroup, DataManager.Instance.GetSkillGroup, () => { return new SkillGroupData(); });
+        }
+
+        private void btnEditRank_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Rank, DataManager.Instance.GetRank, () => { return new RankData(); });
+        }
+
+        private void btnEditSkin_Click(object sender, EventArgs e)
+        {
+            OpenList(DataManager.DataType.Skin, DataManager.Instance.GetSkin, () => { return new SkinData(); });
         }
 
         private delegate string[] GetEntryNames();
@@ -347,7 +378,7 @@ namespace RogueEssence.Dev
 
         private void DevWindow_Load(object sender, EventArgs e)
         {
-            Loaded = true;
+            LoadComplete = true;
         }
 
         private void DevWindow_FormClosed(object sender, FormClosedEventArgs e)

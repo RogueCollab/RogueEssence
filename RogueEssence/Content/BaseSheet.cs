@@ -16,7 +16,6 @@ namespace RogueEssence.Content
         public int Width { get { return baseTexture.Width; } }
         public int Height { get { return baseTexture.Height; } }
 
-        //doesn't work right now.  you've been warned.
         public long MemSize { get; private set; }
 
         public static void InitBase(GraphicsDevice graphicsDevice, Texture2D tex)
@@ -56,7 +55,7 @@ namespace RogueEssence.Content
         {
             using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                Texture2D tex = Texture2D.FromStream(device, stream);
+                Texture2D tex = ImportTex(stream);
                 return new BaseSheet(tex);
             }
         }
@@ -89,9 +88,9 @@ namespace RogueEssence.Content
             }
         }
 
-        public void SaveAsPng(Stream stream)
+        public void Export(Stream stream)
         {
-            baseTexture.SaveAsPng(stream, baseTexture.Width, baseTexture.Height);
+            ExportTex(stream, baseTexture);
         }
 
         public void Draw(SpriteBatch spriteBatch, Vector2 pos, Rectangle? sourceRect)
@@ -144,6 +143,51 @@ namespace RogueEssence.Content
                     return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Multiplies all colors by the alpha, or divides if reversed.
+        /// Used to conform with XNA's particular method of rendering.
+        /// </summary>
+        /// <param name="tex"></param>
+        /// <param name="reverse"></param>
+        private static void premultiply(Texture2D tex, bool reverse)
+        {
+            Color[] color = new Color[tex.Width * tex.Height];
+            tex.GetData<Color>(0, null, color, 0, color.Length);
+            for (int ii = 0; ii < tex.Width * tex.Height; ii++)
+            {
+                if (reverse)
+                    color[ii] = new Color(color[ii].R * 255 / color[ii].A, color[ii].G * 255 / color[ii].A, color[ii].B * 255 / color[ii].A, color[ii].A);
+                else
+                    color[ii] = new Color(color[ii].R * color[ii].A / 255, color[ii].G * color[ii].A / 255, color[ii].B * color[ii].A / 255, color[ii].A);
+            }
+            tex.SetData<Color>(0, null, color, 0, color.Length);
+        }
+
+
+        public static Texture2D ImportTex(Stream stream)
+        {
+            Texture2D tex = Texture2D.FromStream(device, stream);
+            premultiply(tex, false);
+            return tex;
+        }
+
+        public static void ExportTex(Stream stream, Texture2D tex)
+        {
+            Texture2D tempTex = CreateTexCopy(tex);
+            premultiply(tempTex, true);
+            tempTex.SaveAsPng(stream, tempTex.Width, tempTex.Height);
+            tempTex.Dispose();
+        }
+
+        public static Texture2D CreateTexCopy(Texture2D source)
+        {
+            Texture2D copy = new Texture2D(device, source.Width, source.Height);
+            Color[] color = new Color[source.Width * source.Height];
+            source.GetData<Color>(0, null, color, 0, color.Length);
+            copy.SetData<Color>(0, null, color, 0, color.Length);
+            return copy;
         }
 
         public void Blit(BaseSheet source, int srcPx, int srcPy, int srcW, int srcH, int destX, int destY)

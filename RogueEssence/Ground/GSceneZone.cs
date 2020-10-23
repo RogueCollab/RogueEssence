@@ -136,6 +136,12 @@ namespace RogueEssence.Ground
                         Character targetChar = DataManager.Instance.Save.ActiveTeam.Players[charIndex];
                         DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(charIndex);
                         DataManager.Instance.Save.ActiveTeam.Players.Insert(charIndex + 1, targetChar);
+
+                        //update the leader indices
+                        if (DataManager.Instance.Save.ActiveTeam.LeaderIndex == charIndex)
+                            DataManager.Instance.Save.ActiveTeam.LeaderIndex++;
+                        else if (DataManager.Instance.Save.ActiveTeam.LeaderIndex == charIndex + 1)
+                            DataManager.Instance.Save.ActiveTeam.LeaderIndex--;
                         break;
                     }
                 case GameAction.ActionType.SetLeader:

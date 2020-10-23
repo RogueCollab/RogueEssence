@@ -31,6 +31,11 @@ namespace RogueEssence.Dev
             }
         }
 
+        public void SetChosenAnim(TileBrush brush)
+        {
+            SetChosenAnim(brush.Layer);
+        }
+
         public void SetChosenAnim(TileLayer anim)
         {
             lock (drawLock)

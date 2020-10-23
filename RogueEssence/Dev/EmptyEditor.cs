@@ -2,7 +2,7 @@ namespace RogueEssence.Dev
 {
     public class EmptyEditor : IRootEditor
     {
-        public bool Loaded => true;
+        public bool LoadComplete => true;
         public IGroundEditor GroundEditor => null;
         public IMapEditor MapEditor => null;
 

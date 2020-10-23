@@ -10,20 +10,20 @@ namespace RogueEssence.LevelGen
         public SpreadPlanBase SpreadPlan;
         //this is heavily hardcoded
         public SpawnList<RoomGenOption> Spawns;
-        public int PriorityGrid;
-        public int PriorityList;
+        public Priority PriorityGrid;
+        public Priority PriorityList;
 
         public SpreadRoomPostProc()
         {
             Spawns = new SpawnList<RoomGenOption>();
         }
-        public SpreadRoomPostProc(int priorityGrid, int priorityList) : this()
+        public SpreadRoomPostProc(Priority priorityGrid, Priority priorityList) : this()
         {
             PriorityGrid = priorityGrid;
             PriorityList = priorityList;
         }
 
-        public SpreadRoomPostProc(int priorityGrid, int priorityList, SpreadPlanBase plan) : this(priorityGrid, priorityList)
+        public SpreadRoomPostProc(Priority priorityGrid, Priority priorityList, SpreadPlanBase plan) : this(priorityGrid, priorityList)
         {
             SpreadPlan = plan;
         }
@@ -37,7 +37,7 @@ namespace RogueEssence.LevelGen
         }
         public override ZonePostProc Instantiate(ulong seed) { return new SpreadRoomPostProc(this, seed); }
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<int, IGenStep> queue)
+        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
             //find the first postproc that is a GridRoom postproc and add this to its special rooms
             //NOTE: if a room-based generator is not found as the generation step, it will just skip this floor but treat it as though it was placed.

@@ -805,7 +805,7 @@ namespace RogueEssence.Data
 
         }
 
-        public void BeginPlay(string filePath, int zoneId, bool scoreValid)
+        public void BeginPlay(string filePath, int zoneId, bool rogue, bool seeded)
         {
             try
             {
@@ -823,8 +823,10 @@ namespace RogueEssence.Data
                 replayWriter.Write(version.Revision);
                 replayWriter.Write(0L);//pointer to epitaph location, 0 for now
                 replayWriter.Write(0);//final score, 0 for now
+                replayWriter.Write(0);//final result, 0 for now
                 replayWriter.Write(zoneId);
-                replayWriter.Write(scoreValid);
+                replayWriter.Write(rogue);
+                replayWriter.Write(seeded);
                 replayWriter.Write(Save.ActiveTeam.GetReferenceName());
                 replayWriter.Write(Save.StartDate);
                 replayWriter.Write(Save.Rand.FirstSeed);
@@ -863,7 +865,7 @@ namespace RogueEssence.Data
                 {
                     //serialize the entire save data to mark the start of the dungeon
                     replayWriter.Write((byte)ReplayData.ReplayLog.StateLog);
-                    SaveGameState(replayWriter);
+                    SaveMainGameState(replayWriter);
 
                     replayWriter.Flush();
                 }
@@ -886,7 +888,7 @@ namespace RogueEssence.Data
 
                     //serialize the entire save data to mark the start of the dungeon
                     replayWriter.Write((byte)ReplayData.ReplayLog.QuicksaveLog);
-                    SaveGameState(replayWriter);
+                    SaveMainGameState(replayWriter);
 
                     replayWriter.Flush();
                 }
@@ -957,6 +959,8 @@ namespace RogueEssence.Data
                         epitaph.EndDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
 
                         long epitaphPos = replayWriter.BaseStream.Position;
+                        //save the location string
+                        replayWriter.Write(epitaph.Location);
                         //save the epitaph
                         Data.GameProgress.SaveMainData(replayWriter, epitaph);
 
@@ -964,6 +968,7 @@ namespace RogueEssence.Data
                         replayWriter.BaseStream.Seek(sizeof(Int32) * 4, SeekOrigin.Begin);
                         replayWriter.Write(epitaphPos);
                         replayWriter.Write(epitaph.ActiveTeam.GetTotalScore());
+                        replayWriter.Write((int)epitaph.Outcome);
                     }
 
                     replayWriter.Close();
@@ -1029,16 +1034,35 @@ namespace RogueEssence.Data
         public bool FoundRecords(string mainPath)
         {
             string[] files = Directory.GetFiles(mainPath);
-            return files.Length > 0;
+            return ContainsNonTrivialFiles(files);
         }
 
-        public List<RecordHeaderData> GetRecordHeaders(string recordDir)
+        public static bool ContainsNonTrivialFiles(string[] files)
+        {
+            foreach (string file in files)
+            {
+                if (IsNonTrivialFile(file))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsNonTrivialFile(string file)
+        {
+            string bareFile = Path.GetFileName(file);
+            return !bareFile.StartsWith(".");
+        }
+
+        public List<RecordHeaderData> GetRecordHeaders(string recordDir, string ext)
         {
             List<RecordHeaderData> results = new List<RecordHeaderData>();
 
-            string[] files = Directory.GetFiles(recordDir);
+            string[] files = Directory.GetFiles(recordDir, "*" + ext);
             foreach (string file in files)
             {
+                if (!IsNonTrivialFile(file))
+                    continue;
+
                 RecordHeaderData record = GetRecordHeader(file);
                 results.Add(record);
             }
@@ -1057,15 +1081,26 @@ namespace RogueEssence.Data
                         //version string
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                         //epitaph location
-                        reader.ReadInt64();
+                        long endPos = reader.ReadInt64();
                         //read score
                         record.Score = reader.ReadInt32();
+                        //read result
+                        record.Result = (GameProgress.ResultType)reader.ReadInt32();
                         //read zone ID
                         record.Zone = reader.ReadInt32();
-                        record.ScoreValid = reader.ReadBoolean();
+                        record.IsRogue = reader.ReadBoolean();
+                        record.IsSeeded = reader.ReadBoolean();
                         //name, date
                         record.Name = reader.ReadString();
                         record.DateTimeString = reader.ReadString();
+                        record.Seed = reader.ReadUInt64();
+
+                        if (endPos > 0)
+                        {
+                            reader.BaseStream.Seek(endPos, SeekOrigin.Begin);
+                            //read location string
+                            record.LocationString = reader.ReadString();
+                        }
                         return record;
                     }
                 }
@@ -1094,6 +1129,8 @@ namespace RogueEssence.Data
                         if (endPos > 0)
                         {
                             reader.BaseStream.Seek(endPos, SeekOrigin.Begin);
+                            //read location string
+                            reader.ReadString();
                             return Data.GameProgress.LoadMainData(reader);
                         }
                     }
@@ -1125,9 +1162,13 @@ namespace RogueEssence.Data
                             throw new Exception("Cannot quickload a completed file!");
                         //read score
                         reader.ReadInt32();
+                        //read result
+                        reader.ReadInt32();
                         //read zone
                         reader.ReadInt32();
-                        //read score validity
+                        //read rogue mode
+                        reader.ReadBoolean();
+                        //seeded run
                         reader.ReadBoolean();
                         //read name
                         reader.ReadString();
@@ -1337,9 +1378,26 @@ namespace RogueEssence.Data
             GameState state = new GameState();
             state.Save = Save;
             state.Zone = ZoneManager.Instance;
-            SaveMainGameState(state);
+
+            //notify script engine
+            LuaEngine.Instance.SaveData(state.Save);
+
+            SaveGameState(state);
         }
-        public void SaveMainGameState(GameState state)
+
+        public void SaveMainGameState(BinaryWriter writer)
+        {
+            GameState state = new GameState();
+            state.Save = Save;
+            state.Zone = ZoneManager.Instance;
+
+            //notify script engine
+            LuaEngine.Instance.SaveData(state.Save);
+
+            SaveGameState(writer, state);
+        }
+
+        public void SaveGameState(GameState state)
         {
             using (Stream stream = new FileStream(SAVE_FILE_PATH, FileMode.Create, FileAccess.Write, FileShare.None))
             {
@@ -1349,13 +1407,6 @@ namespace RogueEssence.Data
             }
         }
 
-        public void SaveGameState(BinaryWriter writer)
-        {
-            GameState state = new GameState();
-            state.Save = Save;
-            state.Zone = ZoneManager.Instance;
-            SaveGameState(writer, state);
-        }
         public void SaveGameState(BinaryWriter writer, GameState state)
         {
             GameProgress.SaveMainData(writer, state.Save);
@@ -1394,6 +1445,10 @@ namespace RogueEssence.Data
             
         }
 
+        /// <summary>
+        /// Returns game progress and current zone.
+        /// </summary>
+        /// <returns></returns>
         public GameState LoadMainGameState()
         {
             if (File.Exists(SAVE_FILE_PATH))

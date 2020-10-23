@@ -435,7 +435,10 @@ namespace RogueEssence.Dungeon
                 {
                     ShowActions = false;
                     GameManager.Instance.SE("Menu/Skip");
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(ActiveTeam.LeaderIndex)));
+
+                    CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                    if (turnChar.Team == -1)
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
                 }
                 else if (input.JustPressed(FrameInput.InputType.ItemMenu))
                 {
@@ -625,6 +628,7 @@ namespace RogueEssence.Dungeon
                         for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                         {
                             Skill skill = FocusedCharacter.Skills[ii].Element;
+                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive);
                             if (skill.SkillNum > -1)
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
@@ -1374,7 +1378,7 @@ namespace RogueEssence.Dungeon
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", anim.ToString(), FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
             }
             if (ZoneManager.Instance.CurrentMap != null)

@@ -53,7 +53,7 @@ namespace RogueEssence.Data
             if (verbose && Comment != "")
             {
                 result += "  #";
-                result += Comment;
+                result += Comment.ToString();
             }
 
             return result;
