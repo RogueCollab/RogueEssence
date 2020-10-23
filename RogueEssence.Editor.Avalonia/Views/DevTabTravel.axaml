@@ -1,0 +1,37 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.DevTabTravel">
+  <Design.DataContext>
+    <vm:DevTabTravelViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4">
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" >Ground Map:</TextBlock>
+    <ComboBox Margin="4" Name="cbMaps" Grid.Row="1" Grid.ColumnSpan="2"/>
+    <Button Margin="4" Name="btnEnterMap" Command="{Binding btnEnterMap_Click}" Grid.Row="2" Grid.ColumnSpan="2">Enter Ground Map</Button>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="3">Dungeon:</TextBlock>
+    <ComboBox Margin="4" Name="cbZones" SelectionChanged="cbZones_SelectedIndexChanged" Grid.Row="4" Grid.ColumnSpan="2"/>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="5" Grid.Column="0" >Structure:</TextBlock>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="5" Grid.Column="1" >Floor:</TextBlock>
+    <ComboBox Margin="4" Name="cbStructure" SelectionChanged="cbStructure_SelectedIndexChanged" Grid.Row="6" Grid.Column="0" />
+    <ComboBox Margin="4" Name="cbFloor" Grid.Row="6" Grid.Column="1"/>
+    <Button Margin="4" Name="btnEnterDungeon" Command="{Binding btnEnterDungeon_Click}" Grid.Row="7" Grid.ColumnSpan="2" >Enter Dungeon</Button>
+  </Grid>
+</UserControl>

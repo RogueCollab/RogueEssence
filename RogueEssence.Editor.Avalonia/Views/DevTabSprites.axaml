@@ -1,0 +1,34 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.DevTabSprites">
+  <Design.DataContext>
+    <vm:DevTabSpritesViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Button Name="btnEditSprites" Margin="4" Command="{Binding btnEditSprites_Click}" Grid.Row="0" Grid.Column="0" >Char Sprites</Button>
+    <Button Name="btnEditPortraits" Margin="4" Command="{Binding btnEditPortraits_Click}" Grid.Row="0" Grid.Column="1" >Portraits</Button>
+    <Button Name="btnEditParticles" Margin="4" IsEnabled="False" Grid.Row="1" Grid.Column="0" >Particles</Button>
+    <Button Name="btnEditBeams" Margin="4" IsEnabled="False" Grid.Row="1" Grid.Column="1" >Beams</Button>
+    <Button Name="btnEditBGs" Margin="4" IsEnabled="False" Grid.Row="2" Grid.Column="0" >Backgrounds</Button>
+    <Button Name="btnEmotes" Margin="4" IsEnabled="False" Grid.Row="2" Grid.Column="1" >Emotes</Button>
+    <Button Name="btnTileSprites" Margin="4" IsEnabled="False" Grid.Row="3" Grid.Column="0" >Tiles</Button>
+    <Button Name="btnItemSprites" Margin="4" IsEnabled="False" Grid.Row="3" Grid.Column="1" >Items</Button>
+    <Button Name="btnObjectSprites" Margin="4" IsEnabled="False" Grid.Row="4" Grid.Column="0" >Objects</Button>
+  </Grid>
+</UserControl>
