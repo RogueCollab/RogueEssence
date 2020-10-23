@@ -10,6 +10,10 @@ using RogueEssence.Script;
 using RogueEssence;
 using System.Reflection;
 using Microsoft.Xna.Framework;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Logging.Serilog;
+using Avalonia.ReactiveUI;
 #endregion
 
 namespace RogueEssence.Examples
@@ -183,8 +187,12 @@ namespace RogueEssence.Examples
                     DiagManager.Instance.BeginInput();
 
 
-
-                DiagManager.Instance.DevEditor = new EmptyEditor();
+                AppBuilder builder = RogueEssence.Dev.Program.BuildAvaloniaApp();
+                builder.SetupWithoutStarting();
+                DiagManager.Instance.DevEditor = new RogueEssence.Dev.Views.DevForm()
+                {
+                    DataContext = new RogueEssence.Dev.ViewModels.DevFormViewModel()
+                };
 
                 using (GameBase game = new GameBase())
                     game.Run();

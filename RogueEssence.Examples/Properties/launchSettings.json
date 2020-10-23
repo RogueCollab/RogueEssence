@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RogueEssence.Examples": {
+      "commandName": "Project",
+      "commandLineArgs": "-dev"
+    }
+  }
+}
