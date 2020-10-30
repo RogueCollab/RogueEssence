@@ -230,7 +230,7 @@ namespace RogueEssence.Dev
             //Registry.SetValue(DiagManager.REG_PATH, "SkillChoice", cbSkills.SelectedIndex);
             if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && Dungeon.DungeonScene.Instance.FocusedCharacter != null)
             {
-                Character player = Dungeon.DungeonScene.Instance.FocusedCharacter;
+                Character player = DungeonScene.Instance.FocusedCharacter;
                 if (player.BaseSkills[CharData.MAX_SKILL_SLOTS - 1].SkillNum > -1)
                     player.DeleteSkill(0);
                 player.LearnSkill(currentSkill, true);
@@ -241,8 +241,8 @@ namespace RogueEssence.Dev
         protected void GiveSkillFoe()
         {
             //Registry.SetValue(DiagManager.REG_PATH, "SkillChoice", cbSkills.SelectedIndex);
-            Character player = Dungeon.DungeonScene.Instance.FocusedCharacter;
-            foreach (Character character in Dungeon.ZoneManager.Instance.CurrentMap.IterateCharacters())
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
                 if (DungeonScene.Instance.GetMatchup(player, character) == Alignment.Foe)
                 {
@@ -404,7 +404,7 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < zone.Structures.Count; ii++)
                 names.Add(ii.ToString()/* + " - " + zone.Structures[ii].Name.ToLocal()*/);
             structure_names = names.ToArray();
-            currentStructure = Math.Clamp(currentStructure, 0, structure_names.Length-1);
+            currentStructure = Math.Clamp(currentStructure, 0, Math.Max(0, structure_names.Length-1));
             UpdateStructure();
         }
 
@@ -413,13 +413,16 @@ namespace RogueEssence.Dev
             ZoneData zone = DataManager.Instance.GetZone(currentDungeon);
             List<string> names = new List<string>();
             floorIDs = new List<int>();
-            foreach (int ii in zone.Structures[currentStructure].GetFloorIDs())
+            if (zone.Structures.Count > 0)
             {
-                names.Add(ii.ToString()/* + " - " + zone.Structures[cbStructure.SelectedIndex].Floors[ii].Name.ToLocal()*/);
-                floorIDs.Add(ii);
+                foreach (int ii in zone.Structures[currentStructure].GetFloorIDs())
+                {
+                    names.Add(ii.ToString()/* + " - " + zone.Structures[cbStructure.SelectedIndex].Floors[ii].Name.ToLocal()*/);
+                    floorIDs.Add(ii);
+                }
             }
             floor_names = names.ToArray();
-            currentFloor = Math.Clamp(currentFloor, 0, floor_names.Length - 1);
+            currentFloor = Math.Clamp(currentFloor, 0, Math.Max(0, floor_names.Length - 1));
         }
 
         private void UpdateSprite(MonsterID id)
