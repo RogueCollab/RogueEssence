@@ -156,7 +156,7 @@ namespace RogueEssence
                         if (DiagManager.Instance.DevMode)
                         {
 
-                            DiagManager.Instance.DevEditor.Load();
+                            DiagManager.Instance.DevEditor.Load(this);
                             while (!DiagManager.Instance.DevEditor.LoadComplete)
                                 Thread.Sleep(10);
 
@@ -179,36 +179,38 @@ namespace RogueEssence
 
                 if (CurrentPhase == LoadPhase.Ready)
                 {
-                try
-                {
-                    SoundManager.NewFrame();
-                    GraphicsManager.Update();
-
-                    FrameInput input = new FrameInput();
-                    if (DiagManager.Instance.ActiveDebugReplay != null && DiagManager.Instance.DebugReplayIndex < DiagManager.Instance.ActiveDebugReplay.Count)
+                    try
                     {
-                        input = DiagManager.Instance.ActiveDebugReplay[DiagManager.Instance.DebugReplayIndex];
-                        DiagManager.Instance.DebugReplayIndex++;
-                        if (IsActive)
-                            input.ReadDevInput(Keyboard.GetState(), Mouse.GetState());
+                        SoundManager.NewFrame();
+                        GraphicsManager.Update();
+
+                        FrameInput input = new FrameInput();
+                        DiagManager.Instance.DevEditor.Update(gameTime);
+                        if (DiagManager.Instance.ActiveDebugReplay != null && DiagManager.Instance.DebugReplayIndex < DiagManager.Instance.ActiveDebugReplay.Count)
+                        {
+                            input = DiagManager.Instance.ActiveDebugReplay[DiagManager.Instance.DebugReplayIndex];
+                            DiagManager.Instance.DebugReplayIndex++;
+                            if (IsActive)
+                                input.ReadDevInput(Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
+                        }
+                        else if (IsActive) //set this frame's input
+                            input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
+
+                        if (DiagManager.Instance.ActiveDebugReplay == null)
+                            DiagManager.Instance.LogInput(input);
+                        DiagManager.Instance.GamePadActive = input.HasGamePad;
+
+                        GameManager.Instance.SetMetaInput(input);
+                        GameManager.Instance.UpdateMeta();
+                        GameManager.Instance.SetFrameInput(input);
+                        GameManager.Instance.Update();
+                        LuaEngine.Instance.Update(gameTime);
+
                     }
-                    else if (IsActive) //set this frame's input
-                        input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState());
-
-                    if (DiagManager.Instance.ActiveDebugReplay == null)
-                        DiagManager.Instance.LogInput(input);
-                    DiagManager.Instance.GamePadActive = input.HasGamePad;
-                    GameManager.Instance.SetMetaInput(input);
-                    GameManager.Instance.UpdateMeta();
-                    GameManager.Instance.SetFrameInput(input);
-                    GameManager.Instance.Update();
-                    LuaEngine.Instance.Update(gameTime);
-
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
 
                     firstUpdate = true;//allow drawing now
                 }
@@ -262,7 +264,7 @@ namespace RogueEssence
                 {
                     try
                     {
-                    GameManager.Instance.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds);
+                        GameManager.Instance.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds);
 
                     }
                     catch (Exception ex)
@@ -278,6 +280,8 @@ namespace RogueEssence
                         }
                     }
 
+
+                    DiagManager.Instance.DevEditor.Draw();
                 }
             }
 

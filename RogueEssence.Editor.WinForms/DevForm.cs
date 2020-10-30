@@ -8,6 +8,7 @@ using RogueEssence.Ground;
 using RogueEssence.Script;
 using Microsoft.Win32;
 using RogueEssence.Menu;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Dev
 {
@@ -20,6 +21,9 @@ namespace RogueEssence.Dev
 
         public IMapEditor MapEditor => mapEditor;
         public IGroundEditor GroundEditor => groundEditor;
+        public bool AteMouse { get { return false; } }
+        public bool AteKeyboard { get { return false; } }
+
 
         public DevForm()
         {
@@ -28,7 +32,7 @@ namespace RogueEssence.Dev
             InitializeComponent();
         }
 
-        void IRootEditor.Load()
+        void IRootEditor.Load(GameBase game)
         {
             string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
             for (int ii = 0; ii < item_names.Length; ii++)
@@ -107,6 +111,9 @@ namespace RogueEssence.Dev
 
             Show();
         }
+
+        public void Update(GameTime gameTime) { }
+        public void Draw() { }
 
         private void chkShowSprites_CheckedChanged(object sender, EventArgs e)
         {

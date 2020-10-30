@@ -951,7 +951,7 @@ namespace RogueEssence
             if (ShowDebug)
             {
                 spriteBatch.End();
-                spriteBatch.Begin();
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null);
                 DrawDebug(spriteBatch, updateTime);
             }
             spriteBatch.End();

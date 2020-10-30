@@ -81,7 +81,7 @@ namespace RogueEssence
             Direction = Dir8.None;
         }
 
-        public FrameInput(GamePadState gamePad, KeyboardState keyboard, MouseState mouse)
+        public FrameInput(GamePadState gamePad, KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive)
         {
             Active = true;
             BaseGamepadState = gamePad;
@@ -108,36 +108,39 @@ namespace RogueEssence
                     dirLoc = dirLoc + Dir4.Right.GetLoc();
             }
 
-            if (dirLoc == Loc.Zero)
+            if (keyActive)
             {
-                for (int ii = 0; ii < DiagManager.Instance.CurSettings.DirKeys.Length; ii++)
+                if (dirLoc == Loc.Zero)
                 {
-                    if (keyboard.IsKeyDown(DiagManager.Instance.CurSettings.DirKeys[ii]))
-                        dirLoc = dirLoc + ((Dir4)ii).GetLoc();
+                    for (int ii = 0; ii < DiagManager.Instance.CurSettings.DirKeys.Length; ii++)
+                    {
+                        if (keyboard.IsKeyDown(DiagManager.Instance.CurSettings.DirKeys[ii]))
+                            dirLoc = dirLoc + ((Dir4)ii).GetLoc();
+                    }
                 }
-            }
-
-            if (dirLoc == Loc.Zero)
-            {
-                if (keyboard.IsKeyDown(Keys.NumPad2))
-                    dirLoc = dirLoc + Dir8.Down.GetLoc();
-                if (keyboard.IsKeyDown(Keys.NumPad4))
-                    dirLoc = dirLoc + Dir8.Left.GetLoc();
-                if (keyboard.IsKeyDown(Keys.NumPad8))
-                    dirLoc = dirLoc + Dir8.Up.GetLoc();
-                if (keyboard.IsKeyDown(Keys.NumPad6))
-                    dirLoc = dirLoc + Dir8.Right.GetLoc();
 
                 if (dirLoc == Loc.Zero)
                 {
-                    if (keyboard.IsKeyDown(Keys.NumPad3) || keyboard.IsKeyDown(Keys.NumPad1))
+                    if (keyboard.IsKeyDown(Keys.NumPad2))
                         dirLoc = dirLoc + Dir8.Down.GetLoc();
-                    if (keyboard.IsKeyDown(Keys.NumPad1) || keyboard.IsKeyDown(Keys.NumPad7))
+                    if (keyboard.IsKeyDown(Keys.NumPad4))
                         dirLoc = dirLoc + Dir8.Left.GetLoc();
-                    if (keyboard.IsKeyDown(Keys.NumPad7) || keyboard.IsKeyDown(Keys.NumPad9))
+                    if (keyboard.IsKeyDown(Keys.NumPad8))
                         dirLoc = dirLoc + Dir8.Up.GetLoc();
-                    if (keyboard.IsKeyDown(Keys.NumPad9) || keyboard.IsKeyDown(Keys.NumPad3))
+                    if (keyboard.IsKeyDown(Keys.NumPad6))
                         dirLoc = dirLoc + Dir8.Right.GetLoc();
+
+                    if (dirLoc == Loc.Zero)
+                    {
+                        if (keyboard.IsKeyDown(Keys.NumPad3) || keyboard.IsKeyDown(Keys.NumPad1))
+                            dirLoc = dirLoc + Dir8.Down.GetLoc();
+                        if (keyboard.IsKeyDown(Keys.NumPad1) || keyboard.IsKeyDown(Keys.NumPad7))
+                            dirLoc = dirLoc + Dir8.Left.GetLoc();
+                        if (keyboard.IsKeyDown(Keys.NumPad7) || keyboard.IsKeyDown(Keys.NumPad9))
+                            dirLoc = dirLoc + Dir8.Up.GetLoc();
+                        if (keyboard.IsKeyDown(Keys.NumPad9) || keyboard.IsKeyDown(Keys.NumPad3))
+                            dirLoc = dirLoc + Dir8.Right.GetLoc();
+                    }
                 }
             }
 
@@ -151,39 +154,50 @@ namespace RogueEssence
                     inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurSettings.ActionButtons[ii]);
             }
 
-            for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
-                inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
+            if (keyActive)
+            {
+                for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
+                    inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
 
-            inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
-            inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
+                inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
+                inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
 
-            inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);
-            inputStates[(int)InputType.RightMouse] = (mouse.RightButton == ButtonState.Pressed);
+                inputStates[(int)InputType.MuteMusic] = keyboard.IsKeyDown(Keys.F11);
+                inputStates[(int)InputType.ShowDebug] = keyboard.IsKeyDown(Keys.F1);
+            }
 
             MouseLoc = new Loc(mouse.X, mouse.Y);
 
-            inputStates[(int)InputType.MuteMusic] = keyboard.IsKeyDown(Keys.F11);
-            inputStates[(int)InputType.ShowDebug] = keyboard.IsKeyDown(Keys.F1);
+            if (mouseActive)
+            {
+                inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);
+                inputStates[(int)InputType.RightMouse] = (mouse.RightButton == ButtonState.Pressed);
+            }
 
-            ReadDevInput(keyboard, mouse);
+            ReadDevInput(keyboard, mouse, keyActive, mouseActive);
         }
 
-        public void ReadDevInput(KeyboardState keyboard, MouseState mouse)
+        public void ReadDevInput(KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive)
         {
             if (DiagManager.Instance.DevMode)
             {
-                MouseWheel = mouse.ScrollWheelValue;
-                inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
+                if (mouseActive)
+                    MouseWheel = mouse.ScrollWheelValue;
 
-                inputStates[(int)InputType.Pause] |= keyboard.IsKeyDown(Keys.F2);
-                inputStates[(int)InputType.AdvanceFrame] |= keyboard.IsKeyDown(Keys.F3);
-                inputStates[(int)InputType.Test] |= keyboard.IsKeyDown(Keys.F4);
-                inputStates[(int)InputType.SpeedDown] |= keyboard.IsKeyDown(Keys.F5);
-                inputStates[(int)InputType.SpeedUp] |= keyboard.IsKeyDown(Keys.F6);
-                //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F7);
-                //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F8);
-                inputStates[(int)InputType.SeeAll] |= keyboard.IsKeyDown(Keys.F9);
-                inputStates[(int)InputType.Restart] |= keyboard.IsKeyDown(Keys.F12);
+                if (keyActive)
+                {
+                    inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
+
+                    inputStates[(int)InputType.Pause] |= keyboard.IsKeyDown(Keys.F2);
+                    inputStates[(int)InputType.AdvanceFrame] |= keyboard.IsKeyDown(Keys.F3);
+                    inputStates[(int)InputType.Test] |= keyboard.IsKeyDown(Keys.F4);
+                    inputStates[(int)InputType.SpeedDown] |= keyboard.IsKeyDown(Keys.F5);
+                    inputStates[(int)InputType.SpeedUp] |= keyboard.IsKeyDown(Keys.F6);
+                    //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F7);
+                    //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F8);
+                    inputStates[(int)InputType.SeeAll] |= keyboard.IsKeyDown(Keys.F9);
+                    inputStates[(int)InputType.Restart] |= keyboard.IsKeyDown(Keys.F12);
+                }
             }
         }
 
