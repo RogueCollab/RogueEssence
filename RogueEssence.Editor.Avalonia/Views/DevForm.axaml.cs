@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using System;
 using RogueEssence;
 using RogueEssence.Dev;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Dev.Views
 {
@@ -18,6 +19,9 @@ namespace RogueEssence.Dev.Views
 
         public IMapEditor MapEditor => null;
         public IGroundEditor GroundEditor => null;
+        public bool AteMouse { get { return false; } }
+        public bool AteKeyboard { get { return false; } }
+
 
 
 
@@ -35,11 +39,13 @@ namespace RogueEssence.Dev.Views
         }
 
 
-        void IRootEditor.Load()
+        void IRootEditor.Load(GameBase game)
         {
 
             Show();
         }
+        public void Update(GameTime gameTime) { }
+        public void Draw() { }
 
         public void OpenGround()
         {
