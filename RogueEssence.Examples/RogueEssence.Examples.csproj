@@ -23,8 +23,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\RogueEssence.Editor.Imgui\RogueEssence.Editor.Imgui.csproj" />
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
-    <ProjectReference Include="..\RogueEssence.Editor.Avalonia\RogueEssence.Editor.Avalonia.csproj" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
