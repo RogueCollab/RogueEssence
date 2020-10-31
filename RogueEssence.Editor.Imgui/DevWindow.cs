@@ -20,8 +20,8 @@ namespace RogueEssence.Dev
         public IGroundEditor GroundEditor => null;
         public IMapEditor MapEditor => null;
 
-        public bool AteMouse { get { return ImGui.GetIO().WantCaptureMouse; } }
-        public bool AteKeyboard { get { return ImGui.GetIO().WantCaptureKeyboard; } }
+        public bool AteMouse { get { return LoadComplete && ImGui.GetIO().WantCaptureMouse; } }
+        public bool AteKeyboard { get { return LoadComplete && ImGui.GetIO().WantCaptureKeyboard; } }
 
         private ImGuiRenderer _imGuiRenderer;
 
