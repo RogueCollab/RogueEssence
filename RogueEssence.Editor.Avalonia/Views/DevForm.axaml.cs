@@ -68,11 +68,12 @@ namespace RogueEssence.Dev.Views
 
         public void Window_Loaded(object sender, EventArgs e)
         {
-            Thread thread = new Thread(LoadGame);
-            thread.IsBackground = true;
-            thread.Start();
-
+            //Thread thread = new Thread(LoadGame);
+            //thread.IsBackground = true;
+            //thread.Start();
+            Dispatcher.UIThread.Post(LoadGame);
             LoadComplete = true;
+            //LoadGame();
         }
 
         public void Window_Closed(object sender, EventArgs e)
