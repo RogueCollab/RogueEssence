@@ -43,7 +43,8 @@ namespace RogueEssence.Dev.Views
         void IRootEditor.Load(GameBase game)
         {
 
-            Show();
+
+            LoadComplete = true;
         }
         public void Update(GameTime gameTime) { }
         public void Draw() { }
@@ -61,11 +62,12 @@ namespace RogueEssence.Dev.Views
 
         public void Window_Loaded(object sender, EventArgs e)
         {
+            if (Design.IsDesignMode)
+                return;
             //Thread thread = new Thread(LoadGame);
             //thread.IsBackground = true;
             //thread.Start();
-            Dispatcher.UIThread.Post(LoadGame);
-            LoadComplete = true;
+            Dispatcher.UIThread.Post(LoadGame, DispatcherPriority.Background);
             //LoadGame();
         }
 
