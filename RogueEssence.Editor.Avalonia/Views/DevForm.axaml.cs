@@ -7,6 +7,7 @@ using System;
 using RogueEssence;
 using RogueEssence.Dev;
 using Microsoft.Xna.Framework;
+using System.Threading;
 
 namespace RogueEssence.Dev.Views
 {
@@ -38,12 +39,19 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        void LoadGame()
+        {
+            DiagManager.Instance.DevEditor = this;
+            using (GameBase game = new GameBase())
+                game.Run();
+        }
 
         void IRootEditor.Load(GameBase game)
         {
 
-            Show();
         }
+
+
         public void Update(GameTime gameTime) { }
         public void Draw() { }
 
@@ -60,6 +68,10 @@ namespace RogueEssence.Dev.Views
 
         public void Window_Loaded(object sender, EventArgs e)
         {
+            Thread thread = new Thread(LoadGame);
+            thread.IsBackground = true;
+            thread.Start();
+
             LoadComplete = true;
         }
 
