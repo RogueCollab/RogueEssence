@@ -190,11 +190,12 @@ namespace RogueEssence.Examples
 
                 if (DiagManager.Instance.DevMode)
                 {
-                    AppBuilder builder = RogueEssence.Dev.Program.BuildAvaloniaApp();
+                    AppBuilder builder = Dev.Program.BuildAvaloniaApp();
                     builder.StartWithClassicDesktopLifetime(args);
                 }
                 else
                 {
+                    DiagManager.Instance.DevEditor = new EmptyEditor();
                     using (GameBase game = new GameBase())
                         game.Run();
                 }
