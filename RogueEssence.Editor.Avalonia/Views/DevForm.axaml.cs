@@ -39,6 +39,12 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        void LoadGame()
+        {
+            DiagManager.Instance.DevEditor = this;
+            using (GameBase game = new GameBase())
+                game.Run();
+        }
 
         void IRootEditor.Load(GameBase game)
         {
@@ -46,6 +52,8 @@ namespace RogueEssence.Dev.Views
 
             LoadComplete = true;
         }
+
+
         public void Update(GameTime gameTime) { }
         public void Draw() { }
 
