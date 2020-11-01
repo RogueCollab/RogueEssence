@@ -186,8 +186,6 @@ namespace RogueEssence.Examples
                 if (DiagManager.Instance.ActiveDebugReplay == null && logInput)
                     DiagManager.Instance.BeginInput();
 
-                //DiagManager.Instance.DevEditor = new DevWindow();
-
                 if (DiagManager.Instance.DevMode)
                 {
                     AppBuilder builder = Dev.Program.BuildAvaloniaApp();

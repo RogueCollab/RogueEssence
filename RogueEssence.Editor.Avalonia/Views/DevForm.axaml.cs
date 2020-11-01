@@ -7,7 +7,7 @@ using System;
 using RogueEssence;
 using RogueEssence.Dev;
 using Microsoft.Xna.Framework;
-using System.Threading;
+using Avalonia.Threading;
 
 namespace RogueEssence.Dev.Views
 {
@@ -49,6 +49,8 @@ namespace RogueEssence.Dev.Views
         void IRootEditor.Load(GameBase game)
         {
 
+
+            LoadComplete = true;
         }
 
 
@@ -68,11 +70,12 @@ namespace RogueEssence.Dev.Views
 
         public void Window_Loaded(object sender, EventArgs e)
         {
+            if (Design.IsDesignMode)
+                return;
             //Thread thread = new Thread(LoadGame);
             //thread.IsBackground = true;
             //thread.Start();
-            Dispatcher.UIThread.Post(LoadGame);
-            LoadComplete = true;
+            Dispatcher.UIThread.Post(LoadGame, DispatcherPriority.Background);
             //LoadGame();
         }
 
