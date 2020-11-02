@@ -90,74 +90,89 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref chosenAnim, value);
-                GraphicsManager.GlobalIdle = chosenAnim;
+                lock (GameBase.lockObj)
+                    GraphicsManager.GlobalIdle = chosenAnim;
             }
         }
 
         public void btnRollSkill_Click()
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+            lock (GameBase.lockObj)
             {
-                Character character = DungeonScene.Instance.FocusedCharacter;
-                BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
+                if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                {
+                    Character character = DungeonScene.Instance.FocusedCharacter;
+                    BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                while (character.BaseSkills[0].SkillNum > -1)
-                    character.DeleteSkill(0);
-                List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                foreach (int skill in final_skills)
-                    character.LearnSkill(skill, true);
+                    while (character.BaseSkills[0].SkillNum > -1)
+                        character.DeleteSkill(0);
+                    List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
+                    foreach (int skill in final_skills)
+                        character.LearnSkill(skill, true);
 
-                DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
+                    DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
+                }
             }
         }
 
         bool updating;
         private void SpeciesChanged()
         {
+            bool prevUpdate = updating;
             updating = true;
-            int tempForm = chosenForm;
-            Forms.Clear();
-            MonsterData monster = DataManager.Instance.GetMonster(chosenMonster);
-            for (int ii = 0; ii < monster.Forms.Count; ii++)
-                Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
 
-            ChosenForm = Math.Clamp(tempForm, 0, Forms.Count - 1);
-            updating = false;
+            lock (GameBase.lockObj)
+            {
+                int tempForm = chosenForm;
+                Forms.Clear();
+                MonsterData monster = DataManager.Instance.GetMonster(chosenMonster);
+                for (int ii = 0; ii < monster.Forms.Count; ii++)
+                    Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
+
+                ChosenForm = Math.Clamp(tempForm, 0, Forms.Count - 1);
+            }
+
+            updating = prevUpdate;
             UpdateSprite();
         }
 
         public void UpdateSpecies(MonsterID id, int level)
         {
+            bool prevUpdate = updating;
             updating = true;
 
-            if (ChosenMonster != id.Species)
-                ChosenMonster = id.Species;
-            if (ChosenForm != id.Form)
-                ChosenForm = id.Form;
-            if (ChosenSkin != id.Skin)
-                ChosenSkin = id.Skin;
-            if (ChosenGender != (int)id.Gender)
-                ChosenGender = (int)id.Gender;
+            ChosenMonster = id.Species;
+            ChosenForm = id.Form;
+            ChosenSkin = id.Skin;
+            ChosenGender = (int)id.Gender;
 
             Level = level;
 
-            updating = false;
+            updating = prevUpdate;
         }
 
         private void UpdateSprite()
         {
             if (updating)
                 return;
-            if (GameManager.Instance.IsInGame())
-                DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+
+            lock (GameBase.lockObj)
+            {
+                if (GameManager.Instance.IsInGame())
+                    DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+            }
         }
 
         private void UpdateLevel()
         {
             if (updating)
                 return;
-            if (GameManager.Instance.IsInGame())
-                DungeonScene.Instance.FocusedCharacter.Level = level;
+
+            lock (GameBase.lockObj)
+            {
+                if (GameManager.Instance.IsInGame())
+                    DungeonScene.Instance.FocusedCharacter.Level = level;
+            }
         }
     }
 }

@@ -17,14 +17,5 @@ namespace RogueEssence.Dev.Views
         }
 
 
-        public void cbZones_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        public void cbStructure_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }
