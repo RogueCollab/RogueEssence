@@ -1,0 +1,17 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="RogueEssence.Dev.Views.DataListForm"
+        Title="Dev Controls" Height="260" Width="200">
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+        <vm:DataListFormViewModel/>
+    </Design.DataContext>
+  <Grid>
+    <views:SearchListBox DataContext="{Binding SearchList}"/>
+  </Grid>
+</Window>

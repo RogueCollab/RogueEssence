@@ -11,4 +11,12 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.11" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\DataListForm\DataListForm.axaml.cs">
+      <DependentUpon>DataListForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DataListForm\SearchListBox.axaml.cs">
+      <DependentUpon>SearchListBox.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
