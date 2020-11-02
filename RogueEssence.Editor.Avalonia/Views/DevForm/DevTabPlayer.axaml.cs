@@ -17,12 +17,5 @@ namespace RogueEssence.Dev.Views
         }
 
 
-
-        public void nudLevel_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
-        {
-            if (GameManager.Instance.IsInGame())
-                Dungeon.DungeonScene.Instance.FocusedCharacter.Level = (int)e.NewValue;
-        }
-
     }
 }

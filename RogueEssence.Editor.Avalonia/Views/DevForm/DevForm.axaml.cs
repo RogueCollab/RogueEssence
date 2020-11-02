@@ -46,14 +46,15 @@ namespace RogueEssence.Dev.Views
         {
             ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
-            //devViewModel.Game.HideChars = DataManager.Instance.HideChars;
-            //devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
+            devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
+            devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
 
             string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
             for (int ii = 0; ii < skill_names.Length; ii++)
                 devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
             //regVal = Registry.GetValue(DiagManager.REG_PATH, "SkillChoice", 0);
             //cbSkills.SelectedIndex = Math.Min(cbSkills.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenSkill = -1;
             devViewModel.Game.ChosenSkill = 0;
 
             string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
@@ -61,6 +62,7 @@ namespace RogueEssence.Dev.Views
                 devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
             //regVal = Registry.GetValue(DiagManager.REG_PATH, "IntrinsicChoice", 0);
             //cbIntrinsics.SelectedIndex = Math.Min(cbIntrinsics.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenIntrinsic = -1;
             devViewModel.Game.ChosenIntrinsic = 0;
 
             string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
@@ -68,6 +70,7 @@ namespace RogueEssence.Dev.Views
                 devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
             //regVal = Registry.GetValue(DiagManager.REG_PATH, "StatusChoice", 0);
             //cbStatus.SelectedIndex = Math.Min(cbStatus.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenStatus = -1;
             devViewModel.Game.ChosenStatus = 0;
 
             string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
@@ -75,6 +78,7 @@ namespace RogueEssence.Dev.Views
                 devViewModel.Game.Items.Add(ii.ToString("D3") + ": " + item_names[ii]);
             //object regVal = Registry.GetValue(DiagManager.REG_PATH, "ItemChoice", 0);
             //cbSpawnItem.SelectedIndex = Math.Min(cbSpawnItem.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenItem = -1;
             devViewModel.Game.ChosenItem = 0;
 
             string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();

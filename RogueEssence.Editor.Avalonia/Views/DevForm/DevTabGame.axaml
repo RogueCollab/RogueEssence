@@ -25,8 +25,8 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <CheckBox Name="chkObject" Margin="4" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">Hide Objects</CheckBox>
-      <CheckBox Name="chkSprites" Margin="4" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1">Hide Sprites</CheckBox>
+      <CheckBox Name="chkObjects" Margin="4" IsChecked="{Binding HideObjects}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">Hide Objects</CheckBox>
+      <CheckBox Name="chkSprites" Margin="4" IsChecked="{Binding HideSprites}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1">Hide Sprites</CheckBox>
       <Button Name="btnSpawnClone" Command="{Binding btnSpawn_Click}" Margin="4" Grid.Row="1" Grid.Column="0">Create Clone</Button>
       <Button Name="btnDespawnAll" Command="{Binding btnDespawn_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Clear All Foes</Button>
       <ComboBox Name="cbSkills" Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill}" Margin="4" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>

@@ -287,7 +287,8 @@ namespace RogueEssence
 
         public bool IsInGame()
         {
-            return (ZoneManager.Instance.CurrentZone != null && DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null);
+            return (ZoneManager.Instance.CurrentZone != null && ZoneManager.Instance.CurrentMap != null &&
+                DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null);
         }
 
         public void Begin()
