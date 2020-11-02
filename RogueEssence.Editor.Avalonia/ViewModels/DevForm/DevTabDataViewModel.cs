@@ -25,7 +25,11 @@ namespace RogueEssence.Dev.ViewModels
         }
         public void btnEditZone_Click()
         {
-
+            Views.DataListForm dataListForm = new Views.DataListForm
+            {
+                DataContext = new DataListFormViewModel(),
+            };
+            dataListForm.Show();
         }
         public void btnEditStatuses_Click()
         {

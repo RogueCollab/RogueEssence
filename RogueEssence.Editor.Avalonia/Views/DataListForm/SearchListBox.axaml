@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.SearchListBox">
+  <Design.DataContext>
+    <vm:SearchListBoxViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="40"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="40"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Text="{Binding DataName}" Grid.Row="0" Grid.Column="0"></TextBlock>
+    <TextBox Name="txtSearch" TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding SearchText}" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
+    <ListBox Name="lbxItems" Items="{Binding SearchItems}" Margin="4" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
+    <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="3" Grid.Column="0" >Add</Button>
+    <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="3" Grid.Column="1" >Delete</Button>
+  </Grid>
+</UserControl>
