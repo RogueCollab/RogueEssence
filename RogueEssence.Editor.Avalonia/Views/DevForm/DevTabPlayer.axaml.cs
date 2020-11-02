@@ -20,32 +20,9 @@ namespace RogueEssence.Dev.Views
 
         public void nudLevel_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
         {
-
+            if (GameManager.Instance.IsInGame())
+                Dungeon.DungeonScene.Instance.FocusedCharacter.Level = (int)e.NewValue;
         }
 
-        public void cbDexNum_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        public void cbForm_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        public void cbSkin_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        public void cbGender_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        public void cbAnim_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }
