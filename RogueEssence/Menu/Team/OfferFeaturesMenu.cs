@@ -63,7 +63,7 @@ namespace RogueEssence.Menu
 
             Portrait.Speaker = CurrentChar.BaseForm;
             Nickname.Text = CurrentChar.BaseName;
-            Name.Text = CurrentChar.FullFormName;
+            Name.Text = CharData.GetFullFormName(CurrentChar.BaseForm);
 
             BaseMonsterForm formData = DataManager.Instance.GetMonster(CurrentChar.BaseForm.Species).Forms[CurrentChar.BaseForm.Form];
 

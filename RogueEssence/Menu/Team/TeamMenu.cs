@@ -38,7 +38,8 @@ namespace RogueEssence.Menu
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 int teamIndex = team.Count;
-                bool disabled = (sendHome && DataManager.Instance.Save.ActiveTeam.LeaderIndex == team.Count);//disable the leader choice in send home mode
+                CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                bool disabled = (sendHome && turnChar.Char == team.Count);//disable the current turn choice in send home mode
                 if (checkSkin)
                     disabled |= DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead;
 

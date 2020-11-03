@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
                 BaseMonsterForm formEntry = dexEntry.Forms[character.BaseForm.Form];
                 Portraits[ii] = new SpeakerPortrait(character.BaseForm, new EmoteStyle(0),
                     Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), false);
-                string speciesText = character.BaseName + " / " + character.FullFormName;
+                string speciesText = character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm);
                 Stats[ii * 4] = new MenuText(speciesText,
                     Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 Stats[ii * 4 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level),

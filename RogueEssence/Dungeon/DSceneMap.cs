@@ -267,7 +267,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> ProcessPickup(Character character, ActionResult result)
         {
             Team memberTeam = character.MemberTeam;
-            if (!(memberTeam is ExplorerTeam) || ((ExplorerTeam)memberTeam).GetInvCount() >= ((ExplorerTeam)memberTeam).GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+            if (!(memberTeam is ExplorerTeam))
                 yield break;
 
             if (character.AttackOnly)
