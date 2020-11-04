@@ -27,22 +27,19 @@ namespace RogueEssence.Dungeon
         public string OriginalUUID;
         public string OriginalTeam;
 
-        public string FullFormName
+        public static string GetFullFormName(MonsterID id)
         {
-            get
+            string name = DataManager.Instance.GetMonster(id.Species).Name.ToLocal();
+            SkinData data = DataManager.Instance.GetSkin(id.Skin);
+            if (data.Symbol != '\0')
+                name = data.Symbol + name;
+            if (id.Gender != Gender.Genderless)
             {
-                string name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
-                SkinData data = DataManager.Instance.GetSkin(BaseForm.Skin);
-                if (data.Symbol != '\0')
-                    name = data.Symbol + name;
-                if (BaseForm.Gender != Gender.Genderless)
-                {
-                    char genderChar = (BaseForm.Gender == Gender.Male) ? '\u2642' : '\u2640';
-                    if (name[name.Length - 1] != genderChar)
-                        name += genderChar;
-                }
-                return name;
+                char genderChar = (id.Gender == Gender.Male) ? '\u2642' : '\u2640';
+                if (name[name.Length - 1] != genderChar)
+                    name += genderChar;
             }
+            return name;
         }
 
 

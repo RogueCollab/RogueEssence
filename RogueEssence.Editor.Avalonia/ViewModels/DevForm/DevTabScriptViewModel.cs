@@ -9,7 +9,10 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnReloadScripts_Click()
         {
+            lock (GameBase.lockObj)
+            {
 
+            }
         }
 
     }

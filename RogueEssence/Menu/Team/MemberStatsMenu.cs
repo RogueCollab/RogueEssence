@@ -65,7 +65,7 @@ namespace RogueEssence.Menu
 
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
                 Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
-            string speciesText = player.BaseName + " / " + player.FullFormName;
+            string speciesText = player.BaseName + " / " + CharData.GetFullFormName(player.BaseForm);
             Name = new MenuText(speciesText, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET));
 
             ElementData element1 = DataManager.Instance.GetElement(player.Element1);

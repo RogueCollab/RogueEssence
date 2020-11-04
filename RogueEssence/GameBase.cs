@@ -29,7 +29,7 @@ namespace RogueEssence
         }
 
         public static LoadPhase CurrentPhase;
-        
+        public static object lockObj = new object();
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -179,33 +179,35 @@ namespace RogueEssence
 
                 if (CurrentPhase == LoadPhase.Ready)
                 {
+                    DiagManager.Instance.DevEditor.Update(gameTime);
                     try
                     {
-                        SoundManager.NewFrame();
-                        GraphicsManager.Update();
-
-                        FrameInput input = new FrameInput();
-                        DiagManager.Instance.DevEditor.Update(gameTime);
-                        if (DiagManager.Instance.ActiveDebugReplay != null && DiagManager.Instance.DebugReplayIndex < DiagManager.Instance.ActiveDebugReplay.Count)
+                        lock (lockObj)
                         {
-                            input = DiagManager.Instance.ActiveDebugReplay[DiagManager.Instance.DebugReplayIndex];
-                            DiagManager.Instance.DebugReplayIndex++;
-                            if (IsActive)
-                                input.ReadDevInput(Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
+                            SoundManager.NewFrame();
+                            GraphicsManager.Update();
+
+                            FrameInput input = new FrameInput();
+                            if (DiagManager.Instance.ActiveDebugReplay != null && DiagManager.Instance.DebugReplayIndex < DiagManager.Instance.ActiveDebugReplay.Count)
+                            {
+                                input = DiagManager.Instance.ActiveDebugReplay[DiagManager.Instance.DebugReplayIndex];
+                                DiagManager.Instance.DebugReplayIndex++;
+                                if (IsActive)
+                                    input.ReadDevInput(Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
+                            }
+                            else if (IsActive) //set this frame's input
+                                input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
+
+                            if (DiagManager.Instance.ActiveDebugReplay == null)
+                                DiagManager.Instance.LogInput(input);
+                            DiagManager.Instance.GamePadActive = input.HasGamePad;
+
+                            GameManager.Instance.SetMetaInput(input);
+                            GameManager.Instance.UpdateMeta();
+                            GameManager.Instance.SetFrameInput(input);
+                            GameManager.Instance.Update();
+                            LuaEngine.Instance.Update(gameTime);
                         }
-                        else if (IsActive) //set this frame's input
-                            input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
-
-                        if (DiagManager.Instance.ActiveDebugReplay == null)
-                            DiagManager.Instance.LogInput(input);
-                        DiagManager.Instance.GamePadActive = input.HasGamePad;
-
-                        GameManager.Instance.SetMetaInput(input);
-                        GameManager.Instance.UpdateMeta();
-                        GameManager.Instance.SetFrameInput(input);
-                        GameManager.Instance.Update();
-                        LuaEngine.Instance.Update(gameTime);
-
                     }
                     catch (Exception ex)
                     {
@@ -262,24 +264,26 @@ namespace RogueEssence
                 }
                 else if (CurrentPhase == LoadPhase.Ready && firstUpdate)
                 {
-                    try
+                    lock (lockObj)
                     {
-                        GameManager.Instance.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds);
-
-                    }
-                    catch (Exception ex)
-                    {
-                        DiagManager.Instance.LogError(ex);
                         try
                         {
-                            spriteBatch.End();
+                            GameManager.Instance.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds);
+
                         }
-                        catch (Exception ex2)
+                        catch (Exception ex)
                         {
-                            DiagManager.Instance.LogError(ex2);
+                            DiagManager.Instance.LogError(ex);
+                            try
+                            {
+                                spriteBatch.End();
+                            }
+                            catch (Exception ex2)
+                            {
+                                DiagManager.Instance.LogError(ex2);
+                            }
                         }
                     }
-
 
                     DiagManager.Instance.DevEditor.Draw();
                 }
