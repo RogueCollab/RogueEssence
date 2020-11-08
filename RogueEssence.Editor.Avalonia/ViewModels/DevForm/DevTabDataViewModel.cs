@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using RogueEssence.Dungeon;
+using RogueEssence.Menu;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -88,8 +90,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnGroundEditor_Click()
         {
-
-
+            Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
+            if (form.GroundEditForm == null)
+            {
+                MenuManager.Instance.ClearMenus();
+                if (ZoneManager.Instance.CurrentGround != null)
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, ZoneManager.Instance.CurrentGround.AssetName);
+                else
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, "");
+            }
         }
 
     }

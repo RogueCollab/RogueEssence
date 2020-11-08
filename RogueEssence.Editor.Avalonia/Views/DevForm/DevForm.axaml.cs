@@ -11,6 +11,8 @@ using Avalonia.Threading;
 using System.Threading;
 using RogueEssence.Data;
 using RogueEssence.Content;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev.Views
 {
@@ -19,10 +21,10 @@ namespace RogueEssence.Dev.Views
         public bool LoadComplete { get; private set; }
 
         //private MapEditor mapEditor;
-        //private GroundEditor groundEditor;
+        public GroundEditForm GroundEditForm;
 
         public IMapEditor MapEditor => null;
-        public IGroundEditor GroundEditor => null;
+        public IGroundEditor GroundEditor { get { return GroundEditForm; } }
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
 
@@ -155,14 +157,36 @@ namespace RogueEssence.Dev.Views
 
         public void OpenGround()
         {
+            GroundEditForm = new GroundEditForm()
+            {
+                DataContext = new ViewModels.GroundEditViewModel(),
+            };
+            GroundEditForm.FormClosed += groundEditorClosed;
+            GroundEditForm.LoadFromCurrentGround();
+            GroundEditForm.Show();
+        }
 
+        public void groundEditorClosed(object sender, EventArgs e)
+        {
+            GameManager.Instance.SceneOutcome = resetEditors();
+        }
+
+
+        private IEnumerator<YieldInstruction> resetEditors()
+        {
+            GroundEditForm = null;
+            //mapEditor = null;
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }
 
 
         public void CloseGround()
         {
-
+            if (GroundEditForm != null)
+                GroundEditForm.Close();
         }
+
+
 
         void LoadGame()
         {
@@ -197,6 +221,7 @@ namespace RogueEssence.Dev.Views
             DiagManager.Instance.DevEditor = this;
             using (GameBase game = new GameBase())
                 game.Run();
+            Close();
         }
 
         public void Window_Loaded(object sender, EventArgs e)
@@ -212,6 +237,14 @@ namespace RogueEssence.Dev.Views
 
         public void Window_Closed(object sender, EventArgs e)
         {
+            DiagManager.Instance.LoadMsg = "Closing...";
+            EnterLoadPhase(GameBase.LoadPhase.Unload);
         }
+
+        public static void EnterLoadPhase(GameBase.LoadPhase loadState)
+        {
+            GameBase.CurrentPhase = loadState;
+        }
+
     }
 }

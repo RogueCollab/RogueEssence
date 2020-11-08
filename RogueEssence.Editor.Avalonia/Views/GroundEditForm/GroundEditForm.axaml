@@ -1,0 +1,55 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="RogueEssence.Dev.Views.GroundEditForm"
+        Title="Dev Controls" Height="500" Width="850" Opened="Window_Loaded" Closed="Window_Closed">
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+        <vm:DevFormViewModel/>
+    </Design.DataContext>
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_New" Command="{Binding New_Click}"/>
+        <MenuItem Header="_Open" Command="{Binding Open_Click}"/>
+        <MenuItem Header="_Save" Command="{Binding Save_Click}"/>
+        <MenuItem Header="_Save As" Command="{Binding SaveAs_Click}"/>
+        <Separator/>
+        <MenuItem Header="_Load Map from Tileset" Command="{Binding ImportFromTileset_Click}"/>
+        <MenuItem Header="_Load Tileset from .png" Command="{Binding ImportFromPng_Click}"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Resize Map" Command="{Binding ReSize_Click}"/>
+        <MenuItem Header="Re-Tile Map" Command="{Binding ReTile_Click}"/>
+        <MenuItem Header="Undo" Command="{Binding Undo_Click}"/>
+        <MenuItem Header="Redo" Command="{Binding Redo_Click}"/>
+      </MenuItem>
+    </Menu>
+    <Grid>
+      <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="4" >
+        <TabItem Name="tabTextures" Header="Textures" >
+          <views:GroundTabTextures DataContext="{Binding Textures}"/>
+        </TabItem>
+        <TabItem Name="tabWalls" Header="Walls" >
+          <views:GroundTabWalls DataContext="{Binding Walls}"/>
+        </TabItem>
+        <TabItem Name="tabEntities" Header="Entities" >
+          <views:GroundTabEntities DataContext="{Binding Entities}"/>
+        </TabItem>
+        <TabItem Name="tabProperties" Header="Properties" >
+          <views:GroundTabProperties DataContext="{Binding Properties}"/>
+        </TabItem>
+        <TabItem Name="tabScript" Header="Script" >
+          <views:GroundTabScript DataContext="{Binding Script}"/>
+        </TabItem>
+        <TabItem Name="tabStrings" Header="Strings" >
+          <views:GroundTabStrings DataContext="{Binding Strings}"/>
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </DockPanel>
+</Window>

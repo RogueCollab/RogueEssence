@@ -18,5 +18,26 @@
     <Compile Update="Views\DataListForm\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabStrings.axaml.cs">
+      <DependentUpon>GroundTabStrings.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabScript.axaml.cs">
+      <DependentUpon>GroundTabScript.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabProperties.axaml.cs">
+      <DependentUpon>GroundTabProperties.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabEntities.axaml.cs">
+      <DependentUpon>GroundTabEntities.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabWalls.axaml.cs">
+      <DependentUpon>GroundTabWalls.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabTextures.axaml.cs">
+      <DependentUpon>GroundTabTextures.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\GroundEditForm.axaml.cs">
+      <DependentUpon>GroundEditForm.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
