@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using RogueEssence;
+using RogueEssence.Dungeon;
+using RogueEssence.Ground;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -23,5 +27,10 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabSpritesViewModel Sprites { get; set; }
         public DevTabScriptViewModel Script { get; set; }
         public DevTabTravelViewModel Travel { get; set; }
+
+
+
+
+
     }
 }
