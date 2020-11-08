@@ -221,7 +221,8 @@ namespace RogueEssence.Dev.Views
             DiagManager.Instance.DevEditor = this;
             using (GameBase game = new GameBase())
                 game.Run();
-            Close();
+
+            executeOrInvoke(Close);
         }
 
         public void Window_Loaded(object sender, EventArgs e)
