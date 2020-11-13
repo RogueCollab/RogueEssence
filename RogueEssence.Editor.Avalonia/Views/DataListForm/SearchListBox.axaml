@@ -4,7 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="RogueEssence.Dev.Views.SearchListBox">
+             x:Class="RogueEssence.Dev.Views.SearchListBox"
+             DataContextChanged="slb_DataContextChanged">
   <Design.DataContext>
     <vm:SearchListBoxViewModel/>
   </Design.DataContext>
@@ -13,16 +14,9 @@
       <RowDefinition Height="20"/>
       <RowDefinition Height="40"/>
       <RowDefinition Height="*"/>
-      <RowDefinition Height="40"/>
     </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Text="{Binding DataName}" Grid.Row="0" Grid.Column="0"></TextBlock>
-    <TextBox Name="txtSearch" TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding SearchText}" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
-    <ListBox Name="lbxItems" Items="{Binding SearchItems}" Margin="4" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
-    <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="3" Grid.Column="0" >Add</Button>
-    <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="3" Grid.Column="1" >Delete</Button>
+    <TextBox Name="txtSearch" TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding SearchText}" Margin="4" Grid.Row="1" Grid.Column="0"/>
+    <ListBox Name="lbxItems" SelectionMode="AlwaysSelected" Items="{Binding SearchItems}" SelectedIndex="{Binding SelectedSearchIndex}" SelectionChanged="lbxItems_SelectionChanged" DoubleTapped="lbxItems_DoubleClick" Margin="4" Grid.Row="2" Grid.Column="0"/>
   </Grid>
 </UserControl>
