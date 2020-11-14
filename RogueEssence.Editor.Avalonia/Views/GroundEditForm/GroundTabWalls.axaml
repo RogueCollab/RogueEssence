@@ -3,11 +3,30 @@
              xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:converters="clr-namespace:RogueEssence.Editor.Avalonia.Converters"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.GroundTabWalls">
   <Design.DataContext>
     <vm:GroundTabWallsViewModel/>
   </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ComparisonConverter x:Key="ComparisonConverter"/>
+  </UserControl.Resources>
   <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="40"/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Mode</TextBlock>
+    <RadioButton Name="rbDraw" IsChecked="{Binding Path=BlockMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Draw}}" VerticalAlignment="Top" Margin="4" Grid.Row="1" Grid.Column="0">Draw</RadioButton>
+    <RadioButton Name="rbRect" IsChecked="{Binding Path=BlockMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Rectangle}}" VerticalAlignment="Top" Margin="4" Grid.Row="1" Grid.Column="1">Rectangle</RadioButton>
+    <RadioButton Name="rbFill" IsChecked="{Binding Path=BlockMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Fill}}" VerticalAlignment="Top" Margin="4" Grid.Row="1" Grid.Column="2">Fill</RadioButton>
   </Grid>
 </UserControl>

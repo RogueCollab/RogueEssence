@@ -16,6 +16,7 @@ namespace RogueEssence.Dev.ViewModels
             Walls = new GroundTabWallsViewModel();
             Entities = new GroundTabEntitiesViewModel();
             Properties = new GroundTabPropertiesViewModel();
+            Script = new GroundTabScriptViewModel();
             Strings = new GroundTabStringsViewModel();
         }
 
@@ -23,6 +24,7 @@ namespace RogueEssence.Dev.ViewModels
         public GroundTabWallsViewModel Walls { get; set; }
         public GroundTabEntitiesViewModel Entities { get; set; }
         public GroundTabPropertiesViewModel Properties { get; set; }
+        public GroundTabScriptViewModel Script { get; set; }
         public GroundTabStringsViewModel Strings { get; set; }
 
 
