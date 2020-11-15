@@ -17,6 +17,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public DevTabScriptViewModel()
         {
+            m_lastcommands = new Stack<string>();
             ScriptLog = "";
             ScriptLine = "";
         }
@@ -26,6 +27,13 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return scriptLog; }
             set { this.RaiseAndSetIfChanged(ref scriptLog, value); }
+        }
+
+        private int scriptCaret;
+        public int ScriptCaret
+        {
+            get { return scriptCaret; }
+            set { this.RaiseAndSetIfChanged(ref scriptCaret, value); }
         }
 
         private string scriptLine;
@@ -47,29 +55,23 @@ namespace RogueEssence.Dev.ViewModels
 
         public void SendScript()
         {
-            //txtScriptOutput.AppendText("\n" + txtScriptInput.Text);
-            //m_lastcommands.Push(txtScriptInput.Text);
-            ////Send the text to the script engine
-            //LuaEngine.Instance.RunString(txtScriptInput.Text);
-            //txtScriptInput.Clear();
-            //m_cntDownArrow = 0;
+            lock (GameBase.lockObj)
+            {
+                ScriptLog = ScriptLog + "\n" + ScriptLine;
+                m_lastcommands.Push(ScriptLine);
+                ScriptCaret = ScriptLog.Length;
+                //Send the text to the script engine
+                LuaEngine.Instance.RunString(ScriptLine);
+                ScriptLine = "";
+                m_cntDownArrow = 0;
+            }
         }
 
         public void ShiftHistory(int increment)
         {
-            //string[] strs = m_lastcommands.ToArray();
-            //if (m_cntDownArrow < strs.Length)
-            //{
-            //    txtScriptInput.Clear();
-            //    txtScriptInput.Text = strs[m_cntDownArrow];
-            //    m_cntDownArrow++;
-            //}
-            //else if (m_cntDownArrow >= strs.Length)
-            //{
-            //    txtScriptInput.Clear();
-            //    m_cntDownArrow = 0;
-            //}
-            //e.Handled = true;
+            string[] strs = m_lastcommands.ToArray();
+            m_cntDownArrow = (m_cntDownArrow + strs.Length + increment) % strs.Length;
+            ScriptLine = strs[m_cntDownArrow];
         }
 
     }

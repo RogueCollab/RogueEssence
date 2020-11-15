@@ -5,12 +5,16 @@ using RogueEssence;
 using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using RogueEssence.Data;
+using Avalonia.Controls;
+using System.IO;
+using RogueEssence.Dev.Views;
+using RogueEssence.Content;
 
 namespace RogueEssence.Dev.ViewModels
 {
     public class GroundEditViewModel : ViewModelBase
     {
-        public GroundEditViewModel()
+        public GroundEditViewModel(Window dialogParent)
         {
             Textures = new GroundTabTexturesViewModel();
             Walls = new GroundTabWallsViewModel();
@@ -18,6 +22,7 @@ namespace RogueEssence.Dev.ViewModels
             Properties = new GroundTabPropertiesViewModel();
             Script = new GroundTabScriptViewModel();
             Strings = new GroundTabStringsViewModel();
+            DialogParent = dialogParent;
         }
 
         public GroundTabTexturesViewModel Textures { get; set; }
@@ -28,122 +33,182 @@ namespace RogueEssence.Dev.ViewModels
         public GroundTabStringsViewModel Strings { get; set; }
 
 
-        private void New_Click()
-        {
-            ////Check all callbacks by default
-            //for (int ii = 0; ii < chklstScriptMapCallbacks.Items.Count; ii++)
-            //    chklstScriptMapCallbacks.SetItemChecked(ii, true);
-
-            //CurrentFile = "";
-
-            ////Schedule the map creation
-            //GroundEditScene.Instance.PendingDevEvent = DoNew();
-        }
-
-        private void Open_Click()
-        {
-            //openFileDialog.Filter = "map files (*" + DataManager.GROUND_EXT + ")|*" + DataManager.GROUND_EXT;
-            //DialogResult result = openFileDialog.ShowDialog();
-
-            //if (result == DialogResult.OK)
-            //{
-            //    if (!ComparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(openFileDialog.FileName)))
-            //        MessageBox.Show(String.Format("Map can only be loaded from {0}!", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    else
-            //    {
-            //        CurrentFile = openFileDialog.FileName;
-
-            //        //Schedule the map load
-            //        GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(openFileDialog.FileName));
-            //    }
-            //}
-        }
-
-        private void Save_Click()
-        {
-            //if (CurrentFile == "")
-            //    saveAsToolStripMenuItem_Click(sender, e); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
-            //else
-            //    GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
-        }
-        private void SaveAs_Click()
-        {
-            //DialogResult result = saveMapFileDialog.ShowDialog();
-
-            //if (result == System.Windows.Forms.DialogResult.OK)
-            //{
-            //    if (!ComparePaths(Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH, Path.GetDirectoryName(saveMapFileDialog.FileName)))
-            //        MessageBox.Show(String.Format("Map can only be saved to {0}!", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    else
-            //    {
-            //        string oldFilename = CurrentFile;
-            //        ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(saveMapFileDialog.FileName); //Set the assetname to the file name!
-            //        CurrentFile = saveMapFileDialog.FileName;
-
-            //        //Schedule saving the map
-            //        GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, oldFilename);
-            //    }
-            //}
-        }
+        public string CurrentFile;
+        public Window DialogParent;
 
 
-        private void ImportFromTileset_Click()
-        {
-            //if (tileBrowser.CurrentTileset == "")
-            //    MessageBox.Show(String.Format("No tileset to import!"), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //else
-            //    GroundEditScene.Instance.PendingDevEvent = DoImportTileset(tileBrowser.CurrentTileset);
-        }
-
-        private void ImportFromPng_Click()
-        {
-            //openFileDialog.Filter = "PNG files (*.png)|*.png";
-            //DialogResult result = openFileDialog.ShowDialog();
-
-            //if (result == DialogResult.OK)
-            //    GroundEditScene.Instance.PendingDevEvent = DoImportPng(openFileDialog.FileName);
-        }
-
-
-        private void ReSize_Click()
-        {
-            //MapResizeWindow window = new MapResizeWindow(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
-
-            //if (window.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            //{
-            //    DiagManager.Instance.LoadMsg = "Resizing Map...";
-            //    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-
-            //    ZoneManager.Instance.CurrentGround.ResizeJustified(window.MapWidth, window.MapHeight, window.ResizeDir);
-
-            //    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-            //}
-        }
-
-        private void ReTile_Click()
-        {
-            //MapRetileWindow window = new MapRetileWindow(ZoneManager.Instance.CurrentGround.TileSize);
-
-            //if (window.ShowDialog() == DialogResult.OK)
-            //{
-            //    DiagManager.Instance.LoadMsg = "Retiling Map...";
-            //    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-
-            //    ZoneManager.Instance.CurrentGround.Retile(window.TileSize / GraphicsManager.TEX_SIZE);
-
-            //    tileBrowser.SetTileSize(window.TileSize);
-
-            //    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-            //}
-        }
-
-
-        private void Undo_Click()
+        public void New_Click()
         {
 
+            //Check all callbacks by default
+            for (int ii = 0; ii < Script.ScriptItems.Count; ii++)
+                Script.ScriptItems[ii].IsChecked = true;
+
+            CurrentFile = "";
+
+            lock (GameBase.lockObj)
+            {
+                //Schedule the map creation
+                GroundEditScene.Instance.PendingDevEvent = DoNew();
+            }
         }
 
-        private void Redo_Click()
+        public async void Open_Click()
+        {
+            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Directory = mapDir;
+
+            FileDialogFilter filter = new FileDialogFilter();
+            filter.Name = "Ground Files";
+            filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
+            openFileDialog.Filters.Add(filter);
+
+            string[] results = await openFileDialog.ShowAsync(DialogParent);
+
+            if (results.Length > 0)
+            {
+                if (!comparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(results[0])))
+                    await MessageBox.Show(DialogParent, String.Format("Map can only be loaded from:\n{0}", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
+                else
+                {
+                    lock (GameBase.lockObj)
+                    {
+                        CurrentFile = results[0];
+
+                        //Schedule the map load
+                        GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(results[0]));
+                    }
+                }
+            }
+        }
+
+        public void Save_Click()
+        {
+            if (CurrentFile == "")
+                SaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
+            else
+            {
+                lock (GameBase.lockObj)
+                    GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
+            }
+        }
+        public async void SaveAs_Click()
+        {
+            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Directory = mapDir;
+
+            FileDialogFilter filter = new FileDialogFilter();
+            filter.Name = "Ground Files";
+            filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
+            saveFileDialog.Filters.Add(filter);
+
+            string result = await saveFileDialog.ShowAsync(DialogParent);
+
+            if (result != null)
+            {
+                if (!comparePaths(Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH, Path.GetDirectoryName(result)))
+                    await MessageBox.Show(DialogParent, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
+                else
+                {
+                    lock (GameBase.lockObj)
+                    {
+                        string oldFilename = CurrentFile;
+                        ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
+                        CurrentFile = result;
+
+                        //Schedule saving the map
+                        GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, oldFilename);
+                    }
+                }
+            }
+        }
+
+        public async void ImportFromPng_Click()
+        {
+            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Directory = mapDir;
+
+            FileDialogFilter filter = new FileDialogFilter();
+            filter.Name = "PNG Files";
+            filter.Extensions.Add("png");
+            openFileDialog.Filters.Add(filter);
+
+            string[] results = await openFileDialog.ShowAsync(DialogParent);
+
+            lock (GameBase.lockObj)
+            {
+                if (results.Length > 0)
+                    GroundEditScene.Instance.PendingDevEvent = DoImportPng(results[0]);
+            }
+        }
+
+
+        public async void ImportFromTileset_Click()
+        {
+            if (Textures.TileBrowser.CurrentTileset == "")
+                await MessageBox.Show(DialogParent, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
+            else
+                GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
+        }
+
+
+        public async void ReSize_Click()
+        {
+
+            MapResizeWindow window = new MapResizeWindow();
+            MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+            window.DataContext = viewModel;
+
+            bool result = await window.ShowDialog<bool>(DialogParent);
+
+            lock (GameBase.lockObj)
+            {
+                if (result)
+                {
+                    DiagManager.Instance.LoadMsg = "Resizing Map...";
+                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+
+                    ZoneManager.Instance.CurrentGround.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight, viewModel.ResizeDir);
+
+                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+                }
+            }
+        }
+
+        public async void ReTile_Click()
+        {
+            MapRetileWindow window = new MapRetileWindow();
+            MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize);
+            window.DataContext = viewModel;
+
+            bool result = await window.ShowDialog<bool>(DialogParent);
+
+            lock (GameBase.lockObj)
+            {
+                if (result)
+                {
+                    DiagManager.Instance.LoadMsg = "Retiling Map...";
+                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+
+                    ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
+
+                    Textures.TileBrowser.SetTileSize(viewModel.TileSize);
+
+                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+                }
+            }
+        }
+
+
+        public void Undo_Click()
+        {
+
+        }
+
+        public void Redo_Click()
         {
 
         }
@@ -279,6 +344,14 @@ namespace RogueEssence.Dev.ViewModels
             //RefreshTitle();
 
             yield break;
+        }
+
+
+        private static bool comparePaths(string path1, string path2)
+        {
+            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\'),
+                Path.GetFullPath(path2).TrimEnd('\\'),
+                StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
     }

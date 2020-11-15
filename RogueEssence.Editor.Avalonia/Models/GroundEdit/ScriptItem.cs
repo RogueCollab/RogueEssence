@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RogueEssence.Editor.Avalonia.Models
+namespace RogueEssence.Dev.Models
 {
     public class ScriptItem
     {

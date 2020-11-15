@@ -13,10 +13,10 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Views\DataListForm\DataListForm.axaml.cs">
+    <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\DataListForm\SearchListBox.axaml.cs">
+    <Compile Update="Views\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\GroundEditForm\GroundTabStrings.axaml.cs">

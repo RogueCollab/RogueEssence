@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using RogueEssence.Editor.Avalonia.Models;
+using RogueEssence.Dev.Models;
 using System.Collections.ObjectModel;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;

@@ -7,16 +7,19 @@ using Avalonia.Data.Converters;
 
 namespace RogueEssence.Dev.Converters
 {
-    public class ComparisonConverter : IValueConverter
+    public class ComparisonXConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value?.Equals(parameter);
+            bool? res = value?.Equals(parameter);
+            if (res.HasValue && res.Value)
+                return "X";
+            return "";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value?.Equals(true) == true ? parameter : BindingOperations.DoNothing;
+            return value?.Equals("X") == true ? parameter : BindingOperations.DoNothing;
         }
     }
 }

@@ -87,15 +87,17 @@ namespace RogueEssence.Dev.ViewModels
         private delegate IEntryData CreateEntry();
         private void OpenList(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
         {
-            DataListFormViewModel choices = new DataListFormViewModel();
-            choices.Name = dataType.ToString();
-            string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-            choices.AddEntries(entries);
-
-            choices.SelectedOKEvent += () =>
+            lock (GameBase.lockObj)
             {
-                if (choices.SearchList.InternalIndex > -1)
+                DataListFormViewModel choices = new DataListFormViewModel();
+                choices.Name = dataType.ToString();
+                string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                choices.AddEntries(entries);
+
+                choices.SelectedOKEvent += () =>
                 {
+                    if (choices.SearchList.InternalIndex > -1)
+                    {
                     //ElementForm editor = new ElementForm();
                     //int entryNum = choices.ChosenEntry;
                     //editor.Text = entries[entryNum];
@@ -124,9 +126,9 @@ namespace RogueEssence.Dev.ViewModels
 
                     //editor.Show();
                 }
-            };
-            choices.SelectedAddEvent += () =>
-            {
+                };
+                choices.SelectedAddEvent += () =>
+                {
                 //ElementForm editor = new ElementForm();
                 //int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
                 //editor.Text = "New " + dataType.ToString();
@@ -157,12 +159,12 @@ namespace RogueEssence.Dev.ViewModels
                 //editor.Show();
             };
 
-            Views.DataListForm dataListForm = new Views.DataListForm
-            {
-                DataContext = choices,
-            };
-            dataListForm.Show();
-
+                Views.DataListForm dataListForm = new Views.DataListForm
+                {
+                    DataContext = choices,
+                };
+                dataListForm.Show();
+            }
         }
 
 
@@ -175,14 +177,17 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnGroundEditor_Click()
         {
-            Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
-            if (form.GroundEditForm == null)
+            lock (GameBase.lockObj)
             {
-                MenuManager.Instance.ClearMenus();
-                if (ZoneManager.Instance.CurrentGround != null)
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, ZoneManager.Instance.CurrentGround.AssetName);
-                else
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, "");
+                Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
+                if (form.GroundEditForm == null)
+                {
+                    MenuManager.Instance.ClearMenus();
+                    if (ZoneManager.Instance.CurrentGround != null)
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, ZoneManager.Instance.CurrentGround.AssetName);
+                    else
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, "");
+                }
             }
         }
 
