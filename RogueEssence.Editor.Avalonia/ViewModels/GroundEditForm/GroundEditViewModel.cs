@@ -151,7 +151,10 @@ namespace RogueEssence.Dev.ViewModels
             if (Textures.TileBrowser.CurrentTileset == "")
                 await MessageBox.Show(DialogParent, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
             else
-                GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
+            {
+                lock (GameBase.lockObj)
+                    GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
+            }
         }
 
 
@@ -203,60 +206,60 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public void Undo_Click()
-        {
+        //public void Undo_Click()
+        //{
 
-        }
+        //}
 
-        public void Redo_Click()
-        {
+        //public void Redo_Click()
+        //{
 
-        }
+        //}
 
 
 
         private IEnumerator<YieldInstruction> DoNew()
         {
-            ////take all the necessary steps before and after moving to the map
+            //take all the necessary steps before and after moving to the map
 
-            //DiagManager.Instance.LoadMsg = "Loading Map...";
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-            //GameManager.Instance.ForceReady();
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+            GameManager.Instance.ForceReady();
 
 
-            //ZoneManager.Instance.CurrentZone.DevNewGround();
+            ZoneManager.Instance.CurrentZone.DevNewGround();
 
-            //loadEditorSettings();
+            loadEditorSettings();
 
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
             yield break;
         }
         private IEnumerator<YieldInstruction> DoLoad(string mapName)
         {
-            ////take all the necessary steps before and after moving to the map
+            //take all the necessary steps before and after moving to the map
 
-            //DiagManager.Instance.LoadMsg = "Loading Map...";
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-            //GameManager.Instance.ForceReady();
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+            GameManager.Instance.ForceReady();
 
-            //ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
+            ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
-            //loadEditorSettings();
+            loadEditorSettings();
 
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
             yield break;
         }
 
         public void LoadFromCurrentGround()
         {
-            //if (ZoneManager.Instance.CurrentGround.AssetName != "")
-            //    CurrentFile = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
-            //else
-            //    CurrentFile = "";
+            if (ZoneManager.Instance.CurrentGround.AssetName != "")
+                CurrentFile = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
+            else
+                CurrentFile = "";
 
-            //loadEditorSettings();
+            loadEditorSettings();
         }
 
         private void loadEditorSettings()
