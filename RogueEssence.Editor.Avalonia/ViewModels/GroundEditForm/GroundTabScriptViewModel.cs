@@ -33,14 +33,11 @@ namespace RogueEssence.Dev.ViewModels
 
         private void fillInMapScriptData()
         {
-            lock (GameBase.lockObj)
+            //Setup callback display without triggering events
+            var scev = ZoneManager.Instance.CurrentGround.ActiveScriptEvent();
+            foreach (LuaEngine.EMapCallbacks s in scev)
             {
-                //Setup callback display without triggering events
-                var scev = ZoneManager.Instance.CurrentGround.ActiveScriptEvent();
-                foreach (LuaEngine.EMapCallbacks s in scev)
-                {
-                    ScriptItems[(int)s].IsChecked = true;
-                }
+                ScriptItems[(int)s].IsChecked = true;
             }
         }
 

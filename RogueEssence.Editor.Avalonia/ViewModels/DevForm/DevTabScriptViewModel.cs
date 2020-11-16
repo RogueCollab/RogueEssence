@@ -45,26 +45,20 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnReloadScripts_Click()
         {
-            lock (GameBase.lockObj)
-            {
-                //Reload everything
-                LuaEngine.Instance.Reset();
-                LuaEngine.Instance.ReInit();
-            }
+            //Reload everything
+            LuaEngine.Instance.Reset();
+            LuaEngine.Instance.ReInit();
         }
 
         public void SendScript()
         {
-            lock (GameBase.lockObj)
-            {
-                ScriptLog = ScriptLog + "\n" + ScriptLine;
-                m_lastcommands.Push(ScriptLine);
-                ScriptCaret = ScriptLog.Length;
-                //Send the text to the script engine
-                LuaEngine.Instance.RunString(ScriptLine);
-                ScriptLine = "";
-                m_cntDownArrow = 0;
-            }
+            ScriptLog = ScriptLog + "\n" + ScriptLine;
+            m_lastcommands.Push(ScriptLine);
+            ScriptCaret = ScriptLog.Length;
+            //Send the text to the script engine
+            LuaEngine.Instance.RunString(ScriptLine);
+            ScriptLine = "";
+            m_cntDownArrow = 0;
         }
 
         public void ShiftHistory(int increment)

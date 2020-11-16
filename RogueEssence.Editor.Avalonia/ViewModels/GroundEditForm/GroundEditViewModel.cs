@@ -46,11 +46,8 @@ namespace RogueEssence.Dev.ViewModels
 
             CurrentFile = "";
 
-            lock (GameBase.lockObj)
-            {
-                //Schedule the map creation
-                GroundEditScene.Instance.PendingDevEvent = DoNew();
-            }
+            //Schedule the map creation
+            GroundEditScene.Instance.PendingDevEvent = DoNew();
         }
 
         public async void Open_Click()
@@ -72,13 +69,10 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(DialogParent, String.Format("Map can only be loaded from:\n{0}", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
-                    lock (GameBase.lockObj)
-                    {
-                        CurrentFile = results[0];
+                    CurrentFile = results[0];
 
-                        //Schedule the map load
-                        GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(results[0]));
-                    }
+                    //Schedule the map load
+                    GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(results[0]));
                 }
             }
         }
@@ -88,10 +82,7 @@ namespace RogueEssence.Dev.ViewModels
             if (CurrentFile == "")
                 SaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
-            {
-                lock (GameBase.lockObj)
-                    GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
-            }
+                GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
         }
         public async void SaveAs_Click()
         {
@@ -112,15 +103,12 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(DialogParent, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
-                    lock (GameBase.lockObj)
-                    {
-                        string oldFilename = CurrentFile;
-                        ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
-                        CurrentFile = result;
+                    string oldFilename = CurrentFile;
+                    ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
+                    CurrentFile = result;
 
-                        //Schedule saving the map
-                        GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, oldFilename);
-                    }
+                    //Schedule saving the map
+                    GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, oldFilename);
                 }
             }
         }
@@ -138,11 +126,8 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(DialogParent);
 
-            lock (GameBase.lockObj)
-            {
-                if (results.Length > 0)
-                    GroundEditScene.Instance.PendingDevEvent = DoImportPng(results[0]);
-            }
+            if (results.Length > 0)
+                GroundEditScene.Instance.PendingDevEvent = DoImportPng(results[0]);
         }
 
 
@@ -151,10 +136,7 @@ namespace RogueEssence.Dev.ViewModels
             if (Textures.TileBrowser.CurrentTileset == "")
                 await MessageBox.Show(DialogParent, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
             else
-            {
-                lock (GameBase.lockObj)
-                    GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
-            }
+                GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
         }
 
 
@@ -167,17 +149,14 @@ namespace RogueEssence.Dev.ViewModels
 
             bool result = await window.ShowDialog<bool>(DialogParent);
 
-            lock (GameBase.lockObj)
+            if (result)
             {
-                if (result)
-                {
-                    DiagManager.Instance.LoadMsg = "Resizing Map...";
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+                DiagManager.Instance.LoadMsg = "Resizing Map...";
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-                    ZoneManager.Instance.CurrentGround.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight, viewModel.ResizeDir);
+                ZoneManager.Instance.CurrentGround.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight, viewModel.ResizeDir);
 
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-                }
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
             }
         }
 
@@ -189,19 +168,16 @@ namespace RogueEssence.Dev.ViewModels
 
             bool result = await window.ShowDialog<bool>(DialogParent);
 
-            lock (GameBase.lockObj)
+            if (result)
             {
-                if (result)
-                {
-                    DiagManager.Instance.LoadMsg = "Retiling Map...";
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+                DiagManager.Instance.LoadMsg = "Retiling Map...";
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-                    ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
+                ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
 
-                    Textures.TileBrowser.SetTileSize(viewModel.TileSize);
+                Textures.TileBrowser.SetTileSize(viewModel.TileSize);
 
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-                }
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
             }
         }
 

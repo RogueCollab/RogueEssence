@@ -90,28 +90,24 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref chosenAnim, value);
-                lock (GameBase.lockObj)
-                    GraphicsManager.GlobalIdle = chosenAnim;
+                GraphicsManager.GlobalIdle = chosenAnim;
             }
         }
 
         public void btnRollSkill_Click()
         {
-            lock (GameBase.lockObj)
+            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
             {
-                if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-                {
-                    Character character = DungeonScene.Instance.FocusedCharacter;
-                    BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
+                Character character = DungeonScene.Instance.FocusedCharacter;
+                BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                    while (character.BaseSkills[0].SkillNum > -1)
-                        character.DeleteSkill(0);
-                    List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                    foreach (int skill in final_skills)
-                        character.LearnSkill(skill, true);
+                while (character.BaseSkills[0].SkillNum > -1)
+                    character.DeleteSkill(0);
+                List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
+                foreach (int skill in final_skills)
+                    character.LearnSkill(skill, true);
 
-                    DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
-                }
+                DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
             }
         }
 
@@ -121,16 +117,13 @@ namespace RogueEssence.Dev.ViewModels
             bool prevUpdate = updating;
             updating = true;
 
-            lock (GameBase.lockObj)
-            {
-                int tempForm = chosenForm;
-                Forms.Clear();
-                MonsterData monster = DataManager.Instance.GetMonster(chosenMonster);
-                for (int ii = 0; ii < monster.Forms.Count; ii++)
-                    Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
+            int tempForm = chosenForm;
+            Forms.Clear();
+            MonsterData monster = DataManager.Instance.GetMonster(chosenMonster);
+            for (int ii = 0; ii < monster.Forms.Count; ii++)
+                Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
 
-                ChosenForm = Math.Clamp(tempForm, 0, Forms.Count - 1);
-            }
+            ChosenForm = Math.Clamp(tempForm, 0, Forms.Count - 1);
 
             updating = prevUpdate;
             UpdateSprite();
@@ -156,11 +149,8 @@ namespace RogueEssence.Dev.ViewModels
             if (updating)
                 return;
 
-            lock (GameBase.lockObj)
-            {
-                if (GameManager.Instance.IsInGame())
-                    DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
-            }
+            if (GameManager.Instance.IsInGame())
+                DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
         }
 
         private void UpdateLevel()
@@ -168,11 +158,8 @@ namespace RogueEssence.Dev.ViewModels
             if (updating)
                 return;
 
-            lock (GameBase.lockObj)
-            {
-                if (GameManager.Instance.IsInGame())
-                    DungeonScene.Instance.FocusedCharacter.Level = level;
-            }
+            if (GameManager.Instance.IsInGame())
+                DungeonScene.Instance.FocusedCharacter.Level = level;
         }
     }
 }

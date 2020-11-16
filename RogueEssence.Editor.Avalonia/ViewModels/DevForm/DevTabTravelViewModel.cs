@@ -67,57 +67,45 @@ namespace RogueEssence.Dev.ViewModels
 
         private void ZoneChanged()
         {
-            lock (GameBase.lockObj)
-            {
-                int temp = chosenZone;
-                Structures.Clear();
-                ZoneData zone = DataManager.Instance.GetZone(chosenZone);
-                for (int ii = 0; ii < zone.Structures.Count; ii++)
-                    Structures.Add(ii.ToString()/* + " - " + zone.Structures[ii].Name.ToLocal()*/);
-                ChosenStructure = Math.Clamp(temp, 0, Structures.Count - 1);
-            }
+            int temp = chosenZone;
+            Structures.Clear();
+            ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+            for (int ii = 0; ii < zone.Structures.Count; ii++)
+                Structures.Add(ii.ToString()/* + " - " + zone.Structures[ii].Name.ToLocal()*/);
+            ChosenStructure = Math.Clamp(temp, 0, Structures.Count - 1);
         }
 
         private void StructureChanged()
         {
-            lock (GameBase.lockObj)
-            {
-                if (chosenStructure == -1)
-                    return;
+            if (chosenStructure == -1)
+                return;
 
-                int temp = chosenFloor;
-                floorIDs.Clear();
-                Floors.Clear();
-                ZoneData zone = DataManager.Instance.GetZone(chosenZone);
-                foreach (int ii in zone.Structures[chosenStructure].GetFloorIDs())
-                {
-                    Floors.Add(ii.ToString()/* + " - " + zone.Structures[cbStructure.SelectedIndex].Floors[ii].Name.ToLocal()*/);
-                    floorIDs.Add(ii);
-                }
-                ChosenFloor = Math.Clamp(temp, 0, Floors.Count - 1);
+            int temp = chosenFloor;
+            floorIDs.Clear();
+            Floors.Clear();
+            ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+            foreach (int ii in zone.Structures[chosenStructure].GetFloorIDs())
+            {
+                Floors.Add(ii.ToString()/* + " - " + zone.Structures[cbStructure.SelectedIndex].Floors[ii].Name.ToLocal()*/);
+                floorIDs.Add(ii);
             }
+            ChosenFloor = Math.Clamp(temp, 0, Floors.Count - 1);
         }
 
         public void btnEnterMap_Click()
         {
-            lock (GameBase.lockObj)
-            {
-                //Registry.SetValue(DiagManager.REG_PATH, "MapChoice", cbMaps.SelectedIndex);
-                MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(1, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
-            }
+            //Registry.SetValue(DiagManager.REG_PATH, "MapChoice", cbMaps.SelectedIndex);
+            MenuManager.Instance.ClearMenus();
+            GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(1, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
         }
 
         public void btnEnterDungeon_Click()
         {
-            lock (GameBase.lockObj)
-            {
-                //Registry.SetValue(DiagManager.REG_PATH, "ZoneChoice", cbZones.SelectedIndex);
-                //Registry.SetValue(DiagManager.REG_PATH, "StructChoice", cbStructure.SelectedIndex);
-                //Registry.SetValue(DiagManager.REG_PATH, "FloorChoice", cbFloor.SelectedIndex);
-                MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
-            }
+            //Registry.SetValue(DiagManager.REG_PATH, "ZoneChoice", cbZones.SelectedIndex);
+            //Registry.SetValue(DiagManager.REG_PATH, "StructChoice", cbStructure.SelectedIndex);
+            //Registry.SetValue(DiagManager.REG_PATH, "FloorChoice", cbFloor.SelectedIndex);
+            MenuManager.Instance.ClearMenus();
+            GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
         }
 
     }

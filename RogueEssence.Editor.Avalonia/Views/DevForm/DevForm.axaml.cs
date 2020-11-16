@@ -47,102 +47,94 @@ namespace RogueEssence.Dev.Views
 
         void IRootEditor.Load(GameBase game)
         {
-            lock (GameBase.lockObj)
-            {
-                ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
+            ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
-                devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
-                devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
+            devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
+            devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
 
-                string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
-                for (int ii = 0; ii < skill_names.Length; ii++)
-                    devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "SkillChoice", 0);
-                //cbSkills.SelectedIndex = Math.Min(cbSkills.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
-                devViewModel.Game.ChosenSkill = -1;
-                devViewModel.Game.ChosenSkill = 0;
+            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
+            for (int ii = 0; ii < skill_names.Length; ii++)
+                devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "SkillChoice", 0);
+            //cbSkills.SelectedIndex = Math.Min(cbSkills.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenSkill = -1;
+            devViewModel.Game.ChosenSkill = 0;
 
-                string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
-                for (int ii = 0; ii < intrinsic_names.Length; ii++)
-                    devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "IntrinsicChoice", 0);
-                //cbIntrinsics.SelectedIndex = Math.Min(cbIntrinsics.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
-                devViewModel.Game.ChosenIntrinsic = -1;
-                devViewModel.Game.ChosenIntrinsic = 0;
+            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
+            for (int ii = 0; ii < intrinsic_names.Length; ii++)
+                devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "IntrinsicChoice", 0);
+            //cbIntrinsics.SelectedIndex = Math.Min(cbIntrinsics.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenIntrinsic = -1;
+            devViewModel.Game.ChosenIntrinsic = 0;
 
-                string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
-                for (int ii = 0; ii < status_names.Length; ii++)
-                    devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "StatusChoice", 0);
-                //cbStatus.SelectedIndex = Math.Min(cbStatus.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
-                devViewModel.Game.ChosenStatus = -1;
-                devViewModel.Game.ChosenStatus = 0;
+            string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
+            for (int ii = 0; ii < status_names.Length; ii++)
+                devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "StatusChoice", 0);
+            //cbStatus.SelectedIndex = Math.Min(cbStatus.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenStatus = -1;
+            devViewModel.Game.ChosenStatus = 0;
 
-                string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
-                for (int ii = 0; ii < item_names.Length; ii++)
-                    devViewModel.Game.Items.Add(ii.ToString("D3") + ": " + item_names[ii]);
-                //object regVal = Registry.GetValue(DiagManager.REG_PATH, "ItemChoice", 0);
-                //cbSpawnItem.SelectedIndex = Math.Min(cbSpawnItem.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
-                devViewModel.Game.ChosenItem = -1;
-                devViewModel.Game.ChosenItem = 0;
+            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+            for (int ii = 0; ii < item_names.Length; ii++)
+                devViewModel.Game.Items.Add(ii.ToString("D3") + ": " + item_names[ii]);
+            //object regVal = Registry.GetValue(DiagManager.REG_PATH, "ItemChoice", 0);
+            //cbSpawnItem.SelectedIndex = Math.Min(cbSpawnItem.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
+            devViewModel.Game.ChosenItem = -1;
+            devViewModel.Game.ChosenItem = 0;
 
-                string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
-                for (int ii = 0; ii < monster_names.Length; ii++)
-                    devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
-                //cbDexNum.SelectedIndex = 0;
-                devViewModel.Player.ChosenMonster = 0;
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+            for (int ii = 0; ii < monster_names.Length; ii++)
+                devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+            //cbDexNum.SelectedIndex = 0;
+            devViewModel.Player.ChosenMonster = 0;
 
 
-                string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
-                for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                    devViewModel.Player.Skins.Add(skin_names[ii]);
-                devViewModel.Player.ChosenSkin = 0;
+            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
+                devViewModel.Player.Skins.Add(skin_names[ii]);
+            devViewModel.Player.ChosenSkin = 0;
 
-                for (int ii = 0; ii < 3; ii++)
-                    devViewModel.Player.Genders.Add(((Gender)ii).ToString());
-                devViewModel.Player.ChosenGender = 0;
+            for (int ii = 0; ii < 3; ii++)
+                devViewModel.Player.Genders.Add(((Gender)ii).ToString());
+            devViewModel.Player.ChosenGender = 0;
 
-                for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
-                    devViewModel.Player.Anims.Add(GraphicsManager.Actions[ii].Name);
-                devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+            for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
+                devViewModel.Player.Anims.Add(GraphicsManager.Actions[ii].Name);
+            devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
 
-                ZoneData zone = DataManager.Instance.GetZone(1);
-                for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
-                    devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "MapChoice", 0);
-                //cbMaps.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbMaps.Items.Count - 1);
-                devViewModel.Travel.ChosenGround = 0;
+            ZoneData zone = DataManager.Instance.GetZone(1);
+            for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
+                devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "MapChoice", 0);
+            //cbMaps.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbMaps.Items.Count - 1);
+            devViewModel.Travel.ChosenGround = 0;
 
-                string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
-                for (int ii = 0; ii < dungeon_names.Length; ii++)
-                    devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "ZoneChoice", 0);
-                //cbZones.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbZones.Items.Count - 1);
-                devViewModel.Travel.ChosenZone = 0;
+            string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
+            for (int ii = 0; ii < dungeon_names.Length; ii++)
+                devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "ZoneChoice", 0);
+            //cbZones.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbZones.Items.Count - 1);
+            devViewModel.Travel.ChosenZone = 0;
 
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "StructChoice", 0);
-                //cbStructure.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbStructure.Items.Count - 1);
-                devViewModel.Travel.ChosenStructure = 0;
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "StructChoice", 0);
+            //cbStructure.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbStructure.Items.Count - 1);
+            devViewModel.Travel.ChosenStructure = 0;
 
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "FloorChoice", 0);
-                //cbFloor.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbFloor.Items.Count - 1);
+            //regVal = Registry.GetValue(DiagManager.REG_PATH, "FloorChoice", 0);
+            //cbFloor.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbFloor.Items.Count - 1);
 
-                LoadComplete = true;
-            }
+            LoadComplete = true;
         }
 
 
         public void Update(GameTime gameTime)
         {
-            lock (GameBase.lockObj)
-            {
-                ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
-                devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
-                if (GameManager.Instance.IsInGame())
-                {
-                    devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm, Dungeon.DungeonScene.Instance.FocusedCharacter.Level);
-                }
-            }
+            ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
+            devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+            if (GameManager.Instance.IsInGame())
+                devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm, Dungeon.DungeonScene.Instance.FocusedCharacter.Level);
         }
 
         private void update()
@@ -200,8 +192,10 @@ namespace RogueEssence.Dev.Views
             }
             else
             {
+                //mojoshader dislikes the form loading while the game is loading for some reason, so give a delay
+                await Task.Delay(1000);
                 using (GameBase game = new GameBase())
-                    await Task.Run(game.RunAsync);
+                    await game.RunAsync();
             }
             Close();
         }
