@@ -14,6 +14,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
+using SDL2;
 #endregion
 
 namespace RogueEssence.Examples
@@ -214,6 +215,8 @@ namespace RogueEssence.Examples
             CoreDllMap.Init();
             Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
             CoreDllMap.Register(fnaAssembly);
+            //load SDL first before FNA3D to sidestep multiple dylibs problem
+            SDL.SDL_GetPlatform();
         }
     }
 
