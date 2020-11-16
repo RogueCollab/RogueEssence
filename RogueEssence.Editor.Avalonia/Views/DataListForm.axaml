@@ -6,12 +6,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="RogueEssence.Dev.Views.DataListForm"
-        Title="Dev Controls" Height="260" Width="200">
+        Title="{Binding Name}" Height="260" Width="200">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
         <vm:DataListFormViewModel/>
     </Design.DataContext>
   <Grid>
-    <views:SearchListBox DataContext="{Binding SearchList}"/>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="40"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <views:SearchListBox DataContext="{Binding SearchList}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
+    <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Add</Button>
+    <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Delete</Button>
   </Grid>
 </Window>

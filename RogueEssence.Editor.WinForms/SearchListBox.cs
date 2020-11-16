@@ -119,23 +119,23 @@ namespace RogueEssence.Dev
             return entryMap[index];
         }
 
-        public string GetInternalEntry(int index)
+        public string GetInternalEntry(int internalIndex)
         {
-            return entries[index];
+            return entries[internalIndex];
         }
 
-        public void SetInternalEntry(int index, string entry)
+        public void SetInternalEntry(int internalIndex, string entry)
         {
-            bool oldAppears = (txtSearch.Text == "" || entries[index].IndexOf(txtSearch.Text, StringComparison.CurrentCultureIgnoreCase) > -1);
+            bool oldAppears = (txtSearch.Text == "" || entries[internalIndex].IndexOf(txtSearch.Text, StringComparison.CurrentCultureIgnoreCase) > -1);
             bool newAppears = (txtSearch.Text == "" || entry.IndexOf(txtSearch.Text, StringComparison.CurrentCultureIgnoreCase) > -1);
-            entries[index] = entry;
+            entries[internalIndex] = entry;
 
-            int shownIndex = entryMap.IndexOf(index);
+            int shownIndex = entryMap.IndexOf(internalIndex);
             
             if (oldAppears && newAppears)
             {
                 //change
-                lbxItems.Items[shownIndex] = index + ": " + entry;
+                lbxItems.Items[shownIndex] = internalIndex + ": " + entry;
             }
             else if (oldAppears)
             {
@@ -148,10 +148,10 @@ namespace RogueEssence.Dev
                 //add
                 for (int ii = 0; ii < entryMap.Count; ii++)
                 {
-                    if (entryMap[ii] < index)
+                    if (entryMap[ii] < internalIndex)
                     {
-                        lbxItems.Items.Insert(ii, index + ": " + entry);
-                        entryMap.Insert(ii, index);
+                        lbxItems.Items.Insert(ii, internalIndex + ": " + entry);
+                        entryMap.Insert(ii, internalIndex);
                         break;
                     }
                 }
@@ -181,14 +181,15 @@ namespace RogueEssence.Dev
                 SelectedIndex = index;
         }
 
+        public int IndexFromPoint(Point p)
+        {
+            return lbxItems.IndexFromPoint(p);
+        }
+
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
             RefreshFilter();
         }
 
-        public int IndexFromPoint(Point p)
-        {
-            return lbxItems.IndexFromPoint(p);
-        }
     }
 }

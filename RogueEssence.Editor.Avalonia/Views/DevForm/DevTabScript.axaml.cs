@@ -35,11 +35,13 @@ namespace RogueEssence.Dev.Views
                     case Key.Up:
                         {
                             viewModel.ShiftHistory(-1);
+                            args.Handled = true;
                             break;
                         }
                     case Key.Down:
                         {
                             viewModel.ShiftHistory(1);
+                            args.Handled = true;
                             break;
                         }
                 }

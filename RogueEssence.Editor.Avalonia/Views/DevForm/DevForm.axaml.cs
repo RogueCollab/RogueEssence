@@ -157,10 +157,8 @@ namespace RogueEssence.Dev.Views
 
         public void OpenGround()
         {
-            GroundEditForm = new GroundEditForm()
-            {
-                DataContext = new ViewModels.GroundEditViewModel(),
-            };
+            GroundEditForm = new GroundEditForm();
+            GroundEditForm.DataContext = new ViewModels.GroundEditViewModel(GroundEditForm);
             GroundEditForm.FormClosed += groundEditorClosed;
             GroundEditForm.LoadFromCurrentGround();
             GroundEditForm.Show();

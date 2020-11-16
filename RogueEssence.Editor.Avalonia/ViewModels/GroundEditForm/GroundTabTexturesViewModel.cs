@@ -8,9 +8,9 @@ namespace RogueEssence.Dev.ViewModels
     {
         public GroundTabTexturesViewModel()
         {
-
+            TileBrowser = new TileBrowserViewModel();
         }
 
-
+        public TileBrowserViewModel TileBrowser { get; set; }
     }
 }

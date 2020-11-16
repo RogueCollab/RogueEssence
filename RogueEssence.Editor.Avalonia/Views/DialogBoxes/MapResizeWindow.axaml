@@ -1,0 +1,56 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RogueElements;assembly=RogueElements"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+        x:Class="RogueEssence.Dev.Views.MapResizeWindow"
+        Title="Resize Map" Height="380" Width="200">
+  <Design.DataContext>
+    <vm:MapResizeViewModel/>
+  </Design.DataContext>
+  <Window.Resources>
+    <converters:ComparisonXConverter x:Key="ComparisonXConverter"/>
+  </Window.Resources>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="42"/>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="42"/>
+      <RowDefinition Height="20"/>
+      <RowDefinition/>
+      <RowDefinition Height="2*"/>
+      <RowDefinition/>
+      <RowDefinition Height="10"/>
+      <RowDefinition Height="42"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4">Width</TextBlock>
+    <NumericUpDown Value="{Binding MapWidth}" Minimum="1" Maximum="1000" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"></NumericUpDown>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4">Height</TextBlock>
+    <NumericUpDown Value="{Binding MapHeight}" Minimum="1" Maximum="1000" Margin="4" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"></NumericUpDown>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4">Anchor</TextBlock>
+
+    <Button Command="{Binding btnUpLeft_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.UpLeft}}" Margin="4" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1"/>
+    <Button Command="{Binding btnUp_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.Up}}" Margin="4" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"/>
+    <Button Command="{Binding btnUpRight_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.UpRight}}" Margin="4" Grid.Row="5" Grid.Column="3" Grid.ColumnSpan="1"/>
+    <Button Command="{Binding btnLeft_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.Left}}" Margin="4" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="1"/>
+    <Button Command="{Binding btnNone_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.None}}" Margin="4" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2"/>
+    <Button Command="{Binding btnRight_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.Right}}" Margin="4" Grid.Row="6" Grid.Column="3" Grid.ColumnSpan="1"/>
+    <Button Command="{Binding btnDownLeft_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.DownLeft}}" Margin="4" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="1"/>
+    <Button Command="{Binding btnDown_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.Down}}" Margin="4" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2"/>
+    <Button Command="{Binding btnDownRight_Click}" Content="{Binding Path=ResizeDir, Converter={StaticResource ComparisonXConverter}, ConverterParameter={x:Static local:Dir8.DownRight}}" Margin="4" Grid.Row="7" Grid.Column="3" Grid.ColumnSpan="1"/>
+    
+    <Button Click="btnOK_Click" Margin="4" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">OK</Button>
+    <Button Click="btnCancel_Click" Margin="4" Grid.Row="9" Grid.Column="2" Grid.ColumnSpan="2">Cancel</Button>
+  </Grid>
+</Window>

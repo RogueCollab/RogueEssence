@@ -1,0 +1,30 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="RogueEssence.Dev.Views.MapRetileWindow"
+        Title="Re-Tile Map" Height="150" Width="280">
+  <Design.DataContext>
+    <vm:MapRetileViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="42"/>
+      <RowDefinition/>
+      <RowDefinition Height="42"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Tile Size (Pixels)</TextBlock>
+    <NumericUpDown Value="{Binding TileSize}" Minimum="1" Maximum="256" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"></NumericUpDown>
+    <TextBlock Margin="4" TextWrapping="Wrap" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Tile size must be divisible by 8."/>
+    <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="0">OK</Button>
+    <Button Click="btnCancel_Click" Margin="4" Grid.Row="3" Grid.Column="1">Cancel</Button>
+  </Grid>
+</Window>
