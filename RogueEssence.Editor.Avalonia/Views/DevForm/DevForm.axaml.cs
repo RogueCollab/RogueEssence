@@ -13,6 +13,7 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.Views
 {
@@ -45,11 +46,6 @@ namespace RogueEssence.Dev.Views
         }
 
         void IRootEditor.Load(GameBase game)
-        {
-            executeOrInvoke(load);
-        }
-
-        private void load()
         {
             lock (GameBase.lockObj)
             {
@@ -138,11 +134,6 @@ namespace RogueEssence.Dev.Views
 
         public void Update(GameTime gameTime)
         {
-            executeOrInvoke(update);
-        }
-
-        private void update()
-        {
             lock (GameBase.lockObj)
             {
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
@@ -152,6 +143,10 @@ namespace RogueEssence.Dev.Views
                     devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm, Dungeon.DungeonScene.Instance.FocusedCharacter.Level);
                 }
             }
+        }
+
+        private void update()
+        {
         }
         public void Draw() { }
 
@@ -186,7 +181,7 @@ namespace RogueEssence.Dev.Views
 
 
 
-        void LoadGame()
+        async void LoadGame()
         {
             // Windows - CAN run game in new thread, CAN run game in same thread via dispatch.
             // Mac - CANNOT run game in new thread, CAN run game in same thread via dispatch.
@@ -196,42 +191,27 @@ namespace RogueEssence.Dev.Views
             // However, this is only happening on linux.  Why not windows and mac?
             // With Mac, cocoa can ONLY start the game window if it's on the main thread. Weird...
 
+            DiagManager.Instance.DevEditor = this;
+
             if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
-                LoadGameDelegate();
+            {
+                using (GameBase game = new GameBase())
+                    game.Run();
+            }
             else
             {
-                Thread thread = new Thread(LoadGameDelegate);
-                thread.IsBackground = true;
-                thread.Start();
+                using (GameBase game = new GameBase())
+                    await Task.Run(game.RunAsync);
             }
+            Close();
         }
 
-        private void executeOrInvoke(Action action)
-        {
-            if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
-                action();
-            else
-                Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Background);
-        }
-
-        void LoadGameDelegate()
-        {
-            DiagManager.Instance.DevEditor = this;
-            using (GameBase game = new GameBase())
-                game.Run();
-
-            executeOrInvoke(Close);
-        }
 
         public void Window_Loaded(object sender, EventArgs e)
         {
             if (Design.IsDesignMode)
                 return;
-            //Thread thread = new Thread(LoadGame);
-            //thread.IsBackground = true;
-            //thread.Start();
             Dispatcher.UIThread.InvokeAsync(LoadGame, DispatcherPriority.Background);
-            //LoadGame();
         }
 
         public void Window_Closed(object sender, EventArgs e)
