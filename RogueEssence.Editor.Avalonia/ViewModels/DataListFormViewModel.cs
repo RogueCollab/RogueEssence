@@ -29,7 +29,7 @@ namespace RogueEssence.Dev.ViewModels
         public string Name
         {
             get { return name; }
-            set { this.RaiseAndSetIfChanged(ref name, value); }
+            set { this.SetIfChanged(ref name, value); }
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using RogueEssence;
@@ -9,6 +10,13 @@ using Avalonia.Controls;
 using System.IO;
 using RogueEssence.Dev.Views;
 using RogueEssence.Content;
+using RogueElements;
+using RogueEssence.Script;
+using System.Linq;
+using ReactiveUI;
+using System.Collections.ObjectModel;
+using RogueEssence.Dev.Models;
+using System.Diagnostics;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -20,20 +28,35 @@ namespace RogueEssence.Dev.ViewModels
             Walls = new GroundTabWallsViewModel();
             Entities = new GroundTabEntitiesViewModel();
             Properties = new GroundTabPropertiesViewModel();
-            Script = new GroundTabScriptViewModel();
             Strings = new GroundTabStringsViewModel();
             DialogParent = dialogParent;
+            CurrentFile = "";
+
+
+            ScriptItems = new ObservableCollection<ScriptItem>();
+            foreach (LuaEngine.EMapCallbacks v in LuaEngine.EnumerateCallbackTypes())
+                ScriptItems.Add(new ScriptItem(v.ToString(), false));
+
         }
 
         public GroundTabTexturesViewModel Textures { get; set; }
         public GroundTabWallsViewModel Walls { get; set; }
         public GroundTabEntitiesViewModel Entities { get; set; }
         public GroundTabPropertiesViewModel Properties { get; set; }
-        public GroundTabScriptViewModel Script { get; set; }
         public GroundTabStringsViewModel Strings { get; set; }
 
+        private string currentFile;
+        public string CurrentFile
+        {
+            get { return currentFile; }
+            set
+            {
+                this.SetIfChanged(ref currentFile, value);
+            }
+        }
 
-        public string CurrentFile;
+
+
         public Window DialogParent;
 
 
@@ -41,15 +64,15 @@ namespace RogueEssence.Dev.ViewModels
         {
 
             //Check all callbacks by default
-            for (int ii = 0; ii < Script.ScriptItems.Count; ii++)
-                Script.ScriptItems[ii].IsChecked = true;
+            for (int ii = 0; ii < ScriptItems.Count; ii++)
+                ScriptItems[ii].IsChecked = true;
 
             CurrentFile = "";
 
             lock (GameBase.lockObj)
             {
                 //Schedule the map creation
-                GroundEditScene.Instance.PendingDevEvent = DoNew();
+                DoNew();
             }
         }
 
@@ -73,12 +96,7 @@ namespace RogueEssence.Dev.ViewModels
                 else
                 {
                     lock (GameBase.lockObj)
-                    {
-                        CurrentFile = results[0];
-
-                        //Schedule the map load
-                        GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(results[0]));
-                    }
+                        DoLoad(Path.GetFileNameWithoutExtension(results[0]));
                 }
             }
         }
@@ -90,7 +108,7 @@ namespace RogueEssence.Dev.ViewModels
             else
             {
                 lock (GameBase.lockObj)
-                    GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
+                    DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
             }
         }
         public async void SaveAs_Click()
@@ -116,10 +134,9 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         string oldFilename = CurrentFile;
                         ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
-                        CurrentFile = result;
 
                         //Schedule saving the map
-                        GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, oldFilename);
+                        DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
                     }
                 }
             }
@@ -141,7 +158,7 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 if (results.Length > 0)
-                    GroundEditScene.Instance.PendingDevEvent = DoImportPng(results[0]);
+                    DoImportPng(results[0]);
             }
         }
 
@@ -153,7 +170,7 @@ namespace RogueEssence.Dev.ViewModels
             else
             {
                 lock (GameBase.lockObj)
-                    GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
+                    DoImportTileset(Textures.TileBrowser.CurrentTileset);
             }
         }
 
@@ -218,7 +235,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
 
-        private IEnumerator<YieldInstruction> DoNew()
+        private void DoNew()
         {
             //take all the necessary steps before and after moving to the map
 
@@ -226,16 +243,12 @@ namespace RogueEssence.Dev.ViewModels
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
             GameManager.Instance.ForceReady();
 
-
             ZoneManager.Instance.CurrentZone.DevNewGround();
 
             loadEditorSettings();
-
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-
-            yield break;
         }
-        private IEnumerator<YieldInstruction> DoLoad(string mapName)
+        private void DoLoad(string mapName)
         {
             //take all the necessary steps before and after moving to the map
 
@@ -245,11 +258,10 @@ namespace RogueEssence.Dev.ViewModels
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
+            CurrentFile = mapName;
             loadEditorSettings();
-
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
-            yield break;
         }
 
         public void LoadFromCurrentGround()
@@ -264,89 +276,83 @@ namespace RogueEssence.Dev.ViewModels
 
         private void loadEditorSettings()
         {
-            //lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            //tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            Textures.LoadLayers();
+            Textures.TileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
 
-            //RefreshTitle();
-            //UpdateHasScriptFolder();
-            //LoadMapProperties();
-            //SetupLayerVisibility();
-            //LoadAndSetupStrings();
+            Walls.SetupLayerVisibility();
+            Properties.LoadMapProperties();
+            LoadScriptData();
+            Strings.LoadStrings();
         }
 
-        private IEnumerator<YieldInstruction> DoImportPng(string filePath)
+        private void DoImportPng(string filePath)
         {
-            //string sheetName = Path.GetFileNameWithoutExtension(filePath);
-
-            //string outputFile = String.Format(GraphicsManager.TILE_PATTERN, sheetName);
-
-
-            ////load into tilesets
-            //using (BaseSheet tileset = BaseSheet.Import(filePath))
-            //{
-            //    List<BaseSheet> tileList = new List<BaseSheet>();
-            //    tileList.Add(tileset);
-            //    ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
-            //}
+            string sheetName = Path.GetFileNameWithoutExtension(filePath);
+            string outputFile = String.Format(GraphicsManager.TILE_PATTERN, sheetName);
 
 
-            ////update the index
-            //using (FileStream stream = File.OpenRead(outputFile))
-            //{
-            //    using (BinaryReader reader = new BinaryReader(stream))
-            //    {
-            //        TileIndexNode guide = TileIndexNode.Load(reader);
-            //        GraphicsManager.TileIndex.Nodes[sheetName] = guide;
-            //    }
-            //}
+            //load into tilesets
+            using (BaseSheet tileset = BaseSheet.Import(filePath))
+            {
+                List<BaseSheet> tileList = new List<BaseSheet>();
+                tileList.Add(tileset);
+                ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+            }
 
-            //string search = Path.GetDirectoryName(String.Format(GraphicsManager.TILE_PATTERN, '*'));
-            //using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
-            //{
-            //    using (BinaryWriter writer = new BinaryWriter(stream))
-            //        GraphicsManager.TileIndex.Save(writer);
-            //}
 
-            //GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+            //update the index
+            using (FileStream stream = File.OpenRead(outputFile))
+            {
+                using (BinaryReader reader = new BinaryReader(stream))
+                {
+                    TileIndexNode guide = TileIndexNode.Load(reader);
+                    GraphicsManager.TileIndex.Nodes[sheetName] = guide;
+                }
+            }
 
-            //tileBrowser.UpdateTilesList();
-            //tileBrowser.SelectTileset(sheetName);
-            yield break;
+            string search = Path.GetDirectoryName(String.Format(GraphicsManager.TILE_PATTERN, '*'));
+            using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
+            {
+                using (BinaryWriter writer = new BinaryWriter(stream))
+                    GraphicsManager.TileIndex.Save(writer);
+            }
+
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+            Textures.TileBrowser.UpdateTilesList();
+            Textures.TileBrowser.SelectTileset(sheetName);
         }
 
-        private IEnumerator<YieldInstruction> DoImportTileset(string sheetName)
+        private void DoImportTileset(string sheetName)
         {
-            //Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
+            Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
-            //DiagManager.Instance.LoadMsg = "Loading Map...";
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-            //ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.UpLeft);
+            ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.UpLeft);
 
-            ////set tilesets
-            //for (int yy = 0; yy < newSize.Y; yy++)
-            //{
-            //    for (int xx = 0; xx < newSize.X; xx++)
-            //        ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
-            //}
+            //set tilesets
+            for (int yy = 0; yy < newSize.Y; yy++)
+            {
+                for (int xx = 0; xx < newSize.X; xx++)
+                    ZoneManager.Instance.CurrentGround.Layers[Textures.CurrentLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+            }
 
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-
-            yield break;
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
         }
 
-        private IEnumerator<YieldInstruction> DoSave(GroundMap curgrnd, string filepath, string oldfname)
+        private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
-            //DataManager.SaveData(filepath, curgrnd);
+            DataManager.SaveData(filepath, curgrnd);
 
-            ////Actually create the script folder, and default script file.
-            //CreateOrCopyScriptData(oldfname, CurrentFile);
-            ////Strings will have to be created on demand!
-            //UpdateHasScriptFolder();
+            //Actually create the script folder, and default script file.
+            createOrCopyScriptData(oldfname, filepath);
+            //create or update the strings
+            Strings.SaveStrings();
 
-            //RefreshTitle();
+            CurrentFile = filepath;
 
-            yield break;
         }
 
 
@@ -356,6 +362,84 @@ namespace RogueEssence.Dev.ViewModels
                 Path.GetFullPath(path2).TrimEnd('\\'),
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
+
+        /// <summary>
+        /// Call this when saving as, so that if the previous map name has a script folder with data in it,
+        /// we can copy it. And if it doesn't, we create a "blank slate" one!
+        /// </summary>
+        /// <param name="oldfilepath"></param>
+        /// <param name="newfilepath"></param>
+        private void createOrCopyScriptData(string oldfilepath, string newfilepath)
+        {
+            string oldmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
+            string newmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+
+            //Check if we have anything to copy at all!
+            if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))
+            {
+                Directory.CreateDirectory(newmapscriptdir);
+                foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
+                {
+                    //Path to the sub-directory within the script folder containing this file
+                    string subdirpath = f.Remove(oldmapscriptdir.Count()); //Not Count - 1 because of the last path separator!
+                    //Path to the sub-directory within the new script folder where we'll copy this file!
+                    string destpath = Path.Combine(newmapscriptdir, subdirpath);
+
+                    //Ensure all subdirectories are created recursively, if there are any!
+                    Directory.CreateDirectory(Path.GetDirectoryName(destpath));
+
+                    //Copy the file itself
+                    File.Copy(f, destpath, false);
+                }
+            }
+            else
+            {
+                //We just create a new one straight away!
+                LuaEngine.Instance.CreateNewMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
+            }
+        }
+
+
+
+
+
+
+
+
+        public ObservableCollection<ScriptItem> ScriptItems { get; }
+
+        public void btnOpenScriptDir_Click()
+        {
+            lock (GameBase.lockObj)
+            {
+                string mapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(CurrentFile));
+                mapscriptdir = Path.GetFullPath(mapscriptdir);
+                Process.Start("explorer.exe", mapscriptdir);
+            }
+        }
+        public void btnReloadScripts_Click()
+        {
+            lock (GameBase.lockObj)
+            {
+                LuaEngine.Instance.Reset();
+                LuaEngine.Instance.ReInit();
+            }
+        }
+
+        private void LoadScriptData()
+        {
+            lock (GameBase.lockObj)
+            {
+                //Setup callback display without triggering events
+                var scev = ZoneManager.Instance.CurrentGround.ActiveScriptEvent();
+                foreach (LuaEngine.EMapCallbacks s in scev)
+                {
+                    ScriptItems[(int)s].IsChecked = true;
+                }
+            }
+        }
+
+
 
     }
 }

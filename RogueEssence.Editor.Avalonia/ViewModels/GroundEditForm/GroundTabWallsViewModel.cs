@@ -19,9 +19,14 @@ namespace RogueEssence.Dev.ViewModels
             get { return blockMode; }
             set
             {
-                this.RaiseAndSetIfChanged(ref blockMode, value);
+                this.SetIfChanged(ref blockMode, value);
             }
         }
 
+        public void SetupLayerVisibility()
+        {
+
+            //ShowDataLayer = false;
+        }
     }
 }

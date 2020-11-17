@@ -1117,6 +1117,11 @@ namespace RogueEssence.Dev
             }
         }
 
+        private string MakeCurrentStringsPath()
+        {
+            return String.Format("{0}{1}", Script.LuaEngine.MapScriptDirectory, ZoneManager.Instance.CurrentGround.AssetName);
+        }
+
         private void btnCommitStrings_Click(object sender, EventArgs e)
         {
             if (!String.IsNullOrEmpty(CurrentFile))
@@ -1133,11 +1138,6 @@ namespace RogueEssence.Dev
             }
             else
                 MessageBox.Show(this, "Please save the map and commit the strings at least once before trying to reload the strings!!", "Please save and commit strings first!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
-
-        private string MakeCurrentStringsPath()
-        {
-            return String.Format("{0}{1}", Script.LuaEngine.MapScriptDirectory, ZoneManager.Instance.CurrentGround.AssetName);
         }
 
         private void btnStringAdd_Click(object sender, EventArgs e)

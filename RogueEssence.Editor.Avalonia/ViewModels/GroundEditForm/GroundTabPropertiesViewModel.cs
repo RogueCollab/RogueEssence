@@ -19,7 +19,9 @@ namespace RogueEssence.Dev.ViewModels
 
             Music = new ObservableCollection<string>();
             reloadMusic();
+
         }
+
 
 
         public string MapName
@@ -27,16 +29,12 @@ namespace RogueEssence.Dev.ViewModels
             get
             {
                 lock (GameBase.lockObj)
-                {
                     return ZoneManager.Instance.CurrentGround.Name.DefaultText;
-                }
             }
             set
             {
                 lock (GameBase.lockObj)
-                {
-                    this.RaiseAndSetIfChanged(ref ZoneManager.Instance.CurrentGround.Name.DefaultText, value);
-                }
+                    this.RaiseAndSet(ref ZoneManager.Instance.CurrentGround.Name.DefaultText, value);
             }
         }
 
@@ -47,16 +45,14 @@ namespace RogueEssence.Dev.ViewModels
             get
             {
                 lock (GameBase.lockObj)
-                {
                     return (int)ZoneManager.Instance.CurrentGround.EdgeView;
-                }
             }
             set
             {
                 lock (GameBase.lockObj)
                 {
                     int scroll = (int)ZoneManager.Instance.CurrentGround.EdgeView;
-                    this.RaiseAndSetIfChanged(ref scroll, value);
+                    this.RaiseAndSet(ref scroll, value);
                     ZoneManager.Instance.CurrentGround.EdgeView = (Map.ScrollEdge)scroll;
                 }
             }
@@ -71,7 +67,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenMusic; }
             set
             {
-                this.RaiseAndSetIfChanged(ref chosenMusic, value);
+                this.SetIfChanged(ref chosenMusic, value);
                 musicChanged();
             }
         }
@@ -117,5 +113,27 @@ namespace RogueEssence.Dev.ViewModels
                 GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, false);
             }
         }
+
+        public void LoadMapProperties()
+        {
+            MapName = MapName;
+            ChosenScroll = ChosenScroll;
+
+            bool foundSong = false;
+            for (int ii = 0; ii < Music.Count; ii++)
+            {
+                string song = Music[ii];
+                if (song == ZoneManager.Instance.CurrentGround.Music)
+                {
+                    ChosenMusic = ii;
+                    foundSong = true;
+                    break;
+                }
+            }
+            if (!foundSong)
+                ChosenMusic = -1;
+        }
+
+
     }
 }

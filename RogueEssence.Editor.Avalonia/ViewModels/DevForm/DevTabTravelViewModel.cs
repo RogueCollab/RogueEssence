@@ -28,7 +28,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenGround
         {
             get { return chosenGround; }
-            set { this.RaiseAndSetIfChanged(ref chosenGround, value); }
+            set { this.SetIfChanged(ref chosenGround, value); }
         }
 
 
@@ -40,7 +40,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenZone; }
             set
             {
-                this.RaiseAndSetIfChanged(ref chosenZone, value);
+                this.SetIfChanged(ref chosenZone, value);
                 ZoneChanged();
             }
         }
@@ -51,7 +51,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenStructure
         {
             get { return chosenStructure; }
-            set { this.RaiseAndSetIfChanged(ref chosenStructure, value);
+            set { this.SetIfChanged(ref chosenStructure, value);
                 StructureChanged();
             }
         }
@@ -62,7 +62,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenFloor
         {
             get { return chosenFloor; }
-            set { this.RaiseAndSetIfChanged(ref chosenFloor, value); }
+            set { this.SetIfChanged(ref chosenFloor, value); }
         }
 
         private void ZoneChanged()

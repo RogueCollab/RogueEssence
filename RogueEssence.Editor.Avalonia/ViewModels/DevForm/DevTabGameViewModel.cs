@@ -25,7 +25,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenSkill
         {
             get { return chosenSkill; }
-            set { this.RaiseAndSetIfChanged(ref chosenSkill, value); }
+            set { this.SetIfChanged(ref chosenSkill, value); }
         }
 
         public ObservableCollection<string> Intrinsics { get; }
@@ -34,7 +34,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenIntrinsic
         {
             get { return chosenIntrinsic; }
-            set { this.RaiseAndSetIfChanged(ref chosenIntrinsic, value); }
+            set { this.SetIfChanged(ref chosenIntrinsic, value); }
         }
 
         public ObservableCollection<string> Statuses { get; }
@@ -43,7 +43,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenStatus
         {
             get { return chosenStatus; }
-            set { this.RaiseAndSetIfChanged(ref chosenStatus, value); }
+            set { this.SetIfChanged(ref chosenStatus, value); }
         }
 
         public ObservableCollection<string> Items { get; }
@@ -52,7 +52,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenItem
         {
             get { return chosenItem; }
-            set { this.RaiseAndSetIfChanged(ref chosenItem, value); }
+            set { this.SetIfChanged(ref chosenItem, value); }
         }
 
         private bool hideSprites;
@@ -61,7 +61,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return hideSprites; }
             set
             {
-                this.RaiseAndSetIfChanged(ref hideSprites, value);
+                this.SetIfChanged(ref hideSprites, value);
                 DataManager.Instance.HideChars = value;
             }
         }
@@ -70,7 +70,7 @@ namespace RogueEssence.Dev.ViewModels
         public bool HideObjects
         {
             get { return hideObjects; }
-            set { this.RaiseAndSetIfChanged(ref hideObjects, value);
+            set { this.SetIfChanged(ref hideObjects, value);
                 DataManager.Instance.HideObjects = value;
             }
         }

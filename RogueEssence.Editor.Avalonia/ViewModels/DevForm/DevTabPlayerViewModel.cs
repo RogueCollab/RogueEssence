@@ -19,18 +19,32 @@ namespace RogueEssence.Dev.ViewModels
             Skins = new ObservableCollection<string>();
             Genders = new ObservableCollection<string>();
             Anims = new ObservableCollection<string>();
-
-            level = 1;
         }
 
         private int level;
         public int Level
         {
-            get { return level; }
+            get => level;
             set
             {
-                this.RaiseAndSetIfChanged(ref level, value);
-                UpdateLevel();
+                if (!this.SetIfChanged(ref level, value))
+                    return;
+                lock (GameBase.lockObj)
+                {
+                    if (GameManager.Instance.IsInGame())
+                        DungeonScene.Instance.FocusedCharacter.Level = level;
+                }
+            }
+        }
+        public void UpdateLevel()
+        {
+            lock (GameBase.lockObj)
+            {
+                int upd = 0;
+                if (GameManager.Instance.IsInGame())
+                    upd = DungeonScene.Instance.FocusedCharacter.Level;
+
+                Level = upd;
             }
         }
 
@@ -42,7 +56,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenMonster; }
             set
             {
-                this.RaiseAndSetIfChanged(ref chosenMonster, value);
+                this.SetIfChanged(ref chosenMonster, value);
                 SpeciesChanged();
             }
         }
@@ -54,7 +68,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenForm
         {
             get { return chosenForm; }
-            set { this.RaiseAndSetIfChanged(ref chosenForm, value);
+            set { this.SetIfChanged(ref chosenForm, value);
                 UpdateSprite();
             }
         }
@@ -65,7 +79,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenSkin
         {
             get { return chosenSkin; }
-            set { this.RaiseAndSetIfChanged(ref chosenSkin, value);
+            set { this.SetIfChanged(ref chosenSkin, value);
                 UpdateSprite();
             }
         }
@@ -76,7 +90,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenGender
         {
             get { return chosenGender; }
-            set { this.RaiseAndSetIfChanged(ref chosenGender, value);
+            set { this.SetIfChanged(ref chosenGender, value);
                 UpdateSprite();
             }
         }
@@ -89,7 +103,8 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenAnim; }
             set
             {
-                this.RaiseAndSetIfChanged(ref chosenAnim, value);
+                if (!this.SetIfChanged(ref chosenAnim, value))
+                    return;
                 lock (GameBase.lockObj)
                     GraphicsManager.GlobalIdle = chosenAnim;
             }
@@ -136,7 +151,7 @@ namespace RogueEssence.Dev.ViewModels
             UpdateSprite();
         }
 
-        public void UpdateSpecies(MonsterID id, int level)
+        public void UpdateSpecies(MonsterID id)
         {
             bool prevUpdate = updating;
             updating = true;
@@ -145,8 +160,6 @@ namespace RogueEssence.Dev.ViewModels
             ChosenForm = id.Form;
             ChosenSkin = id.Skin;
             ChosenGender = (int)id.Gender;
-
-            Level = level;
 
             updating = prevUpdate;
         }
@@ -163,16 +176,5 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void UpdateLevel()
-        {
-            if (updating)
-                return;
-
-            lock (GameBase.lockObj)
-            {
-                if (GameManager.Instance.IsInGame())
-                    DungeonScene.Instance.FocusedCharacter.Level = level;
-            }
-        }
     }
 }

@@ -11,6 +11,7 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.9.12" />
     <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
+    <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\DataListForm.axaml.cs">
@@ -18,15 +19,6 @@
     </Compile>
     <Compile Update="Views\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\GroundEditForm\GroundTabStrings.axaml.cs">
-      <DependentUpon>GroundTabStrings.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\GroundEditForm\GroundTabScript.axaml.cs">
-      <DependentUpon>GroundTabScript.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\GroundEditForm\GroundTabProperties.axaml.cs">
-      <DependentUpon>GroundTabProperties.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\GroundEditForm\GroundTabEntities.axaml.cs">
       <DependentUpon>GroundTabEntities.axaml</DependentUpon>

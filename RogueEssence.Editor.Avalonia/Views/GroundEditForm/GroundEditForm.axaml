@@ -5,12 +5,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
         x:Class="RogueEssence.Dev.Views.GroundEditForm"
-        Title="Dev Controls" Height="500" Width="850" Opened="Window_Loaded" Closed="Window_Closed">
+        Height="500" Width="850" Opened="Window_Loaded" Closed="Window_Closed">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
         <vm:DevFormViewModel/>
     </Design.DataContext>
+  <Window.Resources>
+    <converters:FileToTitleConverter x:Key="FileToTitleConverter"/>
+    <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
+    <converters:MapScriptPathConverter x:Key="MapScriptPathConverter"/>
+  </Window.Resources>
+  <Window.Title>
+    <Binding Path="CurrentFile" Converter="{StaticResource FileToTitleConverter}"/>
+  </Window.Title>
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="_File">
@@ -43,11 +52,38 @@
         <TabItem Name="tabProperties" Header="Properties" >
           <views:GroundTabProperties DataContext="{Binding Properties}"/>
         </TabItem>
-        <TabItem Name="tabScript" Header="Script" >
-          <views:GroundTabScript DataContext="{Binding Script}"/>
-        </TabItem>
         <TabItem Name="tabStrings" Header="Strings" >
           <views:GroundTabStrings DataContext="{Binding Strings}"/>
+        </TabItem>
+        <TabItem Name="tabScript" Header="Script" >
+          <Grid Margin="4" >
+            <Grid.RowDefinitions>
+              <RowDefinition Height="20"/>
+              <RowDefinition Height="40"/>
+              <RowDefinition Height="20"/>
+              <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="120"/>
+              <ColumnDefinition Width="120"/>
+              <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding Path=CurrentFile, Converter={StaticResource MapScriptPathConverter}}"/>
+            <Button Name="btnOpenScriptDir" Command="{Binding btnOpenScriptDir_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1" Grid.Column="0">Open Script Folder</Button>
+            <Button Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1" Grid.Column="1">Reload Scripts</Button>
+            <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Map Callbacks</TextBlock>
+            <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="4" BorderThickness="1" BorderBrush="Black">
+              <ItemsControl Items="{Binding ScriptItems}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <CheckBox Margin="4"
+                              IsChecked="{Binding IsChecked}"
+                              Content="{Binding Description}"/>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Border>
+          </Grid>
         </TabItem>
       </TabControl>
     </Grid>

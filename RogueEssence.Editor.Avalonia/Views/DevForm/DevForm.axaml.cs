@@ -46,7 +46,7 @@ namespace RogueEssence.Dev.Views
 
         void IRootEditor.Load(GameBase game)
         {
-            executeOrInvoke(load);
+            ExecuteOrInvoke(load);
         }
 
         private void load()
@@ -84,7 +84,7 @@ namespace RogueEssence.Dev.Views
 
                 string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
                 for (int ii = 0; ii < item_names.Length; ii++)
-                    devViewModel.Game.Items.Add(ii.ToString("D3") + ": " + item_names[ii]);
+                    devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
                 //object regVal = Registry.GetValue(DiagManager.REG_PATH, "ItemChoice", 0);
                 //cbSpawnItem.SelectedIndex = Math.Min(cbSpawnItem.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
                 devViewModel.Game.ChosenItem = -1;
@@ -138,7 +138,7 @@ namespace RogueEssence.Dev.Views
 
         public void Update(GameTime gameTime)
         {
-            executeOrInvoke(update);
+            ExecuteOrInvoke(update);
         }
 
         private void update()
@@ -147,10 +147,9 @@ namespace RogueEssence.Dev.Views
             {
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
                 devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+                devViewModel.Player.UpdateLevel();
                 if (GameManager.Instance.IsInGame())
-                {
-                    devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm, Dungeon.DungeonScene.Instance.FocusedCharacter.Level);
-                }
+                    devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm);
             }
         }
         public void Draw() { }
@@ -158,9 +157,10 @@ namespace RogueEssence.Dev.Views
         public void OpenGround()
         {
             GroundEditForm = new GroundEditForm();
-            GroundEditForm.DataContext = new ViewModels.GroundEditViewModel(GroundEditForm);
+            ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel(GroundEditForm);
+            GroundEditForm.DataContext = vm;
             GroundEditForm.FormClosed += groundEditorClosed;
-            GroundEditForm.LoadFromCurrentGround();
+            vm.LoadFromCurrentGround();
             GroundEditForm.Show();
         }
 
@@ -206,7 +206,7 @@ namespace RogueEssence.Dev.Views
             }
         }
 
-        private void executeOrInvoke(Action action)
+        public static void ExecuteOrInvoke(Action action)
         {
             if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
                 action();
@@ -220,7 +220,7 @@ namespace RogueEssence.Dev.Views
             using (GameBase game = new GameBase())
                 game.Run();
 
-            executeOrInvoke(Close);
+            ExecuteOrInvoke(Close);
         }
 
         public void Window_Loaded(object sender, EventArgs e)

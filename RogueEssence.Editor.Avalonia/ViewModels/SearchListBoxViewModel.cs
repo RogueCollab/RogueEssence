@@ -26,14 +26,14 @@ namespace RogueEssence.Dev.ViewModels
         public string DataName
         {
             get { return dataName; }
-            set { this.RaiseAndSetIfChanged(ref dataName, value); }
+            set { this.SetIfChanged(ref dataName, value); }
         }
 
         private string searchText;
         public string SearchText
         {
             get { return searchText; }
-            set { this.RaiseAndSetIfChanged(ref searchText, value); }
+            set { this.SetIfChanged(ref searchText, value); }
         }
 
         public ObservableCollection<string> SearchItems { get; }
@@ -45,7 +45,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return selectedSearchIndex; }
             set
             {
-                this.RaiseAndSetIfChanged(ref selectedSearchIndex, value);
+                this.SetIfChanged(ref selectedSearchIndex, value);
                 InternalIndex = entryMap[selectedSearchIndex];
             }
         }

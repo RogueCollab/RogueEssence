@@ -30,14 +30,11 @@ namespace RogueEssence.Dev.Views
 
         public bool Active { get; private set; }
 
-        private string CurrentFile;
-
         private List<string> objectAnimIndex;
 
         public bool ShowDataLayer;
 
         private EntEditMode EntMode;
-        //private TileEditMode BlockMode;
 
 
         public GroundEditForm()
@@ -123,6 +120,7 @@ namespace RogueEssence.Dev.Views
 
 
 
+
         public void Window_Loaded(object sender, EventArgs e)
         {
             //RefreshTitle();
@@ -149,12 +147,6 @@ namespace RogueEssence.Dev.Views
                 GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest);
             else
                 GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
-        }
-
-
-        public void LoadFromCurrentGround()
-        {
-
         }
     }
 }
