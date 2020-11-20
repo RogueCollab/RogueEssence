@@ -150,6 +150,11 @@ namespace RogueEssence.Dev.Views
                 devViewModel.Player.UpdateLevel();
                 if (GameManager.Instance.IsInGame())
                     devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm);
+                if (GroundEditForm != null)
+                {
+                    ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
+                    vm.Textures.TileBrowser.UpdateFrame();
+                }
             }
         }
         public void Draw() { }
@@ -157,9 +162,8 @@ namespace RogueEssence.Dev.Views
         public void OpenGround()
         {
             GroundEditForm = new GroundEditForm();
-            ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel(GroundEditForm);
+            ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel();
             GroundEditForm.DataContext = vm;
-            GroundEditForm.FormClosed += groundEditorClosed;
             vm.LoadFromCurrentGround();
             GroundEditForm.Show();
         }

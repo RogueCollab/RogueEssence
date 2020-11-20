@@ -1,0 +1,47 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.LayerBox">
+  <Design.DataContext>
+    <vm:LayerBoxViewModel/>
+  </Design.DataContext>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="16"/>
+      <RowDefinition/>
+      <RowDefinition Height="34"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="6">Layers:</TextBlock>
+    <ListBox  Margin="2" SelectionMode="AlwaysSelected" Items="{Binding Layers}" SelectedIndex="{Binding ChosenLayer}" DoubleTapped="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="26"/>
+              <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <CheckBox IsChecked="{Binding Path=Visible}" Grid.Column="0"/>
+            <TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" Grid.Column="1"/>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <Button Command="{Binding AddLayer}" Margin="2" Grid.Row="2" Grid.Column="0" >+</Button>
+    <Button Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1">-</Button>
+    <Button Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2">D</Button>
+    <Button Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3">M</Button>
+    <Button Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4">^</Button>
+    <Button Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5">v</Button>
+  </Grid>
+</UserControl>

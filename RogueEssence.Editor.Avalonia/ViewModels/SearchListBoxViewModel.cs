@@ -45,8 +45,9 @@ namespace RogueEssence.Dev.ViewModels
             get { return selectedSearchIndex; }
             set
             {
-                this.SetIfChanged(ref selectedSearchIndex, value);
-                InternalIndex = entryMap[selectedSearchIndex];
+                InternalIndex = (value > -1 && value < entryMap.Count) ? entryMap[value] : -1;
+                this.RaiseAndSet(ref selectedSearchIndex, value);
+                SelectedIndexChanged?.Invoke();
             }
         }
 
@@ -54,7 +55,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
         public event EventHandler<RoutedEventArgs> ListBoxMouseDoubleClick;
-        public event EventHandler<SelectionChangedEventArgs> SelectedIndexChanged;
+        public event Action SelectedIndexChanged;
 
         public void SetName(string name)
         {
@@ -165,8 +166,8 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (SearchText == "" || entries[ii].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
                 {
-                    SearchItems.Add(ii + ": " + entries[ii]);
                     entryMap.Add(ii);
+                    SearchItems.Add(ii + ": " + entries[ii]);
                     if (ii == internalIndex)
                         index = entryMap.Count - 1;
                 }
@@ -183,11 +184,6 @@ namespace RogueEssence.Dev.ViewModels
         public void txtSearch_TextChanged(string text)
         {
             RefreshFilter();
-        }
-
-        public void lbxItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SelectedIndexChanged?.Invoke(sender, e);
         }
 
         public void lbxItems_DoubleClick(object sender, RoutedEventArgs e)

@@ -36,9 +36,7 @@ namespace RogueEssence.Dev.ViewModels
         public void AddEntries(string[] entries)
         {
             for (int ii = 0; ii < entries.Length; ii++)
-            {
                 SearchList.AddItem(entries[ii]);
-            }
         }
 
         public void ModifyEntry(int index, string entry)

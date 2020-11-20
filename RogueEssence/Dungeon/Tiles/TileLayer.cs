@@ -44,9 +44,13 @@ namespace RogueEssence.Dungeon
         }
 
         public TileLayer(Loc texture, string sheet)
+            : this(new TileFrame(texture, sheet))
+        { }
+
+        public TileLayer(TileFrame frame)
             : this()
         {
-            Frames.Add(new TileFrame(texture, sheet));
+            Frames.Add(frame);
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc pos, ulong totalTick)
@@ -58,8 +62,12 @@ namespace RogueEssence.Dungeon
             if (Frames.Count > 0)
             {
                 int currentFrame = (int)(totalTick / (ulong)FrameTick.FrameToTick(FrameLength) % (ulong)Frames.Count);
-                Content.BaseSheet texture = GraphicsManager.GetTile(Frames[currentFrame]);
-                texture.Draw(spriteBatch, pos.ToVector2(), null, color);
+                TileFrame frame = Frames[currentFrame];
+                if (frame != TileFrame.Empty)
+                {
+                    BaseSheet texture = GraphicsManager.GetTile(frame);
+                    texture.Draw(spriteBatch, pos.ToVector2(), null, color);
+                }
             }
         }
 

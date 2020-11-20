@@ -28,7 +28,7 @@
     <Button Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1">Form</TextBlock>
-    <ComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" Margin="4" Grid.Row="3" Grid.Column="0"/>
+    <ComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4" Grid.Row="3" Grid.Column="0"/>
     <ComboBox Name="cbForm" Items="{Binding Forms}" SelectedIndex="{Binding ChosenForm}" Margin="4" Grid.Row="3" Grid.Column="1"/>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="0">Skin</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="1" >Gender</TextBlock>

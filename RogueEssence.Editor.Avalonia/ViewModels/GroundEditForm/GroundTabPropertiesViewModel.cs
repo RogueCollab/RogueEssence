@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Controls;
+using ReactiveUI;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System;
@@ -79,6 +80,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private void reloadMusic()
         {
+            if (Design.IsDesignMode)
+                return;
             lock (GameBase.lockObj)
             {
                 Music.Clear();

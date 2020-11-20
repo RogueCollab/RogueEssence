@@ -66,11 +66,10 @@ namespace RogueEssence.Dev
             InputManager input = GameManager.Instance.MetaInputManager;
 
             var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
+            MouseLoc = input.MouseLoc;
 
             if (groundEditor.Active)
-            {
                 groundEditor.ProcessInput(input);
-            }
         }
 
 

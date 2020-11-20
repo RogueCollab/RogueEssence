@@ -18,7 +18,7 @@ namespace RogueEssence.Dev.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return null;
+            throw new NotSupportedException();
         }
     }
 }

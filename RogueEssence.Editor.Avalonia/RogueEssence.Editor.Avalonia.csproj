@@ -17,6 +17,9 @@
     <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\DialogBoxes\MapLayerWindow.axaml.cs">
+      <DependentUpon>MapLayerWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
     </Compile>
@@ -31,6 +34,12 @@
     </Compile>
     <Compile Update="Views\GroundEditForm\GroundEditForm.axaml.cs">
       <DependentUpon>GroundEditForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Textures\LayerBox.axaml.cs">
+      <DependentUpon>LayerBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Textures\TileBrowser.axaml.cs">
+      <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

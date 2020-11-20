@@ -12,7 +12,7 @@
         <vm:DevFormViewModel/>
     </Design.DataContext>
   <Grid>
-    <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="4" >
+    <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="2">
       <TabItem Name="tabGame" Header="Game" >
         <views:DevTabGame DataContext="{Binding Game}"/>
       </TabItem>

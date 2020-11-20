@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Media.Imaging;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Converters
 {
-    public class FileToTitleConverter : IValueConverter
+    public class TilesetConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            string file = (string)value;
-            if (file == "")
-                return "New File";
-            else
-                return Path.GetFileNameWithoutExtension(file);
+            string tileset = (string)value;
+            if (String.IsNullOrEmpty(tileset))
+                return null;
+            return DevTileManager.Instance.GetTileset(tileset);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

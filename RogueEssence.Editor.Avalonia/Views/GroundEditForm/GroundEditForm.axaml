@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
         x:Class="RogueEssence.Dev.Views.GroundEditForm"
-        Height="500" Width="850" Opened="Window_Loaded" Closed="Window_Closed">
+        Width="850" Height="540" Opened="Window_Loaded" Closed="Window_Closed">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
         <vm:DevFormViewModel/>
@@ -27,19 +27,22 @@
         <MenuItem Header="_Open" Command="{Binding Open_Click}"/>
         <MenuItem Header="_Save" Command="{Binding Save_Click}"/>
         <MenuItem Header="_Save As" Command="{Binding SaveAs_Click}"/>
-        <Separator/>
-        <MenuItem Header="_Load Map from Tileset" Command="{Binding ImportFromTileset_Click}"/>
-        <MenuItem Header="_Load Tileset from .png" Command="{Binding ImportFromPng_Click}"/>
       </MenuItem>
       <MenuItem Header="_Edit">
         <MenuItem Header="Resize Map" Command="{Binding ReSize_Click}"/>
         <MenuItem Header="Re-Tile Map" Command="{Binding ReTile_Click}"/>
+        <Separator/>
         <MenuItem Header="Undo" Command="{Binding Undo_Click}"/>
         <MenuItem Header="Redo" Command="{Binding Redo_Click}"/>
       </MenuItem>
+      <MenuItem Header="_Tiles">
+        <MenuItem Header="_Load from .png into Tileset" Command="{Binding ImportFromPng_Click}"/>
+        <MenuItem Header="_Load Tileset into Layer" Command="{Binding ImportFromTileset_Click}"/>
+        <MenuItem Header="_Load Standardize Frame Length" Command="{Binding StandardizeFrameLength_Click}"/>
+      </MenuItem>
     </Menu>
     <Grid>
-      <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="4" >
+      <TabControl Name="tabOptions" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex}" Margin="2">
         <TabItem Name="tabTextures" Header="Textures" >
           <views:GroundTabTextures DataContext="{Binding Textures}"/>
         </TabItem>
@@ -59,7 +62,7 @@
           <Grid Margin="4" >
             <Grid.RowDefinitions>
               <RowDefinition Height="20"/>
-              <RowDefinition Height="40"/>
+              <RowDefinition Height="34"/>
               <RowDefinition Height="20"/>
               <RowDefinition/>
             </Grid.RowDefinitions>

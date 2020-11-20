@@ -22,14 +22,13 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class GroundEditViewModel : ViewModelBase
     {
-        public GroundEditViewModel(Window dialogParent)
+        public GroundEditViewModel()
         {
             Textures = new GroundTabTexturesViewModel();
             Walls = new GroundTabWallsViewModel();
             Entities = new GroundTabEntitiesViewModel();
             Properties = new GroundTabPropertiesViewModel();
             Strings = new GroundTabStringsViewModel();
-            DialogParent = dialogParent;
             CurrentFile = "";
 
 
@@ -48,16 +47,16 @@ namespace RogueEssence.Dev.ViewModels
         private string currentFile;
         public string CurrentFile
         {
-            get { return currentFile; }
-            set
-            {
-                this.SetIfChanged(ref currentFile, value);
-            }
+            get => currentFile;
+            set => this.SetIfChanged(ref currentFile, value);
         }
 
-
-
-        public Window DialogParent;
+        private int selectedTabIndex;
+        public int SelectedTabIndex
+        {
+            get => selectedTabIndex;
+            set => this.SetIfChanged(ref selectedTabIndex, value);
+        }
 
 
         public void New_Click()
@@ -69,11 +68,8 @@ namespace RogueEssence.Dev.ViewModels
 
             CurrentFile = "";
 
-            lock (GameBase.lockObj)
-            {
-                //Schedule the map creation
+            lock (GameBase.lockObj) //Schedule the map creation
                 DoNew();
-            }
         }
 
         public async void Open_Click()
@@ -87,12 +83,14 @@ namespace RogueEssence.Dev.ViewModels
             filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
             openFileDialog.Filters.Add(filter);
 
-            string[] results = await openFileDialog.ShowAsync(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
             if (results.Length > 0)
             {
                 if (!comparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(results[0])))
-                    await MessageBox.Show(DialogParent, String.Format("Map can only be loaded from:\n{0}", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be loaded from:\n{0}", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
@@ -122,12 +120,14 @@ namespace RogueEssence.Dev.ViewModels
             filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
             saveFileDialog.Filters.Add(filter);
 
-            string result = await saveFileDialog.ShowAsync(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string result = await saveFileDialog.ShowAsync(form.GroundEditForm);
 
             if (result != null)
             {
                 if (!comparePaths(Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH, Path.GetDirectoryName(result)))
-                    await MessageBox.Show(DialogParent, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
@@ -153,7 +153,9 @@ namespace RogueEssence.Dev.ViewModels
             filter.Extensions.Add("png");
             openFileDialog.Filters.Add(filter);
 
-            string[] results = await openFileDialog.ShowAsync(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
             lock (GameBase.lockObj)
             {
@@ -165,8 +167,10 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void ImportFromTileset_Click()
         {
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
             if (Textures.TileBrowser.CurrentTileset == "")
-                await MessageBox.Show(DialogParent, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(form.GroundEditForm, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
             else
             {
                 lock (GameBase.lockObj)
@@ -182,7 +186,9 @@ namespace RogueEssence.Dev.ViewModels
             MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
             window.DataContext = viewModel;
 
-            bool result = await window.ShowDialog<bool>(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
 
             lock (GameBase.lockObj)
             {
@@ -204,7 +210,9 @@ namespace RogueEssence.Dev.ViewModels
             MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize);
             window.DataContext = viewModel;
 
-            bool result = await window.ShowDialog<bool>(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
 
             lock (GameBase.lockObj)
             {
@@ -215,13 +223,12 @@ namespace RogueEssence.Dev.ViewModels
 
                     ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
 
-                    Textures.TileBrowser.SetTileSize(viewModel.TileSize);
+                    Textures.TileBrowser.TileSize = Textures.TileBrowser.TileSize;
 
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
                 }
             }
         }
-
 
         //public void Undo_Click()
         //{
@@ -232,8 +239,6 @@ namespace RogueEssence.Dev.ViewModels
         //{
 
         //}
-
-
 
         private void DoNew()
         {
@@ -276,8 +281,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private void loadEditorSettings()
         {
-            Textures.LoadLayers();
-            Textures.TileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            Textures.Layers.LoadLayers();
+            Textures.TileBrowser.TileSize = Textures.TileBrowser.TileSize;
 
             Walls.SetupLayerVisibility();
             Properties.LoadMapProperties();
@@ -318,6 +323,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+            DevTileManager.Instance.ClearCaches();
 
             Textures.TileBrowser.UpdateTilesList();
             Textures.TileBrowser.SelectTileset(sheetName);
@@ -352,7 +358,6 @@ namespace RogueEssence.Dev.ViewModels
             Strings.SaveStrings();
 
             CurrentFile = filepath;
-
         }
 
 
@@ -399,6 +404,26 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+
+        public void ProcessInput(InputManager input)
+        {
+            lock (GameBase.lockObj)
+            {
+                switch (selectedTabIndex)
+                {
+                    case 0://Textures
+                        Textures.ProcessInput(input);
+                        break;
+                    case 1://Walls
+                        Walls.ProcessInput(input);
+                        break;
+                    case 2://Entities
+                        Entities.ProcessInput(input);
+                        break;
+                }
+            }
+        }
 
 
 

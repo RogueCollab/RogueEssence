@@ -27,11 +27,11 @@
     <ComboBox Margin="4" Name="cbMaps" Items="{Binding Grounds}" SelectedIndex="{Binding ChosenGround}" Grid.Row="1" Grid.ColumnSpan="2"/>
     <Button Margin="4" Name="btnEnterMap" Command="{Binding btnEnterMap_Click}" Grid.Row="2" Grid.ColumnSpan="2">Enter Ground Map</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="3">Dungeon:</TextBlock>
-    <ComboBox Margin="4" Name="cbZones" Items="{Binding Zones}" SelectedIndex="{Binding ChosenZone}" Grid.Row="4" Grid.ColumnSpan="2"/>
+    <ComboBox Margin="4" Name="cbZones" Items="{Binding Zones}" SelectedIndex="{Binding ChosenZone}" VirtualizationMode="Simple" Grid.Row="4" Grid.ColumnSpan="2"/>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="5" Grid.Column="0" >Structure:</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="5" Grid.Column="1" >Floor:</TextBlock>
     <ComboBox Margin="4" Name="cbStructure" Items="{Binding Structures}" SelectedIndex="{Binding ChosenStructure}" Grid.Row="6" Grid.Column="0" />
-    <ComboBox Margin="4" Name="cbFloor" Items="{Binding Floors}" SelectedIndex="{Binding ChosenFloor}" Grid.Row="6" Grid.Column="1"/>
+    <ComboBox Margin="4" Name="cbFloor" Items="{Binding Floors}" SelectedIndex="{Binding ChosenFloor}" VirtualizationMode="Simple" Grid.Row="6" Grid.Column="1"/>
     <Button Margin="4" Name="btnEnterDungeon" Command="{Binding btnEnterDungeon_Click}" Grid.Row="7" Grid.ColumnSpan="2" >Enter Dungeon</Button>
   </Grid>
 </UserControl>

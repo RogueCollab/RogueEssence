@@ -13,13 +13,12 @@ using System.Threading;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using System.Collections.Generic;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
     public class GroundEditForm : Window, IGroundEditor
     {
-        public event EventHandler FormClosed;
-
 
         public enum EntEditMode
         {
@@ -50,7 +49,7 @@ namespace RogueEssence.Dev.Views
             //InitializeComponent();
 
             //lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            //tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            //tileBrowser.TileSize = tileBrowser.TileSize;
 
             //UpdateHasScriptFolder();
 
@@ -115,7 +114,8 @@ namespace RogueEssence.Dev.Views
 
         public void ProcessInput(InputManager input)
         {
-
+            GroundEditViewModel vm = (GroundEditViewModel)DataContext;
+            DevForm.ExecuteOrInvoke(() => vm.ProcessInput(input));
         }
 
 
@@ -123,30 +123,26 @@ namespace RogueEssence.Dev.Views
 
         public void Window_Loaded(object sender, EventArgs e)
         {
-            //RefreshTitle();
-
-            //string mapDir = (string)Registry.GetValue(DiagManager.REG_PATH, "MapDir", "");
-            //if (String.IsNullOrEmpty(mapDir))
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
-            //openFileDialog.InitialDirectory = mapDir;
-            //saveMapFileDialog.InitialDirectory = mapDir;
-
-            //ReloadMusic();
-
-            //LoadMapProperties();
-            //LoadAndSetupStrings();
-
+            Active = true;
         }
 
         public void Window_Closed(object sender, EventArgs e)
         {
-            FormClosed?.Invoke(sender, e);
+            Active = false;
+            GameManager.Instance.SceneOutcome = exitGroundEdit();
+        }
+
+
+        private IEnumerator<YieldInstruction> exitGroundEdit()
+        {
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.GroundEditForm = null;
 
             //move to the previous scene or the title, if there was none
             if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())
-                GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest);
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
             else
-                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }
     }
 }

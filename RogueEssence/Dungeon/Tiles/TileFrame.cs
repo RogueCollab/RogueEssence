@@ -19,6 +19,8 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
+            if (Sheet == "")
+                return "[EMPTY]";
             return String.Format("Tile {0}: {1}", Sheet, TexLoc.ToString());
         }
 
