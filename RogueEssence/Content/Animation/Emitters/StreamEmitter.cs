@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 using RogueElements;
 
 namespace RogueEssence.Content
@@ -29,6 +31,7 @@ namespace RogueEssence.Content
             Shots = other.Shots;
             BurstTime = other.BurstTime;
             StartDistance = other.StartDistance;
+            EndDiff = other.EndDiff;
             Range = other.Range;
             Speed = other.Speed;
             LocHeight = other.LocHeight;
@@ -41,6 +44,7 @@ namespace RogueEssence.Content
         public int Shots;
         public int BurstTime;
         public int StartDistance;
+        public int EndDiff;
         public DrawLayer Layer;
 
 
@@ -56,24 +60,35 @@ namespace RogueEssence.Content
             {
                 CurrentShotTime -= BurstTime;
 
-                Loc particleSpeed = Dir.GetLoc() * Speed;
-                Loc startDelta = Dir.GetLoc() * StartDistance;
-
                 int range = Range;
                 if (Dir.IsDiagonal())
                     range = (int)(range * 1.4142136);
 
-                int totalTime = range - StartDistance;
+                Vector2 totalDistance = (Dir.GetLoc() * (range - StartDistance)).ToVector2();
+
+                double angle = MathUtils.Rand.NextDouble() * Math.PI * 2;
+                int dist = MathUtils.Rand.Next(EndDiff + 1);
+                Vector2 endDelta = new Vector2((int)Math.Round(Math.Cos(angle) * dist), (int)Math.Round(Math.Sin(angle) * dist));
+                totalDistance += endDelta;
+
+                //pixels
+                float totalTime = range - StartDistance;
+                //seconds
                 if (Speed > 0)
-                {
-                    totalTime *= GraphicsManager.MAX_FPS;
                     totalTime /= Speed;
-                }
+
+                //pixels
+                Vector2 particleSpeed = totalDistance;
+                //pixels per second
+                if (totalTime > 0)
+                    particleSpeed /= totalTime;
+
+                Loc startDelta = Dir.GetLoc() * StartDistance;
 
                 if (Anims.Count > 0)
                 {
                     IParticleEmittable chosenAnim = Anims[CurrentShots % Anims.Count];
-                    scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(totalTime, Origin + startDelta, particleSpeed, Loc.Zero, LocHeight, 0, 0, Dir));
+                    scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle((int)Math.Round(totalTime * GraphicsManager.MAX_FPS), Origin + startDelta, particleSpeed.ToLoc(), Loc.Zero, LocHeight, 0, 0, Dir));
                 }
                 
                 CurrentShots++;

@@ -10,5 +10,9 @@ namespace RogueEssence
         {
             return new Vector2(loc.X, loc.Y);
         }
+        public static Loc ToLoc(this Vector2 loc)
+        {
+            return new Loc((int)loc.X, (int)loc.Y);
+        }
     }
 }

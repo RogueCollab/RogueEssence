@@ -145,8 +145,14 @@ namespace RogueEssence.Content
     [Serializable]
     public abstract class ShootingEmitter : EndingEmitter
     {
+        /// <summary>
+        /// Pixels
+        /// </summary>
         [NonSerialized]
         protected int Range;
+        /// <summary>
+        /// Pixels per second
+        /// </summary>
         [NonSerialized]
         protected int Speed;
 

@@ -3,6 +3,7 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Dev;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Content
 {
@@ -28,13 +29,22 @@ namespace RogueEssence.Content
             Anim = other.Anim;
             TotalTime = other.TotalTime;
             Cycles = other.Cycles;
+            FrameOffset = other.FrameOffset;
         }
 
         [SubGroup]
         public AnimData Anim;
 
+        /// <summary>
+        /// In frames
+        /// </summary>
         public int TotalTime;
         public int Cycles;
+
+        /// <summary>
+        /// Time difference to start animating at
+        /// </summary>
+        public int FrameOffset;
 
         [NonSerialized]
         public Dir8 Direction;
@@ -63,7 +73,7 @@ namespace RogueEssence.Content
             Loc drawLoc = GetDrawLoc(offset);
 
             DirSheet sheet = GraphicsManager.GetAttackSheet(Anim.AnimIndex);
-            sheet.DrawDir(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y - LocHeight), Anim.GetCurrentFrame(ActionTime, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), DirExt.AddAngles(Direction, Anim.AnimDir), Color.White * ((float)Anim.Alpha / 255));
+            sheet.DrawDir(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y - LocHeight), Anim.GetCurrentFrame(ActionTime + FrameOffset, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), DirExt.AddAngles(Direction, Anim.AnimDir), Color.White * ((float)Anim.Alpha / 255));
 
         }
 
