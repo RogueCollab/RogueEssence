@@ -294,10 +294,29 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.SE("Menu/Cancel");
         }
 
+        public IEnumerator<YieldInstruction> ProcessCheck()
+        {
+            //trigger check events- just before player action
+            List<SingleCharEvent> effects = new List<SingleCharEvent>();
+            effects.AddRange(ZoneManager.Instance.CurrentMap.CheckEvents);
+            foreach (SingleCharEvent effect in effects)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
+                if (GameManager.Instance.SceneOutcome != null)
+                    break;
+            }
+        }
+
         public override IEnumerator<YieldInstruction> ProcessInput()
         {
             if (!IsPlayerTurn())
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessAI());
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(ProcessCheck());
+
+                //the check events may have ended the scene
+                if (GameManager.Instance.SceneOutcome == null)
+                    yield return CoroutineManager.Instance.StartCoroutine(ProcessAI());
+            }
             else
             {
                 yield return new WaitUntil(AnimationsOver);
@@ -319,27 +338,20 @@ namespace RogueEssence.Dungeon
                 }
                 else
                 {
+                    yield return CoroutineManager.Instance.StartCoroutine(ProcessCheck());
+
                     if (IsPlayerLeaderTurn() && !CanUseTeamMode())
                         SetTeamMode(false);
 
-                    yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+                    //the check events may have ended the scene
+                    if (GameManager.Instance.SceneOutcome == null)
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
                 }
 
                 if (!GameManager.Instance.FrameProcessed)
                     yield return new WaitForFrames(1);
             }
 
-            if (GameManager.Instance.SceneOutcome == null && GameManager.Instance.FrameProcessed)
-            {
-                List<SingleCharEvent> effects = new List<SingleCharEvent>();
-                effects.AddRange(ZoneManager.Instance.CurrentMap.CheckEvents);
-                foreach (SingleCharEvent effect in effects)
-                {
-                    yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
-                    if (GameManager.Instance.SceneOutcome != null)
-                        break;
-                }
-            }
             if (IsGameOver())
             {
                 bool allowRescue = true;
