@@ -9,8 +9,22 @@ namespace RogueEssence.Dev.ViewModels
     {
         public GroundTabEntitiesViewModel()
         {
-
+            EntBrowser = new EntityBrowserViewModel();
         }
+
+        private EntEditMode entMode;
+        public EntEditMode EntMode
+        {
+            get { return entMode; }
+            set
+            {
+                this.SetIfChanged(ref entMode, value);
+            }
+        }
+
+        public EntityBrowserViewModel EntBrowser { get; set; }
+
+
 
         public void ProcessInput(InputManager input)
         {

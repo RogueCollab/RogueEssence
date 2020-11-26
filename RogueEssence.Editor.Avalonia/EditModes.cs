@@ -11,4 +11,11 @@ namespace RogueEssence.Dev
         Fill = 2,
         Eyedrop = 3,
     }
+
+    public enum EntEditMode
+    {
+        SelectEntity = 0,
+        PlaceEntity = 1,
+    }
+
 }

@@ -1,0 +1,190 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"             
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.EntityBrowser">
+  <Design.DataContext>
+    <vm:EntityBrowserViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="36"/>
+      <RowDefinition Height="36"/>
+      <RowDefinition Height="36"/>
+      <RowDefinition Height="42"/>
+      <RowDefinition Height="36"/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0" IsVisible="True">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="60"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" Text="Type:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+      <ComboBox Margin="4,2" Grid.Column="1"/>
+    </Grid>
+    <Grid Grid.Row="1" IsVisible="True">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="60"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" Text="Name:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+      <TextBox VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+    </Grid>
+    <Grid Grid.Row="2" IsVisible="True">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="60"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" Text="Direction:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+      <ComboBox Margin="4,2" Grid.Column="1"/>
+    </Grid>
+    <Grid Grid.Row="3" IsVisible="True">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="60"/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" Text="Bounds:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+      <NumericUpDown Minimum="1" Margin="4,2" Grid.Column="1" />
+      <NumericUpDown Minimum="1" Margin="4,2" Grid.Column="2" />
+    </Grid>
+    <Grid Grid.Row="4" IsVisible="True">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="60"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" Text="Enabled:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+      <CheckBox Margin="4,2" Grid.Column="1" />
+    </Grid>
+    
+    <TabControl TabStripPlacement="Top" Margin="0,2,0,0" Grid.Row="5">
+      <TabItem Header="Script" IsVisible="True">
+      </TabItem>
+      <TabItem Header="Spawner Script" IsVisible="True">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition/>
+            <RowDefinition/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Trigger Type:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <ComboBox VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="Callbacks:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
+          <Border Margin="4,2" BorderThickness="1" BorderBrush="Black" Grid.Row="1" Grid.Column="1">
+            <ItemsControl>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <!--CheckBox Margin="4"
+                            IsChecked="{Binding IsChecked}"
+                            Content="{Binding Description}"/-->
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+          <TextBlock Margin="4,2" Text="Spawn&#xA;Callbacks:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
+          <Border Margin="4,2" BorderThickness="1" BorderBrush="Black" Grid.Row="2" Grid.Column="1">
+            <ItemsControl>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <!--CheckBox Margin="4"
+                            IsChecked="{Binding IsChecked}"
+                            Content="{Binding Description}"/-->
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Char Display" IsVisible="True">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Species:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <ComboBox VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="0" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="Form:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
+          <ComboBox VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="1" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="Skin:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
+          <ComboBox VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="Gender:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
+          <ComboBox VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1"/>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Char Data" IsVisible="True">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Name:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <TextBox VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Object Display" IsVisible="True">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="42"/>
+            <RowDefinition Height="42"/>
+            <RowDefinition Height="42"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Sprite:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <ComboBox VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"/>
+          <TextBlock Margin="4,2" Text="Start Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
+          <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="End Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="2"/>
+          <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="3"/>
+          <TextBlock Margin="4,2" Text="Frame Length:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
+          <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"/>
+          <TextBlock Margin="4,2" Text="Alpha:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
+          <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"/>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Spawner Data" IsVisible="True" >
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Spawn Name:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <TextBox VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="Spawner Type:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
+          <ComboBox VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="1"/>
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</UserControl>

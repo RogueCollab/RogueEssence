@@ -21,7 +21,7 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <TextBlock VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Map Name</TextBlock>
+    <TextBlock VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Layer Name</TextBlock>
     <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
     <CheckBox Margin="4" IsChecked="{Binding Front}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Draw in Front</CheckBox>
     <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="0">OK</Button>

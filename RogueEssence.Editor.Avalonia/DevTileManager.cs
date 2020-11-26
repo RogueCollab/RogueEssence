@@ -9,29 +9,24 @@ namespace RogueEssence.Dev
 {
     public class DevTileManager
     {
-        private static DevTileManager instance;
+        public const string RESOURCE_PATH = DiagManager.CONTENT_PATH + "Editor/";
 
-        public static DevTileManager Instance
+        private static LRUCache<TileFrame, Bitmap> tileCache;
+        private static LRUCache<string, Bitmap> tilesetCache;
+
+        public static Bitmap IconO;
+        public static Bitmap IconX;
+
+        public static void Init()
         {
-            get
-            {
-                if (instance == null)
-                    instance = new DevTileManager();
-                return instance;
-            }
-        }
+            IconO = new Bitmap(Path.Join(RESOURCE_PATH, "O.png"));
+            IconX = new Bitmap(Path.Join(RESOURCE_PATH, "X.png"));
 
-        LRUCache<TileFrame, Bitmap> tileCache;
-
-        LRUCache<string, Bitmap> tilesetCache;
-
-        private DevTileManager()
-        {
             tileCache = new LRUCache<TileFrame, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
         }
 
-        public Bitmap GetTile(TileFrame tileTex)
+        public static Bitmap GetTile(TileFrame tileTex)
         {
             Bitmap sheet;
             if (tileCache.TryGetValue(tileTex, out sheet))
@@ -70,13 +65,13 @@ namespace RogueEssence.Dev
             return null;
         }
 
-        public void ClearCaches()
+        public static void ClearCaches()
         {
             tileCache.Clear();
             tilesetCache.Clear();
         }
 
-        public Bitmap GetTileset(string tileset)
+        public static Bitmap GetTileset(string tileset)
         {
             Bitmap sheet;
             if (tilesetCache.TryGetValue(tileset, out sheet))

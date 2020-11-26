@@ -53,6 +53,8 @@ namespace RogueEssence.Dev.Views
         {
             lock (GameBase.lockObj)
             {
+                DevTileManager.Init();
+
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
                 devViewModel.Game.HideSprites = DataManager.Instance.HideChars;

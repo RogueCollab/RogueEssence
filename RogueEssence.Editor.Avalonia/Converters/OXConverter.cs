@@ -9,14 +9,12 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Converters
 {
-    public class TileConverter : IValueConverter
+    public class OXConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            TileFrame tileFrame = (TileFrame)value;
-            if (tileFrame.Sheet == null)
-                return null;
-            return DevTileManager.GetTile(tileFrame);
+            bool tf = (bool)value;
+            return tf ? DevTileManager.IconO : DevTileManager.IconX;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

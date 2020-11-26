@@ -158,7 +158,10 @@ namespace RogueEssence.Content
             for (int ii = 0; ii < tex.Width * tex.Height; ii++)
             {
                 if (reverse)
-                    color[ii] = new Color(color[ii].R * 255 / color[ii].A, color[ii].G * 255 / color[ii].A, color[ii].B * 255 / color[ii].A, color[ii].A);
+                {
+                    if (color[ii].A > 0)
+                        color[ii] = new Color(color[ii].R * 255 / color[ii].A, color[ii].G * 255 / color[ii].A, color[ii].B * 255 / color[ii].A, color[ii].A);
+                }
                 else
                     color[ii] = new Color(color[ii].R * color[ii].A / 255, color[ii].G * color[ii].A / 255, color[ii].B * color[ii].A / 255, color[ii].A);
             }

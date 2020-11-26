@@ -626,8 +626,8 @@ namespace RogueEssence.Content
             if (guide.Nodes.ContainsKey(data.Species))
             {
                 buffer.Species = data.Species;
-                //if (guide.Nodes[data.Species].Position > 0)
-                fallback = buffer;
+                if (guide.Nodes[data.Species].Position > 0)
+                    fallback = buffer;
                 if (guide.Nodes[data.Species].Nodes.ContainsKey(data.Form))
                 {
                     buffer.Form = data.Form;

@@ -323,7 +323,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevTileManager.Instance.ClearCaches();
+            DevTileManager.ClearCaches();
 
             Textures.TileBrowser.UpdateTilesList();
             Textures.TileBrowser.SelectTileset(sheetName);

@@ -23,6 +23,8 @@
       <ColumnDefinition Width="180"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
+    <views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/>
+    <views:TileBrowser DataContext="{Binding TileBrowser}" Grid.Row="1" Grid.Column="1"/>
     <Grid Grid.Row="0" Grid.Column="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="16"/>
@@ -40,7 +42,5 @@
       <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Fill}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="2">Fill</RadioButton>
       <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Eyedrop}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="3">Eyedrop</RadioButton>
     </Grid>
-    <views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/>
-    <views:TileBrowser DataContext="{Binding TileBrowser}" Grid.Row="1" Grid.Column="1"/>
   </Grid>
 </UserControl>
