@@ -37,11 +37,9 @@ namespace RogueEssence.Ground
         public int LocHeight { get { return 0; } }
         public Loc DrawOffset;
 
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            DevEntColoring = Color.Chartreuse;
-        }
+        public override Color DevEntColoring => Color.Chartreuse;
+
+        public override EThink ThinkType => EThink.Never;
 
 
         public GroundObject()
@@ -49,11 +47,7 @@ namespace RogueEssence.Ground
             ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             ObjectAnim = new ObjAnimData();
             EntName = "GroundObject" + ToString(); //!#FIXME : Give a default unique name please fix this when we have editor/template names!
-            DevEntColoring = Color.Chartreuse;
             SetTriggerType(EEntityTriggerTypes.Action);
-
-            //by default, objects never think
-            ThinkType = EThink.Never;
         }
         public GroundObject(ObjAnimData anim, Rect collider, bool contact, string entname)
             : this(anim, collider, new Loc(), contact, entname)
@@ -67,10 +61,6 @@ namespace RogueEssence.Ground
             DrawOffset = drawOffset;
             SetTriggerType(triggerty);
             EntName = entname;
-            DevEntColoring = Color.Chartreuse;
-
-            //by default, objects never think
-            ThinkType = EThink.Never;
         }
 
         public GroundObject(ObjAnimData anim, Rect collider, EEntityTriggerTypes triggerty, string entname)
@@ -80,6 +70,18 @@ namespace RogueEssence.Ground
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool contact, string entname)
             : this(anim, collider, drawOffset, true, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
         {}
+
+        protected GroundObject(GroundObject other) : base(other)
+        {
+            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
+                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+            ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            Solid = other.Solid;
+        }
+
+        public override GroundEntity Clone() { return new GroundObject(this); }
+
 
         public override void DoCleanup()
         {
@@ -152,6 +154,11 @@ namespace RogueEssence.Ground
                     return entry.Value;
             }
             return null;
+        }
+
+        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
+        {
+            return ScriptEvents.ContainsKey(ev);
         }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)

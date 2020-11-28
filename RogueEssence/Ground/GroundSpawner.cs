@@ -22,7 +22,7 @@ namespace RogueEssence.Ground
         /// <summary>
         /// The "Character" entity from which the NPC will be generated.
         /// </summary>
-        public Character NPCChar { get; set; }
+        public CharData NPCChar { get; set; }
 
         /// <summary>
         /// The NPC that was spawned by this spawner
@@ -41,6 +41,8 @@ namespace RogueEssence.Ground
         /// </summary>
         public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
 
+        public override Color DevEntColoring => Color.Salmon;
+
 
         public override EEntTypes GetEntityType()
         {
@@ -53,17 +55,30 @@ namespace RogueEssence.Ground
         /// <param name="spawnername">name given to the spawner entity</param>
         /// <param name="npcname">name given to the spawned entity</param>
         /// <param name="npcchar">character entity from which the NPC will be generated from</param>
-        public GroundSpawner(string spawnername, string npcname, Character npcchar )
+        public GroundSpawner(string spawnername, string npcname, CharData npcchar )
             :base()
         {
             EntName = spawnername;
             NPCName = npcname;
             NPCChar = npcchar;
-            DevEntColoring = DevEntColoring = Color.Salmon;
-            Bounds = new Rect(Position.X, Position.Y, 10, 10); //Static size, so its easier to click on it!
+            Bounds = new Rect(Position.X, Position.Y, 8, 8); //Static size, so its easier to click on it!
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
             ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
+        protected GroundSpawner(GroundSpawner other) : base(other)
+        {
+            NPCName = other.NPCName;
+            NPCChar = new CharData(other.NPCChar);
+            EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.EntityCallbacks)
+                EntityCallbacks.Add(ev);
+            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
+                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+        }
+
+        public override GroundEntity Clone() { return new GroundSpawner(this); }
+
 
         /// <summary>
         /// Generates the NPC and place it at the location the spawner is on the map.
@@ -140,6 +155,17 @@ namespace RogueEssence.Ground
                     return entry.Value;
             }
             return null;
+        }
+
+
+        public bool HasSpawnScriptEvent(LuaEngine.EEntLuaEventTypes ev)
+        {
+            return EntityCallbacks.Contains(ev);
+        }
+
+        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
+        {
+            return ScriptEvents.ContainsKey(ev);
         }
 
         public override void ReloadEvents()

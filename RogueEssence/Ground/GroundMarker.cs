@@ -14,25 +14,23 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundMarker : GroundEntity
     {
+        public override Color DevEntColoring => Color.OrangeRed;
 
-        public GroundMarker(string name, Loc pos, Dir8 dir = Dir8.None)
+        public GroundMarker(string name, Loc pos, Dir8 dir)
         {
             EntName = name;
             Position = pos;
             Direction = dir;
-            Bounds = new Rect(Position.X, Position.Y, 10, 10); //Static size, so its easier to click on it!
+            Bounds = new Rect(Position.X, Position.Y, 8, 8); //Static size, so its easier to click on it!
             if (pos == null)
                 pos = new Loc(-1,-1);
             if (name == null)
                 name = "";
-
-            DevEntColoring = Color.OrangeRed;
         }
+        protected GroundMarker(GroundMarker other) : base(other)
+        { }
 
-        internal GroundMarker Clone()
-        {
-            return new GroundMarker(EntName, Position, Direction);
-        }
+        public override GroundEntity Clone() { return new GroundMarker(this); }
 
         public override EEntTypes GetEntityType()
         {
@@ -42,12 +40,6 @@ namespace RogueEssence.Ground
         public override bool DevHasGraphics()
         {
             return false;
-        }
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            DevEntColoring = Color.OrangeRed;
         }
 
         /// <summary>

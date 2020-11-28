@@ -50,7 +50,12 @@ namespace RogueEssence.Ground
         public virtual int     Width       { get { return Bounds.Width; } }
         public virtual int     X           { get { return Bounds.X; } }
         public virtual int     Y           { get { return Bounds.Y; } }
-        
+
+        public virtual void SetMapLoc(Loc loc)
+        {
+            MapLoc = loc;
+        }
+
         /// <summary>
         ///
         /// </summary>
@@ -80,6 +85,16 @@ namespace RogueEssence.Ground
             DevEntitySelected = false;
         }
 
+        protected GroundEntity(GroundEntity other)
+        {
+            EntEnabled = other.EntEnabled;
+            Collider = other.Collider;
+            EntName = other.EntName;
+            Direction = other.Direction;
+            triggerType = other.triggerType;
+        }
+        public abstract GroundEntity Clone();
+
 //==================================================
 // Map editor stuff
 //==================================================
@@ -92,7 +107,7 @@ namespace RogueEssence.Ground
         /// <summary>
         /// The color of the boxes and etc around the entity
         /// </summary>
-        public virtual Color DevEntColoring { get; protected set; }
+        public abstract Color DevEntColoring { get; }
 
         /// <summary>
         /// When the entity is selected by the map editor, this method is called
@@ -153,6 +168,10 @@ namespace RogueEssence.Ground
         public virtual ScriptEvent FindEvent(string eventname)
         {
             return null;
+        }
+        public virtual bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
+        {
+            return false;
         }
 
         /// <summary>

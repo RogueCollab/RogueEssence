@@ -48,6 +48,9 @@ namespace RogueEssence.Ground
             }
         }
 
+        public override Color DevEntColoring => Color.Aqua;
+        public override EThink ThinkType => EThink.Always;
+
 
         //DRAWING LOGIC
 
@@ -67,7 +70,7 @@ namespace RogueEssence.Ground
             set { currentCharAction.MapLoc = value; }
         }
 
-        public void SetMapLoc(Loc loc)
+        public override void SetMapLoc(Loc loc)
         {
             Rect orig = currentCharAction.Collider;
             currentCharAction.MapLoc = loc;
@@ -109,12 +112,10 @@ namespace RogueEssence.Ground
             currentCharAction = new IdleGroundAction(newLoc, charDir);
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
-            DevEntColoring = Color.Aqua;
             TriggerType = EEntityTriggerTypes.Action;
             ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
 
             //By default all groundcharacters think
-            ThinkType = EThink.Always;
             AIEnabled = true;
             IsInteracting = false;
         }
@@ -128,6 +129,18 @@ namespace RogueEssence.Ground
             Data.BaseForm = appearance;
             Data.Nickname = nickname;
         }
+        protected GroundChar(GroundChar other) : base(other)
+        {
+            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
+                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+            Data = new CharData(other.Data);
+
+            currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
+            CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
+        }
+        public override GroundEntity Clone() { return new GroundChar(this); }
+
 
         public void StartEmote(EmoteData data, int cycles)
         {
@@ -358,6 +371,11 @@ namespace RogueEssence.Ground
             return null;
         }
 
+        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
+        {
+            return ScriptEvents.ContainsKey(ev);
+        }
+
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
         {
             return ev == LuaEngine.EEntLuaEventTypes.Action ||
@@ -443,7 +461,6 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            DevEntColoring = Color.Aqua;
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
         }
     }

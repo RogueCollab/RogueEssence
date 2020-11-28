@@ -25,7 +25,7 @@ namespace RogueEssence.Ground
         /// <summary>
         /// Contains the type of thinking this entity does
         /// </summary>
-        public virtual EThink ThinkType { get; set; }
+        public abstract EThink ThinkType { get; }
 
         /// <summary>
         /// Current task
@@ -44,6 +44,11 @@ namespace RogueEssence.Ground
             Complete = 1,
         }
         [NonSerialized] private ETaskState TaskState = ETaskState.None;
+
+        public BaseTaskUser() : base() { }
+
+        protected BaseTaskUser(BaseTaskUser other) : base(other)
+        { }
 
         /// <summary>
         /// Set the entity's current task to the one specified in parameters.
