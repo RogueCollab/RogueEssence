@@ -763,23 +763,23 @@ namespace RogueEssence.Content
             return newSheet;
         }
 
-        public static DirSheet GetAttackSheet(string num)
+        public static DirSheet GetAttackSheet(string name)
         {
             IEffectAnim sheet;
-            if (vfxCache.TryGetValue("Particle-" + num, out sheet))
+            if (vfxCache.TryGetValue("Particle-" + name, out sheet))
                 return (DirSheet)sheet;
 
             try
             {
-                if (File.Exists(String.Format(PARTICLE_PATTERN, num)))
+                if (File.Exists(String.Format(PARTICLE_PATTERN, name)))
                 {
                     //read file and read binary data
-                    using (FileStream fileStream = File.OpenRead(String.Format(PARTICLE_PATTERN, num)))
+                    using (FileStream fileStream = File.OpenRead(String.Format(PARTICLE_PATTERN, name)))
                     {
                         using (BinaryReader reader = new BinaryReader(fileStream))
                         {
                             sheet = DirSheet.Load(reader);
-                            vfxCache.Add("Particle-" + num, sheet);
+                            vfxCache.Add("Particle-" + name, sheet);
                             return (DirSheet)sheet;
                         }
                     }
@@ -787,10 +787,10 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new Exception("Error loading " + String.Format(PARTICLE_PATTERN, num) + "\n", ex));
+                DiagManager.Instance.LogError(new Exception("Error loading " + String.Format(PARTICLE_PATTERN, name) + "\n", ex));
             }
             DirSheet newSheet = DirSheet.LoadError();
-            vfxCache.Add("Particle-" + num, newSheet);
+            vfxCache.Add("Particle-" + name, newSheet);
             return newSheet;
         }
 

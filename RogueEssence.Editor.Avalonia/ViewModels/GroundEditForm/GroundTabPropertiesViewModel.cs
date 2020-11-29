@@ -17,6 +17,14 @@ namespace RogueEssence.Dev.ViewModels
             ScrollEdges = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
+            BGs = new ObservableCollection<string>();
+            BGs.Add("---");
+            string[] dirs = Directory.GetFiles(DiagManager.CONTENT_PATH + "BG/");
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                BGs.Add(filename);
+            }
 
             Music = new ObservableCollection<string>();
             reloadMusic();
@@ -29,8 +37,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             get
             {
-                lock (GameBase.lockObj)
-                    return ZoneManager.Instance.CurrentGround.Name.DefaultText;
+                return ZoneManager.Instance.CurrentGround.Name.DefaultText;
             }
             set
             {
@@ -45,17 +52,73 @@ namespace RogueEssence.Dev.ViewModels
         {
             get
             {
-                lock (GameBase.lockObj)
-                    return (int)ZoneManager.Instance.CurrentGround.EdgeView;
+                return (int)ZoneManager.Instance.CurrentGround.EdgeView;
             }
             set
             {
                 lock (GameBase.lockObj)
                 {
-                    int scroll = (int)ZoneManager.Instance.CurrentGround.EdgeView;
-                    this.RaiseAndSet(ref scroll, value);
-                    ZoneManager.Instance.CurrentGround.EdgeView = (Map.ScrollEdge)scroll;
+                    ZoneManager.Instance.CurrentGround.EdgeView = (Map.ScrollEdge)value;
+                    this.RaisePropertyChanged();
                 }
+            }
+        }
+
+
+        public ObservableCollection<string> BGs { get; }
+
+        public int ChosenBG
+        {
+            get
+            {
+                int chosenAnim = BGs.IndexOf(ZoneManager.Instance.CurrentGround.BGAnim.AnimIndex);
+                if (chosenAnim == -1)
+                    chosenAnim = 0;
+                return chosenAnim;
+            }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.BGAnim.AnimIndex = value > 0 ? BGs[value] : "";
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public int BGFrameTime
+        {
+            get
+            {
+                return ZoneManager.Instance.CurrentGround.BGAnim.FrameTime;
+            }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.BGAnim.FrameTime = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public int BGMoveX
+        {
+            get
+            {
+                return ZoneManager.Instance.CurrentGround.BGMovement.X;
+            }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.BGMovement.X = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public int BGMoveY
+        {
+            get
+            {
+                return ZoneManager.Instance.CurrentGround.BGMovement.Y;
+            }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.BGMovement.Y = value;
+                this.RaisePropertyChanged();
             }
         }
 
@@ -121,6 +184,11 @@ namespace RogueEssence.Dev.ViewModels
         {
             MapName = MapName;
             ChosenScroll = ChosenScroll;
+            ChosenBG = ChosenBG;
+            BGFrameTime = BGFrameTime;
+            BGMoveX = BGMoveX;
+            BGMoveY = BGMoveY;
+
 
             bool foundSong = false;
             for (int ii = 0; ii < Music.Count; ii++)

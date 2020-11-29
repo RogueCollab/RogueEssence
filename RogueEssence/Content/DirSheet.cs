@@ -87,6 +87,32 @@ namespace RogueEssence.Content
             }
         }
 
+        public static string GetExportString(DirSheet sheet, string basename)
+        {
+            string suffix = "";
+            switch (sheet.Dirs)
+            {
+                case RotateType.None:
+                    {
+                        if (sheet.TileWidth == sheet.TileHeight)
+                            suffix = sheet.Dirs.ToString();
+                        else
+                            suffix = sheet.TotalFrames.ToString();
+                    }
+                    break;
+                default:
+                    suffix = sheet.Dirs.ToString();
+                    break;
+            }
+            return basename + "." + suffix;
+        }
+
+        public static void Export(DirSheet sheet, string filepath)
+        {
+            using (Stream stream = new FileStream(filepath, FileMode.Create, FileAccess.Write, FileShare.None))
+                ExportTex(stream, sheet.baseTexture);
+        }
+
         public static new DirSheet Load(BinaryReader reader)
         {
             long length = reader.ReadInt64();

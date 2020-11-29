@@ -19,8 +19,8 @@ namespace RogueEssence.Dev
 
         public static void Init()
         {
-            IconO = new Bitmap(Path.Join(RESOURCE_PATH, "O.png"));
-            IconX = new Bitmap(Path.Join(RESOURCE_PATH, "X.png"));
+            IconO = new Bitmap(Path.Combine(RESOURCE_PATH, "O.png"));
+            IconX = new Bitmap(Path.Combine(RESOURCE_PATH, "X.png"));
 
             tileCache = new LRUCache<TileFrame, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);

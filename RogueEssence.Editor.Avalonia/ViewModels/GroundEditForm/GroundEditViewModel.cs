@@ -74,7 +74,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void Open_Click()
         {
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            string mapDir = Path.Combine(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -89,8 +89,8 @@ namespace RogueEssence.Dev.ViewModels
 
             if (results.Length > 0)
             {
-                if (!comparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(results[0])))
-                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be loaded from:\n{0}", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
+                if (!comparePaths(Path.Combine(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(results[0])))
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be loaded from:\n{0}", Path.Combine(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
@@ -111,7 +111,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         public async void SaveAs_Click()
         {
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            string mapDir = Path.Combine(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = mapDir;
 
@@ -144,7 +144,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void ImportFromPng_Click()
         {
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            string mapDir = Path.Combine(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -272,7 +272,7 @@ namespace RogueEssence.Dev.ViewModels
         public void LoadFromCurrentGround()
         {
             if (ZoneManager.Instance.CurrentGround.AssetName != "")
-                CurrentFile = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
+                CurrentFile = Path.Combine(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
             else
                 CurrentFile = "";
 
