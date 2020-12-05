@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Avalonia.Controls;
 using ReactiveUI;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev
 {
@@ -38,6 +40,13 @@ namespace RogueEssence.Dev
 
             backingField = newValue;
             reactiveObject.RaisePropertyChanged(propertyName);
+        }
+
+        public static DataEditForm GetOwningForm(this IControl control)
+        {
+            while (control.Parent != null)
+                control = control.Parent;
+            return (DataEditForm)control;
         }
     }
 }

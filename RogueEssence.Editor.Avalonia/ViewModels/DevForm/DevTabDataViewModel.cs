@@ -105,12 +105,11 @@ namespace RogueEssence.Dev.ViewModels
 
                         Views.DataEditForm editor = new Views.DataEditForm();
                         editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                        StackPanel pnl = editor.FindControl<StackPanel>("stkContent");
-                        DataEditor.LoadDataControls(data, pnl);
+                        DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += () =>
                         {
                             object obj = data;
-                            DataEditor.SaveDataControls(ref obj, pnl);
+                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
                             data = (IEntryData)obj;
                             DataManager.SaveData(entryNum, dataType.ToString(), data);
                             DataManager.Instance.ClearCache(dataType);
@@ -135,12 +134,11 @@ namespace RogueEssence.Dev.ViewModels
 
                     Views.DataEditForm editor = new Views.DataEditForm();
                     editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                    StackPanel pnl = editor.FindControl<StackPanel>("stkContent");
-                    DataEditor.LoadDataControls(data, pnl);
+                    DataEditor.LoadDataControls(data, editor.ControlPanel);
                     editor.SelectedOKEvent += () =>
                     {
                         object obj = data;
-                        DataEditor.SaveDataControls(ref obj, pnl);
+                        DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
                         data = (IEntryData)obj;
                         DataManager.SaveData(entryNum, dataType.ToString(), data);
                         DataManager.Instance.ClearCache(dataType);

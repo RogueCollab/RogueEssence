@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
         x:Class="RogueEssence.Dev.Views.DataEditForm"
-        Title="{Binding Name}" Width="300" Height="540" Opened="Window_Loaded">
+        Title="{Binding Name}" Width="300" Height="540" Opened="Window_Loaded" Closing="Window_Closing">
   <!--Icon="/Assets/app-logo.ico"-->
   <Window.Resources>
   </Window.Resources>

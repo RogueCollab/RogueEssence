@@ -29,12 +29,11 @@ namespace RogueEssence.Dev
                     frmData.Title = element.ToString();
 
                 //TODO: make this a member and reference it that way
-                StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                DataEditor.StaticLoadMemberControl(pnl, "(StateCollection) [" + index + "]", elementType, new object[0] { }, element, true);
+                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(StateCollection) [" + index + "]", elementType, new object[0] { }, element, true);
 
-                frmData.SelectedOKEvent += () =>
+                frmData.SelectedOKEvent += async () =>
                 {
-                    DataEditor.StaticSaveMemberControl(pnl, "StateCollection", elementType, new object[0] { }, ref element, true);
+                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "StateCollection", elementType, new object[0] { }, ref element, true);
 
                     bool itemExists = false;
 
@@ -50,7 +49,7 @@ namespace RogueEssence.Dev
 
                     if (itemExists)
                     {
-                        //MessageBox.Show("Cannot add duplicate states.", "Entry already exists.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
                     }
                     else
                     {
@@ -63,6 +62,7 @@ namespace RogueEssence.Dev
                     frmData.Close();
                 };
 
+                control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
 

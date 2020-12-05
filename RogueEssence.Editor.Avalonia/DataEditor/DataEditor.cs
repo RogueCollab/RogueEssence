@@ -29,6 +29,7 @@ namespace RogueEssence.Dev
 
         public static void Init()
         {
+            clipboardObj = new object();
             converters = new List<IEditorConverter>();
             //AddConverter(new AutoTileBaseConverter());
             AddConverter(new BaseEmitterConverter());
@@ -345,7 +346,7 @@ namespace RogueEssence.Dev
                         nudValue.Minimum = rangeAtt.Min;
                         nudValue.Maximum = rangeAtt.Max;
                     }
-                    nudValue.Value = (member == null) ? (nudValue.Minimum > 0 ? nudValue.Minimum : 0) : (Int32)member;
+                    nudValue.Value = (member == null) ? (nudValue.Minimum > 0 ? nudValue.Minimum : 0) : (byte)member;
 
                     control.Children.Add(nudValue);
                 }
@@ -833,12 +834,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Title = name + "/" + element.ToString();
 
-                        StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
                         frmData.SelectedOKEvent += () =>
                         {
-                            StaticSaveMemberControl(pnl, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
                             op(index, element);
                             frmData.Close();
                         };
@@ -846,7 +846,7 @@ namespace RogueEssence.Dev
                         {
                             frmData.Close();
                         };
-
+                        control.GetOwningForm().RegisterChild(frmData);
                         frmData.Show();
                     };
 
@@ -876,12 +876,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Title = name + "/" + element.ToString();
 
-                        StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                         frmData.SelectedOKEvent += () =>
                         {
-                            StaticSaveMemberControl(pnl, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref element, true);
                             op(index, element);
                             frmData.Close();
                         };
@@ -890,6 +889,7 @@ namespace RogueEssence.Dev
                             frmData.Close();
                         };
 
+                        control.GetOwningForm().RegisterChild(frmData);
                         frmData.Show();
                     };
 
@@ -915,12 +915,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Title = name + "/" + element.ToString();
 
-                        StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                         frmData.SelectedOKEvent += () =>
                         {
-                            StaticSaveMemberControl(pnl, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
                             op(key, element);
                             frmData.Close();
                         };
@@ -929,6 +928,7 @@ namespace RogueEssence.Dev
                             frmData.Close();
                         };
 
+                        control.GetOwningForm().RegisterChild(frmData);
                         frmData.Show();
                     };
 
@@ -940,12 +940,11 @@ namespace RogueEssence.Dev
                         else
                             frmKey.Title = name + "/" + element.ToString();
 
-                        StackPanel pnl = frmKey.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
+                        StaticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
 
                         frmKey.SelectedOKEvent += () =>
                         {
-                            StaticSaveMemberControl(pnl, name, keyType, new object[0] { }, ref key, true);
+                            StaticSaveMemberControl(frmKey.ControlPanel, name, keyType, new object[0] { }, ref key, true);
                             op(key, element);
                             frmKey.Close();
                         };
@@ -954,6 +953,7 @@ namespace RogueEssence.Dev
                             frmKey.Close();
                         };
 
+                        control.GetOwningForm().RegisterChild(frmKey);
                         frmKey.Show();
                     };
 
@@ -977,12 +977,11 @@ namespace RogueEssence.Dev
                         else
                             frmData.Title = name + "/" + element.ToString();
 
-                        StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                         frmData.SelectedOKEvent += () =>
                         {
-                            StaticSaveMemberControl(pnl, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
                             op(priority, index, element);
                             frmData.Close();
                         };
@@ -991,6 +990,7 @@ namespace RogueEssence.Dev
                             frmData.Close();
                         };
 
+                        control.GetOwningForm().RegisterChild(frmData);
                         frmData.Show();
                     };
                     lbxValue.OnEditPriority = (Priority priority, int index, PriorityListBox.EditPriorityOp op) =>
@@ -998,13 +998,12 @@ namespace RogueEssence.Dev
                         DataEditForm frmData = new DataEditForm();
                         frmData.Title = name + "/" + "New Priority";
 
-                        StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
 
                         frmData.SelectedOKEvent += () =>
                         {
                             object priorityObj = priority;
-                            StaticSaveMemberControl(pnl, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), ref priorityObj, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), ref priorityObj, true);
                             op(priority, index, (Priority)priorityObj);
                             frmData.Close();
                         };
@@ -1013,6 +1012,7 @@ namespace RogueEssence.Dev
                             frmData.Close();
                         };
 
+                        control.GetOwningForm().RegisterChild(frmData);
                         frmData.Show();
                     };
 
@@ -1046,12 +1046,11 @@ namespace RogueEssence.Dev
                         DataEditForm frmData = new DataEditForm();
                         frmData.Title = name + "/" + type.Name;
 
-                        StackPanel pnl = frmData.FindControl<StackPanel>("stkContent");
-                        StaticLoadMemberControl(pnl, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                        StaticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
                         frmData.SelectedOKEvent += () =>
                         {
-                            StaticSaveMemberControl(pnl, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
+                            StaticSaveMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
                             op(element);
                             frmData.Close();
                         };
@@ -1060,6 +1059,7 @@ namespace RogueEssence.Dev
                             frmData.Close();
                         };
 
+                        control.GetOwningForm().RegisterChild(frmData);
                         frmData.Show();
                     };
                 }
@@ -1108,7 +1108,7 @@ namespace RogueEssence.Dev
                                 saveClassControls(obj, groupBoxPanel);
                                 setClipboardObj(obj);
                             };
-                            pasteToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
+                            pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                             {
                                 Type type1 = clipboardObj.GetType();
                                 Type type2 = type;
@@ -1117,8 +1117,8 @@ namespace RogueEssence.Dev
                                     groupBoxPanel.Children.Clear();
                                     loadClassControls(clipboardObj, groupBoxPanel);
                                 }
-                                //else
-                                //    MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                else
+                                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                             };
 
                             groupBoxPanel.ContextMenu = copyPasteStrip;
@@ -1215,7 +1215,7 @@ namespace RogueEssence.Dev
                                 saveClassControls(obj, groupBoxPanel);
                                 setClipboardObj(obj);
                             };
-                            pasteToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
+                            pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                             {
                                 Type type1 = clipboardObj.GetType();
                                 Type type2 = type;
@@ -1237,8 +1237,8 @@ namespace RogueEssence.Dev
                                     groupBoxPanel.Children.Clear();
                                     loadClassControls(clipboardObj, groupBoxPanel);
                                 }
-                                //else
-                                //    MessageBox.Show(String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                else
+                                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                             };
 
                             groupBoxPanel.ContextMenu = copyPasteStrip;

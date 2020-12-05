@@ -7,6 +7,7 @@ using RogueEssence.Data;
 using System.Drawing;
 using RogueElements;
 using Avalonia.Controls;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev
 {

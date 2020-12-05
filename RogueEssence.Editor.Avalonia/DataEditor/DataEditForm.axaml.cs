@@ -9,6 +9,8 @@ using RogueEssence.Dev;
 using Microsoft.Xna.Framework;
 using Avalonia.Threading;
 using System.Threading;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace RogueEssence.Dev.Views
 {
@@ -17,9 +19,16 @@ namespace RogueEssence.Dev.Views
         public event Action SelectedOKEvent;
         public event Action SelectedCancelEvent;
 
+        public StackPanel ControlPanel { get; }
+
+        private List<Window> children;
+
         public DataEditForm()
         {
             InitializeComponent();
+
+            children = new List<Window>();
+            ControlPanel = this.FindControl<StackPanel>("stkContent");
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -29,6 +38,16 @@ namespace RogueEssence.Dev.Views
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        public void RegisterChild(Window child)
+        {
+            children.Add(child);
+            child.Closed += (object sender, EventArgs e) =>
+            {
+                children.Remove(child);
+            };
+        }
+
 
 
 
@@ -42,6 +61,16 @@ namespace RogueEssence.Dev.Views
             this.Width = this.Width + 10;
         }
 
+        public void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (Design.IsDesignMode)
+                return;
+
+            for (int ii = children.Count-1; ii >= 0; ii--)
+            {
+                children[ii].Close();
+            }
+        }
 
         public void btnOK_Click(object sender, RoutedEventArgs e)
         {

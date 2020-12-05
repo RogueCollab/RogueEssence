@@ -6,6 +6,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev
 {

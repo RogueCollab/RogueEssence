@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
+using Avalonia.VisualTree;
 
 namespace RogueEssence.Dev.Views
 {
@@ -64,13 +65,12 @@ namespace RogueEssence.Dev.Views
             collection[index] = (collection[index].Item1, element);
         }
 
-        private void insertKey(object key, object element)
+        private async void insertKey(object key, object element)
         {
             int index = getIndexFromKey(key);
             if (index == -1)
             {
-                //TODO: pass in the owner window
-                //await MessageBox.Show(this, "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(this.GetOwningForm(), "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
             OnEditItem(key, element, insertItem);
