@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Controls;
+using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
@@ -98,66 +100,64 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (choices.SearchList.InternalIndex > -1)
                     {
-                    //ElementForm editor = new ElementForm();
-                    //int entryNum = choices.ChosenEntry;
-                    //editor.Text = entries[entryNum];
-                    //IEntryData data = entryOp(entryNum);
-                    //editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                    //DataEditor.LoadDataControls(data, editor.ControlPanel);
+                        int entryNum = choices.SearchList.InternalIndex;
+                        IEntryData data = entryOp(entryNum);
 
-                    //editor.OnOK += (object okSender, EventArgs okE) =>
-                    //{
-                    //    object obj = data;
-                    //    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                    //    data = (IEntryData)obj;
-                    //    DataManager.SaveData(entryNum, dataType.ToString(), data);
-                    //    DataManager.Instance.ClearCache(dataType);
-                    //    IEntryData entryData = ((IEntryData)data);
-                    //    EntrySummary entrySummary = entryData.GenerateEntrySummary();
-                    //    DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
-                    //    DataManager.Instance.SaveIndex(dataType);
-                    //    choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
-                    //    editor.Close();
-                    //};
-                    //editor.OnCancel += (object okSender, EventArgs okE) =>
-                    //{
-                    //    editor.Close();
-                    //};
+                        Views.DataEditForm editor = new Views.DataEditForm();
+                        editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                        StackPanel pnl = editor.FindControl<StackPanel>("stkContent");
+                        DataEditor.LoadDataControls(data, pnl);
+                        editor.SelectedOKEvent += () =>
+                        {
+                            object obj = data;
+                            DataEditor.SaveDataControls(ref obj, pnl);
+                            data = (IEntryData)obj;
+                            DataManager.SaveData(entryNum, dataType.ToString(), data);
+                            DataManager.Instance.ClearCache(dataType);
+                            EntrySummary entrySummary = data.GenerateEntrySummary();
+                            DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
+                            DataManager.Instance.SaveIndex(dataType);
+                            choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
+                            editor.Close();
+                        };
+                        editor.SelectedCancelEvent += () =>
+                        {
+                            editor.Close();
+                        };
 
-                    //editor.Show();
-                }
+                        editor.Show();
+                    }
                 };
                 choices.SelectedAddEvent += () =>
                 {
-                //ElementForm editor = new ElementForm();
-                //int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
-                //editor.Text = "New " + dataType.ToString();
-                //IEntryData data = createOp();
-                //editor.Text = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                //DataEditor.LoadDataControls(data, editor.ControlPanel);
+                    int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
+                    IEntryData data = createOp();
 
-                //editor.OnOK += (object okSender, EventArgs okE) =>
-                //{
-                //    object obj = data;
-                //    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                //    data = (IEntryData)obj;
-                //    DataManager.SaveData(entryNum, dataType.ToString(), data);
-                //    DataManager.Instance.ClearCache(dataType);
-                //    IEntryData entryData = ((IEntryData)data);
-                //    EntrySummary entrySummary = entryData.GenerateEntrySummary();
-                //    DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
-                //    DataManager.Instance.SaveIndex(dataType);
-                //    entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                //    choices.AddEntry(entrySummary.GetLocalString(true));
-                //    editor.Close();
-                //};
-                //editor.OnCancel += (object okSender, EventArgs okE) =>
-                //{
-                //    editor.Close();
-                //};
+                    Views.DataEditForm editor = new Views.DataEditForm();
+                    editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                    StackPanel pnl = editor.FindControl<StackPanel>("stkContent");
+                    DataEditor.LoadDataControls(data, pnl);
+                    editor.SelectedOKEvent += () =>
+                    {
+                        object obj = data;
+                        DataEditor.SaveDataControls(ref obj, pnl);
+                        data = (IEntryData)obj;
+                        DataManager.SaveData(entryNum, dataType.ToString(), data);
+                        DataManager.Instance.ClearCache(dataType);
+                        EntrySummary entrySummary = data.GenerateEntrySummary();
+                        DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
+                        DataManager.Instance.SaveIndex(dataType);
+                        entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                        choices.AddEntry(entrySummary.GetLocalString(true));
+                        editor.Close();
+                    };
+                    editor.SelectedCancelEvent += () =>
+                    {
+                        editor.Close();
+                    };
 
-                //editor.Show();
-            };
+                    editor.Show();
+                };
 
                 Views.DataListForm dataListForm = new Views.DataListForm
                 {

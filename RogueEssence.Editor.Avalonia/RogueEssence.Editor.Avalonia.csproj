@@ -14,8 +14,23 @@
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="DataEditor\PriorityListBox.axaml.cs">
+      <DependentUpon>PriorityListBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\DictionaryBox.axaml.cs">
+      <DependentUpon>DictionaryBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\CollectionBox.axaml.cs">
+      <DependentUpon>CollectionBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\DataEditForm.axaml.cs">
+      <DependentUpon>DataEditForm.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Content\AnimEditForm.axaml.cs">
       <DependentUpon>AnimEditForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\ClassBox.axaml.cs">
+      <DependentUpon>ClassBox.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Content\SpeciesEditForm.axaml.cs">
       <DependentUpon>SpeciesEditForm.axaml</DependentUpon>

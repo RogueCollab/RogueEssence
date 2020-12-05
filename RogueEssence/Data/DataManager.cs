@@ -453,13 +453,13 @@ namespace RogueEssence.Data
         {
             using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (BinaryReader reader = new BinaryReader(stream))
-                {
+                //using (BinaryReader reader = new BinaryReader(stream))
+                //{
                     IFormatter formatter = new BinaryFormatter();
                     if (binder != null)
                         formatter.Binder = binder;
                     return formatter.Deserialize(stream);
-                }
+                //}
             }
         }
 
@@ -475,11 +475,11 @@ namespace RogueEssence.Data
         {
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
+                //using (BinaryWriter writer = new BinaryWriter(stream))
+                //{
                     IFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(stream, entry);
-                }
+                //}
             }
         }
 

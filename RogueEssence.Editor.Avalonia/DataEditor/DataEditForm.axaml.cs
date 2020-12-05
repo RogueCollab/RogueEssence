@@ -1,16 +1,25 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using System;
+using RogueEssence;
+using RogueEssence.Dev;
+using Microsoft.Xna.Framework;
+using Avalonia.Threading;
+using System.Threading;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapRetileWindow : Window
+    public class DataEditForm : Window
     {
-        public MapRetileWindow()
+        public event Action SelectedOKEvent;
+        public event Action SelectedCancelEvent;
+
+        public DataEditForm()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -20,6 +29,7 @@ namespace RogueEssence.Dev.Views
         {
             AvaloniaXamlLoader.Load(this);
         }
+
 
 
         //TODO: this is a workaround to a bug in text wrapping
@@ -35,13 +45,13 @@ namespace RogueEssence.Dev.Views
 
         public void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            this.Close(true);
+            SelectedOKEvent?.Invoke();
         }
-
 
         public void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            this.Close(false);
+            SelectedCancelEvent?.Invoke();
         }
+
     }
 }

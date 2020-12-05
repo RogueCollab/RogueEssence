@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using Avalonia.Interactivity;
 using Avalonia.Controls;
 
 namespace RogueEssence.Dev.ViewModels
