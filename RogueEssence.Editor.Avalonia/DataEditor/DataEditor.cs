@@ -21,52 +21,52 @@ namespace RogueEssence.Dev
 {
     public static class DataEditor
     {
-        private static List<IEditorConverter> converters;
+        private static List<IEditor> converters;
 
         public static object clipboardObj;
 
         public static void Init()
         {
             clipboardObj = new object();
-            converters = new List<IEditorConverter>();
+            converters = new List<IEditor>();
             //AddConverter(new AutoTileBaseConverter());
-            AddConverter(new BaseEmitterConverter());
-            AddConverter(new BattleDataConverter());
-            AddConverter(new BattleFXConverter());
-            AddConverter(new CircleSquareEmitterConverter());
-            AddConverter(new CombatActionConverter());
-            AddConverter(new ExplosionDataConverter());
+            AddConverter(new BaseEmitterEditor());
+            AddConverter(new BattleDataEditor());
+            AddConverter(new BattleFXEditor());
+            AddConverter(new CircleSquareEmitterEditor());
+            AddConverter(new CombatActionEditor());
+            AddConverter(new ExplosionDataEditor());
             //AddConverter(new ItemDataConverter());
             //AddConverter(new TileLayerConverter());
-            AddConverter(new ShootingEmitterConverter());
-            AddConverter(new SkillDataConverter());
-            AddConverter(new ColumnAnimConverter());
-            AddConverter(new StaticAnimConverter());
-            AddConverter(new TypeDictConverter());
+            AddConverter(new ShootingEmitterEditor());
+            AddConverter(new SkillDataEditor());
+            AddConverter(new ColumnAnimEditor());
+            AddConverter(new StaticAnimEditor());
+            AddConverter(new TypeDictEditor());
             //AddConverter(new SpawnListConverter());
             //AddConverter(new SpawnRangeListConverter());
-            AddConverter(new PriorityListConverter());
-            AddConverter(new PriorityConverter());
-            AddConverter(new SegLocConverter());
-            AddConverter(new LocConverter());
-            AddConverter(new IntRangeConverter());
-            AddConverter(new FlagTypeConverter());
-            AddConverter(new ColorConverter());
-            AddConverter(new TypeConverter());
-            AddConverter(new DictionaryConverter());
-            AddConverter(new ListConverter());
-            AddConverter(new ArrayConverter());
-            AddConverter(new EnumConverter());
-            AddConverter(new StringConverter());
-            AddConverter(new DoubleConverter());
-            AddConverter(new SingleConverter());
-            AddConverter(new BooleanConverter());
-            AddConverter(new IntConverter());
-            AddConverter(new ByteConverter());
-            AddConverter(new EditorConverter<object>());
+            AddConverter(new PriorityListEditor());
+            AddConverter(new PriorityEditor());
+            AddConverter(new SegLocEditor());
+            AddConverter(new LocEditor());
+            AddConverter(new IntRangeEditor());
+            AddConverter(new FlagTypeEditor());
+            AddConverter(new ColorEditor());
+            AddConverter(new TypeEditor());
+            AddConverter(new DictionaryEditor());
+            AddConverter(new ListEditor());
+            AddConverter(new ArrayEditor());
+            AddConverter(new EnumEditor());
+            AddConverter(new StringEditor());
+            AddConverter(new DoubleEditor());
+            AddConverter(new SingleEditor());
+            AddConverter(new BooleanEditor());
+            AddConverter(new IntEditor());
+            AddConverter(new ByteEditor());
+            AddConverter(new Editor<object>());
         }
 
-        public static void AddConverter(IEditorConverter converter)
+        public static void AddConverter(IEditor converter)
         {
             //maintain inheritance order
             for (int ii = 0; ii < converters.Count; ii++)
@@ -90,7 +90,7 @@ namespace RogueEssence.Dev
         {
             Type objType = member.GetType();
             Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditorConverter converter in converters)
+            foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
@@ -108,7 +108,7 @@ namespace RogueEssence.Dev
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditorConverter converter in converters)
+            foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
@@ -194,7 +194,7 @@ namespace RogueEssence.Dev
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditorConverter converter in converters)
+            foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
@@ -227,7 +227,7 @@ namespace RogueEssence.Dev
         {
             Type objType = member.GetType();
             Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditorConverter converter in converters)
+            foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
@@ -245,7 +245,7 @@ namespace RogueEssence.Dev
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditorConverter converter in converters)
+            foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
@@ -325,7 +325,7 @@ namespace RogueEssence.Dev
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditorConverter converter in converters)
+            foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
