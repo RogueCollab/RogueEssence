@@ -16,7 +16,7 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <ListBox Name="lbxItems" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
+    <ListBox Name="lbxItems" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50" MaxHeight="130"/>
     <Button Click="btnAdd_Click" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
     <Button Click="btnDelete_Click" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
     <Button Click="btnUp_Click" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>

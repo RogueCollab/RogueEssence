@@ -68,7 +68,7 @@ namespace RogueEssence.Dev.Views
         private async void insertKey(object key, object element)
         {
             int index = getIndexFromKey(key);
-            if (index == -1)
+            if (index > -1)
             {
                 await MessageBox.Show(this.GetOwningForm(), "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
@@ -86,7 +86,7 @@ namespace RogueEssence.Dev.Views
             int curIndex = 0;
             foreach ((object, object) item in collection)
             {
-                if (item.Item1 == key)
+                if (item.Item1.Equals(key))
                     return curIndex;
                 curIndex++;
             }

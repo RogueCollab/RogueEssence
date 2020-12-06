@@ -44,6 +44,7 @@ namespace RogueEssence.Dev
             //AddConverter(new SpawnListConverter());
             //AddConverter(new SpawnRangeListConverter());
             AddConverter(new TypeDictConverter());
+            AddConverter(new ColumnAnimConverter());
             AddConverter(new StaticAnimConverter());
         }
 
