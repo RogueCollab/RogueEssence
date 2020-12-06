@@ -12,10 +12,10 @@ namespace RogueEssence.Dev
 {
     public abstract class TestableConverter<T> : EditorConverter<T>
     {
-        public override void LoadClassControls(T obj, StackPanel control)
+        public override void LoadWindowControls(T obj, StackPanel control)
         {
             //int initialHeight = control.Height;
-            base.LoadClassControls(obj, control);
+            base.LoadWindowControls(obj, control);
 
             //int totalHeight = control.Height - initialHeight;
 

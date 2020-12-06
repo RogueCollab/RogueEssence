@@ -28,7 +28,6 @@ namespace RogueEssence.Data
         public bool Targeted;
 
         //initial state for variables
-        [Dev.SubGroup]
         public StateCollection<StatusState> StatusStates;
 
         public PriorityList<SkillChangeEvent> OnSkillChanges;

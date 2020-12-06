@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
 
         private static List<IEditorConverter> converters;
 
-        private static object clipboardObj;
+        public static object clipboardObj;
 
         public static void Init()
         {
@@ -46,6 +46,7 @@ namespace RogueEssence.Dev
             AddConverter(new TypeDictConverter());
             AddConverter(new ColumnAnimConverter());
             AddConverter(new StaticAnimConverter());
+            AddConverter(new ObjectConverter());
         }
 
         public static void AddConverter(IEditorConverter converter)
@@ -68,7 +69,25 @@ namespace RogueEssence.Dev
             loadMemberControl(obj, control, obj.ToString(), obj.GetType(), null, obj, true);
         }
 
-        private static void loadClassControls(object obj, StackPanel control)
+        private static void loadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        {
+            Type objType = member.GetType();
+            Type[] interfaces = objType.GetInterfaces();
+            foreach (IEditorConverter converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    converter.LoadClassControls(control, name, type, attributes, member, isWindow);
+                    return;
+                }
+            }
+
+            throw new ArgumentException("Unhandled type!");
+            //StaticLoadClassControls(member, control);
+        }
+
+        public static void LoadWindowControls(object obj, StackPanel control)
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -77,12 +96,12 @@ namespace RogueEssence.Dev
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
-                    converter.LoadClassControls(obj, control);
+                    converter.LoadWindowControls(obj, control);
                     return;
                 }
             }
 
-            StaticLoadClassControls(obj, control);
+            throw new ArgumentException("Unhandled type!");
         }
 
         public static void StaticLoadClassControls(object obj, StackPanel control)
@@ -152,8 +171,6 @@ namespace RogueEssence.Dev
         }
 
 
-        private delegate void CreateMethod();
-
         public static void LoadLabelControl(StackPanel control, string name)
         {
             TextBlock lblName = new TextBlock();
@@ -186,19 +203,20 @@ namespace RogueEssence.Dev
             }
             StaticLoadMemberControl(control, name, type, attributes, member, isWindow);
         }
-        //TODO: move loadClassControls to be another layer of searching just after loadMemberControl
-        //loadClassControls will have to honor isWindow and SubGroupAttribute by themselves.
-        //the code for that can be written into EditorConverter to make it easy, possibly
-        //meanwhile other classes like color will not honor isWindow and SubGroupAttribute because they are meant to be treated like the primitives
-        //finally, the last-resort cases in StaticLoadMemberControl will remain unchanged?  they will only call the generic class UI creators straight on
-        //instead of loadClassControls
+
+        //TODO:
+        //add the ability to tag- using attributes- a specific member with a specific editor
+        //-this should make the virtual method LoadMemberControl obsolete
+        //-this should also give power to customize editors for types outside of the current assembly's control, by passing in attributes
+        //-well, it might still be easier to keep loadmembercontrol override this way, due to being able to inject attributes on specific members.
+        //TODO: also separate out the special cases for integers as data, and anims as strings
 
         //overload this method in children to account for structs such as loc
         public static void StaticLoadMemberControl(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             try
             {
-                if (type.IsEnum)
+                if (type.IsSubclassOf(typeof(System.Enum)))
                 {
                     LoadLabelControl(control, name);
 
@@ -385,7 +403,132 @@ namespace RogueEssence.Dev
                     nudValue.Value = (double)value;
                     control.Children.Add(nudValue);
                 }
-                else if (type == typeof(Color))
+                else if (type == typeof(String))
+                {
+                    LoadLabelControl(control, name);
+
+                    AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
+                    if (animAtt != null)
+                    {
+                        ComboBox cbValue = new ComboBox();
+                        cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
+                        string choice = (string)member;
+
+                        List<string> items = new List<string>();
+                        items.Add("---");
+                        int chosenIndex = 0;
+
+                        string[] dirs = Directory.GetFiles(animAtt.FolderPath);
+
+                        for (int ii = 0; ii < dirs.Length; ii++)
+                        {
+                            string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                            if (filename == choice)
+                                chosenIndex = items.Count;
+                            items.Add(filename);
+                        }
+
+                        var subject = new Subject<List<string>>();
+                        cbValue.Bind(ComboBox.ItemsProperty, subject);
+                        subject.OnNext(items);
+                        cbValue.SelectedIndex = chosenIndex;
+                        control.Children.Add(cbValue);
+                    }
+                    else if (ReflectionExt.FindAttribute<SoundAttribute>(attributes) != null)
+                    {
+                        //is it a sound effect?
+
+                        ComboBox cbValue = new ComboBox();
+                        cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
+                        string choice = (string)member;
+
+                        List<string> items = new List<string>();
+                        items.Add("---");
+                        int chosenIndex = 0;
+
+                        string[] dirs = Directory.GetFiles(DiagManager.CONTENT_PATH + "Sound/Battle");
+
+                        for (int ii = 0; ii < dirs.Length; ii++)
+                        {
+                            string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                            if (filename == choice)
+                                chosenIndex = items.Count;
+                            items.Add(filename);
+                        }
+
+                        var subject = new Subject<List<string>>();
+                        cbValue.Bind(ComboBox.ItemsProperty, subject);
+                        subject.OnNext(items);
+                        cbValue.SelectionChanged += CbValue_PlaySound;
+                        cbValue.SelectedIndex = chosenIndex;
+                        control.Children.Add(cbValue);
+
+                    }
+                    else
+                    {
+                        //for strings, use an edit textbox
+                        TextBox txtValue = new TextBox();
+                        //txtValue.Dock = DockStyle.Fill;
+                        MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
+                        if (attribute != null)
+                        {
+                            //txtValue.Multiline = true;
+                            //txtValue.Size = new Size(0, 80);
+                        }
+                        //else
+                        //    txtValue.Size = new Size(0, 20);
+                        txtValue.Text = (member == null) ? "" : (String)member;
+                        control.Children.Add(txtValue);
+                    }
+                }
+                else if (type.IsSubclassOf(typeof(System.Array)))
+                {
+                    //TODO: 2D array grid support
+                    //if (type.GetElementType().IsArray)
+
+                    LoadLabelControl(control, name);
+
+                    CollectionBox lbxValue = new CollectionBox();
+
+                    Type elementType = type.GetElementType();
+                    //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
+                    //add lambda expression for editing a single element
+                    lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
+                    {
+                        DataEditForm frmData = new DataEditForm();
+                        if (element == null)
+                            frmData.Title = name + "/" + "New " + elementType.Name;
+                        else
+                            frmData.Title = name + "/" + element.ToString();
+
+                        StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+
+                        frmData.SelectedOKEvent += () =>
+                        {
+                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
+                            op(index, element);
+                            frmData.Close();
+                        };
+                        frmData.SelectedCancelEvent += () =>
+                        {
+                            frmData.Close();
+                        };
+                        control.GetOwningForm().RegisterChild(frmData);
+                        frmData.Show();
+                    };
+
+
+                    Array array = ((Array)member);
+                    List<object> objList = new List<object>();
+                    for (int ii = 0; ii < array.Length; ii++)
+                        objList.Add(array.GetValue(ii));
+
+                    lbxValue.LoadFromList(objList);
+                    control.Children.Add(lbxValue);
+                }
+
+
+                if (type == typeof(Color))
                 {
                     LoadLabelControl(control, name);
 
@@ -493,84 +636,6 @@ namespace RogueEssence.Dev
                         cbValue.SelectedIndex = selection;
 
                         control.Children.Add(sharedRowPanel);
-                    }
-                }
-                else if (type == typeof(String))
-                {
-                    LoadLabelControl(control, name);
-
-                    AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
-                    if (animAtt != null)
-                    {
-                        ComboBox cbValue = new ComboBox();
-                        cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                        string choice = (string)member;
-
-                        List<string> items = new List<string>();
-                        items.Add("---");
-                        int chosenIndex = 0;
-
-                        string[] dirs = Directory.GetFiles(animAtt.FolderPath);
-
-                        for (int ii = 0; ii < dirs.Length; ii++)
-                        {
-                            string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                            if (filename == choice)
-                                chosenIndex = items.Count;
-                            items.Add(filename);
-                        }
-
-                        var subject = new Subject<List<string>>();
-                        cbValue.Bind(ComboBox.ItemsProperty, subject);
-                        subject.OnNext(items);
-                        cbValue.SelectedIndex = chosenIndex;
-                        control.Children.Add(cbValue);
-                    }
-                    else if (ReflectionExt.FindAttribute<SoundAttribute>(attributes) != null)
-                    {
-                        //is it a sound effect?
-
-                        ComboBox cbValue = new ComboBox();
-                        cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                        string choice = (string)member;
-
-                        List<string> items = new List<string>();
-                        items.Add("---");
-                        int chosenIndex = 0;
-
-                        string[] dirs = Directory.GetFiles(DiagManager.CONTENT_PATH + "Sound/Battle");
-
-                        for (int ii = 0; ii < dirs.Length; ii++)
-                        {
-                            string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                            if (filename == choice)
-                                chosenIndex = items.Count;
-                            items.Add(filename);
-                        }
-
-                        var subject = new Subject<List<string>>();
-                        cbValue.Bind(ComboBox.ItemsProperty, subject);
-                        subject.OnNext(items);
-                        cbValue.SelectionChanged += CbValue_PlaySound;
-                        cbValue.SelectedIndex = chosenIndex;
-                        control.Children.Add(cbValue);
-
-                    }
-                    else
-                    {
-                        //for strings, use an edit textbox
-                        TextBox txtValue = new TextBox();
-                        //txtValue.Dock = DockStyle.Fill;
-                        MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
-                        if (attribute != null)
-                        {
-                            //txtValue.Multiline = true;
-                            //txtValue.Size = new Size(0, 80);
-                        }
-                        //else
-                        //    txtValue.Size = new Size(0, 20);
-                        txtValue.Text = (member == null) ? "" : (String)member;
-                        control.Children.Add(txtValue);
                     }
                 }
                 else if (type == typeof(Priority))
@@ -689,92 +754,6 @@ namespace RogueEssence.Dev
 
                     control.Children.Add(innerPanel);
                 }
-                //else if (type == typeof(TileLayer))
-                //{
-                //    LoadLabelControl(control, name);
-
-                //    TilePreview preview = new TilePreview();
-                //    preview.Dock = DockStyle.Fill;
-                //    preview.Size = new Size(GraphicsManager.TileSize, GraphicsManager.TileSize);
-                //    preview.SetChosenAnim((TileLayer)member);
-                //    control.Controls.Add(preview);
-                //    preview.TileClick += (object sender, EventArgs e) =>
-                //    {
-                //        ElementForm frmData = new ElementForm();
-                //        frmData.Text = name + "/" + "Tile";
-
-                //        Rectangle boxRect = new Rectangle(new Point(), new Size(654, 502 + LABEL_HEIGHT));
-                //        int box_down = 0;
-                //        LoadLabelControl(frmData.ControlPanel, name);
-                //        box_down += 16;
-                //        //for enums, use a combobox
-                //        TileBrowser browser = new TileBrowser();
-                //        browser.Location = new Point(boxRect.Left, box_down);
-                //        browser.Size = new Size(boxRect.Width, boxRect.Height);
-                //        browser.SetBrush(preview.GetChosenAnim());
-                //        frmData.ControlPanel.Controls.Add(browser);
-
-                //        if (frmData.ShowDialog() == DialogResult.OK)
-                //            preview.SetChosenAnim(browser.GetBrush());
-                //    };
-                //}
-                //else if (type.GetInterfaces().Contains(typeof(IList<TileLayer>)))
-                //{
-                //    LoadLabelControl(control, name);
-
-                //    TilePreview preview = new TilePreview();
-                //    preview.Dock = DockStyle.Fill;
-                //    preview.Size = new Size(GraphicsManager.TileSize, GraphicsManager.TileSize);
-                //    preview.SetChosenAnim(((IList<TileLayer>)member).Count > 0 ? ((IList<TileLayer>)member)[0] : new TileLayer());
-                //    control.Controls.Add(preview);
-
-                //    CollectionBox lbxValue = new CollectionBox();
-                //    lbxValue.Dock = DockStyle.Fill;
-                //    lbxValue.Size = new Size(0, 175);
-                //    lbxValue.LoadFromList(type, (IList)member);
-                //    control.Controls.Add(lbxValue);
-
-                //    lbxValue.SelectedIndexChanged += (object sender, EventArgs e) =>
-                //    {
-                //        if (lbxValue.SelectedIndex > -1)
-                //            preview.SetChosenAnim(((IList<TileLayer>)lbxValue.Collection)[lbxValue.SelectedIndex]);
-                //        else
-                //            preview.SetChosenAnim(((IList<TileLayer>)lbxValue.Collection).Count > 0 ? ((IList<TileLayer>)lbxValue.Collection)[0] : new TileLayer());
-                //    };
-
-
-                //    //add lambda expression for editing a single element
-                //    lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
-                //    {
-                //        ElementForm frmData = new ElementForm();
-                //        frmData.Text = name + "/" + "Tile #" + index;
-
-                //        Rectangle boxRect = new Rectangle(new Point(), new Size(654, 502 + LABEL_HEIGHT));
-                //        int box_down = 0;
-                //        LoadLabelControl(frmData.ControlPanel, name);
-                //        box_down += 16;
-                //        //for enums, use a combobox
-                //        TileBrowser browser = new TileBrowser();
-                //        browser.Location = new Point(boxRect.Left, box_down);
-                //        browser.Size = new Size(boxRect.Width, boxRect.Height);
-                //        browser.SetBrush(element != null ? (TileLayer)element : new TileLayer());
-
-                //        frmData.OnOK += (object okSender, EventArgs okE) =>
-                //        {
-                //            element = browser.GetBrush();
-                //            frmData.Close();
-                //        };
-                //        frmData.OnCancel += (object okSender, EventArgs okE) =>
-                //        {
-                //            frmData.Close();
-                //        };
-
-                //        frmData.ControlPanel.Controls.Add(browser);
-
-                //        frmData.Show();
-                //    };
-
-                //}
                 else if (type.Equals(typeof(Type)))
                 {
                     TypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<TypeConstraintAttribute>(attributes);
@@ -814,51 +793,6 @@ namespace RogueEssence.Dev
 
                     control.Children.Add(sharedRowPanel);
 
-                }
-                else if (type.IsArray)
-                {
-                    //TODO: 2D array grid support
-                    //if (type.GetElementType().IsArray)
-
-                    LoadLabelControl(control, name);
-
-                    CollectionBox lbxValue = new CollectionBox();
-
-                    Type elementType = type.GetElementType();
-                    //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
-                    //add lambda expression for editing a single element
-                    lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
-                    {
-                        DataEditForm frmData = new DataEditForm();
-                        if (element == null)
-                            frmData.Title = name + "/" + "New " + elementType.Name;
-                        else
-                            frmData.Title = name + "/" + element.ToString();
-
-                        StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
-
-                        frmData.SelectedOKEvent += () =>
-                        {
-                            StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
-                            op(index, element);
-                            frmData.Close();
-                        };
-                        frmData.SelectedCancelEvent += () =>
-                        {
-                            frmData.Close();
-                        };
-                        control.GetOwningForm().RegisterChild(frmData);
-                        frmData.Show();
-                    };
-
-
-                    Array array = ((Array)member);
-                    List<object> objList = new List<object>();
-                    for (int ii = 0; ii < array.Length; ii++)
-                        objList.Add(array.GetValue(ii));
-
-                    lbxValue.LoadFromList(objList);
-                    control.Children.Add(lbxValue);
                 }
                 else if (type.GetInterfaces().Contains(typeof(IList)))
                 {
@@ -1020,236 +954,96 @@ namespace RogueEssence.Dev
                     lbxValue.LoadFromList((IPriorityList)member);
                     control.Children.Add(lbxValue);
                 }
-                else if (!isWindow && ReflectionExt.FindAttribute<SubGroupAttribute>(attributes) == null)
-                {
-                    //in all cases where the class itself isn't being rendered to the window, simply represent as an editable object
-                    LoadLabelControl(control, name);
+                //else if (type == typeof(TileLayer))
+                //{
+                //    LoadLabelControl(control, name);
 
-                    if (member == null)
-                    {
-                        Type[] children = type.GetAssignableTypes();
-                        //create an empty instance
-                        member = ReflectionExt.CreateMinimalInstance(children[0]);
-                    }
+                //    TilePreview preview = new TilePreview();
+                //    preview.Dock = DockStyle.Fill;
+                //    preview.Size = new Size(GraphicsManager.TileSize, GraphicsManager.TileSize);
+                //    preview.SetChosenAnim((TileLayer)member);
+                //    control.Controls.Add(preview);
+                //    preview.TileClick += (object sender, EventArgs e) =>
+                //    {
+                //        ElementForm frmData = new ElementForm();
+                //        frmData.Text = name + "/" + "Tile";
 
-                    ClassBox cbxValue = new ClassBox();
-                    MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
-                    //if (attribute != null)
-                    //    cbxValue.Size = new Size(0, 80);
-                    //else
-                    //    cbxValue.Size = new Size(0, 29);
-                    cbxValue.LoadFromSource(member);
-                    control.Children.Add(cbxValue);
+                //        Rectangle boxRect = new Rectangle(new Point(), new Size(654, 502 + LABEL_HEIGHT));
+                //        int box_down = 0;
+                //        LoadLabelControl(frmData.ControlPanel, name);
+                //        box_down += 16;
+                //        //for enums, use a combobox
+                //        TileBrowser browser = new TileBrowser();
+                //        browser.Location = new Point(boxRect.Left, box_down);
+                //        browser.Size = new Size(boxRect.Width, boxRect.Height);
+                //        browser.SetBrush(preview.GetChosenAnim());
+                //        frmData.ControlPanel.Controls.Add(browser);
 
-                    //add lambda expression for editing a single element
-                    cbxValue.OnEditItem = (object element, ClassBox.EditElementOp op) =>
-                    {
-                        DataEditForm frmData = new DataEditForm();
-                        frmData.Title = name + "/" + type.Name;
+                //        if (frmData.ShowDialog() == DialogResult.OK)
+                //            preview.SetChosenAnim(browser.GetBrush());
+                //    };
+                //}
+                //else if (type.GetInterfaces().Contains(typeof(IList<TileLayer>)))
+                //{
+                //    LoadLabelControl(control, name);
 
-                        StaticLoadMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                //    TilePreview preview = new TilePreview();
+                //    preview.Dock = DockStyle.Fill;
+                //    preview.Size = new Size(GraphicsManager.TileSize, GraphicsManager.TileSize);
+                //    preview.SetChosenAnim(((IList<TileLayer>)member).Count > 0 ? ((IList<TileLayer>)member)[0] : new TileLayer());
+                //    control.Controls.Add(preview);
 
-                        frmData.SelectedOKEvent += () =>
-                        {
-                            StaticSaveMemberControl(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
-                            op(element);
-                            frmData.Close();
-                        };
-                        frmData.SelectedCancelEvent += () =>
-                        {
-                            frmData.Close();
-                        };
+                //    CollectionBox lbxValue = new CollectionBox();
+                //    lbxValue.Dock = DockStyle.Fill;
+                //    lbxValue.Size = new Size(0, 175);
+                //    lbxValue.LoadFromList(type, (IList)member);
+                //    control.Controls.Add(lbxValue);
 
-                        control.GetOwningForm().RegisterChild(frmData);
-                        frmData.Show();
-                    };
-                }
-                else
-                {
-                    LoadLabelControl(control, name);
-                    //if it's a class of its own, create a new panel
-                    //then pass it into the call
-                    //use the returned "ref" int to determine how big the panel should be
-                    //continue from there
-                    Type[] children = type.GetAssignableTypes();
-
-                    //handle null members by getting an instance of the FIRST instantiatable subclass (including itself) it can find
-                    if (member == null)
-                        member = ReflectionExt.CreateMinimalInstance(children[0]);
-
-                    if (children.Length < 1)
-                        throw new Exception("Completely abstract field found for: " + name);
-                    else if (children.Count() == 1)
-                    {
-                        Border border = new Border();
-                        border.BorderThickness = new Thickness(1);
-                        border.BorderBrush = Avalonia.Media.Brushes.LightGray;
-                        border.Margin = new Thickness(2);
-
-                        StackPanel groupBoxPanel = new StackPanel();
-                        groupBoxPanel.Margin = new Thickness(2);
-
-                        {
-                            ContextMenu copyPasteStrip = new ContextMenu();
-
-                            MenuItem copyToolStripMenuItem = new MenuItem();
-                            MenuItem pasteToolStripMenuItem = new MenuItem();
-
-                            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
-                            list.AddRange(new MenuItem[] {
-                            copyToolStripMenuItem,
-                            pasteToolStripMenuItem});
-
-                            copyToolStripMenuItem.Header = "Copy " + type.Name;
-                            pasteToolStripMenuItem.Header = "Paste " + type.Name;
-
-                            copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
-                            {
-                                object obj = ReflectionExt.CreateMinimalInstance(children[0]);
-                                saveClassControls(obj, groupBoxPanel);
-                                setClipboardObj(obj);
-                            };
-                            pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
-                            {
-                                Type type1 = clipboardObj.GetType();
-                                Type type2 = type;
-                                if (type2.IsAssignableFrom(type1))
-                                {
-                                    groupBoxPanel.Children.Clear();
-                                    loadClassControls(clipboardObj, groupBoxPanel);
-                                }
-                                else
-                                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
-                            };
-
-                            groupBoxPanel.ContextMenu = copyPasteStrip;
-                        }
-
-                        loadClassControls(member, groupBoxPanel);
-                        border.Child = groupBoxPanel;
-                        control.Children.Add(border);
-                    }
-                    else
-                    {
-                        //note: considerations must be made when dealing with inheritance/polymorphism
-                        //eg: find all children in this assembly that can be instantiated,
-                        //add them to different panels
-                        //show the one that is active right now
-                        //include a combobox for switching children
+                //    lbxValue.SelectedIndexChanged += (object sender, EventArgs e) =>
+                //    {
+                //        if (lbxValue.SelectedIndex > -1)
+                //            preview.SetChosenAnim(((IList<TileLayer>)lbxValue.Collection)[lbxValue.SelectedIndex]);
+                //        else
+                //            preview.SetChosenAnim(((IList<TileLayer>)lbxValue.Collection).Count > 0 ? ((IList<TileLayer>)lbxValue.Collection)[0] : new TileLayer());
+                //    };
 
 
-                        Avalonia.Controls.Grid sharedRowPanel = getSharedRowPanel(2);
+                //    //add lambda expression for editing a single element
+                //    lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
+                //    {
+                //        ElementForm frmData = new ElementForm();
+                //        frmData.Text = name + "/" + "Tile #" + index;
 
-                        TextBlock lblType = new TextBlock();
-                        lblType.Text = "Type:";
-                        lblType.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-                        sharedRowPanel.Children.Add(lblType);
-                        sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
-                        lblType.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
+                //        Rectangle boxRect = new Rectangle(new Point(), new Size(654, 502 + LABEL_HEIGHT));
+                //        int box_down = 0;
+                //        LoadLabelControl(frmData.ControlPanel, name);
+                //        box_down += 16;
+                //        //for enums, use a combobox
+                //        TileBrowser browser = new TileBrowser();
+                //        browser.Location = new Point(boxRect.Left, box_down);
+                //        browser.Size = new Size(boxRect.Width, boxRect.Height);
+                //        browser.SetBrush(element != null ? (TileLayer)element : new TileLayer());
 
-                        ComboBox cbValue = new ComboBox();
-                        cbValue.Margin = new Thickness(4, 0, 0, 0);
-                        cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                        sharedRowPanel.Children.Add(cbValue);
-                        cbValue.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
+                //        frmData.OnOK += (object okSender, EventArgs okE) =>
+                //        {
+                //            element = browser.GetBrush();
+                //            frmData.Close();
+                //        };
+                //        frmData.OnCancel += (object okSender, EventArgs okE) =>
+                //        {
+                //            frmData.Close();
+                //        };
 
-                        control.Children.Add(sharedRowPanel);
+                //        frmData.ControlPanel.Controls.Add(browser);
 
-                        Border border = new Border();
-                        border.BorderThickness = new Thickness(1);
-                        border.BorderBrush = Avalonia.Media.Brushes.LightGray;
-                        border.Margin = new Thickness(2);
+                //        frmData.Show();
+                //    };
 
-                        StackPanel groupBoxPanel = new StackPanel();
-                        groupBoxPanel.Margin = new Thickness(2);
+                //}
 
-                        List<CreateMethod> createMethods = new List<CreateMethod>();
 
-                        bool refreshPanel = true;
-                        List<string> items = new List<string>();
-                        int selection = 0;
-                        for (int ii = 0; ii < children.Length; ii++)
-                        {
-                            Type childType = children[ii];
-                            items.Add(childType.GetDisplayName());
+                loadClassControls(control, name, type, attributes, member, isWindow);
 
-                            createMethods.Add(() =>
-                            {
-                                if (refreshPanel)
-                                {
-                                    groupBoxPanel.Children.Clear();
-                                    object emptyMember = ReflectionExt.CreateMinimalInstance(childType);
-                                    loadClassControls(emptyMember, groupBoxPanel);//TODO: POTENTIAL INFINITE RECURSION
-                                }
-                            });
-                            if (childType == member.GetType())
-                                selection = ii;
-                        }
-
-                        var subject = new Subject<List<string>>();
-                        cbValue.Bind(ComboBox.ItemsProperty, subject);
-                        subject.OnNext(items);
-                        cbValue.SelectedIndex = selection;
-
-                        cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
-                        {
-                            createMethods[cbValue.SelectedIndex]();
-                        };
-
-                        {
-                            ContextMenu copyPasteStrip = new ContextMenu();
-
-                            MenuItem copyToolStripMenuItem = new MenuItem();
-                            MenuItem pasteToolStripMenuItem = new MenuItem();
-
-                            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
-                            list.AddRange(new MenuItem[] {
-                            copyToolStripMenuItem,
-                            pasteToolStripMenuItem});
-
-                            copyToolStripMenuItem.Header = "Copy " + type.Name;
-                            pasteToolStripMenuItem.Header = "Paste " + type.Name;
-
-                            copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
-                            {
-                                object obj = ReflectionExt.CreateMinimalInstance(children[cbValue.SelectedIndex]);
-                                saveClassControls(obj, groupBoxPanel);
-                                setClipboardObj(obj);
-                            };
-                            pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
-                            {
-                                Type type1 = clipboardObj.GetType();
-                                Type type2 = type;
-                                int type_idx = -1;
-                                for (int ii = 0; ii < children.Length; ii++)
-                                {
-                                    if (children[ii] == type1)
-                                    {
-                                        type_idx = ii;
-                                        break;
-                                    }
-                                }
-                                if (type_idx > -1)
-                                {
-                                    refreshPanel = false;
-                                    cbValue.SelectedIndex = type_idx;
-                                    refreshPanel = true;
-
-                                    groupBoxPanel.Children.Clear();
-                                    loadClassControls(clipboardObj, groupBoxPanel);
-                                }
-                                else
-                                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
-                            };
-
-                            groupBoxPanel.ContextMenu = copyPasteStrip;
-                        }
-
-                        loadClassControls(member, groupBoxPanel);
-                        border.Child = groupBoxPanel;
-                        control.Children.Add(border);
-                    }
-                }
             }
             catch (Exception e)
             {
@@ -1262,7 +1056,25 @@ namespace RogueEssence.Dev
             saveMemberControl(obj, control, obj.ToString(), obj.GetType(), null, ref obj, true);
         }
 
-        private static void saveClassControls(object obj, StackPanel control)
+        private static void saveClassControls(StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
+        {
+            Type objType = member.GetType();
+            Type[] interfaces = objType.GetInterfaces();
+            foreach (IEditorConverter converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    converter.SaveClassControls(control, name, type, attributes, ref member, isWindow);
+                    return;
+                }
+            }
+            throw new ArgumentException("Unhandled type!");
+            //StaticSaveClassControls(member, control);
+        }
+
+
+        public static void SaveWindowControls(object obj, StackPanel control)
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -1271,11 +1083,11 @@ namespace RogueEssence.Dev
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
-                    converter.SaveClassControls(obj, control);
+                    converter.SaveWindowControls(obj, control);
                     return;
                 }
             }
-            StaticSaveClassControls(obj, control);
+            throw new ArgumentException("Unhandled type!");
         }
 
         public static void StaticSaveClassControls(object obj, StackPanel control)
@@ -1370,7 +1182,7 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
             try
             {
-                if (type.IsEnum)
+                if (type.IsSubclassOf(typeof(System.Enum)))
                 {
                     controlIndex++;
 
@@ -1477,7 +1289,44 @@ namespace RogueEssence.Dev
                     member = (Double)nudValue.Value;
                     controlIndex++;
                 }
-                else if (type == typeof(Color))
+                else if (type == typeof(String))
+                {
+                    controlIndex++;
+                    //for strings, use an edit textbox
+                    if (ReflectionExt.FindAttribute<AnimAttribute>(attributes) != null || ReflectionExt.FindAttribute<SoundAttribute>(attributes) != null)
+                    {
+                        ComboBox cbValue = (ComboBox)control.Children[controlIndex];
+                        if (cbValue.SelectedIndex == 0)
+                            member = "";
+                        else
+                            member = (string)cbValue.SelectedItem;
+                    }
+                    else
+                    {
+                        TextBox txtValue = (TextBox)control.Children[controlIndex];
+                        member = (String)txtValue.Text;
+                    }
+                    controlIndex++;
+                }
+                else if (type.IsSubclassOf(typeof(System.Array)))
+                {
+                    //TODO: 2D array grid support
+                    //if (type.GetElementType().IsArray)
+
+                    controlIndex++;
+                    CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
+                    List<object> objList = (List<object>)lbxValue.GetList(typeof(List<object>));
+
+                    Array array = Array.CreateInstance(type.GetElementType(), objList.Count);
+                    for (int ii = 0; ii < objList.Count; ii++)
+                        array.SetValue(objList[ii], ii);
+
+                    member = array;
+                    controlIndex++;
+                }
+
+
+                if (type == typeof(Color))
                 {
                     controlIndex++;
                     Avalonia.Controls.Grid innerControl = (Avalonia.Controls.Grid)control.Children[controlIndex];
@@ -1511,25 +1360,6 @@ namespace RogueEssence.Dev
                         member = new FlagType(children[cbValue.SelectedIndex]);
                         controlIndex++;
                     }
-                }
-                else if (type == typeof(String))
-                {
-                    controlIndex++;
-                    //for strings, use an edit textbox
-                    if (ReflectionExt.FindAttribute<AnimAttribute>(attributes) != null || ReflectionExt.FindAttribute<SoundAttribute>(attributes) != null)
-                    {
-                        ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                        if (cbValue.SelectedIndex == 0)
-                            member = "";
-                        else
-                            member = (string)cbValue.SelectedItem;
-                    }
-                    else
-                    {
-                        TextBox txtValue = (TextBox)control.Children[controlIndex];
-                        member = (String)txtValue.Text;
-                    }
-                    controlIndex++;
                 }
                 else if (type == typeof(Priority))
                 {
@@ -1622,23 +1452,6 @@ namespace RogueEssence.Dev
                     member = children[cbValue.SelectedIndex];
                     controlIndex++;
                 }
-                else if (type.IsArray)
-                {
-                    //TODO: 2D array grid support
-                    //if (type.GetElementType().IsArray)
-
-                    controlIndex++;
-                    CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
-                    List<object> objList = (List<object>)lbxValue.GetList(typeof(List<object>));
-
-                    Array array = Array.CreateInstance(type.GetElementType(), objList.Count);
-                    for (int ii = 0; ii < objList.Count; ii++)
-                        array.SetValue(objList[ii], ii);
-
-                    member = array;
-                    controlIndex++;
-
-                }
                 else if (type.GetInterfaces().Contains(typeof(IList)))
                 {
                     controlIndex++;
@@ -1660,43 +1473,9 @@ namespace RogueEssence.Dev
                     member = lbxValue.GetList(type);
                     controlIndex++;
                 }
-                else if (!isWindow && ReflectionExt.FindAttribute<SubGroupAttribute>(attributes) == null)
-                {
-                    controlIndex++;
-                    ClassBox cbxValue = (ClassBox)control.Children[controlIndex];
-                    member = cbxValue.Object;
-                    controlIndex++;
-                }
-                else
-                {
-                    controlIndex++;
-                    Type[] children = type.GetAssignableTypes();
 
-                    //need to create a new instance
-                    //note: considerations must be made when dealing with inheritance/polymorphism
-                    //eg: check to see if there are children of the type,
-                    //and if so, do this instead:
-                    //get the combobox index determining the type
-                    //instantiate the type
-                    //get the panel for the index
-                    //save using THAT panel
 
-                    if (children.Length == 1)
-                        member = ReflectionExt.CreateMinimalInstance(children[0]);
-                    else
-                    {
-
-                        Avalonia.Controls.Grid subGrid = (Avalonia.Controls.Grid)control.Children[controlIndex];
-                        ComboBox cbValue = (ComboBox)subGrid.Children[1];
-
-                        member = ReflectionExt.CreateMinimalInstance(children[cbValue.SelectedIndex]);
-                        controlIndex++;
-                    }
-
-                    Border border = (Border)control.Children[controlIndex];
-                    saveClassControls(member, (StackPanel)border.Child);
-                    controlIndex++;
-                }
+                saveClassControls(control, name, type, attributes, ref member, isWindow);
             }
             catch (Exception e)
             {
@@ -1735,7 +1514,7 @@ namespace RogueEssence.Dev
             return (obj) => { return obj == null ? "[NULL]" : obj.ToString(); };
         }
 
-        private static void setClipboardObj(object obj)
+        public static void setClipboardObj(object obj)
         {
             using (MemoryStream stream = new MemoryStream())
             {

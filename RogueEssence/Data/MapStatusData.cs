@@ -27,7 +27,6 @@ namespace RogueEssence.Data
         public SwitchOffEmitter Emitter;
         public bool DefaultHidden;
 
-        [Dev.SubGroup]
         public StateCollection<MapStatusState> StatusStates;
 
         public MapStatusGivenEvent RepeatMethod;

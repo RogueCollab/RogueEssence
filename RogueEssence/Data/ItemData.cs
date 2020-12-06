@@ -45,7 +45,6 @@ namespace RogueEssence.Data
         //NOTE: There is no event that fires when items are given to or taken from the bag, thus RefreshTraits for bag items WILL NOT WORK right now
         public bool BagEffect;
 
-        [Dev.SubGroup]
         public StateCollection<ItemState> ItemStates;
 
         //add equip effects

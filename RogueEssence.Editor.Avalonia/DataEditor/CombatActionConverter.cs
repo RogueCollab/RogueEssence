@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
                 Character player = DungeonScene.Instance.FocusedCharacter;
 
                 CombatAction data = obj.Clone();
-                SaveClassControls(data, (StackPanel)((Button)sender).Parent);
+                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
 
                 DungeonScene.Instance.PendingDevEvent = player.MockCharAction(data, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
             }

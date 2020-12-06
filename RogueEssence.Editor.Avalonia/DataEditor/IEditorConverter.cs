@@ -10,11 +10,15 @@ namespace RogueEssence.Dev
     {
         Type GetConvertingType();
 
-        void LoadClassControls(object obj, StackPanel control);
+        void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow);
+
+        void LoadWindowControls(object obj, StackPanel control);
 
         void LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow);
 
-        void SaveClassControls(object obj, StackPanel control);
+        void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow);
+
+        void SaveWindowControls(object obj, StackPanel control);
 
         void SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow);
     }

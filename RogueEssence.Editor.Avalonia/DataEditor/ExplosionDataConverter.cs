@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
                 Character player = DungeonScene.Instance.FocusedCharacter;
 
                 ExplosionData data = new ExplosionData();
-                SaveClassControls(data, (StackPanel)((Button)sender).Parent);
+                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
 
                 DungeonScene.Instance.PendingDevEvent = data.ReleaseExplosion(player.CharLoc, player, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
             }

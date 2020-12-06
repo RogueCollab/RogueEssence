@@ -52,7 +52,6 @@ namespace RogueEssence.Data
 
         public int HitRate;
 
-        [SubGroup]
         public StateCollection<SkillState> SkillStates;
         public PriorityList<BattleEvent> BeforeTryActions;
         public PriorityList<BattleEvent> BeforeActions;

@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
                 Character player = DungeonScene.Instance.FocusedCharacter;
 
                 BattleData data = new BattleData();
-                SaveClassControls(data, (StackPanel)((Button)sender).Parent);
+                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
 
                 DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessEndAnim(player, player, data);
             }

@@ -13,11 +13,13 @@ namespace RogueEssence.Dev
 {
     public class TypeDictConverter : EditorConverter<ITypeDict>
     {
-        public override void LoadClassControls(ITypeDict obj, StackPanel control)
+        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, ITypeDict member, bool isWindow)
         {
+            DataEditor.LoadLabelControl(control, name);
+
             CollectionBox lbxValue = new CollectionBox();
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), obj.GetType(), 0);
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
             //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
             lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
@@ -67,20 +69,21 @@ namespace RogueEssence.Dev
             };
 
             List<object> states = new List<object>();
-            foreach (object state in obj)
+            foreach (object state in member)
                 states.Add(state);
             lbxValue.LoadFromList(states);
             control.Children.Add(lbxValue);
         }
 
 
-        public override void SaveClassControls(ITypeDict obj, StackPanel control)
+        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref ITypeDict member, bool isWindow)
         {
-            CollectionBox lbxValue = (CollectionBox)control.Children[0];
+            CollectionBox lbxValue = (CollectionBox)control.Children[1];
 
+            member = (ITypeDict)Activator.CreateInstance(type);
             List<object> states = (List<object>)lbxValue.GetList(typeof(List<object>));
             for (int ii = 0; ii < states.Count; ii++)
-                obj.Set(states[ii]);
+                member.Set(states[ii]);
         }
     }
 }

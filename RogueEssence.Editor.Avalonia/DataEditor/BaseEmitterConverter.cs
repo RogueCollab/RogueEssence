@@ -17,7 +17,7 @@ namespace RogueEssence.Dev
                 Character player = DungeonScene.Instance.FocusedCharacter;
 
                 EndingEmitter data = (EndingEmitter)obj.Clone();
-                SaveClassControls(data, (StackPanel)((Button)sender).Parent);
+                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
                 data.SetupEmit(player.MapLoc, player.MapLoc, player.CharDir);
                 DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
             }
