@@ -16,7 +16,7 @@ namespace RogueEssence.Dev
         {
             //if (name == "Sprite")
             //{
-            //    DataEditor.LoadLabelControl(control, name);
+            //    LoadLabelControl(control, name);
             //    //for strings, use an edit textbox
             //    Dev.SpriteBrowser browser = new Dev.SpriteBrowser();
             //    browser.Size = new Size(210, 256);

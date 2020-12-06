@@ -9,13 +9,25 @@ using System.Text;
 
 namespace RogueEssence.Dev
 {
-    public class ObjectConverter : EditorConverter<object>
-    {
-
-    }
-    public abstract class EditorConverter<T> : IEditorConverter
+    public class EditorConverter<T> : IEditorConverter
     {
         protected delegate void CreateMethod();
+
+        public static void LoadLabelControl(StackPanel control, string name)
+        {
+            TextBlock lblName = new TextBlock();
+            lblName.Margin = new Thickness(0, 4, 0, 0);
+            //StringBuilder separatedName = new StringBuilder();
+            //for (int ii = 0; ii < name.Length; ii++)
+            //{
+            //    if (ii > 0 && (char.IsUpper(name[ii]) && !char.IsLower(name[ii-1]) || char.IsDigit(name[ii])))
+            //        separatedName.Append(' ');
+            //    separatedName.Append(name[ii]);
+            //}
+            //separatedName.Append(":");
+            lblName.Text = name + ":";
+            control.Children.Add(lblName);
+        }
 
         public Type GetConvertingType() { return typeof(T); }
 
@@ -25,7 +37,7 @@ namespace RogueEssence.Dev
             //override LoadWindowControls, which is called by those methods.
 
             //in all cases where the class itself isn't being rendered to the window, simply represent as an editable object
-            DataEditor.LoadLabelControl(control, name);
+            LoadLabelControl(control, name);
 
             if (!isWindow && ReflectionExt.FindAttribute<SubGroupAttribute>(attributes) == null)
             {

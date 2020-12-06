@@ -14,19 +14,11 @@ namespace RogueEssence.Dev
     {
         public override void LoadWindowControls(T obj, StackPanel control)
         {
-            //int initialHeight = control.Height;
             base.LoadWindowControls(obj, control);
-
-            //int totalHeight = control.Height - initialHeight;
 
             Button btnTest = new Button();
             btnTest.Margin = new Avalonia.Thickness(0, 4, 0, 0);
-            //btnTest.Name = "btnTest";
-            //btnTest.Dock = DockStyle.Fill;
-            //btnTest.Size = new System.Drawing.Size(0, 29);
-            //btnTest.TabIndex = 0;
             btnTest.Content = "Test";
-            //btnTest.UseVisualStyleBackColor = true;
             btnTest.Click += (object sender, RoutedEventArgs e) =>
             {
                 lock (GameBase.lockObj)

@@ -17,7 +17,7 @@ namespace RogueEssence.Dev
             //if (type == typeof(List<TileLayer>))
             //{
             //    List<TileLayer> anims = (List<TileLayer>)member;
-            //    DataEditor.LoadLabelControl(control, name);
+            //    LoadLabelControl(control, name);
 
             //    Dev.TilePreview preview = new Dev.TilePreview();
             //    preview.Size = new Size(GraphicsManager.TileSize, GraphicsManager.TileSize);

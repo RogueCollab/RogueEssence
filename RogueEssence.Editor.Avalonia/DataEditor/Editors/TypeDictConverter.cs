@@ -15,7 +15,7 @@ namespace RogueEssence.Dev
     {
         public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, ITypeDict member, bool isWindow)
         {
-            DataEditor.LoadLabelControl(control, name);
+            LoadLabelControl(control, name);
 
             CollectionBox lbxValue = new CollectionBox();
 
