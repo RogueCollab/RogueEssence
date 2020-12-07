@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
         x:Class="RogueEssence.Dev.Views.AnimEditForm"
-        Title="{Binding Name}" Height="280" Width="300">
+        Title="{Binding Name}" Height="280" Width="300" Closed="Window_Closed">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
       <vm:AnimEditViewModel/>

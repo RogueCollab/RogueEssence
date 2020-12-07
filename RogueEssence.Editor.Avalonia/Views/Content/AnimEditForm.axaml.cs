@@ -9,6 +9,7 @@ using RogueEssence.Dev;
 using Microsoft.Xna.Framework;
 using Avalonia.Threading;
 using System.Threading;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Views
 {
@@ -28,5 +29,17 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+
+        public void Window_Closed(object sender, EventArgs e)
+        {
+            lock (GameBase.lockObj)
+            {
+                if (DungeonScene.Instance != null)
+                {
+                    DungeonScene.Instance.DebugAsset = RogueEssence.Content.GraphicsManager.AssetType.None;
+                    DungeonScene.Instance.DebugAnim = "";
+                }
+            }
+        }
     }
 }

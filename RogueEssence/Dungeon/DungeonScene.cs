@@ -37,7 +37,9 @@ namespace RogueEssence.Dungeon
 
         public bool SeeAll;
         public int DebugEmote;
-        
+        public GraphicsManager.AssetType DebugAsset;
+        public string DebugAnim;
+
         public ExplorerTeam ActiveTeam {  get { return ZoneManager.Instance.CurrentMap.ActiveTeam; } }
 
         
@@ -1111,6 +1113,21 @@ namespace RogueEssence.Dungeon
 
 
 
+                    //draw example texture
+                    if (DebugAsset != GraphicsManager.AssetType.None)
+                    {
+                        switch (DebugAsset)
+                        {
+                            case GraphicsManager.AssetType.VFX:
+                                DirSheet dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
+                                dirSheet.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / scale / 2 - dirSheet.TileWidth / 2, GraphicsManager.ScreenHeight / scale / 2 - dirSheet.TileHeight / 2),
+                                    (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % (ulong)dirSheet.TotalFrames),
+                                    FocusedCharacter.CharDir, Color.White);
+
+                                break;
+                        }
+                    }
+
                     spriteBatch.End();
 
 
@@ -1370,11 +1387,6 @@ namespace RogueEssence.Dungeon
             spriteBatch.End();
         }
 
-        public virtual void DrawDev(SpriteBatch spriteBatch)
-        {
-
-        }
-
         public override void DrawDebug(SpriteBatch spriteBatch)
         {
             if (FocusedCharacter != null)
@@ -1392,7 +1404,9 @@ namespace RogueEssence.Dungeon
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
+
             }
+
             if (ZoneManager.Instance.CurrentMap != null)
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
             GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);

@@ -34,6 +34,14 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.SetIfChanged(ref chosenAnim, value);
                 CachedPath = null;
+                lock (GameBase.lockObj)
+                {
+                    if (DungeonScene.Instance != null)
+                    {
+                        DungeonScene.Instance.DebugAsset = assetType;
+                        DungeonScene.Instance.DebugAnim = chosenAnim;
+                    }
+                }
             }
         }
 

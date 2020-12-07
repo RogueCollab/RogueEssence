@@ -336,6 +336,9 @@ namespace RogueEssence.Dev.Views
 
         public static string GetConfigPath()
         {
+            //https://jimrich.sk/environment-specialfolder-on-windows-linux-and-os-x/
+            //MacOS actually uses a different folder for config data, traditionally
+            //I guess it's the odd one out...
             switch (CoreDllMap.OS)
             {
                 case "osx":
