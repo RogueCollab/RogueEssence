@@ -29,41 +29,6 @@ namespace RogueEssence.Dev
         {
             clipboardObj = new object();
             converters = new List<IEditor>();
-            //AddConverter(new AutoTileBaseConverter());
-            AddConverter(new BaseEmitterEditor());
-            AddConverter(new BattleDataEditor());
-            AddConverter(new BattleFXEditor());
-            AddConverter(new CircleSquareEmitterEditor());
-            AddConverter(new CombatActionEditor());
-            AddConverter(new ExplosionDataEditor());
-            //AddConverter(new ItemDataConverter());
-            //AddConverter(new TileLayerConverter());
-            AddConverter(new ShootingEmitterEditor());
-            AddConverter(new SkillDataEditor());
-            AddConverter(new ColumnAnimEditor());
-            AddConverter(new StaticAnimEditor());
-            AddConverter(new TypeDictEditor());
-            //AddConverter(new SpawnListConverter());
-            //AddConverter(new SpawnRangeListConverter());
-            AddConverter(new PriorityListEditor());
-            AddConverter(new PriorityEditor());
-            AddConverter(new SegLocEditor());
-            AddConverter(new LocEditor());
-            AddConverter(new IntRangeEditor());
-            AddConverter(new FlagTypeEditor());
-            AddConverter(new ColorEditor());
-            AddConverter(new TypeEditor());
-            AddConverter(new DictionaryEditor());
-            AddConverter(new ListEditor());
-            AddConverter(new ArrayEditor());
-            AddConverter(new EnumEditor());
-            AddConverter(new StringEditor());
-            AddConverter(new DoubleEditor());
-            AddConverter(new SingleEditor());
-            AddConverter(new BooleanEditor());
-            AddConverter(new IntEditor());
-            AddConverter(new ByteEditor());
-            AddConverter(new ObjectEditor());
         }
 
         public static void AddConverter(IEditor converter)
@@ -83,10 +48,10 @@ namespace RogueEssence.Dev
 
         public static void LoadDataControls(object obj, StackPanel control)
         {
-            loadMemberControl(obj, control, obj.ToString(), obj.GetType(), null, obj, true);
+            LoadClassControls(control, obj.ToString(), obj.GetType(), new object[0], obj, true);
         }
 
-        public static void loadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             Type objType = member.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -101,7 +66,6 @@ namespace RogueEssence.Dev
             }
 
             throw new ArgumentException("Unhandled type!");
-            //StaticLoadClassControls(member, control);
         }
 
         public static void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
@@ -120,16 +84,7 @@ namespace RogueEssence.Dev
             throw new ArgumentException("Unhandled type!");
         }
 
-        public static Avalonia.Controls.Grid getSharedRowPanel(int cols)
-        {
-            Avalonia.Controls.Grid sharedRowPanel = new Avalonia.Controls.Grid();
-            for(int ii = 0; ii < cols; ii++)
-                sharedRowPanel.ColumnDefinitions.Add(new ColumnDefinition());
-
-            return sharedRowPanel;
-        }
-
-        public static void loadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -142,16 +97,15 @@ namespace RogueEssence.Dev
                     return;
                 }
             }
-            loadClassControls(control, name, type, attributes, member, isWindow);
+            throw new ArgumentException("Unhandled type!");
         }
 
         public static void SaveDataControls(ref object obj, StackPanel control)
         {
-            obj = saveMemberControl(obj, control, obj.ToString(), obj.GetType(), null, true);
+            obj = SaveClassControls(control, obj.ToString(), obj.GetType(), new object[0], true);
         }
 
-        //TODO: do a sweep of this and LoadClassControls; we may want to call Save/Load WindowControls instead
-        public static object saveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             Type[] interfaces = type.GetInterfaces();
             foreach (IEditor converter in converters)
@@ -181,7 +135,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static object saveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        public static object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -193,8 +147,7 @@ namespace RogueEssence.Dev
                     return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
                 }
             }
-
-            return saveClassControls(control, name, type, attributes, isWindow);
+            throw new ArgumentException("Unhandled type!");
         }
 
         //TODO: WPF data binding would invalidate this
@@ -218,7 +171,7 @@ namespace RogueEssence.Dev
             return (obj) => { return obj == null ? "[NULL]" : obj.ToString(); };
         }
 
-        public static void setClipboardObj(object obj)
+        public static void SetClipboardObj(object obj)
         {
             using (MemoryStream stream = new MemoryStream())
             {

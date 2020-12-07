@@ -29,7 +29,7 @@ namespace RogueEssence.Dev
 
                 Type[] children = baseType.GetAssignableTypes();
 
-                Avalonia.Controls.Grid sharedRowPanel = DataEditor.getSharedRowPanel(2);
+                Avalonia.Controls.Grid sharedRowPanel = getSharedRowPanel(2);
 
                 TextBlock lblType = new TextBlock();
                 lblType.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;

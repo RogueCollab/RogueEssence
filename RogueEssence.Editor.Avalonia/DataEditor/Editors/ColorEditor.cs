@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
-            Avalonia.Controls.Grid innerPanel = DataEditor.getSharedRowPanel(8);
+            Avalonia.Controls.Grid innerPanel = getSharedRowPanel(8);
 
             TextBlock lblR = new TextBlock();
             lblR.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;

@@ -12,9 +12,6 @@ namespace RogueEssence.Dev
 {
     public abstract class TestableEditor<T> : Editor<T>
     {
-        public override bool DefaultSubgroup => false;
-        public override bool DefaultDecoration => true;
-
 
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
         {

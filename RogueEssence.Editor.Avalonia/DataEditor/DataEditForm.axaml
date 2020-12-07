@@ -22,7 +22,7 @@
     </Grid.ColumnDefinitions>
     <!--ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2"-->
     <ScrollViewer Grid.ColumnSpan="2">
-      <StackPanel Name="stkContent">
+      <StackPanel Name="stkContent" Margin="4">
         
       </StackPanel>
     </ScrollViewer>

@@ -35,11 +35,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.loadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(priority, index, element);
                     frmData.Close();
                 };
@@ -56,11 +56,11 @@ namespace RogueEssence.Dev
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = name + "/" + "New Priority";
 
-                DataEditor.loadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    object priorityObj = DataEditor.saveClassControls(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    object priorityObj = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(priority, index, (Priority)priorityObj);
                     frmData.Close();
                 };

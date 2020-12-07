@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
+        public override bool DefaultType => true;
 
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Type member)
         {
@@ -26,7 +27,7 @@ namespace RogueEssence.Dev
 
             Type[] children = baseType.GetAssignableTypes();
 
-            Avalonia.Controls.Grid sharedRowPanel = DataEditor.getSharedRowPanel(2);
+            Avalonia.Controls.Grid sharedRowPanel = getSharedRowPanel(2);
 
             TextBlock lblType = new TextBlock();
             lblType.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;

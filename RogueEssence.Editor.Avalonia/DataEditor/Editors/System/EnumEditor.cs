@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
+        public override bool DefaultType => true;
 
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Enum member)
         {
@@ -48,7 +49,7 @@ namespace RogueEssence.Dev
                     }
                 }
 
-                Avalonia.Controls.Grid innerPanel = DataEditor.getSharedRowPanel(checkboxes.Count);
+                Avalonia.Controls.Grid innerPanel = getSharedRowPanel(checkboxes.Count);
                 for (int ii = 0; ii < checkboxes.Count; ii++)
                 {
                     innerPanel.Children.Add(checkboxes[ii]);

@@ -14,8 +14,9 @@ namespace RogueEssence.Dev
     {
         protected delegate void CreateMethod();
 
-        public abstract bool DefaultSubgroup { get; }
-        public abstract bool DefaultDecoration { get; }
+        public virtual bool DefaultSubgroup => false;
+        public virtual bool DefaultDecoration => true;
+        public virtual bool DefaultType => false;
 
         public static void LoadLabelControl(StackPanel control, string name)
         {
@@ -33,9 +34,145 @@ namespace RogueEssence.Dev
             control.Children.Add(lblName);
         }
 
+
+        protected static Grid getSharedRowPanel(int cols)
+        {
+            Grid sharedRowPanel = new Grid();
+            for (int ii = 0; ii < cols; ii++)
+                sharedRowPanel.ColumnDefinitions.Add(new ColumnDefinition());
+
+            return sharedRowPanel;
+        }
+
         public Type GetConvertingType() { return typeof(T); }
 
-        private void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, T member, bool isWindow)
+        public virtual void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
+        {
+            //go through all members and add for them
+            //control starts off clean; this is the control that will have all member controls on it
+            try
+            {
+                List<MemberInfo> myFields = type.GetEditableMembers();
+
+                List<List<MemberInfo>> tieredFields = new List<List<MemberInfo>>();
+                for (int ii = 0; ii < myFields.Count; ii++)
+                {
+                    if (myFields[ii].GetCustomAttributes(typeof(NonEditedAttribute), false).Length > 0)
+                        continue;
+                    if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
+                        continue;
+
+                    object member = myFields[ii].GetValue(obj);
+                    if (member == null && myFields[ii].GetCustomAttributes(typeof(NonNullAttribute), false).Length > 0)
+                        throw new Exception("Null class member found in " + type.ToString() + ": " + myFields[ii].Name);
+
+                    if (myFields[ii].GetCustomAttributes(typeof(SharedRowAttribute), false).Length == 0)
+                        tieredFields.Add(new List<MemberInfo>());
+                    tieredFields[tieredFields.Count - 1].Add(myFields[ii]);
+                }
+
+                for (int ii = 0; ii < tieredFields.Count; ii++)
+                {
+                    if (tieredFields[ii].Count == 1)
+                    {
+                        MemberInfo myInfo = tieredFields[ii][0];
+                        StackPanel stack = new StackPanel();
+                        control.Children.Add(stack);
+                        DataEditor.LoadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
+                    }
+                    else
+                    {
+                        Grid sharedRowPanel = getSharedRowPanel(tieredFields[ii].Count);
+                        control.Children.Add(sharedRowPanel);
+                        for (int jj = 0; jj < tieredFields[ii].Count; jj++)
+                        {
+                            MemberInfo myInfo = tieredFields[ii][jj];
+                            StackPanel stack = new StackPanel();
+                            sharedRowPanel.Children.Add(stack);
+                            stack.SetValue(Grid.ColumnProperty, jj);
+                            DataEditor.LoadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(e);
+            }
+        }
+
+        //TODO: add the ability to tag- using attributes- a specific member with a specific editor
+        public virtual void LoadMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        {
+            DataEditor.LoadClassControls(control, name, type, attributes, member, isWindow);
+        }
+
+        public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        {
+            try
+            {
+                //create instance of type here; object always starts null?
+                T obj = (T)ReflectionExt.CreateMinimalInstance(type);
+
+                List<MemberInfo> myFields = type.GetEditableMembers();
+
+                List<List<MemberInfo>> tieredFields = new List<List<MemberInfo>>();
+                for (int ii = 0; ii < myFields.Count; ii++)
+                {
+                    if (myFields[ii].GetCustomAttributes(typeof(NonEditedAttribute), false).Length > 0)
+                        continue;
+                    if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
+                        continue;
+
+                    object member = myFields[ii].GetValue(obj);
+                    if (member == null && myFields[ii].GetCustomAttributes(typeof(NonNullAttribute), false).Length > 0)
+                        throw new Exception("Null class member found in " + type.ToString() + ": " + myFields[ii].Name);
+
+                    if (myFields[ii].GetCustomAttributes(typeof(SharedRowAttribute), false).Length == 0)
+                        tieredFields.Add(new List<MemberInfo>());
+
+                    tieredFields[tieredFields.Count - 1].Add(myFields[ii]);
+                }
+
+                int controlIndex = 0;
+                for (int ii = 0; ii < tieredFields.Count; ii++)
+                {
+                    if (tieredFields[ii].Count == 1)
+                    {
+                        MemberInfo myInfo = tieredFields[ii][0];
+                        object member = DataEditor.SaveMemberControl(obj, (StackPanel)control.Children[controlIndex], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false);
+                        myInfo.SetValue(obj, member);
+                        controlIndex++;
+                    }
+                    else
+                    {
+                        StackPanel sharedRowControl = (StackPanel)control.Children[controlIndex];
+                        int sharedRowControlIndex = 0;
+                        for (int jj = 0; jj < tieredFields[ii].Count; jj++)
+                        {
+                            MemberInfo myInfo = tieredFields[ii][jj];
+                            object member = DataEditor.SaveMemberControl(obj, (StackPanel)sharedRowControl.Children[jj], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false);
+                            myInfo.SetValue(obj, member);
+                            sharedRowControlIndex++;
+                        }
+                        controlIndex++;
+                    }
+                }
+                return obj;
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(e);
+                return default(T);
+            }
+        }
+
+        public virtual object SaveMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        {
+            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow);
+        }
+
+        void IEditor.LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             //if you want a class that is by default isolated to a classbox but has a custom UI when opened on its own/overridden to render,
             //override LoadWindowControls, which is called by those methods.
@@ -59,9 +196,13 @@ namespace RogueEssence.Dev
                 LoadLabelControl(control, name);
                 if (member == null)
                 {
-                    Type[] children = type.GetAssignableTypes();
+                    Type[] children;
+                    if (DefaultType)
+                        children = new Type[1] { type };
+                    else
+                        children = type.GetAssignableTypes();
                     //create an empty instance
-                    member = (T)ReflectionExt.CreateMinimalInstance(children[0]);
+                    member = ReflectionExt.CreateMinimalInstance(children[0]);
                 }
 
                 ClassBox cbxValue = new ClassBox();
@@ -79,11 +220,11 @@ namespace RogueEssence.Dev
                     DataEditForm frmData = new DataEditForm();
                     frmData.Title = name + "/" + type.Name;
 
-                    DataEditor.loadClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                    DataEditor.LoadClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
                     frmData.SelectedOKEvent += () =>
                     {
-                        element = DataEditor.saveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true);
+                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true);
                         op(element);
                         frmData.Close();
                     };
@@ -118,11 +259,15 @@ namespace RogueEssence.Dev
                 //then pass it into the call
                 //use the returned "ref" int to determine how big the panel should be
                 //continue from there
-                Type[] children = type.GetAssignableTypes();
+                Type[] children;
+                if (DefaultType)
+                    children = new Type[1] { type };
+                else
+                    children = type.GetAssignableTypes();
 
                 //handle null members by getting an instance of the FIRST instantiatable subclass (including itself) it can find
                 if (member == null)
-                    member = (T)ReflectionExt.CreateMinimalInstance(children[0]);
+                    member = ReflectionExt.CreateMinimalInstance(children[0]);
 
                 if (children.Length < 1)
                     throw new Exception("Completely abstract field found for: " + name);
@@ -163,7 +308,7 @@ namespace RogueEssence.Dev
                         copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                         {
                             object obj = DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes);
-                            DataEditor.setClipboardObj(obj);
+                            DataEditor.SetClipboardObj(obj);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                         {
@@ -190,12 +335,12 @@ namespace RogueEssence.Dev
                     //add them to different panels
                     //show the one that is active right now
                     //include a combobox for switching children
-                    
+
                     StackPanel chosenParent = null;
                     if (includeDecoration)
                         LoadLabelControl(control, name);
 
-                    Grid sharedRowPanel = DataEditor.getSharedRowPanel(2);
+                    Grid sharedRowPanel = getSharedRowPanel(2);
 
                     TextBlock lblType = new TextBlock();
                     lblType.Text = "Type:";
@@ -286,7 +431,7 @@ namespace RogueEssence.Dev
                         copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                         {
                             object obj = DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes);
-                            DataEditor.setClipboardObj(obj);
+                            DataEditor.SetClipboardObj(obj);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                         {
@@ -322,67 +467,16 @@ namespace RogueEssence.Dev
             }
         }
 
-        public virtual void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
+        void IEditor.LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
         {
-            //go through all members and add for them
-            //control starts off clean; this is the control that will have all member controls on it
-            try
-            {
-                List<MemberInfo> myFields = type.GetEditableMembers();
-
-                List<List<MemberInfo>> tieredFields = new List<List<MemberInfo>>();
-                for (int ii = 0; ii < myFields.Count; ii++)
-                {
-                    if (myFields[ii].GetCustomAttributes(typeof(NonEditedAttribute), false).Length > 0)
-                        continue;
-                    if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
-                        continue;
-
-                    object member = myFields[ii].GetValue(obj);
-                    if (member == null && myFields[ii].GetCustomAttributes(typeof(NonNullAttribute), false).Length > 0)
-                        throw new Exception("Null class member found in " + type.ToString() + ": " + myFields[ii].Name);
-
-                    if (myFields[ii].GetCustomAttributes(typeof(SharedRowAttribute), false).Length == 0)
-                        tieredFields.Add(new List<MemberInfo>());
-                    tieredFields[tieredFields.Count - 1].Add(myFields[ii]);
-                }
-
-                for (int ii = 0; ii < tieredFields.Count; ii++)
-                {
-                    if (tieredFields[ii].Count == 1)
-                    {
-                        MemberInfo myInfo = tieredFields[ii][0];
-                        StackPanel stack = new StackPanel();
-                        control.Children.Add(stack);
-                        DataEditor.loadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
-                    }
-                    else
-                    {
-                        Grid sharedRowPanel = DataEditor.getSharedRowPanel(tieredFields[ii].Count);
-                        control.Children.Add(sharedRowPanel);
-                        for (int jj = 0; jj < tieredFields[ii].Count; jj++)
-                        {
-                            MemberInfo myInfo = tieredFields[ii][jj];
-                            StackPanel stack = new StackPanel();
-                            sharedRowPanel.Children.Add(stack);
-                            stack.SetValue(Grid.ColumnProperty, jj);
-                            DataEditor.loadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(e);
-            }
+            LoadWindowControls(control, name, type, attributes, (T)obj);
         }
 
-        public virtual void LoadMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        void IEditor.LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
-            DataEditor.loadClassControls(control, name, type, attributes, member, isWindow);
+            LoadMemberControl((T)obj, control, name, type, attributes, member, isWindow);
         }
-
-        private T SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        object IEditor.SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             int controlIndex = 0;
 
@@ -398,11 +492,15 @@ namespace RogueEssence.Dev
             {
                 controlIndex++;
                 ClassBox cbxValue = (ClassBox)control.Children[controlIndex];
-                return (T)cbxValue.Object;
+                return cbxValue.Object;
             }
             else
             {
-                Type[] children = type.GetAssignableTypes();
+                Type[] children;
+                if (DefaultType)
+                    children = new Type[1] { type };
+                else
+                    children = type.GetAssignableTypes();
 
                 //need to create a new instance
                 //note: considerations must be made when dealing with inheritance/polymorphism
@@ -428,7 +526,7 @@ namespace RogueEssence.Dev
                         Border border = (Border)control.Children[controlIndex];
                         chosenParent = (StackPanel)border.Child;
                     }
-                    return (T)DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes);
+                    return DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes);
                 }
                 else
                 {
@@ -449,92 +547,10 @@ namespace RogueEssence.Dev
                     else
                         chosenParent = (StackPanel)control.Children[controlIndex];
 
-                    return (T)DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes);
+                    return DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes);
                 }
 
             }
-        }
-        public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
-        {
-            try
-            {
-                //create instance of type here; object always starts null?
-                T obj = (T)ReflectionExt.CreateMinimalInstance(type);
-
-                List<MemberInfo> myFields = type.GetEditableMembers();
-
-                List<List<MemberInfo>> tieredFields = new List<List<MemberInfo>>();
-                for (int ii = 0; ii < myFields.Count; ii++)
-                {
-                    if (myFields[ii].GetCustomAttributes(typeof(NonEditedAttribute), false).Length > 0)
-                        continue;
-                    if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
-                        continue;
-
-                    object member = myFields[ii].GetValue(obj);
-                    if (member == null && myFields[ii].GetCustomAttributes(typeof(NonNullAttribute), false).Length > 0)
-                        throw new Exception("Null class member found in " + type.ToString() + ": " + myFields[ii].Name);
-
-                    if (myFields[ii].GetCustomAttributes(typeof(SharedRowAttribute), false).Length == 0)
-                        tieredFields.Add(new List<MemberInfo>());
-
-                    tieredFields[tieredFields.Count - 1].Add(myFields[ii]);
-                }
-
-                int controlIndex = 0;
-                for (int ii = 0; ii < tieredFields.Count; ii++)
-                {
-                    if (tieredFields[ii].Count == 1)
-                    {
-                        MemberInfo myInfo = tieredFields[ii][0];
-                        object member = DataEditor.saveMemberControl(obj, (StackPanel)control.Children[controlIndex], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false);
-                        myInfo.SetValue(obj, member);
-                        controlIndex++;
-                    }
-                    else
-                    {
-                        StackPanel sharedRowControl = (StackPanel)control.Children[controlIndex];
-                        int sharedRowControlIndex = 0;
-                        for (int jj = 0; jj < tieredFields[ii].Count; jj++)
-                        {
-                            MemberInfo myInfo = tieredFields[ii][jj];
-                            object member = DataEditor.saveMemberControl(obj, (StackPanel)sharedRowControl.Children[jj], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false);
-                            myInfo.SetValue(obj, member);
-                            sharedRowControlIndex++;
-                        }
-                        controlIndex++;
-                    }
-                }
-                return obj;
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(e);
-                return default(T);
-            }
-        }
-
-        public virtual object SaveMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
-        {
-            return DataEditor.saveClassControls(control, name, type, attributes, isWindow);
-        }
-
-        void IEditor.LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
-        {
-            LoadClassControls(control, name, type, attributes, (T)member, isWindow);
-        }
-        void IEditor.LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
-        {
-            LoadWindowControls(control, name, type, attributes, (T)obj);
-        }
-
-        void IEditor.LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
-        {
-            LoadMemberControl((T)obj, control, name, type, attributes, member, isWindow);
-        }
-        object IEditor.SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
-        {
-            return SaveClassControls(control, name, type, attributes, isWindow);
         }
 
         object IEditor.SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)

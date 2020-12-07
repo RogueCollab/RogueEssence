@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
-            Avalonia.Controls.Grid innerPanel = DataEditor.getSharedRowPanel(4);
+            Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
 
             TextBlock lblX = new TextBlock();
             lblX.Text = "Min:";

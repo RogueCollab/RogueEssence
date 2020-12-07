@@ -34,6 +34,9 @@ namespace RogueEssence.Dev
 
         public override object SaveMemberControl(ItemData obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
+            //Here, we can just inject an attribute and now it's as if that member had an attribute assigned to it,
+            //even when we didn't have access to the member itself! (via it being a part of another library, etc)
+
             //if (name == "Sprite")
             //{
             //    int controlIndex = 0;
@@ -41,10 +44,11 @@ namespace RogueEssence.Dev
             //    Dev.SpriteBrowser browser = (Dev.SpriteBrowser)control.Controls[controlIndex];
             //    member = browser.ChosenPic;
             //    controlIndex++;
+            //
             //}
             //else
             //{
-                return base.SaveMemberControl(obj, control, name, type, attributes, isWindow);
+            return base.SaveMemberControl(obj, control, name, type, attributes, isWindow);
             //}
         }
     }

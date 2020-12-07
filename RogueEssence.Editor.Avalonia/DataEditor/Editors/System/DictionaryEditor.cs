@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
+        public override bool DefaultType => true;
 
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IDictionary member)
         {
@@ -36,11 +37,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.loadClassControls(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(key, element);
                     frmData.Close();
                 };
@@ -61,11 +62,11 @@ namespace RogueEssence.Dev
                 else
                     frmKey.Title = name + "/" + element.ToString();
 
-                DataEditor.loadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
+                DataEditor.LoadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
 
                 frmKey.SelectedOKEvent += () =>
                 {
-                    key = DataEditor.saveClassControls(frmKey.ControlPanel, name, keyType, new object[0] { }, true);
+                    key = DataEditor.SaveClassControls(frmKey.ControlPanel, name, keyType, new object[0] { }, true);
                     op(key, element);
                     frmKey.Close();
                 };

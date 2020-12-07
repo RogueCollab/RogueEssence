@@ -15,9 +15,5 @@ using System.Reactive.Subjects;
 namespace RogueEssence.Dev
 {
     public class ObjectEditor : Editor<Object>
-    {
-        public override bool DefaultSubgroup => false;
-
-        public override bool DefaultDecoration => true;
-    }
+    { }
 }

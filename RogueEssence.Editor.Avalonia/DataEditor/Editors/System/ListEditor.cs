@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
+        public override bool DefaultType => true;
 
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IList member)
         {
@@ -34,11 +35,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.loadClassControls(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
                     op(index, element);
                     frmData.Close();
                 };

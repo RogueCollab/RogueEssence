@@ -35,11 +35,11 @@ namespace RogueEssence.Dev
                     frmData.Title = element.ToString();
 
                 //TODO: make this a member and reference it that way
-                DataEditor.loadClassControls(frmData.ControlPanel, "(TypeDict) [" + index + "]", elementType, new object[0] { }, element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, "(TypeDict) [" + index + "]", elementType, new object[0] { }, element, true);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.saveClassControls(frmData.ControlPanel, "TypeDict", elementType, new object[0] { }, true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, "TypeDict", elementType, new object[0] { }, true);
 
                     bool itemExists = false;
 

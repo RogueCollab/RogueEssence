@@ -191,7 +191,8 @@ namespace RogueEssence.Dev
             Dictionary<string, int> assemblyNameLookup = new Dictionary<string, int>();
             for (int ii = 0; ii < candAssemblies.Length; ii++)
             {
-                assemblyNameLookup[candAssemblies[ii].FullName] = ii;
+                //TODO: we don't use full names here because of version disagreements; is there a better way?
+                assemblyNameLookup[candAssemblies[ii].GetName().Name] = ii;
                 if (candAssemblies[ii] == assembly)
                     startIndex = ii;
                 assemblyToDependents[ii] = new List<int>();
@@ -202,7 +203,7 @@ namespace RogueEssence.Dev
                 for (int jj = 0; jj < names.Length; jj++)
                 {
                     int nn;
-                    if (assemblyNameLookup.TryGetValue(names[jj].FullName, out nn))
+                    if (assemblyNameLookup.TryGetValue(names[jj].Name, out nn))
                         assemblyToDependents[nn].Add(ii);
                 }
             }
@@ -258,6 +259,9 @@ namespace RogueEssence.Dev
                 for (int ii = 0; ii < types.Length; ii++)
                 {
                     Type checkType = types[ii];
+                    //non-public classes cannot be used
+                    if (!checkType.IsPublic)
+                        continue;
                     //check if assignable; must be assignable to all
                     if (!allowAbstract && checkType.IsAbstract)
                         continue;
@@ -284,12 +288,17 @@ namespace RogueEssence.Dev
                         children.Add(checkType);
                     else
                     {
+                        //checkType is now currently a generic type whos argument-less form inherits from the constraint type's argument-less form
+                        //now, in order to see if the generic type itself has a filled form that can satisfy the constraint,
+                        //we must first fill all argument-less parameters with the existing arguments of the constraint
+                        //as well as check to see if the arguments that ARE filled are filled with the right types
+
                         //checkType contains unassigned generic parameters
                         //constraints may have assigned generic parameters
                         //if they do, tracebackType maps back to them
                         Type[] checkArgs = checkType.GetGenericArguments();
                         Type[] paramsFromBase = new Type[checkArgs.Length];
-
+                        bool correctFill = true;
                         for (int jj = 0; jj < tracebackType.Length; jj++)
                         {
                             Type[] filledArgs = constraints[jj].GetGenericArguments();
@@ -297,22 +306,26 @@ namespace RogueEssence.Dev
 
                             for (int kk = 0; kk < tracebackArgs.Length; kk++)
                             {
-                                if (tracebackArgs[kk].IsGenericParameter && paramsFromBase[kk] == null)
+                                if (tracebackArgs[kk].IsGenericParameter && paramsFromBase[tracebackArgs[kk].GenericParameterPosition] == null)
                                     paramsFromBase[tracebackArgs[kk].GenericParameterPosition] = filledArgs[kk];
+                                else if (tracebackArgs[kk] != filledArgs[kk])
+                                    correctFill = false;
                             }
                         }
-                        Type[] chosenParams = new Type[checkArgs.Length];
+                        if (correctFill)
+                        {
+                            Type[] chosenParams = new Type[checkArgs.Length];
 
-                        //TODO: place proclaimed types beforehand,
-                        //and let recursion bump into those,
-                        //instead of the other way around?
+                            //TODO: place proclaimed types beforehand,
+                            //and let recursion bump into those,
+                            //instead of the other way around?
 
-                        Stack<Type[]> pendingParams = new Stack<Type[]>();
-                        pendingParams.Push(paramsFromBase);
-                        Stack<int> typeIndex = new Stack<int>();
-                        typeIndex.Push(0);
-                        defSpecifiedGenericParameter(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, pendingParams, typeIndex, new Stack<Type[]>(), new Stack<int>());
-
+                            Stack<Type[]> pendingParams = new Stack<Type[]>();
+                            pendingParams.Push(paramsFromBase);
+                            Stack<int> typeIndex = new Stack<int>();
+                            typeIndex.Push(0);
+                            defSpecifiedGenericParameter(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, pendingParams, typeIndex, new Stack<Type[]>(), new Stack<int>());
+                        }
                     }
                 }
             }
