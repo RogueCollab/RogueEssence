@@ -74,6 +74,8 @@ namespace RogueEssence
             Settings.InitStatic();
 
             CurSettings = LoadSettings();
+
+
         }
 
         public void SetErrorListener(LogAdded errorAdded)
@@ -463,6 +465,7 @@ namespace RogueEssence
                 xmldoc.Save("Contacts.xml");
             }
         }
+
 
         public string GetControlString(FrameInput.InputType inputType)
         {

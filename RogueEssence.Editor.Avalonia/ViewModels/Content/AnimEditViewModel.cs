@@ -78,9 +78,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnImport_Click()
         {
             //remember addresses in registry
-            string folderName = null;// (string)Registry.GetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", "");
-            if (String.IsNullOrEmpty(folderName))
-                folderName = Directory.GetCurrentDirectory();
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -105,7 +103,7 @@ namespace RogueEssence.Dev.ViewModels
                         return;
                 }
 
-                //Registry.SetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", dialog.SelectedPath);
+                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(results[0]));
                 CachedPath = results[0];
 
                 try
@@ -143,10 +141,7 @@ namespace RogueEssence.Dev.ViewModels
             string animData = chosenAnim;
 
             //remember addresses in registry
-            string folderName = null;// (string)Registry.GetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", "");
-            if (String.IsNullOrEmpty(folderName))
-                folderName = Directory.GetCurrentDirectory();
-
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = folderName;
@@ -160,7 +155,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (folder != null)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", dialog.SelectedPath);
+                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
                 //CachedPath = folder;
                 lock (GameBase.lockObj)
                     Export(folder, animData);

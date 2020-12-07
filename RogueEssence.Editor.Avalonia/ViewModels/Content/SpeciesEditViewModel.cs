@@ -58,7 +58,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public string Name
         {
-            get { return checkSprites ? "Char Sheets" : "Portraits"; }
+            get { return checkSprites ? GraphicsManager.AssetType.Chara.ToString() : GraphicsManager.AssetType.Portrait.ToString(); }
             set { }
         }
         public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
@@ -164,9 +164,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             //remember addresses in registry
-            string folderName = null;// (string)Registry.GetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", "");
-            if (String.IsNullOrEmpty(folderName))
-                folderName = Directory.GetCurrentDirectory();
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
@@ -176,7 +174,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (folder != null)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", dialog.SelectedPath);
+                DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
                 try
@@ -222,9 +220,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             //remember addresses in registry
-            string folderName = null;// (string)Registry.GetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", "");
-            if (String.IsNullOrEmpty(folderName))
-                folderName = Directory.GetCurrentDirectory();
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
@@ -234,7 +230,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (folder != null)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, checkSprites ? "SpriteDir" : "PortraitDir", dialog.SelectedPath);
+                DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
                 lock (GameBase.lockObj)
                     Export(CachedPath, formdata);

@@ -6,6 +6,7 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Ground;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -115,7 +116,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "ItemChoice", cbSpawnItem.SelectedIndex);
+                DevForm.SetConfig("ItemChoice", chosenItem);
                 InvItem item = new InvItem(chosenItem);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1)
@@ -141,7 +142,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "StatusChoice", cbStatus.SelectedIndex);
+                DevForm.SetConfig("StatusChoice", chosenStatus);
                 StatusData entry = DataManager.Instance.GetStatus(chosenStatus);
                 if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
                 {
@@ -167,7 +168,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "SkillChoice", cbSkills.SelectedIndex);
+                DevForm.SetConfig("SkillChoice", chosenSkill);
                 if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
                 {
                     Character player = DungeonScene.Instance.FocusedCharacter;
@@ -183,7 +184,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "SkillChoice", cbSkills.SelectedIndex);
+                DevForm.SetConfig("SkillChoice", chosenSkill);
                 Character player = DungeonScene.Instance.FocusedCharacter;
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 {
@@ -203,7 +204,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "IntrinsicChoice", cbIntrinsics.SelectedIndex);
+                DevForm.SetConfig("IntrinsicChoice", chosenIntrinsic);
                 if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
                 {
                     Character player = DungeonScene.Instance.FocusedCharacter;
@@ -217,7 +218,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "IntrinsicChoice", cbIntrinsics.SelectedIndex);
+                DevForm.SetConfig("IntrinsicChoice", chosenIntrinsic);
                 Character player = DungeonScene.Instance.FocusedCharacter;
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 {

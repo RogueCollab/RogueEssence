@@ -13,6 +13,7 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace RogueEssence.Dev.Views
 {
@@ -28,6 +29,8 @@ namespace RogueEssence.Dev.Views
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
 
+        private static Dictionary<string, string> devConfig;
+        private static bool canSave;
 
 
 
@@ -55,6 +58,9 @@ namespace RogueEssence.Dev.Views
             {
                 DevTileManager.Init();
 
+                loadDevConfig();
+
+
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
                 devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
@@ -63,39 +69,30 @@ namespace RogueEssence.Dev.Views
                 string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
                 for (int ii = 0; ii < skill_names.Length; ii++)
                     devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "SkillChoice", 0);
-                //cbSkills.SelectedIndex = Math.Min(cbSkills.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
                 devViewModel.Game.ChosenSkill = -1;
-                devViewModel.Game.ChosenSkill = 0;
+                devViewModel.Game.ChosenSkill = Math.Min(Math.Max(GetConfig("SkillChoice", 0), 0), devViewModel.Game.Skills.Count - 1);
 
                 string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
                 for (int ii = 0; ii < intrinsic_names.Length; ii++)
                     devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "IntrinsicChoice", 0);
-                //cbIntrinsics.SelectedIndex = Math.Min(cbIntrinsics.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
                 devViewModel.Game.ChosenIntrinsic = -1;
-                devViewModel.Game.ChosenIntrinsic = 0;
+                devViewModel.Game.ChosenIntrinsic = Math.Min(Math.Max(GetConfig("IntrinsicChoice", 0), 0), devViewModel.Game.Intrinsics.Count - 1);
 
                 string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
                 for (int ii = 0; ii < status_names.Length; ii++)
                     devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "StatusChoice", 0);
-                //cbStatus.SelectedIndex = Math.Min(cbStatus.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
                 devViewModel.Game.ChosenStatus = -1;
-                devViewModel.Game.ChosenStatus = 0;
+                devViewModel.Game.ChosenStatus = Math.Min(Math.Max(GetConfig("StatusChoice", 0), 0), devViewModel.Game.Statuses.Count - 1);
 
                 string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
                 for (int ii = 0; ii < item_names.Length; ii++)
                     devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
-                //object regVal = Registry.GetValue(DiagManager.REG_PATH, "ItemChoice", 0);
-                //cbSpawnItem.SelectedIndex = Math.Min(cbSpawnItem.Items.Count - 1, (regVal != null) ? (int)regVal : 0);
                 devViewModel.Game.ChosenItem = -1;
-                devViewModel.Game.ChosenItem = 0;
+                devViewModel.Game.ChosenItem = Math.Min(Math.Max(GetConfig("ItemChoice", 0), 0), devViewModel.Game.Items.Count - 1);
 
                 string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
                 for (int ii = 0; ii < monster_names.Length; ii++)
                     devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
-                //cbDexNum.SelectedIndex = 0;
                 devViewModel.Player.ChosenMonster = 0;
 
 
@@ -115,23 +112,16 @@ namespace RogueEssence.Dev.Views
                 ZoneData zone = DataManager.Instance.GetZone(1);
                 for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
                     devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "MapChoice", 0);
-                //cbMaps.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbMaps.Items.Count - 1);
-                devViewModel.Travel.ChosenGround = 0;
+                devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
 
                 string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
                 for (int ii = 0; ii < dungeon_names.Length; ii++)
                     devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "ZoneChoice", 0);
-                //cbZones.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbZones.Items.Count - 1);
-                devViewModel.Travel.ChosenZone = 0;
+                devViewModel.Travel.ChosenZone = Math.Min(Math.Max(GetConfig("ZoneChoice", 0), 0), devViewModel.Travel.Zones.Count - 1);
 
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "StructChoice", 0);
-                //cbStructure.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbStructure.Items.Count - 1);
-                devViewModel.Travel.ChosenStructure = 0;
+                devViewModel.Travel.ChosenStructure = Math.Min(Math.Max(GetConfig("StructChoice", 0), 0), devViewModel.Travel.Structures.Count - 1);
 
-                //regVal = Registry.GetValue(DiagManager.REG_PATH, "FloorChoice", 0);
-                //cbFloor.SelectedIndex = Math.Min(Math.Max(0, (regVal != null) ? (int)regVal : 0), cbFloor.Items.Count - 1);
+                devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
 
                 LoadComplete = true;
             }
@@ -157,6 +147,9 @@ namespace RogueEssence.Dev.Views
                     ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
                     vm.Textures.TileBrowser.UpdateFrame();
                 }
+
+                if (canSave)
+                    saveConfig();
             }
         }
         public void Draw() { }
@@ -251,5 +244,105 @@ namespace RogueEssence.Dev.Views
             GameBase.CurrentPhase = loadState;
         }
 
+
+
+        private static void loadDevConfig()
+        {
+            string configPath = GetConfigPath();
+            string folderPath = Path.GetDirectoryName(configPath);
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            devConfig = new Dictionary<string, string>();
+            try
+            {
+                if (File.Exists(configPath))
+                {
+                    using (FileStream stream = File.OpenRead(configPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            while (reader.BaseStream.Position < reader.BaseStream.Length)
+                            {
+                                string key = reader.ReadString();
+                                string val = reader.ReadString();
+                                devConfig[key] = val;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+
+        private static void saveConfig()
+        {
+            //save whole file
+            try
+            {
+                using (var writer = new BinaryWriter(new FileStream(GetConfigPath(), FileMode.Create, FileAccess.Write, FileShare.None)))
+                {
+                    foreach (string curKey in devConfig.Keys)
+                    {
+                        writer.Write(curKey);
+                        writer.Write(devConfig[curKey]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+        public static string GetConfig(string key, string def)
+        {
+            string val;
+            if (devConfig.TryGetValue(key, out val))
+                return val;
+            return def;
+        }
+
+        public static int GetConfig(string key, int def)
+        {
+            string val;
+            if (devConfig.TryGetValue(key, out val))
+            {
+                int result;
+                if (Int32.TryParse(val, out result))
+                    return result;
+            }
+            return def;
+        }
+
+        public static void SetConfig(string key, int val)
+        {
+            SetConfig(key, val.ToString());
+        }
+
+        public static void SetConfig(string key, string val)
+        {
+            if (val == null && devConfig.ContainsKey(key))
+                devConfig.Remove(key);
+            else
+                devConfig[key] = val;
+
+            canSave = true;
+        }
+
+        public static string GetConfigPath()
+        {
+            switch (CoreDllMap.OS)
+            {
+                case "osx":
+                    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "/Library/Application Support/RogueEssence/config");
+                default:
+                    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence/config");
+            }
+        }
     }
 }
