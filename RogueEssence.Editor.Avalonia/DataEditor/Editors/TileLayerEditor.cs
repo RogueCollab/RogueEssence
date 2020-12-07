@@ -16,6 +16,9 @@ namespace RogueEssence.Dev
 {
     public class TileLayerEditor : Editor<TileLayer>
     {
+        public override bool DefaultSubgroup => true;
+
+        public override bool DefaultDecoration => false;
 
         //else if (type == typeof(TileLayer))
         //{

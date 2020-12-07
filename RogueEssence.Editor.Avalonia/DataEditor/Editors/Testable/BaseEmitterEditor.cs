@@ -10,17 +10,11 @@ namespace RogueEssence.Dev
 {
     public class BaseEmitterEditor : TestableEditor<EndingEmitter>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, EndingEmitter obj)
+        protected override void RunTest(EndingEmitter data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                EndingEmitter data = (EndingEmitter)obj.Clone();
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-                data.SetupEmit(player.MapLoc, player.MapLoc, player.CharDir);
-                DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            data.SetupEmit(player.MapLoc, player.MapLoc, player.CharDir);
+            DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
         }
     }
 }

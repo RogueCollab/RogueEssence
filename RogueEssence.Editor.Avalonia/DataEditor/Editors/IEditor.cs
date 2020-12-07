@@ -12,14 +12,14 @@ namespace RogueEssence.Dev
 
         void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow);
 
-        void LoadWindowControls(object obj, StackPanel control);
+        void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object member);
 
         void LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow);
 
-        void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow);
+        object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow);
 
-        void SaveWindowControls(object obj, StackPanel control);
+        object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes);
 
-        void SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow);
+        object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow);
     }
 }

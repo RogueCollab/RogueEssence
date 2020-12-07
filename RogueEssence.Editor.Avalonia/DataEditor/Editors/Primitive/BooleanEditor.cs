@@ -17,7 +17,10 @@ namespace RogueEssence.Dev
 {
     public class BooleanEditor : Editor<Boolean>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Boolean member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Boolean member)
         {
             CheckBox chkValue = new CheckBox();
             chkValue.Margin = new Thickness(0, 4, 0, 0);
@@ -27,12 +30,11 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Boolean member, bool isWindow)
+        public override Boolean SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             CheckBox chkValue = (CheckBox)control.Children[controlIndex];
-            member = chkValue.IsChecked.HasValue && chkValue.IsChecked.Value;
-            controlIndex++;
+            return chkValue.IsChecked.HasValue && chkValue.IsChecked.Value;
         }
 
     }

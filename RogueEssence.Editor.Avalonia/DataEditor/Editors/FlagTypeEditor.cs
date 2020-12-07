@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class FlagTypeEditor : Editor<FlagType>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, FlagType member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, FlagType member)
         {
             StringTypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<StringTypeConstraintAttribute>(attributes);
 
@@ -58,10 +61,11 @@ namespace RogueEssence.Dev
 
                 control.Children.Add(sharedRowPanel);
             }
+            throw new InvalidOperationException("No constraints set for member!");
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref FlagType member, bool isWindow)
+        public override FlagType SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             StringTypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<StringTypeConstraintAttribute>(attributes);
@@ -73,9 +77,9 @@ namespace RogueEssence.Dev
 
                 Avalonia.Controls.Grid subGrid = (Avalonia.Controls.Grid)control.Children[controlIndex];
                 ComboBox cbValue = (ComboBox)subGrid.Children[1];
-                member = new FlagType(children[cbValue.SelectedIndex]);
-                controlIndex++;
+                return new FlagType(children[cbValue.SelectedIndex]);
             }
+            throw new InvalidOperationException("No constraints set for member!");
         }
     }
 }

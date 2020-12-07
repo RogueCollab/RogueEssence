@@ -12,9 +12,13 @@ namespace RogueEssence.Dev
 {
     public abstract class TestableEditor<T> : Editor<T>
     {
-        public override void LoadWindowControls(T obj, StackPanel control)
+        public override bool DefaultSubgroup => false;
+        public override bool DefaultDecoration => true;
+
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
         {
-            base.LoadWindowControls(obj, control);
+            base.LoadWindowControls(control, name, type, attributes, obj);
 
             Button btnTest = new Button();
             btnTest.Margin = new Avalonia.Thickness(0, 4, 0, 0);
@@ -22,14 +26,23 @@ namespace RogueEssence.Dev
             btnTest.Click += (object sender, RoutedEventArgs e) =>
             {
                 lock (GameBase.lockObj)
-                    btnTest_Click(sender, e, obj);
+                {
+                    if (CheckTest())
+                    {
+                        T testObj = (T)DataEditor.SaveWindowControls(control, "", typeof(T), attributes);
+                        RunTest(testObj);
+                    }
+                }
             };
             control.Children.Add(btnTest);
         }
 
 
+        private bool CheckTest()
+        {
+            return DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null;
+        }
 
-
-        protected abstract void btnTest_Click(object sender, RoutedEventArgs e, T obj);
+        protected abstract void RunTest(T data);
     }
 }

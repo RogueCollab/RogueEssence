@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class IntRangeEditor : Editor<IntRange>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, IntRange member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IntRange member)
         {
             LoadLabelControl(control, name);
 
@@ -53,7 +56,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref IntRange member, bool isWindow)
+        public override IntRange SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
@@ -65,8 +68,7 @@ namespace RogueEssence.Dev
             innerControlIndex++;
             innerControlIndex++;
             NumericUpDown nudValueY = (NumericUpDown)innerControl.Children[innerControlIndex];
-            member = new IntRange((int)nudValueX.Value, (int)nudValueY.Value);
-            innerControlIndex++;
+            return new IntRange((int)nudValueX.Value, (int)nudValueY.Value);
         }
     }
 }

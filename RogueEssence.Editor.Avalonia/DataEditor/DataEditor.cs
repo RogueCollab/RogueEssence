@@ -63,7 +63,7 @@ namespace RogueEssence.Dev
             AddConverter(new BooleanEditor());
             AddConverter(new IntEditor());
             AddConverter(new ByteEditor());
-            AddConverter(new Editor<object>());
+            AddConverter(new ObjectEditor());
         }
 
         public static void AddConverter(IEditor converter)
@@ -86,7 +86,7 @@ namespace RogueEssence.Dev
             loadMemberControl(obj, control, obj.ToString(), obj.GetType(), null, obj, true);
         }
 
-        private static void loadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void loadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             Type objType = member.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -104,78 +104,20 @@ namespace RogueEssence.Dev
             //StaticLoadClassControls(member, control);
         }
 
-        public static void LoadWindowControls(object obj, StackPanel control)
+        public static void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
         {
-            Type objType = obj.GetType();
-            Type[] interfaces = objType.GetInterfaces();
+            Type[] interfaces = type.GetInterfaces();
             foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
-                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                if (convertType == type || type.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
-                    converter.LoadWindowControls(obj, control);
+                    converter.LoadWindowControls(control, name, type, attributes, obj);
                     return;
                 }
             }
 
             throw new ArgumentException("Unhandled type!");
-        }
-
-        public static void StaticLoadClassControls(object obj, StackPanel control)
-        {
-            //go through all members and add for them
-            //control starts off clean; this is the control that will have all member controls on it
-            try
-            {
-                Type type = obj.GetType();
-
-                List<MemberInfo> myFields = type.GetEditableMembers();
-
-                List<List<MemberInfo>> tieredFields = new List<List<MemberInfo>>();
-                for (int ii = 0; ii < myFields.Count; ii++)
-                {
-                    if (myFields[ii].GetCustomAttributes(typeof(NonEditedAttribute), false).Length > 0)
-                        continue;
-                    if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
-                        continue;
-
-                    object member = myFields[ii].GetValue(obj);
-                    if (member == null && myFields[ii].GetCustomAttributes(typeof(NonNullAttribute), false).Length > 0)
-                        throw new Exception("Null class member found in " + type.ToString() + ": " + myFields[ii].Name);
-
-                    if (myFields[ii].GetCustomAttributes(typeof(SharedRowAttribute), false).Length == 0)
-                        tieredFields.Add(new List<MemberInfo>());
-                    tieredFields[tieredFields.Count - 1].Add(myFields[ii]);
-                }
-
-                for (int ii = 0; ii < tieredFields.Count; ii++)
-                {
-                    if (tieredFields[ii].Count == 1)
-                    {
-                        MemberInfo myInfo = tieredFields[ii][0];
-                        StackPanel stack = new StackPanel();
-                        control.Children.Add(stack);
-                        loadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
-                    }
-                    else
-                    {
-                        Avalonia.Controls.Grid sharedRowPanel = getSharedRowPanel(tieredFields[ii].Count);
-                        control.Children.Add(sharedRowPanel);
-                        for (int jj = 0; jj < tieredFields[ii].Count; jj++)
-                        {
-                            MemberInfo myInfo = tieredFields[ii][jj];
-                            StackPanel stack = new StackPanel();
-                            sharedRowPanel.Children.Add(stack);
-                            stack.SetValue(Avalonia.Controls.Grid.ColumnProperty, jj);
-                            loadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(e);
-            }
         }
 
         public static Avalonia.Controls.Grid getSharedRowPanel(int cols)
@@ -187,10 +129,7 @@ namespace RogueEssence.Dev
             return sharedRowPanel;
         }
 
-
-
-
-        private static void loadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void loadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -203,45 +142,46 @@ namespace RogueEssence.Dev
                     return;
                 }
             }
-            StaticLoadMemberControl(control, name, type, attributes, member, isWindow);
-        }
-
-        public static void StaticLoadMemberControl(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
-        {
-            try
-            {
-                loadClassControls(control, name, type, attributes, member, isWindow);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(e);
-            }
+            loadClassControls(control, name, type, attributes, member, isWindow);
         }
 
         public static void SaveDataControls(ref object obj, StackPanel control)
         {
-            saveMemberControl(obj, control, obj.ToString(), obj.GetType(), null, ref obj, true);
+            obj = saveMemberControl(obj, control, obj.ToString(), obj.GetType(), null, true);
         }
 
-        private static void saveClassControls(StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
+        //TODO: do a sweep of this and LoadClassControls; we may want to call Save/Load WindowControls instead
+        public static object saveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
-            Type objType = member.GetType();
-            Type[] interfaces = objType.GetInterfaces();
+            Type[] interfaces = type.GetInterfaces();
             foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
-                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                if (convertType == type || type.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
-                    converter.SaveClassControls(control, name, type, attributes, ref member, isWindow);
-                    return;
+                    return converter.SaveClassControls(control, name, type, attributes, isWindow);
                 }
             }
             throw new ArgumentException("Unhandled type!");
-            //StaticSaveClassControls(member, control);
         }
 
 
-        public static void SaveWindowControls(object obj, StackPanel control)
+        public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        {
+            Type[] interfaces = type.GetInterfaces();
+            foreach (IEditor converter in converters)
+            {
+                Type convertType = converter.GetConvertingType();
+                if (convertType == type || type.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                {
+                    return converter.SaveWindowControls(control, name, type, attributes);
+                }
+            }
+            throw new ArgumentException("Unhandled type!");
+        }
+
+
+        public static object saveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             Type objType = obj.GetType();
             Type[] interfaces = objType.GetInterfaces();
@@ -250,110 +190,11 @@ namespace RogueEssence.Dev
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
-                    converter.SaveWindowControls(obj, control);
-                    return;
-                }
-            }
-            throw new ArgumentException("Unhandled type!");
-        }
-
-        public static void StaticSaveClassControls(object obj, StackPanel control)
-        {
-            try
-            {
-                Type type = obj.GetType();
-
-                List<MemberInfo> myFields = type.GetEditableMembers();
-
-
-                List<List<MemberInfo>> tieredFields = new List<List<MemberInfo>>();
-                for (int ii = 0; ii < myFields.Count; ii++)
-                {
-                    if (myFields[ii].GetCustomAttributes(typeof(NonEditedAttribute), false).Length > 0)
-                        continue;
-                    if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
-                        continue;
-
-                    object member = myFields[ii].GetValue(obj);
-                    if (member == null && myFields[ii].GetCustomAttributes(typeof(NonNullAttribute), false).Length > 0)
-                        throw new Exception("Null class member found in " + type.ToString() + ": " + myFields[ii].Name);
-
-                    if (myFields[ii].GetCustomAttributes(typeof(SharedRowAttribute), false).Length == 0)
-                        tieredFields.Add(new List<MemberInfo>());
-
-                    tieredFields[tieredFields.Count - 1].Add(myFields[ii]);
-                }
-
-                int controlIndex = 0;
-                for (int ii = 0; ii < tieredFields.Count; ii++)
-                {
-                    if (tieredFields[ii].Count == 1)
-                    {
-                        MemberInfo myInfo = tieredFields[ii][0];
-                        object member = myInfo.GetValue(obj);
-
-                        saveMemberControl(obj, (StackPanel)control.Children[controlIndex], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), ref member, false);
-                        myInfo.SetValue(obj, member);
-                        controlIndex++;
-                    }
-                    else
-                    {
-                        StackPanel sharedRowControl = (StackPanel)control.Children[controlIndex];
-                        int sharedRowControlIndex = 0;
-                        for (int jj = 0; jj < tieredFields[ii].Count; jj++)
-                        {
-                            MemberInfo myInfo = tieredFields[ii][jj];
-                            object member = myInfo.GetValue(obj);
-
-                            saveMemberControl(obj, (StackPanel)sharedRowControl.Children[jj], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), ref member, false);
-                            myInfo.SetValue(obj, member);
-                            sharedRowControlIndex++;
-                        }
-                        controlIndex++;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(e);
-            }
-        }
-
-
-
-        private static void saveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
-        {
-            Type objType = obj.GetType();
-            Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditor converter in converters)
-            {
-                Type convertType = converter.GetConvertingType();
-                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
-                {
-                    converter.SaveMemberControl(obj, control, name, type, attributes, ref member, isWindow);
-                    return;
+                    return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
                 }
             }
 
-            StaticSaveMemberControl(control, name, type, attributes, ref member, isWindow);
-        }
-
-        public static void StaticSaveMemberControl(StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
-        {
-            //do not set anything
-            //on save, write value to object
-            //use completely clean controls for iterating child controls
-            //must invoke save and load for structs
-            //must use the attribute tag
-            //does not need members; can be static methods then
-            try
-            {
-                saveClassControls(control, name, type, attributes, ref member, isWindow);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(e);
-            }
+            return saveClassControls(control, name, type, attributes, isWindow);
         }
 
         //TODO: WPF data binding would invalidate this

@@ -13,7 +13,11 @@ namespace RogueEssence.Dev
 {
     public class TypeDictEditor : Editor<ITypeDict>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, ITypeDict member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, ITypeDict member)
         {
             LoadLabelControl(control, name);
 
@@ -31,11 +35,11 @@ namespace RogueEssence.Dev
                     frmData.Title = element.ToString();
 
                 //TODO: make this a member and reference it that way
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(StateCollection) [" + index + "]", elementType, new object[0] { }, element, true);
+                DataEditor.loadClassControls(frmData.ControlPanel, "(TypeDict) [" + index + "]", elementType, new object[0] { }, element, true);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "StateCollection", elementType, new object[0] { }, ref element, true);
+                    element = DataEditor.saveClassControls(frmData.ControlPanel, "TypeDict", elementType, new object[0] { }, true);
 
                     bool itemExists = false;
 
@@ -76,14 +80,15 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref ITypeDict member, bool isWindow)
+        public override ITypeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             CollectionBox lbxValue = (CollectionBox)control.Children[1];
 
-            member = (ITypeDict)Activator.CreateInstance(type);
+            ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
             List<object> states = (List<object>)lbxValue.GetList(typeof(List<object>));
             for (int ii = 0; ii < states.Count; ii++)
                 member.Set(states[ii]);
+            return member;
         }
     }
 }

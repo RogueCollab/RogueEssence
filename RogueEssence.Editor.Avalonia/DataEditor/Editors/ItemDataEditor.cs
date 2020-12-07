@@ -12,6 +12,9 @@ namespace RogueEssence.Dev
 {
     public class ItemDataEditor : Editor<ItemData>
     {
+        public override bool DefaultSubgroup => false;
+        public override bool DefaultDecoration => true;
+
         public override void LoadMemberControl(ItemData obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             //if (name == "Sprite")
@@ -25,11 +28,11 @@ namespace RogueEssence.Dev
             //}
             //else
             //{
-            //    base.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
+                base.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
             //}
         }
 
-        public override void SaveMemberControl(ItemData obj, StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
+        public override object SaveMemberControl(ItemData obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             //if (name == "Sprite")
             //{
@@ -41,7 +44,7 @@ namespace RogueEssence.Dev
             //}
             //else
             //{
-            //    base.SaveMemberControl(obj, control, name, type, attributes, ref member, isWindow);
+                return base.SaveMemberControl(obj, control, name, type, attributes, isWindow);
             //}
         }
     }

@@ -10,17 +10,11 @@ namespace RogueEssence.Dev
 {
     public class ColumnAnimEditor : TestableEditor<ColumnAnim>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, ColumnAnim obj)
+        protected override void RunTest(ColumnAnim data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                ColumnAnim data = (ColumnAnim)Activator.CreateInstance(obj.GetType());
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-                data.SetupEmitted(player.MapLoc, 0, player.CharDir);
-                DungeonScene.Instance.CreateAnim(data, DrawLayer.Normal);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            data.SetupEmitted(player.MapLoc, 0, player.CharDir);
+            DungeonScene.Instance.CreateAnim(data, DrawLayer.Normal);
         }
     }
 }

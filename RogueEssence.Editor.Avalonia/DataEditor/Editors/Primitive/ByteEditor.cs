@@ -17,7 +17,10 @@ namespace RogueEssence.Dev
 {
     public class ByteEditor : Editor<Byte>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Byte member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Byte member)
         {
             LoadLabelControl(control, name);
 
@@ -36,13 +39,12 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Byte member, bool isWindow)
+        public override Byte SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
             NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
-            member = (byte)nudValue.Value;
-            controlIndex++;
+            return (byte)nudValue.Value;
         }
 
     }

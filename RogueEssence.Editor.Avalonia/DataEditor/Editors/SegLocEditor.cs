@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class SegLocEditor : Editor<SegLoc>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, SegLoc member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, SegLoc member)
         {
             LoadLabelControl(control, name);
 
@@ -53,7 +56,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref SegLoc member, bool isWindow)
+        public override SegLoc SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
@@ -65,8 +68,7 @@ namespace RogueEssence.Dev
             innerControlIndex++;
             innerControlIndex++;
             NumericUpDown nudValueY = (NumericUpDown)innerControl.Children[innerControlIndex];
-            member = new SegLoc((int)nudValueX.Value, (int)nudValueY.Value);
-            innerControlIndex++;
+            return new SegLoc((int)nudValueX.Value, (int)nudValueY.Value);
         }
     }
 }

@@ -11,17 +11,10 @@ namespace RogueEssence.Dev
 {
     public class ExplosionDataEditor : TestableEditor<ExplosionData>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, ExplosionData obj)
+        protected override void RunTest(ExplosionData data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                ExplosionData data = new ExplosionData();
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = data.ReleaseExplosion(player.CharLoc, player, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            DungeonScene.Instance.PendingDevEvent = data.ReleaseExplosion(player.CharLoc, player, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
         }
     }
 }

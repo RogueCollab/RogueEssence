@@ -14,7 +14,11 @@ namespace RogueEssence.Dev
 {
     public class PriorityListEditor : Editor<IPriorityList>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, IPriorityList member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        //TODO: possibly revamp this with a GridView
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IPriorityList member)
         {
             LoadLabelControl(control, name);
 
@@ -31,11 +35,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.loadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
+                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(priority, index, element);
                     frmData.Close();
                 };
@@ -52,12 +56,11 @@ namespace RogueEssence.Dev
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = name + "/" + "New Priority";
 
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
+                DataEditor.loadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    object priorityObj = priority;
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), ref priorityObj, true);
+                    object priorityObj = DataEditor.saveClassControls(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(priority, index, (Priority)priorityObj);
                     frmData.Close();
                 };
@@ -75,13 +78,12 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref IPriorityList member, bool isWindow)
+        public override IPriorityList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
             PriorityListBox lbxValue = (PriorityListBox)control.Children[controlIndex];
-            member = lbxValue.GetList(type);
-            controlIndex++;
+            return lbxValue.GetList(type);
         }
     }
 }

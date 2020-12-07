@@ -14,7 +14,10 @@ namespace RogueEssence.Dev
 {
     public class DictionaryEditor : Editor<IDictionary>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, IDictionary member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IDictionary member)
         {
             LoadLabelControl(control, name);
 
@@ -33,11 +36,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.loadClassControls(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), ref element, true);
+                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(key, element);
                     frmData.Close();
                 };
@@ -58,11 +61,11 @@ namespace RogueEssence.Dev
                 else
                     frmKey.Title = name + "/" + element.ToString();
 
-                DataEditor.StaticLoadMemberControl(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
+                DataEditor.loadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
 
                 frmKey.SelectedOKEvent += () =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmKey.ControlPanel, name, keyType, new object[0] { }, ref key, true);
+                    key = DataEditor.saveClassControls(frmKey.ControlPanel, name, keyType, new object[0] { }, true);
                     op(key, element);
                     frmKey.Close();
                 };
@@ -75,18 +78,17 @@ namespace RogueEssence.Dev
                 frmKey.Show();
             };
 
-            lbxValue.LoadFromDict((IDictionary)member);
+            lbxValue.LoadFromDict(member);
             control.Children.Add(lbxValue);
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref IDictionary member, bool isWindow)
+        public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
             DictionaryBox lbxValue = (DictionaryBox)control.Children[controlIndex];
-            member = lbxValue.GetDict(type);
-            controlIndex++;
+            return lbxValue.GetDict(type);
         }
     }
 }

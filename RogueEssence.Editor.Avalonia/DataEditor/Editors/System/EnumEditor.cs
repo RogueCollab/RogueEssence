@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class EnumEditor : Editor<Enum>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Enum member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Enum member)
         {
             LoadLabelControl(control, name);
 
@@ -78,7 +81,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Enum member, bool isWindow)
+        public override Enum SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
@@ -107,13 +110,12 @@ namespace RogueEssence.Dev
                         innerControlIndex++;
                     }
                 }
-                member = (Enum)Enum.ToObject(type, pending);
+                return (Enum)Enum.ToObject(type, pending);
             }
             else
             {
                 ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                member = (Enum)Enum.ToObject(type, cbValue.SelectedIndex);
-                controlIndex++;
+                return (Enum)Enum.ToObject(type, cbValue.SelectedIndex);
             }
         }
     }

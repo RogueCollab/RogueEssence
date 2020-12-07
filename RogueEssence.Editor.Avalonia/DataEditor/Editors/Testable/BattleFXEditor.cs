@@ -10,17 +10,10 @@ namespace RogueEssence.Dev
 {
     public class BattleFXEditor : TestableEditor<BattleFX>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, BattleFX obj)
+        protected override void RunTest(BattleFX data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                BattleFX data = new BattleFX();
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessBattleFX(player, player, data);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessBattleFX(player, player, data);
         }
     }
 }

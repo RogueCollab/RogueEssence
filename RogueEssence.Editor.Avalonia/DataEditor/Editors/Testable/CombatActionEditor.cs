@@ -11,17 +11,10 @@ namespace RogueEssence.Dev
 {
     public class CombatActionEditor : TestableEditor<CombatAction>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, CombatAction obj)
+        protected override void RunTest(CombatAction data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                CombatAction data = obj.Clone();
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = player.MockCharAction(data, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            DungeonScene.Instance.PendingDevEvent = player.MockCharAction(data, DungeonScene.Instance.MockHitLoc, DungeonScene.Instance.MockHitLoc);
         }
     }
 }

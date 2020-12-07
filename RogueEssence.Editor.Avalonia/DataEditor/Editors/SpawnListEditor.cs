@@ -13,6 +13,12 @@ namespace RogueEssence.Dev
 {
     public class SpawnListEditor : Editor<ISpawnList>
     {
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        //TODO: copy the list editor to implement this
+        //or if you're feeling adventurous, use a GridView
+
         //public override void LoadClassControls(ISpawnList obj, StackPanel control)
         //{
         //    SpawnListBox lbxValue = new SpawnListBox();
@@ -30,11 +36,11 @@ namespace RogueEssence.Dev
         //        else
         //            frmData.Text = element.ToString();
 
-        //        DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(SpawnList) [" + index + "]", elementType, new object[0] { }, element, true);
+        //        DataEditor.loadClassControls(frmData.ControlPanel, "(SpawnList) [" + index + "]", elementType, new object[0] { }, element, true);
 
         //        frmData.OnOK += (object okSender, EventArgs okE) =>
         //        {
-        //            DataEditor.StaticSaveMemberControl(frmData.ControlPanel, "SpawnList", elementType, new object[0] { }, ref element, true);
+        //            DataEditor.saveClassControls(frmData.ControlPanel, "SpawnList", elementType, new object[0] { }, ref element, true);
 
         //            op(index, element);
         //            frmData.Close();

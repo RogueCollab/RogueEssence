@@ -12,6 +12,9 @@ namespace RogueEssence.Dev
 {
     public class AutoTileBaseEditor : Editor<AutoTileBase>
     {
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
         public override void LoadMemberControl(AutoTileBase obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             //if (type == typeof(List<TileLayer>))
@@ -29,12 +32,12 @@ namespace RogueEssence.Dev
             //        Dev.ElementForm frmData = new Dev.ElementForm();
             //        frmData.Text = "Edit Tile";
             //        Rectangle boxRect = new Rectangle(new Point(), frmData.Size);
-            //        DataEditor.StaticLoadMemberControl(frmData.ControlPanel, name, type, attributes, preview.Tag, true);
+            //        DataEditor.loadClassControls(frmData.ControlPanel, name, type, attributes, preview.Tag, true);
 
             //        if (frmData.ShowDialog() == DialogResult.OK)
             //        {
             //            object element = preview.Tag;
-            //            DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, type, attributes, ref element, true);
+            //            DataEditor.saveClassControls(frmData.ControlPanel, name, type, attributes, ref element, true);
             //            List<TileLayer> new_anims = (List<TileLayer>)element;
             //            preview.SetChosenAnim(new_anims.Count > 0 ? new_anims[0] : new TileLayer());
             //            preview.Tag = element;
@@ -47,7 +50,7 @@ namespace RogueEssence.Dev
             //}
         }
 
-        public override void SaveMemberControl(AutoTileBase obj, StackPanel control, string name, Type type, object[] attributes, ref object member, bool isWindow)
+        public override object SaveMemberControl(AutoTileBase obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             //if (type == typeof(List<TileLayer>))
             //{
@@ -59,7 +62,7 @@ namespace RogueEssence.Dev
             //}
             //else
             //{
-                base.SaveMemberControl(obj, control, name, type, attributes, ref member, isWindow);
+                return base.SaveMemberControl(obj, control, name, type, attributes, isWindow);
             //}
         }
     }

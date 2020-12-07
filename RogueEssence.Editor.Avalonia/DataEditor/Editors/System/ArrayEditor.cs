@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class ArrayEditor : Editor<Array>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Array member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Array member)
         {
             //TODO: 2D array grid support
             //if (type.GetElementType().IsArray)
@@ -36,11 +39,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                DataEditor.loadClassControls(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), ref element, true);
+                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), true);
                     op(index, element);
                     frmData.Close();
                 };
@@ -62,7 +65,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Array member, bool isWindow)
+        public override Array SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             //TODO: 2D array grid support
@@ -76,8 +79,7 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < objList.Count; ii++)
                 array.SetValue(objList[ii], ii);
 
-            member = array;
-            controlIndex++;
+            return array;
         }
     }
 }

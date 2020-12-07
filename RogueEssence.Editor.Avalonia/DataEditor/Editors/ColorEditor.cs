@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class ColorEditor : Editor<Color>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Color member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Color member)
         {
             LoadLabelControl(control, name);
 
@@ -85,7 +88,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Color member, bool isWindow)
+        public override Color SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
@@ -103,8 +106,7 @@ namespace RogueEssence.Dev
             innerControlIndex++;
             innerControlIndex++;
             NumericUpDown nudValueA = (NumericUpDown)innerControl.Children[innerControlIndex];
-            innerControlIndex++;
-            member = new Color((int)nudValueR.Value, (int)nudValueG.Value, (int)nudValueB.Value, (int)nudValueA.Value);
+            return new Color((int)nudValueR.Value, (int)nudValueG.Value, (int)nudValueB.Value, (int)nudValueA.Value);
         }
     }
 }

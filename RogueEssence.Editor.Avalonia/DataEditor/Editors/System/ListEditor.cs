@@ -14,7 +14,10 @@ namespace RogueEssence.Dev
 {
     public class ListEditor : Editor<IList>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, IList member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IList member)
         {
             LoadLabelControl(control, name);
 
@@ -31,11 +34,11 @@ namespace RogueEssence.Dev
                 else
                     frmData.Title = name + "/" + element.ToString();
 
-                DataEditor.StaticLoadMemberControl(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                DataEditor.loadClassControls(frmData.ControlPanel, "(List) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    DataEditor.StaticSaveMemberControl(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), ref element, true);
+                    element = DataEditor.saveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
                     op(index, element);
                     frmData.Close();
                 };
@@ -48,18 +51,17 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            lbxValue.LoadFromList((IList)member);
+            lbxValue.LoadFromList(member);
             control.Children.Add(lbxValue);
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref IList member, bool isWindow)
+        public override IList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
             CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
-            member = lbxValue.GetList(type);
-            controlIndex++;
+            return lbxValue.GetList(type);
         }
     }
 }

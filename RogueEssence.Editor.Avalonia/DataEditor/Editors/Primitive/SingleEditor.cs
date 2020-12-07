@@ -17,7 +17,10 @@ namespace RogueEssence.Dev
 {
     public class SingleEditor : Editor<Single>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Single member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Single member)
         {
             LoadLabelControl(control, name);
 
@@ -35,13 +38,12 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Single member, bool isWindow)
+        public override Single SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
             NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
-            member = (Single)nudValue.Value;
-            controlIndex++;
+            return (Single)nudValue.Value;
         }
 
     }

@@ -11,17 +11,10 @@ namespace RogueEssence.Dev
 {
     public class BattleDataEditor : TestableEditor<BattleData>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, BattleData obj)
+        protected override void RunTest(BattleData data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                BattleData data = new BattleData();
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessEndAnim(player, player, data);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.ProcessEndAnim(player, player, data);
         }
     }
 }

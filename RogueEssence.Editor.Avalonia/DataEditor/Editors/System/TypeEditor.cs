@@ -16,7 +16,10 @@ namespace RogueEssence.Dev
 {
     public class TypeEditor : Editor<Type>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Type member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Type member)
         {
             TypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<TypeConstraintAttribute>(attributes);
             Type baseType = dataAtt.BaseClass;
@@ -58,7 +61,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Type member, bool isWindow)
+        public override Type SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             TypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<TypeConstraintAttribute>(attributes);
@@ -68,8 +71,7 @@ namespace RogueEssence.Dev
 
             Avalonia.Controls.Grid subGrid = (Avalonia.Controls.Grid)control.Children[controlIndex];
             ComboBox cbValue = (ComboBox)subGrid.Children[1];
-            member = children[cbValue.SelectedIndex];
-            controlIndex++;
+            return children[cbValue.SelectedIndex];
         }
     }
 }

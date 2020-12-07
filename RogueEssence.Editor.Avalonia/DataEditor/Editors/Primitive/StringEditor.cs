@@ -17,7 +17,11 @@ namespace RogueEssence.Dev
 {
     public class StringEditor : Editor<String>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, String member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, String member)
         {
             LoadLabelControl(control, name);
 
@@ -97,7 +101,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref String member, bool isWindow)
+        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
@@ -106,16 +110,15 @@ namespace RogueEssence.Dev
             {
                 ComboBox cbValue = (ComboBox)control.Children[controlIndex];
                 if (cbValue.SelectedIndex == 0)
-                    member = "";
+                    return "";
                 else
-                    member = (string)cbValue.SelectedItem;
+                    return (string)cbValue.SelectedItem;
             }
             else
             {
                 TextBox txtValue = (TextBox)control.Children[controlIndex];
-                member = (String)txtValue.Text;
+                return txtValue.Text;
             }
-            controlIndex++;
         }
 
 

@@ -17,7 +17,10 @@ namespace RogueEssence.Dev
 {
     public class IntEditor : Editor<Int32>
     {
-        public override void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, Int32 member, bool isWindow)
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Int32 member)
         {
             LoadLabelControl(control, name);
 
@@ -87,7 +90,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override void SaveClassControls(StackPanel control, string name, Type type, object[] attributes, ref Int32 member, bool isWindow)
+        public override Int32 SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
@@ -99,13 +102,13 @@ namespace RogueEssence.Dev
                 int returnValue = cbValue.SelectedIndex;
                 if (dataAtt.IncludeInvalid)
                     returnValue--;
-                member = returnValue;
+                return returnValue;
             }
             else if (frameAtt != null)
             {
                 ComboBox cbValue = (ComboBox)control.Children[controlIndex];
                 if (!frameAtt.DashOnly)
-                    member = cbValue.SelectedIndex;
+                    return cbValue.SelectedIndex;
                 else
                 {
                     int currentDashValue = -1;
@@ -116,19 +119,18 @@ namespace RogueEssence.Dev
                             currentDashValue++;
                             if (currentDashValue == cbValue.SelectedIndex)
                             {
-                                member = ii;
-                                break;
+                                return ii;
                             }
                         }
                     }
                 }
+                return 0;
             }
             else
             {
                 NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
-                member = (Int32)nudValue.Value;
+                return (Int32)nudValue.Value;
             }
-            controlIndex++;
         }
 
     }

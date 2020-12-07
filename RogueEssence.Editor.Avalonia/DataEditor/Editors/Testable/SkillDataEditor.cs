@@ -11,17 +11,10 @@ namespace RogueEssence.Dev
 {
     public class SkillDataEditor : TestableEditor<SkillData>
     {
-        protected override void btnTest_Click(object sender, RoutedEventArgs e, SkillData obj)
+        protected override void RunTest(SkillData data)
         {
-            if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-            {
-                Character player = DungeonScene.Instance.FocusedCharacter;
-
-                SkillData data = new SkillData();
-                SaveWindowControls(data, (StackPanel)((Button)sender).Parent);
-
-                DungeonScene.Instance.PendingDevEvent = player.MockCharAction(data);
-            }
+            Character player = DungeonScene.Instance.FocusedCharacter;
+            DungeonScene.Instance.PendingDevEvent = player.MockCharAction(data);
         }
     }
 }

@@ -7,4 +7,9 @@ namespace RogueEssence.Dev
     {
         public SubGroupAttribute() { }
     }
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class SepGroupAttribute : Attribute
+    {
+        public SepGroupAttribute() { }
+    }
 }
