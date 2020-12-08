@@ -26,7 +26,7 @@ namespace RogueEssence.Dev
                 {
                     if (CheckTest())
                     {
-                        T testObj = (T)DataEditor.SaveWindowControls(control, "", typeof(T), attributes);
+                        T testObj = (T)DataEditor.SaveWindowControls(control, "", type, attributes);
                         RunTest(testObj);
                     }
                 }

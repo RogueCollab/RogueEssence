@@ -53,7 +53,7 @@ namespace RogueEssence.Dev
 
         public static void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
-            Type objType = member.GetType();
+            Type objType = type;
             Type[] interfaces = objType.GetInterfaces();
             foreach (IEditor converter in converters)
             {
