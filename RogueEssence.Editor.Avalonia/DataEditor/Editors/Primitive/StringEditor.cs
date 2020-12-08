@@ -64,7 +64,7 @@ namespace RogueEssence.Dev
                 items.Add("---");
                 int chosenIndex = 0;
 
-                string[] dirs = Directory.GetFiles(DiagManager.CONTENT_PATH + "Sound/Battle");
+                string[] dirs = Directory.GetFiles(GraphicsManager.CONTENT_PATH + "Sound/Battle");
 
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {

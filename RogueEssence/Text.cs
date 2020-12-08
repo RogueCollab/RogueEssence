@@ -23,7 +23,7 @@ namespace RogueEssence
 
         public static void Init()
         {
-            string path = DiagManager.ASSET_PATH + "Strings/Languages.xml";
+            string path = PathMod.ASSET_PATH + "Strings/Languages.xml";
             List<string> codes = new List<string>();
             Dictionary<string, string> translations = new Dictionary<string, string>();
             try
@@ -176,10 +176,10 @@ namespace RogueEssence
         public static void SetCultureCode(string code)
         {
             Culture = new CultureInfo(code);
-            StringsDefault = LoadXmlDoc(DiagManager.ASSET_PATH + "Strings/strings.resx");
-            Strings = LoadXmlDoc(DiagManager.ASSET_PATH + "Strings/strings." + code + ".resx");
-            StringsExDefault = LoadXmlDoc(DiagManager.ASSET_PATH + "Strings/stringsEx.resx");
-            StringsEx = LoadXmlDoc(DiagManager.ASSET_PATH + "Strings/stringsEx." + code + ".resx");
+            StringsDefault = LoadXmlDoc(PathMod.ASSET_PATH + "Strings/strings.resx");
+            Strings = LoadXmlDoc(PathMod.ASSET_PATH + "Strings/strings." + code + ".resx");
+            StringsExDefault = LoadXmlDoc(PathMod.ASSET_PATH + "Strings/stringsEx.resx");
+            StringsEx = LoadXmlDoc(PathMod.ASSET_PATH + "Strings/stringsEx." + code + ".resx");
         }
     }
 

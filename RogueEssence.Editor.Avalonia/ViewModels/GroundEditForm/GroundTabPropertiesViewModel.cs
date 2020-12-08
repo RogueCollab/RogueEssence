@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using ReactiveUI;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System;
@@ -19,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
             BGs = new ObservableCollection<string>();
             BGs.Add("---");
-            string[] dirs = Directory.GetFiles(DiagManager.CONTENT_PATH + "BG/");
+            string[] dirs = Directory.GetFiles(GraphicsManager.CONTENT_PATH + "BG/");
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
@@ -149,12 +150,12 @@ namespace RogueEssence.Dev.ViewModels
             {
                 Music.Clear();
 
-                string[] files = Directory.GetFiles(DataManager.MUSIC_PATH, "*.ogg", SearchOption.TopDirectoryOnly);
+                string[] files = Directory.GetFiles(GraphicsManager.MUSIC_PATH, "*.ogg", SearchOption.TopDirectoryOnly);
 
                 Music.Add("None");
                 for (int ii = 0; ii < files.Length; ii++)
                 {
-                    string song = files[ii].Substring((DataManager.MUSIC_PATH).Length);
+                    string song = files[ii].Substring((GraphicsManager.MUSIC_PATH).Length);
                     Music.Add(song);
                     if (song == ZoneManager.Instance.CurrentGround.Music)
                         ChosenMusic = ii;

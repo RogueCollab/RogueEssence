@@ -53,16 +53,13 @@ namespace RogueEssence.Data
         }
         public static DataManager Instance { get { return instance; } }
 
-        public const string DATA_PATH = DiagManager.ASSET_PATH + "Data/";
+        public const string DATA_PATH = PathMod.ASSET_PATH + "Data/";
         public const string MAP_PATH = DATA_PATH + "Map/";
         public const string GROUND_PATH = DATA_PATH + "Ground/";
         public const string DATA_EXT = ".bin";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
         public const string FX_PATH = DATA_PATH + "SystemFX/";
-
-        public const string MUSIC_PATH = DiagManager.CONTENT_PATH + "Music/";
-        public const string SOUND_PATH = DiagManager.CONTENT_PATH + "Sound/";
 
         public const string SCRIPT_PATH = DATA_PATH + "Script/";
         public const string SCRIPT_CPATH = DATA_PATH + "Script/bin/";

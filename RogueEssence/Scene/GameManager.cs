@@ -101,8 +101,8 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
 
-            if (System.IO.File.Exists(DataManager.SOUND_PATH + newSE + ".ogg"))
-                SoundManager.PlaySound(DataManager.SOUND_PATH + newSE + ".ogg", 1);
+            if (System.IO.File.Exists(GraphicsManager.SOUND_PATH + newSE + ".ogg"))
+                SoundManager.PlaySound(GraphicsManager.SOUND_PATH + newSE + ".ogg", 1);
         }
 
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
@@ -120,9 +120,9 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 yield break;
 
-            if (System.IO.File.Exists(DataManager.SOUND_PATH + newSE + ".ogg"))
+            if (System.IO.File.Exists(GraphicsManager.SOUND_PATH + newSE + ".ogg"))
             {
-                int pauseFrames = SoundManager.PlaySound(DataManager.SOUND_PATH + newSE + ".ogg");
+                int pauseFrames = SoundManager.PlaySound(GraphicsManager.SOUND_PATH + newSE + ".ogg");
                 yield return new WaitForFrames(pauseFrames);
             }
         }
@@ -854,11 +854,11 @@ namespace RogueEssence
                 MusicFadeTime -= elapsedTime;
                 if (MusicFadeTime <= FrameTick.Zero)
                 {
-                    if (System.IO.File.Exists(DataManager.MUSIC_PATH + NextSong))
+                    if (System.IO.File.Exists(GraphicsManager.MUSIC_PATH + NextSong))
                     {
                         Song = NextSong;
                         NextSong = null;
-                        SoundManager.PlayBGM(DataManager.MUSIC_PATH + Song);
+                        SoundManager.PlayBGM(GraphicsManager.MUSIC_PATH + Song);
                     }
                     else
                     {
@@ -878,8 +878,8 @@ namespace RogueEssence
                     if (FanfareTime <= FrameTick.Zero)
                     {
                         int pauseFrames = 0;
-                        if (!String.IsNullOrEmpty(QueuedFanfare) && System.IO.File.Exists(DataManager.SOUND_PATH + QueuedFanfare + ".ogg"))
-                            pauseFrames = SoundManager.PlaySound(DataManager.SOUND_PATH + QueuedFanfare + ".ogg", 1) + FANFARE_WAIT_EXTRA;
+                        if (!String.IsNullOrEmpty(QueuedFanfare) && System.IO.File.Exists(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg"))
+                            pauseFrames = SoundManager.PlaySound(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg", 1) + FANFARE_WAIT_EXTRA;
                         CurrentFanfarePhase = FanfarePhase.Wait;
                         if (FanfareTime < pauseFrames)
                             FanfareTime = FrameTick.FromFrames(pauseFrames);

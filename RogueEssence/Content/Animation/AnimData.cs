@@ -8,7 +8,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class ObjAnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "Object/")]
+        [Anim(0, GraphicsManager.CONTENT_PATH + "Object/")]
         public override string AnimIndex { get; set; }
 
         public ObjAnimData()
@@ -30,7 +30,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class BeamAnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "Beam/")]
+        [Anim(0, GraphicsManager.CONTENT_PATH + "Beam/")]
         public override string AnimIndex { get; set; }
 
         public BeamAnimData()
@@ -57,7 +57,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class BGAnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "BG/")]
+        [Anim(0, GraphicsManager.CONTENT_PATH + "BG/")]
         public override string AnimIndex { get; set; }
 
         public BGAnimData()
@@ -84,7 +84,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class AnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "Particle/")]
+        [Anim(0, GraphicsManager.CONTENT_PATH + "Particle/")]
         public override string AnimIndex { get; set; }
 
         public AnimData()

@@ -9,7 +9,7 @@ namespace RogueEssence.Dev
 {
     public class DevTileManager
     {
-        public const string RESOURCE_PATH = DiagManager.CONTENT_PATH + "Editor/";
+        public const string RESOURCE_PATH = PathMod.ASSET_PATH + "Editor/";
 
         private static LRUCache<TileFrame, Bitmap> tileCache;
         private static LRUCache<string, Bitmap> tilesetCache;

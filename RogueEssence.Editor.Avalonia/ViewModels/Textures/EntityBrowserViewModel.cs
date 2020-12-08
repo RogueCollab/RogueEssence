@@ -457,7 +457,7 @@ namespace RogueEssence.Dev.ViewModels
 
             ObjectAnims = new ObservableCollection<string>();
             ObjectAnims.Add("---");
-            string[] dirs = Directory.GetFiles(DiagManager.CONTENT_PATH + "Object/");
+            string[] dirs = Directory.GetFiles(GraphicsManager.CONTENT_PATH + "Object/");
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);

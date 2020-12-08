@@ -85,17 +85,21 @@ namespace RogueEssence.Content
             }
         }
 
-        public const string UI_PATH = DiagManager.CONTENT_PATH + "UI/";
-        public const string FONT_PATTERN = DiagManager.CONTENT_PATH + "Font/{0}.font";
-        public const string CHARA_PATTERN = DiagManager.CONTENT_PATH + "Chara/Chara-{0}.chara";
-        public const string PORTRAIT_PATTERN = DiagManager.CONTENT_PATH + "Portrait/Portrait-{0}.portrait";
-        public const string PARTICLE_PATTERN = DiagManager.CONTENT_PATH + "Particle/{0}.dir";
-        public const string ITEM_PATTERN = DiagManager.CONTENT_PATH + "Item/Item-{0}.dir";
-        public const string BEAM_PATTERN = DiagManager.CONTENT_PATH + "Beam/{0}.beam";
-        public const string ICON_PATTERN = DiagManager.CONTENT_PATH + "Icon/Icon-{0}.dir";
-        public const string TILE_PATTERN = DiagManager.CONTENT_PATH + "Tile/{0}.tile";
-        public const string OBJECT_PATTERN = DiagManager.CONTENT_PATH + "Object/{0}.dir";
-        public const string BG_PATTERN = DiagManager.CONTENT_PATH + "BG/{0}.dir";
+        public const string MUSIC_PATH = CONTENT_PATH + "Music/";
+        public const string SOUND_PATH = CONTENT_PATH + "Sound/";
+
+        public const string CONTENT_PATH = PathMod.ASSET_PATH + "Content/";
+        public const string UI_PATH = CONTENT_PATH + "UI/";
+        public const string FONT_PATTERN = CONTENT_PATH + "Font/{0}.font";
+        public const string CHARA_PATTERN = CONTENT_PATH + "Chara/Chara-{0}.chara";
+        public const string PORTRAIT_PATTERN = CONTENT_PATH + "Portrait/Portrait-{0}.portrait";
+        public const string PARTICLE_PATTERN = CONTENT_PATH + "Particle/{0}.dir";
+        public const string ITEM_PATTERN = CONTENT_PATH + "Item/Item-{0}.dir";
+        public const string BEAM_PATTERN = CONTENT_PATH + "Beam/{0}.beam";
+        public const string ICON_PATTERN = CONTENT_PATH + "Icon/Icon-{0}.dir";
+        public const string TILE_PATTERN = CONTENT_PATH + "Tile/{0}.tile";
+        public const string OBJECT_PATTERN = CONTENT_PATH + "Object/{0}.dir";
+        public const string BG_PATTERN = CONTENT_PATH + "BG/{0}.dir";
 
 
         public const int TEX_SIZE = 8;
@@ -206,7 +210,7 @@ namespace RogueEssence.Content
 
         public static void InitParams()
         {
-            string path = DiagManager.CONTENT_PATH + "GFXParams.xml";
+            string path = CONTENT_PATH + "GFXParams.xml";
             //try to load from file
             if (File.Exists(path))
             {
@@ -370,9 +374,9 @@ namespace RogueEssence.Content
             objectCache.OnItemRemoved = DisposeCachedObject;
 
             //load guides
-            CharaIndex = LoadCharaIndices(DiagManager.CONTENT_PATH + "Chara/");
-            PortraitIndex = LoadCharaIndices(DiagManager.CONTENT_PATH + "Portrait/");
-            TileIndex = LoadTileIndices(DiagManager.CONTENT_PATH + "Tile/");
+            CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
+            PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
+            TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
 
             Loaded = true;
             //Notify script engine
@@ -432,40 +436,40 @@ namespace RogueEssence.Content
         public static void RunConversions(AssetType conversionFlags)
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
-                Dev.ImportHelper.ImportAllFonts(DiagManager.DEV_PATH+"Font/", FONT_PATTERN);
+                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH+"Font/", FONT_PATTERN);
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
-                Dev.ImportHelper.ImportAllChars(DiagManager.DEV_PATH + "Sprite/", CHARA_PATTERN);
+                Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", CHARA_PATTERN);
                 Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
             }
             if ((conversionFlags & AssetType.Portrait) != AssetType.None)
             {
-                Dev.ImportHelper.ImportAllPortraits(DiagManager.DEV_PATH + "Portrait/", PORTRAIT_PATTERN);
+                Dev.ImportHelper.ImportAllPortraits(PathMod.DEV_PATH + "Portrait/", PORTRAIT_PATTERN);
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
             }
             if ((conversionFlags & AssetType.Tile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(DiagManager.DEV_PATH+"Tiles/", TILE_PATTERN, true, false);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tiles/", TILE_PATTERN, true, false);
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
-                Dev.ImportHelper.ImportAllItems(DiagManager.DEV_PATH+"Item/", ITEM_PATTERN);
+                Dev.ImportHelper.ImportAllItems(PathMod.DEV_PATH+"Item/", ITEM_PATTERN);
             if ((conversionFlags & AssetType.VFX) != AssetType.None)
-                Dev.ImportHelper.ImportAllVFX(DiagManager.DEV_PATH+"Attacks/", PARTICLE_PATTERN, BEAM_PATTERN);
+                Dev.ImportHelper.ImportAllVFX(PathMod.DEV_PATH+"Attacks/", PARTICLE_PATTERN, BEAM_PATTERN);
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
-                Dev.ImportHelper.ImportAllDirs(DiagManager.DEV_PATH+"Icon/", ICON_PATTERN);
+                Dev.ImportHelper.ImportAllDirs(PathMod.DEV_PATH+"Icon/", ICON_PATTERN);
             if ((conversionFlags & AssetType.Object) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(DiagManager.DEV_PATH+"Object/", OBJECT_PATTERN);
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Object/", OBJECT_PATTERN);
             if ((conversionFlags & AssetType.BG) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(DiagManager.DEV_PATH+"BG/", BG_PATTERN);
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", BG_PATTERN);
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(DiagManager.DEV_PATH + "Tiles/", TILE_PATTERN, false, true);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tiles/", TILE_PATTERN, false, true);
 
             if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
                 Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
-                //Dev.ImportHelper.ImportAllAutoTiles(DiagManager.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
+                //Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
                 //Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
             }
         }
@@ -493,7 +497,7 @@ namespace RogueEssence.Content
                 if ((assetType & AssetType.Chara) != AssetType.None)
                 {
                     Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
-                    CharaIndex = LoadCharaIndices(DiagManager.CONTENT_PATH + "Chara/");
+                    CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
                     spriteCache.Clear();
                     DiagManager.Instance.LogInfo("Characters Reloaded.");
                 }
@@ -501,7 +505,7 @@ namespace RogueEssence.Content
                 if ((assetType & AssetType.Portrait) != AssetType.None)
                 {
                     Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
-                    PortraitIndex = LoadCharaIndices(DiagManager.CONTENT_PATH + "Portrait/");
+                    PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
                     portraitCache.Clear();
                     DiagManager.Instance.LogInfo("Portraits Reloaded.");
                 }
