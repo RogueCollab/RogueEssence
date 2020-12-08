@@ -19,7 +19,7 @@
     <converters:FrameConverter x:Key="FrameConverter"/>
     <converters:MultiSelectConverter x:Key="MultiSelectConverter"/>
   </UserControl.Resources>
-  <Grid Margin="4" >
+  <Grid >
     <Grid.RowDefinitions>
       <RowDefinition Height="11*"/>
       <RowDefinition Height="9*"/>

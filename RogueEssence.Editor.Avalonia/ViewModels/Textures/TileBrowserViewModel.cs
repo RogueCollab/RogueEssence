@@ -8,6 +8,7 @@ using ReactiveUI;
 using RogueEssence.Content;
 using Avalonia.Controls;
 using System.Collections.ObjectModel;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -16,10 +17,23 @@ namespace RogueEssence.Dev.ViewModels
         private TileLayer layer;
         public Loc MultiSelect;
 
+        private int autotile;
+        private int bordertile;
+
         public TileBrush(TileLayer layer, Loc multiSelect)
         {
+            autotile = -1;
+            bordertile = -1;
             this.layer = layer;
             MultiSelect = multiSelect;
+        }
+
+        public TileBrush(int autotile, int bordertile)
+        {
+            this.autotile = autotile;
+            this.bordertile = bordertile;
+            this.layer = new TileLayer();
+            this.MultiSelect = Loc.One;
         }
 
         public AutoTile GetSanitizedTile()
@@ -29,6 +43,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public AutoTile GetSanitizedTile(Loc offset)
         {
+            if (autotile > -1)
+            {
+                AutoTile auto = new AutoTile(autotile, bordertile);
+                AutoTileData autoTile = DataManager.Instance.GetAutoTile(autotile);
+                auto.Layers.AddRange(autoTile.Tiles.Generic);
+                return auto;
+            }
+
             TileLayer newLayer = new TileLayer();
             bool hasFilled = false;
             foreach (TileFrame frame in layer.Frames)
@@ -186,11 +208,8 @@ namespace RogueEssence.Dev.ViewModels
             return new TileBrush(layer, multiSelect);
         }
 
-        public void SetBrush(AutoTile autoTile)
+        public void SetBrush(TileLayer layer)
         {
-            //TODO: an anim can have multiple layers if they're an autotile, we need to somehow pick up autotiles
-            TileLayer layer = (autoTile.Layers.Count > 0) ? autoTile.Layers[0] : new TileLayer();
-
             MultiSelect = Loc.One;
             FrameLength = layer.FrameLength;
             Frames.Clear();

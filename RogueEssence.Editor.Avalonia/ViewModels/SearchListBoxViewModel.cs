@@ -37,6 +37,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public ObservableCollection<string> SearchItems { get; }
+        public int Count => SearchItems.Count;
 
 
         private int selectedSearchIndex;
@@ -68,7 +69,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (SearchText == "" || entries[entries.Count - 1].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
             {
-                SearchItems.Add((entries.Count - 1) + ": " + entries[entries.Count - 1]);
+                SearchItems.Add(entries[entries.Count - 1]);
                 entryMap.Add(entries.Count - 1);
             }
         }
@@ -100,7 +101,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (SearchText == "" || entries[entryMap[index]].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
             {
-                SearchItems[index] = entryMap[index] + ": " + entry;
+                SearchItems[index] = entry;
             }
             else
             {
@@ -130,7 +131,7 @@ namespace RogueEssence.Dev.ViewModels
             if (oldAppears && newAppears)
             {
                 //change
-                SearchItems[shownIndex] = internalIndex + ": " + entry;
+                SearchItems[shownIndex] = entry;
             }
             else if (oldAppears)
             {
@@ -145,7 +146,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (entryMap[ii] < internalIndex)
                     {
-                        SearchItems.Insert(ii, internalIndex + ": " + entry);
+                        SearchItems.Insert(ii, entry);
                         entryMap.Insert(ii, internalIndex);
                         break;
                     }
@@ -167,7 +168,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (SearchText == "" || entries[ii].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
                 {
                     entryMap.Add(ii);
-                    SearchItems.Add(ii + ": " + entries[ii]);
+                    SearchItems.Add(entries[ii]);
                     if (ii == internalIndex)
                         index = entryMap.Count - 1;
                 }

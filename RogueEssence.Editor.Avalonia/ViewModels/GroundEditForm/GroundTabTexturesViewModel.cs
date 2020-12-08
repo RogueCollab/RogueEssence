@@ -1,6 +1,7 @@
 ﻿using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using System;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -10,6 +11,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             Layers = new LayerBoxViewModel();
             TileBrowser = new TileBrowserViewModel();
+            AutotileBrowser = new AutotileBrowserViewModel();
         }
 
         private TileEditMode texMode;
@@ -32,6 +34,20 @@ namespace RogueEssence.Dev.ViewModels
 
         public LayerBoxViewModel Layers { get; set; }
         public TileBrowserViewModel TileBrowser { get; set; }
+        public AutotileBrowserViewModel AutotileBrowser { get; set; }
+
+
+
+        private int tabIndex;
+        public int TabIndex
+        {
+            get => tabIndex;
+            set
+            {
+                this.SetIfChanged(ref tabIndex, value);
+            }
+        }
+
 
         public void ProcessInput(InputManager input)
         {
@@ -41,7 +57,7 @@ namespace RogueEssence.Dev.ViewModels
                 case TileEditMode.Draw:
                     {
                         if (input[FrameInput.InputType.LeftMouse])
-                            paintTile(tileCoords, TileBrowser.GetBrush());
+                            paintTile(tileCoords, getBrush());
                         else if (input[FrameInput.InputType.RightMouse])
                             paintTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
                     }
@@ -51,14 +67,14 @@ namespace RogueEssence.Dev.ViewModels
                         Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
                         if (input.JustPressed(FrameInput.InputType.LeftMouse))
                         {
-                            GroundEditScene.Instance.AutoTileInProgress = TileBrowser.GetBrush().GetSanitizedTile();
+                            GroundEditScene.Instance.AutoTileInProgress = getBrush().GetSanitizedTile();
                             GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
                         }
                         else if (input[FrameInput.InputType.LeftMouse])
                             GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
                         else if (input.JustReleased(FrameInput.InputType.LeftMouse))
                         {
-                            rectTile(GroundEditScene.Instance.TileRectPreview(), TileBrowser.GetBrush());
+                            rectTile(GroundEditScene.Instance.TileRectPreview(), getBrush());
                             GroundEditScene.Instance.AutoTileInProgress = null;
                         }
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
@@ -78,7 +94,7 @@ namespace RogueEssence.Dev.ViewModels
                 case TileEditMode.Fill:
                     {
                         if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            fillTile(tileCoords, TileBrowser.GetBrush());
+                            fillTile(tileCoords, getBrush());
                         else if (input.JustReleased(FrameInput.InputType.RightMouse))
                             fillTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
                     }
@@ -93,6 +109,13 @@ namespace RogueEssence.Dev.ViewModels
 
         }
 
+        private TileBrush getBrush()
+        {
+            if (tabIndex == 0)
+                return TileBrowser.GetBrush();
+            else
+                return AutotileBrowser.GetBrush();
+        }
 
         private void paintTile(Loc loc, TileBrush brush)
         {
@@ -114,6 +137,11 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 }
             }
+
+            Rect bounds = new Rect(loc, brush.MultiSelect);
+            //now recompute all tiles within the multiselect rectangle + 1
+            bounds.Inflate(1, 1);
+            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(MathUtils.Rand, bounds.Start, bounds.Size);
         }
 
         private void rectTile(Rect rect, TileBrush brush)
@@ -128,6 +156,11 @@ namespace RogueEssence.Dev.ViewModels
                     ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[xx][yy] = brush.GetSanitizedTile();
                 }
             }
+
+            Rect bounds = rect;
+            //now recompute all tiles within the multiselect rectangle + 1
+            bounds.Inflate(1, 1);
+            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(MathUtils.Rand, bounds.Start, bounds.Size);
         }
 
         private void eyedropTile(Loc loc)
@@ -135,7 +168,18 @@ namespace RogueEssence.Dev.ViewModels
             if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                 return;
 
-            TileBrowser.SetBrush(ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y]);
+            AutoTile autoTile = ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y];
+
+            if (autoTile.AutoTileset > -1)
+            {
+                //switch to autotile tab
+                AutotileBrowser.SetBrush(autoTile);
+            }
+            else
+            {
+                TileLayer layer = (autoTile.Layers.Count > 0) ? autoTile.Layers[0] : new TileLayer();
+                TileBrowser.SetBrush(layer);
+            }
         }
 
 
@@ -145,7 +189,7 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y].Copy();
-
+            Rect bounds = new Rect(loc, Loc.One);
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height),
                     (Loc testLoc) =>
                     {
@@ -157,9 +201,15 @@ namespace RogueEssence.Dev.ViewModels
                     },
                     (Loc testLoc) =>
                     {
+                        bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
+                            new Loc(Math.Max(bounds.End.X, testLoc.X+1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
                         ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[testLoc.X][testLoc.Y] = brush.GetSanitizedTile();
                     },
                 loc);
+
+            //now recompute all autotiles within the rectangle
+            bounds.Inflate(1, 1);
+            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(MathUtils.Rand, bounds.Start, bounds.Size);
         }
     }
 }

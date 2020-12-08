@@ -12,6 +12,11 @@ namespace RogueEssence.Dungeon
         public List<TileLayer> Layers;
 
         public int AutoTileset { get; private set; }
+        
+        /// <summary>
+        /// The autotileset that counts as a wall in this tile's view.
+        /// For floor tiles' pebbles, etc.
+        /// </summary>
         public int BorderTileset { get; private set; }
 
         public AutoTile(params TileLayer[] layers)

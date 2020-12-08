@@ -62,6 +62,9 @@
     <Compile Update="Views\Textures\EntityBrowser.axaml.cs">
       <DependentUpon>EntityBrowser.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Textures\AutotileBrowser.axaml.cs">
+      <DependentUpon>AutotileBrowser.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Textures\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>

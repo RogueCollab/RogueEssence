@@ -24,7 +24,14 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/>
-    <views:TileBrowser DataContext="{Binding TileBrowser}" Grid.Row="1" Grid.Column="1"/>
+    <TabControl TabStripPlacement="Top" SelectedIndex="{Binding TabIndex}" Margin="4" Grid.Row="1" Grid.Column="1">
+      <TabItem Header="Tiles" >
+        <views:TileBrowser DataContext="{Binding TileBrowser}"/>
+      </TabItem>
+      <TabItem Header="Autotiles" >
+        <views:AutotileBrowser DataContext="{Binding AutotileBrowser}"/>
+      </TabItem>
+    </TabControl>
     <Grid Grid.Row="0" Grid.Column="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="16"/>
