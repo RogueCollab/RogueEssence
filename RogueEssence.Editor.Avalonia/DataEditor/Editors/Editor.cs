@@ -325,6 +325,7 @@ namespace RogueEssence.Dev
 
                         chosenParent.ContextMenu = copyPasteStrip;
                     }
+                    chosenParent.Background = Avalonia.Media.Brushes.Transparent;
                     DataEditor.LoadWindowControls(chosenParent, name, children[0], attributes, member);
 
                 }
@@ -461,7 +462,7 @@ namespace RogueEssence.Dev
 
                         chosenParent.ContextMenu = copyPasteStrip;
                     }
-
+                    chosenParent.Background = Avalonia.Media.Brushes.Transparent;
                     DataEditor.LoadWindowControls(chosenParent, name, children[selection], attributes, member);
                 }
             }
