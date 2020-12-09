@@ -25,7 +25,7 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <ListBox Items="{Binding Anims}" SelectedItem="{Binding ChosenAnim}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4"/>
+    <views:SearchListBox DataContext="{Binding Anims}" Margin="4" Grid.ColumnSpan="4"/>
     <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button>
     <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button>
     <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Export</Button>

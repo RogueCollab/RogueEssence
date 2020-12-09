@@ -23,29 +23,10 @@ namespace RogueEssence.Dev.ViewModels
 
 
         public string Name { get { return assetType.ToString(); } }
-        public ObservableCollection<string> Anims { get; }
 
 
-        private string chosenAnim;
-        public string ChosenAnim
-        {
-            get => chosenAnim;
-            set
-            {
-                this.SetIfChanged(ref chosenAnim, value);
-                CachedPath = null;
-                lock (GameBase.lockObj)
-                {
-                    if (DungeonScene.Instance != null)
-                    {
-                        DungeonScene.Instance.DebugAsset = assetType;
-                        DungeonScene.Instance.DebugAnim = chosenAnim;
-                    }
-                }
-            }
-        }
-
-        //ReImport enabled if CachedPath is not null
+        private List<string> anims;
+        public SearchListBoxViewModel Anims { get; set; }
 
         private string cachedPath;
         public string CachedPath
@@ -57,7 +38,12 @@ namespace RogueEssence.Dev.ViewModels
 
         public AnimEditViewModel()
         {
-            Anims = new ObservableCollection<string>();
+            anims = new List<string>();
+
+            Anims = new SearchListBoxViewModel();
+            Anims.DataName = "Graphics:";
+            Anims.SelectedIndexChanged += Anims_SelectedIndexChanged;
+
         }
 
         public void LoadDataEntries(GraphicsManager.AssetType assetType, string assetPattern, Window parent)
@@ -73,12 +59,14 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
+                anims.Clear();
                 Anims.Clear();
                 string[] dirs = Directory.GetFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {
                     string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                    Anims.Add(filename);
+                    anims.Add(filename);
+                    Anims.AddItem(filename);
                 }
             }
         }
@@ -103,7 +91,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 string animName = Path.GetFileNameWithoutExtension(results[0]);
 
-                if (Anims.Contains(animName))
+                if (anims.Contains(animName))
                 {
                     MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Sprite Sheet already exists.",
                         MessageBox.MessageBoxButtons.YesNo);
@@ -146,7 +134,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnExport_Click()
         {
             //get current sprite
-            string animData = chosenAnim;
+            string animData = anims[Anims.InternalIndex];
 
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
@@ -173,16 +161,16 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnDelete_Click()
         {
             //get current sprite
-            string animData = chosenAnim;
+            int animIdx = Anims.InternalIndex;
 
-            MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + animData, "Delete Sprite Sheet.",
+            MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + anims[animIdx], "Delete Sprite Sheet.",
                 MessageBox.MessageBoxButtons.YesNo);
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
 
             lock (GameBase.lockObj)
-                Delete(chosenAnim);
+                Delete(animIdx);
         }
 
 
@@ -237,18 +225,38 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void Delete(string anim)
+        private void Delete(int animIdx)
         {
+            string anim = anims[animIdx];
+
             if (File.Exists(String.Format(assetPattern, anim)))
                 File.Delete(String.Format(assetPattern, anim));
 
-            Anims.Remove(anim);
+            anims.RemoveAt(animIdx);
+            Anims.RemoveInternalAt(animIdx);
 
             DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
 
             //signal for reload
             GraphicsManager.NeedReload = GraphicsManager.AssetType.Chara;
 
+        }
+
+
+        private void Anims_SelectedIndexChanged()
+        {
+            CachedPath = null;
+            if (Anims.InternalIndex == -1)
+                return;
+
+            lock (GameBase.lockObj)
+            {
+                if (DungeonScene.Instance != null)
+                {
+                    DungeonScene.Instance.DebugAsset = assetType;
+                    DungeonScene.Instance.DebugAnim = anims[Anims.InternalIndex];
+                }
+            }
         }
 
     }

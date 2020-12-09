@@ -37,7 +37,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public ObservableCollection<string> SearchItems { get; }
-        public int Count => SearchItems.Count;
+        public int Count => entries.Count;
 
 
         private int selectedSearchIndex;
@@ -151,6 +151,21 @@ namespace RogueEssence.Dev.ViewModels
                         break;
                     }
                 }
+            }
+        }
+
+        public void RemoveInternalAt(int internalIndex)
+        {
+            bool oldAppears = (SearchText == "" || entries[internalIndex].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1);
+            entries.RemoveAt(internalIndex);
+
+            int shownIndex = entryMap.IndexOf(internalIndex);
+
+            if (oldAppears)
+            {
+                //remove
+                SearchItems.RemoveAt(shownIndex);
+                entryMap.RemoveAt(shownIndex);
             }
         }
 
