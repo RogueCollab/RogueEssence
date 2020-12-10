@@ -271,26 +271,25 @@ namespace RogueEssence.Script
         private string PathToScript(EMainScripts script)
         {
             string sciptp = MainScripts[script];
-            return String.Format("{0}{1}", m_path, sciptp);
+            return String.Format("{0}{1}", PathMod.ModPath(SCRIPT_PATH), sciptp);
         }
         #endregion
 
         //Paths
         public static readonly string MapScriptPath = "ground.{0}";
-        public static readonly string MapScriptDirectory = DataManager.SCRIPT_PATH + "ground/";
+        public const string MAP_SCRIPT_DIR = SCRIPT_PATH + "ground/";
         public static readonly string MapPackageEntryPointName = "init"; //filename of the map's main script file that the engine will run when the map is loaded (by default lua package entrypoints are init.lua)
 
         public static readonly string ZoneScriptPath = "zone.{0}";
-        public static readonly string ZoneScriptDirectory = DataManager.SCRIPT_PATH + "zone/";
+        public const string ZONE_SCRIPT_DIR = SCRIPT_PATH + "zone/";
         public static readonly string ZonePackageEntryPointName = "init"; //filename of the zone's main script file that the engine will run when the zone is loaded (by default lua package entrypoints are init.lua)
 
         //Global lua symbol names
         private static readonly string ScriptVariablesTableName = "SV"; //Name of the table of script variables that gets loaded and saved with the game
 
         //Lua State
-        private Lua m_state;                            //Lua state/interpreter
-        private string m_path = DataManager.SCRIPT_PATH;  //Base script engine scripts path
-        private string m_cpath = DataManager.SCRIPT_CPATH; //Base script engine libraries, for so and dlls
+        public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
+        public const string SCRIPT_CPATH = DataManager.DATA_PATH + "Script/bin/"; //Base script engine libraries, for so and dlls
         private ScriptServices m_scrsvc;
         private ScriptSound m_scriptsound;
         private ScriptGround m_scriptground;
@@ -308,7 +307,7 @@ namespace RogueEssence.Script
         //Properties
         public string CurZonePackagePath { get; internal set; } //Path to the currently loaded zone script, aka the last zone script to have been run
         public string   CurMapPackagePath { get; internal set; } //Path to the currently loaded map script, aka the last map script to have been run
-        public Lua      LuaState { get { return m_state; } set { m_state = value; } }
+        public Lua      LuaState { get; set; }
         public GameTime Curtime { get { return m_curtime; } set { m_curtime = value; } }
 
         //Pre-compiled internal lua functions
@@ -338,8 +337,8 @@ namespace RogueEssence.Script
 
         public static void InitScriptFolders(string baseFolder)
         {
-            string sourcePath = Path.Join(PathMod.ASSET_PATH, DataManager.SCRIPT_PATH);
-            string destPath = Path.Join(baseFolder, DataManager.SCRIPT_PATH);
+            string sourcePath = Path.Join(PathMod.ASSET_PATH, SCRIPT_PATH);
+            string destPath = Path.Join(baseFolder, SCRIPT_PATH);
             //TODO: do we need scripts to be in their own folder?
             foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
                 Directory.CreateDirectory(dirPath.Replace(sourcePath, destPath));
@@ -358,21 +357,21 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Importing .NET packages..");
             LuaState.LoadCLRPackage();
 
-            m_state.DoString(String.Format("{0} = import '{0}'", "RogueEssence"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Content"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Data"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Dungeon"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Ground"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Script"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Menu"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.LevelGen"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Resources"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Network"));
-            m_state.DoString(String.Format("{0} = import '{0}'", "FNA"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna"));
-            m_state.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna.Framework"));
-            m_state.DoString(String.Format("{0} = import '{0}'", "RogueElements"));
+            LuaState.DoString(String.Format("{0} = import '{0}'", "RogueEssence"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Content"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Data"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Dungeon"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Ground"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Script"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Menu"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.LevelGen"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Resources"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Network"));
+            LuaState.DoString(String.Format("{0} = import '{0}'", "FNA"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna"));
+            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna.Framework"));
+            LuaState.DoString(String.Format("{0} = import '{0}'", "RogueElements"));
         }
 
         /// <summary>
@@ -473,12 +472,12 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Setting up lua paths..");
             //Add the current script directory to the lua searchpath for loading modules!
             LuaState["package.path"] = LuaState["package.path"] + ";" +
-                                        System.IO.Path.GetFullPath(m_path) + "lib/?.lua;" +
-                                        System.IO.Path.GetFullPath(m_path) + "?.lua;" +
-                                        System.IO.Path.GetFullPath(m_path) + "?/init.lua";
+                                        Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "lib/?.lua;" +
+                                        Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "?.lua;" +
+                                        Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "?/init.lua";
 
             //Add lua binary path
-            string cpath = LuaState["package.cpath"] + ";" + System.IO.Path.GetFullPath(m_cpath);
+            string cpath = LuaState["package.cpath"] + ";" + Path.GetFullPath(PathMod.ModPath(SCRIPT_CPATH));
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 cpath += "?.dll";
             else
@@ -509,7 +508,7 @@ namespace RogueEssence.Script
             SetLuaPaths();
 
             //Setup some globabl vars
-            LuaState["_SCRIPT_PATH"] = System.IO.Path.GetFullPath(m_path); //Share with the script engine the path to the root of the script files
+            LuaState["_SCRIPT_PATH"] = Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)); //Share with the script engine the path to the root of the script files
 
             RunString(ZoneCurrentScriptSym + " = nil");
             RunString(MapCurrentScriptSym + " = nil");
@@ -928,7 +927,7 @@ namespace RogueEssence.Script
         /// <returns>Absolute path to the map's script directory.</returns>
         public string _MakeZoneScriptPath(string zonename)
         {
-            return System.IO.Path.GetFullPath(m_path) +
+            return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
                    string.Format(ZoneScriptPath, zonename).Replace('.', '/'); //The physical path to the map's script dir
         }
 
@@ -942,7 +941,7 @@ namespace RogueEssence.Script
             try
             {
                 string abspath = System.IO.Path.GetFullPath(zonepath + "/init.lua");
-                m_state.LoadFile(abspath);
+                LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZoneScriptPath, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
                           abspath);
                 CurZonePackagePath = zonepath; //Set this only on success
@@ -995,7 +994,7 @@ namespace RogueEssence.Script
         /// <returns>Absolute path to the map's script directory.</returns>
         public string _MakeMapScriptPath(string mapname)
         {
-            return System.IO.Path.GetFullPath(m_path) +
+            return System.IO.Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
                    string.Format(MapScriptPath, mapname).Replace('.', '/'); //The physical path to the map's script dir
         }
 
@@ -1008,8 +1007,8 @@ namespace RogueEssence.Script
             string mappath = _MakeMapScriptPath(mapassetname);
             try
             {
-                string abspath = System.IO.Path.GetFullPath(mappath + "/init.lua");
-                m_state.LoadFile(abspath);
+                string abspath = Path.GetFullPath(mappath + "/init.lua");
+                LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(MapScriptPath, mapassetname), MapCurrentScriptSym, mapassetname),
                           abspath);
                 CurMapPackagePath = mappath; //Set this only on success

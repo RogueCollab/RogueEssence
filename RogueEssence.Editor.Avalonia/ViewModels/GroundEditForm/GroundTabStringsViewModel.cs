@@ -145,7 +145,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private string MakeCurrentStringsPath()
         {
-            return String.Format("{0}{1}", LuaEngine.MapScriptDirectory, ZoneManager.Instance.CurrentGround.AssetName);
+            return String.Format("{0}{1}", PathMod.ModPath(LuaEngine.MAP_SCRIPT_DIR), ZoneManager.Instance.CurrentGround.AssetName);
         }
 
     }

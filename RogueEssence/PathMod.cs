@@ -37,6 +37,19 @@ namespace RogueEssence
             return Path.Join(baseFolder, Mod, basePath);
         }
 
+        public static IEnumerable<string> FallbackPaths(string basePath)
+        {
+            string mod = Mod;
+            while (mod != "")
+            {
+                string fullPath = Path.Join(mod, basePath);
+                if (File.Exists(fullPath))
+                    yield return fullPath;
+                mod = Directory.GetParent(Directory.GetParent(mod).Name).Name;
+            }
+            yield return Path.Join(ASSET_PATH, basePath);
+        }
+
         public static string ModPath(string basePath)
         {
             string mod = Mod;
@@ -49,7 +62,7 @@ namespace RogueEssence
             }
             return Path.Join(ASSET_PATH, basePath);
         }
-        public static string[] GetModFiles(string baseFolder)
+        public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
             string mod = Mod;
@@ -57,10 +70,10 @@ namespace RogueEssence
             {
                 string fullPath = Path.Join(mod, baseFolder);
                 if (File.Exists(fullPath))
-                    files.Add(Directory.GetFiles(fullPath));
+                    files.Add(Directory.GetFiles(fullPath, search));
                 mod = Directory.GetParent(Directory.GetParent(mod).Name).Name;
             }
-            files.Add(Directory.GetFiles(Path.Join(ASSET_PATH, baseFolder)));
+            files.Add(Directory.GetFiles(Path.Join(ASSET_PATH, baseFolder), search));
 
             HashSet<string> results = new HashSet<string>();
             for (int ii = 0; ii < files.Count; ii++)
