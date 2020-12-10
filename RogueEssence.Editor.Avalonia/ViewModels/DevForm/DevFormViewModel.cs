@@ -15,18 +15,19 @@ namespace RogueEssence.Dev.ViewModels
             Game = new DevTabGameViewModel();
             Player = new DevTabPlayerViewModel();
             Data = new DevTabDataViewModel();
+            Travel = new DevTabTravelViewModel();
             Sprites = new DevTabSpritesViewModel();
             Script = new DevTabScriptViewModel();
-            Travel = new DevTabTravelViewModel();
-
+            Mods = new DevTabModsViewModel();
         }
 
         public DevTabGameViewModel Game { get; set; }
         public DevTabPlayerViewModel Player { get; set; }
         public DevTabDataViewModel Data { get; set; }
+        public DevTabTravelViewModel Travel { get; set; }
         public DevTabSpritesViewModel Sprites { get; set; }
         public DevTabScriptViewModel Script { get; set; }
-        public DevTabTravelViewModel Travel { get; set; }
+        public DevTabModsViewModel Mods { get; set; }
 
 
 

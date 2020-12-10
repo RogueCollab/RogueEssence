@@ -6,6 +6,7 @@ using RogueEssence.Ground;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using NLua;
+using System.IO;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -37,7 +38,7 @@ namespace RogueEssence.Script
     /// </summary>
     public partial class LuaEngine
     {
-#region MAP_EVENTS
+        #region MAP_EVENTS
         /// <summary>
         /// The available callbacks a map's lua script may receive from the engine.
         /// </summary>
@@ -202,7 +203,7 @@ namespace RogueEssence.Script
 #endregion
 
 
-#region SERVICES_EVENTS
+        #region SERVICES_EVENTS
         private static readonly string NameLuaServiceEventNames = "EngineServiceEvents";
 
         private enum EServiceEvents
@@ -241,7 +242,7 @@ namespace RogueEssence.Script
         }
 #endregion
 
-#region MAIN_SCRIPTS
+        #region MAIN_SCRIPTS
         /// <summary>
         /// Keyval to access the pre-defined script files
         /// </summary>
@@ -332,6 +333,20 @@ namespace RogueEssence.Script
         private LuaEngine()
         {
             Reset();
+        }
+
+
+        public static void InitScriptFolders(string baseFolder)
+        {
+            string sourcePath = Path.Join(PathMod.ASSET_PATH, DataManager.SCRIPT_PATH);
+            string destPath = Path.Join(baseFolder, DataManager.SCRIPT_PATH);
+            //TODO: do we need scripts to be in their own folder?
+            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(sourcePath, destPath));
+
+            //Copy all the files & Replaces any files with the same name
+            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(sourcePath, destPath), true);
         }
 
         /// <summary>

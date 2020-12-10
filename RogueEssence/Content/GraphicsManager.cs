@@ -322,8 +322,6 @@ namespace RogueEssence.Content
 
             BattleFactors = TileSheet.Import(UI_PATH + "BattleFactors.png", 16, 16);
 
-            Shadows = TileSheet.Import(UI_PATH + "Shadows.png", 32, 16);
-
             Tiling = TileSheet.Import(UI_PATH + "Tiling.png", TileSize, TileSize);
 
             Darkness = TileSheet.Import(UI_PATH + "Dark.png", 8, 8);
@@ -338,8 +336,9 @@ namespace RogueEssence.Content
 
             MapSheet = TileSheet.Import(UI_PATH + "Map.png", 4, 4);
 
-            Title = BaseSheet.Import(UI_PATH + "Title.png");
 
+            Shadows = TileSheet.Import(UI_PATH + "Shadows.png", 32, 16);
+            Title = BaseSheet.Import(UI_PATH + "Title.png");
             Subtitle = BaseSheet.Import(UI_PATH + "Enter.png");
 
 
@@ -381,6 +380,13 @@ namespace RogueEssence.Content
             Loaded = true;
             //Notify script engine
             LuaEngine.Instance.OnGraphicsLoad();
+        }
+
+        public static void ReloadStatic()
+        {
+            //maybe add other graphics here later on
+
+            ClearCaches(AssetType.All);
         }
 
         public static void Unload()
@@ -474,65 +480,33 @@ namespace RogueEssence.Content
             }
         }
 
+        public static void InitContentFolders(string baseFolder)
+        {
+            Directory.CreateDirectory(Path.Join(baseFolder, CONTENT_PATH));
+
+            Directory.CreateDirectory(Path.Join(baseFolder, UI_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, FONT_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, CHARA_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, PORTRAIT_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, PARTICLE_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, ITEM_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, BEAM_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, ICON_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, TILE_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, OBJECT_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, BG_PATTERN));
+
+            Directory.CreateDirectory(Path.Join(baseFolder, MUSIC_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, SOUND_PATH));
+        }
+
+
         public static void Update()
         {
             try
             {
-                AssetType assetType = NeedReload;
-
-                if ((assetType & AssetType.Tile) != AssetType.None)
-                {
-                    Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
-                    TileIndex = LoadTileIndices(TILE_PATTERN);
-                    tileCache.Clear();
-                    DiagManager.Instance.LogInfo("Tilesets Reloaded.");
-                }
-
-                if ((assetType & AssetType.BG) != AssetType.None)
-                {
-                    bgCache.Clear();
-                    DiagManager.Instance.LogInfo("Backgrounds Reloaded.");
-                }
-
-                if ((assetType & AssetType.Chara) != AssetType.None)
-                {
-                    Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
-                    CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
-                    spriteCache.Clear();
-                    DiagManager.Instance.LogInfo("Characters Reloaded.");
-                }
-
-                if ((assetType & AssetType.Portrait) != AssetType.None)
-                {
-                    Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
-                    PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
-                    portraitCache.Clear();
-                    DiagManager.Instance.LogInfo("Portraits Reloaded.");
-                }
-
-                if ((assetType & AssetType.VFX) != AssetType.None)
-                {
-                    vfxCache.Clear();
-                    DiagManager.Instance.LogInfo("Effects Reloaded.");
-                }
-
-                if ((assetType & AssetType.Item) != AssetType.None)
-                {
-                    itemCache.Clear();
-                    DiagManager.Instance.LogInfo("Items Reloaded.");
-                }
-
-                if ((assetType & AssetType.Icon) != AssetType.None)
-                {
-                    iconCache.Clear();
-                    DiagManager.Instance.LogInfo("Icons Reloaded.");
-                }
-
-                if ((assetType & AssetType.Object) != AssetType.None)
-                {
-                    objectCache.Clear();
-                    DiagManager.Instance.LogInfo("Objects Reloaded.");
-                }
+                if (NeedReload != AssetType.None)
+                    ClearCaches(NeedReload);
             }
             catch (Exception ex)
             {
@@ -546,6 +520,8 @@ namespace RogueEssence.Content
         {
             if ((assetType & AssetType.Tile) != AssetType.None)
             {
+                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
+                TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
                 tileCache.Clear();
                 DiagManager.Instance.LogInfo("Tilesets Reloaded.");
             }
@@ -558,12 +534,16 @@ namespace RogueEssence.Content
 
             if ((assetType & AssetType.Chara) != AssetType.None)
             {
+                Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
+                CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
                 spriteCache.Clear();
                 DiagManager.Instance.LogInfo("Characters Reloaded.");
             }
 
             if ((assetType & AssetType.Portrait) != AssetType.None)
             {
+                Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
+                PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
                 portraitCache.Clear();
                 DiagManager.Instance.LogInfo("Portraits Reloaded.");
             }

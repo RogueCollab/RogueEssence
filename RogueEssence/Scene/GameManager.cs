@@ -322,6 +322,21 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
+
+        public IEnumerator<YieldInstruction> SetMod(string modPath)
+        {
+            removeStateVariables();
+            TitleScene.TitleMenuSaveState = null;
+            MoveToScene(new TitleScene(true));
+            PathMod.Mod = modPath;
+            //clean up and reload all caches
+            GraphicsManager.ReloadStatic();
+            DataManager.Instance.InitData();
+            LuaEngine.Instance.OnDataLoad();
+            //call data editor's load method to reload the dropdowns
+            yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
+        }
+
         private void removeStateVariables()
         {
             //remove all state variables

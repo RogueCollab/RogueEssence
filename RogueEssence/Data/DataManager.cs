@@ -59,6 +59,7 @@ namespace RogueEssence.Data
         public const string DATA_EXT = ".bin";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
+
         public const string FX_PATH = DATA_PATH + "SystemFX/";
 
         public const string SCRIPT_PATH = DATA_PATH + "Script/";
@@ -245,6 +246,20 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.AI, aiCache);
             LoadIndexFull(DataType.Rank, rankCache);
             LoadIndexFull(DataType.Skin, skinCache);
+        }
+
+
+        public static void InitDataFolders(string baseFolder)
+        {
+            Directory.CreateDirectory(Path.Join(baseFolder, DATA_PATH));
+            foreach (DataType type in Enum.GetValues(typeof(DataType)))
+            {
+                if (type != DataManager.DataType.All && type != DataManager.DataType.None)
+                    Directory.CreateDirectory(Path.Join(baseFolder, DATA_PATH + type.ToString() + "/"));
+            }
+            Directory.CreateDirectory(Path.Join(baseFolder, MAP_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, GROUND_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, FX_PATH));
         }
 
 

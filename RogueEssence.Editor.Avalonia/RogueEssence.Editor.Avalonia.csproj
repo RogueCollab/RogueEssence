@@ -38,6 +38,12 @@
     <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\DevForm\DevTabMods.axaml.cs">
+      <DependentUpon>DevTabMods.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\RenameWindow.axaml.cs">
+      <DependentUpon>RenameWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\DialogBoxes\MapLayerWindow.axaml.cs">
       <DependentUpon>MapLayerWindow.axaml</DependentUpon>
     </Compile>

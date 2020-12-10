@@ -123,6 +123,8 @@ namespace RogueEssence.Dev.Views
 
                 devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
 
+                devViewModel.Mods.UpdateMod();
+
                 LoadComplete = true;
             }
         }
