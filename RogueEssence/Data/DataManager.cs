@@ -75,9 +75,9 @@ namespace RogueEssence.Data
         public const string ROGUE_PATH = SAVE_PATH + "ROGUE/";
 
 
-        public const string SAVE_FILE_PATH = SAVE_PATH + "SAVE.rssv";
+        public const string SAVE_FILE_PATH = "SAVE.rssv";
         public const string QUICKSAVE_EXTENSION = ".rsqs";
-        public const string QUICKSAVE_FILE_PATH = SAVE_PATH + "QUICKSAVE" + QUICKSAVE_EXTENSION;
+        public const string QUICKSAVE_FILE_PATH = "QUICKSAVE" + QUICKSAVE_EXTENSION;
 
         public const string SOS_EXTENSION = ".sosmail";
         public const string AOK_EXTENSION = ".aokmail";
@@ -180,9 +180,6 @@ namespace RogueEssence.Data
 
             if (!Directory.Exists(RESCUE_OUT_PATH + AOK_PATH))
                 Directory.CreateDirectory(RESCUE_OUT_PATH + AOK_PATH);
-
-            if (!Directory.Exists(REPLAY_PATH))
-                Directory.CreateDirectory(REPLAY_PATH);
 
 
             MsgLog = new List<string>();
@@ -992,15 +989,15 @@ namespace RogueEssence.Data
                 {
                     return "";
                 }
-                else if (File.Exists(REPLAY_PATH + outFile + REPLAY_EXTENSION))
+                else if (File.Exists(PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION)))
                 {
-                    string renamedFile = GetNonConflictingSavePath(REPLAY_PATH, outFile, REPLAY_EXTENSION);
+                    string renamedFile = GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
 
                     if (renamedFile != null)
-                        Directory.Move(fullPath, REPLAY_PATH + renamedFile + REPLAY_EXTENSION);
+                        Directory.Move(fullPath, PathMod.ModSavePath(REPLAY_PATH, renamedFile + REPLAY_EXTENSION));
                 }
                 else
-                    Directory.Move(fullPath, REPLAY_PATH + outFile + REPLAY_EXTENSION);
+                    Directory.Move(fullPath, PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION));
                 return outFile + REPLAY_EXTENSION;
             }
             catch (Exception ex)
@@ -1366,11 +1363,11 @@ namespace RogueEssence.Data
         public MainProgress GetProgress()
         {
             //try to load from file
-            if (File.Exists(SAVE_FILE_PATH))
+            if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
             {
                 try
                 {
-                    using (FileStream stream = File.OpenRead(SAVE_FILE_PATH))
+                    using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                             return (MainProgress)GameProgress.LoadMainData(reader);
@@ -1411,7 +1408,7 @@ namespace RogueEssence.Data
 
         public void SaveGameState(GameState state)
         {
-            using (Stream stream = new FileStream(SAVE_FILE_PATH, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 //saves scene, zone, and ground, if there will be one...
                 using (BinaryWriter writer = new BinaryWriter(stream))
@@ -1463,11 +1460,11 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public GameState LoadMainGameState()
         {
-            if (File.Exists(SAVE_FILE_PATH))
+            if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
             {
                 try
                 {
-                    using (Stream stream = new FileStream(SAVE_FILE_PATH, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         //loads dungeon, zone, and ground, if there will be one...
                         using (BinaryReader reader = new BinaryReader(stream))
@@ -1521,10 +1518,10 @@ namespace RogueEssence.Data
         {
             try
             {
-                if (File.Exists(SAVE_FILE_PATH))
-                    File.Delete(SAVE_FILE_PATH);
-                if (File.Exists(QUICKSAVE_FILE_PATH))
-                    File.Delete(QUICKSAVE_FILE_PATH);
+                if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
+                    File.Delete(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH));
+                if (File.Exists(PathMod.ModSavePath(SAVE_PATH, QUICKSAVE_FILE_PATH)))
+                    File.Delete(PathMod.ModSavePath(SAVE_PATH, QUICKSAVE_FILE_PATH));
 
                 //if (Directory.Exists(ROGUE_PATH))
                 //{

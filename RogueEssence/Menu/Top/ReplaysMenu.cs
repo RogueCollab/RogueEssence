@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
 
         public ReplaysMenu()
         {
-            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(DataManager.REPLAY_PATH, DataManager.REPLAY_EXTENSION);
+            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             foreach (RecordHeaderData record in records)

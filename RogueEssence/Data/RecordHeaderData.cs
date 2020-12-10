@@ -36,7 +36,7 @@ namespace RogueEssence.Data
         {
             Dictionary<int, List<RecordHeaderData>> highScores = new Dictionary<int, List<RecordHeaderData>>();
 
-            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(DataManager.REPLAY_PATH, DataManager.REPLAY_EXTENSION);
+            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION);
             
             foreach (RecordHeaderData record in records)
             {

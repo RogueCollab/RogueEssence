@@ -604,7 +604,7 @@ namespace RogueEssence.Data
             RescuesLeft = zone.Rescues;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.QUICKSAVE_FILE_PATH, zoneID, false, false);
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false);
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
@@ -622,7 +622,7 @@ namespace RogueEssence.Data
 
                 SOSMail sos = Rescue.SOS;
                 string dateRescued = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
-                ReplayData replay = DataManager.Instance.LoadReplay(DataManager.REPLAY_PATH + recordFile, false);
+                ReplayData replay = DataManager.Instance.LoadReplay(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile), false);
                 AOKMail aok = new AOKMail(sos, DataManager.Instance.Save, dateRescued, replay);
                 GeneratedAOK = DataManager.SaveRescueMail(DataManager.RESCUE_OUT_PATH + DataManager.AOK_PATH, aok, false);
                 string deletePath = DataManager.FindRescueMail(DataManager.RESCUE_IN_PATH + DataManager.SOS_PATH, sos, sos.Extension);
@@ -713,7 +713,7 @@ namespace RogueEssence.Data
 
             if (recorded && display)
             {
-                GameProgress ending = DataManager.Instance.GetRecord(DataManager.REPLAY_PATH + recordFile);
+                GameProgress ending = DataManager.Instance.GetRecord(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile));
 
                 if (fanfare)
                 {
@@ -825,7 +825,7 @@ namespace RogueEssence.Data
 
                 if (recorded && display)
                 {
-                    GameProgress ending = DataManager.Instance.GetRecord(Data.DataManager.REPLAY_PATH + recordFile);
+                    GameProgress ending = DataManager.Instance.GetRecord(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile));
 
                     if (fanfare)
                     {
@@ -841,7 +841,7 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
 
                     Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, DataManager.REPLAY_PATH + recordFile)));
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
 
                 }
 
@@ -888,7 +888,7 @@ namespace RogueEssence.Data
 
                 if (recorded)
                 {
-                    GameProgress ending = DataManager.Instance.GetRecord(DataManager.REPLAY_PATH + recordFile);
+                    GameProgress ending = DataManager.Instance.GetRecord(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile));
 
                     if (fanfare)
                     {
@@ -904,7 +904,7 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
 
                     Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, DataManager.REPLAY_PATH + recordFile)));
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
                 }
 
                 //ask to transfer if the dungeon records progress, and it is NOT a seeded run.

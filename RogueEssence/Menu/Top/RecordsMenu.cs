@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
         public RecordsMenu()
         {
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
-            if (DataManager.Instance.FoundRecords(DataManager.REPLAY_PATH))
+            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)))
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAYS_TITLE"), () => { MenuManager.Instance.AddMenu(new ReplaysMenu(), false); }));
             Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
             if (scores.Count > 0)
