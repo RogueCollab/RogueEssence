@@ -133,6 +133,9 @@ namespace RogueEssence.Dev.ViewModels
         bool updating;
         private void SpeciesChanged()
         {
+            if (chosenMonster == -1)
+                return;
+
             bool prevUpdate = updating;
             updating = true;
 

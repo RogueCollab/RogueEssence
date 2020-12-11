@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dev
 {
@@ -10,6 +11,7 @@ namespace RogueEssence.Dev
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
 
+        public void ReloadData(DataManager.DataType dataType) { }
         public void Load(GameBase game) { }
         public void Update(GameTime gameTime) { }
         public void Draw() { }

@@ -33,7 +33,7 @@ namespace RogueEssence.Dev
 
                 }
 
-                using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
+                using (FileStream stream = new FileStream(PathMod.ModPath(search + "/index.idx"), FileMode.Create, FileAccess.Write))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         fullGuide.Save(writer);
@@ -65,7 +65,7 @@ namespace RogueEssence.Dev
                     }
                 }
 
-                using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
+                using (FileStream stream = new FileStream(PathMod.ModPath(search + "/index.idx"), FileMode.Create, FileAccess.Write))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         fullGuide.Save(writer);

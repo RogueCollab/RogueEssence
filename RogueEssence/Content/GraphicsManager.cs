@@ -486,15 +486,15 @@ namespace RogueEssence.Content
         {
             Directory.CreateDirectory(Path.Join(baseFolder, CONTENT_PATH));
 
-            Directory.CreateDirectory(Path.Join(baseFolder, CHARA_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, PORTRAIT_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, PARTICLE_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, ITEM_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, BEAM_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, ICON_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, TILE_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, OBJECT_PATTERN));
-            Directory.CreateDirectory(Path.Join(baseFolder, BG_PATTERN));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(CHARA_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(PORTRAIT_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(PARTICLE_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(ITEM_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(BEAM_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(ICON_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(TILE_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(OBJECT_PATTERN)));
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(BG_PATTERN)));
 
             Directory.CreateDirectory(Path.Join(baseFolder, MUSIC_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, SOUND_PATH));

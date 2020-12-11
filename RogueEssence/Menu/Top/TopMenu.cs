@@ -35,8 +35,13 @@ namespace RogueEssence.Menu
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)) || DataManager.Instance.Save != null || RecordHeaderData.LoadHighScores().Count > 0)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_RECORD"), () => { MenuManager.Instance.AddMenu(new RecordsMenu(), false); }));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OPTIONS_TITLE"), () => { MenuManager.Instance.AddMenu(new OptionsMenu(), false); }));
+
             if (!inMod)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
+            {
+                string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+                if (DataManager.Instance.Save != null && modsPath.Length > 0)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
+            }
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_EXIT"), exitMod));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUIT_GAME"), exitGame));
@@ -58,7 +63,7 @@ namespace RogueEssence.Menu
         private void exitMod()
         {
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod("");
+            GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod("", true);
         }
 
 

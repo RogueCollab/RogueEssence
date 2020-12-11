@@ -242,7 +242,7 @@ namespace RogueEssence.Data
         }
 
 
-        public static void InitDataFolders(string baseFolder)
+        public static void InitDataDirs(string baseFolder)
         {
             Directory.CreateDirectory(Path.Join(baseFolder, DATA_PATH));
             foreach (DataType type in Enum.GetValues(typeof(DataType)))
@@ -253,6 +253,12 @@ namespace RogueEssence.Data
             Directory.CreateDirectory(Path.Join(baseFolder, MAP_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, GROUND_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, FX_PATH));
+        }
+
+        public static void InitSaveDirs()
+        {
+            Directory.CreateDirectory(PathMod.ModSavePath(SAVE_PATH));
+            Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
         }
 
 
@@ -531,7 +537,7 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
-                mapData = (GroundMap)LoadData(GROUND_PATH + name + ".rsground");
+                mapData = (GroundMap)LoadData(PathMod.ModPath(GROUND_PATH + name + ".rsground"));
                 return mapData;
             }
             catch (Exception ex)

@@ -20,7 +20,7 @@ namespace RogueEssence
         public const string DEV_PATH = "../../../../RawAsset/";
         public const string TEMP_PATH = "../../../../temp/";
 #endif
-        public const string MODS_PATH = "Mods/";
+        public const string MODS_PATH = "MODS/";
 
         public static string Mod = "";
 
@@ -49,7 +49,7 @@ namespace RogueEssence
                 string fullPath = Path.Join(mod, basePath);
                 if (File.Exists(fullPath))
                     yield return fullPath;
-                mod = Directory.GetParent(Directory.GetParent(mod).Name).Name;
+                mod = GetModParentPath(mod);
             }
             yield return Path.Join(ASSET_PATH, basePath);
         }
@@ -62,7 +62,7 @@ namespace RogueEssence
                 string fullPath = Path.Join(mod, basePath);
                 if (File.Exists(fullPath))
                     return fullPath;
-                mod = Directory.GetParent(Directory.GetParent(mod).Name).Name;
+                mod = GetModParentPath(mod);
             }
             return Path.Join(ASSET_PATH, basePath);
         }
@@ -73,9 +73,9 @@ namespace RogueEssence
             while (mod != "")
             {
                 string fullPath = Path.Join(mod, baseFolder);
-                if (File.Exists(fullPath))
+                if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
-                mod = Directory.GetParent(Directory.GetParent(mod).Name).Name;
+                mod = GetModParentPath(mod);
             }
             files.Add(Directory.GetFiles(Path.Join(ASSET_PATH, baseFolder), search));
 
@@ -91,6 +91,16 @@ namespace RogueEssence
                 result_files.Add(str);
             result_files.Sort();
             return result_files.ToArray();
+        }
+
+        public static string GetModParentPath(string mod)
+        {
+            string relativeTo = Path.GetFullPath(".");
+            string parent = Path.Join(Path.GetFullPath(mod), "..", "..");
+            string result = Path.GetRelativePath(relativeTo, parent);
+            if (result == ".")
+                result = "";
+            return result;
         }
     }
 }

@@ -68,6 +68,9 @@ namespace RogueEssence.Dev.ViewModels
 
         private void ZoneChanged()
         {
+            if (chosenZone == -1)
+                return;
+
             lock (GameBase.lockObj)
             {
                 int temp = chosenStructure;

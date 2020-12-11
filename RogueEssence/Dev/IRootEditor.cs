@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dev
 {
@@ -10,6 +11,7 @@ namespace RogueEssence.Dev
         IGroundEditor GroundEditor { get; }
         IMapEditor MapEditor { get; }
 
+        void ReloadData(DataManager.DataType dataType);
         void Load(GameBase game);
         void Update(GameTime gameTime);
         void Draw();

@@ -100,24 +100,67 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (choices.SearchList.InternalIndex > -1)
                     {
-                        int entryNum = choices.SearchList.InternalIndex;
-                        IEntryData data = entryOp(entryNum);
+                        lock (GameBase.lockObj)
+                        {
+                            int entryNum = choices.SearchList.InternalIndex;
+                            IEntryData data = entryOp(entryNum);
+
+                            Views.DataEditForm editor = new Views.DataEditForm();
+                            editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                            DataEditor.LoadDataControls(data, editor.ControlPanel);
+                            editor.SelectedOKEvent += () =>
+                            {
+                                lock (GameBase.lockObj)
+                                {
+                                    object obj = data;
+                                    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                                    data = (IEntryData)obj;
+                                    DataManager.SaveData(entryNum, dataType.ToString(), data);
+                                    DataManager.Instance.ClearCache(dataType);
+                                    EntrySummary entrySummary = data.GenerateEntrySummary();
+                                    DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
+                                    DataManager.Instance.SaveIndex(dataType);
+                                    DiagManager.Instance.DevEditor.ReloadData(dataType);
+                                    choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
+                                    editor.Close();
+                                }
+                            };
+                            editor.SelectedCancelEvent += () =>
+                            {
+                                editor.Close();
+                            };
+
+                            editor.Show();
+                        }
+                    }
+                };
+                choices.SelectedAddEvent += () =>
+                {
+                    lock (GameBase.lockObj)
+                    {
+                        int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
+                        IEntryData data = createOp();
 
                         Views.DataEditForm editor = new Views.DataEditForm();
                         editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += () =>
                         {
-                            object obj = data;
-                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                            data = (IEntryData)obj;
-                            DataManager.SaveData(entryNum, dataType.ToString(), data);
-                            DataManager.Instance.ClearCache(dataType);
-                            EntrySummary entrySummary = data.GenerateEntrySummary();
-                            DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
-                            DataManager.Instance.SaveIndex(dataType);
-                            choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
-                            editor.Close();
+                            lock (GameBase.lockObj)
+                            {
+                                object obj = data;
+                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                                data = (IEntryData)obj;
+                                DataManager.SaveData(entryNum, dataType.ToString(), data);
+                                DataManager.Instance.ClearCache(dataType);
+                                EntrySummary entrySummary = data.GenerateEntrySummary();
+                                DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
+                                DataManager.Instance.SaveIndex(dataType);
+                                DiagManager.Instance.DevEditor.ReloadData(dataType);
+                                entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                                choices.AddEntry(entrySummary.GetLocalString(true));
+                                editor.Close();
+                            }
                         };
                         editor.SelectedCancelEvent += () =>
                         {
@@ -126,35 +169,6 @@ namespace RogueEssence.Dev.ViewModels
 
                         editor.Show();
                     }
-                };
-                choices.SelectedAddEvent += () =>
-                {
-                    int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
-                    IEntryData data = createOp();
-
-                    Views.DataEditForm editor = new Views.DataEditForm();
-                    editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                    DataEditor.LoadDataControls(data, editor.ControlPanel);
-                    editor.SelectedOKEvent += () =>
-                    {
-                        object obj = data;
-                        DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                        data = (IEntryData)obj;
-                        DataManager.SaveData(entryNum, dataType.ToString(), data);
-                        DataManager.Instance.ClearCache(dataType);
-                        EntrySummary entrySummary = data.GenerateEntrySummary();
-                        DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
-                        DataManager.Instance.SaveIndex(dataType);
-                        entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                        choices.AddEntry(entrySummary.GetLocalString(true));
-                        editor.Close();
-                    };
-                    editor.SelectedCancelEvent += () =>
-                    {
-                        editor.Close();
-                    };
-
-                    editor.Show();
                 };
 
                 Views.DataListForm dataListForm = new Views.DataListForm

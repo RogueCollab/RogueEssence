@@ -323,8 +323,11 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> SetMod(string modPath)
+        public IEnumerator<YieldInstruction> SetMod(string modPath, bool fade)
         {
+            if (fade)
+                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+
             removeStateVariables();
             TitleScene.TitleMenuSaveState = null;
             MoveToScene(new TitleScene(true));
@@ -333,8 +336,12 @@ namespace RogueEssence
             GraphicsManager.ReloadStatic();
             DataManager.Instance.InitData();
             LuaEngine.Instance.OnDataLoad();
+            DataManager.InitSaveDirs();
             //call data editor's load method to reload the dropdowns
-            yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
+            DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.All);
+
+            if (fade)
+                yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
         private void removeStateVariables()

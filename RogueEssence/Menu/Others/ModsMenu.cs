@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
         private void choose(string dir)
         {
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(Path.Join(PathMod.MODS_PATH, dir));
+            GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(dir, true);
         }
     }
 }

@@ -60,70 +60,135 @@ namespace RogueEssence.Dev.Views
 
                 loadDevConfig();
 
+                reload(DataManager.DataType.All);
+
+                LoadComplete = true;
+            }
+        }
+
+
+        void IRootEditor.ReloadData(DataManager.DataType dataType)
+        {
+            ExecuteOrInvoke(() => { reload(dataType); });
+        }
+
+        private void reload(DataManager.DataType dataType)
+        {
+            lock (GameBase.lockObj)
+            {
+                if (dataType == DataManager.DataType.All)
+                    DevTileManager.ClearCaches();
 
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
-                devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
-                devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
+                if (dataType == DataManager.DataType.All)
+                {
+                    devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
+                    devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
+                }
 
-                string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
-                for (int ii = 0; ii < skill_names.Length; ii++)
-                    devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
-                devViewModel.Game.ChosenSkill = -1;
-                devViewModel.Game.ChosenSkill = Math.Min(Math.Max(GetConfig("SkillChoice", 0), 0), devViewModel.Game.Skills.Count - 1);
+                if ((dataType & DataManager.DataType.Skill) != DataManager.DataType.None)
+                {
+                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
+                    devViewModel.Game.Skills.Clear();
+                    for (int ii = 0; ii < skill_names.Length; ii++)
+                        devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
+                    devViewModel.Game.ChosenSkill = -1;
+                    devViewModel.Game.ChosenSkill = Math.Min(Math.Max(GetConfig("SkillChoice", 0), 0), devViewModel.Game.Skills.Count - 1);
+                }
 
-                string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
-                for (int ii = 0; ii < intrinsic_names.Length; ii++)
-                    devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
-                devViewModel.Game.ChosenIntrinsic = -1;
-                devViewModel.Game.ChosenIntrinsic = Math.Min(Math.Max(GetConfig("IntrinsicChoice", 0), 0), devViewModel.Game.Intrinsics.Count - 1);
+                if ((dataType & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
+                {
+                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
+                    devViewModel.Game.Intrinsics.Clear();
+                    for (int ii = 0; ii < intrinsic_names.Length; ii++)
+                        devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
+                    devViewModel.Game.ChosenIntrinsic = -1;
+                    devViewModel.Game.ChosenIntrinsic = Math.Min(Math.Max(GetConfig("IntrinsicChoice", 0), 0), devViewModel.Game.Intrinsics.Count - 1);
+                }
 
-                string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
-                for (int ii = 0; ii < status_names.Length; ii++)
-                    devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
-                devViewModel.Game.ChosenStatus = -1;
-                devViewModel.Game.ChosenStatus = Math.Min(Math.Max(GetConfig("StatusChoice", 0), 0), devViewModel.Game.Statuses.Count - 1);
+                if ((dataType & DataManager.DataType.Status) != DataManager.DataType.None)
+                {
+                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
+                    devViewModel.Game.Statuses.Clear();
+                    for (int ii = 0; ii < status_names.Length; ii++)
+                        devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
+                    devViewModel.Game.ChosenStatus = -1;
+                    devViewModel.Game.ChosenStatus = Math.Min(Math.Max(GetConfig("StatusChoice", 0), 0), devViewModel.Game.Statuses.Count - 1);
+                }
 
-                string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
-                for (int ii = 0; ii < item_names.Length; ii++)
-                    devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
-                devViewModel.Game.ChosenItem = -1;
-                devViewModel.Game.ChosenItem = Math.Min(Math.Max(GetConfig("ItemChoice", 0), 0), devViewModel.Game.Items.Count - 1);
+                if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
+                {
+                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+                    devViewModel.Game.Items.Clear();
+                    for (int ii = 0; ii < item_names.Length; ii++)
+                        devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
+                    devViewModel.Game.ChosenItem = -1;
+                    devViewModel.Game.ChosenItem = Math.Min(Math.Max(GetConfig("ItemChoice", 0), 0), devViewModel.Game.Items.Count - 1);
+                }
 
-                string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
-                for (int ii = 0; ii < monster_names.Length; ii++)
-                    devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
-                devViewModel.Player.ChosenMonster = 0;
 
+                if ((dataType & DataManager.DataType.Monster) != DataManager.DataType.None)
+                {
+                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+                    devViewModel.Player.Monsters.Clear();
+                    for (int ii = 0; ii < monster_names.Length; ii++)
+                        devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+                    devViewModel.Player.ChosenMonster = -1;
+                    devViewModel.Player.ChosenMonster = 0;
 
-                string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
-                for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                    devViewModel.Player.Skins.Add(skin_names[ii]);
-                devViewModel.Player.ChosenSkin = 0;
+                    devViewModel.Player.ChosenForm = -1;
+                    devViewModel.Player.ChosenForm = 0;
 
-                for (int ii = 0; ii < 3; ii++)
-                    devViewModel.Player.Genders.Add(((Gender)ii).ToString());
-                devViewModel.Player.ChosenGender = 0;
+                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+                    devViewModel.Player.Skins.Clear();
+                    for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
+                        devViewModel.Player.Skins.Add(skin_names[ii]);
+                    devViewModel.Player.ChosenSkin = -1;
+                    devViewModel.Player.ChosenSkin = 0;
 
-                for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
-                    devViewModel.Player.Anims.Add(GraphicsManager.Actions[ii].Name);
-                devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+                    devViewModel.Player.Genders.Clear();
+                    for (int ii = 0; ii < 3; ii++)
+                        devViewModel.Player.Genders.Add(((Gender)ii).ToString());
+                    devViewModel.Player.ChosenGender = -1;
+                    devViewModel.Player.ChosenGender = 0;
+                }
 
-                ZoneData zone = DataManager.Instance.GetZone(1);
-                for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
-                    devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
-                devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
+                if (dataType == DataManager.DataType.All)
+                {
+                    int globalIdle = GraphicsManager.GlobalIdle;
+                    devViewModel.Player.Anims.Clear();
+                    for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
+                        devViewModel.Player.Anims.Add(GraphicsManager.Actions[ii].Name);
+                    devViewModel.Player.ChosenAnim = -1;
+                    devViewModel.Player.ChosenAnim = globalIdle;
+                }
 
-                string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
-                for (int ii = 0; ii < dungeon_names.Length; ii++)
-                    devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
-                devViewModel.Travel.ChosenZone = Math.Min(Math.Max(GetConfig("ZoneChoice", 0), 0), devViewModel.Travel.Zones.Count - 1);
+                if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
+                {
+                    ZoneData zone = DataManager.Instance.GetZone(1);
+                    devViewModel.Travel.Grounds.Clear();
+                    for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
+                        devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
+                    devViewModel.Travel.ChosenGround = -1;
+                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
 
-                devViewModel.Travel.ChosenStructure = Math.Min(Math.Max(GetConfig("StructChoice", 0), 0), devViewModel.Travel.Structures.Count - 1);
+                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
+                    devViewModel.Travel.Zones.Clear();
+                    for (int ii = 0; ii < dungeon_names.Length; ii++)
+                        devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
+                    devViewModel.Travel.ChosenZone = -1;
+                    devViewModel.Travel.ChosenZone = Math.Min(Math.Max(GetConfig("ZoneChoice", 0), 0), devViewModel.Travel.Zones.Count - 1);
 
-                devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
+                    devViewModel.Travel.ChosenStructure = -1;
+                    devViewModel.Travel.ChosenStructure = Math.Min(Math.Max(GetConfig("StructChoice", 0), 0), devViewModel.Travel.Structures.Count - 1);
 
-                devViewModel.Mods.UpdateMod();
+                    devViewModel.Travel.ChosenFloor = -1;
+                    devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
+                }
+
+                if (dataType == DataManager.DataType.All)
+                    devViewModel.Mods.UpdateMod();
 
                 LoadComplete = true;
             }

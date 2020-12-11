@@ -89,7 +89,10 @@ namespace RogueEssence.Dev.ViewModels
 
             //modify and reload
             lock (GameBase.lockObj)
-                GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(chosenMod.FullPath);
+            {
+                MenuManager.Instance.ClearMenus();
+                GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(chosenMod.FullPath, false);
+            }
         }
 
         public async void btnAdd_Click()
@@ -131,7 +134,7 @@ namespace RogueEssence.Dev.ViewModels
             //Content
             GraphicsManager.InitContentFolders(newNode.FullPath);
             //Data
-            DataManager.InitDataFolders(newNode.FullPath);
+            DataManager.InitDataDirs(newNode.FullPath);
             //Script
             LuaEngine.InitScriptFolders(newNode.FullPath);
 
