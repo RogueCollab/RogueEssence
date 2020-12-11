@@ -299,7 +299,7 @@ namespace RogueEssence.Dev.ViewModels
         private void DoImportPng(string filePath)
         {
             string sheetName = Path.GetFileNameWithoutExtension(filePath);
-            string outputFile = String.Format(GraphicsManager.TILE_PATTERN, sheetName);
+            string outputFile = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
 
 
             //load into tilesets
@@ -321,8 +321,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
 
-            string search = Path.GetDirectoryName(String.Format(GraphicsManager.TILE_PATTERN, '*'));
-            using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
+            using (FileStream stream = new FileStream(PathMod.ModPath(Path.GetDirectoryName(GraphicsManager.TILE_PATTERN) + "/index.idx"), FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                     GraphicsManager.TileIndex.Save(writer);

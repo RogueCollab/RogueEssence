@@ -36,7 +36,7 @@ namespace RogueEssence.Dev
                 items.Add("---");
                 int chosenIndex = 0;
 
-                string[] dirs = Directory.GetFiles(animAtt.FolderPath);
+                string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + animAtt.FolderPath);
 
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {
@@ -64,7 +64,7 @@ namespace RogueEssence.Dev
                 items.Add("---");
                 int chosenIndex = 0;
 
-                string[] dirs = Directory.GetFiles(GraphicsManager.CONTENT_PATH + "Sound/Battle");
+                string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Sound/Battle");
 
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {

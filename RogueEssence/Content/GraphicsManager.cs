@@ -85,12 +85,14 @@ namespace RogueEssence.Content
             }
         }
 
+        public const string UI_PATH = PathMod.ASSET_PATH + "UI/";
+        public const string FONT_PATTERN = PathMod.ASSET_PATH + "Font/{0}.font";
+
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
 
-        public const string CONTENT_PATH = PathMod.ASSET_PATH + "Content/";
-        public const string UI_PATH = CONTENT_PATH + "UI/";
-        public const string FONT_PATTERN = CONTENT_PATH + "Font/{0}.font";
+        public const string CONTENT_PATH = "Content/";
+
         public const string CHARA_PATTERN = CONTENT_PATH + "Chara/Chara-{0}.chara";
         public const string PORTRAIT_PATTERN = CONTENT_PATH + "Portrait/Portrait-{0}.portrait";
         public const string PARTICLE_PATTERN = CONTENT_PATH + "Particle/{0}.dir";
@@ -210,7 +212,7 @@ namespace RogueEssence.Content
 
         public static void InitParams()
         {
-            string path = CONTENT_PATH + "GFXParams.xml";
+            string path = PathMod.ModPath(CONTENT_PATH + "GFXParams.xml");
             //try to load from file
             if (File.Exists(path))
             {
@@ -373,9 +375,9 @@ namespace RogueEssence.Content
             objectCache.OnItemRemoved = DisposeCachedObject;
 
             //load guides
-            CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
-            PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
-            TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
+            CharaIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Chara/"));
+            PortraitIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Portrait/"));
+            TileIndex = LoadTileIndices(PathMod.ModPath(CONTENT_PATH + "Tile/"));
 
             Loaded = true;
             //Notify script engine
@@ -445,30 +447,30 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH+"Font/", FONT_PATTERN);
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
-                Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", CHARA_PATTERN);
+                Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", PathMod.HardMod(CHARA_PATTERN));
                 Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
             }
             if ((conversionFlags & AssetType.Portrait) != AssetType.None)
             {
-                Dev.ImportHelper.ImportAllPortraits(PathMod.DEV_PATH + "Portrait/", PORTRAIT_PATTERN);
+                Dev.ImportHelper.ImportAllPortraits(PathMod.DEV_PATH + "Portrait/", PathMod.HardMod(PORTRAIT_PATTERN));
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
             }
             if ((conversionFlags & AssetType.Tile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tiles/", TILE_PATTERN, true, false);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tiles/", PathMod.HardMod(TILE_PATTERN), true, false);
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
-                Dev.ImportHelper.ImportAllItems(PathMod.DEV_PATH+"Item/", ITEM_PATTERN);
+                Dev.ImportHelper.ImportAllItems(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
             if ((conversionFlags & AssetType.VFX) != AssetType.None)
-                Dev.ImportHelper.ImportAllVFX(PathMod.DEV_PATH+"Attacks/", PARTICLE_PATTERN, BEAM_PATTERN);
+                Dev.ImportHelper.ImportAllVFX(PathMod.DEV_PATH+"Attacks/", PathMod.HardMod(PARTICLE_PATTERN), PathMod.HardMod(BEAM_PATTERN));
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
-                Dev.ImportHelper.ImportAllDirs(PathMod.DEV_PATH+"Icon/", ICON_PATTERN);
+                Dev.ImportHelper.ImportAllDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
             if ((conversionFlags & AssetType.Object) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Object/", OBJECT_PATTERN);
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Object/", PathMod.HardMod(OBJECT_PATTERN));
             if ((conversionFlags & AssetType.BG) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", BG_PATTERN);
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", PathMod.HardMod(BG_PATTERN));
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tiles/", TILE_PATTERN, false, true);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tiles/", PathMod.HardMod(TILE_PATTERN), false, true);
 
             if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
                 Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
@@ -484,8 +486,6 @@ namespace RogueEssence.Content
         {
             Directory.CreateDirectory(Path.Join(baseFolder, CONTENT_PATH));
 
-            Directory.CreateDirectory(Path.Join(baseFolder, UI_PATH));
-            Directory.CreateDirectory(Path.Join(baseFolder, FONT_PATTERN));
             Directory.CreateDirectory(Path.Join(baseFolder, CHARA_PATTERN));
             Directory.CreateDirectory(Path.Join(baseFolder, PORTRAIT_PATTERN));
             Directory.CreateDirectory(Path.Join(baseFolder, PARTICLE_PATTERN));
@@ -521,7 +521,7 @@ namespace RogueEssence.Content
             if ((assetType & AssetType.Tile) != AssetType.None)
             {
                 Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
-                TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
+                TileIndex = LoadTileIndices(PathMod.ModPath(CONTENT_PATH + "Tile/"));
                 tileCache.Clear();
                 DiagManager.Instance.LogInfo("Tilesets Reloaded.");
             }
@@ -535,7 +535,7 @@ namespace RogueEssence.Content
             if ((assetType & AssetType.Chara) != AssetType.None)
             {
                 Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
-                CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
+                CharaIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Chara/"));
                 spriteCache.Clear();
                 DiagManager.Instance.LogInfo("Characters Reloaded.");
             }
@@ -543,7 +543,7 @@ namespace RogueEssence.Content
             if ((assetType & AssetType.Portrait) != AssetType.None)
             {
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
-                PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
+                PortraitIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Portrait/"));
                 portraitCache.Clear();
                 DiagManager.Instance.LogInfo("Portraits Reloaded.");
             }
@@ -652,7 +652,7 @@ namespace RogueEssence.Content
             {
                 try
                 {
-                    using (FileStream stream = File.OpenRead(String.Format(CHARA_PATTERN, data.Species)))
+                    using (FileStream stream = File.OpenRead(PathMod.ModPath(String.Format(CHARA_PATTERN, data.Species))))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
@@ -691,7 +691,7 @@ namespace RogueEssence.Content
             {
                 try
                 {
-                    using (FileStream stream = File.OpenRead(String.Format(PORTRAIT_PATTERN, data.Species)))
+                    using (FileStream stream = File.OpenRead(PathMod.ModPath(String.Format(PORTRAIT_PATTERN, data.Species))))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
@@ -722,11 +722,12 @@ namespace RogueEssence.Content
             if (vfxCache.TryGetValue("Beam-" + num, out sheet))
                 return (BeamSheet)sheet;
 
+            string beamPath = PathMod.ModPath(String.Format(BEAM_PATTERN, num));
             try
             {
-                if (System.IO.File.Exists(String.Format(BEAM_PATTERN, num)))
+                if (File.Exists(beamPath))
                 {
-                    using (FileStream stream = File.OpenRead(String.Format(BEAM_PATTERN, num)))
+                    using (FileStream stream = File.OpenRead(beamPath))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
@@ -739,7 +740,7 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new Exception("Error loading " + String.Format(BEAM_PATTERN, num) + "\n", ex));
+                DiagManager.Instance.LogError(new Exception("Error loading " + beamPath + "\n", ex));
             }
 
             BeamSheet newSheet = BeamSheet.LoadError();
@@ -753,12 +754,13 @@ namespace RogueEssence.Content
             if (vfxCache.TryGetValue("Particle-" + name, out sheet))
                 return (DirSheet)sheet;
 
+            string particlePath = PathMod.ModPath(String.Format(PARTICLE_PATTERN, name));
             try
             {
-                if (File.Exists(String.Format(PARTICLE_PATTERN, name)))
+                if (File.Exists(particlePath))
                 {
                     //read file and read binary data
-                    using (FileStream fileStream = File.OpenRead(String.Format(PARTICLE_PATTERN, name)))
+                    using (FileStream fileStream = File.OpenRead(particlePath))
                     {
                         using (BinaryReader reader = new BinaryReader(fileStream))
                         {
@@ -771,7 +773,7 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new Exception("Error loading " + String.Format(PARTICLE_PATTERN, name) + "\n", ex));
+                DiagManager.Instance.LogError(new Exception("Error loading " + particlePath + "\n", ex));
             }
             DirSheet newSheet = DirSheet.LoadError();
             vfxCache.Add("Particle-" + name, newSheet);
@@ -804,12 +806,13 @@ namespace RogueEssence.Content
             if (cache.TryGetValue(num, out sheet))
                 return sheet;
 
+            string dirPath = PathMod.ModPath(String.Format(pattern, num));
             try
             {
-                if (System.IO.File.Exists(String.Format(pattern, num)))
+                if (File.Exists(dirPath))
                 {
                     //read file and read binary data
-                    using (FileStream stream = File.OpenRead(String.Format(pattern, num)))
+                    using (FileStream stream = File.OpenRead(dirPath))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
@@ -822,7 +825,7 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new Exception("Error loading " + String.Format(pattern, num) + "\n", ex));
+                DiagManager.Instance.LogError(new Exception("Error loading " + dirPath + "\n", ex));
             }
             DirSheet newSheet = DirSheet.LoadError();
             cache.Add(num, newSheet);
@@ -861,7 +864,7 @@ namespace RogueEssence.Content
             {
                 try
                 {
-                    using (FileStream stream = new FileStream(String.Format(TILE_PATTERN, tileTex.Sheet), FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (FileStream stream = new FileStream(PathMod.ModPath(String.Format(TILE_PATTERN, tileTex.Sheet)), FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {

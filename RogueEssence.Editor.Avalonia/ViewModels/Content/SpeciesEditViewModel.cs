@@ -401,9 +401,9 @@ namespace RogueEssence.Dev.ViewModels
         private string GetFilename(int num)
         {
             if (checkSprites)
-                return String.Format(GraphicsManager.CHARA_PATTERN, num);
+                return PathMod.ModPath(String.Format(GraphicsManager.CHARA_PATTERN, num));
             else
-                return String.Format(GraphicsManager.PORTRAIT_PATTERN, num);
+                return PathMod.ModPath(String.Format(GraphicsManager.PORTRAIT_PATTERN, num));
         }
     }
 }

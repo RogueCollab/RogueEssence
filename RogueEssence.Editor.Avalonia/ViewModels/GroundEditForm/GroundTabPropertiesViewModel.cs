@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
             BGs = new ObservableCollection<string>();
             BGs.Add("---");
-            string[] dirs = Directory.GetFiles(GraphicsManager.CONTENT_PATH + "BG/");
+            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "BG/");
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
@@ -150,12 +150,12 @@ namespace RogueEssence.Dev.ViewModels
             {
                 Music.Clear();
 
-                string[] files = Directory.GetFiles(GraphicsManager.MUSIC_PATH, "*.ogg", SearchOption.TopDirectoryOnly);
+                string[] files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH, "*.ogg");
 
                 Music.Add("None");
                 for (int ii = 0; ii < files.Length; ii++)
                 {
-                    string song = files[ii].Substring((GraphicsManager.MUSIC_PATH).Length);
+                    string song = Path.GetFileName(files[ii]);
                     Music.Add(song);
                     if (song == ZoneManager.Instance.CurrentGround.Music)
                         ChosenMusic = ii;

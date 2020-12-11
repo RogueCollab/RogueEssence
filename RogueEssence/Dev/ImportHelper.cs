@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in Directory.GetFiles(search, pattern))
+                foreach (string dir in PathMod.GetModFiles(search, pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file.Split('-')[1]);
@@ -52,7 +52,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in Directory.GetFiles(search, pattern))
+                foreach (string dir in PathMod.GetModFiles(search, pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     using (FileStream stream = File.OpenRead(dir))

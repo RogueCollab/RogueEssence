@@ -38,7 +38,7 @@ namespace RogueEssence.Dev
             {
                 try
                 {
-                    using (FileStream stream = new FileStream(String.Format(GraphicsManager.TILE_PATTERN, tileTex.Sheet), FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (FileStream stream = new FileStream(PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, tileTex.Sheet)), FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         // Seek to the location of the tile
                         stream.Seek(tilePos, SeekOrigin.Begin);
@@ -94,7 +94,7 @@ namespace RogueEssence.Dev
 
                             if (tilePos > 0)
                             {
-                                using (FileStream stream = new FileStream(String.Format(GraphicsManager.TILE_PATTERN, tileset), FileMode.Open, FileAccess.Read, FileShare.Read))
+                                using (FileStream stream = new FileStream(PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, tileset)), FileMode.Open, FileAccess.Read, FileShare.Read))
                                 {
                                     // Seek to the location of the tile
                                     stream.Seek(tilePos, SeekOrigin.Begin);

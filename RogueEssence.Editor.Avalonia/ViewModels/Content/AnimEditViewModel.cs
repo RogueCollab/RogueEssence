@@ -61,7 +61,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 anims.Clear();
                 Anims.Clear();
-                string[] dirs = Directory.GetFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
+                string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {
                     string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
@@ -181,7 +181,7 @@ namespace RogueEssence.Dev.ViewModels
             //write sprite data
             using (DirSheet sheet = DirSheet.Import(currentPath))
             {
-                using (FileStream stream = File.OpenWrite(String.Format(assetPattern, components[0])))
+                using (FileStream stream = File.OpenWrite(PathMod.ModPath(String.Format(assetPattern, components[0]))))
                 {
                     //save data
                     using (BinaryWriter writer = new BinaryWriter(stream))
@@ -203,10 +203,11 @@ namespace RogueEssence.Dev.ViewModels
 
         private void Export(string currentPath, string anim)
         {
-            if (File.Exists(String.Format(assetPattern, anim)))
+            string animPath = PathMod.ModPath(String.Format(assetPattern, anim));
+            if (File.Exists(animPath))
             {
                 //read file and read binary data
-                using (FileStream fileStream = File.OpenRead(String.Format(assetPattern, anim)))
+                using (FileStream fileStream = File.OpenRead(animPath))
                 {
                     using (BinaryReader reader = new BinaryReader(fileStream))
                     {
@@ -229,8 +230,9 @@ namespace RogueEssence.Dev.ViewModels
         {
             string anim = anims[animIdx];
 
-            if (File.Exists(String.Format(assetPattern, anim)))
-                File.Delete(String.Format(assetPattern, anim));
+            string animPath = PathMod.ModPath(String.Format(assetPattern, anim));
+            if (File.Exists(animPath))
+                File.Delete(animPath);
 
             anims.RemoveAt(animIdx);
             Anims.RemoveInternalAt(animIdx);
@@ -239,7 +241,6 @@ namespace RogueEssence.Dev.ViewModels
 
             //signal for reload
             GraphicsManager.NeedReload = GraphicsManager.AssetType.Chara;
-
         }
 
 
