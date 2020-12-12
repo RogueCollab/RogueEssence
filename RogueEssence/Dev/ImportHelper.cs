@@ -21,7 +21,7 @@ namespace RogueEssence.Dev
                 foreach (string dir in PathMod.GetModFiles(search, pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
-                    int num = Convert.ToInt32(file.Split('-')[1]);
+                    int num = Convert.ToInt32(file);
                     using (FileStream stream = File.OpenRead(dir))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
@@ -503,7 +503,7 @@ namespace RogueEssence.Dev
             {
                 string fileName = Path.GetFileNameWithoutExtension(dir);
                 string[] components = fileName.Split('.');
-                int index = Int32.Parse(components[1]);
+                int index = Int32.Parse(components[0]);
 
                 using (DirSheet sheet = DirSheet.Import(dir))
                 {

@@ -221,7 +221,7 @@ namespace RogueEssence.Ground
                 else
                 {
                     DataManager.Instance.Save.ActiveTeam.LeaderIndex = charIndex;
-                    GameManager.Instance.SE(DataManager.Instance.LeaderSE);
+                    GameManager.Instance.SE(GraphicsManager.LeaderSE);
 
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 

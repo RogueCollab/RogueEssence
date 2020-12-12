@@ -500,12 +500,12 @@ namespace RogueEssence.Dungeon
                 else if (Fullness <= 10 && prevFullness > 10)
                 {
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_CRITICAL", BaseName));
-                    GameManager.Instance.SE(DataManager.Instance.HungerSE);
+                    GameManager.Instance.SE(GraphicsManager.HungerSE);
                 }
                 else if (Fullness <= 20 && prevFullness > 20)
                 {
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_LOW", BaseName));
-                    GameManager.Instance.SE(DataManager.Instance.HungerSE);
+                    GameManager.Instance.SE(GraphicsManager.HungerSE);
                 }
             }
             else
@@ -521,7 +521,7 @@ namespace RogueEssence.Dungeon
 
                 if (MemberTeam == DungeonScene.Instance.ActiveTeam && MemberTeam.Leader == this)
                 {
-                    GameManager.Instance.SE(DataManager.Instance.HungerSE);
+                    GameManager.Instance.SE(GraphicsManager.HungerSE);
                     recovery = -60;
                 }
                 else
@@ -581,7 +581,7 @@ namespace RogueEssence.Dungeon
             {
                 DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ZERO", Name), false, false, this, null);
                 if (anim)
-                    GameManager.Instance.SE(DataManager.Instance.NullDmgSE);
+                    GameManager.Instance.SE(GraphicsManager.NullDmgSE);
                 yield break;
             }
 
@@ -1232,12 +1232,12 @@ namespace RogueEssence.Dungeon
             
             if (item.Cursed && !CanRemoveStuck)
             {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
+                GameManager.Instance.SE(GraphicsManager.CursedSE);
                 DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_CURSED", item.GetName(), Name));
             }
             else if (entry.Cursed)
             {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
+                GameManager.Instance.SE(GraphicsManager.CursedSE);
                 if (!CanRemoveStuck)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE", item.GetName(), Name));
                 else

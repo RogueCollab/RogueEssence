@@ -38,7 +38,10 @@ namespace RogueEssence
         }
         public static string HardMod(string basePath)
         {
-            return Path.Join(Mod, basePath);
+            if (Mod == "")
+                return Path.Join(ASSET_PATH, basePath);
+            else
+                return Path.Join(Mod, basePath);
         }
 
         public static IEnumerable<string> FallbackPaths(string basePath)

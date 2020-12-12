@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Menu;
 using RogueEssence.Dungeon;
+using RogueEssence.Content;
 
 namespace RogueEssence.Ground
 {
@@ -97,7 +98,7 @@ namespace RogueEssence.Ground
             InvItem item = memberTeam.GetInv(invSlot);
             memberTeam.RemoveFromInv(invSlot);
 
-            GameManager.Instance.SE(DataManager.Instance.EquipSE);
+            GameManager.Instance.SE(GraphicsManager.EquipSE);
 
             if (itemChar.EquippedItem.ID > -1)
             {
@@ -122,7 +123,7 @@ namespace RogueEssence.Ground
             InvItem item = itemChar.EquippedItem;
             memberTeam.AddToInv(item);
             itemChar.DequipItem();
-            GameManager.Instance.SE(DataManager.Instance.EquipSE);
+            GameManager.Instance.SE(GraphicsManager.EquipSE);
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.Name, item.GetName())));
 
         }

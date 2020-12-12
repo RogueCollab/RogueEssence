@@ -27,7 +27,7 @@ namespace RogueEssence
         public override void Begin()
         {
             //set up title, fade, and start music
-            GameManager.Instance.BGM("Title.ogg", true);
+            GameManager.Instance.BGM(GraphicsManager.TitleBGM, true);
             startTime = GraphicsManager.TotalFrameTick;
         }
 
@@ -62,7 +62,7 @@ namespace RogueEssence
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(window_scale, window_scale, 1)));
 
 
-            BaseSheet bg = GraphicsManager.GetBackground("Sky");
+            BaseSheet bg = GraphicsManager.GetBackground(GraphicsManager.TitleBG);
             bg.Draw(spriteBatch, new Vector2(), null);
 
             if (!hideTitle)

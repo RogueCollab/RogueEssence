@@ -117,18 +117,6 @@ namespace RogueEssence.Data
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
 
-        public string HungerSE;
-        public string NullDmgSE;
-        public string CursedSE;
-        public string PickupSE;
-        public string PickupFoeSE;
-        public string ReplaceSE;
-        public string PlaceSE;
-        public string EquipSE;
-        public string MoneySE;
-        public string LeaderSE;
-        public string ReviveSE;
-
         public BattleFX HealFX;
         public BattleFX RestoreChargeFX;
         public BattleFX LoseChargeFX;
@@ -215,7 +203,6 @@ namespace RogueEssence.Data
             KnockbackFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Knockback.fx"), null);
             JumpFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Jump.fx"), null);
             ThrowFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Throw.fx"), null);
-            LoadSystemSE();
 
 
             UniversalEvent = (ActiveEffect)LoadData(PathMod.ModPath(DATA_PATH + "Universal.bin"), null);
@@ -261,53 +248,6 @@ namespace RogueEssence.Data
             Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
         }
 
-
-        private void LoadSystemSE()
-        {
-            string path = PathMod.ModPath(DATA_PATH + "SystemSE.xml");
-            //try to load from file
-            if (File.Exists(path))
-            {
-                try
-                {
-                    StartChars = new List<int>();
-
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    XmlNode sysSounds = xmldoc.DocumentElement.SelectSingleNode("Sounds");
-
-                    HungerSE = sysSounds.SelectSingleNode("Hunger").InnerText;
-                    NullDmgSE = sysSounds.SelectSingleNode("NullDmg").InnerText;
-                    CursedSE = sysSounds.SelectSingleNode("Cursed").InnerText;
-                    PickupSE = sysSounds.SelectSingleNode("Pickup").InnerText;
-                    PickupFoeSE = sysSounds.SelectSingleNode("PickupFoe").InnerText;
-                    ReplaceSE = sysSounds.SelectSingleNode("Replace").InnerText;
-                    PlaceSE = sysSounds.SelectSingleNode("Place").InnerText;
-                    EquipSE = sysSounds.SelectSingleNode("Equip").InnerText;
-                    MoneySE = sysSounds.SelectSingleNode("Money").InnerText;
-                    LeaderSE = sysSounds.SelectSingleNode("Leader").InnerText;
-                    ReviveSE = sysSounds.SelectSingleNode("Revive").InnerText;
-
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
-            }
-            HungerSE = "";
-            NullDmgSE = "";
-            CursedSE = "";
-            PickupSE = "";
-            PickupFoeSE = "";
-            ReplaceSE = "";
-            PlaceSE = "";
-            EquipSE = "";
-            MoneySE = "";
-            LeaderSE = "";
-            ReviveSE = "";
-        }
 
         private void LoadRarity()
         {

@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
         protected override void Confirmed()
         {
             chooseAmount(Digits.Amount);
-            GameManager.Instance.SE(DataManager.Instance.MoneySE);
+            GameManager.Instance.SE(GraphicsManager.MoneySE);
             MenuManager.Instance.RemoveMenu();
         }
 

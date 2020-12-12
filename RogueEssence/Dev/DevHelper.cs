@@ -58,7 +58,7 @@ namespace RogueEssence.Dev
                     fullGuide.Entries[num] = data.GenerateEntrySummary();
                 }
 
-                using (Stream stream = new FileStream(dataPath + "index.idx", FileMode.Create, FileAccess.Write, FileShare.None))
+                using (Stream stream = new FileStream(PathMod.ModPath(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                     {

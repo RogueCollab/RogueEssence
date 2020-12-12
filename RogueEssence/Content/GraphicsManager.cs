@@ -85,20 +85,21 @@ namespace RogueEssence.Content
             }
         }
 
-        public const string UI_PATH = PathMod.ASSET_PATH + "UI/";
+        public const string BASE_PATH = PathMod.ASSET_PATH + "Base/";
         public const string FONT_PATTERN = PathMod.ASSET_PATH + "Font/{0}.font";
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
+        public const string UI_PATH = CONTENT_PATH + "UI/";
 
         public const string CONTENT_PATH = "Content/";
 
-        public const string CHARA_PATTERN = CONTENT_PATH + "Chara/Chara-{0}.chara";
-        public const string PORTRAIT_PATTERN = CONTENT_PATH + "Portrait/Portrait-{0}.portrait";
+        public const string CHARA_PATTERN = CONTENT_PATH + "Chara/{0}.chara";
+        public const string PORTRAIT_PATTERN = CONTENT_PATH + "Portrait/{0}.portrait";
         public const string PARTICLE_PATTERN = CONTENT_PATH + "Particle/{0}.dir";
-        public const string ITEM_PATTERN = CONTENT_PATH + "Item/Item-{0}.dir";
+        public const string ITEM_PATTERN = CONTENT_PATH + "Item/{0}.dir";
         public const string BEAM_PATTERN = CONTENT_PATH + "Beam/{0}.beam";
-        public const string ICON_PATTERN = CONTENT_PATH + "Icon/Icon-{0}.dir";
+        public const string ICON_PATTERN = CONTENT_PATH + "Icon/{0}.dir";
         public const string TILE_PATTERN = CONTENT_PATH + "Tile/{0}.tile";
         public const string OBJECT_PATTERN = CONTENT_PATH + "Object/{0}.dir";
         public const string BG_PATTERN = CONTENT_PATH + "BG/{0}.dir";
@@ -203,20 +204,39 @@ namespace RogueEssence.Content
         public static BaseSheet MiniHP { get; private set; }
         public static TileSheet MapSheet { get; private set; }
         public static BaseSheet Splash { get; private set; }
+
+
         public static BaseSheet Title { get; private set; }
         public static BaseSheet Subtitle { get; private set; }
+
+
+        public static string HungerSE { get; private set; }
+        public static string NullDmgSE { get; private set; }
+        public static string CursedSE { get; private set; }
+        public static string PickupSE { get; private set; }
+        public static string PickupFoeSE { get; private set; }
+        public static string ReplaceSE { get; private set; }
+        public static string PlaceSE { get; private set; }
+        public static string EquipSE { get; private set; }
+        public static string MoneySE { get; private set; }
+        public static string LeaderSE { get; private set; }
+        public static string ReviveSE { get; private set; }
+
+        public static string TitleBG { get; private set; }
+
+        public static string TitleBGM { get; private set; }
+        public static string MonsterBGM { get; private set; }
 
         public static bool Loaded;
 
         public static void InitParams()
         {
-            string path = PathMod.ModPath(CONTENT_PATH + "GFXParams.xml");
+            string path = BASE_PATH + "GFXParams.xml";
             //try to load from file
             if (File.Exists(path))
             {
                 try
                 {
-
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
 
@@ -276,6 +296,7 @@ namespace RogueEssence.Content
             }
         }
 
+
         public static void InitBase(GraphicsDeviceManager newGraphics, int zoom, bool fullScreen)
         {
             graphics = newGraphics;
@@ -289,9 +310,9 @@ namespace RogueEssence.Content
             for (int ii = 0; ii < 16; ii++)
                 BaseSheet.BlitColor((ii % 2 == (ii / 4 % 2)) ? Color.Black : new Color(255, 0, 255, 255), defaultTex, 8, 8, ii % 4 * 8, ii / 4 * 8);
             //Set graphics device
-            Content.BaseSheet.InitBase(graphics, defaultTex);
+            BaseSheet.InitBase(graphics, defaultTex);
 
-            Splash = BaseSheet.Import(UI_PATH + "Splash.png");
+            Splash = BaseSheet.Import(BASE_PATH + "Splash.png");
 
             SysFont = LoadFont("system");
         }
@@ -305,42 +326,43 @@ namespace RogueEssence.Content
             Pixel.BlitColor(Color.White, 1, 1, 0, 0);
 
             //Load divider texture
-            DivTex = BaseSheet.Import(UI_PATH + "Divider.png");
+            DivTex = BaseSheet.Import(BASE_PATH + "Divider.png");
 
             //load menu data
-            MenuBG = TileSheet.Import(UI_PATH + "MenuBG.png", 8, 8);
+            MenuBG = TileSheet.Import(BASE_PATH + "MenuBG.png", 8, 8);
 
             //load menu data
-            MenuBorder = TileSheet.Import(UI_PATH + "MenuBorder.png", 8, 8);
+            MenuBorder = TileSheet.Import(BASE_PATH + "MenuBorder.png", 8, 8);
 
             //load menu data
-            PicBorder = TileSheet.Import(UI_PATH + "PortraitBorder.png", 4, 4);
+            PicBorder = TileSheet.Import(BASE_PATH + "PortraitBorder.png", 4, 4);
 
-            Arrows = TileSheet.Import(UI_PATH + "Arrows.png", 8, 8);
+            Arrows = TileSheet.Import(BASE_PATH + "Arrows.png", 8, 8);
 
-            Cursor = TileSheet.Import(UI_PATH + "Cursor.png", 11, 11);
+            Cursor = TileSheet.Import(BASE_PATH + "Cursor.png", 11, 11);
 
-            BattleFactors = TileSheet.Import(UI_PATH + "BattleFactors.png", 16, 16);
+            BattleFactors = TileSheet.Import(BASE_PATH + "BattleFactors.png", 16, 16);
 
-            Tiling = TileSheet.Import(UI_PATH + "Tiling.png", TileSize, TileSize);
+            Tiling = TileSheet.Import(BASE_PATH + "Tiling.png", TileSize, TileSize);
 
-            Darkness = TileSheet.Import(UI_PATH + "Dark.png", 8, 8);
+            Darkness = TileSheet.Import(BASE_PATH + "Dark.png", 8, 8);
 
-            Strip = TileSheet.Import(UI_PATH + "Strip.png", 8, 8);
+            Strip = TileSheet.Import(BASE_PATH + "Strip.png", 8, 8);
 
-            Buttons = TileSheet.Import(UI_PATH + "Buttons.png", 16, 16);
+            Buttons = TileSheet.Import(BASE_PATH + "Buttons.png", 16, 16);
 
-            HPMenu = TileSheet.Import(UI_PATH + "HP.png", 8, 8);
+            HPMenu = TileSheet.Import(BASE_PATH + "HP.png", 8, 8);
 
-            MiniHP = BaseSheet.Import(UI_PATH + "MiniHP.png");
+            MiniHP = BaseSheet.Import(BASE_PATH + "MiniHP.png");
 
-            MapSheet = TileSheet.Import(UI_PATH + "Map.png", 4, 4);
+            MapSheet = TileSheet.Import(BASE_PATH + "Map.png", 4, 4);
 
+            Shadows = TileSheet.Import(BASE_PATH + "Shadows.png", 32, 16);
 
-            Shadows = TileSheet.Import(UI_PATH + "Shadows.png", 32, 16);
-            Title = BaseSheet.Import(UI_PATH + "Title.png");
-            Subtitle = BaseSheet.Import(UI_PATH + "Enter.png");
+            Title = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Title.png"));
+            Subtitle = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Enter.png"));
 
+            LoadContentParams();
 
             //load font
             TextFont = LoadFont("text");
@@ -385,6 +407,10 @@ namespace RogueEssence.Content
         public static void ReloadStatic()
         {
             //maybe add other graphics here later on
+            Title = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Title.png"));
+            Subtitle = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Enter.png"));
+
+            LoadContentParams();
 
             ClearCaches(AssetType.All);
         }
@@ -496,6 +522,47 @@ namespace RogueEssence.Content
 
             Directory.CreateDirectory(Path.Join(baseFolder, MUSIC_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, SOUND_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, UI_PATH));
+        }
+
+        public static void LoadContentParams()
+        {
+            string path = PathMod.ModPath(CONTENT_PATH + "ContentParams.xml");
+            //try to load from file
+            if (File.Exists(path))
+            {
+                try
+                {
+
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+
+                    XmlNode sysSounds = xmldoc.DocumentElement.SelectSingleNode("Sounds");
+
+                    HungerSE = sysSounds.SelectSingleNode("Hunger").InnerText;
+                    NullDmgSE = sysSounds.SelectSingleNode("NullDmg").InnerText;
+                    CursedSE = sysSounds.SelectSingleNode("Cursed").InnerText;
+                    PickupSE = sysSounds.SelectSingleNode("Pickup").InnerText;
+                    PickupFoeSE = sysSounds.SelectSingleNode("PickupFoe").InnerText;
+                    ReplaceSE = sysSounds.SelectSingleNode("Replace").InnerText;
+                    PlaceSE = sysSounds.SelectSingleNode("Place").InnerText;
+                    EquipSE = sysSounds.SelectSingleNode("Equip").InnerText;
+                    MoneySE = sysSounds.SelectSingleNode("Money").InnerText;
+                    LeaderSE = sysSounds.SelectSingleNode("Leader").InnerText;
+                    ReviveSE = sysSounds.SelectSingleNode("Revive").InnerText;
+
+                    TitleBG = xmldoc.DocumentElement.SelectSingleNode("TitleBG").InnerText;
+
+                    TitleBGM = xmldoc.DocumentElement.SelectSingleNode("TitleBGM").InnerText;
+                    MonsterBGM = xmldoc.DocumentElement.SelectSingleNode("MonsterBGM").InnerText;
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
         }
 
         public static void RebuildIndices(AssetType assetType)
