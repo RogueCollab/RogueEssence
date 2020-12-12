@@ -112,6 +112,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
+            placeableEntity.SyncScriptEvents();
 
             if (placeableEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
                 ZoneManager.Instance.CurrentGround.AddMapChar((GroundChar)placeableEntity);

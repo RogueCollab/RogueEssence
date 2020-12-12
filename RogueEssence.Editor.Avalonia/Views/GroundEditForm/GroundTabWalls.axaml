@@ -17,6 +17,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="14"/>
       <RowDefinition Height="40"/>
+      <RowDefinition Height="40"/>
       <RowDefinition/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -28,5 +29,6 @@
     <RadioButton Name="rbDraw" IsChecked="{Binding Path=BlockMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Draw}}" VerticalAlignment="Top" Margin="4" Grid.Row="1" Grid.Column="0">Draw</RadioButton>
     <RadioButton Name="rbRect" IsChecked="{Binding Path=BlockMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Rectangle}}" VerticalAlignment="Top" Margin="4" Grid.Row="1" Grid.Column="1">Rectangle</RadioButton>
     <RadioButton Name="rbFill" IsChecked="{Binding Path=BlockMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Fill}}" VerticalAlignment="Top" Margin="4" Grid.Row="1" Grid.Column="2">Fill</RadioButton>
+    <CheckBox Margin="4" IsChecked="{Binding ShowWalls}" Grid.Row="2" Grid.Column="0">Show Walls</CheckBox>
   </Grid>
 </UserControl>

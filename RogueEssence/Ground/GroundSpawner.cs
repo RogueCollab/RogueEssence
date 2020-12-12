@@ -147,16 +147,6 @@ namespace RogueEssence.Ground
                 scriptEvent.LuaEngineReload();
         }
 
-        public override ScriptEvent FindEvent(string eventname)
-        {
-            foreach (var entry in ScriptEvents)
-            {
-                if (entry.Value.EventName().Contains(eventname))
-                    return entry.Value;
-            }
-            return null;
-        }
-
 
         public bool HasSpawnScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
@@ -166,6 +156,12 @@ namespace RogueEssence.Ground
         public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
             return ScriptEvents.ContainsKey(ev);
+        }
+
+        public override void SyncScriptEvents()
+        {
+            foreach (var ev in ScriptEvents.Keys)
+                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
         }
 
         public override void ReloadEvents()

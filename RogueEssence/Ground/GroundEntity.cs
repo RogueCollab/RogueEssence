@@ -41,7 +41,7 @@ namespace RogueEssence.Ground
 // Common fields and properties
 //===========================================
         public Rect Collider = new Rect();
-        public virtual string  EntName     { get; set; }
+        public string  EntName     { get; set; }
         public virtual Dir8    Direction   { get; set; }
         public virtual Loc     MapLoc      { get { return Collider.Start; } set { Collider.Start = value; } } //!FIXME: Not sure what to go with between maploc and position, since both are used, and maploc is kinda confusing
         public virtual Loc     Position    { get { return Collider.Start; } set { Collider.Start = value; } }
@@ -165,13 +165,18 @@ namespace RogueEssence.Ground
         /// </summary>
         /// <param name="eventname"></param>
         /// <returns></returns>
-        public virtual ScriptEvent FindEvent(string eventname)
-        {
-            return null;
-        }
         public virtual bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
             return false;
+        }
+
+        /// <summary>
+        /// Synchronizes the script call nams
+        /// </summary>
+        /// <param name="ev"></param>
+        public virtual void SyncScriptEvents()
+        {
+
         }
 
         /// <summary>
@@ -299,7 +304,7 @@ namespace RogueEssence.Ground
             var eventstypes = LuaEngine.IterateLuaEntityEvents();
             do
             {
-                if (FindEvent(LuaEngine.MakeLuaEntityCallbackName(EntName, eventstypes.Current)) != null)
+                if (HasScriptEvent(eventstypes.Current))
                     callbacks.Add(eventstypes.Current);
             }
             while (eventstypes.MoveNext());

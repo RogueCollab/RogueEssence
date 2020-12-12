@@ -1,4 +1,5 @@
-﻿using RogueElements;
+﻿using ReactiveUI;
+using RogueElements;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.ViewModels
@@ -17,6 +18,19 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref blockMode, value);
+            }
+        }
+
+        public bool ShowWalls
+        {
+            get
+            {
+                return GroundEditScene.Instance.ShowWalls;
+            }
+            set
+            {
+                GroundEditScene.Instance.ShowWalls = value;
+                this.RaisePropertyChanged();
             }
         }
 

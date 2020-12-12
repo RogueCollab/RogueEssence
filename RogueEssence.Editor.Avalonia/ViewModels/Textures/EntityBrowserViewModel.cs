@@ -47,6 +47,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.EntName = value;
+                SelectedEntity.SyncScriptEvents();
                 this.RaisePropertyChanged();
             }
         }

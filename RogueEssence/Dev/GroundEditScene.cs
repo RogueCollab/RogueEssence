@@ -30,6 +30,7 @@ namespace RogueEssence.Dev
         public AutoTile AutoTileInProgress;
         public bool? BlockInProgress;
         public Rect RectInProgress;
+        public bool ShowWalls;
 
         public Rect TileRectPreview()
         {
@@ -152,19 +153,22 @@ namespace RogueEssence.Dev
                 }
 
                 //draw the blocks
-                int texSize = ZoneManager.Instance.CurrentGround.TexSize;
-                for (int jj = viewTileRect.Y * texSize; jj < viewTileRect.End.Y * texSize; jj++)
+                if (ShowWalls)
                 {
-                    for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
+                    int texSize = ZoneManager.Instance.CurrentGround.TexSize;
+                    for (int jj = viewTileRect.Y * texSize; jj < viewTileRect.End.Y * texSize; jj++)
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                        for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
                         {
-                            bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
-                            if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
-                                blocked = BlockInProgress.Value;
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                            {
+                                bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
+                                if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
+                                    blocked = BlockInProgress.Value;
 
-                            if (blocked)
-                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.5f);
+                                if (blocked)
+                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.6f);
+                            }
                         }
                     }
                 }

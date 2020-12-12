@@ -77,6 +77,7 @@ namespace RogueEssence.Ground
             foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
                 ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
             ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            DrawOffset = other.DrawOffset;
             Solid = other.Solid;
         }
 
@@ -146,19 +147,15 @@ namespace RogueEssence.Ground
                 entry.Value.ReloadEvent();
         }
 
-        public override ScriptEvent FindEvent(string eventname)
-        {
-            foreach (var entry in ScriptEvents)
-            {
-                if (entry.Value.EventName().Contains(eventname))
-                    return entry.Value;
-            }
-            return null;
-        }
-
         public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
             return ScriptEvents.ContainsKey(ev);
+        }
+
+        public override void SyncScriptEvents()
+        {
+            foreach (var ev in ScriptEvents.Keys)
+                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
         }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)

@@ -22,7 +22,7 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">Add, edit, or remove localized strings to be used by scripts on the map.</TextBlock>
-    <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Items="{Binding MapStrings}" SelectedIndex="{Binding CurrentString}">
+    <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Items="{Binding MapStrings}" SelectedIndex="{Binding CurrentString, Mode=TwoWay}">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Key" Binding="{Binding Key}"/>
         <DataGridTextColumn Header="Comment" Binding="{Binding Comment}"/>
