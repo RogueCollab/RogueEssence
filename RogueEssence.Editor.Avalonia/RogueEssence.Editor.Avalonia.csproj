@@ -47,6 +47,9 @@
     <Compile Update="Views\DialogBoxes\MapLayerWindow.axaml.cs">
       <DependentUpon>MapLayerWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabDecorations.axaml.cs">
+      <DependentUpon>GroundTabDecorations.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
     </Compile>

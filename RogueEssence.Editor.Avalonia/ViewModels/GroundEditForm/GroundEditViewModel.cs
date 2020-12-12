@@ -25,6 +25,7 @@ namespace RogueEssence.Dev.ViewModels
         public GroundEditViewModel()
         {
             Textures = new GroundTabTexturesViewModel();
+            Decorations = new GroundTabDecorationsViewModel();
             Walls = new GroundTabWallsViewModel();
             Entities = new GroundTabEntitiesViewModel();
             Properties = new GroundTabPropertiesViewModel();
@@ -39,6 +40,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public GroundTabTexturesViewModel Textures { get; set; }
+        public GroundTabDecorationsViewModel Decorations { get; set; }
         public GroundTabWallsViewModel Walls { get; set; }
         public GroundTabEntitiesViewModel Entities { get; set; }
         public GroundTabPropertiesViewModel Properties { get; set; }
@@ -404,10 +406,13 @@ namespace RogueEssence.Dev.ViewModels
                     case 0://Textures
                         Textures.ProcessInput(input);
                         break;
-                    case 1://Walls
+                    case 1://Decorations
+                        Decorations.ProcessInput(input);
+                        break;
+                    case 2://Walls
                         Walls.ProcessInput(input);
                         break;
-                    case 2://Entities
+                    case 3://Entities
                         Entities.ProcessInput(input);
                         break;
                 }

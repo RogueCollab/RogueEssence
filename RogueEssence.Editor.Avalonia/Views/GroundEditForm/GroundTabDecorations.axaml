@@ -1,0 +1,69 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.GroundTabDecorations">
+  <Design.DataContext>
+    <vm:GroundTabDecorationsViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ComparisonConverter x:Key="ComparisonConverter"/>
+  </UserControl.Resources>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="38"/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="180"/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <!--views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/-->
+    <Grid Margin="4" Grid.Row="1" Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="36"/>
+        <RowDefinition Height="42"/>
+        <RowDefinition Height="42"/>
+        <RowDefinition Height="42"/>
+        <RowDefinition Height="42"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="80"/>
+        <ColumnDefinition/>
+        <ColumnDefinition Width="80"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" Text="Sprite:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+      <ComboBox Items="{Binding ObjectAnims}" SelectedIndex="{Binding ChosenObjectAnim}" VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <TextBlock Margin="4,2" Text="Direction:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
+      <ComboBox Margin="4,2" Items="{Binding Directions}" SelectedIndex="{Binding ChosenDirection}" Grid.Row="1" Grid.Column="1"/>
+      <TextBlock Margin="4,2" Text="Start Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
+      <NumericUpDown Minimum="-1" Value="{Binding StartFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1"/>
+      <TextBlock Margin="4,2" Text="End Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="2"/>
+      <NumericUpDown Minimum="-1" Value="{Binding EndFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="3"/>
+      <TextBlock Margin="4,2" Text="Frame Length:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
+      <NumericUpDown Minimum="1" Value="{Binding FrameLength}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <!--TextBlock Margin="4,2" Text="Alpha:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4"/>
+      <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"/-->
+    </Grid>
+    <Grid Grid.Row="0" Grid.Column="1" Margin="4">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="16"/>
+        <RowDefinition Height="26"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Mode</TextBlock>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.SelectEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="0">Select/Move</RadioButton>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.PlaceEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="1">Add New</RadioButton>
+    </Grid>
+    
+  </Grid>
+</UserControl>

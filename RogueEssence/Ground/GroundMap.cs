@@ -793,16 +793,36 @@ namespace RogueEssence.Ground
         public List<GroundEntity> FindEntitiesAtPosition(Loc pos)
         {
             List<GroundEntity> found = new List<GroundEntity>();
-            Rect Intersection = new Rect(pos.X, pos.Y, 1, 1);
-
             foreach (GroundEntity c in IterateEntities())
             {
-                if (c.Bounds.Intersects(Intersection))
+                if (RogueElements.Collision.InBounds(c.Bounds, pos))
                     found.Add(c);
             }
 
             return found;
         }
+
+
+        /// <summary>
+        /// Convenience method for locating an anim on that map at the
+        /// position specified.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        public List<GroundAnim> FindAnimsAtPosition(Loc pos)
+        {
+            List<GroundAnim> found = new List<GroundAnim>();
+
+            foreach (GroundAnim c in Anims)
+            {
+                Loc drawSize = c.GetDrawSize();
+                if (RogueElements.Collision.InBounds(c.MapLoc, new Loc(Math.Max(drawSize.X, GraphicsManager.TEX_SIZE), Math.Max(drawSize.Y, GraphicsManager.TEX_SIZE)), pos))
+                    found.Add(c);
+            }
+
+            return found;
+        }
+
 
 
         public string FindNonConflictingName(string inputStr)

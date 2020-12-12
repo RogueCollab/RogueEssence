@@ -46,6 +46,9 @@
         <TabItem Name="tabTextures" Header="Textures" >
           <views:GroundTabTextures DataContext="{Binding Textures}"/>
         </TabItem>
+        <TabItem Name="tabDecorations" Header="Decorations" >
+          <views:GroundTabDecorations DataContext="{Binding Decorations}"/>
+        </TabItem>
         <TabItem Name="tabWalls" Header="Walls" >
           <views:GroundTabWalls DataContext="{Binding Walls}"/>
         </TabItem>
