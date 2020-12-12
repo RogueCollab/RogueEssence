@@ -95,7 +95,7 @@ namespace RogueEssence.Dev.ViewModels
                     if (comparePaths(proposedPath, Path.GetDirectoryName(results[0])))
                         legalPath = true;
                 }
-                if (legalPath)
+                if (!legalPath)
                     await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.", PathMod.ModPath(DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
@@ -299,7 +299,7 @@ namespace RogueEssence.Dev.ViewModels
         private void DoImportPng(string filePath)
         {
             string sheetName = Path.GetFileNameWithoutExtension(filePath);
-            string outputFile = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
 
 
             //load into tilesets
@@ -310,23 +310,7 @@ namespace RogueEssence.Dev.ViewModels
                 ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
             }
 
-
-            //update the index
-            using (FileStream stream = File.OpenRead(outputFile))
-            {
-                using (BinaryReader reader = new BinaryReader(stream))
-                {
-                    TileIndexNode guide = TileIndexNode.Load(reader);
-                    GraphicsManager.TileIndex.Nodes[sheetName] = guide;
-                }
-            }
-
-            using (FileStream stream = new FileStream(PathMod.ModPath(Path.GetDirectoryName(GraphicsManager.TILE_PATTERN) + "/index.idx"), FileMode.Create, FileAccess.Write))
-            {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                    GraphicsManager.TileIndex.Save(writer);
-            }
-
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
             GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
             DevTileManager.ClearCaches();
 

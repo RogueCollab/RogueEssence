@@ -444,7 +444,7 @@ namespace RogueEssence.Data
 
         public void SaveIndex(DataType type)
         {
-            using (Stream stream = new FileStream(PathMod.ModPath(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
+            using (Stream stream = new FileStream(PathMod.HardMod(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
@@ -477,7 +477,7 @@ namespace RogueEssence.Data
 
         public static void SaveData(int indexNum, string subPath, IEntryData entry)
         {
-            string folder = PathMod.ModPath(DATA_PATH + subPath);
+            string folder = PathMod.HardMod(DATA_PATH + subPath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
             SaveData(folder + "/" + indexNum + DATA_EXT, entry);

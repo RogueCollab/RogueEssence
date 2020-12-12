@@ -33,7 +33,7 @@ namespace RogueEssence.Dev
 
                 }
 
-                using (FileStream stream = new FileStream(PathMod.ModPath(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         fullGuide.Save(writer);
@@ -65,7 +65,7 @@ namespace RogueEssence.Dev
                     }
                 }
 
-                using (FileStream stream = new FileStream(PathMod.ModPath(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         fullGuide.Save(writer);
@@ -215,7 +215,7 @@ namespace RogueEssence.Dev
             foreach (MonsterID key in spritePositions.Keys)
                 guide.AddSubValue(0, key.Form, key.Skin, (int)key.Gender);
 
-            using (FileStream stream = new FileStream(destinationPath, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            using (FileStream stream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {

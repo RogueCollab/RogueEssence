@@ -47,7 +47,7 @@ namespace RogueEssence
             while (mod != "")
             {
                 string fullPath = Path.Join(mod, basePath);
-                if (File.Exists(fullPath))
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
                 mod = GetModParentPath(mod);
             }
@@ -60,7 +60,7 @@ namespace RogueEssence
             while (mod != "")
             {
                 string fullPath = Path.Join(mod, basePath);
-                if (File.Exists(fullPath))
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
                 mod = GetModParentPath(mod);
             }

@@ -317,7 +317,8 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> RestartToTitle()
         {
-            removeStateVariables();
+            cleanup();
+            reInit();
             MoveToScene(new TitleScene(false));
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
@@ -328,10 +329,11 @@ namespace RogueEssence
             if (fade)
                 yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
 
-            removeStateVariables();
+            cleanup();
+            PathMod.Mod = modPath;
+            reInit();
             TitleScene.TitleMenuSaveState = null;
             MoveToScene(new TitleScene(true));
-            PathMod.Mod = modPath;
             //clean up and reload all caches
             GraphicsManager.ReloadStatic();
             DataManager.Instance.InitData();
@@ -344,11 +346,14 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
-        private void removeStateVariables()
+        private void cleanup()
         {
-            //remove all state variables
             DataManager.Instance.SetProgress(null);
             ZoneManager.Instance.Cleanup();
+        }
+        private void reInit()
+        {
+            //remove all state variables
             DungeonScene.InitInstance();
             GroundScene.InitInstance();
             LuaEngine.Instance.Reset();
@@ -695,7 +700,8 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> ReturnToReplayMenu()
         {
-            removeStateVariables();
+            cleanup();
+            reInit();
             MoveToScene(new TitleScene(true));
 
             MenuBase.Transparent = false;

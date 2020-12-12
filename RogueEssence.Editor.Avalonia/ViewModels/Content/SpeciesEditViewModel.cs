@@ -277,15 +277,22 @@ namespace RogueEssence.Dev.ViewModels
             //save data
             ImportHelper.SaveSpecies(fileName, data);
 
+            if (checkSprites)
+            {
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Chara);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Chara);
+            }
+            else
+            {
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Portrait);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Portrait);
+            }
+
+
             DiagManager.Instance.LogInfo("Frames from:\n" +
                 currentPath +
                 "\nhave been imported to:" + GetFormString(currentForm));
 
-            //signal for reload
-            if (checkSprites)
-                GraphicsManager.NeedReload = GraphicsManager.AssetType.Chara;
-            else
-                GraphicsManager.NeedReload = GraphicsManager.AssetType.Portrait;
         }
 
 
@@ -321,10 +328,18 @@ namespace RogueEssence.Dev.ViewModels
             //save data
             ImportHelper.SaveSpecies(fileName, data);
 
-            DiagManager.Instance.LogInfo("Deleted frames for:" + GetFormString(formdata));
+            if (checkSprites)
+            {
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Chara);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Chara);
+            }
+            else
+            {
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Portrait);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Portrait);
+            }
 
-            //signal for reload
-            GraphicsManager.NeedReload = GraphicsManager.AssetType.Chara;
+            DiagManager.Instance.LogInfo("Deleted frames for:" + GetFormString(formdata));
 
         }
 
@@ -401,9 +416,9 @@ namespace RogueEssence.Dev.ViewModels
         private string GetFilename(int num)
         {
             if (checkSprites)
-                return PathMod.ModPath(String.Format(GraphicsManager.CHARA_PATTERN, num));
+                return PathMod.HardMod(String.Format(GraphicsManager.CHARA_PATTERN, num));
             else
-                return PathMod.ModPath(String.Format(GraphicsManager.PORTRAIT_PATTERN, num));
+                return PathMod.HardMod(String.Format(GraphicsManager.PORTRAIT_PATTERN, num));
         }
     }
 }

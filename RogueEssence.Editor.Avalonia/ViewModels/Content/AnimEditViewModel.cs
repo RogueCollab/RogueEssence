@@ -181,22 +181,21 @@ namespace RogueEssence.Dev.ViewModels
             //write sprite data
             using (DirSheet sheet = DirSheet.Import(currentPath))
             {
-                using (FileStream stream = File.OpenWrite(PathMod.ModPath(String.Format(assetPattern, components[0]))))
+                using (FileStream stream = File.OpenWrite(PathMod.HardMod(String.Format(assetPattern, components[0]))))
                 {
                     //save data
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         sheet.Save(writer);
                 }
             }
+            GraphicsManager.RebuildIndices(assetType);
+            GraphicsManager.ClearCaches(assetType);
 
             DiagManager.Instance.LogInfo("Frames from:\n" +
                 currentPath + "\nhave been imported.");
 
             //recompute
             recomputeAnimList();
-
-            //signal for reload
-            GraphicsManager.NeedReload = assetType;
         }
 
 
@@ -237,10 +236,11 @@ namespace RogueEssence.Dev.ViewModels
             anims.RemoveAt(animIdx);
             Anims.RemoveInternalAt(animIdx);
 
+            GraphicsManager.RebuildIndices(assetType);
+            GraphicsManager.ClearCaches(assetType);
+
             DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
 
-            //signal for reload
-            GraphicsManager.NeedReload = GraphicsManager.AssetType.Chara;
         }
 
 

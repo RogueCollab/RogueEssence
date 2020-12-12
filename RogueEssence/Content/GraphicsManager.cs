@@ -206,8 +206,6 @@ namespace RogueEssence.Content
         public static BaseSheet Title { get; private set; }
         public static BaseSheet Subtitle { get; private set; }
 
-        public static AssetType NeedReload;
-
         public static bool Loaded;
 
         public static void InitParams()
@@ -375,9 +373,9 @@ namespace RogueEssence.Content
             objectCache.OnItemRemoved = DisposeCachedObject;
 
             //load guides
-            CharaIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Chara/"));
-            PortraitIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Portrait/"));
-            TileIndex = LoadTileIndices(PathMod.ModPath(CONTENT_PATH + "Tile/"));
+            CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
+            PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
+            TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
 
             Loaded = true;
             //Notify script engine
@@ -500,28 +498,23 @@ namespace RogueEssence.Content
             Directory.CreateDirectory(Path.Join(baseFolder, SOUND_PATH));
         }
 
-
-        public static void Update()
+        public static void RebuildIndices(AssetType assetType)
         {
-            try
-            {
-                if (NeedReload != AssetType.None)
-                    ClearCaches(NeedReload);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(new Exception("Could not reload asset.\n", ex));
-            }
+            if ((assetType & AssetType.Tile) != AssetType.None)
+                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
 
-            NeedReload = AssetType.None;
+            if ((assetType & AssetType.Chara) != AssetType.None)
+                Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
+
+            if ((assetType & AssetType.Portrait) != AssetType.None)
+                Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
         }
 
         public static void ClearCaches(AssetType assetType)
         {
             if ((assetType & AssetType.Tile) != AssetType.None)
             {
-                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
-                TileIndex = LoadTileIndices(PathMod.ModPath(CONTENT_PATH + "Tile/"));
+                TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
                 tileCache.Clear();
                 DiagManager.Instance.LogInfo("Tilesets Reloaded.");
             }
@@ -534,16 +527,14 @@ namespace RogueEssence.Content
 
             if ((assetType & AssetType.Chara) != AssetType.None)
             {
-                Dev.ImportHelper.BuildCharIndex(CHARA_PATTERN);
-                CharaIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Chara/"));
+                CharaIndex = LoadCharaIndices(CONTENT_PATH + "Chara/");
                 spriteCache.Clear();
                 DiagManager.Instance.LogInfo("Characters Reloaded.");
             }
 
             if ((assetType & AssetType.Portrait) != AssetType.None)
             {
-                Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
-                PortraitIndex = LoadCharaIndices(PathMod.ModPath(CONTENT_PATH + "Portrait/"));
+                PortraitIndex = LoadCharaIndices(CONTENT_PATH + "Portrait/");
                 portraitCache.Clear();
                 DiagManager.Instance.LogInfo("Portraits Reloaded.");
             }
@@ -590,7 +581,7 @@ namespace RogueEssence.Content
             CharaIndexNode fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(charaDir + "index.idx"))
+                using (FileStream stream = File.OpenRead(PathMod.ModPath(charaDir + "index.idx")))
                 {
                     using (BinaryReader reader = new BinaryReader(stream))
                         fullGuide = CharaIndexNode.Load(reader);
@@ -838,7 +829,7 @@ namespace RogueEssence.Content
             TileGuide fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(tileDir + "index.idx"))
+                using (FileStream stream = File.OpenRead(PathMod.ModPath(tileDir + "index.idx")))
                 {
                     using (BinaryReader reader = new BinaryReader(stream))
                         fullGuide = TileGuide.Load(reader);
