@@ -274,10 +274,16 @@ namespace RogueEssence.Ground
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
-            int teamShadow = 1;
-            currentCharAction.DrawShadow(spriteBatch, offset, sheet, new Loc(1, teamShadow * 2));
+
+            Loc shadowType = new Loc(0, 0 + sheet.ShadowSize * 2);
+            Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
+
+            GraphicsManager.Shadows.DrawTile(spriteBatch,
+                (shadowPoint - offset).ToVector2() - new Vector2(GraphicsManager.Shadows.TileWidth / 2, GraphicsManager.Shadows.TileHeight / 2),
+                shadowType.X, shadowType.Y);
         }
 
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);

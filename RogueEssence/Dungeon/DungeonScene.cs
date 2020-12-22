@@ -869,6 +869,8 @@ namespace RogueEssence.Dungeon
                     while (charIndex < groundDraw.Count)
                     {
                         groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        if (GameManager.Instance.ShowDebug)
+                            groundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
 
@@ -1025,6 +1027,8 @@ namespace RogueEssence.Dungeon
                             if (charY == j * GraphicsManager.TileSize)
                             {
                                 otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                                if (GameManager.Instance.ShowDebug)
+                                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                                 charIndex++;
                             }
                             else
@@ -1037,6 +1041,8 @@ namespace RogueEssence.Dungeon
                             if (charY < (j + 1) * GraphicsManager.TileSize)
                             {
                                 otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                                if (GameManager.Instance.ShowDebug)
+                                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                                 charIndex++;
                             }
                             else
@@ -1047,6 +1053,8 @@ namespace RogueEssence.Dungeon
                     while (charIndex < otherDraw.Count)
                     {
                         otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        if (GameManager.Instance.ShowDebug)
+                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
 
@@ -1068,6 +1076,8 @@ namespace RogueEssence.Dungeon
                     while (charIndex < otherDraw.Count)
                     {
                         otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        if (GameManager.Instance.ShowDebug)
+                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     
@@ -1082,6 +1092,8 @@ namespace RogueEssence.Dungeon
                     while (charIndex < otherDraw.Count)
                     {
                         otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        if (GameManager.Instance.ShowDebug)
+                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
 

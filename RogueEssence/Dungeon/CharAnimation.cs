@@ -165,9 +165,10 @@ namespace RogueEssence.Dungeon
             //draw sprite at current frame
             sheet.DrawChar(spriteBatch, charFrameType, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
         }
-        public void DrawShadow(SpriteBatch spriteBatch, Loc offset, CharSheet sheet, Loc shadowType)
+        public Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
-            sheet.DrawShadow(spriteBatch, charFrameType, DirExt.AddAngles(CharDir, dirOffset), GetDrawLoc(sheet, offset).ToVector2(), shadowType, FrameMethod);
+            Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
+            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, DirExt.AddAngles(CharDir, dirOffset), pointType, FrameMethod);
         }
 
         private int totalFrameTickFrame(List<CharAnimFrame> frames)

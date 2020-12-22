@@ -2092,7 +2092,40 @@ namespace RogueEssence.Dungeon
             if (terrainShadow == 0)
                 terrainShadow = sheet.ShadowSize;
             int animFrame = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(5) % 3);
-            currentCharAction.DrawShadow(spriteBatch, offset, sheet, new Loc(animFrame, teamStatus + terrainShadow * 2));
+            Loc shadowType = new Loc(animFrame, teamStatus + terrainShadow * 2);
+            Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
+
+            GraphicsManager.Shadows.DrawTile(spriteBatch,
+                (shadowPoint - offset).ToVector2() - new Vector2(GraphicsManager.Shadows.TileWidth / 2, GraphicsManager.Shadows.TileHeight / 2),
+                shadowType.X, shadowType.Y);
+        }
+
+        private void drawCross(SpriteBatch spriteBatch, Loc loc, Color color)
+        {
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X - 2, loc.Y, 5, 1), null, color);
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X, loc.Y - 2, 1, 5), null, color);
+        }
+
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        {
+            CharSheet sheet = GraphicsManager.GetChara(Appearance);
+            Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);
+            Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
+            Loc leftHand = currentCharAction.GetActionPoint(sheet, ActionPointType.LeftHand);
+            Loc rightHand = currentCharAction.GetActionPoint(sheet, ActionPointType.RightHand);
+
+            drawCross(spriteBatch, head - offset, Color.Black);
+            Color centerColor = new Color(0, 255, 0, 255);
+            if (leftHand == center)
+                centerColor = new Color(255, centerColor.G, centerColor.B, centerColor.A);
+            else
+                drawCross(spriteBatch, leftHand - offset, Color.Red);
+            if (rightHand == center)
+                centerColor = new Color(centerColor.R, centerColor.G, 255, centerColor.A);
+            else
+                drawCross(spriteBatch, rightHand - offset, Color.Blue);
+
+            drawCross(spriteBatch, center - offset, centerColor);
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
@@ -2101,7 +2134,11 @@ namespace RogueEssence.Dungeon
             currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
+            {
+                //TODO: emote in the right place
+                Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
                 currentEmote.Draw(spriteBatch, offset - MapLoc - drawOffset);
+            }
             else if (!DataManager.Instance.Save.CutsceneMode)
             {
                 List<int> icons = new List<int>();
@@ -2112,7 +2149,7 @@ namespace RogueEssence.Dungeon
                     StackState stack = status.StatusStates.GetWithDefault<StackState>();
                     int emote = -1;
                     if (stack != null && stack.Stack < 0)
-                            emote = entry.DropEmoticon;
+                        emote = entry.DropEmoticon;
                     else
                         emote = entry.Emoticon;
 
@@ -2121,8 +2158,8 @@ namespace RogueEssence.Dungeon
                     if (entry.FreeEmote > -1)
                     {
                         DirSheet iconSheet = GraphicsManager.GetIcon(entry.FreeEmote);
-                        Loc animPos = new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - iconSheet.TileWidth / 2,
-                            MapLoc.Y + GraphicsManager.TileSize / 2 - iconSheet.TileHeight / 2 - LocHeight) - offset;
+                        Loc animPos = new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - /*iconOffset.X*/ -iconSheet.TileWidth / 2,
+                            MapLoc.Y + GraphicsManager.TileSize / 2 - /*iconOffset.Y*/ -iconSheet.TileHeight / 2 - LocHeight) - offset;
                         int currentFrame = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(STATUS_FRAME_LENGTH) % (ulong)(iconSheet.TotalFrames));
                         iconSheet.DrawDir(spriteBatch, animPos.ToVector2(), currentFrame, CharDir);
                     }
@@ -2139,10 +2176,10 @@ namespace RogueEssence.Dungeon
 
                     int currentFrame = frameTotal % iconSheet.TotalFrames;
 
-                    Loc frontDraw = new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - iconSheet.TileWidth / 2,
-                    MapLoc.Y - iconSheet.TileHeight - LocHeight) + drawOffset - offset;
+                    Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
+                    Loc frontDraw = head - offset - new Loc(0, GraphicsManager.TEX_SIZE * 2) - new Loc(iconSheet.TileWidth / 2, iconSheet.TileHeight / 2);
 
-                    iconSheet.DrawDir(spriteBatch, new Vector2(frontDraw.X, frontDraw.Y), currentFrame);
+                    iconSheet.DrawDir(spriteBatch, frontDraw.ToVector2(), currentFrame);
                 }
             }
         }

@@ -69,6 +69,7 @@ namespace RogueEssence.Content
         public int LocHeight { get; set; }
         public abstract bool Finished { get; }
 
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
 
         public virtual Loc GetDrawLoc(Loc offset) { return Origin - offset; }

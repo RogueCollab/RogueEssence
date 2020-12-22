@@ -93,6 +93,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Draw(spriteBatch, offset, Color.White);

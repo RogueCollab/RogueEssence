@@ -20,6 +20,8 @@ namespace RogueEssence.Content
         Loc MapLoc { get; }
         int LocHeight { get; }
 
+        void DrawDebug(SpriteBatch spriteBatch, Loc offset);
+
         void Draw(SpriteBatch spriteBatch, Loc offset);
 
         Loc GetDrawLoc(Loc offset);
@@ -65,6 +67,7 @@ namespace RogueEssence.Content
 
         public abstract void Update(BaseScene scene, FrameTick elapsedTime);
 
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public abstract void Draw(SpriteBatch spriteBatch, Loc offset);
 
         public abstract Loc GetDrawLoc(Loc offset);

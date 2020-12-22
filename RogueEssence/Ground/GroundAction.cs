@@ -76,9 +76,9 @@ namespace RogueEssence.Ground
             //draw sprite at current frame
             sheet.DrawChar(spriteBatch, AnimFrameType, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
         }
-        public void DrawShadow(SpriteBatch spriteBatch, Loc offset, CharSheet sheet, Loc shadowType)
+        public Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
-            sheet.DrawShadow(spriteBatch, AnimFrameType, DirExt.AddAngles(CharDir, dirOffset), GetDrawLoc(offset, sheet).ToVector2(), shadowType, FrameMethod);
+            return MapLoc + Collider.Size / 2 +  DrawOffset + sheet.GetActionPoint(AnimFrameType, DirExt.AddAngles(CharDir, dirOffset), pointType, FrameMethod);
         }
 
         private int zeroFrame(List<CharAnimFrame> frames)

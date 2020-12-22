@@ -263,7 +263,8 @@ namespace RogueEssence.Dungeon
         //when working with delays, there can be set max delays, and additional delays
         //max delays do not stack; the bigger delay eclipses the smaller one
         //additional delays do stack; they can happen on a max delay as long as there is no additional delay also there
-        
+
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
 
         public abstract Loc GetDrawLoc(Loc offset);

@@ -80,7 +80,7 @@ namespace RogueEssence.Dungeon
         public virtual void OnUpdateHitboxes(FrameTick elapsedTime) { }
         public virtual void UpdateFrame() { currentAnim.UpdateFrame(); }
         public void UpdateDrawEffects(HashSet<DrawEffect> drawEffects) { currentAnim.UpdateDrawEffects(drawEffects); }
-        public virtual void DrawShadow(SpriteBatch spriteBatch, Loc offset, CharSheet sheet, Loc shadowType) { currentAnim.DrawShadow(spriteBatch, offset, sheet, shadowType); }
+        public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType) { return currentAnim.GetActionPoint(sheet, pointType); }
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet) { currentAnim.Draw(spriteBatch, offset, sheet); }
         public Loc GetDrawLoc(Loc offset, CharSheet sheet) { return currentAnim.GetDrawLoc(sheet, offset); }
         public void GetCurrentSprite(CharSheet sheet, out int anim, out int currentTime, out int currentFrame) { currentAnim.GetCurrentSprite(sheet, out anim, out currentTime, out currentFrame); }
