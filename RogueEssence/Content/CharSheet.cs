@@ -286,9 +286,6 @@ namespace RogueEssence.Content
                 doc.Load(path + "AnimData.xml");
                 int shadowSize = Convert.ToInt32(doc.SelectSingleNode("AnimData/ShadowSize").InnerText);
 
-                int maxWidth = 0;
-                int maxHeight = 0;
-
                 Dictionary<int, (Loc, CharAnimSequence, int)> sequenceList = new Dictionary<int, (Loc, CharAnimSequence, int)>();
                 XmlNode sequenceNode = doc.SelectSingleNode("AnimData/Anims");
                 XmlNodeList sequences = sequenceNode.SelectNodes("Anim");
@@ -330,6 +327,9 @@ namespace RogueEssence.Content
                     }
                     sequenceList[animIndex] = (animSize, frameList, copyOf);
                 }
+
+                int maxWidth = 0;
+                int maxHeight = 0;
 
                 Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
                 //load all available tilesets
@@ -377,7 +377,8 @@ namespace RogueEssence.Content
                         sheetIndex = Math.Min(sheetIndex, animSheet.Height / tileHeight - 1);
                         for (int jj = 0; jj < (animSheet.Width / tileWidth); jj++)
                         {
-                            Rectangle rect = getCoveredRect(animSheet, new Rectangle(jj * tileWidth, sheetIndex * tileHeight, tileWidth, tileHeight));
+                            Rectangle tileRect = new Rectangle(jj * tileWidth, sheetIndex * tileHeight, tileWidth, tileHeight);
+                            Rectangle rect = getCoveredRect(animSheet, tileRect);
                             if (rect.Width <= 0)
                                 rect = new Rectangle(tileWidth / 2, tileHeight / 2, 1, 1);
                             Texture2D frameTex = new Texture2D(device, rect.Width, rect.Height);
@@ -388,8 +389,8 @@ namespace RogueEssence.Content
                             maxHeight = Math.Max(maxHeight, rect.Height);
                             Loc boundsCenter = new Loc(rect.Center.X, rect.Center.Y);
 
-                            Loc?[] shadowOffset = getOffsetFromRGB(shadowSheet, new Rectangle(jj * tileWidth, sheetIndex * tileHeight, tileWidth, tileHeight), false, false, false, false, true);
-                            Loc?[] frameOffset = getOffsetFromRGB(offsetSheet, new Rectangle(jj * tileWidth, sheetIndex * tileHeight, tileWidth, tileHeight), true, true, true, true, false);
+                            Loc?[] shadowOffset = getOffsetFromRGB(shadowSheet, tileRect, false, false, false, false, true);
+                            Loc?[] frameOffset = getOffsetFromRGB(offsetSheet, tileRect, true, true, true, true, false);
                             OffsetData offsets = new OffsetData();
                             if (frameOffset[2].HasValue)
                             {
@@ -427,6 +428,10 @@ namespace RogueEssence.Content
                 List<(Texture2D, Rectangle, OffsetData)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
                 mapDuplicates(frames, finalFrames, frameMap);
 
+                if (maxWidth % 2 == 1)
+                    maxWidth++;
+                if (maxHeight % 2 == 1)
+                    maxHeight++;
 
                 int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
                 Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
@@ -824,9 +829,23 @@ namespace RogueEssence.Content
                 return 0;
         }
 
-        public bool HasAnim(int type)
+        public bool HasOwnAnim(int type)
         {
-            return animData.ContainsKey(type);
+            CharAnimGroup group;
+            if (!animData.TryGetValue(type, out group))
+                return false;
+            return group.CopyOf == -1;
+        }
+
+        public bool IsAnimCopied(int type)
+        {
+            foreach (int otherType in animData.Keys)
+            {
+                CharAnimGroup group = animData[otherType];
+                if (group.CopyOf == type)
+                    return true;
+            }
+            return false;
         }
 
         private CharAnimGroup getReferencedAnim(int type)

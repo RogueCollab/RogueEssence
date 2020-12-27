@@ -1414,7 +1414,14 @@ namespace RogueEssence.Dungeon
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
+
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
+                Color frameColor = Color.White;
+                if (charSheet.IsAnimCopied(anim))
+                    frameColor = Color.Yellow;
+                if (!charSheet.HasOwnAnim(anim))
+                    frameColor = Color.Gray;
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
 
             }
