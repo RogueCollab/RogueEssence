@@ -302,7 +302,7 @@ namespace RogueEssence.Dev.ViewModels
             if (checkSprites)
             {
                 CharSheet sheet = GraphicsManager.GetChara(currentForm);
-                CharSheet.Export(sheet, currentPath);
+                CharSheet.Export(sheet, currentPath, false);
             }
             else
             {

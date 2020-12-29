@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Dev;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Data
 {
@@ -68,8 +69,7 @@ namespace RogueEssence.Data
 
         public BattleFX HitFX;
 
-        [FrameType(0, false)]
-        public int HitCharAnim;
+        public CharAnimData HitCharAction;
 
         public BattleData()
         {
@@ -91,6 +91,7 @@ namespace RogueEssence.Data
 
             IntroFX = new List<BattleFX>();
             HitFX = new BattleFX();
+            HitCharAction = new CharAnimProcess();
         }
 
         public BattleData(BattleData other)
@@ -118,7 +119,7 @@ namespace RogueEssence.Data
             foreach (BattleFX fx in other.IntroFX)
                 IntroFX.Add(new BattleFX(fx));
             HitFX = new BattleFX(other.HitFX);
-            HitCharAnim = other.HitCharAnim;
+            HitCharAction = other.HitCharAction.Clone();
         }
 
         protected void copyEventList<T>(ref PriorityList<T> effectsTo, PriorityList<T> effectsFrom, bool init) where T : GameEvent

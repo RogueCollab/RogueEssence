@@ -22,22 +22,6 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class CharAnimation
     {
-        public static StaticCharAnimation GetCharAnim(int charActionType)
-        {
-            CharFrameType frameType = GraphicsManager.Actions[charActionType];
-            if (frameType.IsDash)
-            {
-                CharLungeAction action = new CharLungeAction();
-                action.BaseFrameType = charActionType;
-                return action;
-            }
-            else
-            {
-                CharAnimAction action = new CharAnimAction();
-                action.BaseFrameType = charActionType;
-                return action;
-            }
-        }
 
         protected abstract int AnimFrameType { get; }
         protected virtual int FrameMethod(List<CharAnimFrame> frames) { return zeroFrame(frames); }
@@ -218,6 +202,7 @@ namespace RogueEssence.Dungeon
         public bool FallShort { get; set; }
 
     }
+
 
     public abstract class MovingCharAnimation : CharAnimation
     {
@@ -404,6 +389,44 @@ namespace RogueEssence.Dungeon
         {
             MapLoc = AnimLoc * GraphicsManager.TileSize;
             LocHeight = MAX_TILE_HEIGHT * GraphicsManager.TileSize-(int)ActionTime.FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
+        }
+    }
+
+    public class CharAnimFly : StaticCharAnimation
+    {
+        const int MAX_TILE_HEIGHT = 8;
+        public const int ANIM_TIME = 24;
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
+        }
+        public override bool ActionPassed { get { return ActionTime >= ANIM_TIME - 1; } }
+        public override bool ActionDone { get { return ActionTime >= ANIM_TIME; } }
+        protected override int AnimFrameType { get { return GraphicsManager.ChargeAction; } }
+
+        protected override void UpdateFrameInternal()
+        {
+            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            LocHeight = (int)ActionTime.FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
+        }
+    }
+
+    public class CharAnimSpin : StaticCharAnimation
+    {
+        public const int SPINS = 3;
+        public const int ANIM_TIME = 24;
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
+        }
+        public override bool ActionPassed { get { return ActionDone; } }
+        public override bool ActionDone { get { return ActionTime >= ANIM_TIME; } }
+        protected override int AnimFrameType { get { return GraphicsManager.ChargeAction; } }
+
+        protected override void UpdateFrameInternal()
+        {
+            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            dirOffset = (Dir8)(ActionTime.FractionOf(8 * SPINS, ANIM_TIME) % 8);
         }
     }
 
