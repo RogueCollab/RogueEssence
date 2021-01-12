@@ -39,6 +39,16 @@
           </Grid>
         </TreeDataTemplate>
       </TreeView.DataTemplates>
+      <TreeView.ContextMenu>
+        <ContextMenu Items="{Binding OpList}">
+          <ContextMenu.Styles>
+            <Style Selector="MenuItem">
+              <Setter Property="Header" Value="{Binding Name}"/>
+              <Setter Property="Command" Value="{Binding Command}"/>
+            </Style>
+          </ContextMenu.Styles>
+        </ContextMenu>
+      </TreeView.ContextMenu>
     </TreeView>
     <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button>
     <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button>

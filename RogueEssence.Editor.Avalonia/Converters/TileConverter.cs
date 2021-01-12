@@ -16,7 +16,7 @@ namespace RogueEssence.Dev.Converters
             TileFrame tileFrame = (TileFrame)value;
             if (tileFrame.Sheet == null)
                 return null;
-            return DevTileManager.GetTile(tileFrame);
+            return DevGraphicsManager.GetTile(tileFrame);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

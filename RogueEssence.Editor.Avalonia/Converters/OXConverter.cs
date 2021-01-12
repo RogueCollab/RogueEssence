@@ -14,7 +14,7 @@ namespace RogueEssence.Dev.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool tf = (bool)value;
-            return tf ? DevTileManager.IconO : DevTileManager.IconX;
+            return tf ? DevGraphicsManager.IconO : DevGraphicsManager.IconX;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

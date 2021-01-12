@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
@@ -16,6 +15,24 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
+    public class OpContainer
+    {
+        public Action CommandAction;
+        public CharSheetOp Op;
+        public string Name { get { return Op.Name; } }
+
+        public OpContainer(CharSheetOp op, Action command)
+        {
+            Op = op;
+            CommandAction = command;
+        }
+
+        public void Command()
+        {
+            CommandAction();
+        }
+    }
+
     public class MonsterNodeViewModel : ViewModelBase
     {
 
@@ -62,6 +79,7 @@ namespace RogueEssence.Dev.ViewModels
             set { }
         }
         public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
+        public ObservableCollection<OpContainer> OpList { get; }
 
 
         private MonsterNodeViewModel chosenMonster;
@@ -88,6 +106,7 @@ namespace RogueEssence.Dev.ViewModels
         public SpeciesEditViewModel()
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
+            OpList = new ObservableCollection<OpContainer>();
         }
 
 
@@ -96,11 +115,31 @@ namespace RogueEssence.Dev.ViewModels
             return GraphicsManager.GetFallbackForm(parent, id) == id;
         }
 
+        private async void applyOpToCharSheet(CharSheetOp op)
+        {
+            //get current sprite
+            MonsterID formdata = chosenMonster.ID;
+
+            if (!chosenMonster.Filled)
+            {
+                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
+                return;
+            }
+
+            CharSheet sheet = GraphicsManager.GetChara(formdata);
+
+            op.Apply(sheet);
+        }
+
         public void LoadFormDataEntries(bool sprites, Window parent)
         {
             checkSprites = sprites;
             this.parent = parent;
-
+            if (sprites)
+            {
+                foreach (CharSheetOp op in DevGraphicsManager.CharSheetOps)
+                    OpList.Add(new OpContainer(op, () => applyOpToCharSheet(op)));
+            }
 
             lock (GameBase.lockObj)
             {
@@ -215,7 +254,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, "No graphics exist on this item.", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -241,7 +280,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, "This spritesheet does not exist.", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
 

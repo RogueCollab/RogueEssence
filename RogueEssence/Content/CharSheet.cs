@@ -8,7 +8,6 @@ using System.Xml;
 
 namespace RogueEssence.Content
 {
-
     public class CharFrameType
     {
         public string Name;

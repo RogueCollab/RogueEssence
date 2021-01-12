@@ -16,7 +16,7 @@ namespace RogueEssence.Dev.Converters
             string tileset = (string)value;
             if (String.IsNullOrEmpty(tileset))
                 return null;
-            return DevTileManager.GetTileset(tileset);
+            return DevGraphicsManager.GetTileset(tileset);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

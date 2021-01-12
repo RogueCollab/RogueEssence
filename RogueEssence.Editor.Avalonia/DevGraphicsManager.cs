@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media.Imaging;
 using RogueElements;
@@ -7,7 +8,7 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev
 {
-    public class DevTileManager
+    public class DevGraphicsManager
     {
         public const string RESOURCE_PATH = PathMod.ASSET_PATH + "Editor/";
 
@@ -17,10 +18,20 @@ namespace RogueEssence.Dev
         public static Bitmap IconO;
         public static Bitmap IconX;
 
+        public static List<CharSheetOp> CharSheetOps;
+
         public static void Init()
         {
-            IconO = new Bitmap(Path.Combine(RESOURCE_PATH, "O.png"));
-            IconX = new Bitmap(Path.Combine(RESOURCE_PATH, "X.png"));
+            CharSheetOps = new List<CharSheetOp>();
+            foreach (string path in Directory.GetFiles(Path.Combine(RESOURCE_PATH, "Extensions"), "*.op"))
+            {
+                CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
+                CharSheetOps.Add(newOp);
+            }
+
+
+            IconO = new Bitmap(Path.Combine(RESOURCE_PATH, "UI/O.png"));
+            IconX = new Bitmap(Path.Combine(RESOURCE_PATH, "UI/X.png"));
 
             tileCache = new LRUCache<TileFrame, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
