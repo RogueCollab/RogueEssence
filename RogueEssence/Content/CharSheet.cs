@@ -697,10 +697,12 @@ namespace RogueEssence.Content
                 // automatically add default animation
                 {
                     CharAnimGroup anim = new CharAnimGroup();
-                    foreach (CharAnimSequence sequence in animData[1].Sequences)
+                    foreach (CharAnimSequence sequence in animData[GraphicsManager.IdleAction].Sequences)
                     {
                         CharAnimSequence newSequence = new CharAnimSequence();
-                        newSequence.Frames.Add(sequence.Frames[0]);
+                        CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
+                        frame.EndTime = 1;
+                        newSequence.Frames.Add(frame);
                         anim.Sequences.Add(newSequence);
                     }
                     animData[0] = anim;
