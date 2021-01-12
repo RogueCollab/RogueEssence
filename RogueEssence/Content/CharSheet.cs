@@ -144,17 +144,17 @@ namespace RogueEssence.Content
     public class CharSheet : TileSheet
     {
         //class made specifically for characters, with their own actions and animations
-        private Dictionary<int, CharAnimGroup> animData;
+        public Dictionary<int, CharAnimGroup> AnimData;
         public int ShadowSize { get; private set; }
         //offsets are relative to the center of each image
-        private List<OffsetData> offsetData;
+        public List<OffsetData> OffsetData;
 
 
         protected CharSheet(Texture2D tex, int tileWidth, int tileHeight, int shadowSize, Dictionary<int, CharAnimGroup> animData, List<OffsetData> offsetData)
             : base(tex, tileWidth, tileHeight)
         {
-            this.animData = animData;
-            this.offsetData = offsetData;
+            this.AnimData = animData;
+            this.OffsetData = offsetData;
             ShadowSize = shadowSize;
         }
 
@@ -695,6 +695,18 @@ namespace RogueEssence.Content
                     frames[ii].Item1.Dispose();
                 }
 
+                // automatically add default animation
+                {
+                    CharAnimGroup anim = new CharAnimGroup();
+                    foreach (CharAnimSequence sequence in animData[1].Sequences)
+                    {
+                        CharAnimSequence newSequence = new CharAnimSequence();
+                        newSequence.Frames.Add(sequence.Frames[0]);
+                        anim.Sequences.Add(newSequence);
+                    }
+                    animData[0] = anim;
+                }
+
                 return new CharSheet(tex, maxWidth, maxHeight, shadowSize, animData, offsetData);
             }
             else
@@ -763,9 +775,9 @@ namespace RogueEssence.Content
                 Color[] particleColors = new Color[particleImg.Width * particleImg.Height];
 
                 Loc tileSize = new Loc(sheet.TileWidth, sheet.TileHeight);
-                for (int ii = 0; ii < sheet.offsetData.Count; ii++)
+                for (int ii = 0; ii < sheet.OffsetData.Count; ii++)
                 {
-                    OffsetData offsets = sheet.offsetData[ii];
+                    OffsetData offsets = sheet.OffsetData[ii];
                     Loc tilePos = new Loc(ii % sheet.TotalX, ii / sheet.TotalX) * tileSize;
                     tilePos = tilePos + tileSize / 2;
                     setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.Center, new Color(0, 255, 0, 255));
@@ -792,9 +804,12 @@ namespace RogueEssence.Content
 
                 XmlNode animsNode = doc.CreateElement("Anims");
 
-                foreach (int key in sheet.animData.Keys)
+                foreach (int key in sheet.AnimData.Keys)
                 {
-                    CharAnimGroup group = sheet.animData[key];
+                    if (key == 0)
+                        continue;
+
+                    CharAnimGroup group = sheet.AnimData[key];
                     XmlNode animGroupNode = doc.CreateElement("Anim");
 
                     animGroupNode.AppendInnerTextChild(doc, "Name", GraphicsManager.Actions[key].Name);
@@ -861,13 +876,13 @@ namespace RogueEssence.Content
                 // this is relative to the center of the frame
                 List<(Rectangle, Rectangle)> frames_bounds_tight = new List<(Rectangle, Rectangle)>();
                 // use offsets because they conveniently give the actual number of unique frames
-                for (int ii = 0; ii < sheet.offsetData.Count; ii++)
+                for (int ii = 0; ii < sheet.OffsetData.Count; ii++)
                 {
                     Loc rectStart = new Loc(ii % sheet.TotalX, ii / sheet.TotalX);
                     Rectangle crop_rect = GetCoveredRect(sheet.baseTexture, new Rectangle(rectStart.X * sheet.TileWidth, rectStart.Y * sheet.TileHeight, sheet.TileWidth, sheet.TileHeight));
 
                     Rectangle frame_rect = addToBounds(crop_rect, new Loc(-sheet.TileWidth / 2, -sheet.TileHeight / 2));
-                    frame_rect = combineExtents(frame_rect, sheet.offsetData[ii].GetCoveredRect());
+                    frame_rect = combineExtents(frame_rect, sheet.OffsetData[ii].GetCoveredRect());
                     frames_bounds_tight.Add((crop_rect, frame_rect));
                 }
 
@@ -876,12 +891,15 @@ namespace RogueEssence.Content
                 Rectangle shadow_rect_tight = GraphicsManager.MarkerShadow.GetCoveredRect(new Rectangle(0, 0, GraphicsManager.MarkerShadow.Width, GraphicsManager.MarkerShadow.Height));
 
                 // get max bounds for all animations
-                foreach (int key in sheet.animData.Keys)
+                foreach (int key in sheet.AnimData.Keys)
                 {
-                    if (sheet.animData[key].CopyOf > -1)
+                    if (key == 0)
                         continue;
+                    if (sheet.AnimData[key].CopyOf > -1)
+                        continue;
+
                     Rectangle maxBounds = new Rectangle(10000, 10000, -20000, -20000);
-                    foreach (CharAnimSequence sequence in sheet.animData[key].Sequences)
+                    foreach (CharAnimSequence sequence in sheet.AnimData[key].Sequences)
                     {
                         foreach (CharAnimFrame frame in sequence.Frames)
                         {
@@ -902,25 +920,28 @@ namespace RogueEssence.Content
                 }
 
 
-                foreach (int key in sheet.animData.Keys)
+                foreach (int key in sheet.AnimData.Keys)
                 {
-                    if (sheet.animData[key].CopyOf > -1)
+                    if (key == 0)
+                        continue;
+
+                    if (sheet.AnimData[key].CopyOf > -1)
                         continue;
 
                     Rectangle maxBounds = groupBounds[key];
-                    int framesPerAnim = sheet.animData[key].Sequences[0].Frames.Count;
+                    int framesPerAnim = sheet.AnimData[key].Sequences[0].Frames.Count;
 
-                    Texture2D animImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.animData[key].Sequences.Count);
-                    Texture2D particleImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.animData[key].Sequences.Count);
+                    Texture2D animImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
+                    Texture2D particleImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
                     Color[] particleColors = new Color[particleImg.Width * particleImg.Height];
-                    Texture2D shadowImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.animData[key].Sequences.Count);
+                    Texture2D shadowImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
 
                     for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
                     {
                         int sheetIndex = (DirExt.DIR8_COUNT - ii) % DirExt.DIR8_COUNT;
-                        if (sheetIndex >= sheet.animData[key].Sequences.Count)
+                        if (sheetIndex >= sheet.AnimData[key].Sequences.Count)
                             continue;
-                        CharAnimSequence sequence = sheet.animData[key].Sequences[ii];
+                        CharAnimSequence sequence = sheet.AnimData[key].Sequences[ii];
                         for (int jj = 0; jj < sequence.Frames.Count; jj++)
                         {
                             CharAnimFrame frame = sequence.Frames[jj];
@@ -948,7 +969,7 @@ namespace RogueEssence.Content
                             BaseSheet.Blit(sheet.baseTexture, animImg, source_rect.X, source_rect.Y, source_rect.Width, source_rect.Height,
                                 pastePos.X, pastePos.Y, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
 
-                            OffsetData offsets = sheet.offsetData[frame.Frame.X + frame.Frame.Y * sheet.TotalX];
+                            OffsetData offsets = sheet.OffsetData[frame.Frame.X + frame.Frame.Y * sheet.TotalX];
                             setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.CenterFlip : offsets.Center), new Color(0, 255, 0, 255));
                             setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.HeadFlip : offsets.Head), new Color(0, 0, 0, 255));
                             setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.LeftHandFlip : offsets.LeftHand), new Color(255, 0, 0, 255));
@@ -986,9 +1007,12 @@ namespace RogueEssence.Content
 
                 XmlNode animsNode = doc.CreateElement("Anims");
 
-                foreach (int key in sheet.animData.Keys)
+                foreach (int key in sheet.AnimData.Keys)
                 {
-                    CharAnimGroup group = sheet.animData[key];
+                    if (key == 0)
+                        continue;
+
+                    CharAnimGroup group = sheet.AnimData[key];
                     XmlNode animGroupNode = doc.CreateElement("Anim");
 
                     animGroupNode.AppendInnerTextChild(doc, "Name", GraphicsManager.Actions[key].Name);
@@ -1111,24 +1135,24 @@ namespace RogueEssence.Content
             base.Save(writer);
 
             writer.Write(ShadowSize);
-            writer.Write(offsetData.Count);
-            for (int ii = 0; ii < offsetData.Count; ii++)
+            writer.Write(OffsetData.Count);
+            for (int ii = 0; ii < OffsetData.Count; ii++)
             {
-                writer.Write(offsetData[ii].Center.X);
-                writer.Write(offsetData[ii].Center.Y);
-                writer.Write(offsetData[ii].Head.X);
-                writer.Write(offsetData[ii].Head.Y);
-                writer.Write(offsetData[ii].LeftHand.X);
-                writer.Write(offsetData[ii].LeftHand.Y);
-                writer.Write(offsetData[ii].RightHand.X);
-                writer.Write(offsetData[ii].RightHand.Y);
+                writer.Write(OffsetData[ii].Center.X);
+                writer.Write(OffsetData[ii].Center.Y);
+                writer.Write(OffsetData[ii].Head.X);
+                writer.Write(OffsetData[ii].Head.Y);
+                writer.Write(OffsetData[ii].LeftHand.X);
+                writer.Write(OffsetData[ii].LeftHand.Y);
+                writer.Write(OffsetData[ii].RightHand.X);
+                writer.Write(OffsetData[ii].RightHand.Y);
             }
 
-            writer.Write(animData.Keys.Count);
-            foreach (int frameType in animData.Keys)
+            writer.Write(AnimData.Keys.Count);
+            foreach (int frameType in AnimData.Keys)
             {
                 writer.Write(frameType);
-                CharAnimGroup animGroup = animData[frameType];
+                CharAnimGroup animGroup = AnimData[frameType];
 
                 writer.Write(animGroup.InternalIndex);
                 writer.Write(animGroup.CopyOf);
@@ -1185,7 +1209,7 @@ namespace RogueEssence.Content
                 if (pointType == ActionPointType.Shadow)
                     return frame.ShadowOffset;
 
-                OffsetData offset = offsetData[frame.Frame.Y * TotalX + frame.Frame.X];
+                OffsetData offset = OffsetData[frame.Frame.Y * TotalX + frame.Frame.X];
                 Loc chosenLoc = Loc.Zero;
                 switch (pointType)
                 {
@@ -1231,16 +1255,16 @@ namespace RogueEssence.Content
         public bool HasOwnAnim(int type)
         {
             CharAnimGroup group;
-            if (!animData.TryGetValue(type, out group))
+            if (!AnimData.TryGetValue(type, out group))
                 return false;
             return group.CopyOf == -1;
         }
 
         public bool IsAnimCopied(int type)
         {
-            foreach (int otherType in animData.Keys)
+            foreach (int otherType in AnimData.Keys)
             {
-                CharAnimGroup group = animData[otherType];
+                CharAnimGroup group = AnimData[otherType];
                 if (group.CopyOf == type)
                     return true;
             }
@@ -1252,7 +1276,7 @@ namespace RogueEssence.Content
             int fallbackIndex = -1;
             CharFrameType actionData = GraphicsManager.Actions[type];
             CharAnimGroup group;
-            while (!animData.TryGetValue(type, out group))
+            while (!AnimData.TryGetValue(type, out group))
             {
                 fallbackIndex++;
                 if (fallbackIndex < actionData.Fallbacks.Count)
@@ -1262,7 +1286,7 @@ namespace RogueEssence.Content
             }
 
             while (group.CopyOf > -1)
-                group = animData[group.CopyOf];
+                group = AnimData[group.CopyOf];
             return group;
         }
 
