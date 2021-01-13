@@ -1193,9 +1193,11 @@ namespace RogueEssence.Content
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
-                List<CharAnimFrame> frames = group.SeqAtDir(dir).Frames;
-                CharAnimFrame frame = frames[frameMethod(frames)];
-                DrawTile(spriteBatch, pos + frame.Offset.ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                CharAnimSequence seq = group.SeqAtDir(dir);
+                int frameNum = frameMethod(seq.Frames);
+                CharAnimFrame frame = seq.Frames[frameNum];
+                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                DrawTile(spriteBatch, pos + AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset).ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
             }
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
@@ -1206,9 +1208,11 @@ namespace RogueEssence.Content
             if (group != null)
             {
                 List<CharAnimFrame> frames = group.SeqAtDir(dir).Frames;
-                CharAnimFrame frame = frames[frameMethod(frames)];
+                int frameNum = frameMethod(frames);
+                CharAnimFrame frame = frames[frameNum];
+                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
                 if (pointType == ActionPointType.Shadow)
-                    return frame.ShadowOffset;
+                    return AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].ShadowOffset, frame.ShadowOffset);
 
                 OffsetData offset = OffsetData[frame.Frame.Y * TotalX + frame.Frame.X];
                 Loc chosenLoc = Loc.Zero;
@@ -1227,7 +1231,7 @@ namespace RogueEssence.Content
                         chosenLoc = frame.Flip ? offset.RightHandFlip : offset.RightHand;
                         break;
                 }
-                return frame.Offset + chosenLoc;
+                return AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].Offset, frame.Offset) + chosenLoc;
             }
             return Loc.Zero;
         }
@@ -1237,11 +1241,27 @@ namespace RogueEssence.Content
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
-                CharAnimFrame frame = group.SeqAtDir(dir).Frames[frameNum];
-                DrawTile(spriteBatch, pos + frame.Offset.ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                CharAnimSequence seq = group.SeqAtDir(dir);
+                CharAnimFrame frame = seq.Frames[frameNum];
+                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                DrawTile(spriteBatch, pos + AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset).ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
             }
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
+        }
+
+        private Loc AdjustOffset(int type, int rushFrame, int frameNum, Loc rushOffset, Loc offset)
+        {
+            if (GraphicsManager.Actions[type].IsDash)
+            {
+                if (frameNum > rushFrame)
+                {
+                    Loc diff = offset - rushOffset;
+                    return rushOffset + (diff / 2);
+                }
+            }
+            
+            return offset;
         }
 
         public int GetCurrentFrame(int type, Dir8 dir, DetermineFrame frameMethod)
