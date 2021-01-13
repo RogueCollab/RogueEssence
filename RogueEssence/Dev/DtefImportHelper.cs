@@ -105,7 +105,7 @@ namespace RogueEssence.Dev
                             }
 
                         }
-                        var node = document.SelectSingleNode("//DungeonTileset/PMDO/" + tileTitle);
+                        var node = document.SelectSingleNode("//DungeonTileset/MD/" + tileTitle);
                         var index = -1;
                         if (node != null)
                             index = int.Parse(node.InnerText);
