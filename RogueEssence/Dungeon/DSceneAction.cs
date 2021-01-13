@@ -409,9 +409,9 @@ namespace RogueEssence.Dungeon
         {
 
             //trigger animations of target
-            if (data.HitCharAnim != 0)
+            StaticCharAnimation charAnim = data.HitCharAction.GetCharAnim();
+            if (charAnim != null)
             {
-                StaticCharAnimation charAnim = CharAnimation.GetCharAnim(data.HitCharAnim);
                 charAnim.AnimLoc = target.CharLoc;
                 charAnim.CharDir = target.CharDir;
                 yield return CoroutineManager.Instance.StartCoroutine(target.StartAnim(charAnim));

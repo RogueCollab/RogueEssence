@@ -314,7 +314,7 @@ namespace RogueEssence.Dev.ViewModels
 
             GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
             GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevTileManager.ClearCaches();
+            DevGraphicsManager.ClearCaches();
 
             Textures.TileBrowser.UpdateTilesList();
             Textures.TileBrowser.SelectTileset(sheetName);

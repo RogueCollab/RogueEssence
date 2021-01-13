@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
@@ -16,6 +15,24 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
+    public class OpContainer
+    {
+        public Action CommandAction;
+        public CharSheetOp Op;
+        public string Name { get { return Op.Name; } }
+
+        public OpContainer(CharSheetOp op, Action command)
+        {
+            Op = op;
+            CommandAction = command;
+        }
+
+        public void Command()
+        {
+            CommandAction();
+        }
+    }
+
     public class MonsterNodeViewModel : ViewModelBase
     {
 
@@ -62,6 +79,7 @@ namespace RogueEssence.Dev.ViewModels
             set { }
         }
         public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
+        public ObservableCollection<OpContainer> OpList { get; }
 
 
         private MonsterNodeViewModel chosenMonster;
@@ -88,6 +106,7 @@ namespace RogueEssence.Dev.ViewModels
         public SpeciesEditViewModel()
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
+            OpList = new ObservableCollection<OpContainer>();
         }
 
 
@@ -96,11 +115,48 @@ namespace RogueEssence.Dev.ViewModels
             return GraphicsManager.GetFallbackForm(parent, id) == id;
         }
 
+        private async void applyOpToCharSheet(CharSheetOp op)
+        {
+            //get current sprite
+            MonsterID currentForm = chosenMonster.ID;
+            string fileName = GetFilename(currentForm.Species);
+
+            if (!chosenMonster.Filled)
+            {
+                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
+                return;
+            }
+
+            CharSheet sheet = GraphicsManager.GetChara(currentForm);
+
+            op.Apply(sheet);
+
+            //load data
+            Dictionary<MonsterID, byte[]> data = LoadSpeciesData(currentForm.Species);
+
+            //write sprite data
+            WriteSpeciesData(data, currentForm, sheet);
+
+            //save data
+            ImportHelper.SaveSpecies(fileName, data);
+
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Chara);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Chara);
+
+
+            DiagManager.Instance.LogInfo(String.Format("{0} applied to: {1}", op.Name, GetFormString(currentForm)));
+        }
+
         public void LoadFormDataEntries(bool sprites, Window parent)
         {
             checkSprites = sprites;
             this.parent = parent;
-
+            if (sprites)
+            {
+                OpList.Add(new OpContainer(new CharSheetDummyOp("Export as Single Sheet"), ExportSingleSheet));
+                foreach (CharSheetOp op in DevGraphicsManager.CharSheetOps)
+                    OpList.Add(new OpContainer(op, () => applyOpToCharSheet(op)));
+            }
 
             lock (GameBase.lockObj)
             {
@@ -208,14 +264,24 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public async void btnExport_Click()
+        public void ExportSingleSheet()
+        {
+            ExportFlow(true);
+        }
+
+        public void btnExport_Click()
+        {
+            ExportFlow(false);
+        }
+
+        public async void ExportFlow(bool singleSheet)
         {
             //get current sprite
             MonsterID formdata = chosenMonster.ID;
 
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, "No graphics exist on this item.", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -233,7 +299,7 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
                 lock (GameBase.lockObj)
-                    Export(CachedPath, formdata);
+                    Export(CachedPath, formdata, singleSheet);
             }
         }
 
@@ -241,7 +307,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, "This spritesheet does not exist.", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -297,12 +363,12 @@ namespace RogueEssence.Dev.ViewModels
 
 
 
-        private void Export(string currentPath, MonsterID currentForm)
+        private void Export(string currentPath, MonsterID currentForm, bool singleSheet)
         {
             if (checkSprites)
             {
                 CharSheet sheet = GraphicsManager.GetChara(currentForm);
-                CharSheet.Export(sheet, currentPath);
+                CharSheet.Export(sheet, currentPath, singleSheet);
             }
             else
             {
@@ -341,6 +407,18 @@ namespace RogueEssence.Dev.ViewModels
 
             DiagManager.Instance.LogInfo("Deleted frames for:" + GetFormString(formdata));
 
+        }
+
+        private void WriteSpeciesData(Dictionary<MonsterID, byte[]> spriteData, MonsterID formData, CharSheet sprite)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                using (BinaryWriter writer = new BinaryWriter(stream))
+                    sprite.Save(writer);
+
+                byte[] writingBytes = stream.ToArray();
+                spriteData[formData] = writingBytes;
+            }
         }
 
         private Dictionary<MonsterID, byte[]> LoadSpeciesData(int num)

@@ -196,6 +196,7 @@ namespace RogueEssence.Content
         public static TileSheet Cursor { get; private set; }
         public static TileSheet BattleFactors { get; private set; }
         public static TileSheet Shadows { get; private set; }
+        public static BaseSheet MarkerShadow { get; private set; }
         public static TileSheet Tiling { get; private set; }
         public static TileSheet Darkness { get; private set; }
         public static TileSheet Strip { get; private set; }
@@ -264,12 +265,25 @@ namespace RogueEssence.Content
                     AOKEmotion = Int32.Parse(aokEmotion.InnerText);
 
                     Actions = new List<CharFrameType>();
+                    List<List<string>> fallbacks = new List<List<string>>();
                     XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
                     foreach (XmlNode action in actions.SelectNodes("Action"))
                     {
                         XmlNode actionName = action.SelectSingleNode("Name");
                         XmlNode actionDash = action.SelectSingleNode("Dash");
                         Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
+                        List<string> actionFallbacks = new List<string>();
+                        foreach (XmlNode fallback in action.SelectNodes("Fallback"))
+                            actionFallbacks.Add(fallback.InnerText);
+                        fallbacks.Add(actionFallbacks);
+                    }
+                    for (int ii = 0; ii < fallbacks.Count; ii++)
+                    {
+                        foreach (string fallback in fallbacks[ii])
+                        {
+                            int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                            Actions[ii].Fallbacks.Add(fallbackIndex);
+                        }
                     }
 
                     XmlNode hurtAction = xmldoc.DocumentElement.SelectSingleNode("HurtAction");
@@ -313,7 +327,7 @@ namespace RogueEssence.Content
             BaseSheet.InitBase(graphics, defaultTex);
 
             Splash = BaseSheet.Import(BASE_PATH + "Splash.png");
-
+            MarkerShadow = BaseSheet.Import(BASE_PATH + "MarkerShadow.png");
             SysFont = LoadFont("system");
         }
 
@@ -419,6 +433,7 @@ namespace RogueEssence.Content
         {
             Subtitle.Dispose();
             Title.Dispose();
+            MarkerShadow.Dispose();
             Splash.Dispose();
             MapSheet.Dispose();
             MiniHP.Dispose();

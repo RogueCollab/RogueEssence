@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -144,9 +145,9 @@ namespace RogueEssence.Dungeon
             TileEmitter = (FiniteEmitter)other.TileEmitter.Clone();
         }
         public abstract CombatAction Clone();
-        protected void BeginStaticAction(Character owner, CharAction prevAction, int actionType, bool fallShort = false)
+        protected void BeginStaticAction(Character owner, CharAction prevAction, CharAnimData animData, bool fallShort = false)
         {
-            StaticCharAnimation anim = CharAnimation.GetCharAnim(actionType);
+            StaticCharAnimation anim = animData.GetCharAnim();
             anim.CharLoc = owner.CharLoc;
             anim.CharDir = owner.CharDir;
             anim.MajorAnim = true;
@@ -223,22 +224,97 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    [Serializable]
+    public abstract class CharAnimData
+    {
+        public abstract StaticCharAnimation GetCharAnim();
+        public abstract CharAnimData Clone();
+    }
+
+    [Serializable]
+    public class CharAnimFrameType : CharAnimData
+    {
+        [Dev.FrameType(0, false)]
+        public int ActionType;
+
+        public CharAnimFrameType() { }
+        public CharAnimFrameType(int actionType) { ActionType = actionType; }
+        protected CharAnimFrameType(CharAnimFrameType other)
+        {
+            ActionType = other.ActionType;
+        }
+        public override CharAnimData Clone() { return new CharAnimFrameType(this); }
+
+        public override StaticCharAnimation GetCharAnim()
+        {
+            CharFrameType frameType = GraphicsManager.Actions[ActionType];
+            if (frameType.IsDash)
+            {
+                CharLungeAction action = new CharLungeAction();
+                action.BaseFrameType = ActionType;
+                return action;
+            }
+            else
+            {
+                CharAnimAction action = new CharAnimAction();
+                action.BaseFrameType = ActionType;
+                return action;
+            }
+        }
+    }
+
+    [Serializable]
+    public class CharAnimProcess : CharAnimData
+    {
+        public enum ProcessType
+        {
+            None,
+            Spin,
+            Drop,
+            Fly
+        }
+
+        public ProcessType Process;
+
+        public CharAnimProcess() { }
+        public CharAnimProcess(ProcessType process) { Process = process; }
+        protected CharAnimProcess(CharAnimProcess other)
+        {
+            Process = other.Process;
+        }
+        public override CharAnimData Clone() { return new CharAnimProcess(this); }
+
+        public override StaticCharAnimation GetCharAnim()
+        {
+            switch (Process)
+            {
+                case ProcessType.Spin:
+                    return new CharAnimSpin();
+                case ProcessType.Drop:
+                    return new CharAnimDrop();
+                case ProcessType.Fly:
+                    return new CharAnimFly();
+                default:
+                    return null;
+            }
+        }
+    }
+
 
     [Serializable]
     public class SelfAction : CombatAction
     {
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
+        public CharAnimData CharAnimData;
 
         //this action throws out no hitbox
-        public SelfAction() { }
+        public SelfAction() { CharAnimData = new CharAnimFrameType(0); }
         protected SelfAction(SelfAction other)
             : base(other)
         {
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
         }
         public override CombatAction Clone() { return new SelfAction(this); }
-        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnim); }
+        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnimData); }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
             //simply add an animation
@@ -285,8 +361,7 @@ namespace RogueEssence.Dungeon
 
         public AttackCoverage WideAngle;
 
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
+        public CharAnimData CharAnimData;
 
         [NonSerialized]
         public bool stopHitboxes;
@@ -294,6 +369,7 @@ namespace RogueEssence.Dungeon
         public AttackAction()
         {
             Emitter = new EmptyFiniteEmitter();
+            CharAnimData = new CharAnimFrameType(0);
         }
         protected AttackAction(AttackAction other)
             : base(other)
@@ -301,7 +377,7 @@ namespace RogueEssence.Dungeon
             HitTiles = other.HitTiles;
             BurstTiles = other.BurstTiles;
             WideAngle = other.WideAngle;
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
             Emitter = (FiniteEmitter)other.Emitter.Clone();
         }
         public override CombatAction Clone() { return new AttackAction(this); }
@@ -313,7 +389,7 @@ namespace RogueEssence.Dungeon
                 if (DungeonScene.Instance.ShotBlocked(owner, owner.CharLoc, owner.CharDir, Alignment.None, true, true, true))
                     stopHitboxes = true;
             }
-            BeginStaticAction(owner, prevAction, CharAnim, stopHitboxes);
+            BeginStaticAction(owner, prevAction, CharAnimData, stopHitboxes);
         }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
@@ -451,12 +527,12 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Speed;
 
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
+        public CharAnimData CharAnimData;
 
         public AreaAction()
         {
             Emitter = new EmptyCircleSquareEmitter();
+            CharAnimData = new CharAnimFrameType(0);
         }
         protected AreaAction(AreaAction other)
             : base(other)
@@ -466,12 +542,12 @@ namespace RogueEssence.Dungeon
             HitArea = other.HitArea;
             Range = other.Range;
             Speed = other.Speed;
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
             Emitter = (CircleSquareEmitter)other.Emitter.Clone();
         }
         public override CombatAction Clone() { return new AreaAction(this); }
 
-        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnim); }
+        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnimData); }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
             //create the area hitbox(es) and toss them into the wild
@@ -584,12 +660,12 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Speed;
 
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
+        public CharAnimData CharAnimData;
 
         public OffsetAction()
         {
             Emitter = new EmptyCircleSquareEmitter();
+            CharAnimData = new CharAnimFrameType(0);
         }
         protected OffsetAction(OffsetAction other)
             : base(other)
@@ -599,12 +675,12 @@ namespace RogueEssence.Dungeon
             HitArea = other.HitArea;
             Range = other.Range;
             Speed = other.Speed;
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
             Emitter = (CircleSquareEmitter)other.Emitter.Clone();
         }
         public override CombatAction Clone() { return new OffsetAction(this); }
 
-        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnim); }
+        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnimData); }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
             //create the area hitbox(es) and toss them into the wild
@@ -751,8 +827,7 @@ namespace RogueEssence.Dungeon
         public bool Boomerang;
         public int Item;
 
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
+        public CharAnimData CharAnimData;
 
         public ProjectileAction()
         {
@@ -760,6 +835,7 @@ namespace RogueEssence.Dungeon
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             StreamEmitter = new EmptyShootingEmitter();
+            CharAnimData = new CharAnimFrameType(0);
         }
         protected ProjectileAction(ProjectileAction other)
             : base(other)
@@ -768,14 +844,14 @@ namespace RogueEssence.Dungeon
             Speed = other.Speed;
             Boomerang = other.Boomerang;
             Item = other.Item;
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
             Anim = new AnimData(other.Anim);
             Emitter = (AttachPointEmitter)other.Emitter.Clone();
             StreamEmitter = (ShootingEmitter)other.StreamEmitter.Clone();
         }
         public override CombatAction Clone() { return new ProjectileAction(this); }
 
-        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnim); }
+        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnimData); }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
             //create the projectile hitbox(es) and toss them into the wild
@@ -928,12 +1004,12 @@ namespace RogueEssence.Dungeon
         public int Speed;
         public int Linger;
 
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
+        public CharAnimData CharAnimData;
 
         public WaveMotionAction()
         {
             Anim = new BeamAnimData();
+            CharAnimData = new CharAnimFrameType(0);
         }
         protected WaveMotionAction(WaveMotionAction other)
             : base(other)
@@ -941,12 +1017,12 @@ namespace RogueEssence.Dungeon
             Anim = new BeamAnimData(other.Anim);
             Wide = other.Wide;
             Speed = other.Speed;
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
             Linger = other.Linger;
         }
         public override CombatAction Clone() { return new WaveMotionAction(this); }
 
-        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnim); }
+        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnimData); }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
             //create the beam hitbox and toss it into the wild
@@ -1015,15 +1091,14 @@ namespace RogueEssence.Dungeon
         public ArcCoverage Coverage;
         public int Item;
 
-        [Dev.FrameType(0, false)]
-        public int CharAnim;
-
+        public CharAnimData CharAnimData;
 
         public ThrowAction()
         {
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             Item = -1;
+            CharAnimData = new CharAnimFrameType(0);
         }
         protected ThrowAction(ThrowAction other)
             : base(other)
@@ -1032,13 +1107,13 @@ namespace RogueEssence.Dungeon
             Range = other.Range;
             Coverage = other.Coverage;
             Item = other.Item;
-            CharAnim = other.CharAnim;
+            CharAnimData = other.CharAnimData.Clone();
             Anim = new AnimData(other.Anim);
             Emitter = (AttachPointEmitter)other.Emitter.Clone();
         }
         public override CombatAction Clone() { return new ThrowAction(this); }
 
-        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnim); }
+        public override void BeginAction(Character owner, CharAction prevAction) { BeginStaticAction(owner, prevAction, CharAnimData); }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)
         {
             //create the throw hitbox and toss it into the wild

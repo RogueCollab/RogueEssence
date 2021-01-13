@@ -106,7 +106,6 @@ namespace RogueEssence.Dev
 
             using (CharSheet sprite = CharSheet.Import(spriteDir))
             {
-
                 using (MemoryStream stream = new MemoryStream())
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
