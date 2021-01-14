@@ -142,12 +142,9 @@ namespace RogueEssence.Ground
         public override GroundEntity Clone() { return new GroundChar(this); }
 
 
-        public void StartEmote(EmoteData data, int cycles)
+        public void StartEmote(Emote emote)
         {
-            if (data == null)
-                currentEmote = null;
-            else
-                currentEmote = new Emote(data.Anim, data.LocHeight, cycles);
+            currentEmote = emote;
         }
 
         public void StartAction(GroundAction action)
@@ -290,7 +287,10 @@ namespace RogueEssence.Ground
             currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
-                currentEmote.Draw(spriteBatch, offset - MapLoc - drawOffset);
+            {
+                Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
+                currentEmote.Draw(spriteBatch, offset - head - drawOffset);
+            }
         }
 
 

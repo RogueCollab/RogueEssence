@@ -834,7 +834,7 @@ namespace RogueEssence.Dungeon
                         else
                             DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO", Name, DataManager.Instance.GetSkill(Skills[deductSlots[0]].Element.SkillNum).Name.ToLocal()));
 
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.NoChargeFX));
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(this, DataManager.Instance.NoChargeFX));
                     }
                 }
                 else
@@ -844,7 +844,7 @@ namespace RogueEssence.Dungeon
                         yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30, CharLoc));
                         DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO", Name, DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).Name.ToLocal()));
 
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.NoChargeFX));
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(this, DataManager.Instance.NoChargeFX));
                     }
                     else
                     {
@@ -1947,12 +1947,9 @@ namespace RogueEssence.Dungeon
         public Loc MapLoc { get { return currentCharAction.MapLoc; } }
         public int LocHeight { get { return currentCharAction.LocHeight; } }
 
-        public void StartEmote(EmoteData data, int cycles)
+        public void StartEmote(Emote emote)
         {
-            if (data == null)
-                currentEmote = null;
-            else
-                currentEmote = new Emote(data.Anim, data.LocHeight, cycles);
+            currentEmote = emote;
         }
         
         public bool OccupiedwithAction()
@@ -2135,9 +2132,8 @@ namespace RogueEssence.Dungeon
 
             if (currentEmote != null)
             {
-                //TODO: emote in the right place
                 Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
-                currentEmote.Draw(spriteBatch, offset - MapLoc - drawOffset);
+                currentEmote.Draw(spriteBatch, offset - head - drawOffset);
             }
             else if (!DataManager.Instance.Save.CutsceneMode)
             {
