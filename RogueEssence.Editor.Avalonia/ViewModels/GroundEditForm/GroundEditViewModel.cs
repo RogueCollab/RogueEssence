@@ -271,7 +271,7 @@ namespace RogueEssence.Dev.ViewModels
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
-            CurrentFile = mapName;
+            CurrentFile = PathMod.ModPath(Path.Combine(DataManager.GROUND_PATH, mapName + DataManager.GROUND_EXT));
             loadEditorSettings();
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
