@@ -922,7 +922,11 @@ namespace RogueEssence.Data
                         foreach (Character character in ActiveTeam.Players)
                         {
                             if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
+                            {
+                                if (character.EquippedItem.ID > -1)
+                                    mainSave.ItemsToStore.Add(character.EquippedItem);
                                 mainSave.CharsToStore.Add(new CharData(character));
+                            }
                         }
                         foreach (Character character in ActiveTeam.Assembly)
                         {
