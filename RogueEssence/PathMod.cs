@@ -82,17 +82,23 @@ namespace RogueEssence
             }
             files.Add(Directory.GetFiles(Path.Join(ASSET_PATH, baseFolder), search));
 
-            HashSet<string> results = new HashSet<string>();
-            for (int ii = 0; ii < files.Count; ii++)
+            Dictionary<string, string> file_mappings = new Dictionary<string, string>();
+            for (int ii = files.Count-1; ii >= 0; ii--)
             {
                 for (int jj = 0; jj < files[ii].Length; jj++)
-                    results.Add(files[ii][jj]);
+                {
+                    string full_path = files[ii][jj];
+                    string file_path = Path.GetFileName(full_path);
+                    file_mappings[file_path] = full_path;
+                }
             }
 
             List<string> result_files = new List<string>();
-            foreach (string str in results)
+            foreach (string str in file_mappings.Keys)
                 result_files.Add(str);
             result_files.Sort();
+            for (int ii = 0; ii < result_files.Count; ii++)
+                result_files[ii] = file_mappings[result_files[ii]];
             return result_files.ToArray();
         }
 
