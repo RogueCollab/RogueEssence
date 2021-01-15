@@ -34,7 +34,7 @@ namespace RogueEssence.Dungeon
                 SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
                 LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.Name, entry.Name.ToLocal()));
 
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(context.User, context.User, DataManager.Instance.NoChargeFX));
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
             }
 
             if (!context.CancelState.Cancel)
@@ -433,6 +433,14 @@ namespace RogueEssence.Dungeon
         }
 
 
+        public IEnumerator<YieldInstruction> ProcessEmoteFX(Character user, EmoteFX fx)
+        {
+            //play sound
+            GameManager.Instance.BattleSE(fx.Sound);
+            //the animation
+            user.StartEmote(new Emote(fx.Anim, fx.LocHeight, 1));
+            yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, user.CharLoc));
+        }
 
         public IEnumerator<YieldInstruction> ProcessBattleFX(Character user, Character target, BattleFX fx)
         {

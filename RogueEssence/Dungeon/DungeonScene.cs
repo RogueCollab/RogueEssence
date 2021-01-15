@@ -18,7 +18,10 @@ namespace RogueEssence.Dungeon
         private static DungeonScene instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new DungeonScene();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static DungeonScene Instance { get { return instance; } }
         
@@ -116,10 +119,9 @@ namespace RogueEssence.Dungeon
         private Rect sightRect;
         
         private float[][] charSightValues;
-
         
         private BlendState subtractBlend;
-        
+
         private RenderTarget2D gameScreen;
 
         public DungeonScene()
@@ -160,6 +162,14 @@ namespace RogueEssence.Dungeon
                 false,
                 GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat,
                 DepthFormat.Depth24);
+        }
+
+        public void ZoomChanged()
+        {
+            int zoomMult = Math.Min(GraphicsManager.WindowZoom, (int)Math.Max(1, 1 / GraphicsManager.Zoom.GetScale()));
+            gameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                GraphicsManager.ScreenWidth * zoomMult, GraphicsManager.ScreenHeight * zoomMult,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
         }
 
         public override void Begin()
@@ -749,7 +759,17 @@ namespace RogueEssence.Dungeon
                 //update cam
                 windowScale = GraphicsManager.WindowZoom;
 
-                scale = GameManager.Instance.Zoom.GetScale();
+                scale = GraphicsManager.Zoom.GetScale();
+
+                matrixScale = windowScale;
+                drawScale = scale;
+                while (matrixScale > 1 && drawScale < 1)
+                {
+                    matrixScale /= 2;
+                    drawScale *= 2;
+                }
+
+
                 Loc viewCenter = focusedLoc;
 
                 if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Clamp)
@@ -820,7 +840,7 @@ namespace RogueEssence.Dungeon
 
                     GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
 
-                    Matrix matrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+                    Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
                     groundDraw.Clear();
@@ -1191,7 +1211,7 @@ namespace RogueEssence.Dungeon
 
                     GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
-                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                     spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 
@@ -1202,7 +1222,7 @@ namespace RogueEssence.Dungeon
                 if ((ShowMap != MinimapState.None) && !Turn && !ShowActions && !DataManager.Instance.Save.CutsceneMode && MenuManager.Instance.MenuCount == 0)
                 {
                     //draw minimap
-                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                     TileSheet mapSheet = GraphicsManager.MapSheet;
 
@@ -1339,7 +1359,7 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
 
 

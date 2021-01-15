@@ -120,7 +120,7 @@ namespace RogueEssence.Data
         public BattleFX HealFX;
         public BattleFX RestoreChargeFX;
         public BattleFX LoseChargeFX;
-        public BattleFX NoChargeFX;
+        public EmoteFX NoChargeFX;
         public BattleFX ElementFX;
         public BattleFX IntrinsicFX;
         public BattleFX SendHomeFX;
@@ -194,7 +194,7 @@ namespace RogueEssence.Data
             HealFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Heal.fx"), null);
             RestoreChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "RestoreCharge.fx"), null);
             LoseChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "LoseCharge.fx"), null);
-            NoChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "NoCharge.fx"), null);
+            NoChargeFX = (EmoteFX)LoadData(PathMod.ModPath(FX_PATH + "NoCharge.fx"), null);
             ElementFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Element.fx"), null);
             IntrinsicFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Intrinsic.fx"), null);
             SendHomeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "SendHome.fx"), null);

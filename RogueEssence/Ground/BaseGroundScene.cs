@@ -42,6 +42,14 @@ namespace RogueEssence.Ground
                 DepthFormat.Depth24);
         }
 
+        public void ZoomChanged()
+        {
+            int zoomMult = Math.Min(GraphicsManager.WindowZoom, (int)Math.Max(1, 1 / GraphicsManager.Zoom.GetScale()));
+            gameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                GraphicsManager.ScreenWidth * zoomMult, GraphicsManager.ScreenHeight * zoomMult,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+        }
+
         public override void Begin()
         {
             PendingDevEvent = null;
@@ -89,7 +97,17 @@ namespace RogueEssence.Ground
             //update cam
             windowScale = GraphicsManager.WindowZoom;
 
-            scale = GameManager.Instance.Zoom.GetScale();
+            scale = GraphicsManager.Zoom.GetScale();
+
+            matrixScale = windowScale;
+            drawScale = scale;
+            while (matrixScale > 1 && drawScale < 1)
+            {
+                matrixScale /= 2;
+                drawScale *= 2;
+            }
+
+
             Loc viewCenter = focusedLoc;
 
             if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
@@ -111,7 +129,7 @@ namespace RogueEssence.Ground
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
 
-                Matrix matrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+                Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
                 groundDraw.Clear();
@@ -127,7 +145,7 @@ namespace RogueEssence.Ground
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                 spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 

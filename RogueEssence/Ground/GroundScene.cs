@@ -16,7 +16,10 @@ namespace RogueEssence.Ground
         private static GroundScene instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new GroundScene();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static GroundScene Instance { get { return instance; } }
 
