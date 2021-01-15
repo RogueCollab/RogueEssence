@@ -212,7 +212,13 @@ namespace RogueEssence
             {
                 string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), diagInfo);
                 if (DevMode)
+                {
+#if DEBUG
                     Debug.WriteLine(fullMsg);
+#else
+                    Console.WriteLine(fullMsg);
+#endif
+                }
 
                 try
                 {
