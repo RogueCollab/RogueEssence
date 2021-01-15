@@ -615,7 +615,7 @@ namespace RogueEssence.Dev
                         {
                             string tileTitle = TILE_TITLES[nn];
                             string tileNodeTitle = TILE_NODE_TITLES[nn];
-                            XmlNode node = document.SelectSingleNode("//LegacyDungeonTileset/MD/" + tileNodeTitle);
+                            XmlNode node = document.SelectSingleNode("//LegacyDungeonTileset/RogueEssence/" + tileNodeTitle);
                             int index = -1;
                             if (node != null)
                                 index = Int32.Parse(node.InnerText);

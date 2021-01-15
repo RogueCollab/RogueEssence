@@ -19,9 +19,9 @@ namespace RogueEssence.Dev
         private const string VAR0_FN = "tileset_0.png";
         private const string VAR1_FN = "tileset_1.png";
         private const string VAR2_FN = "tileset_2.png";
-        private static readonly Regex Var0FFn = new Regex(@"tileset_0_frame(\d+)\.(\d+)\.png");
-        private static readonly Regex Var1FFn = new Regex(@"tileset_1_frame(\d+)\.(\d+)\.png");
-        private static readonly Regex Var2FFn = new Regex(@"tileset_2_frame(\d+)\.(\d+)\.png");
+        private static readonly Regex Var0FFn = new Regex(@"tileset_0_frame(\d+)_(\d+)\.(\d+)\.png");
+        private static readonly Regex Var1FFn = new Regex(@"tileset_1_frame(\d+)_(\d+)\.(\d+)\.png");
+        private static readonly Regex Var2FFn = new Regex(@"tileset_2_frame(\d+)_(\d+)\.(\d+)\.png");
         private const string XML_FN = "tileset.dtef.xml";
         private static readonly string[] VariantTitles = { VAR0_FN, VAR1_FN, VAR2_FN };
         private static readonly Regex[] VariantTitlesFrames = { Var0FFn, Var1FFn, Var2FFn };
@@ -57,19 +57,24 @@ namespace RogueEssence.Dev
 
                 // The tile index inside the tile sheet where the first frame of animation for this variation is.
                 var variationStarts = new[] {0, 0, 0};
-                var frameCounts = new[] {0, 0, 0};
+                
+                // Outer dict: Layer num; inner dict: frame num; tuple: (file name, frame length)
+                var frameSpecs = new[] {
+                    new SortedDictionary<int, SortedDictionary<int, Tuple<string, int>>>(),
+                    new SortedDictionary<int, SortedDictionary<int, Tuple<string, int>>>(),
+                    new SortedDictionary<int, SortedDictionary<int, Tuple<string, int>>>()
+                };
 
                 try
                 {
                     var tileList = new List<BaseSheet>();
                     foreach (var tileTitle in TileTitles)
                     {
-                        var frameLength = -1;
-                        for (var i = 0; i < VariantTitles.Length; i++)
+                        for (var vi = 0; vi < VariantTitles.Length; vi++)
                         {
-                            variationStarts[i] = tileList.Count;
-                            var variantFn = VariantTitles[i];
-                            var reg = VariantTitlesFrames[i];
+                            variationStarts[vi] = tileList.Count;
+                            var variantFn = VariantTitles[vi];
+                            var reg = VariantTitlesFrames[vi];
                             var path = Path.Join(dir, variantFn);
                             if (!File.Exists(path))
                             {
@@ -82,37 +87,40 @@ namespace RogueEssence.Dev
                             var tileset = BaseSheet.Import(path);
                             tileList.Add(tileset);
                             
-                            // List additional frames - We do it this way in two steps to make sure it's sorted
-                            var frameSpecs = new SortedDictionary<int, string>();
+                            // List additional layers and their frames - We do it this way in two steps to make sure it's sorted
                             foreach (var frameFn in Directory.GetFiles(dir, "*.png"))
                             {
                                 if (!reg.IsMatch(frameFn))
                                     continue;
                                 var match = reg.Match(frameFn);
-                                frameSpecs.Add(int.Parse(match.Groups[1].ToString()), frameFn);
-                                // We take the first speed as the frame length
-                                if (frameLength == -1)
-                                    frameLength = int.Parse(match.Groups[2].ToString());
+                                var layerIdx = int.Parse(match.Groups[1].ToString());
+                                var frameIdx = int.Parse(match.Groups[2].ToString());
+                                var durationIdx = int.Parse(match.Groups[3].ToString());
+                                if (!frameSpecs[vi].ContainsKey(layerIdx))
+                                    frameSpecs[vi].Add(layerIdx, new SortedDictionary<int, Tuple<string, int>>());
+                                // GetFiles lists some files twice??
+                                if (!frameSpecs[vi][layerIdx].ContainsKey(frameIdx))
+                                    frameSpecs[vi][layerIdx].Add(frameIdx, new Tuple<string, int>(frameFn, durationIdx));
                             }
 
-                            frameCounts[i] = frameSpecs.Count;
                             // Import additional frames
-                            foreach (var frameFn in frameSpecs.Values)
+                            foreach (var layerFn in frameSpecs[vi].Values)
                             {
-                                // Import frame 
-                                tileset = BaseSheet.Import(frameFn);
-                                tileList.Add(tileset);
+                                foreach (var frameFn in layerFn.Values)
+                                {
+                                    // Import frame 
+                                    tileset = BaseSheet.Import(frameFn.Item1);
+                                    tileList.Add(tileset);
+                                }
                             }
 
                         }
-                        var node = document.SelectSingleNode("//DungeonTileset/MD/" + tileTitle);
+                        
+                        var node = document.SelectSingleNode("//DungeonTileset/RogueEssence/" + tileTitle);
                         var index = -1;
                         if (node != null)
                             index = int.Parse(node.InnerText);
-                        if (frameLength == -1)
-                            frameLength = 60;
 
-                        
                         var autoTile = new AutoTileData();
                         var entry = new AutoTileAdjacent();
 
@@ -131,31 +139,48 @@ namespace RogueEssence.Dev
                             {
                                 if (FieldDtefMapping[jj] == -1)
                                     continue; // Skip empty tile
-                                
-                                //go through each layer
-                                var anim = new TileLayer {FrameLength = frameLength};
-
-                                for (var mm = 0; mm < frameCounts[kk]; mm++)
+                                var offIndex = tileTitle switch
                                 {
-                                    var idx = variationStarts[kk] + mm;
-                                    if (tileList.Count <= idx)
+                                    "Secondary" => 1,
+                                    "Floor" => 2,
+                                    _ => 0
+                                };
+                                var tileX = 6 * offIndex + jj % 6;
+                                var tileY = (int) Math.Floor(jj / 6.0);
+                                
+                                // Base Layer
+                                var baseLayer = new TileLayer {FrameLength = 999};
+                                var idx = variationStarts[kk];
+                                var tileset = tileList[idx];
+                                //keep adding more tiles to the anim until end of blank spot is found
+                                if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
+                                    baseLayer.Frames.Add(new TileFrame(new Loc(tileX, tileY + idx * 8), fileName));
+                                if (baseLayer.Frames.Count < 1) continue;
+                                totalArray[jj][kk].Add(baseLayer);
+                                    
+                                // Additional layers
+                                var processedLayerFrames = 1;
+                                foreach (var layer in frameSpecs[kk].Values)
+                                {
+                                    if (layer.Count < 1)
                                         continue;
-                                    var tileset = tileList[idx];
-                                    //keep adding more tiles to the anim until end of blank spot is found
-                                    var offIndex = tileTitle switch
-                                    {
-                                        "Secondary" => 1,
-                                        "Floor" => 2,
-                                        _ => 0
-                                    };
-                                    var tileX = 6 * offIndex + jj % 6;
-                                    var tileY = (int) Math.Floor(jj / 6.0);
-                                    if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
-                                        anim.Frames.Add(new TileFrame(new Loc(tileX, tileY + idx * 8), fileName));
-                                }
+                                    var anim = new TileLayer {FrameLength = layer[0].Item2};
 
-                                if (anim.Frames.Count > 0)
-                                    totalArray[jj][kk].Add(anim);
+                                    for (var mm = 0; mm < layer.Count; mm++)
+                                    {
+                                        idx = variationStarts[kk] + processedLayerFrames;
+                                        processedLayerFrames += 1;
+                                        if (tileList.Count <= idx)
+                                            continue;
+                                        tileset = tileList[idx];
+                                        //keep adding more tiles to the anim until end of blank spot is found
+                                        if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
+                                            anim.Frames.Add(new TileFrame(new Loc(tileX, tileY + idx * 8), fileName));
+                                    }
+
+                                    if (anim.Frames.Count > 0)
+                                        totalArray[jj][kk].Add(anim);
+                                }
                             }
                         }
 
