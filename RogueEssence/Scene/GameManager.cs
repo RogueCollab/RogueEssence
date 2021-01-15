@@ -59,8 +59,6 @@ namespace RogueEssence
         private int timeSinceError;
         private int longestFrame;
 
-        public GraphicsManager.GameZoom Zoom;
-
         private float fadeAmount;
         private bool fadeWhite;
         private float titleFadeAmount;
@@ -84,8 +82,6 @@ namespace RogueEssence
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
-
-            Zoom = GraphicsManager.GameZoom.x1;
 
             DiagManager.Instance.SetErrorListener(OnError);
         }
@@ -816,11 +812,11 @@ namespace RogueEssence
 
             if (MetaInputManager.MouseWheelDiff != 0)
             {
-                Zoom -= MetaInputManager.MouseWheelDiff / 120;
-                if (Zoom < GraphicsManager.GameZoom.x8Near)
-                    Zoom = GraphicsManager.GameZoom.x8Near;
-                if (Zoom > GraphicsManager.GameZoom.x8Far)
-                    Zoom = GraphicsManager.GameZoom.x8Far;
+                GraphicsManager.Zoom -= MetaInputManager.MouseWheelDiff / 120;
+                if (GraphicsManager.Zoom < GraphicsManager.GameZoom.x8Near)
+                    GraphicsManager.Zoom = GraphicsManager.GameZoom.x8Near;
+                if (GraphicsManager.Zoom > GraphicsManager.GameZoom.x8Far)
+                    GraphicsManager.Zoom = GraphicsManager.GameZoom.x8Far;
             }
 
             CurrentScene.UpdateMeta();
@@ -1004,7 +1000,7 @@ namespace RogueEssence
                 CurrentScene.DrawDebug(spriteBatch);
 
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("Zoom: {0}", Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
             }
 
             GraphicsManager.SysFont.DrawText(spriteBatch, 2, 32, String.Format("{0:D2} FPS  {1:D5} Longest", fps, longestFrame), null, DirV.Up, DirH.Left, Color.White);

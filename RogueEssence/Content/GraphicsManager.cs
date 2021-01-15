@@ -135,6 +135,20 @@ namespace RogueEssence.Content
 
         public static ulong TotalFrameTick;
 
+        public static event Action ZoomChanged;
+
+        private static GameZoom zoom;
+        public static GameZoom Zoom
+        {
+            get { return zoom; }
+            set
+            {
+                zoom = value;
+
+                ZoomChanged?.Invoke();
+            }
+        }
+
         private static int windowZoom;
         public static int WindowZoom
         {
@@ -145,6 +159,8 @@ namespace RogueEssence.Content
                 graphics.PreferredBackBufferWidth = WindowWidth;
                 graphics.PreferredBackBufferHeight = WindowHeight;
                 graphics.ApplyChanges();
+
+                ZoomChanged?.Invoke();
             }
         }
         public static bool FullScreen
@@ -164,6 +180,8 @@ namespace RogueEssence.Content
         public static GraphicsDevice GraphicsDevice { get { return graphics.GraphicsDevice; } }
 
         public static int GlobalIdle;
+
+        public static RenderTarget2D GameScreen;
 
         private static Texture2D defaultTex;
         public static BaseSheet Pixel { get; private set; }
@@ -315,6 +333,7 @@ namespace RogueEssence.Content
         {
             graphics = newGraphics;
             WindowZoom = zoom;
+            Zoom = GameZoom.x1;
             FullScreen = fullScreen;
         }
 
