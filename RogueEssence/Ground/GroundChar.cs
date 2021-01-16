@@ -41,7 +41,7 @@ namespace RogueEssence.Ground
         {
             get
             {
-                if (!EntEnabled)
+                if (!EntEnabled || CollisionDisabled)
                     return 0u;
 
                 return 1u;
@@ -58,6 +58,8 @@ namespace RogueEssence.Ground
 
         [NonSerialized]
         private Emote currentEmote;
+
+        public bool CollisionDisabled;
 
         private Loc drawOffset { get { return currentCharAction.DrawOffset; } }
         public override Loc MapLoc
@@ -251,7 +253,7 @@ namespace RogueEssence.Ground
 
         private ICollisionResponse basicCollision(ICollision collision)
         {
-            if (DataManager.Instance.Save.CutsceneMode)
+            if (DataManager.Instance.Save.CutsceneMode || CollisionDisabled)
                 return null;
 
             if (collision.Other.Tags == 0)
