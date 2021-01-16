@@ -6,6 +6,7 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System.Diagnostics;
+using System.Xml;
 
 namespace RogueEssence.Dev
 {
@@ -147,7 +148,7 @@ namespace RogueEssence.Dev
                     spriteData[formData] = writingBytes;
                 }
             }
-            DiagManager.Instance.LogInfo("Loaded "+pngs.Length+" files from " + Path.GetFullPath(spriteDir));
+            DiagManager.Instance.LogInfo("Loaded " + pngs.Length + " files from " + Path.GetFullPath(spriteDir));
         }
 
         public static void ImportSpecies(string spriteDir, string destFile, BakeSpecies bakeMethod, int index)
@@ -239,6 +240,7 @@ namespace RogueEssence.Dev
 
 
         public static string[] TILE_TITLES = { "wall", "ground", "water" };
+        private static readonly string[] TILE_NODE_TITLES = { "Wall", "Floor", "Secondary" };
 
         public static int GetDirSize(string dirString)
         {
@@ -428,7 +430,7 @@ namespace RogueEssence.Dev
             }
         }
 
-        
+
         public static void ImportAllItems(string sourceDir, string destPattern)
         {
             try
@@ -582,9 +584,6 @@ namespace RogueEssence.Dev
         /// <param name="cacheDir"></param>
         public static void ImportAllAutoTiles(string sourceDir, string cacheDir)
         {
-            //TODO: create a version for one tile import
-            int index = 0;
-
             string[] sizeDirs = Directory.GetDirectories(sourceDir);
             foreach (string sizeDir in sizeDirs)
             {
@@ -603,13 +602,24 @@ namespace RogueEssence.Dev
 
                     DiagManager.Instance.LoadMsg = "Importing " + outputName;
 
+                    // Read XML for layer mapping
+                    XmlDocument document = new XmlDocument();
+                    document.Load(Path.Join(sizeDir, fileName, "tileset.xml"));
+
                     int TOTAL_TILES = 47;
 
                     try
                     {
                         int currentTier = 0;
-                        foreach (string tileTitle in TILE_TITLES)
+                        for (int nn = 0; nn < TILE_TITLES.Length; nn++)
                         {
+                            string tileTitle = TILE_TITLES[nn];
+                            string tileNodeTitle = TILE_NODE_TITLES[nn];
+                            XmlNode node = document.SelectSingleNode("//LegacyDungeonTileset/RogueEssence/" + tileNodeTitle);
+                            int index = -1;
+                            if (node != null)
+                                index = Int32.Parse(node.InnerText);
+
                             AutoTileData autoTile = new AutoTileData();
                             AutoTileAdjacent entry = new AutoTileAdjacent();
 
@@ -676,6 +686,12 @@ namespace RogueEssence.Dev
 
                             if (layerIndex > 0)
                             {
+                                if (index == -1)
+                                {
+                                    throw new KeyNotFoundException(String.Format(
+                                        "Layer index mapping for layer {0} for {1} missing.", tileTitle, fileName));
+                                }
+
                                 ImportTileVariant(entry.Tilex00, totalArray[0]);
                                 ImportTileVariant(entry.Tilex01, totalArray[1]);
                                 ImportTileVariant(entry.Tilex02, totalArray[2]);
@@ -730,7 +746,6 @@ namespace RogueEssence.Dev
 
                                 DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
                                 Debug.WriteLine(String.Format("{0:D3}: {1}", index, autoTile.Name));
-                                index++;
                             }
                         }
                     }

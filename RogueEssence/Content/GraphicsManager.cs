@@ -528,16 +528,21 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", PathMod.HardMod(BG_PATTERN));
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
+                // Old format (image data):
                 Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tiles/", PathMod.HardMod(TILE_PATTERN), false, true);
-
-            if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
-                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
-                //Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
-                //Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
+                // Old format (auto tiles):
+                Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
+                // New format (image data & auto tiles):
+                Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TilesDtef/", PathMod.HardMod(TILE_PATTERN));
+                
+                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
             }
+            
+            if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
+                Dev.ImportHelper.BuildTileIndex(TILE_PATTERN);
         }
 
         public static void InitContentFolders(string baseFolder)
