@@ -39,9 +39,9 @@ namespace RogueEssence.Ground
 
         enum ETaskState
         {
-            None = -1,
-            Running = 0,
-            Complete = 1,
+            None = 0,
+            Running = 1,
+            Complete = 2,
         }
         [NonSerialized] private ETaskState TaskState = ETaskState.None;
 
