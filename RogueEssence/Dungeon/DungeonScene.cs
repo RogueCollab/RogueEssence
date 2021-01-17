@@ -105,9 +105,9 @@ namespace RogueEssence.Dungeon
 
         
         private List<IDrawableSprite> groundDraw;
-        
-        private List<IDrawableSprite> otherDraw;
-        
+        private List<IDrawableSprite> objectDraw;
+        private List<IDrawableSprite> foregroundDraw;
+
         /// <summary>
         /// Rectangle of the tiles that must be drawn.
         /// </summary>
@@ -132,7 +132,8 @@ namespace RogueEssence.Dungeon
             Hitboxes = new List<Hitbox>();
 
             groundDraw = new List<IDrawableSprite>();
-            otherDraw = new List<IDrawableSprite>();
+            objectDraw = new List<IDrawableSprite>();
+            foregroundDraw = new List<IDrawableSprite>();
 
             LiveBattleLog = new LiveMsgLog();
             TeamModeNote = new TeamModeNotice();
@@ -844,7 +845,8 @@ namespace RogueEssence.Dungeon
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
                     groundDraw.Clear();
-                    otherDraw.Clear();
+                    objectDraw.Clear();
+                    foregroundDraw.Clear();
                     //draw the background
                     for (int jj = viewTileRect.Y-1; jj < viewTileRect.End.Y+1; jj++)
                     {
@@ -863,7 +865,7 @@ namespace RogueEssence.Dungeon
                                     if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
                                     {
                                         if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
-                                            AddToDraw(otherDraw, effect);
+                                            AddToDraw(objectDraw, effect);
                                         else
                                             AddToDraw(groundDraw, effect);
                                     }
@@ -901,7 +903,7 @@ namespace RogueEssence.Dungeon
                     foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Back])
                     {
                         if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
+                            AddToDraw(objectDraw, effect);
                     }
                     List<Character> shownFoes = new List<Character>();
                     if (!DataManager.Instance.HideChars)
@@ -954,7 +956,7 @@ namespace RogueEssence.Dungeon
                                 }
                                 if (seeChar)
                                 {
-                                    AddToDraw(otherDraw, character);
+                                    AddToDraw(objectDraw, character);
                                     shownShadows.Add(character);
                                     if (Turn && Math.Abs(FocusedCharacter.CharLoc.X - character.CharLoc.X) <= 6)
                                         shownFoes.Add(character);
@@ -966,7 +968,7 @@ namespace RogueEssence.Dungeon
                     foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Normal])
                     {
                         if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
+                            AddToDraw(objectDraw, effect);
                     }
 
                     //draw shadows
@@ -1041,28 +1043,28 @@ namespace RogueEssence.Dungeon
                     charIndex = 0;
                     for (int j = viewTileRect.Y; j < viewTileRect.End.Y; j++)
                     {
-                        while (charIndex < otherDraw.Count)
+                        while (charIndex < objectDraw.Count)
                         {
-                            int charY = otherDraw[charIndex].MapLoc.Y;
+                            int charY = objectDraw[charIndex].MapLoc.Y;
                             if (charY == j * GraphicsManager.TileSize)
                             {
-                                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                                 if (GameManager.Instance.ShowDebug)
-                                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                                 charIndex++;
                             }
                             else
                                 break;
                         }
                         
-                        while (charIndex < otherDraw.Count)
+                        while (charIndex < objectDraw.Count)
                         {
-                            int charY = otherDraw[charIndex].MapLoc.Y;
+                            int charY = objectDraw[charIndex].MapLoc.Y;
                             if (charY < (j + 1) * GraphicsManager.TileSize)
                             {
-                                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                                 if (GameManager.Instance.ShowDebug)
-                                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                                 charIndex++;
                             }
                             else
@@ -1070,50 +1072,49 @@ namespace RogueEssence.Dungeon
                         }
                     }
 
-                    while (charIndex < otherDraw.Count)
+                    while (charIndex < objectDraw.Count)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
 
                     //draw hitboxes on top
-                    otherDraw.Clear();
+                    objectDraw.Clear();
                     foreach (Hitbox hitbox in Hitboxes)
                     {
                         if (CanSeeSprite(ViewRect, hitbox))
-                            AddToDraw(otherDraw, hitbox);
+                            AddToDraw(objectDraw, hitbox);
                     }
 
                     //draw effects in top
                     foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Front])
                     {
                         if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
+                            AddToDraw(objectDraw, effect);
                     }
                     charIndex = 0;
-                    while (charIndex < otherDraw.Count)
+                    while (charIndex < objectDraw.Count)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     
                     //draw effects in foreground
-                    otherDraw.Clear();
                     foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Top])
                     {
                         if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
+                            AddToDraw(foregroundDraw, effect);
                     }
                     charIndex = 0;
-                    while (charIndex < otherDraw.Count)
+                    while (charIndex < foregroundDraw.Count)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            foregroundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
 

@@ -32,7 +32,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     MapLayer newLayer = new MapLayer(vm.Name);
                     MapLayer oldLayer = Layers[ChosenLayer];
-                    newLayer.Front = vm.Front;
+                    newLayer.Layer = vm.Front ? DrawLayer.Top : DrawLayer.Bottom;
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Tiles = oldLayer.Tiles;
                     Layers[ChosenLayer] = newLayer;

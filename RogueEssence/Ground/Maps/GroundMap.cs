@@ -671,7 +671,7 @@ namespace RogueEssence.Ground
         {
             foreach (MapLayer layer in Layers)
             {
-                if (layer.Front == front && layer.Visible)
+                if ((layer.Layer == DrawLayer.Top) == front && layer.Visible)
                     layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
             }
         }

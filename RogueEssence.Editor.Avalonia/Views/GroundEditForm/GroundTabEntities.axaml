@@ -23,7 +23,7 @@
       <ColumnDefinition Width="180"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/>
+    <!--views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/-->
     <views:EntityBrowser Margin="4" DataContext="{Binding EntBrowser}" Grid.Row="1" Grid.Column="1"/>
     <Grid Grid.Row="0" Grid.Column="1" Margin="4">
       <Grid.RowDefinitions>

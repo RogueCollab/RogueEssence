@@ -33,7 +33,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     AnimLayer newLayer = new AnimLayer(vm.Name);
                     AnimLayer oldLayer = Layers[ChosenLayer];
-                    newLayer.Front = vm.Front;
+                    newLayer.Layer = vm.Front ? DrawLayer.Top : DrawLayer.Bottom;
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Anims = oldLayer.Anims;
                     Layers[ChosenLayer] = newLayer;

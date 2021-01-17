@@ -14,7 +14,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapLayerViewModel(MapLayer layer)
         {
             name = layer.Name;
-            front = layer.Front;
+            front = layer.Layer == Content.DrawLayer.Top;
         }
 
         private string name;

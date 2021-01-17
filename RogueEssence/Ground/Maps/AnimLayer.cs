@@ -12,7 +12,7 @@ namespace RogueEssence.Ground
     public class AnimLayer : IMapLayer
     {
         public string Name { get; set; }
-        public bool Front { get; set; }
+        public DrawLayer Layer { get; set; }
         public bool Visible { get; set; }
 
         public List<GroundAnim> Anims;
@@ -27,7 +27,7 @@ namespace RogueEssence.Ground
         protected AnimLayer(AnimLayer other)
         {
             Name = other.Name;
-            Front = other.Front;
+            Layer = other.Layer;
             Visible = other.Visible;
 
             Anims = new List<GroundAnim>();
@@ -44,7 +44,7 @@ namespace RogueEssence.Ground
 
         public override string ToString()
         {
-            return (Front ? "[Front] " : "") + Name;
+            return (Layer == DrawLayer.Top ? "[Top] " : "") + Name;
         }
 
 

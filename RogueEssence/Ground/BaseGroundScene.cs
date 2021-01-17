@@ -19,7 +19,9 @@ namespace RogueEssence.Ground
         private List<IDrawableSprite> groundDraw;
 
         private List<IDrawableSprite> objectDraw;
-        
+
+        private List<IDrawableSprite> foregroundDraw;
+
         protected Rect viewTileRect;
         
 
@@ -30,6 +32,7 @@ namespace RogueEssence.Ground
 
             groundDraw = new List<IDrawableSprite>();
             objectDraw = new List<IDrawableSprite>();
+            foregroundDraw = new List<IDrawableSprite>();
 
             Loc drawSight = getDrawSight();
 
@@ -134,6 +137,7 @@ namespace RogueEssence.Ground
 
                 groundDraw.Clear();
                 objectDraw.Clear();
+                foregroundDraw.Clear();
 
                 DrawGame(spriteBatch);
 
@@ -185,7 +189,7 @@ namespace RogueEssence.Ground
                     foreach (IDrawableSprite effect in layer.Anims)
                     {
                         if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(layer.Front ? objectDraw : groundDraw, effect);
+                            AddToDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, effect);
                     }
                 }
             }
@@ -323,18 +327,17 @@ namespace RogueEssence.Ground
             }
 
             //draw effects in foreground
-            objectDraw.Clear();
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Top])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
+                    AddToDraw(foregroundDraw, effect);
             }
             charIndex = 0;
-            while (charIndex < objectDraw.Count)
+            while (charIndex < foregroundDraw.Count)
             {
-                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    foregroundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 

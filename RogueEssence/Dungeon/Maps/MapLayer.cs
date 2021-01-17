@@ -2,6 +2,7 @@
 using RogueElements;
 using System.Linq;
 using System.Collections.Generic;
+using RogueEssence.Content;
 
 namespace RogueEssence.Dungeon
 {
@@ -9,7 +10,7 @@ namespace RogueEssence.Dungeon
     public class MapLayer : IMapLayer
     {
         public string Name { get; set; }
-        public bool Front { get; set; }
+        public DrawLayer Layer { get; set; }
         public bool Visible { get; set; }
 
         public AutoTile[][] Tiles;
@@ -26,7 +27,7 @@ namespace RogueEssence.Dungeon
         protected MapLayer(MapLayer other)
         {
             Name = other.Name;
-            Front = other.Front;
+            Layer = other.Layer;
             Visible = other.Visible;
 
 
@@ -103,7 +104,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            return (Front ? "[Front] " : "") + Name;
+            return (Layer == DrawLayer.Top ? "[Top] " : "") + Name;
         }
     }
 }
