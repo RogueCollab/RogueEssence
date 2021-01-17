@@ -21,7 +21,7 @@ namespace RogueEssence.Dev.Views
 
         public async void lbxItems_DoubleClick(object sender, RoutedEventArgs e)
         {
-            LayerBoxViewModel viewModel = (LayerBoxViewModel)DataContext;
+            ILayerBoxViewModel viewModel = (ILayerBoxViewModel)DataContext;
             if (viewModel == null)
                 return;
 

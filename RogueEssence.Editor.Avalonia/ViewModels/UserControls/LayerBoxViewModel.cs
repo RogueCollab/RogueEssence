@@ -13,14 +13,15 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class LayerBoxViewModel : ViewModelBase
+    public abstract class LayerBoxViewModel<T> : ViewModelBase, ILayerBoxViewModel
+        where T : IMapLayer
     {
         public LayerBoxViewModel()
         {
-            Layers = new WrappedObservableCollection<MapLayer>();
+            Layers = new WrappedObservableCollection<T>();
         }
 
-        public WrappedObservableCollection<MapLayer> Layers { get; }
+        public WrappedObservableCollection<T> Layers { get; }
 
         private int chosenLayer;
         public int ChosenLayer
@@ -30,35 +31,16 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public async Task EditLayer()
-        {
-            MapLayerWindow window = new MapLayerWindow();
-            MapLayerViewModel vm = new MapLayerViewModel(Layers[ChosenLayer]);
-            window.DataContext = vm;
+        protected abstract T GetNewLayer();
+        protected abstract void LoadLayersFromSource();
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
-
-            lock (GameBase.lockObj)
-            {
-                if (result)
-                {
-                    MapLayer newLayer = new MapLayer(vm.Name);
-                    newLayer.Front = vm.Front;
-                    newLayer.Visible = Layers[ChosenLayer].Visible;
-                    newLayer.Tiles = Layers[ChosenLayer].Tiles;
-                    Layers[ChosenLayer] = newLayer;
-                }
-            }
-        }
+        public abstract Task EditLayer();
 
         public void AddLayer()
         {
             lock (GameBase.lockObj)
             {
-                MapLayer layer = new MapLayer(String.Format("Layer {0}", Layers.Count));
-                layer.CreateNew(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+                T layer = GetNewLayer();
                 Layers.Add(layer);
             }
         }
@@ -76,15 +58,28 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                MapLayer oldLayer = Layers[chosenLayer];
-                Layers.Insert(chosenLayer + 1, oldLayer.Clone());
+                T oldLayer = Layers[chosenLayer];
+                Layers.Insert(chosenLayer + 1, (T)oldLayer.Clone());
             }
         }
 
-        //public void MergeLayer()
-        //{
-
-        //}
+        public void MergeLayer()
+        {
+            lock (GameBase.lockObj)
+            {
+                if (chosenLayer > 0)
+                {
+                    int insertLayer = chosenLayer - 1;
+                    T topLayer = Layers[chosenLayer];
+                    T bottomLayer = Layers[insertLayer];
+                    Layers.RemoveAt(chosenLayer);
+                    Layers.RemoveAt(insertLayer);
+                    bottomLayer.Merge(topLayer);
+                    Layers.Insert(insertLayer, bottomLayer);
+                    ChosenLayer = insertLayer;
+                }
+            }
+        }
 
         public void MoveLayerUp()
         {
@@ -93,7 +88,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (chosenLayer > 0)
                 {
                     int insertLayer = chosenLayer - 1;
-                    MapLayer oldLayer = Layers[chosenLayer];
+                    T oldLayer = Layers[chosenLayer];
                     Layers.RemoveAt(chosenLayer);
                     Layers.Insert(insertLayer, oldLayer);
                     ChosenLayer = insertLayer;
@@ -108,7 +103,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (chosenLayer < Layers.Count - 1)
                 {
                     int insertLayer = chosenLayer + 1;
-                    MapLayer oldLayer = Layers[chosenLayer];
+                    T oldLayer = Layers[chosenLayer];
                     Layers.RemoveAt(chosenLayer);
                     Layers.Insert(insertLayer, oldLayer);
                     ChosenLayer = insertLayer;
@@ -120,7 +115,15 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (Design.IsDesignMode)
                 return;
-            Layers.LoadModels(ZoneManager.Instance.CurrentGround.Layers);
+
+            LoadLayersFromSource();
         }
+    }
+
+    public interface ILayerBoxViewModel
+    {
+        int ChosenLayer { get; set; }
+        Task EditLayer();
+        void LoadLayers();
     }
 }

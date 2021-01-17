@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class MapLayer
+    public class MapLayer : IMapLayer
     {
         public string Name { get; set; }
         public bool Front { get; set; }
@@ -39,7 +39,12 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public MapLayer Clone() { return new MapLayer(this); }
+        public IMapLayer Clone() { return new MapLayer(this); }
+
+        public void Merge(IMapLayer other)
+        {
+            throw new NotImplementedException();
+        }
 
         public void CreateNew(int width, int height)
         {

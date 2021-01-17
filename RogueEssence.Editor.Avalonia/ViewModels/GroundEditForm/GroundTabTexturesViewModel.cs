@@ -9,7 +9,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public GroundTabTexturesViewModel()
         {
-            Layers = new LayerBoxViewModel();
+            Layers = new TextureLayerBoxViewModel();
             TileBrowser = new TileBrowserViewModel();
             AutotileBrowser = new AutotileBrowserViewModel();
         }
@@ -32,7 +32,7 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref currentLayer, value); }
         }
 
-        public LayerBoxViewModel Layers { get; set; }
+        public ILayerBoxViewModel Layers { get; set; }
         public TileBrowserViewModel TileBrowser { get; set; }
         public AutotileBrowserViewModel AutotileBrowser { get; set; }
 
