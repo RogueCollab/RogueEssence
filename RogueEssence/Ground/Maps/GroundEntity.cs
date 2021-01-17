@@ -95,14 +95,15 @@ namespace RogueEssence.Ground
         }
         public abstract GroundEntity Clone();
 
-//==================================================
-// Map editor stuff
-//==================================================
+        //==================================================
+        // Map editor stuff
+        //==================================================
 
         /// <summary>
         /// Whether the entity should be drawn in highlights
         /// </summary>
-        public bool DevEntitySelected { get; set; }
+        [NonSerialized]
+        public bool DevEntitySelected;
 
         /// <summary>
         /// The color of the boxes and etc around the entity

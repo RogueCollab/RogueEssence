@@ -919,7 +919,7 @@ namespace RogueEssence.Ground
             //Because we clear those on save, we'll need to assign a new array here
 
             //reconnect characters and objects references
-            foreach (GroundChar player in IterateCharacters())
+            foreach (GroundChar player in Entities[0].MapChars)
             {
                 if (player != null)
                 {
