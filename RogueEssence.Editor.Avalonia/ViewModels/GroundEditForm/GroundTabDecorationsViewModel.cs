@@ -18,6 +18,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public GroundTabDecorationsViewModel()
         {
+            Layers = new AnimLayerBoxViewModel();
+            Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             SelectedEntity = new GroundAnim();
 
             Directions = new ObservableCollection<string>();
@@ -46,6 +48,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ILayerBoxViewModel Layers { get; set; }
 
 
         public ObservableCollection<string> ObjectAnims { get; }
@@ -122,7 +125,8 @@ namespace RogueEssence.Dev.ViewModels
                         if (input.JustPressed(FrameInput.InputType.LeftMouse))
                         {
                             SelectEntityAt(groundCoords);
-                            dragDiff = groundCoords - SelectedEntity.MapLoc;
+                            if (SelectedEntity != null)
+                                dragDiff = groundCoords - SelectedEntity.MapLoc;
                         }
                         else if (input[FrameInput.InputType.LeftMouse])
                             MoveEntity(groundCoords - dragDiff);
@@ -155,19 +159,32 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
-            ZoneManager.Instance.CurrentGround.Anims.Remove(ent);
+            ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
         }
 
         public void PlaceEntity(Loc position)
         {
-            GroundAnim placeableEntity = new GroundAnim(SelectedEntity.ObjectAnim, position);
-            ZoneManager.Instance.CurrentGround.Anims.Add(placeableEntity);
+            GroundAnim placeableEntity = new GroundAnim(new ObjAnimData(SelectedEntity.ObjectAnim), position);
+            ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
         }
 
 
         public void SelectEntity(GroundAnim ent)
         {
+            if (ent != null)
+                setEntity(ent);
+            else
+                setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1), Loc.Zero));
+        }
+
+        private void setEntity(GroundAnim ent)
+        {
             SelectedEntity = ent;
+            ChosenObjectAnim = ChosenObjectAnim;
+            ChosenDirection = ChosenDirection;
+            StartFrame = StartFrame;
+            EndFrame = EndFrame;
+            FrameLength = FrameLength;
         }
 
         /// <summary>
@@ -181,7 +198,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void OperateOnEntityAt(Loc position, EntityOp op)
         {
-            List<GroundAnim> found = ZoneManager.Instance.CurrentGround.FindAnimsAtPosition(position);
+            List<GroundAnim> found = ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].FindAnimsAtPosition(position);
             if (found.Count > 0)
                 op(found.First());
             else
@@ -193,5 +210,12 @@ namespace RogueEssence.Dev.ViewModels
             if (SelectedEntity != null)
                 SelectedEntity.MapLoc = loc;
         }
+
+        public void Layers_SelectedLayerChanged()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                SelectEntity(null);
+        }
+
     }
 }

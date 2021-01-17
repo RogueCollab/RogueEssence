@@ -291,6 +291,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             Textures.Layers.LoadLayers();
             Textures.TileBrowser.TileSize = Textures.TileBrowser.TileSize;
+            Decorations.Layers.LoadLayers();
 
             Walls.SetupLayerVisibility();
             Properties.LoadMapProperties();
@@ -333,7 +334,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentGround.Layers[Textures.CurrentLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);

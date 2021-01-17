@@ -25,13 +25,6 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private int currentLayer;
-        public int CurrentLayer
-        {
-            get { return currentLayer; }
-            set { this.SetIfChanged(ref currentLayer, value); }
-        }
-
         public ILayerBoxViewModel Layers { get; set; }
         public TileBrowserViewModel TileBrowser { get; set; }
         public AutotileBrowserViewModel AutotileBrowser { get; set; }

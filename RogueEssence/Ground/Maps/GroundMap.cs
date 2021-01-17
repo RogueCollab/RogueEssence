@@ -74,7 +74,7 @@ namespace RogueEssence.Ground
         public List<GroundChar> TemporaryChars;
 
         public List<GroundObject> GroundObjects;
-        public List<GroundAnim> Anims;
+        public List<AnimLayer> Decorations;
 
         /// <summary>
         /// Contains a list of all the NPCs spawners on this map
@@ -91,12 +91,13 @@ namespace RogueEssence.Ground
 
             GroundObjects = new List<GroundObject>();
             Markers       = new List<GroundMarker>();
+            MapChars = new List<GroundChar>();
+            TemporaryChars = new List<GroundChar>();
+            //Entities = new List<EntityLayer>();
 
             Status = new Dictionary<int, MapStatus>();
 
             BGAnim = new BGAnimData();
-            MapChars = new List<GroundChar>();
-            TemporaryChars = new List<GroundChar>();
 
             Name = new LocalText();
             Comment = "";
@@ -104,7 +105,7 @@ namespace RogueEssence.Ground
 
             Layers = new List<MapLayer>();
 
-            Anims = new List<GroundAnim>();
+            Decorations = new List<AnimLayer>();
             AssetName = "";
 
             Spawners = new List<GroundSpawner>();
@@ -218,6 +219,9 @@ namespace RogueEssence.Ground
             MapLayer layer = new MapLayer("New Layer");
             layer.CreateNew(width, height);
             Layers.Add(layer);
+
+            Decorations.Clear();
+            Decorations.Add(new AnimLayer("New Deco"));
 
             int divSize = GraphicsManager.TEX_SIZE;
             obstacles = new GroundWall[width * TexSize][];
@@ -796,27 +800,6 @@ namespace RogueEssence.Ground
             foreach (GroundEntity c in IterateEntities())
             {
                 if (RogueElements.Collision.InBounds(c.Bounds, pos))
-                    found.Add(c);
-            }
-
-            return found;
-        }
-
-
-        /// <summary>
-        /// Convenience method for locating an anim on that map at the
-        /// position specified.
-        /// </summary>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public List<GroundAnim> FindAnimsAtPosition(Loc pos)
-        {
-            List<GroundAnim> found = new List<GroundAnim>();
-
-            foreach (GroundAnim c in Anims)
-            {
-                Loc drawSize = c.GetDrawSize();
-                if (RogueElements.Collision.InBounds(c.MapLoc, new Loc(Math.Max(drawSize.X, GraphicsManager.TEX_SIZE), Math.Max(drawSize.Y, GraphicsManager.TEX_SIZE)), pos))
                     found.Add(c);
             }
 

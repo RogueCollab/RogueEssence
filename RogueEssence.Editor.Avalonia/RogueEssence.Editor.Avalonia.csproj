@@ -44,7 +44,10 @@
     <Compile Update="Views\DialogBoxes\RenameWindow.axaml.cs">
       <DependentUpon>RenameWindow.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\DialogBoxes\MapLayerWindow.axaml.cs">
+    <Compile Update="Views\GroundEditForm\Layers\AnimLayerWindow.axaml.cs">
+      <DependentUpon>AnimLayerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GroundEditForm\Layers\MapLayerWindow.axaml.cs">
       <DependentUpon>MapLayerWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\GroundEditForm\GroundTabDecorations.axaml.cs">

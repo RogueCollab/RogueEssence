@@ -22,12 +22,17 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public WrappedObservableCollection<T> Layers { get; }
+        public event Action SelectedLayerChanged;
 
         private int chosenLayer;
         public int ChosenLayer
         {
             get => chosenLayer;
-            set => this.SetIfChanged(ref chosenLayer, value);
+            set
+            {
+                this.SetIfChanged(ref chosenLayer, value);
+                SelectedLayerChanged?.Invoke();
+            }
         }
 
 
@@ -122,6 +127,7 @@ namespace RogueEssence.Dev.ViewModels
 
     public interface ILayerBoxViewModel
     {
+        event Action SelectedLayerChanged;
         int ChosenLayer { get; set; }
         Task EditLayer();
         void LoadLayers();

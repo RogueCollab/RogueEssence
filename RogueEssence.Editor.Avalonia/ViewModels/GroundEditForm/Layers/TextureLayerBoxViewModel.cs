@@ -19,7 +19,7 @@ namespace RogueEssence.Dev.ViewModels
         public override async Task EditLayer()
         {
             MapLayerWindow window = new MapLayerWindow();
-            MapLayerViewModel vm = new MapLayerViewModel((MapLayer)Layers[ChosenLayer]);
+            MapLayerViewModel vm = new MapLayerViewModel(Layers[ChosenLayer]);
             window.DataContext = vm;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -31,7 +31,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (result)
                 {
                     MapLayer newLayer = new MapLayer(vm.Name);
-                    MapLayer oldLayer = (MapLayer)Layers[ChosenLayer];
+                    MapLayer oldLayer = Layers[ChosenLayer];
                     newLayer.Front = vm.Front;
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Tiles = oldLayer.Tiles;

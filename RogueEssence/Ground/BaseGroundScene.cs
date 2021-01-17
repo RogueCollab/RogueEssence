@@ -18,7 +18,7 @@ namespace RogueEssence.Ground
 
         private List<IDrawableSprite> groundDraw;
 
-        private List<IDrawableSprite> otherDraw;
+        private List<IDrawableSprite> objectDraw;
         
         protected Rect viewTileRect;
         
@@ -29,7 +29,7 @@ namespace RogueEssence.Ground
         {
 
             groundDraw = new List<IDrawableSprite>();
-            otherDraw = new List<IDrawableSprite>();
+            objectDraw = new List<IDrawableSprite>();
 
             Loc drawSight = getDrawSight();
 
@@ -133,7 +133,7 @@ namespace RogueEssence.Ground
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
                 groundDraw.Clear();
-                otherDraw.Clear();
+                objectDraw.Clear();
 
                 DrawGame(spriteBatch);
 
@@ -178,10 +178,16 @@ namespace RogueEssence.Ground
             }
 
             //draw effects laid on ground
-            foreach (IDrawableSprite effect in ZoneManager.Instance.CurrentGround.Anims)
+            foreach (AnimLayer layer in ZoneManager.Instance.CurrentGround.Decorations)
             {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(groundDraw, effect);
+                if (layer.Visible)
+                {
+                    foreach (IDrawableSprite effect in layer.Anims)
+                    {
+                        if (CanSeeSprite(ViewRect, effect))
+                            AddToDraw(layer.Front ? objectDraw : groundDraw, effect);
+                    }
+                }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
             {
@@ -204,7 +210,7 @@ namespace RogueEssence.Ground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Back])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
 
             if (!DataManager.Instance.HideChars)
@@ -216,7 +222,7 @@ namespace RogueEssence.Ground
                         continue;
                     if (CanSeeSprite(ViewRect, character))
                     {
-                        AddToDraw(otherDraw, character);
+                        AddToDraw(objectDraw, character);
                         shownShadows.Add(character);
                     }
                 }
@@ -225,7 +231,7 @@ namespace RogueEssence.Ground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Normal])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
 
             //draw shadows
@@ -243,7 +249,7 @@ namespace RogueEssence.Ground
                     if (!item.EntEnabled)
                         continue;
                     if (CanSeeSprite(ViewRect, item))
-                        AddToDraw(otherDraw, item);
+                        AddToDraw(objectDraw, item);
                 }
             }
 
@@ -251,28 +257,28 @@ namespace RogueEssence.Ground
             charIndex = 0;
             for (int j = viewTileRect.Y; j < viewTileRect.End.Y; j++)
             {
-                while (charIndex < otherDraw.Count)
+                while (charIndex < objectDraw.Count)
                 {
-                    int charY = otherDraw[charIndex].MapLoc.Y;
+                    int charY = objectDraw[charIndex].MapLoc.Y;
                     if (charY == j * ZoneManager.Instance.CurrentGround.TileSize)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
                         break;
                 }
 
-                while (charIndex < otherDraw.Count)
+                while (charIndex < objectDraw.Count)
                 {
-                    int charY = otherDraw[charIndex].MapLoc.Y;
+                    int charY = objectDraw[charIndex].MapLoc.Y;
                     if (charY < (j + 1) * ZoneManager.Instance.CurrentGround.TileSize)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -280,11 +286,11 @@ namespace RogueEssence.Ground
                 }
             }
 
-            while (charIndex < otherDraw.Count)
+            while (charIndex < objectDraw.Count)
             {
-                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -292,14 +298,14 @@ namespace RogueEssence.Ground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
             charIndex = 0;
-            while (charIndex < otherDraw.Count)
+            while (charIndex < objectDraw.Count)
             {
-                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -317,18 +323,18 @@ namespace RogueEssence.Ground
             }
 
             //draw effects in foreground
-            otherDraw.Clear();
+            objectDraw.Clear();
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Top])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
             charIndex = 0;
-            while (charIndex < otherDraw.Count)
+            while (charIndex < objectDraw.Count)
             {
-                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    otherDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 

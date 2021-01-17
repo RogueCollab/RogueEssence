@@ -29,6 +29,11 @@ namespace RogueEssence.Ground
             ObjectAnim = anim;
             MapLoc = loc;
         }
+        public GroundAnim(GroundAnim other)
+        {
+            ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            MapLoc = MapLoc;
+        }
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
