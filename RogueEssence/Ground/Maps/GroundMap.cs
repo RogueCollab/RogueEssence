@@ -65,35 +65,16 @@ namespace RogueEssence.Ground
         public Loc ViewOffset;
 
         public GroundChar ActiveChar;
-        public List<GroundChar> MapChars;
 
-        /// <summary>
-        /// Field for character entities that should not be serialized
-        /// </summary>
-        [NonSerialized]
-        public List<GroundChar> TemporaryChars;
-
-        public List<GroundObject> GroundObjects;
         public List<AnimLayer> Decorations;
-
-        /// <summary>
-        /// Contains a list of all the NPCs spawners on this map
-        /// </summary>
-        public List<GroundSpawner> Spawners;
-        /// <summary>
-        /// A list of ground markers.
-        /// </summary>
-        public List<GroundMarker> Markers;
+        //TODO: fully implement multilayered entities
+        public List<EntityLayer> Entities;
 
         public GroundMap()
         {
             ScriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
 
-            GroundObjects = new List<GroundObject>();
-            Markers       = new List<GroundMarker>();
-            MapChars = new List<GroundChar>();
-            TemporaryChars = new List<GroundChar>();
-            //Entities = new List<EntityLayer>();
+            Entities = new List<EntityLayer>();
 
             Status = new Dictionary<int, MapStatus>();
 
@@ -107,8 +88,6 @@ namespace RogueEssence.Ground
 
             Decorations = new List<AnimLayer>();
             AssetName = "";
-
-            Spawners = new List<GroundSpawner>();
 
         }
 
@@ -223,6 +202,9 @@ namespace RogueEssence.Ground
             Decorations.Clear();
             Decorations.Add(new AnimLayer("New Deco"));
 
+            Entities.Clear();
+            Entities.Add(new EntityLayer("New EntLayer"));
+
             int divSize = GraphicsManager.TEX_SIZE;
             obstacles = new GroundWall[width * TexSize][];
             for (int ii = 0; ii < obstacles.Length; ii++)
@@ -250,13 +232,13 @@ namespace RogueEssence.Ground
 
         public void AddMapChar(GroundChar mapChar)
         {
-            MapChars.Add(mapChar);
+            Entities[0].MapChars.Add(mapChar);
             signCharToMap(mapChar);
         }
 
         public void AddSpawner(GroundSpawner spwn)
         {
-            Spawners.Add(spwn);
+            Entities[0].Spawners.Add(spwn);
         }
 
         public void RemoveSpawner(GroundSpawner spwner)
@@ -264,7 +246,7 @@ namespace RogueEssence.Ground
             //Delete the spawned NPC if any!
             if (spwner.CurrentNPC != null)
                 RemoveTempChar(spwner.CurrentNPC);
-            Spawners.Remove(spwner);
+            Entities[0].Spawners.Remove(spwner);
         }
 
         /// <summary>
@@ -277,11 +259,11 @@ namespace RogueEssence.Ground
             if (instancename == "PLAYER")
                 return this.ActiveChar;
 
-            GroundChar found = MapChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
+            GroundChar found = Entities[0].MapChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
             if (found != null)
                 return found;
 
-            found = TemporaryChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
+            found = Entities[0].TemporaryChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
             return found;
         }
 
@@ -293,7 +275,7 @@ namespace RogueEssence.Ground
         /// <returns>Character instance or null if not found</returns>
         public GroundChar GetMapChar(string instancename)
         {
-            GroundChar found = MapChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
+            GroundChar found = Entities[0].MapChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
             return found;
         }
 
@@ -304,13 +286,13 @@ namespace RogueEssence.Ground
         /// <returns>Character instance or null if not found</returns>
         public GroundChar GetTempChar(string instancename)
         {
-            GroundChar found = TemporaryChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
+            GroundChar found = Entities[0].TemporaryChars.Find((GroundChar ch) => { return ch.EntName == instancename; });
             return found;
         }
 
         public void RemoveMapChar(GroundChar mapChar)
         {
-            MapChars.Remove(mapChar);
+            Entities[0].MapChars.Remove(mapChar);
             grid.Remove(mapChar);
         }
         private void signCharToMap(GroundChar groundChar)
@@ -320,7 +302,7 @@ namespace RogueEssence.Ground
         }
         public void AddObject(GroundObject groundObj)
         {
-            GroundObjects.Add(groundObj);
+            Entities[0].GroundObjects.Add(groundObj);
             grid.Add(groundObj);
         }
 
@@ -331,7 +313,7 @@ namespace RogueEssence.Ground
         public void AddTempChar(GroundChar ch)
         {
             ch.Map = this;
-            TemporaryChars.Add(ch);
+            Entities[0].TemporaryChars.Add(ch);
             grid.Add(ch);
         }
 
@@ -341,8 +323,14 @@ namespace RogueEssence.Ground
         /// <param name="ch"></param>
         public void RemoveTempChar(GroundChar ch)
         {
-            TemporaryChars.Remove(ch);
+            Entities[0].TemporaryChars.Remove(ch);
             grid.Remove(ch);
+        }
+
+        public void RemoveObject(GroundObject groundObj)
+        {
+            Entities[0].GroundObjects.Remove(groundObj);
+            grid.Remove(groundObj);
         }
 
         /// <summary>
@@ -354,31 +342,70 @@ namespace RogueEssence.Ground
         public GroundObject GetObj(string instancename)
         {
             GroundObject found = null;
-            if ((found = GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; })) == null)
+            if ((found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; })) == null)
             {
                 //Maybe warn or something??
             }
             return found;
         }
 
-        public void RemoveObject(GroundObject groundObj)
+
+
+        /// <summary>
+        /// Create a new marker with the specified parameters, and add it to the map.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="pos"></param>
+        /// <param name="dir"></param>
+        public void AddMarker(string name, Loc pos, Dir8 dir)
         {
-            GroundObjects.Remove(groundObj);
-            grid.Remove(groundObj);
+            Entities[0].Markers.Add(new GroundMarker(name, pos, dir));
         }
 
-        
+        /// <summary>
+        /// Add the marker entity specified to the map
+        /// </summary>
+        /// <param name="mark"></param>
+        public void AddMarker(GroundMarker mark)
+        {
+            Entities[0].Markers.Add(mark);
+        }
+
+        /// <summary>
+        /// Remove the named marker if present, otherwise does nothing.
+        /// </summary>
+        /// <param name="name"></param>
+        public void RemoveMarker(string name)
+        {
+            int index = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
+            if (index > -1)
+                Entities[0].Markers.RemoveAt(index);
+        }
+
+        /// <summary>
+        /// Remove the specific marker entity from the map. If not present does nothing.
+        /// </summary>
+        /// <param name="mark"></param>
+        public void RemoveMarker(GroundMarker mark)
+        {
+            if (Entities[0].Markers.Contains(mark))
+                Entities[0].Markers.Remove(mark);
+        }
+
 
         public IEnumerable<GroundChar> IterateCharacters()
         {
             if (ActiveChar != null)
                 yield return ActiveChar;
-            
-            foreach (GroundChar player in MapChars)
-                yield return player;
 
-            foreach (GroundChar temp in TemporaryChars)
-                yield return temp;
+            foreach (EntityLayer layer in Entities)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundChar v in layer.IterateCharacters())
+                        yield return v;
+                }
+            }
         }
 
 
@@ -442,7 +469,7 @@ namespace RogueEssence.Ground
             this.grid = new AABB.Grid(newWidth, newHeight, GraphicsManager.TileSize);
         }
 
-        public void AddLayer()
+        public void AddLayer(string name)
         {
             MapLayer layer = new MapLayer("");
             layer.CreateNew(Width, Height);
@@ -451,7 +478,7 @@ namespace RogueEssence.Ground
 
         public GroundSpawner GetSpawner(string name)
         {
-            GroundSpawner found = Spawners.Find((GroundSpawner ch) => { return ch.EntName == name; });
+            GroundSpawner found = Entities[0].Spawners.Find((GroundSpawner ch) => { return ch.EntName == name; });
             if (found == null)
             {
                 //Maybe warn or something??
@@ -703,9 +730,9 @@ namespace RogueEssence.Ground
         /// <returns>The found marker, or null if not found.</returns>
         private GroundMarker FindMarker(string name)
         {
-            int index = Markers.FindIndex(marker => marker.EntName == name);
+            int index = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
             if (index > -1)
-                return Markers[index];
+                return Entities[0].Markers[index];
             return null;
         }
         /// <summary>
@@ -715,7 +742,7 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public LocRay8 GetEntryPoint(int index)
         {
-            GroundMarker mark = Markers[index];
+            GroundMarker mark = Entities[0].Markers[index];
             return new LocRay8(mark.Position, mark.Direction);
         }
 
@@ -745,47 +772,6 @@ namespace RogueEssence.Ground
             if (mark == null)
                 throw new KeyNotFoundException(String.Format("GroundMap.SetMarkerPosition({0},{1}): Couldn't find the specified Marker!", name, pos));
             mark.Position = pos;
-        }
-
-        /// <summary>
-        /// Create a new marker with the specified parameters, and add it to the map.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="pos"></param>
-        /// <param name="dir"></param>
-        public void AddMarker(string name, Loc pos, Dir8 dir)
-        {
-            Markers.Add(new GroundMarker(name, pos, dir) );
-        }
-
-        /// <summary>
-        /// Add the marker entity specified to the map
-        /// </summary>
-        /// <param name="mark"></param>
-        public void AddMarker(GroundMarker mark)
-        {
-            Markers.Add(mark);
-        }
-
-        /// <summary>
-        /// Remove the named marker if present, otherwise does nothing.
-        /// </summary>
-        /// <param name="name"></param>
-        public void RemoveMarker(string name)
-        {
-            int index = Markers.FindIndex(marker => marker.EntName == name);
-            if (index > -1)
-                Markers.RemoveAt(index);
-        }
-
-        /// <summary>
-        /// Remove the specific marker entity from the map. If not present does nothing.
-        /// </summary>
-        /// <param name="mark"></param>
-        public void RemoveMarker(GroundMarker mark)
-        {
-            if (Markers.Contains(mark))
-                Markers.Remove(mark);
         }
 
         /// <summary>
@@ -868,17 +854,14 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerable<GroundEntity> IterateEntities()
         {
-            foreach (GroundEntity v in IterateCharacters() )
-                yield return v;
-
-            foreach (GroundEntity v in GroundObjects)
-                yield return v;
-
-            foreach (GroundEntity v in Markers)
-                yield return v;
-
-            foreach (GroundSpawner s in Spawners)
-                yield return s;
+            foreach (EntityLayer layer in Entities)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundEntity v in layer.IterateEntities())
+                        yield return v;
+                }
+            }
         }
 
         public void AddMapScriptEvent(LuaEngine.EMapCallbacks ev)
@@ -935,12 +918,6 @@ namespace RogueEssence.Ground
 
             //Because we clear those on save, we'll need to assign a new array here
 
-            if (Spawners == null)
-                Spawners = new List<GroundSpawner>();
-
-            //Make sure the temp char array is instantiated
-            TemporaryChars = new List<GroundChar>();
-            
             //reconnect characters and objects references
             foreach (GroundChar player in IterateCharacters())
             {
@@ -950,7 +927,7 @@ namespace RogueEssence.Ground
                     signCharToMap(player);
                 }
             }
-            foreach (GroundObject groundObj in GroundObjects)
+            foreach (GroundObject groundObj in Entities[0].GroundObjects)
             {
                 groundObj.OnDeserializeMap(this);
                 grid.Add(groundObj);

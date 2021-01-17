@@ -249,7 +249,7 @@ namespace RogueEssence.Dev
 
         public void EnterGroundEdit(int entryPoint)
         {
-            if (ZoneManager.Instance.CurrentGround.Markers.Count > 0)
+            if (ZoneManager.Instance.CurrentGround.Entities[0].Markers.Count > 0)
             {
                 LocRay8 entry = ZoneManager.Instance.CurrentGround.GetEntryPoint(entryPoint);
                 FocusedLoc = entry.Loc;

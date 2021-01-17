@@ -15,6 +15,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public GroundTabEntitiesViewModel()
         {
+            Layers = new EntityLayerBoxViewModel();
+            Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             EntBrowser = new EntityBrowserViewModel();
         }
 
@@ -28,6 +30,8 @@ namespace RogueEssence.Dev.ViewModels
                 EntBrowser.AllowEntTypes = (entMode == EntEditMode.PlaceEntity);
             }
         }
+
+        public ILayerBoxViewModel Layers { get; set; }
 
         public EntityBrowserViewModel EntBrowser { get; set; }
 
@@ -148,5 +152,12 @@ namespace RogueEssence.Dev.ViewModels
             if (EntBrowser.SelectedEntity != null)
                 EntBrowser.SelectedEntity.SetMapLoc(loc);
         }
+
+        public void Layers_SelectedLayerChanged()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                EntBrowser.SelectEntity(null);
+        }
+
     }
 }

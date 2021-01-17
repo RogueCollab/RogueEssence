@@ -44,6 +44,9 @@
     <Compile Update="Views\DialogBoxes\RenameWindow.axaml.cs">
       <DependentUpon>RenameWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\GroundEditForm\Layers\EntityLayerWindow.axaml.cs">
+      <DependentUpon>EntityLayerWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\GroundEditForm\Layers\AnimLayerWindow.axaml.cs">
       <DependentUpon>AnimLayerWindow.axaml</DependentUpon>
     </Compile>

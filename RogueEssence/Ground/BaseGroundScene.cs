@@ -244,7 +244,7 @@ namespace RogueEssence.Ground
             //draw items
             if (!DataManager.Instance.HideObjects)
             {
-                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.GroundObjects)
+                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].GroundObjects)
                 {
                     if (!item.EntEnabled)
                         continue;

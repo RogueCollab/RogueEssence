@@ -131,7 +131,7 @@ namespace RogueEssence.Ground
             Data.BaseForm = appearance;
             Data.Nickname = nickname;
         }
-        protected GroundChar(GroundChar other) : base(other)
+        protected GroundChar(GroundChar other)
         {
             ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
@@ -140,6 +140,13 @@ namespace RogueEssence.Ground
 
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
+
+            //from base
+            EntEnabled = other.EntEnabled;
+            Collider = other.Collider;
+            EntName = other.EntName;
+            Direction = other.Direction;
+            triggerType = other.triggerType;
         }
         public override GroundEntity Clone() { return new GroundChar(this); }
 

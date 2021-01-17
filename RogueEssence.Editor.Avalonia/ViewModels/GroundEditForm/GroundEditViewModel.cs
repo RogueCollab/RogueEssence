@@ -292,6 +292,7 @@ namespace RogueEssence.Dev.ViewModels
             Textures.Layers.LoadLayers();
             Textures.TileBrowser.TileSize = Textures.TileBrowser.TileSize;
             Decorations.Layers.LoadLayers();
+            Entities.Layers.LoadLayers();
 
             Walls.SetupLayerVisibility();
             Properties.LoadMapProperties();

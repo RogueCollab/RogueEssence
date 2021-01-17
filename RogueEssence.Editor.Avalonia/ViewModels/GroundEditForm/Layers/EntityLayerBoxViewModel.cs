@@ -15,12 +15,12 @@ using RogueEssence.Dev.Views;
 namespace RogueEssence.Dev.ViewModels
 {
 
-    public class AnimLayerBoxViewModel : LayerBoxViewModel<AnimLayer>
+    public class EntityLayerBoxViewModel : LayerBoxViewModel<EntityLayer>
     {
         public override async Task EditLayer()
         {
-            AnimLayerWindow window = new AnimLayerWindow();
-            AnimLayerViewModel vm = new AnimLayerViewModel(Layers[ChosenLayer]);
+            EntityLayerWindow window = new EntityLayerWindow();
+            EntityLayerViewModel vm = new EntityLayerViewModel(Layers[ChosenLayer]);
             window.DataContext = vm;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -31,25 +31,28 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (result)
                 {
-                    AnimLayer newLayer = new AnimLayer(vm.Name);
-                    AnimLayer oldLayer = Layers[ChosenLayer];
-                    newLayer.Front = vm.Front;
+                    EntityLayer newLayer = new EntityLayer(vm.Name);
+                    EntityLayer oldLayer = Layers[ChosenLayer];
                     newLayer.Visible = oldLayer.Visible;
-                    newLayer.Anims = oldLayer.Anims;
+                    newLayer.GroundObjects = oldLayer.GroundObjects;
+                    newLayer.Markers = oldLayer.Markers;
+                    newLayer.MapChars = oldLayer.MapChars;
+                    newLayer.Spawners = oldLayer.Spawners;
+                    newLayer.TemporaryChars = oldLayer.TemporaryChars;
                     Layers[ChosenLayer] = newLayer;
                 }
             }
         }
 
-        protected override AnimLayer GetNewLayer()
+        protected override EntityLayer GetNewLayer()
         {
-            AnimLayer layer = new AnimLayer(String.Format("Deco {0}", Layers.Count));
+            EntityLayer layer = new EntityLayer(String.Format("EntLayer {0}", Layers.Count));
             return layer;
         }
 
         protected override void LoadLayersFromSource()
         {
-            Layers.LoadModels(ZoneManager.Instance.CurrentGround.Decorations);
+            Layers.LoadModels(ZoneManager.Instance.CurrentGround.Entities);
         }
     }
 
