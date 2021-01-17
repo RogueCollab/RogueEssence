@@ -697,7 +697,10 @@ namespace RogueEssence.Content
                 // automatically add default animation
                 {
                     CharAnimGroup anim = new CharAnimGroup();
-                    foreach (CharAnimSequence sequence in animData[GraphicsManager.WalkAction].Sequences)
+                    CharAnimGroup parentGroup = animData[GraphicsManager.IdleAction];
+                    while(parentGroup.CopyOf > -1)
+                        parentGroup = animData[parentGroup.CopyOf];
+                    foreach (CharAnimSequence sequence in parentGroup.Sequences)
                     {
                         CharAnimSequence newSequence = new CharAnimSequence();
                         CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
