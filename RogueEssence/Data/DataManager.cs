@@ -1083,7 +1083,7 @@ namespace RogueEssence.Data
                             reader.BaseStream.Seek(endPos, SeekOrigin.Begin);
                             //read location string
                             reader.ReadString();
-                            return Data.GameProgress.LoadMainData(reader);
+                            return GameProgress.LoadMainData(reader);
                         }
                     }
                 }
@@ -1147,7 +1147,7 @@ namespace RogueEssence.Data
                                 if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
                                     replay.QuicksavePos = reader.BaseStream.Position;
                                 //read team info
-                                replay.States.Add(ReadGameState(reader));
+                                replay.States.Add(ReadGameState(reader, false));
                             }
                             else if (type == (byte)ReplayData.ReplayLog.GameLog)
                             {
@@ -1313,6 +1313,23 @@ namespace RogueEssence.Data
                     using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                            return (MainProgress)GameProgress.LoadMainData(reader);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+
+                //versionless load
+                try
+                {
+                    using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
                             return (MainProgress)GameProgress.LoadMainData(reader);
                     }
                 }
@@ -1361,6 +1378,12 @@ namespace RogueEssence.Data
 
         public void SaveGameState(BinaryWriter writer, GameState state)
         {
+            Version version = Versioning.GetVersion();
+            writer.Write(version.Major);
+            writer.Write(version.Minor);
+            writer.Write(version.Build);
+            writer.Write(version.Revision);
+
             GameProgress.SaveMainData(writer, state.Save);
             ZoneManager.SaveToState(writer, state);
 
@@ -1411,7 +1434,23 @@ namespace RogueEssence.Data
                     {
                         //loads dungeon, zone, and ground, if there will be one...
                         using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader);
+                            return ReadGameState(reader, false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //In this case, the error will be presented clearly to the player.  Do not signal.
+                    DiagManager.Instance.LogError(ex, false);
+                }
+
+                //versionless read
+                try
+                {
+                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        //loads dungeon, zone, and ground, if there will be one...
+                        using (BinaryReader reader = new BinaryReader(stream))
+                            return ReadGameState(reader, true);
                     }
                 }
                 catch (Exception ex)
@@ -1423,9 +1462,13 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public GameState ReadGameState(BinaryReader reader)
+        public GameState ReadGameState(BinaryReader reader, bool versionless)
         {
             GameState state = new GameState();
+            if (!versionless)
+            {
+                Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+            }
             state.Save = GameProgress.LoadMainData(reader);
             ZoneManager.LoadToState(reader, state);
             LuaEngine.Instance.UpdateZoneInstance();
