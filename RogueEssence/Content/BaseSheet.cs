@@ -133,6 +133,12 @@ namespace RogueEssence.Content
             spriteBatch.Draw(defaultTex, destRect, Color.White);
         }
 
+        public void SetTexture(Texture2D tex)
+        {
+            baseTexture.Dispose();
+            baseTexture = tex;
+        }
+
         public bool IsBlank(int srcPx, int srcPy, int srcW, int srcH)
         {
             Color[] color = new Color[srcW * srcH];

@@ -144,7 +144,7 @@ namespace RogueEssence.Content
     {
         //class made specifically for characters, with their own actions and animations
         public Dictionary<int, CharAnimGroup> AnimData;
-        public int ShadowSize { get; private set; }
+        public int ShadowSize;
         //offsets are relative to the center of each image
         public List<OffsetData> OffsetData;
 
@@ -154,7 +154,7 @@ namespace RogueEssence.Content
         {
             this.AnimData = animData;
             this.OffsetData = offsetData;
-            ShadowSize = shadowSize;
+            this.ShadowSize = shadowSize;
         }
 
         //frompath (import) will take a folder containing all elements (xml and all animations, or xml and a sheet)
@@ -162,14 +162,14 @@ namespace RogueEssence.Content
         //save will save as .chara
 
 
-        private static void mapDuplicates(List<(Texture2D img, Rectangle rect, OffsetData offsets)> imgs, List<(Texture2D img, Rectangle rect, OffsetData offsets)> final_imgs, CharAnimFrame[] img_map)
+        private static void mapDuplicates(List<(Texture2D img, Rectangle rect, OffsetData offsets)> imgs, List<(Texture2D img, Rectangle rect, OffsetData offsets)> final_imgs, CharAnimFrame[] img_map, bool offsetCheck)
         {
             for (int xx = 0; xx < imgs.Count; xx++)
             {
                 bool dupe = false;
                 for (int yy = 0; yy < final_imgs.Count; yy++)
                 {
-                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, false) && offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false);
+                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, false) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false));
                     if (imgs_equal)
                     {
                         CharAnimFrame map_frame = new CharAnimFrame();
@@ -178,7 +178,7 @@ namespace RogueEssence.Content
                         dupe = true;
                         break;
                     }
-                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, true) && offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true);
+                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, true) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true));
                     if (flip_equal)
                     {
                         CharAnimFrame map_frame = new CharAnimFrame();
@@ -666,7 +666,7 @@ namespace RogueEssence.Content
 
                 CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
                 List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
-                mapDuplicates(frames, finalFrames, frameMap);
+                mapDuplicates(frames, finalFrames, frameMap, true);
 
                 int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
                 Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
@@ -716,6 +716,95 @@ namespace RogueEssence.Content
             else
                 throw new InvalidOperationException("Error finding AnimData.xml, FrameData.xml or Animations.xml in " + path + ".");
 
+        }
+
+        public void CollapseOffsets()
+        {
+            int maxWidth = 0;
+            int maxHeight = 0;
+
+            Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
+            //load all available tilesets
+            List<(Texture2D img, Rectangle rect, OffsetData offsets)> frames = new List<(Texture2D, Rectangle, OffsetData)>();
+            //get all frames
+            for (int kk = 0; kk < OffsetData.Count; kk++)
+            {
+                int xx = kk % TotalX;
+                int yy = kk / TotalX;
+                Rectangle tileRect = new Rectangle(xx * TileWidth, yy * TileHeight, TileWidth, TileHeight);
+                Rectangle imgCoveredRect = GetCoveredRect(baseTexture, tileRect);
+                if (imgCoveredRect.Width <= 0)
+                    imgCoveredRect = new Rectangle(TileWidth / 2, TileHeight / 2, 1, 1);
+
+                //make frame sizes even
+                int evenWidth = roundUpToMult(imgCoveredRect.Width, 2);
+                int evenHeight = roundUpToMult(imgCoveredRect.Height, 2);
+
+                //first blit, then edit the rect sizes
+                Texture2D frameTex = new Texture2D(device, evenWidth, evenHeight);
+                BaseSheet.Blit(baseTexture, frameTex, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
+                imgCoveredRect.Width = evenWidth;
+                imgCoveredRect.Height = evenHeight;
+                //the final tile size must be able to contain this image
+                maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
+                maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
+
+                Loc boundsCenter = new Loc(imgCoveredRect.Center.X, imgCoveredRect.Center.Y);
+
+                OffsetData offsets = OffsetData[kk];
+
+                //get the farthest that the offsets can cover, relative to the image
+                Rectangle offsetCoveredRect = offsets.GetCoveredRect();
+                Rectangle centeredOffsetRect = centerBounds(offsetCoveredRect);
+
+                //the final tile size must be able to contain the offsets
+                maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
+                maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
+
+                frames.Add((frameTex, imgCoveredRect, offsets));
+
+            }
+
+            CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
+            List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
+            mapDuplicates(frames, finalFrames, frameMap, false);
+
+            int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
+            Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+
+            List<OffsetData> offsetData = new List<OffsetData>();
+            for (int ii = 0; ii < finalFrames.Count; ii++)
+            {
+                int diffX = maxWidth / 2 - finalFrames[ii].img.Width / 2;
+                int diffY = maxHeight / 2 - finalFrames[ii].img.Height / 2;
+                BaseSheet.Blit(finalFrames[ii].img, tex, 0, 0, finalFrames[ii].img.Width, finalFrames[ii].img.Height,
+                    maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY);
+                OffsetData endData = finalFrames[ii].offsets;
+
+                offsetData.Add(endData);
+            }
+
+            foreach(int key in AnimData.Keys)
+            {
+                CharAnimGroup group = AnimData[key];
+                foreach (CharAnimSequence seq in group.Sequences)
+                {
+                    foreach (CharAnimFrame frame in seq.Frames)
+                    {
+                        Loc frameFrom = frame.Frame;
+                        int fromIndex = frameFrom.Y * TotalX + frameFrom.X;
+                        CharAnimFrame mapFrame = frameMap[fromIndex];
+                        frame.Flip = mapFrame.Flip;
+                        int finalIndex = mapFrame.Frame.X;
+                        frame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
+                    }
+                }
+            }
+            for(int ii = 0; ii < frames.Count; ii++)
+                frames[ii].Item1.Dispose();
+
+            SetTileTexture(tex, maxWidth, maxHeight);
+            OffsetData = offsetData;
         }
 
         private static Rectangle addToBounds(Rectangle frame, Loc add)

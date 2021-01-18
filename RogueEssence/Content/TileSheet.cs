@@ -143,6 +143,14 @@ namespace RogueEssence.Content
                 DrawDefault(spriteBatch, destRect);
         }
 
+        public void SetTileTexture(Texture2D tex, int tileWidth, int tileHeight)
+        {
+            base.SetTexture(tex);
+            TotalX = Width / tileWidth;
+            TotalY = Height / tileHeight;
+            TileWidth = tileWidth;
+            TileHeight = tileHeight;
+        }
 
     }
 }
