@@ -9,23 +9,34 @@ using System.IO;
 
 namespace RogueEssence
 {
+    public class LanguageSetting
+    {
+        public string Name;
+        public List<string> Fallbacks;
 
+        public LanguageSetting(string name, List<string> fallbacks)
+        {
+            Name = name;
+            Fallbacks = new List<string>();
+            Fallbacks.AddRange(fallbacks);
+        }
+    }
     public static class Text
     {
-
-        public static Dictionary<string, string> StringsDefault;
-        public static Dictionary<string, string> Strings;
-        public static Dictionary<string, string> StringsExDefault;
-        public static Dictionary<string, string> StringsEx;
+        public static List<Dictionary<string, string>> Strings;
+        public static List<Dictionary<string, string>> StringsEx;
         public static CultureInfo Culture;
         public static string[] SupportedLangs;
-        private static Dictionary<string, string> langNames;
+        public static Dictionary<string, LanguageSetting> LangNames;
 
         public static void Init()
         {
+            Strings = new List<Dictionary<string, string>>();
+            StringsEx = new List<Dictionary<string, string>>();
+
             string path = PathMod.ModPath("Strings/Languages.xml");
             List<string> codes = new List<string>();
-            Dictionary<string, string> translations = new Dictionary<string, string>();
+            Dictionary<string, LanguageSetting> translations = new Dictionary<string, LanguageSetting>();
             try
             {
                 if (File.Exists(path))
@@ -47,28 +58,29 @@ namespace RogueEssence
                             if (valnode != null)
                                 value = valnode.InnerText;
 
-                            if (value != null && name != null)
-                            {
-                                codes.Add(name);
-                                translations[name] = value;
-                            }
+                            List<string> fallbacks = new List<string>();
+                            foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
+                                fallbacks.Add(fallbacknode.InnerText);
+
+                            codes.Add(name);
+                            translations[name] = new LanguageSetting(value, fallbacks);
                         }
                     }
                 }
                 SupportedLangs = codes.ToArray();
-                langNames = translations;
+                LangNames = translations;
             }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex);
                 SupportedLangs = new string[1] { "en" };
-                langNames["en"] = "English";
+                LangNames["en"] = new LanguageSetting("English", new List<string>());
             }
         }
 
         public static string ToName(this string lang)
         {
-            return langNames[lang];
+            return LangNames[lang].Name;
         }
 
         public static Dictionary<string, string> LoadXmlDoc(string path)
@@ -114,9 +126,14 @@ namespace RogueEssence
             try
             {
                 //take a resource instead of a string, and return the localized string for it
-                string text;
-                if (!Text.Strings.TryGetValue(key, out text))
-                    Text.StringsDefault.TryGetValue(key, out text);
+                string text = "";
+                for (int ii = 0; ii < Strings.Count; ii++)
+                {
+                    if (Text.Strings[ii].TryGetValue(key, out text))
+                        break;
+                    else if (ii == Strings.Count - 1)
+                        throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
+                }
                 return String.Format(Regex.Unescape(text), args);
             }
             catch (Exception ex)
@@ -130,9 +147,16 @@ namespace RogueEssence
             string key = "_ENUM_" + typeof(T).Name + "_" + value;
             if (extra != null)
                 key += "_" + extra;
-            string text;
-            if (!Text.Strings.TryGetValue(key, out text))
-                Text.StringsDefault.TryGetValue(key, out text);
+
+            string text = "";
+            for (int ii = 0; ii < Strings.Count; ii++)
+            {
+                if (Text.Strings[ii].TryGetValue(key, out text))
+                    break;
+                else if (ii == Strings.Count - 1)
+                    throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
+            }
+
             if (!String.IsNullOrEmpty(text))
                 return Regex.Unescape(text);
             return value.ToString();
@@ -176,10 +200,25 @@ namespace RogueEssence
         public static void SetCultureCode(string code)
         {
             Culture = new CultureInfo(code);
-            StringsDefault = LoadXmlDoc(PathMod.ModPath("Strings/strings.resx"));
-            Strings = LoadXmlDoc(PathMod.ModPath("Strings/strings." + code + ".resx"));
-            StringsExDefault = LoadXmlDoc(PathMod.ModPath("Strings/stringsEx.resx"));
-            StringsEx = LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + code + ".resx"));
+
+            Strings.Clear();
+            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + code + ".resx")));
+            if (LangNames.ContainsKey(code))
+            {
+                foreach (string fallback in LangNames[code].Fallbacks)
+                    Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + fallback + ".resx")));
+            }
+            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings.resx")));
+
+            StringsEx.Clear();
+
+            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + code + ".resx")));
+            if (LangNames.ContainsKey(code))
+            {
+                foreach (string fallback in LangNames[code].Fallbacks)
+                    StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + fallback + ".resx")));
+            }
+            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx.resx")));
         }
     }
 
@@ -197,9 +236,14 @@ namespace RogueEssence
 
         public string ToLocal()
         {
-            string val;
-            if (!Text.StringsEx.TryGetValue(Key, out val))
-                val = Text.StringsExDefault[Key];
+            string val = "";
+            for (int ii = 0; ii < Text.StringsEx.Count; ii++)
+            {
+                if (Text.StringsEx[ii].TryGetValue(Key, out val))
+                    break;
+                else if (ii == Text.StringsEx.Count - 1)
+                    throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
+            }
             return Regex.Unescape(val);
         }
 
@@ -346,9 +390,19 @@ namespace RogueEssence
         public string ToLocal()
         {
             string text;
-            if (!LocalTexts.TryGetValue(Text.Culture.Name.ToLower(), out text))
-                text = DefaultText;
-            return Regex.Unescape(text);
+            if (LocalTexts.TryGetValue(Text.Culture.Name.ToLower(), out text))
+                return Regex.Unescape(text);
+
+            if (Text.LangNames.ContainsKey(Text.Culture.Name))
+            {
+                foreach (string fallback in Text.LangNames[Text.Culture.Name].Fallbacks)
+                {
+                    if (LocalTexts.TryGetValue(fallback, out text))
+                        return Regex.Unescape(text);
+                }
+            }
+
+            return Regex.Unescape(DefaultText);
         }
 
 
