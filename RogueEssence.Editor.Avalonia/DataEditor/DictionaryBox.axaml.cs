@@ -10,9 +10,29 @@ using Avalonia.VisualTree;
 
 namespace RogueEssence.Dev.Views
 {
+    public class DictionaryElement
+    {
+        private object key;
+        public object Key
+        {
+            get { return key; }
+        }
+        private object value;
+        public object Value
+        {
+            get { return value; }
+        }
+
+        public DictionaryElement(object key, object value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
     public class DictionaryBox : UserControl
     {
-        private ObservableCollection<(object, object)> collection;
+        private ObservableCollection<DictionaryElement> collection;
 
         public delegate void EditElementOp(object key, object element);
         public delegate void ElementOp(object key, object element, EditElementOp op);
@@ -20,13 +40,13 @@ namespace RogueEssence.Dev.Views
         public ElementOp OnEditKey;
         public ElementOp OnEditItem;
 
-        private ListBox lbxCollection;
+        private DataGrid gridCollection;
 
 
         public DictionaryBox()
         {
             this.InitializeComponent();
-            lbxCollection = this.FindControl<ListBox>("lbxItems");
+            gridCollection = this.FindControl<DataGrid>("gridItems");
         }
 
         private void InitializeComponent()
@@ -37,20 +57,20 @@ namespace RogueEssence.Dev.Views
         public IDictionary GetDict(Type type)
         {
             IDictionary result = (IDictionary)Activator.CreateInstance(type);
-            foreach ((object, object) item in collection)
-                result.Add(item.Item1, item.Item2);
+            foreach (DictionaryElement item in collection)
+                result.Add(item.Key, item.Value);
             return result;
         }
 
         public void LoadFromDict(IDictionary source)
         {
-            collection = new ObservableCollection<(object, object)>();
+            collection = new ObservableCollection<DictionaryElement>();
             foreach (object obj in source.Keys)
-                collection.Add((obj, source[obj]));
+                collection.Add(new DictionaryElement(obj, source[obj]));
 
             //bind the collection
-            var subject = new Subject<ObservableCollection<(object, object)>>();
-            lbxCollection.Bind(ComboBox.ItemsProperty, subject);
+            var subject = new Subject<ObservableCollection<DictionaryElement>>();
+            gridCollection.Bind(DataGrid.ItemsProperty, subject);
             subject.OnNext(collection);
         }
 
@@ -62,7 +82,7 @@ namespace RogueEssence.Dev.Views
         private void editItem(object key, object element)
         {
             int index = getIndexFromKey(key);
-            collection[index] = (collection[index].Item1, element);
+            collection[index] = new DictionaryElement(collection[index].Key, element);
         }
 
         private async void insertKey(object key, object element)
@@ -78,15 +98,15 @@ namespace RogueEssence.Dev.Views
 
         private void insertItem(object key, object element)
         {
-            collection.Add((key, element));
+            collection.Add(new DictionaryElement(key, element));
         }
 
         private int getIndexFromKey(object key)
         {
             int curIndex = 0;
-            foreach ((object, object) item in collection)
+            foreach (DictionaryElement item in collection)
             {
-                if (item.Item1.Equals(key))
+                if (item.Key.Equals(key))
                     return curIndex;
                 curIndex++;
             }
@@ -97,11 +117,11 @@ namespace RogueEssence.Dev.Views
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int index = lbxDictionary.IndexFromPoint(e.X, e.Y);
-            int index = lbxCollection.SelectedIndex;
+            int index = gridCollection.SelectedIndex;
             if (index > -1)
             {
-                (object, object) item = collection[index];
-                OnEditItem(item.Item1, item.Item2, editItem);
+                DictionaryElement item = collection[index];
+                OnEditItem(item.Key, item.Value, editItem);
             }
         }
 
@@ -114,9 +134,9 @@ namespace RogueEssence.Dev.Views
 
         public void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex > -1)
+            if (gridCollection.SelectedIndex > -1)
             {
-                collection.RemoveAt(lbxCollection.SelectedIndex);
+                collection.RemoveAt(gridCollection.SelectedIndex);
             }
         }
     }

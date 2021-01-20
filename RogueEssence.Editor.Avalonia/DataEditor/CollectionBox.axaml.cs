@@ -53,7 +53,7 @@ namespace RogueEssence.Dev.Views
 
             //bind the collection
             var subject = new Subject<ObservableCollection<object>>();
-            lbxCollection.Bind(ComboBox.ItemsProperty, subject);
+            lbxCollection.Bind(ListBox.ItemsProperty, subject);
             subject.OnNext(collection);
         }
 
