@@ -13,5 +13,8 @@
         <Style Selector="TabItem">
             <Setter Property="FontSize" Value="12"/>
         </Style>
+      <Style Selector="DataGridRow">
+        <Setter Property="Background" Value="#FFFFFF"/>
+      </Style>
     </Application.Styles>
 </Application>

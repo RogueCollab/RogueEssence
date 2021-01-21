@@ -10,14 +10,41 @@ using System.Reactive.Subjects;
 
 namespace RogueEssence.Dev.Views
 {
+    public class PriorityElement
+    {
+        private Priority priority;
+        public Priority Priority
+        {
+            get { return priority; }
+        }
+        //PriorityObj is solely used for DataGrid's binding
+        //for some reason, if priority was bound to the datagrid as a type,
+        //it will appear as blank
+        public object PriorityObj
+        {
+            get { return priority; }
+        }
+        private object value;
+        public object Value
+        {
+            get { return value; }
+        }
+
+        public PriorityElement(Priority priority, object value)
+        {
+            this.priority = priority;
+            this.value = value;
+        }
+    }
+
     public class PriorityListBox : UserControl
     {
-        private ObservableCollection<(Priority, object)> collection;
+        private ObservableCollection<PriorityElement> collection;
 
         public int SelectedIndex
         {
-            get { return lbxCollection.SelectedIndex; }
-            set { lbxCollection.SelectedIndex = value; }
+            get { return gridCollection.SelectedIndex; }
+            set { gridCollection.SelectedIndex = value; }
         }
 
 
@@ -30,12 +57,12 @@ namespace RogueEssence.Dev.Views
         public ElementOp OnEditItem;
         public PriorityOp OnEditPriority;
 
-        private ListBox lbxCollection;
+        private DataGrid gridCollection;
 
         public PriorityListBox()
         {
             this.InitializeComponent();
-            lbxCollection = this.FindControl<ListBox>("lbxItems");
+            gridCollection = this.FindControl<DataGrid>("gridItems");
         }
 
         private void InitializeComponent()
@@ -46,38 +73,39 @@ namespace RogueEssence.Dev.Views
         public IPriorityList GetList(Type type)
         {
             IPriorityList result = (IPriorityList)Activator.CreateInstance(type);
-            foreach ((Priority, object) item in collection)
-                result.Add(item.Item1, item.Item2);
+            foreach (PriorityElement item in collection)
+                result.Add(item.Priority, item.Value);
             return result;
         }
 
         public void LoadFromList(IPriorityList source)
         {
-            collection = new ObservableCollection<(Priority, object)>();
+            collection = new ObservableCollection<PriorityElement>();
             foreach (Priority priority in source.GetPriorities())
             {
                 //keys.Add(priority);
                 foreach (object item in source.GetItems(priority))
-                    collection.Add((priority, item));
+                    collection.Add(new PriorityElement(priority, item));
             }
 
             //bind the collection
-            var subject = new Subject<ObservableCollection<(Priority, object)>>();
-            lbxCollection.Bind(ComboBox.ItemsProperty, subject);
+            var subject = new Subject<ObservableCollection<PriorityElement>>();
+            gridCollection.Bind(DataGrid.ItemsProperty, subject);
             subject.OnNext(collection);
         }
 
 
         private void editItem(Priority priority, int index, object element)
         {
-            int boxIndex = findBoxIndex(priority, index);
-            collection[boxIndex] = (priority, element);
+            collection[index] = new PriorityElement(priority, element);
+            gridCollection.SelectedIndex = index;
         }
 
         private void insertItem(Priority priority, int index, object element)
         {
             int boxIndex = findBoxIndex(priority, index);
-            collection.Insert(boxIndex, (priority, element));
+            collection.Insert(boxIndex, new PriorityElement(priority, element));
+            gridCollection.SelectedIndex = boxIndex;
         }
 
         private int findBoxIndex(Priority priority, int index)
@@ -85,21 +113,21 @@ namespace RogueEssence.Dev.Views
             if (collection.Count == 0)
                 return 0;
 
-            Priority prevPriority = collection[0].Item1;
+            Priority prevPriority = collection[0].Priority;
             int runningIndex = 0;
             for (int ii = 1; ii < collection.Count; ii++)
             {
-                if (collection[ii].Item1 == prevPriority)
+                if (collection[ii].Priority == prevPriority)
                     runningIndex++;
                 else
                     runningIndex = 0;
 
-                if (collection[ii].Item1 > priority)
+                if (collection[ii].Priority > priority)
                     return ii;
-                else if (collection[ii].Item1 == priority && runningIndex == index)
+                else if (collection[ii].Priority == priority && runningIndex == index)
                     return ii;
 
-                prevPriority = collection[ii].Item1;
+                prevPriority = collection[ii].Priority;
             }
             return collection.Count;
         }
@@ -107,7 +135,7 @@ namespace RogueEssence.Dev.Views
         private int getPriorityIndex(int boxIndex)
         {
             int index = 0;
-            while (boxIndex > 0 && collection[boxIndex].Item1 == collection[boxIndex-1].Item1)
+            while (boxIndex > 0 && collection[boxIndex].Priority == collection[boxIndex-1].Priority)
             {
                 index++;
                 boxIndex--;
@@ -119,24 +147,24 @@ namespace RogueEssence.Dev.Views
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
-            int boxIndex = lbxCollection.SelectedIndex;
+            int boxIndex = gridCollection.SelectedIndex;
             if (boxIndex > -1)
             {
-                Priority priority = collection[boxIndex].Item1;
+                Priority priority = collection[boxIndex].Priority;
                 int index = getPriorityIndex(boxIndex);
-                object element = collection[boxIndex].Item2;
+                object element = collection[boxIndex].Value;
                 OnEditItem(priority, index, element, editItem);
             }
         }
 
         public void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            int boxIndex = lbxCollection.SelectedIndex;
+            int boxIndex = gridCollection.SelectedIndex;
             Priority priority = new Priority(0);
             int index = 0;
             if (boxIndex >= 0)
             {
-                priority = collection[boxIndex].Item1;
+                priority = collection[boxIndex].Priority;
                 index = getPriorityIndex(boxIndex);
             }
             object element = null;
@@ -145,15 +173,15 @@ namespace RogueEssence.Dev.Views
 
         public void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex > -1)
-                collection.RemoveAt(lbxCollection.SelectedIndex);
+            if (gridCollection.SelectedIndex > -1)
+                collection.RemoveAt(gridCollection.SelectedIndex);
         }
 
 
 
         private void Switch(int a, int b)
         {
-            (Priority, object) obj = collection[a];
+            PriorityElement obj = collection[a];
             collection[a] = collection[b];
             collection[b] = obj;
         }
@@ -161,69 +189,71 @@ namespace RogueEssence.Dev.Views
 
         public void btnUp_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex < 0)
+            if (gridCollection.SelectedIndex < 0)
                 return;
 
-            int boxIndex = lbxCollection.SelectedIndex;
-            Priority priority = collection[boxIndex].Item1;
+            int boxIndex = gridCollection.SelectedIndex;
+            Priority priority = collection[boxIndex].Priority;
             Priority currentPriority = priority;
-            if (boxIndex == 0 || collection[boxIndex].Item1 != collection[boxIndex - 1].Item1)
+            if (boxIndex == 0 || collection[boxIndex].Priority != collection[boxIndex - 1].Priority)
             {
-                Priority newPriority = (boxIndex > 0) ? collection[boxIndex - 1].Item1 : new Priority(currentPriority[0] - 1);
+                Priority newPriority = (boxIndex > 0) ? collection[boxIndex - 1].Priority : new Priority(currentPriority[0] - 1);
 
                 Priority nextPriority = getNextPriority(currentPriority, newPriority);
-                object obj = collection[boxIndex].Item2;
-                collection[boxIndex] = (nextPriority, obj);
+                object obj = collection[boxIndex].Value;
+                collection[boxIndex] = new PriorityElement(nextPriority, obj);
+                gridCollection.SelectedIndex = boxIndex;
             }
             else
             {
                 //switch
-                int selectedIndex = lbxCollection.SelectedIndex;
+                int selectedIndex = gridCollection.SelectedIndex;
                 Switch(boxIndex, boxIndex - 1);
-                lbxCollection.SelectedIndex = selectedIndex - 1;
+                gridCollection.SelectedIndex = selectedIndex - 1;
             }
         }
 
         public void btnDown_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex < 0)
+            if (gridCollection.SelectedIndex < 0)
                 return;
 
-            int boxIndex = lbxCollection.SelectedIndex;
-            Priority priority = collection[boxIndex].Item1;
+            int boxIndex = gridCollection.SelectedIndex;
+            Priority priority = collection[boxIndex].Priority;
             Priority currentPriority = priority;
-            if (boxIndex == collection.Count - 1 || collection[boxIndex].Item1 != collection[boxIndex + 1].Item1)
+            if (boxIndex == collection.Count - 1 || collection[boxIndex].Priority != collection[boxIndex + 1].Priority)
             {
-                Priority newPriority = (boxIndex < collection.Count-1) ? collection[boxIndex + 1].Item1 : new Priority(currentPriority[0] + 1);
+                Priority newPriority = (boxIndex < collection.Count-1) ? collection[boxIndex + 1].Priority : new Priority(currentPriority[0] + 1);
 
                 Priority nextPriority = getNextPriority(currentPriority, newPriority);
-                object obj = collection[boxIndex].Item2;
-                collection[boxIndex] = (nextPriority, obj);
+                object obj = collection[boxIndex].Value;
+                collection[boxIndex] = new PriorityElement(nextPriority, obj);
+                gridCollection.SelectedIndex = boxIndex;
             }
             else
             {
-                int selectedIndex = lbxCollection.SelectedIndex;
+                int selectedIndex = gridCollection.SelectedIndex;
                 Switch(boxIndex, boxIndex + 1);
-                lbxCollection.SelectedIndex = selectedIndex + 1;
+                gridCollection.SelectedIndex = selectedIndex + 1;
             }
         }
 
         private void changePriority(Priority priority, int index, Priority newPriority)
         {
-            int boxIndex = findBoxIndex(priority, index);
-            (Priority, object) item = collection[boxIndex];
-            collection.RemoveAt(boxIndex);
+            PriorityElement item = collection[index];
+            collection.RemoveAt(index);
 
-            int newBoxIndex = findBoxIndex(priority, 0);
-            collection.Insert(newBoxIndex, (newPriority, item.Item2));
+            int newBoxIndex = findBoxIndex(newPriority, 0);
+            collection.Insert(newBoxIndex, new PriorityElement(newPriority, item.Value));
+            gridCollection.SelectedIndex = newBoxIndex;
         }
 
         public void btnEditKey_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex > -1)
+            if (gridCollection.SelectedIndex > -1)
             {
-                int boxIndex = lbxCollection.SelectedIndex;
-                Priority priority = collection[boxIndex].Item1;
+                int boxIndex = gridCollection.SelectedIndex;
+                Priority priority = collection[boxIndex].Priority;
                 int index = getPriorityIndex(boxIndex);
                 OnEditPriority(priority, index, changePriority);
             }

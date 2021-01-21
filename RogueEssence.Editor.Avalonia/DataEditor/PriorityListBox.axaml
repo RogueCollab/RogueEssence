@@ -17,7 +17,14 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <ListBox Name="lbxItems" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50" MaxHeight="130"/>
+    <DataGrid Name="gridItems" IsReadOnly="true" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50" MaxHeight="130">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Priority"
+                      Binding="{Binding PriorityObj}" />
+        <DataGridTextColumn Header="Value"
+                            Binding="{Binding Value}" />
+      </DataGrid.Columns>
+    </DataGrid>
     <Button Click="btnAdd_Click" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>
     <Button Click="btnDelete_Click" Margin="4" Grid.Row="3" Grid.Column="1">Delete</Button>
     <Button Click="btnUp_Click" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>

@@ -17,7 +17,6 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        //TODO: possibly revamp this with a GridView
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IPriorityList member)
         {
             LoadLabelControl(control, name);
