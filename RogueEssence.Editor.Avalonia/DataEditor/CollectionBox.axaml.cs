@@ -74,7 +74,7 @@ namespace RogueEssence.Dev.Views
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
-            int index = lbxCollection.SelectedIndex;
+            int index = SelectedIndex;
             if (index > -1)
             {
                 object element = collection[index];
@@ -85,7 +85,7 @@ namespace RogueEssence.Dev.Views
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            int index = lbxCollection.SelectedIndex;
+            int index = SelectedIndex;
             if (index < 0)
                 index = collection.Count;
             object element = null;
@@ -94,9 +94,9 @@ namespace RogueEssence.Dev.Views
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex > -1)
+            if (SelectedIndex > -1)
             {
-                collection.RemoveAt(lbxCollection.SelectedIndex);
+                collection.RemoveAt(SelectedIndex);
             }
         }
 
@@ -109,21 +109,21 @@ namespace RogueEssence.Dev.Views
 
         private void btnUp_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex > 0)
+            if (SelectedIndex > 0)
             {
-                int index = lbxCollection.SelectedIndex;
-                Switch(lbxCollection.SelectedIndex, lbxCollection.SelectedIndex - 1);
-                lbxCollection.SelectedIndex = index - 1;
+                int index = SelectedIndex;
+                Switch(SelectedIndex, SelectedIndex - 1);
+                SelectedIndex = index - 1;
             }
         }
 
         private void btnDown_Click(object sender, RoutedEventArgs e)
         {
-            if (lbxCollection.SelectedIndex > -1 && lbxCollection.SelectedIndex < collection.Count - 1)
+            if (SelectedIndex > -1 && SelectedIndex < collection.Count - 1)
             {
-                int index = lbxCollection.SelectedIndex;
-                Switch(lbxCollection.SelectedIndex, lbxCollection.SelectedIndex + 1);
-                lbxCollection.SelectedIndex = index + 1;
+                int index = SelectedIndex;
+                Switch(SelectedIndex, SelectedIndex + 1);
+                SelectedIndex = index + 1;
             }
         }
     }

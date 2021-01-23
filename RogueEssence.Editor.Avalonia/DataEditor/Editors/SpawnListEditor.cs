@@ -8,6 +8,7 @@ using System.Drawing;
 using RogueElements;
 using Avalonia.Controls;
 using RogueEssence.Dev.Views;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
@@ -16,54 +17,54 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        //TODO: copy the list editor to implement this
-        //or if you're feeling adventurous, use a GridView
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, ISpawnList member)
+        {
+            LoadLabelControl(control, name);
 
-        //public override void LoadClassControls(ISpawnList obj, StackPanel control)
-        //{
-        //    SpawnListBox lbxValue = new SpawnListBox();
-        //    lbxValue.Dock = DockStyle.Fill;
-        //    lbxValue.Size = new Size(0, 200);
+            SpawnListBox lbxValue = new SpawnListBox();
+            SpawnListBoxViewModel mv = new SpawnListBoxViewModel();
+            lbxValue.DataContext = mv;
 
-        //    Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), obj.GetType(), 0);
-        //    lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
-        //    //add lambda expression for editing a single element
-        //    lbxValue.OnEditItem = (int index, object element, SpawnListBox.EditElementOp op) =>
-        //    {
-        //        ElementForm frmData = new ElementForm();
-        //        if (element == null)
-        //            frmData.Text = "New " + elementType.Name;
-        //        else
-        //            frmData.Text = element.ToString();
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
+            //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
+            //add lambda expression for editing a single element
 
-        //        DataEditor.loadClassControls(frmData.ControlPanel, "(SpawnList) [" + index + "]", elementType, new object[0] { }, element, true);
+            mv.OnEditItem += (int index, object element, SpawnListBoxViewModel.EditElementOp op) =>
+            {
+                DataEditForm frmData = new DataEditForm();
+                if (element == null)
+                    frmData.Title = name + "/" + "New " + elementType.Name;
+                else
+                    frmData.Title = name + "/" + element.ToString();
 
-        //        frmData.OnOK += (object okSender, EventArgs okE) =>
-        //        {
-        //            DataEditor.saveClassControls(frmData.ControlPanel, "SpawnList", elementType, new object[0] { }, ref element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, "(SpawnList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
-        //            op(index, element);
-        //            frmData.Close();
-        //        };
-        //        frmData.OnCancel += (object okSender, EventArgs okE) =>
-        //        {
-        //            frmData.Close();
-        //        };
+                frmData.SelectedOKEvent += () =>
+                {
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    op(index, element);
+                    frmData.Close();
+                };
+                frmData.SelectedCancelEvent += () =>
+                {
+                    frmData.Close();
+                };
 
-        //        frmData.Show();
-        //    };
+                control.GetOwningForm().RegisterChild(frmData);
+                frmData.Show();
+            };
 
-        //    lbxValue.LoadFromList(obj.GetType(), obj);
-        //    control.Children.Add(lbxValue);
-        //}
+            mv.LoadFromList(member);
+            control.Children.Add(lbxValue);
+        }
 
-
-        //public override void SaveClassControls(ISpawnList obj, StackPanel control)
-        //{
-        //    SpawnListBox lbxValue = (SpawnListBox)control.Controls[0];
-
-        //    for (int ii = 0; ii < lbxValue.Collection.Count; ii++)
-        //        obj.Add(lbxValue.Collection.GetSpawn(ii), lbxValue.Collection.GetSpawnRate(ii));
-        //}
+        public override ISpawnList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        {
+            int controlIndex = 0;
+            controlIndex++;
+            SpawnListBox lbxValue = (SpawnListBox)control.Children[controlIndex];
+            SpawnListBoxViewModel mv = (SpawnListBoxViewModel)lbxValue.DataContext;
+            return mv.GetList(type);
+        }
     }
 }

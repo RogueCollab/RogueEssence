@@ -34,6 +34,13 @@ namespace RogueEssence.Dev.Views
     {
         private ObservableCollection<DictionaryElement> collection;
 
+        private int SelectedIndex
+        {
+            get { return gridCollection.SelectedIndex; }
+            set { gridCollection.SelectedIndex = value; }
+        }
+
+
         public delegate void EditElementOp(object key, object element);
         public delegate void ElementOp(object key, object element, EditElementOp op);
 
@@ -117,7 +124,7 @@ namespace RogueEssence.Dev.Views
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int index = lbxDictionary.IndexFromPoint(e.X, e.Y);
-            int index = gridCollection.SelectedIndex;
+            int index = SelectedIndex;
             if (index > -1)
             {
                 DictionaryElement item = collection[index];
@@ -134,10 +141,8 @@ namespace RogueEssence.Dev.Views
 
         public void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (gridCollection.SelectedIndex > -1)
-            {
-                collection.RemoveAt(gridCollection.SelectedIndex);
-            }
+            if (SelectedIndex > -1)
+                collection.RemoveAt(SelectedIndex);
         }
     }
 }

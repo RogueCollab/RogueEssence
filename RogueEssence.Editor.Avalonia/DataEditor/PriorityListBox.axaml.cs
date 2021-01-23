@@ -98,14 +98,14 @@ namespace RogueEssence.Dev.Views
         private void editItem(Priority priority, int index, object element)
         {
             collection[index] = new PriorityElement(priority, element);
-            gridCollection.SelectedIndex = index;
+            SelectedIndex = index;
         }
 
         private void insertItem(Priority priority, int index, object element)
         {
             int boxIndex = findBoxIndex(priority, index);
             collection.Insert(boxIndex, new PriorityElement(priority, element));
-            gridCollection.SelectedIndex = boxIndex;
+            SelectedIndex = boxIndex;
         }
 
         private int findBoxIndex(Priority priority, int index)
@@ -147,7 +147,7 @@ namespace RogueEssence.Dev.Views
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
-            int boxIndex = gridCollection.SelectedIndex;
+            int boxIndex = SelectedIndex;
             if (boxIndex > -1)
             {
                 Priority priority = collection[boxIndex].Priority;
@@ -159,7 +159,7 @@ namespace RogueEssence.Dev.Views
 
         public void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            int boxIndex = gridCollection.SelectedIndex;
+            int boxIndex = SelectedIndex;
             Priority priority = new Priority(0);
             int index = 0;
             if (boxIndex >= 0)
@@ -173,8 +173,8 @@ namespace RogueEssence.Dev.Views
 
         public void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (gridCollection.SelectedIndex > -1)
-                collection.RemoveAt(gridCollection.SelectedIndex);
+            if (SelectedIndex > -1)
+                collection.RemoveAt(SelectedIndex);
         }
 
 
@@ -189,10 +189,10 @@ namespace RogueEssence.Dev.Views
 
         public void btnUp_Click(object sender, RoutedEventArgs e)
         {
-            if (gridCollection.SelectedIndex < 0)
+            if (SelectedIndex < 0)
                 return;
 
-            int boxIndex = gridCollection.SelectedIndex;
+            int boxIndex = SelectedIndex;
             Priority priority = collection[boxIndex].Priority;
             Priority currentPriority = priority;
             if (boxIndex == 0 || collection[boxIndex].Priority != collection[boxIndex - 1].Priority)
@@ -202,23 +202,23 @@ namespace RogueEssence.Dev.Views
                 Priority nextPriority = getNextPriority(currentPriority, newPriority);
                 object obj = collection[boxIndex].Value;
                 collection[boxIndex] = new PriorityElement(nextPriority, obj);
-                gridCollection.SelectedIndex = boxIndex;
+                SelectedIndex = boxIndex;
             }
             else
             {
                 //switch
-                int selectedIndex = gridCollection.SelectedIndex;
+                int selectedIndex = SelectedIndex;
                 Switch(boxIndex, boxIndex - 1);
-                gridCollection.SelectedIndex = selectedIndex - 1;
+                SelectedIndex = selectedIndex - 1;
             }
         }
 
         public void btnDown_Click(object sender, RoutedEventArgs e)
         {
-            if (gridCollection.SelectedIndex < 0)
+            if (SelectedIndex < 0)
                 return;
 
-            int boxIndex = gridCollection.SelectedIndex;
+            int boxIndex = SelectedIndex;
             Priority priority = collection[boxIndex].Priority;
             Priority currentPriority = priority;
             if (boxIndex == collection.Count - 1 || collection[boxIndex].Priority != collection[boxIndex + 1].Priority)
@@ -228,13 +228,13 @@ namespace RogueEssence.Dev.Views
                 Priority nextPriority = getNextPriority(currentPriority, newPriority);
                 object obj = collection[boxIndex].Value;
                 collection[boxIndex] = new PriorityElement(nextPriority, obj);
-                gridCollection.SelectedIndex = boxIndex;
+                SelectedIndex = boxIndex;
             }
             else
             {
-                int selectedIndex = gridCollection.SelectedIndex;
+                int selectedIndex = SelectedIndex;
                 Switch(boxIndex, boxIndex + 1);
-                gridCollection.SelectedIndex = selectedIndex + 1;
+                SelectedIndex = selectedIndex + 1;
             }
         }
 
@@ -245,14 +245,14 @@ namespace RogueEssence.Dev.Views
 
             int newBoxIndex = findBoxIndex(newPriority, 0);
             collection.Insert(newBoxIndex, new PriorityElement(newPriority, item.Value));
-            gridCollection.SelectedIndex = newBoxIndex;
+            SelectedIndex = newBoxIndex;
         }
 
         public void btnEditKey_Click(object sender, RoutedEventArgs e)
         {
-            if (gridCollection.SelectedIndex > -1)
+            if (SelectedIndex > -1)
             {
-                int boxIndex = gridCollection.SelectedIndex;
+                int boxIndex = SelectedIndex;
                 Priority priority = collection[boxIndex].Priority;
                 int index = getPriorityIndex(boxIndex);
                 OnEditPriority(priority, index, changePriority);
