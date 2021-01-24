@@ -22,9 +22,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Array member)
         {
-            //TODO: 2D array grid support
-            //if (type.GetElementType().IsArray)
-
             LoadLabelControl(control, name);
 
             CollectionBox lbxValue = new CollectionBox();

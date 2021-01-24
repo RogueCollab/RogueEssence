@@ -240,10 +240,21 @@ namespace RogueEssence.Dev
 
         public static Type[] GetAssignableTypes(this Type type)
         {
-            List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
-            List<Type> types = getAssignableTypes(false, 3, dependentAssemblies.ToArray(), type);
-            types.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
-            return types.ToArray();
+            if (type.IsArray)
+            {
+                Type arrayType = type.GetElementType();
+                Type[] assignableArrays = arrayType.GetAssignableTypes();
+                for (int ii = 0; ii < assignableArrays.Length; ii++)
+                    assignableArrays[ii] = assignableArrays[ii].MakeArrayType(type.GetArrayRank());
+                return assignableArrays;
+            }
+            else
+            {
+                List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
+                List<Type> types = getAssignableTypes(false, 3, dependentAssemblies.ToArray(), type);
+                types.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
+                return types.ToArray();
+            }
         }
 
         private static List<Type> getAssignableTypes(bool allowAbstract, int recursionDepth, Assembly[] searchAssemblies, params Type[] constraints)
@@ -251,8 +262,9 @@ namespace RogueEssence.Dev
             if (recursionDepth == 0)
                 return new List<Type>();
 
-            List<Type> children = new List<Type>();
+            
 
+            List<Type> children = new List<Type>();
             foreach (Assembly assembly in searchAssemblies)
             {
                 Type[] types = assembly.GetTypes();

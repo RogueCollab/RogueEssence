@@ -273,6 +273,10 @@ namespace RogueEssence.Dev
                     throw new Exception("Completely abstract field found for: " + name);
                 else if (children.Length == 1)
                 {
+                    Type memberType = member.GetType();
+                    if (type != memberType)
+                        throw new TargetException("Types do not match.");
+
                     StackPanel chosenParent = control;
                     if (includeDecoration)
                     {
@@ -386,7 +390,7 @@ namespace RogueEssence.Dev
 
                     bool refreshPanel = true;
                     List<string> items = new List<string>();
-                    int selection = 0;
+                    int selection = -1;
                     for (int ii = 0; ii < children.Length; ii++)
                     {
                         Type childType = children[ii];
@@ -404,6 +408,8 @@ namespace RogueEssence.Dev
                         if (childType == member.GetType())
                             selection = ii;
                     }
+                    if (selection == -1)
+                       throw new TargetException("Types do not match.");
 
                     var subject = new Subject<List<string>>();
                     cbValue.Bind(ComboBox.ItemsProperty, subject);

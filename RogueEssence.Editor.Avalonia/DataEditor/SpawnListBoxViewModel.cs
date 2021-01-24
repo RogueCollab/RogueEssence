@@ -27,7 +27,6 @@ namespace RogueEssence.Dev.ViewModels
         public object Value
         {
             get { return val; }
-            set { this.SetIfChanged(ref val, value); }
         }
 
         public SpawnListElement(int weight, double chance, object val)
@@ -132,8 +131,8 @@ namespace RogueEssence.Dev.ViewModels
             int index = CurrentElement;
             if (index > -1)
             {
-                object element = Collection[index];
-                OnEditItem?.Invoke(index, element, editItem);
+                SpawnListElement element = Collection[index];
+                OnEditItem?.Invoke(index, element.Value, editItem);
             }
         }
 
