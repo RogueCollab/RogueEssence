@@ -27,6 +27,8 @@ namespace RogueEssence.Dev
 
             TextBlock lblX = new TextBlock();
             lblX.Text = "Min:";
+            lblX.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblX.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblX);
             lblX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
@@ -40,7 +42,9 @@ namespace RogueEssence.Dev
 
             TextBlock lblY = new TextBlock();
             lblY.Margin = new Thickness(8, 0, 0, 0);
-            lblY.Text = "Map:";
+            lblY.Text = "Max:";
+            lblY.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblY.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblY);
             lblY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 

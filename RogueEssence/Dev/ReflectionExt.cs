@@ -245,7 +245,7 @@ namespace RogueEssence.Dev
                 Type arrayType = type.GetElementType();
                 Type[] assignableArrays = arrayType.GetAssignableTypes();
                 for (int ii = 0; ii < assignableArrays.Length; ii++)
-                    assignableArrays[ii] = assignableArrays[ii].MakeArrayType(type.GetArrayRank());
+                    assignableArrays[ii] = assignableArrays[ii].MakeArrayType();
                 return assignableArrays;
             }
             else
