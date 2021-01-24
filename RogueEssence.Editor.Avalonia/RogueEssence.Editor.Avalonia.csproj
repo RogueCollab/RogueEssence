@@ -14,6 +14,9 @@
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="DataEditor\SpawnRangeListBox.axaml.cs">
+      <DependentUpon>SpawnRangeListBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DataEditor\SpawnListBox.axaml.cs">
       <DependentUpon>SpawnListBox.axaml</DependentUpon>
     </Compile>

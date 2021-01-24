@@ -24,7 +24,7 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Lv.</TextBlock>
-    <NumericUpDown Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Margin="4" Grid.Row="1" Grid.Column="0"></NumericUpDown>
+    <NumericUpDown Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Margin="4" Grid.Row="1" Grid.Column="0"/>
     <Button Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1">Form</TextBlock>
