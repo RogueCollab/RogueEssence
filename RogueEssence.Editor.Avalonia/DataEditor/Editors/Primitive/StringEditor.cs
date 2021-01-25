@@ -25,79 +25,19 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
-            AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
-            if (animAtt != null)
+            //for strings, use an edit textbox
+            TextBox txtValue = new TextBox();
+            //txtValue.Dock = DockStyle.Fill;
+            MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
+            if (attribute != null)
             {
-                ComboBox cbValue = new ComboBox();
-                cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                string choice = member;
-
-                List<string> items = new List<string>();
-                items.Add("---");
-                int chosenIndex = 0;
-
-                string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + animAtt.FolderPath);
-
-                for (int ii = 0; ii < dirs.Length; ii++)
-                {
-                    string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                    if (filename == choice)
-                        chosenIndex = items.Count;
-                    items.Add(filename);
-                }
-
-                var subject = new Subject<List<string>>();
-                cbValue.Bind(ComboBox.ItemsProperty, subject);
-                subject.OnNext(items);
-                cbValue.SelectedIndex = chosenIndex;
-                control.Children.Add(cbValue);
+                //txtValue.Multiline = true;
+                //txtValue.Size = new Size(0, 80);
             }
-            else if (ReflectionExt.FindAttribute<SoundAttribute>(attributes) != null)
-            {
-                //is it a sound effect?
-
-                ComboBox cbValue = new ComboBox();
-                cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                string choice = member;
-
-                List<string> items = new List<string>();
-                items.Add("---");
-                int chosenIndex = 0;
-
-                string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Sound/Battle");
-
-                for (int ii = 0; ii < dirs.Length; ii++)
-                {
-                    string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                    if (filename == choice)
-                        chosenIndex = items.Count;
-                    items.Add(filename);
-                }
-
-                var subject = new Subject<List<string>>();
-                cbValue.Bind(ComboBox.ItemsProperty, subject);
-                subject.OnNext(items);
-                cbValue.SelectionChanged += CbValue_PlaySound;
-                cbValue.SelectedIndex = chosenIndex;
-                control.Children.Add(cbValue);
-
-            }
-            else
-            {
-                //for strings, use an edit textbox
-                TextBox txtValue = new TextBox();
-                //txtValue.Dock = DockStyle.Fill;
-                MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
-                if (attribute != null)
-                {
-                    //txtValue.Multiline = true;
-                    //txtValue.Size = new Size(0, 80);
-                }
-                //else
-                //    txtValue.Size = new Size(0, 20);
-                txtValue.Text = (member == null) ? "" : member;
-                control.Children.Add(txtValue);
-            }
+            //else
+            //    txtValue.Size = new Size(0, 20);
+            txtValue.Text = (member == null) ? "" : member;
+            control.Children.Add(txtValue);
         }
 
 
@@ -105,32 +45,9 @@ namespace RogueEssence.Dev
         {
             int controlIndex = 0;
             controlIndex++;
-            //for strings, use an edit textbox
-            if (ReflectionExt.FindAttribute<AnimAttribute>(attributes) != null || ReflectionExt.FindAttribute<SoundAttribute>(attributes) != null)
-            {
-                ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                if (cbValue.SelectedIndex == 0)
-                    return "";
-                else
-                    return (string)cbValue.SelectedItem;
-            }
-            else
-            {
-                TextBox txtValue = (TextBox)control.Children[controlIndex];
-                return txtValue.Text;
-            }
-        }
 
-
-
-        private static void CbValue_PlaySound(object sender, SelectionChangedEventArgs e)
-        {
-            ComboBox box = (ComboBox)sender;
-            if (box.SelectedIndex > 0)
-            {
-                lock (GameBase.lockObj)
-                    GameManager.Instance.BattleSE((string)box.SelectedItem);
-            }
+            TextBox txtValue = (TextBox)control.Children[controlIndex];
+            return txtValue.Text;
         }
     }
 }

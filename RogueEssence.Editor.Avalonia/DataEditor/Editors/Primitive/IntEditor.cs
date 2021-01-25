@@ -24,69 +24,19 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
-            DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
             FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
-            if (dataAtt != null)
+            NumericUpDown nudValue = new NumericUpDown();
+            nudValue.Minimum = Int32.MinValue;
+            nudValue.Maximum = Int32.MaxValue;
+            NumberRangeAttribute rangeAtt = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
+            if (rangeAtt != null)
             {
-                ComboBox cbValue = new ComboBox();
-                cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenIndex = member;
-                Data.EntryDataIndex nameIndex = Data.DataManager.Instance.DataIndices[dataAtt.DataType];
-
-                List<string> items = new List<string>();
-                if (dataAtt.IncludeInvalid)
-                {
-                    items.Add("---");
-                    chosenIndex++;
-                }
-
-                for (int ii = 0; ii < nameIndex.Count; ii++)
-                    items.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(false));
-
-                var subject = new Subject<List<string>>();
-                cbValue.Bind(ComboBox.ItemsProperty, subject);
-                subject.OnNext(items);
-                cbValue.SelectedIndex = Math.Min(Math.Max(0, chosenIndex), items.Count - 1);
-                control.Children.Add(cbValue);
+                nudValue.Minimum = rangeAtt.Min;
+                nudValue.Maximum = rangeAtt.Max;
             }
-            else if (frameAtt != null)
-            {
-                ComboBox cbValue = new ComboBox();
-                cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenIndex = 0;
+            nudValue.Value = member;
 
-                List<string> items = new List<string>();
-                for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
-                {
-                    if (!frameAtt.DashOnly || GraphicsManager.Actions[ii].IsDash)
-                    {
-                        if (ii == (int)member)
-                            chosenIndex = items.Count;
-                        items.Add(GraphicsManager.Actions[ii].Name);
-                    }
-                }
-
-                var subject = new Subject<List<string>>();
-                cbValue.Bind(ComboBox.ItemsProperty, subject);
-                subject.OnNext(items);
-                cbValue.SelectedIndex = Math.Min(Math.Max(0, chosenIndex), items.Count - 1);
-                control.Children.Add(cbValue);
-            }
-            else
-            {
-                NumericUpDown nudValue = new NumericUpDown();
-                nudValue.Minimum = Int32.MinValue;
-                nudValue.Maximum = Int32.MaxValue;
-                NumberRangeAttribute rangeAtt = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
-                if (rangeAtt != null)
-                {
-                    nudValue.Minimum = rangeAtt.Min;
-                    nudValue.Maximum = rangeAtt.Max;
-                }
-                nudValue.Value = member;
-
-                control.Children.Add(nudValue);
-            }
+            control.Children.Add(nudValue);
         }
 
 
@@ -94,43 +44,9 @@ namespace RogueEssence.Dev
         {
             int controlIndex = 0;
             controlIndex++;
-            DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
-            FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
-            if (dataAtt != null)
-            {
-                ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                int returnValue = cbValue.SelectedIndex;
-                if (dataAtt.IncludeInvalid)
-                    returnValue--;
-                return returnValue;
-            }
-            else if (frameAtt != null)
-            {
-                ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                if (!frameAtt.DashOnly)
-                    return cbValue.SelectedIndex;
-                else
-                {
-                    int currentDashValue = -1;
-                    for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
-                    {
-                        if (GraphicsManager.Actions[ii].IsDash)
-                        {
-                            currentDashValue++;
-                            if (currentDashValue == cbValue.SelectedIndex)
-                            {
-                                return ii;
-                            }
-                        }
-                    }
-                }
-                return 0;
-            }
-            else
-            {
-                NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
-                return (Int32)nudValue.Value;
-            }
+
+            NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
+            return (Int32)nudValue.Value;
         }
 
     }

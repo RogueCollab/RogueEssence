@@ -44,6 +44,7 @@ namespace RogueEssence.Dev
             return sharedRowPanel;
         }
 
+        public virtual Type GetAttributeType() { return null; }
         public Type GetConvertingType() { return typeof(T); }
 
         public virtual void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)

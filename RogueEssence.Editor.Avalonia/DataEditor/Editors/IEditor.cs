@@ -8,6 +8,7 @@ namespace RogueEssence.Dev
 {
     public interface IEditor
     {
+        Type GetAttributeType();
         Type GetConvertingType();
 
         void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow);

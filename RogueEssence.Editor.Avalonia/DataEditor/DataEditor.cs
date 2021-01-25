@@ -41,6 +41,11 @@ namespace RogueEssence.Dev
                     converters.Insert(ii, converter);
                     return;
                 }
+                else if (converter.GetConvertingType() == converters[ii].GetConvertingType() && converter.GetAttributeType() != null && converters[ii].GetAttributeType() == null)
+                {
+                    converters.Insert(ii, converter);
+                    return;
+                }
             }
             converters.Add(converter);
         }
@@ -51,53 +56,46 @@ namespace RogueEssence.Dev
             LoadClassControls(control, obj.ToString(), obj.GetType(), new object[0], obj, true);
         }
 
-        public static void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        private static IEditor findEditor(Type objType, object[] attributes)
         {
-            Type objType = type;
             Type[] interfaces = objType.GetInterfaces();
             foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
                 if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
                 {
-                    converter.LoadClassControls(control, name, type, attributes, member, isWindow);
-                    return;
+                    Type attrType = converter.GetAttributeType();
+                    if (attrType == null)
+                        return converter;
+                    else
+                    {
+                        foreach (object attr in attributes)
+                        {
+                            if (attr.GetType() == attrType)
+                                return converter;
+                        }
+                    }
                 }
             }
-
             throw new ArgumentException("Unhandled type!");
+        }
+
+        public static void LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        {
+            IEditor converter = findEditor(type, attributes);
+            converter.LoadClassControls(control, name, type, attributes, member, isWindow);
         }
 
         public static void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
         {
-            Type[] interfaces = type.GetInterfaces();
-            foreach (IEditor converter in converters)
-            {
-                Type convertType = converter.GetConvertingType();
-                if (convertType == type || type.IsSubclassOf(convertType) || interfaces.Contains(convertType))
-                {
-                    converter.LoadWindowControls(control, name, type, attributes, obj);
-                    return;
-                }
-            }
-
-            throw new ArgumentException("Unhandled type!");
+            IEditor converter = findEditor(type, attributes);
+            converter.LoadWindowControls(control, name, type, attributes, obj);
         }
 
         public static void LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
-            Type objType = obj.GetType();
-            Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditor converter in converters)
-            {
-                Type convertType = converter.GetConvertingType();
-                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
-                {
-                    converter.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
-                    return;
-                }
-            }
-            throw new ArgumentException("Unhandled type!");
+            IEditor converter = findEditor(obj.GetType(), attributes);
+            converter.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
         }
 
         public static void SaveDataControls(ref object obj, StackPanel control)
@@ -107,47 +105,22 @@ namespace RogueEssence.Dev
 
         public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
-            Type[] interfaces = type.GetInterfaces();
-            foreach (IEditor converter in converters)
-            {
-                Type convertType = converter.GetConvertingType();
-                if (convertType == type || type.IsSubclassOf(convertType) || interfaces.Contains(convertType))
-                {
-                    return converter.SaveClassControls(control, name, type, attributes, isWindow);
-                }
-            }
-            throw new ArgumentException("Unhandled type!");
+            IEditor converter = findEditor(type, attributes);
+            return converter.SaveClassControls(control, name, type, attributes, isWindow);
         }
 
 
         public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
-            Type[] interfaces = type.GetInterfaces();
-            foreach (IEditor converter in converters)
-            {
-                Type convertType = converter.GetConvertingType();
-                if (convertType == type || type.IsSubclassOf(convertType) || interfaces.Contains(convertType))
-                {
-                    return converter.SaveWindowControls(control, name, type, attributes);
-                }
-            }
-            throw new ArgumentException("Unhandled type!");
+            IEditor converter = findEditor(type, attributes);
+            return converter.SaveWindowControls(control, name, type, attributes);
         }
 
 
         public static object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
-            Type objType = obj.GetType();
-            Type[] interfaces = objType.GetInterfaces();
-            foreach (IEditor converter in converters)
-            {
-                Type convertType = converter.GetConvertingType();
-                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
-                {
-                    return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
-                }
-            }
-            throw new ArgumentException("Unhandled type!");
+            IEditor converter = findEditor(obj.GetType(), attributes);
+            return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
         }
 
         //TODO: WPF data binding would invalidate this
