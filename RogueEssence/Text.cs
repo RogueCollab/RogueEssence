@@ -153,8 +153,6 @@ namespace RogueEssence
             {
                 if (Text.Strings[ii].TryGetValue(key, out text))
                     break;
-                else if (ii == Strings.Count - 1)
-                    throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
             }
 
             if (!String.IsNullOrEmpty(text))

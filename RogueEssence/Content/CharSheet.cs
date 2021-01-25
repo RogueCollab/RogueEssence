@@ -169,7 +169,7 @@ namespace RogueEssence.Content
                 bool dupe = false;
                 for (int yy = 0; yy < final_imgs.Count; yy++)
                 {
-                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, false) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false));
+                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, false) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false, imgs[xx].img.Width % 2 == 1));
                     if (imgs_equal)
                     {
                         CharAnimFrame map_frame = new CharAnimFrame();
@@ -178,7 +178,7 @@ namespace RogueEssence.Content
                         dupe = true;
                         break;
                     }
-                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, true) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true));
+                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, true) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true, imgs[xx].img.Width % 2 == 1));
                     if (flip_equal)
                     {
                         CharAnimFrame map_frame = new CharAnimFrame();
@@ -224,8 +224,9 @@ namespace RogueEssence.Content
                 int result_ii = ii;
                 if (flip)
                 {
-                    int yPoint = (ii / img1.Width + 1) * img1.Width;
-                    result_ii = yPoint - 1 - (ii - yPoint + img1.Width);
+                    int yPoint = ii / img1.Width;
+                    int xPoint = ii % img1.Width;
+                    result_ii = (yPoint + 1) * img1.Width - 1 - xPoint;
                 }
                 if (data1[ii] != data2[result_ii])
                     return false;
@@ -233,7 +234,7 @@ namespace RogueEssence.Content
             return true;
         }
 
-        private static bool offsetsEqual(OffsetData offset1, OffsetData offset2, bool flip)
+        private static bool offsetsEqual(OffsetData offset1, OffsetData offset2, bool flip, bool oddWidth)
         {
             Loc center = offset2.Center;
             Loc head = offset2.Head;
@@ -241,10 +242,10 @@ namespace RogueEssence.Content
             Loc rightHand = offset2.RightHand;
             if (flip)
             {
-                center = offset2.CenterFlip;
-                head = offset2.HeadFlip;
-                leftHand = offset2.LeftHandFlip;
-                rightHand = offset2.RightHandFlip;
+                center = offset2.CenterFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
+                head = offset2.HeadFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
+                leftHand = offset2.LeftHandFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
+                rightHand = offset2.RightHandFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
             }
 
             if (offset1.Center != center)
@@ -601,15 +602,9 @@ namespace RogueEssence.Content
                             if (imgCoveredRect.Width <= 0)
                                 imgCoveredRect = new Rectangle(tileWidth / 2, tileHeight / 2, 1, 1);
 
-                            //make frame sizes even
-                            int evenWidth = roundUpToMult(imgCoveredRect.Width, 2);
-                            int evenHeight = roundUpToMult(imgCoveredRect.Height, 2);
-
                             //first blit, then edit the rect sizes
-                            Texture2D frameTex = new Texture2D(device, evenWidth, evenHeight);
+                            Texture2D frameTex = new Texture2D(device, imgCoveredRect.Width, imgCoveredRect.Height);
                             BaseSheet.Blit(animSheet, frameTex, jj * tileWidth + imgCoveredRect.X, sheetIndex * tileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
-                            imgCoveredRect.Width = evenWidth;
-                            imgCoveredRect.Height = evenHeight;
                             //the final tile size must be able to contain this image
                             maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
                             maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
@@ -664,6 +659,10 @@ namespace RogueEssence.Content
                 if (frames.Count == 0)
                     return null;
 
+                //make frame sizes even
+                maxWidth = roundUpToMult(maxWidth, 2);
+                maxHeight = roundUpToMult(maxHeight, 2);
+
                 CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
                 List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
                 mapDuplicates(frames, finalFrames, frameMap, true);
@@ -689,10 +688,14 @@ namespace RogueEssence.Content
                     CharAnimFrame mapFrame = frameMap[ii];
                     animFrame.Flip = mapFrame.Flip;
                     int finalIndex = mapFrame.Frame.X;
+                    //if an image with an odd number of pixels is flipped, it must be moved over slightly
+                    if (animFrame.Flip && frames[ii].Item1.Width % 2 == 1)
+                        animFrame.Offset = animFrame.Offset + Loc.UnitX;
                     animFrame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
-
-                    frames[ii].Item1.Dispose();
                 }
+
+                for (int ii = 0; ii < frames.Count; ii++)
+                    frames[ii].Item1.Dispose();
 
                 // automatically add default animation
                 {
@@ -736,20 +739,12 @@ namespace RogueEssence.Content
                 if (imgCoveredRect.Width <= 0)
                     imgCoveredRect = new Rectangle(TileWidth / 2, TileHeight / 2, 1, 1);
 
-                //make frame sizes even
-                int evenWidth = roundUpToMult(imgCoveredRect.Width, 2);
-                int evenHeight = roundUpToMult(imgCoveredRect.Height, 2);
-
                 //first blit, then edit the rect sizes
-                Texture2D frameTex = new Texture2D(device, evenWidth, evenHeight);
+                Texture2D frameTex = new Texture2D(device, imgCoveredRect.Width, imgCoveredRect.Height);
                 BaseSheet.Blit(baseTexture, frameTex, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
-                imgCoveredRect.Width = evenWidth;
-                imgCoveredRect.Height = evenHeight;
                 //the final tile size must be able to contain this image
                 maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
                 maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
-
-                Loc boundsCenter = new Loc(imgCoveredRect.Center.X, imgCoveredRect.Center.Y);
 
                 OffsetData offsets = OffsetData[kk];
 
@@ -762,8 +757,11 @@ namespace RogueEssence.Content
                 maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
 
                 frames.Add((frameTex, imgCoveredRect, offsets));
-
             }
+
+            //make frame sizes even
+            maxWidth = roundUpToMult(maxWidth, 2);
+            maxHeight = roundUpToMult(maxHeight, 2);
 
             CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
             List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
@@ -794,8 +792,15 @@ namespace RogueEssence.Content
                         Loc frameFrom = frame.Frame;
                         int fromIndex = frameFrom.Y * TotalX + frameFrom.X;
                         CharAnimFrame mapFrame = frameMap[fromIndex];
-                        frame.Flip = mapFrame.Flip;
+                        frame.Flip ^= mapFrame.Flip;
                         int finalIndex = mapFrame.Frame.X;
+                        if (frames[fromIndex].Item1.Width % 2 == 1 && mapFrame.Flip)
+                        {
+                            if (frame.Flip)
+                                frame.Offset = frame.Offset + Loc.UnitX;
+                            else
+                                frame.Offset = frame.Offset - Loc.UnitX;
+                        }
                         frame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
                     }
                 }
