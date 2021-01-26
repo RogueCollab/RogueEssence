@@ -32,6 +32,7 @@ namespace RogueEssence.Dev
             if (attribute != null)
             {
                 //txtValue.Multiline = true;
+                txtValue.Height = 80;
                 //txtValue.Size = new Size(0, 80);
             }
             //else

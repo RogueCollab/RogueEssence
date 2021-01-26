@@ -58,11 +58,10 @@ namespace RogueEssence.Dev
 
         private static IEditor findEditor(Type objType, object[] attributes)
         {
-            Type[] interfaces = objType.GetInterfaces();
             foreach (IEditor converter in converters)
             {
                 Type convertType = converter.GetConvertingType();
-                if (convertType == objType || objType.IsSubclassOf(convertType) || interfaces.Contains(convertType))
+                if (convertType.IsAssignableFrom(objType))
                 {
                     Type attrType = converter.GetAttributeType();
                     if (attrType == null)
