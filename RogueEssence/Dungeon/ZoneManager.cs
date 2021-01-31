@@ -100,6 +100,13 @@ namespace RogueEssence.Dungeon
                 else
                     ZoneManager.Instance.CurrentZone.DevNewGround();
             }
+            else
+            {
+                if (!String.IsNullOrEmpty(name))
+                    ZoneManager.Instance.CurrentZone.DevLoadMap(name);
+                else
+                    ZoneManager.Instance.CurrentZone.DevNewMap();
+            }
         }
 
 

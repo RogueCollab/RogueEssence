@@ -62,6 +62,27 @@
     <Compile Update="Views\GroundEditForm\GroundTabDecorations.axaml.cs">
       <DependentUpon>GroundTabDecorations.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\MapEditForm\MapTabItems.axaml.cs">
+      <DependentUpon>MapTabItems.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\MapTabProperties.axaml.cs">
+      <DependentUpon>MapTabProperties.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\MapTabEntities.axaml.cs">
+      <DependentUpon>MapTabEntities.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\MapTabTiles.axaml.cs">
+      <DependentUpon>MapTabTiles.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\MapTabTerrain.axaml.cs">
+      <DependentUpon>MapTabTerrain.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\MapTabTextures.axaml.cs">
+      <DependentUpon>MapTabTextures.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\MapEditForm.axaml.cs">
+      <DependentUpon>MapEditForm.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
     </Compile>

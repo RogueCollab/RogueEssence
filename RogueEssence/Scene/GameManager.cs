@@ -283,7 +283,7 @@ namespace RogueEssence
 
         public bool IsInGame()
         {
-            return (ZoneManager.Instance.CurrentZone != null && ZoneManager.Instance.CurrentMap != null &&
+            return (GameManager.Instance.CurrentScene == DungeonScene.Instance &&
                 DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null);
         }
 
@@ -370,7 +370,7 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> MoveToEditor(bool newGround, string name)
         {
-            BaseScene destScene = GroundEditScene.Instance;// newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
+            BaseScene destScene = newGround ? (BaseScene)GroundEditScene.Instance : (BaseScene)DungeonEditScene.Instance;
 
             ZoneLoc destLoc = ZoneLoc.Invalid;
             if (ZoneManager.Instance.CurrentZoneID > -1)
@@ -387,13 +387,9 @@ namespace RogueEssence
             MoveToScene(destScene);
 
             if (newGround)
-            {
                 GroundEditScene.Instance.EnterGroundEdit(0);
-            }
             else
-            {
-
-            }
+                DungeonEditScene.Instance.EnterMapEdit(0);
             if (DataManager.Instance.Save != null)
                 DataManager.Instance.Save.NextDest = destLoc;
             yield break;

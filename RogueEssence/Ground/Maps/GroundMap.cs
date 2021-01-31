@@ -72,6 +72,7 @@ namespace RogueEssence.Ground
 
         public GroundMap()
         {
+            AssetName = "";
             ScriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
 
             Entities = new List<EntityLayer>();
@@ -87,7 +88,6 @@ namespace RogueEssence.Ground
             Layers = new List<MapLayer>();
 
             Decorations = new List<AnimLayer>();
-            AssetName = "";
 
         }
 
@@ -430,19 +430,9 @@ namespace RogueEssence.Ground
             Loc texDiff = RogueElements.Grid.ResizeJustified(ref obstacles,
                 width * TexSize, height * TexSize, anchorDir.Reverse(), blockChangeOp, blocknewOp);
 
-            foreach (GroundChar character in ZoneManager.Instance.CurrentGround.IterateCharacters())
+            foreach (GroundChar character in IterateCharacters())
             {
-                Loc newLoc = character.MapLoc + texDiff * divSize;
-                if (newLoc.X < 0)
-                    newLoc.X = 0;
-                else if (newLoc.X >= width)
-                    newLoc.X = width - 1;
-                if (newLoc.Y < 0)
-                    newLoc.Y = 0;
-                else if (newLoc.Y >= height)
-                    newLoc.Y = height - 1;
-
-                character.SetMapLoc(newLoc);
+                character.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TexSize - character.Width, height * TexSize - character.Height, character.MapLoc + texDiff * divSize));
                 character.UpdateFrame();
             }
 

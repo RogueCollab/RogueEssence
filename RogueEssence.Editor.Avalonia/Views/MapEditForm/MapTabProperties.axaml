@@ -1,0 +1,58 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.MapTabProperties">
+  <Design.DataContext>
+    <vm:MapTabPropertiesViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4" >
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40"/>
+        <RowDefinition Height="40"/>
+        <RowDefinition Height="42"/>
+        <RowDefinition Height="42"/>
+        <RowDefinition Height="42"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="80"/>
+        <ColumnDefinition/>
+        <ColumnDefinition Width="80"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right">Map Name:</TextBlock>
+      <TextBox Text="{Binding MapName}" VerticalAlignment="Center" Margin="4" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1">Scroll Edge:</TextBlock>
+      <ComboBox Items="{Binding ScrollEdges}" SelectedIndex="{Binding ChosenScroll}" Margin="4" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2">BG Anim:</TextBlock>
+      <ComboBox Items="{Binding BGs}" SelectedIndex="{Binding ChosenBG}" VerticalAlignment="Center" Margin="4" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3">Frame Time:</TextBlock>
+      <NumericUpDown Minimum="1" Value="{Binding BGFrameTime}" VerticalAlignment="Center" Margin="4" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4">Movement X:</TextBlock>
+      <NumericUpDown Value="{Binding BGMoveX}" VerticalAlignment="Center" Margin="4" Grid.Row="4" Grid.Column="1"/>
+      <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="2">Movement Y:</TextBlock>
+      <NumericUpDown Value="{Binding BGMoveY}" VerticalAlignment="Center" Margin="4" Grid.Row="4" Grid.Column="3"/>
+    </Grid>
+
+
+    <Grid Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="20"/>
+        <RowDefinition/>
+        <RowDefinition Height="34"/>
+      </Grid.RowDefinitions>
+
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Music</TextBlock>
+      <ListBox Name="lbxMusic" SelectionMode="AlwaysSelected" Items="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
+      <Button Name="btnReloadMusic" Command="{Binding btnReloadMusic_Click}" Margin="4" Grid.Row="2">Reload Music</Button>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.LevelGen;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Dungeon
 {
@@ -52,6 +54,12 @@ namespace RogueEssence.Dungeon
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
+        /// <summary>
+        /// the internal name of the map, no spaces or special characters, never localized.
+        /// Used to refer to map data and script data for this map!
+        /// </summary>
+        public string AssetName { get; set; }
+
         public string Music;
         public SightRange TileSight;
         public SightRange CharSight;
@@ -77,6 +85,10 @@ namespace RogueEssence.Dungeon
         public AutoTile FloorBG;
         public Dictionary<int, AutoTile> TextureMap;
         public int Element;
+
+        public BGAnimData BGAnim;
+        public Loc BGMovement;
+
 
 
         public Loc? ViewCenter;
@@ -105,6 +117,7 @@ namespace RogueEssence.Dungeon
 
         public Map()
         {
+            AssetName = "";
             Name = new LocalText();
             Comment = "";
             Music = "";
@@ -116,6 +129,8 @@ namespace RogueEssence.Dungeon
             ItemSpawns = new CategorySpawnChooser<InvItem>();
 
             BlankBG = new AutoTile();
+
+            BGAnim = new BGAnimData();
 
             PrepareEvents = new List<SingleCharEvent>();
             StartEvents = new List<SingleCharEvent>();
@@ -138,6 +153,36 @@ namespace RogueEssence.Dungeon
                 DiscoveryArray[ii] = new DiscoveryState[height];
         }
 
+
+        public void ResizeJustified(int width, int height, Dir8 anchorDir)
+        {
+            //tiles
+            Grid.LocAction changeOp = (Loc loc) => { Tiles[loc.X][loc.Y].Effect.UpdateTileLoc(loc); };
+            Grid.LocAction newOp = (Loc loc) => { Tiles[loc.X][loc.Y] = new Tile(0, loc); };
+
+            Loc diff = Grid.ResizeJustified(ref Tiles, width, height, anchorDir.Reverse(), changeOp, newOp);
+
+            //discovery array
+            changeOp = (Loc loc) => { };
+            newOp = (Loc loc) => { };
+
+            Grid.ResizeJustified(ref DiscoveryArray, width, height, anchorDir.Reverse(), changeOp, newOp);
+
+            foreach (Character character in IterateCharacters())
+            {
+                character.CharLoc = Collision.ClampToBounds(width, height, character.CharLoc + diff);
+                character.UpdateFrame();
+                UpdateExploration(character);
+            }
+
+            //items
+            foreach (MapItem item in Items)
+                item.TileLoc = Collision.ClampToBounds(width, height, item.TileLoc + diff);
+
+            //entry points
+            for (int ii = 0; ii < EntryPoints.Count; ii++)
+                EntryPoints[ii] = new LocRay8(EntryPoints[ii].Loc + diff, EntryPoints[ii].Dir);
+        }
 
         public List<Character> RespawnMob()
         {
@@ -331,7 +376,7 @@ namespace RogueEssence.Dungeon
             }
             foreach (int tileset in floortilesets)
             {
-                Data.AutoTileData entry = Data.DataManager.Instance.GetAutoTile(tileset);
+                AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
                 entry.Tiles.AutoTileArea(Rand, rectStart, rectSize,
                     (int x, int y, List<TileLayer> tile) =>
                     {
@@ -349,7 +394,7 @@ namespace RogueEssence.Dungeon
             }
             foreach (int tileset in blocktilesets)
             {
-                Data.AutoTileData entry = Data.DataManager.Instance.GetAutoTile(tileset);
+                AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
                 entry.Tiles.AutoTileArea(Rand, rectStart, rectSize,
                     (int x, int y, List<TileLayer> tile) =>
                     {
@@ -403,8 +448,11 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<Character> IterateCharacters()
         {
-            foreach (Character player in ActiveTeam.Players)
-                yield return player;
+            if (ActiveTeam != null)
+            {
+                foreach (Character player in ActiveTeam.Players)
+                    yield return player;
+            }
 
             foreach (Team team in MapTeams)
             {
@@ -515,13 +563,31 @@ namespace RogueEssence.Dungeon
                 distance);
         }
 
-
-
-        public void DrawBG(SpriteBatch spriteBatch, Loc drawPos, Loc loc)
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
         {
             BlankBG.Draw(spriteBatch, drawPos);
         }
 
+
+        public void DrawBG(SpriteBatch spriteBatch)
+        {
+            if (BGAnim.AnimIndex != "")
+            {
+                DirSheet sheet = GraphicsManager.GetBackground(BGAnim.AnimIndex);
+
+                Loc diff = BGMovement * (int)FrameTick.TickToFrames(GraphicsManager.TotalFrameTick) / 60;
+                if (sheet.Width == 1 && sheet.Height == 1)
+                    sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color.White);
+                else
+                {
+                    for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
+                    {
+                        for (int y = diff.Y % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
+                            sheet.DrawDir(spriteBatch, new Vector2(x, y), BGAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), BGAnim.AnimDir, Color.White);
+                    }
+                }
+            }
+        }
     }
 
     [Serializable]

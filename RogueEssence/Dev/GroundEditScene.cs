@@ -77,8 +77,23 @@ namespace RogueEssence.Dev
         }
 
 
+        public override IEnumerator<YieldInstruction> ProcessInput()
+        {
+            GameManager.Instance.FrameProcessed = false;
 
-        protected override IEnumerator<YieldInstruction> ProcessInput(InputManager input)
+            if (PendingDevEvent != null)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
+                PendingDevEvent = null;
+            }
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+
+            if (!GameManager.Instance.FrameProcessed)
+                yield return new WaitForFrames(1);
+        }
+
+        IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             Loc dirLoc = Loc.Zero;
             bool fast = !input.BaseKeyDown(Keys.LeftShift);

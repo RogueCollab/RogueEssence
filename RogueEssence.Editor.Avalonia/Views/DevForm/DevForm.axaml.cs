@@ -21,10 +21,10 @@ namespace RogueEssence.Dev.Views
     {
         public bool LoadComplete { get; private set; }
 
-        //private MapEditor mapEditor;
+        public MapEditForm MapEditForm;
         public GroundEditForm GroundEditForm;
 
-        public IMapEditor MapEditor => null;
+        public IMapEditor MapEditor { get { return MapEditForm; } }
         public IGroundEditor GroundEditor { get { return GroundEditForm; } }
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
@@ -214,6 +214,12 @@ namespace RogueEssence.Dev.Views
                     ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
                     vm.Textures.TileBrowser.UpdateFrame();
                 }
+                if (MapEditForm != null)
+                {
+                    ViewModels.MapEditViewModel vm = (ViewModels.MapEditViewModel)MapEditForm.DataContext;
+                    vm.Textures.TileBrowser.UpdateFrame();
+                    vm.Terrain.TileBrowser.UpdateFrame();
+                }
 
                 if (canSave)
                     saveConfig();
@@ -230,7 +236,21 @@ namespace RogueEssence.Dev.Views
             GroundEditForm.Show();
         }
 
+        public void OpenMap()
+        {
+            MapEditForm = new MapEditForm();
+            ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
+            MapEditForm.DataContext = vm;
+            vm.LoadFromCurrentMap();
+            MapEditForm.Show();
+        }
+
         public void groundEditorClosed(object sender, EventArgs e)
+        {
+            GameManager.Instance.SceneOutcome = resetEditors();
+        }
+
+        public void mapEditorClosed(object sender, EventArgs e)
         {
             GameManager.Instance.SceneOutcome = resetEditors();
         }
@@ -239,7 +259,7 @@ namespace RogueEssence.Dev.Views
         private IEnumerator<YieldInstruction> resetEditors()
         {
             GroundEditForm = null;
-            //mapEditor = null;
+            MapEditForm = null;
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }
 
@@ -250,6 +270,11 @@ namespace RogueEssence.Dev.Views
                 GroundEditForm.Close();
         }
 
+        public void CloseMap()
+        {
+            if (MapEditForm != null)
+                MapEditForm.Close();
+        }
 
 
         void LoadGame()

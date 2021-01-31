@@ -10,7 +10,7 @@
         Width="850" Height="540" Opened="Window_Loaded" Closed="Window_Closed">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
-        <vm:DevFormViewModel/>
+        <vm:GroundEditViewModel/>
     </Design.DataContext>
   <Window.Resources>
     <converters:FileToTitleConverter x:Key="FileToTitleConverter"/>

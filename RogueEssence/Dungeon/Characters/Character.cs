@@ -198,8 +198,6 @@ namespace RogueEssence.Dungeon
 
         public Character()
         {
-            Dead = true;
-
             Skills = new List<BackReference<Skill>>();
             for(int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
                 Skills.Add(new BackReference<Skill>(new Skill()));
@@ -280,6 +278,38 @@ namespace RogueEssence.Dungeon
             BackRef = new TempCharBackRef(false, -1);
 
             UpdateFrame();
+        }
+
+        public Character Clone(Team team)
+        {
+            CharData character = new CharData();
+            character.BaseForm = this.CurrentForm;
+            character.Nickname = this.Nickname;
+            character.Level = this.Level;
+            character.MaxHPBonus = this.MaxHPBonus;
+            character.AtkBonus = this.AtkBonus;
+            character.DefBonus = this.DefBonus;
+            character.MAtkBonus = this.MAtkBonus;
+            character.MDefBonus = this.MDefBonus;
+            character.SpeedBonus = this.SpeedBonus;
+
+            for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
+                character.BaseSkills[ii] = new SlotSkill(this.BaseSkills[ii]);
+
+            for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
+                character.BaseIntrinsics[ii] = this.BaseIntrinsics[ii];
+
+            Character new_mob = new Character(character, team);
+            team.Players.Add(new_mob);
+            new_mob.CharLoc = this.CharLoc;
+            new_mob.CharDir = this.CharDir;
+            new_mob.Tactic = new AITactic(this.Tactic);
+            new_mob.EquippedItem = new InvItem(this.EquippedItem);
+
+            for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
+                new_mob.Skills[ii].Element.Enabled = this.Skills[ii].Element.Enabled;
+
+            return new_mob;
         }
 
         public void OnRemove()

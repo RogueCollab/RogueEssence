@@ -98,10 +98,25 @@ namespace RogueEssence.Ground
                 PendingLeaderAction = null;
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessFrameInput());
+            if (PendingDevEvent != null)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
+                PendingDevEvent = null;
+            }
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+
+            if (!GameManager.Instance.FrameProcessed)
+                yield return new WaitForFrames(1);
+
+            if (GameManager.Instance.SceneOutcome == null)
+            {
+                //psy's notes: put everything related to the check events in the ground map, so its more encapsulated.
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnCheck());
+            }
         }
 
-        protected override IEnumerator<YieldInstruction> ProcessInput(InputManager input)
+        IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             GameAction action = new GameAction(GameAction.ActionType.None, Dir8.None);
 

@@ -82,24 +82,8 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 MonsterTeam team = new MonsterTeam();
-                Character focusedChar = DungeonScene.Instance.FocusedCharacter;
-                CharData character = new CharData();
-                character.BaseForm = focusedChar.CurrentForm;
-                character.Nickname = "Clone";
-                character.Level = focusedChar.Level;
-
-                for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
-                    character.BaseSkills[ii] = new SlotSkill(focusedChar.BaseSkills[ii]);
-
-                for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
-                    character.BaseIntrinsics[ii] = focusedChar.BaseIntrinsics[ii];
-
-                Character new_mob = new Character(character, team);
+                Character new_mob = DungeonScene.Instance.FocusedCharacter.Clone(team);
                 team.Players.Add(new_mob);
-                new_mob.CharLoc = focusedChar.CharLoc;
-                new_mob.CharDir = focusedChar.CharDir;
-                new_mob.Tactic = new AITactic(focusedChar.Tactic);
-                new_mob.EquippedItem = new InvItem(focusedChar.EquippedItem);
                 ZoneManager.Instance.CurrentMap.MapTeams.Add(new_mob.MemberTeam);
                 new_mob.RefreshTraits();
                 DungeonScene.Instance.PendingDevEvent = new_mob.OnMapStart();

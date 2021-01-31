@@ -9,6 +9,7 @@ namespace RogueEssence.Dungeon
     {
         public delegate void PlacementMethod(int x, int y, List<TileLayer> tile);
         public delegate bool QueryMethod(int x, int y);
+        //TODO: pass a seed instead, and choose variation based on the static aspect of the seed
         public abstract void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod);
         public abstract TileLayer[] Generic { get; }
 

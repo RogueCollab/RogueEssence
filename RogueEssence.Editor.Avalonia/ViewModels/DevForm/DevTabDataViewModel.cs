@@ -184,7 +184,18 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnMapEditor_Click()
         {
-
+            lock (GameBase.lockObj)
+            {
+                Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
+                if (form.MapEditForm == null)
+                {
+                    MenuManager.Instance.ClearMenus();
+                    if (ZoneManager.Instance.CurrentMap != null)
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, ZoneManager.Instance.CurrentMap.AssetName);
+                    else
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, "");
+                }
+            }
         }
 
         public void btnGroundEditor_Click()

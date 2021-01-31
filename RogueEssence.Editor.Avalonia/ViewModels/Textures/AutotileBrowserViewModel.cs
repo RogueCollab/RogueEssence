@@ -57,12 +57,13 @@ namespace RogueEssence.Dev.ViewModels
             set => this.SetIfChanged(ref borderPreview, value);
         }
 
+        private int tileSize;
         public int TileSize
         {
-            get => ZoneManager.Instance.CurrentGround.TileSize;
+            get => tileSize;
             set
             {
-                this.RaisePropertyChanged();
+                this.RaiseAndSetIfChanged(ref tileSize, value);
                 UpdateAutotilesList();
             }
         }

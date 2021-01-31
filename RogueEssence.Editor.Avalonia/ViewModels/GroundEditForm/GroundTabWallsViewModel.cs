@@ -36,8 +36,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void SetupLayerVisibility()
         {
-
-            //ShowDataLayer = false;
+            ShowWalls = ShowWalls;
         }
 
         public void ProcessInput(InputManager input)

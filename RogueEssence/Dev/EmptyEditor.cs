@@ -17,5 +17,7 @@ namespace RogueEssence.Dev
         public void Draw() { }
         public void OpenGround() { }
         public void CloseGround() { }
+        public void OpenMap() { }
+        public void CloseMap() { }
     }
 }

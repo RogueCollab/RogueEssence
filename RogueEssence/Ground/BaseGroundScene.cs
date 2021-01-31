@@ -34,8 +34,6 @@ namespace RogueEssence.Ground
             objectDraw = new List<IDrawableSprite>();
             foregroundDraw = new List<IDrawableSprite>();
 
-            Loc drawSight = getDrawSight();
-
             gameScreen = new RenderTarget2D(
                 GraphicsManager.GraphicsDevice,
                 GraphicsManager.ScreenWidth,
@@ -58,39 +56,6 @@ namespace RogueEssence.Ground
             PendingDevEvent = null;
         }
 
-
-
-        public override IEnumerator<YieldInstruction> ProcessInput()
-        {
-            GameManager.Instance.FrameProcessed = false;
-
-
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessFrameInput());
-        }
-
-
-        public IEnumerator<YieldInstruction> ProcessFrameInput()
-        {
-            if (PendingDevEvent != null)
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
-                PendingDevEvent = null;
-            }
-            else
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
-
-            if (!GameManager.Instance.FrameProcessed)
-                yield return new WaitForFrames(1);
-
-            if (GameManager.Instance.SceneOutcome == null)
-            {
-                //psy's notes: put everything related to the check events in the ground map, so its more encapsulated.
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnCheck());
-
-            }
-        }
-
-        protected abstract IEnumerator<YieldInstruction> ProcessInput(InputManager input);
 
 
 
@@ -381,12 +346,6 @@ namespace RogueEssence.Ground
 
             return loc;
         }
-
-        static Loc getDrawSight()
-        {
-            return Character.GetSightDims() * 2 + new Loc(1, 2);
-        }
-
 
         public void LogMsg(string msg)
         {
