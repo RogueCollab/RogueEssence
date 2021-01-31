@@ -31,15 +31,14 @@ namespace RogueEssence.Dev
 
         public Loc MouseLoc;
         public AutoTile AutoTileInProgress;
-        public AutoTile TerrainInProgress;
+        public TerrainTile TerrainInProgress;
         public ObjAnimData TileInProgress;
         public Rect RectInProgress;
         public bool ShowTerrain;
 
         public Rect RectPreview()
         {
-            int size = GraphicsManager.DungeonTexSize;
-            Rect resultRect = new Rect(RectInProgress.Start / size, RectInProgress.Size / size);
+            Rect resultRect = new Rect(RectInProgress.Start, RectInProgress.Size);
             if (resultRect.Size.X <= 0)
             {
                 resultRect.Start = new Loc(resultRect.Start.X + resultRect.Size.X, resultRect.Start.Y);
@@ -124,49 +123,15 @@ namespace RogueEssence.Dev
             //
 
             if (DiagManager.Instance.DevEditor.MapEditor.Active && ZoneManager.Instance.CurrentMap != null)
-            {
                 DrawGame(spriteBatch);
+        }
+        protected override void PostDraw(SpriteBatch spriteBatch)
+        {
+            Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
-                Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
-
-                if (AutoTileInProgress != null)
-                {
-                    for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
-                    {
-                        for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
-                        {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)) &&
-                                Collision.InBounds(RectPreview(), new Loc(ii, jj)))
-                            {
-                                if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
-                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
-                                else
-                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
-                            }
-                        }
-                    }
-                }
-
-                //draw the blocks
-                if (ShowTerrain)
-                {
-                    for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
-                    {
-                        for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
-                        {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)) &&
-                                Collision.InBounds(RectPreview(), new Loc(ii, jj)))
-                            {
-                                if (TerrainInProgress.Equals(new AutoTile(new TileLayer())))
-                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
-                                else
-                                    TerrainInProgress.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
-                            }
-                        }
-                    }
-                }
-
+            if (AutoTileInProgress != null)
+            {
                 for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
                 {
                     for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
@@ -174,7 +139,75 @@ namespace RogueEssence.Dev
                         if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)) &&
                             Collision.InBounds(RectPreview(), new Loc(ii, jj)))
                         {
-                            if (TileInProgress == null)
+                            if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
+                            else
+                                AutoTileInProgress.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
+                        }
+                    }
+                }
+            }
+
+            //draw the blocks
+
+            if (ShowTerrain)
+            {
+                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                {
+                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                    {
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
+                        {
+                            TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Data;
+                            if (Collision.InBounds(RectPreview(), new Loc(ii, jj)))
+                            {
+                                if (TerrainInProgress != null)
+                                {
+                                    tile = TerrainInProgress;
+                                    if (TerrainInProgress.Equals(new AutoTile(new TileLayer())))
+                                        GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
+                                    else
+                                        TerrainInProgress.TileTex.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
+                                }
+                            }
+                            TerrainData data = tile.GetData();
+                            Color color = Color.Transparent;
+                            switch (data.BlockType)
+                            {
+                                case TerrainData.Mobility.Block:
+                                    color = Color.Red;
+                                    break;
+                                case TerrainData.Mobility.Water:
+                                    color = Color.Blue;
+                                    break;
+                                case TerrainData.Mobility.Lava:
+                                    color = Color.Orange;
+                                    break;
+                                case TerrainData.Mobility.Abyss:
+                                    color = Color.Black;
+                                    break;
+                                case TerrainData.Mobility.Impassable:
+                                    color = Color.White;
+                                    break;
+
+                            }
+                            if (color != Color.Transparent)
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, color * 0.5f);
+                        }
+                    }
+                }
+            }
+
+            if (TileInProgress != null)
+            {
+                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                {
+                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                    {
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)) &&
+                            Collision.InBounds(RectPreview(), new Loc(ii, jj)))
+                        {
+                            if (TileInProgress.Equals(new ObjAnimData()))
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
                             else
                             {
@@ -189,11 +222,10 @@ namespace RogueEssence.Dev
                         }
                     }
                 }
-
-                spriteBatch.End();
             }
-        }
 
+            spriteBatch.End();
+        }
 
         public override void DrawDev(SpriteBatch spriteBatch)
         {

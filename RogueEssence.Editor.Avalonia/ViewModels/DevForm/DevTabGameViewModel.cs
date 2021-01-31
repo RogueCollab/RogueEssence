@@ -83,7 +83,6 @@ namespace RogueEssence.Dev.ViewModels
             {
                 MonsterTeam team = new MonsterTeam();
                 Character new_mob = DungeonScene.Instance.FocusedCharacter.Clone(team);
-                team.Players.Add(new_mob);
                 ZoneManager.Instance.CurrentMap.MapTeams.Add(new_mob.MemberTeam);
                 new_mob.RefreshTraits();
                 DungeonScene.Instance.PendingDevEvent = new_mob.OnMapStart();

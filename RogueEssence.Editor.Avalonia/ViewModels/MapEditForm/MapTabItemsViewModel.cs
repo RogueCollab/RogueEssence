@@ -33,22 +33,40 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private int tabIndex;
+        public int TabIndex
+        {
+            get => tabIndex;
+            set
+            {
+                this.SetIfChanged(ref tabIndex, value);
+            }
+        }
+
         public ObservableCollection<string> ItemTypes { get; }
 
         public int ChosenItem
         {
-            get { return SelectedEntity.IsMoney ? SelectedEntity.Value + 1 : 0; }
+            get
+            {
+                if (SelectedEntity.IsMoney)
+                    return 0;
+                else
+                    return SelectedEntity.Value + 1;
+            }
             set
             {
                 if (value == 0)
                 {
                     SelectedEntity.IsMoney = true;
                     Amount = 1;
+                    TabIndex = 0;
                 }
                 else
                 {
                     SelectedEntity.IsMoney = false;
                     SelectedEntity.Value = value - 1;
+                    TabIndex = 1;
                 }
                 this.RaisePropertyChanged();
             }
@@ -133,9 +151,12 @@ namespace RogueEssence.Dev.ViewModels
 
         public void PlaceEntity(Loc position)
         {
+            RemoveEntityAt(position);
+
             MapItem placeableEntity = new MapItem(SelectedEntity);
 
             placeableEntity.TileLoc = position;
+            ZoneManager.Instance.CurrentMap.Items.Add(placeableEntity);
         }
 
 

@@ -95,7 +95,7 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         if (input.JustPressed(FrameInput.InputType.LeftMouse))
                         {
-                            DungeonEditScene.Instance.TerrainInProgress = getBrush().GetSanitizedTile();
+                            DungeonEditScene.Instance.TerrainInProgress = new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile());
                             DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
                         }
                         else if (input[FrameInput.InputType.LeftMouse])
@@ -107,7 +107,7 @@ namespace RogueEssence.Dev.ViewModels
                         }
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
                         {
-                            DungeonEditScene.Instance.TerrainInProgress = new AutoTile(new TileLayer());
+                            DungeonEditScene.Instance.TerrainInProgress = new TerrainTile(0, new AutoTile(new TileLayer()));
                             DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
                         }
                         else if (input[FrameInput.InputType.RightMouse])

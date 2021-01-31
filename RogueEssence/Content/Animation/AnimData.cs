@@ -184,5 +184,31 @@ namespace RogueEssence.Content
         {
             return "[" + (AnimIndex == "" ? "\"---\"" : "\""+AnimIndex+"\"") + " Frames: " + FrameTime + " ]";
         }
+
+        public bool Equals(AnimDataBase other)
+        {
+            if (other == null)
+                return false;
+
+            if (AnimIndex != other.AnimIndex)
+                return false;
+            if (FrameTime == other.FrameTime)
+                return false;
+            if (Alpha == other.Alpha)
+                return false;
+            if (StartFrame == other.StartFrame)
+                return false;
+            if (EndFrame == other.EndFrame)
+                return false;
+            if (AnimDir == other.AnimDir)
+                return false;
+
+            return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj != null) && Equals(obj as AnimDataBase);
+        }
     }
 }

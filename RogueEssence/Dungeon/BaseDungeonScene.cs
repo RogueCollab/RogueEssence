@@ -190,7 +190,7 @@ namespace RogueEssence.Dungeon
                         if (showHiddenItem)
                             item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
                     }
-                    else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                    else if (showHiddenItem || ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                     {
                         if (terrain.BlockType == TerrainData.Mobility.Passable)
                             item.Draw(spriteBatch, ViewRect.Start, Color.White);

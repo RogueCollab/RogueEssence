@@ -39,7 +39,7 @@
     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="3" Grid.Column="1">Delete</Button>
     <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
     <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="1" Grid.Column="2">v</Button>
-    <Slider IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}}" Value="{Binding CurrentWeight}" TickFrequency="20" Minimum="1" Maximum="255" Margin="4" Grid.Row="2" Grid.ColumnSpan="2"/>
+    <Slider IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentWeight}" TickFrequency="20" Minimum="1" Maximum="255" Margin="4" Grid.Row="2" Grid.ColumnSpan="2"/>
     <TextBlock Margin="4" Grid.Row="2" Grid.Column="2">Weight</TextBlock>
   </Grid>
 </UserControl>

@@ -619,6 +619,7 @@ namespace RogueEssence.Dungeon
 
         public BaseMap()
         {
+            rand = new ReRandom(0);
             EntryPoints = new List<LocRay8>();
 
             Items = new List<MapItem>();

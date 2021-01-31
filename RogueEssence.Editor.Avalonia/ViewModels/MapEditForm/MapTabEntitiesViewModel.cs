@@ -16,6 +16,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             MonsterTeam team = new MonsterTeam();
             SelectedEntity = new Character(new CharData(), team);
+            SelectedEntity.Level = 1;
             SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
             team.Players.Add(SelectedEntity);
 
@@ -134,8 +135,11 @@ namespace RogueEssence.Dev.ViewModels
             }
             set
             {
-                SelectedEntity.BaseForm.Form = value;
-                SelectedEntity.HP = SelectedEntity.MaxHP;
+                if (value > -1)
+                {
+                    SelectedEntity.BaseForm.Form = value;
+                    SelectedEntity.HP = SelectedEntity.MaxHP;
+                }
                 this.RaisePropertyChanged();
             }
         }
@@ -175,7 +179,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.Level; }
             set
             {
-                this.SetIfChanged(ref SelectedEntity.Level, value);
+                this.RaiseAndSetIfChanged(ref SelectedEntity.Level, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
             }
         }
@@ -201,11 +205,16 @@ namespace RogueEssence.Dev.ViewModels
             {
                 lock (GameBase.lockObj)
                 {
-                    InvItem item = new InvItem(value - 1);
-                    ItemData entry = (ItemData)item.GetData();
-                    if (entry.MaxStack > 1)
-                        item.HiddenValue = entry.MaxStack;
-                    SelectedEntity.EquipItem(item);
+                    if (value > 0)
+                    {
+                        InvItem item = new InvItem(value - 1);
+                        ItemData entry = (ItemData)item.GetData();
+                        if (entry.MaxStack > 1)
+                            item.HiddenValue = entry.MaxStack;
+                        SelectedEntity.EquipItem(item);
+                    }
+                    else
+                        SelectedEntity.DequipItem();
                 }
                 this.RaisePropertyChanged();
             }
@@ -219,7 +228,10 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[0].SkillNum + 1; }
             set
             {
-                SelectedEntity.ReplaceSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
+                if (value > 0)
+                    SelectedEntity.ReplaceSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
+                else
+                    SelectedEntity.DeleteSkill(0);
                 this.RaisePropertyChanged();
             }
         }
@@ -229,7 +241,10 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[1].SkillNum + 1; }
             set
             {
-                SelectedEntity.ReplaceSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
+                if (value > 0)
+                    SelectedEntity.ReplaceSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
+                else
+                    SelectedEntity.DeleteSkill(1);
                 this.RaisePropertyChanged();
             }
         }
@@ -239,7 +254,10 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[2].SkillNum + 1; }
             set
             {
-                SelectedEntity.ReplaceSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
+                if (value > 0)
+                    SelectedEntity.ReplaceSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
+                else
+                    SelectedEntity.DeleteSkill(2);
                 this.RaisePropertyChanged();
             }
         }
@@ -249,7 +267,10 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[3].SkillNum + 1; }
             set
             {
-                SelectedEntity.ReplaceSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
+                if (value > 0)
+                    SelectedEntity.ReplaceSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
+                else
+                    SelectedEntity.DeleteSkill(3);
                 this.RaisePropertyChanged();
             }
         }
@@ -406,11 +427,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public void PlaceEntity(Loc position)
         {
+            RemoveEntityAt(position);
+
             MonsterTeam team = new MonsterTeam();
             Character placeableEntity = SelectedEntity.Clone(team);
-            team.Players.Add(placeableEntity);
 
             placeableEntity.CharLoc = position;
+            ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+            placeableEntity.UpdateFrame();
         }
 
 
@@ -423,6 +447,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 MonsterTeam team = new MonsterTeam();
                 SelectedEntity = new Character(new CharData(), team);
+                SelectedEntity.Level = 1;
                 SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
                 team.Players.Add(SelectedEntity);
                 setEntity(SelectedEntity);
@@ -478,7 +503,10 @@ namespace RogueEssence.Dev.ViewModels
         private void MoveEntity(Loc loc)
         {
             if (SelectedEntity != null)
+            {
                 SelectedEntity.CharLoc = loc;
+                SelectedEntity.UpdateFrame();
+            }
         }
     }
 }

@@ -107,7 +107,7 @@ namespace RogueEssence.Dev.ViewModels
                         }
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
                         {
-                            DungeonEditScene.Instance.TileInProgress = null;
+                            DungeonEditScene.Instance.TileInProgress = new ObjAnimData();
                             DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
                         }
                         else if (input[FrameInput.InputType.RightMouse])

@@ -11,7 +11,8 @@ namespace RogueEssence.Dev.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (int)value > -1;
+            int baseIdx = bool.Parse((string)parameter) ? 0 : -1;
+            return (int)value > baseIdx;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

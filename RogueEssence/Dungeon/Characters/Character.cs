@@ -283,7 +283,7 @@ namespace RogueEssence.Dungeon
         public Character Clone(Team team)
         {
             CharData character = new CharData();
-            character.BaseForm = this.CurrentForm;
+            character.BaseForm = this.BaseForm;
             character.Nickname = this.Nickname;
             character.Level = this.Level;
             character.MaxHPBonus = this.MaxHPBonus;
@@ -1342,7 +1342,7 @@ namespace RogueEssence.Dungeon
                 {
                     int maxCharges = DataManager.Instance.GetSkill(Skills[ii].Element.SkillNum).BaseCharges + ChargeBoost;
                     //bring charges up to maximum if maximum is enforced
-                    if (!DataManager.Instance.Save.MidAdventure)
+                    if (DataManager.Instance.Save != null && !DataManager.Instance.Save.MidAdventure)
                         SetSkillCharges(ii, maxCharges);
 
                     //cap off over-maximum values
@@ -2103,8 +2103,8 @@ namespace RogueEssence.Dungeon
         {
             CharSheet sheet = GraphicsManager.GetChara(Appearance);
             int teamStatus = 0;
-            if (!DataManager.Instance.Save.CutsceneMode)
-            {
+            //if (DataManager.Instance.Save != null || !DataManager.Instance.Save.CutsceneMode)
+            //{
                 if (MemberTeam == DungeonScene.Instance.ActiveTeam)
                 {
                     if (DataManager.Instance.Save.TeamMode && DungeonScene.Instance.FocusedCharacter == this)
@@ -2115,7 +2115,7 @@ namespace RogueEssence.Dungeon
                     else
                         teamStatus = 1;
                 }
-            }
+            //}
             if (terrainShadow == 0)
                 terrainShadow = sheet.ShadowSize;
             int animFrame = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(5) % 3);
@@ -2165,7 +2165,7 @@ namespace RogueEssence.Dungeon
                 Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
                 currentEmote.Draw(spriteBatch, offset - head - drawOffset);
             }
-            else if (!DataManager.Instance.Save.CutsceneMode)
+            else //if (DataManager.Instance.Save != null || !DataManager.Instance.Save.CutsceneMode)
             {
                 List<int> icons = new List<int>();
 

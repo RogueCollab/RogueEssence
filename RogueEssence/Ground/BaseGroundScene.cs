@@ -106,7 +106,6 @@ namespace RogueEssence.Ground
 
                 DrawGame(spriteBatch);
 
-
                 spriteBatch.End();
 
 

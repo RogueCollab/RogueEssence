@@ -40,6 +40,11 @@
       <NumericUpDown Value="{Binding BGMoveX}" VerticalAlignment="Center" Margin="4" Grid.Row="4" Grid.Column="1"/>
       <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="2">Movement Y:</TextBlock>
       <NumericUpDown Value="{Binding BGMoveY}" VerticalAlignment="Center" Margin="4" Grid.Row="4" Grid.Column="3"/>
+      <!--Blank BG-->
+      <!--Floor BG-->
+      <!--Start Events-->
+      <!--Prepare Events-->
+      <!--Check Events-->
     </Grid>
 
 
