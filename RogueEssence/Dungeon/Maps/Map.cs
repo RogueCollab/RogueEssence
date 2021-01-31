@@ -377,7 +377,7 @@ namespace RogueEssence.Dungeon
             foreach (int tileset in floortilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(Rand, rectStart, rectSize,
+                entry.Tiles.AutoTileArea(Rand.FirstSeed, rectStart, rectSize, new Loc(Width, Height),
                     (int x, int y, List<TileLayer> tile) =>
                     {
                         if (Collision.InBounds(Width, Height, new Loc(x, y)))
@@ -395,7 +395,7 @@ namespace RogueEssence.Dungeon
             foreach (int tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(Rand, rectStart, rectSize,
+                entry.Tiles.AutoTileArea(Rand.FirstSeed, rectStart, rectSize, new Loc(Width, Height),
                     (int x, int y, List<TileLayer> tile) =>
                     {
                         if (Collision.InBounds(Width, Height, new Loc(x, y)))

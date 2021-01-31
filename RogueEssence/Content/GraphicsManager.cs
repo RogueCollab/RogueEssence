@@ -111,6 +111,7 @@ namespace RogueEssence.Content
         public static int TileSize { get { return DungeonTexSize * TEX_SIZE; } }
         public static int ScreenWidth;
         public static int ScreenHeight;
+        public static int MoneySprite;
         public static int PortraitSize;
         public static List<string> Emotions;
         public static int SOSEmotion;
@@ -270,6 +271,9 @@ namespace RogueEssence.Content
 
                     XmlNode screenHeight = xmldoc.DocumentElement.SelectSingleNode("ScreenHeight");
                     ScreenHeight = Int32.Parse(screenHeight.InnerText);
+
+                    XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
+                    MoneySprite = Int32.Parse(moneySprite.InnerText);
 
                     Emotions = new List<string>();
                     XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");

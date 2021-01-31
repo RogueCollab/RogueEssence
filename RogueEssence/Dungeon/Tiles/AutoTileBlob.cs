@@ -63,7 +63,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public override void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
         {
             int[][] pass1Array = new int[rectSize.X][];
             for (int ii = 0; ii < rectSize.X; ii++)
@@ -73,16 +73,27 @@ namespace RogueEssence.Dungeon
                     pass1Array[ii][jj] = -1;
             }
 
-            for (int x = 0; x < rectSize.X; x++)
+            ReRandom rand = new ReRandom(randSeed);
+            for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int y = 0; y < rectSize.Y; y++)
+                int yy = 0;
+                for (; yy < rectStart.Y + rectSize.Y; yy++)
                 {
-                    int neighborCode = -1;
-                    if (queryMethod(rectStart.X + x, rectStart.Y + y))
-                        neighborCode = textureBlock(rectStart.X + x, rectStart.Y + y, queryMethod);
+                    ulong subSeed = rand.NextUInt64();
+                    if (xx >= rectStart.X && yy >= rectStart.Y)
+                    {
+                        int neighborCode = -1;
+                        if (queryMethod(xx, yy))
+                            neighborCode = textureBlock(xx, yy, queryMethod);
 
-                    if (neighborCode != -1)
-                        placementMethod(rectStart.X + x, rectStart.Y + y, GetTile(rand, neighborCode));
+                        if (neighborCode != -1)
+                            placementMethod(xx, yy, GetTile(new ReRandom(subSeed), neighborCode));
+                    }
+                }
+                while (yy < totalSize.Y)
+                {
+                    rand.NextUInt64();
+                    yy++;
                 }
             }
         }

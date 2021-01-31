@@ -9,8 +9,6 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class MapItem : IDrawableSprite, ISpawnable
     {
-        public const int MONEY_SPRITE = 10;
-
         public bool IsMoney;
         public bool Cursed;
         public int Value;
@@ -21,7 +19,7 @@ namespace RogueEssence.Dungeon
             get
             {
                 if (IsMoney)
-                    return MONEY_SPRITE;
+                    return GraphicsManager.MoneySprite;
                 else
                     return Data.DataManager.Instance.GetItem(Value).Sprite;
             }

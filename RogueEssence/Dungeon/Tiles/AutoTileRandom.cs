@@ -20,14 +20,25 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
         {
-            for (int ii = 0; ii < rectSize.X; ii++)
+            ReRandom rand = new ReRandom(randSeed);
+            for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int jj = 0; jj < rectSize.Y; jj++)
+                int yy = 0;
+                for (; yy < rectStart.Y + rectSize.Y; yy++)
                 {
-                    if (queryMethod(rectStart.X + ii, rectStart.Y + jj))
-                        placementMethod(rectStart.X + ii, rectStart.Y + jj, GetTile(rand));
+                    ulong subSeed = rand.NextUInt64();
+                    if (xx >= rectStart.X && yy >= rectStart.Y)
+                    {
+                        if (queryMethod(xx, yy))
+                            placementMethod(xx, yy, GetTile(new ReRandom(subSeed)));
+                    }
+                }
+                while (yy < totalSize.Y)
+                {
+                    rand.NextUInt64();
+                    yy++;
                 }
             }
         }

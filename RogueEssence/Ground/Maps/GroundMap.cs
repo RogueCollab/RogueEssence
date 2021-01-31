@@ -18,8 +18,12 @@ namespace RogueEssence.Ground
     {
         [NonSerialized]
         private AABB.Grid grid;
+
         private GroundWall[][] obstacles;
 
+        [OptionalField]
+        protected ReRandom rand;
+        public ReRandom Rand { get { return rand; } }
 
         public Dictionary<int, MapStatus> Status;
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> ScriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
@@ -73,6 +77,7 @@ namespace RogueEssence.Ground
         public GroundMap()
         {
             AssetName = "";
+            rand = new ReRandom(0);
             ScriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
 
             Entities = new List<EntityLayer>();
@@ -89,6 +94,11 @@ namespace RogueEssence.Ground
 
             Decorations = new List<AnimLayer>();
 
+        }
+
+        public void LoadRand(ReRandom rand)
+        {
+            this.rand = rand;
         }
 
         /// <summary>

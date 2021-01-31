@@ -109,7 +109,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
         {
             int[][] mainArray = new int[rectSize.X][];
             for (int ii = 0; ii < rectSize.X; ii++)
@@ -119,28 +119,42 @@ namespace RogueEssence.Dungeon
                     mainArray[ii][jj] = -1;
             }
 
-            for (int x = 0; x < rectSize.X; x++)
+            for (int xx = 0; xx < rectSize.X; xx++)
             {
-                for (int y = 0; y < rectSize.Y; y++)
+                for (int yy = 0; yy < rectSize.Y; yy++)
                 {
-                    if (queryMethod(rectStart.X + x, rectStart.Y + y))
-                        texutreMainBlock(mainArray, rectStart, rectStart.X + x, rectStart.Y + y, queryMethod);
+                    if (queryMethod(rectStart.X + xx, rectStart.Y + yy))
+                        textureMainBlock(mainArray, rectStart, rectStart.X + xx, rectStart.Y + yy, queryMethod);
                 }
             }
 
-            for (int ii = 0; ii < rectSize.X; ii++)
+            ReRandom rand = new ReRandom(randSeed);
+            //rand next is called for every tile up to the rectangle involved
+            //there exists a jump function for rand, but not for arbitrary length
+            //if the rand function changes to allow it, change this code block to jump directly to the correct values.
+            for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int jj = 0; jj < rectSize.Y; jj++)
+                int yy = 0;
+                for (; yy < rectStart.Y + rectSize.Y; yy++)
                 {
-                    int neighborCode = mainArray[ii][jj];
-                    if (neighborCode != -1)
-                        placementMethod(rectStart.X + ii, rectStart.Y + jj, GetTile(rand, neighborCode));
+                    ulong subSeed = rand.NextUInt64();
+                    if (xx >= rectStart.X && yy >= rectStart.Y)
+                    {
+                        int neighborCode = mainArray[xx - rectStart.X][yy - rectStart.Y];
+                        if (neighborCode != -1)
+                            placementMethod(xx, yy, GetTile(new ReRandom(subSeed), neighborCode));
+                    }
+                }
+                while (yy < totalSize.Y)
+                {
+                    rand.NextUInt64();
+                    yy++;
                 }
             }
         }
 
 
-        private void texutreMainBlock(int[][] textureArray, Loc rectStart, int x, int y, QueryMethod queryMethod)
+        private void textureMainBlock(int[][] textureArray, Loc rectStart, int x, int y, QueryMethod queryMethod)
         {
             int texn_um = 0;
 

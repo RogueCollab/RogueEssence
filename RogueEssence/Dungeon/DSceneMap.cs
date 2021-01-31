@@ -981,7 +981,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!silent)
                 {
-                    ItemAnim itemAnim = new ItemAnim(start, loc, item.IsMoney ? MapItem.MONEY_SPRITE : Data.DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    ItemAnim itemAnim = new ItemAnim(start, loc, item.IsMoney ? GraphicsManager.MoneySprite : Data.DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
                     CreateAnim(itemAnim, DrawLayer.Normal);
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }

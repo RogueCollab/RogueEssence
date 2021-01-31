@@ -1324,6 +1324,7 @@ namespace RogueEssence.Data
                     DiagManager.Instance.LogError(ex);
                 }
 
+                //TODO: v0.5: remove this
                 //versionless load
                 try
                 {
@@ -1443,6 +1444,7 @@ namespace RogueEssence.Data
                     DiagManager.Instance.LogError(ex, false);
                 }
 
+                //TODO: v0.5: remove this
                 //versionless read
                 try
                 {
@@ -1465,6 +1467,7 @@ namespace RogueEssence.Data
         public GameState ReadGameState(BinaryReader reader, bool versionless)
         {
             GameState state = new GameState();
+            //TODO: v0.5: remove this
             if (!versionless)
             {
                 Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());

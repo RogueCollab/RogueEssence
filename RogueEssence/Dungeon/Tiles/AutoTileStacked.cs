@@ -74,18 +74,18 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public override void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
         {
-            for (int ii = 0; ii < rectSize.X; ii++)
+            for (int xx = 0; xx < rectSize.X; xx++)
             {
-                for (int jj = 0; jj < rectSize.Y; jj++)
+                for (int yy = 0; yy < rectSize.Y; yy++)
                 {
                     int neighborCode = -1;
-                    if (queryMethod(ii + rectStart.X, jj + rectStart.Y))
-                        neighborCode = textureWaterTile(ii + rectStart.X, jj + rectStart.Y, queryMethod);
+                    if (queryMethod(xx + rectStart.X, yy + rectStart.Y))
+                        neighborCode = textureWaterTile(xx + rectStart.X, yy + rectStart.Y, queryMethod);
                     
                     if (neighborCode != -1)
-                        placementMethod(rectStart.X + ii, rectStart.Y + jj, GetTile(rand, neighborCode));
+                        placementMethod(rectStart.X + xx, rectStart.Y + yy, GetTile(neighborCode));
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace RogueEssence.Dungeon
             return tex_num;
         }
 
-        private List<TileLayer> GetTile(ReRandom rand, int neighborCode)
+        private List<TileLayer> GetTile(int neighborCode)
         {
             List<TileLayer> tileList = new List<TileLayer>();
             int mask = Convert.ToInt32("11110000", 2);

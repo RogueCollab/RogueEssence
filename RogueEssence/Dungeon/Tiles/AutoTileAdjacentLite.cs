@@ -84,7 +84,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
         {
             int[][] mainArray = new int[rectSize.X+2][];
             for (int ii = 0; ii < rectSize.X + 2; ii++)
@@ -101,34 +101,45 @@ namespace RogueEssence.Dungeon
                     looseArray[ii][jj] = -1;
             }
 
-            for (int x = 0; x < rectSize.X + 2; x++)
+            for (int xx = 0; xx < rectSize.X + 2; xx++)
             {
-                for (int y = 0; y < rectSize.Y + 2; y++)
+                for (int yy = 0; yy < rectSize.Y + 2; yy++)
                 {
-                    if (queryMethod(rectStart.X + x - 1, rectStart.Y + y - 1))
-                        textureMainBlock(mainArray, rectStart, rectStart.X + x - 1, rectStart.Y + y - 1, queryMethod);
+                    if (queryMethod(rectStart.X + xx - 1, rectStart.Y + yy - 1))
+                        textureMainBlock(mainArray, rectStart, rectStart.X + xx - 1, rectStart.Y + yy - 1, queryMethod);
                 }
             }
 
-            for (int x = 0; x < rectSize.X; x++)
+            for (int xx = 0; xx < rectSize.X; xx++)
             {
-                for (int y = 0; y < rectSize.Y; y++)
+                for (int yy = 0; yy < rectSize.Y; yy++)
                 {
-                    if (queryMethod(rectStart.X + x, rectStart.Y + y) && mainArray[x+1][y+1] == -1)
-                        textureLooseBlock(looseArray, mainArray, rectStart, rectStart.X + x, rectStart.Y + y, queryMethod);
+                    if (queryMethod(rectStart.X + xx, rectStart.Y + yy) && mainArray[xx+1][yy+1] == -1)
+                        textureLooseBlock(looseArray, mainArray, rectStart, rectStart.X + xx, rectStart.Y + yy, queryMethod);
                 }
             }
 
-            for (int ii = 0; ii < rectSize.X; ii++)
+            ReRandom rand = new ReRandom(randSeed);
+            for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int jj = 0; jj < rectSize.Y; jj++)
+                int yy = 0;
+                for (; yy < rectStart.Y + rectSize.Y; yy++)
                 {
-                    int neighborCode = mainArray[ii + 1][jj + 1];
-                    if (looseArray[ii][jj] != -1)
-                        neighborCode = looseArray[ii][jj];
+                    ulong subSeed = rand.NextUInt64();
+                    if (xx >= rectStart.X && yy >= rectStart.Y)
+                    {
+                        int neighborCode = mainArray[xx + 1 - rectStart.X][yy + 1 - rectStart.Y];
+                        if (looseArray[xx - rectStart.X][yy - rectStart.Y] != -1)
+                            neighborCode = looseArray[xx - rectStart.X][yy - rectStart.Y];
 
-                    if (neighborCode != -1)
-                        placementMethod(rectStart.X + ii, rectStart.Y + jj, GetTile(rand, neighborCode));
+                        if (neighborCode != -1)
+                            placementMethod(xx, yy, GetTile(new ReRandom(subSeed), neighborCode));
+                    }
+                }
+                while (yy < totalSize.Y)
+                {
+                    rand.NextUInt64();
+                    yy++;
                 }
             }
         }

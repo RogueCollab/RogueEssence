@@ -134,7 +134,7 @@ namespace RogueEssence.Dev.ViewModels
             Rect bounds = new Rect(loc, brush.MultiSelect);
             //now recompute all tiles within the multiselect rectangle + 1
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(MathUtils.Rand, bounds.Start, bounds.Size);
+            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
         }
 
         private void rectTile(Rect rect, TileBrush brush)
@@ -153,7 +153,7 @@ namespace RogueEssence.Dev.ViewModels
             Rect bounds = rect;
             //now recompute all tiles within the multiselect rectangle + 1
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(MathUtils.Rand, bounds.Start, bounds.Size);
+            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
         }
 
         private void eyedropTile(Loc loc)
@@ -202,7 +202,7 @@ namespace RogueEssence.Dev.ViewModels
 
             //now recompute all autotiles within the rectangle
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(MathUtils.Rand, bounds.Start, bounds.Size);
+            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
         }
     }
 }
