@@ -158,7 +158,7 @@ namespace RogueEssence.Dev.ViewModels
                     string song = Path.GetFileName(files[ii]);
                     Music.Add(song);
                     if (song == ZoneManager.Instance.CurrentGround.Music)
-                        ChosenMusic = ii;
+                        ChosenMusic = ii+1;
                 }
             }
         }
@@ -167,15 +167,13 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                if (chosenMusic <= 0)
-                {
-                    ZoneManager.Instance.CurrentGround.Music = "";
-                }
-                else
+                if (chosenMusic > 0)
                 {
                     string fileName = (string)Music[chosenMusic];
                     ZoneManager.Instance.CurrentGround.Music = fileName;
                 }
+                else
+                    ZoneManager.Instance.CurrentGround.Music = "";
 
                 GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, false);
             }

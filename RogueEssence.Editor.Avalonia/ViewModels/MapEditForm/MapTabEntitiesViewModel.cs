@@ -1,6 +1,8 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Controls;
+using ReactiveUI;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using System;
 using System.Collections.Generic;
@@ -64,6 +66,9 @@ namespace RogueEssence.Dev.ViewModels
 
             speciesChanged();
 
+            Statuses = new CollectionBoxViewModel();
+            Statuses.OnMemberChanged += Statuses_Changed;
+            Statuses.OnEditItem += Statuses_EditItem;
         }
 
         private EntEditMode entMode;
@@ -179,7 +184,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.Level; }
             set
             {
-                this.RaiseAndSetIfChanged(ref SelectedEntity.Level, value);
+                this.RaiseAndSet(ref SelectedEntity.Level, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
             }
         }
@@ -320,7 +325,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.MaxHPBonus; }
             set
             {
-                this.RaiseAndSetIfChanged(ref SelectedEntity.MaxHPBonus, value);
+                this.RaiseAndSet(ref SelectedEntity.MaxHPBonus, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
             }
         }
@@ -328,32 +333,34 @@ namespace RogueEssence.Dev.ViewModels
         public int AtkBonus
         {
             get { return SelectedEntity.AtkBonus; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.AtkBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.AtkBonus, value); }
         }
 
         public int DefBonus
         {
             get { return SelectedEntity.DefBonus; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.DefBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.DefBonus, value); }
         }
 
         public int MAtkBonus
         {
             get { return SelectedEntity.MAtkBonus; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.MAtkBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.MAtkBonus, value); }
         }
 
         public int MDefBonus
         {
             get { return SelectedEntity.MDefBonus; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.MDefBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.MDefBonus, value); }
         }
 
         public int SpeedBonus
         {
             get { return SelectedEntity.SpeedBonus; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.SpeedBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.SpeedBonus, value); }
         }
+
+        public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
 
@@ -399,6 +406,59 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+        public void Statuses_Changed()
+        {
+            Dictionary<int, StatusEffect> statuses = new Dictionary<int, StatusEffect>();
+            List<StatusEffect> states = Statuses.GetList<List<StatusEffect>>();
+            for (int ii = 0; ii < states.Count; ii++)
+                statuses[states[ii].ID] = states[ii];
+            SelectedEntity.StatusEffects = statuses;
+        }
+
+        public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            if (element == null)
+                frmData.Title = "New Status";
+            else
+                frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "(Statuses) [" + index + "]", typeof(StatusEffect), new object[0] { }, element, true);
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            frmData.SelectedOKEvent += async () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Statuses", typeof(StatusEffect), new object[0] { }, true);
+
+                bool itemExists = false;
+
+                List<StatusEffect> states = (List<StatusEffect>)Statuses.GetList(typeof(List<StatusEffect>));
+                for (int ii = 0; ii < states.Count; ii++)
+                {
+                    if (ii != index)
+                    {
+                        if (states[ii].ID == ((StatusEffect)element).ID)
+                            itemExists = true;
+                    }
+                }
+
+                if (itemExists)
+                    await MessageBox.Show((Window)form.MapEditor, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                else
+                {
+                    op(index, element);
+                    frmData.Close();
+                }
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            //form.MapEditor.RegisterChild(frmData);
+            frmData.Show();
+        }
 
         /// <summary>
         /// Select the entity at that position and displays its data for editing
@@ -483,6 +543,11 @@ namespace RogueEssence.Dev.ViewModels
             MAtkBonus = MAtkBonus;
             MDefBonus = MDefBonus;
             SpeedBonus = SpeedBonus;
+
+            List<StatusEffect> states = new List<StatusEffect>();
+            foreach (StatusEffect state in SelectedEntity.StatusEffects.Values)
+                states.Add(state);
+            Statuses.LoadFromList(states);
         }
 
         /// <summary>

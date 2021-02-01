@@ -5,6 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.CollectionBox">
+  <Design.DataContext>
+    <vm:CollectionBoxViewModel/>
+  </Design.DataContext>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
@@ -16,10 +19,10 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <ListBox Name="lbxItems" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50" MaxHeight="130"/>
-    <Button Click="btnAdd_Click" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
-    <Button Click="btnDelete_Click" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
-    <Button Click="btnUp_Click" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
-    <Button Click="btnDown_Click" Margin="4" Grid.Row="1" Grid.Column="2">v</Button>
+    <ListBox Name="lbxItems" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50"/>
+    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
+    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
+    <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
+    <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="1" Grid.Column="2">v</Button>
   </Grid>
 </UserControl>

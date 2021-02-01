@@ -77,7 +77,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.Value; }
             set
             {
-                this.SetIfChanged(ref SelectedEntity.Value, value);
+                this.RaiseAndSet(ref SelectedEntity.Value, value);
             }
         }
 
@@ -86,7 +86,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.HiddenValue; }
             set
             {
-                this.SetIfChanged(ref SelectedEntity.HiddenValue, value);
+                this.RaiseAndSet(ref SelectedEntity.HiddenValue, value);
             }
         }
 
@@ -95,7 +95,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.Cursed; }
             set
             {
-                this.SetIfChanged(ref SelectedEntity.Cursed, value);
+                this.RaiseAndSet(ref SelectedEntity.Cursed, value);
             }
         }
 

@@ -105,6 +105,9 @@ namespace RogueEssence.Dev
         {
             if (ZoneManager.Instance.CurrentMap != null)
             {
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                    character.UpdateFrame();
+
                 FocusedLoc += DiffLoc;
                 DiffLoc = new Loc();
 

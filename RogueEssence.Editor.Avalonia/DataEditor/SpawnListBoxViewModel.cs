@@ -143,7 +143,7 @@ namespace RogueEssence.Dev.ViewModels
             if (index < 0)
                 index = Collection.Count;
             object element = null;
-            OnEditItem(index, element, insertItem);
+            OnEditItem?.Invoke(index, element, insertItem);
         }
 
         private void btnDelete_Click()

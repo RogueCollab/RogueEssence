@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
@@ -12,8 +13,13 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition/>
+      <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="0" Grid.Column="0" Grid.RowSpan="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="40"/>
         <RowDefinition Height="40"/>
@@ -42,13 +48,41 @@
       <NumericUpDown Value="{Binding BGMoveY}" VerticalAlignment="Center" Margin="4" Grid.Row="4" Grid.Column="3"/>
       <!--Blank BG-->
       <!--Floor BG-->
-      <!--Start Events-->
-      <!--Prepare Events-->
-      <!--Check Events-->
+    </Grid>
+    <Grid Grid.Row="1" Grid.Column="0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="20"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Map Statuses</TextBlock>
+      <views:CollectionBox DataContext="{Binding Statuses}" Margin="4" Grid.Row="1"/>
+    </Grid>
+    <Grid Grid.Row="0" Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="20"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Prepare Events</TextBlock>
+      <views:CollectionBox DataContext="{Binding PrepareEvents}" Margin="4" Grid.Row="1"/>
+    </Grid>
+    <Grid Grid.Row="0" Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="20"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Start Events</TextBlock>
+      <views:CollectionBox DataContext="{Binding StartEvents}" Margin="4" Grid.Row="1"/>
+    </Grid>
+    <Grid Grid.Row="1" Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="20"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Check Events</TextBlock>
+      <views:CollectionBox DataContext="{Binding CheckEvents}" Margin="4" Grid.Row="1"/>
     </Grid>
 
-
-    <Grid Grid.Column="1">
+    <Grid Grid.Row="1" Grid.Column="2">
       <Grid.RowDefinitions>
         <RowDefinition Height="20"/>
         <RowDefinition/>
@@ -59,5 +93,9 @@
       <ListBox Name="lbxMusic" SelectionMode="AlwaysSelected" Items="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
       <Button Name="btnReloadMusic" Command="{Binding btnReloadMusic_Click}" Margin="4" Grid.Row="2">Reload Music</Button>
     </Grid>
+
   </Grid>
+
+  
+  
 </UserControl>

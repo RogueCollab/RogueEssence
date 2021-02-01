@@ -25,7 +25,7 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="40"/>
     </Grid.ColumnDefinitions>
-    <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50" MaxHeight="130">
+    <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Weight"
                       Binding="{Binding Weight}" />

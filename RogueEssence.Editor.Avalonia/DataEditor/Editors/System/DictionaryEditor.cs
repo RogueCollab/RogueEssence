@@ -9,6 +9,7 @@ using RogueElements;
 using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using System.Collections;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
@@ -23,13 +24,16 @@ namespace RogueEssence.Dev
             LoadLabelControl(control, name);
 
             DictionaryBox lbxValue = new DictionaryBox();
+            lbxValue.MaxHeight = 180;
+            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(lbxValue.GetOwningForm());
+            lbxValue.DataContext = mv;
 
             Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
             //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
             //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (object key, object element, DictionaryBox.EditElementOp op) =>
+            mv.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 if (element == null)
@@ -54,7 +58,7 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            lbxValue.OnEditKey = (object key, object element, DictionaryBox.EditElementOp op) =>
+            mv.OnEditKey += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmKey = new DataEditForm();
                 if (element == null)
@@ -79,7 +83,7 @@ namespace RogueEssence.Dev
                 frmKey.Show();
             };
 
-            lbxValue.LoadFromDict(member);
+            mv.LoadFromDict(member);
             control.Children.Add(lbxValue);
         }
 
@@ -89,7 +93,8 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
             controlIndex++;
             DictionaryBox lbxValue = (DictionaryBox)control.Children[controlIndex];
-            return lbxValue.GetDict(type);
+            DictionaryBoxViewModel mv = (DictionaryBoxViewModel)lbxValue.DataContext;
+            return mv.GetDict(type);
         }
     }
 }

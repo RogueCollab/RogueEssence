@@ -1,9 +1,12 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Controls;
+using ReactiveUI;
 using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace RogueEssence.Dev.ViewModels
@@ -21,6 +24,10 @@ namespace RogueEssence.Dev.ViewModels
             Owners = new ObservableCollection<string>();
             for (int ii = 0; ii < 3; ii++)
                 Owners.Add(((EffectTile.TileOwner)ii).ToString());
+
+
+            TileStates = new CollectionBoxViewModel();
+            TileStates.OnEditItem += TileStates_EditItem;
         }
 
         private TileEditMode tileMode;
@@ -42,7 +49,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenTile; }
             set
             {
-                this.SetIfChanged(ref chosenTile, value);
+                this.RaiseAndSet(ref chosenTile, value);
             }
         }
 
@@ -52,7 +59,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return isRevealed; }
             set
             {
-                this.SetIfChanged(ref isRevealed, value);
+                this.RaiseAndSet(ref isRevealed, value);
             }
         }
 
@@ -62,7 +69,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return isDanger; }
             set
             {
-                this.SetIfChanged(ref isDanger, value);
+                this.RaiseAndSet(ref isDanger, value);
             }
         }
 
@@ -74,8 +81,57 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenOwner; }
             set
             {
-                this.SetIfChanged(ref chosenOwner, value);
+                this.RaiseAndSet(ref chosenOwner, value);
             }
+        }
+
+        public CollectionBoxViewModel TileStates { get; set; }
+
+        public void TileStates_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            if (element == null)
+                frmData.Title = "New State";
+            else
+                frmData.Title = element.ToString();
+
+            //TODO: make this a member and reference it that way
+            DataEditor.LoadClassControls(frmData.ControlPanel, "(TileStates) [" + index + "]", typeof(TileState), new object[0] { }, element, true);
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            frmData.SelectedOKEvent += async () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "TileStates", typeof(TileState), new object[0] { }, true);
+
+                bool itemExists = false;
+
+                List<object> states = (List<object>)TileStates.GetList(typeof(List<object>));
+                for (int ii = 0; ii < states.Count; ii++)
+                {
+                    if (ii != index)
+                    {
+                        if (states[ii].GetType() == element.GetType())
+                            itemExists = true;
+                    }
+                }
+
+                if (itemExists)
+                {
+                    await MessageBox.Show((Window)form.MapEditor, "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                }
+                else
+                {
+                    op(index, element);
+                    frmData.Close();
+                }
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            //form.MapEditor.RegisterChild(frmData);
+            frmData.Show();
         }
 
         public void ProcessInput(InputManager input)
@@ -148,6 +204,10 @@ namespace RogueEssence.Dev.ViewModels
             EffectTile brush = new EffectTile(ChosenTile, IsRevealed);
             brush.Danger = IsDanger;
             brush.Owner = (EffectTile.TileOwner)ChosenOwner;
+
+            List<TileState> states = TileStates.GetList<List<TileState>>();
+            for (int ii = 0; ii < states.Count; ii++)
+                brush.TileStates.Set(states[ii]);
             return brush;
         }
 
@@ -157,6 +217,11 @@ namespace RogueEssence.Dev.ViewModels
             ChosenOwner = (int)brush.Owner;
             IsDanger = brush.Danger;
             IsRevealed = brush.Revealed;
+
+            List<TileState> states = new List<TileState>();
+            foreach (TileState state in brush.TileStates)
+                states.Add(state);
+            TileStates.LoadFromList(states);
         }
 
         private void paintTile(Loc loc, EffectTile brush)
@@ -200,7 +265,7 @@ namespace RogueEssence.Dev.ViewModels
 
             EffectTile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect;
             Rect bounds = new Rect(loc, Loc.One);
-            Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
+            RogueElements.Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
                     (Loc testLoc) =>
                     {
                         return tile.ID != ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Effect.ID;

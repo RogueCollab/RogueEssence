@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
-  <Grid>
+  <Grid MaxHeight="180">
     <Grid.RowDefinitions>
       <RowDefinition/>
       <RowDefinition Height="40"/>
@@ -17,7 +17,7 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50" MaxHeight="130">
+    <DataGrid Name="gridItems" IsReadOnly="true" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Priority"
                       Binding="{Binding PriorityObj}" />

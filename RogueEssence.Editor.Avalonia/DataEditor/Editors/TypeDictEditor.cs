@@ -8,6 +8,7 @@ using System.Drawing;
 using RogueElements;
 using Avalonia.Controls;
 using RogueEssence.Dev.Views;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
@@ -22,11 +23,14 @@ namespace RogueEssence.Dev
             LoadLabelControl(control, name);
 
             CollectionBox lbxValue = new CollectionBox();
+            lbxValue.MaxHeight = 180;
+            CollectionBoxViewModel mv = new CollectionBoxViewModel();
+            lbxValue.DataContext = mv;
 
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
             //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
+            mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 if (element == null)
@@ -43,7 +47,7 @@ namespace RogueEssence.Dev
 
                     bool itemExists = false;
 
-                    List<object> states = (List<object>)lbxValue.GetList(typeof(List<object>));
+                    List<object> states = (List<object>)mv.GetList(typeof(List<object>));
                     for (int ii = 0; ii < states.Count; ii++)
                     {
                         if (ii != index)
@@ -75,7 +79,7 @@ namespace RogueEssence.Dev
             List<object> states = new List<object>();
             foreach (object state in member)
                 states.Add(state);
-            lbxValue.LoadFromList(states);
+            mv.LoadFromList(states);
             control.Children.Add(lbxValue);
         }
 
@@ -85,7 +89,8 @@ namespace RogueEssence.Dev
             CollectionBox lbxValue = (CollectionBox)control.Children[1];
 
             ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
-            List<object> states = (List<object>)lbxValue.GetList(typeof(List<object>));
+            CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
+            List<object> states = (List<object>)mv.GetList(typeof(List<object>));
             for (int ii = 0; ii < states.Count; ii++)
                 member.Set(states[ii]);
             return member;

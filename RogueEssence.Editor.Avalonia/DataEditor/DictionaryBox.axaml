@@ -5,6 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.DictionaryBox">
+  <Design.DataContext>
+    <vm:DictionaryBoxViewModel/>
+  </Design.DataContext>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
@@ -15,7 +18,7 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60" MaxHeight="140">
+    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Key"
                       Binding="{Binding Key}" />
@@ -23,7 +26,7 @@
                             Binding="{Binding Value}" />
       </DataGrid.Columns>
     </DataGrid>
-    <Button Click="btnAdd_Click" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
-    <Button Click="btnDelete_Click" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
+    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
+    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
   </Grid>
 </UserControl>

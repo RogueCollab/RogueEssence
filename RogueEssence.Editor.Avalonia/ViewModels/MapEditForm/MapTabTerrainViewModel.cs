@@ -32,15 +32,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public bool ShowTerrain
         {
-            get
-            {
-                return DungeonEditScene.Instance.ShowTerrain;
-            }
-            set
-            {
-                DungeonEditScene.Instance.ShowTerrain = value;
-                this.RaisePropertyChanged();
-            }
+            get { return DungeonEditScene.Instance.ShowTerrain; }
+            set { this.RaiseAndSet(ref DungeonEditScene.Instance.ShowTerrain, value); }
         }
 
 
@@ -50,10 +43,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenTerrain
         {
             get { return chosenTerrain; }
-            set
-            {
-                this.SetIfChanged(ref chosenTerrain, value);
-            }
+            set { this.RaiseAndSet(ref chosenTerrain, value); }
         }
 
 
@@ -66,10 +56,7 @@ namespace RogueEssence.Dev.ViewModels
         public int TabIndex
         {
             get => tabIndex;
-            set
-            {
-                this.SetIfChanged(ref tabIndex, value);
-            }
+            set { this.SetIfChanged(ref tabIndex, value); }
         }
 
 

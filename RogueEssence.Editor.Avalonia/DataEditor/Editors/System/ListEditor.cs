@@ -8,6 +8,7 @@ using System.Drawing;
 using RogueElements;
 using Avalonia.Controls;
 using RogueEssence.Dev.Views;
+using RogueEssence.Dev.ViewModels;
 using System.Collections;
 
 namespace RogueEssence.Dev
@@ -23,11 +24,14 @@ namespace RogueEssence.Dev
             LoadLabelControl(control, name);
 
             CollectionBox lbxValue = new CollectionBox();
+            lbxValue.MaxHeight = 180;
+            CollectionBoxViewModel mv = new CollectionBoxViewModel();
+            lbxValue.DataContext = mv;
 
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), type, 0);
             //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
             //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
+            mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 if (element == null)
@@ -52,7 +56,7 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            lbxValue.LoadFromList(member);
+            mv.LoadFromList(member);
             control.Children.Add(lbxValue);
         }
 
@@ -62,7 +66,8 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
             controlIndex++;
             CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
-            return lbxValue.GetList(type);
+            CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
+            return mv.GetList(type);
         }
     }
 }

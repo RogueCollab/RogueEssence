@@ -22,6 +22,7 @@ namespace RogueEssence.Dev
             LoadLabelControl(control, name);
 
             SpawnListBox lbxValue = new SpawnListBox();
+            lbxValue.MaxHeight = 220;
             SpawnListBoxViewModel mv = new SpawnListBoxViewModel();
             lbxValue.DataContext = mv;
 

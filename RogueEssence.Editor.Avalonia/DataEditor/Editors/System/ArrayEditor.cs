@@ -11,6 +11,7 @@ using RogueEssence.Dev.Views;
 using System.Collections;
 using Avalonia;
 using System.Reactive.Subjects;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
@@ -24,11 +25,14 @@ namespace RogueEssence.Dev
             LoadLabelControl(control, name);
 
             CollectionBox lbxValue = new CollectionBox();
+            lbxValue.MaxHeight = 180;
+            CollectionBoxViewModel mv = new CollectionBoxViewModel();
+            lbxValue.DataContext = mv;
 
             Type elementType = type.GetElementType();
             //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
             //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (int index, object element, CollectionBox.EditElementOp op) =>
+            mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 if (element == null)
@@ -57,7 +61,7 @@ namespace RogueEssence.Dev
             for (int ii = 0; ii < member.Length; ii++)
                 objList.Add(member.GetValue(ii));
 
-            lbxValue.LoadFromList(objList);
+            mv.LoadFromList(objList);
             control.Children.Add(lbxValue);
         }
 
@@ -70,7 +74,8 @@ namespace RogueEssence.Dev
 
             controlIndex++;
             CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
-            List<object> objList = (List<object>)lbxValue.GetList(typeof(List<object>));
+            CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
+            List<object> objList = (List<object>)mv.GetList(typeof(List<object>));
 
             Array array = Array.CreateInstance(type.GetElementType(), objList.Count);
             for (int ii = 0; ii < objList.Count; ii++)
