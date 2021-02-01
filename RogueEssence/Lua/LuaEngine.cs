@@ -423,22 +423,29 @@ namespace RogueEssence.Script
             if (DataManager.Instance.Save != null)
                 LoadSavedData(DataManager.Instance.Save);
             if (ZoneManager.Instance != null)
+            {
                 ZoneManager.Instance.LuaEngineReload();
+                if (ZoneManager.Instance.CurrentZone != null)
+                    GameManager.Instance.SceneOutcome = ReInitZone();
+            }
 
-            //!#FIXME : We'll need to call the method for zone init too!
-            //!#FIXME : We'll need to call the method on map entry too if a map is running!
+        }
+
+        public IEnumerator<YieldInstruction> ReInitZone()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentGround != null)
             {
                 OnGroundMapInit(ZoneManager.Instance.CurrentGround.AssetName, ZoneManager.Instance.CurrentGround);
                 OnGroundModeBegin();
 
                 //process events before the map fades in
-                GameManager.Instance.SceneOutcome = ZoneManager.Instance.CurrentGround.OnInit();
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
             }
             else if (ZoneManager.Instance.CurrentMap != null)
             {
+                //!#FIXME : We'll need to call the method on map entry too if a map is running!
                 //OnDungeonFloorInit();
-                throw new NotImplementedException("LuaEngine.ReInit() not implemented for dungeon!");
             }
         }
 
@@ -765,7 +772,7 @@ namespace RogueEssence.Script
             //Save script engine stuff here!
             DiagManager.Instance.LogInfo("LuaEngine.SaveData()..");
             object[] result = RunString(String.Format("return Serpent.dump({0})", ScriptVariablesTableName));
-            if (result[0] != null)
+            if (result != null && result[0] != null)
             {
                 save.ScriptVars = result[0] as string;
                 DiagManager.Instance.LogInfo("============ Serialized SV : ============");
