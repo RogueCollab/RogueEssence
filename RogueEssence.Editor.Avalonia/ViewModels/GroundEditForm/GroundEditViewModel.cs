@@ -15,7 +15,6 @@ using RogueEssence.Script;
 using System.Linq;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using RogueEssence.Dev.Models;
 using System.Diagnostics;
 
 namespace RogueEssence.Dev.ViewModels
@@ -30,13 +29,8 @@ namespace RogueEssence.Dev.ViewModels
             Entities = new GroundTabEntitiesViewModel();
             Properties = new GroundTabPropertiesViewModel();
             Strings = new GroundTabStringsViewModel();
+            Script = new GroundTabScriptViewModel();
             CurrentFile = "";
-
-
-            ScriptItems = new ObservableCollection<ScriptItem>();
-            foreach (LuaEngine.EMapCallbacks v in LuaEngine.EnumerateCallbackTypes())
-                ScriptItems.Add(new ScriptItem(v.ToString(), false));
-
         }
 
         public GroundTabTexturesViewModel Textures { get; set; }
@@ -45,6 +39,7 @@ namespace RogueEssence.Dev.ViewModels
         public GroundTabEntitiesViewModel Entities { get; set; }
         public GroundTabPropertiesViewModel Properties { get; set; }
         public GroundTabStringsViewModel Strings { get; set; }
+        public GroundTabScriptViewModel Script { get; set; }
 
         private string currentFile;
         public string CurrentFile
@@ -63,11 +58,6 @@ namespace RogueEssence.Dev.ViewModels
 
         public void New_Click()
         {
-
-            //Check all callbacks by default
-            for (int ii = 0; ii < ScriptItems.Count; ii++)
-                ScriptItems[ii].IsChecked = true;
-
             CurrentFile = "";
 
             lock (GameBase.lockObj) //Schedule the map creation
@@ -297,7 +287,7 @@ namespace RogueEssence.Dev.ViewModels
 
             Walls.SetupLayerVisibility();
             Properties.LoadMapProperties();
-            LoadScriptData();
+            Script.LoadScripts();
             Strings.LoadStrings();
         }
 
@@ -344,6 +334,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
+            Script.SaveScripts();
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.
@@ -421,47 +412,5 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
-
-
-
-
-
-
-
-        public ObservableCollection<ScriptItem> ScriptItems { get; }
-
-        public void btnOpenScriptDir_Click()
-        {
-            lock (GameBase.lockObj)
-            {
-                string mapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(CurrentFile));
-                mapscriptdir = Path.GetFullPath(mapscriptdir);
-                Process.Start("explorer.exe", mapscriptdir);
-            }
-        }
-        public void btnReloadScripts_Click()
-        {
-            lock (GameBase.lockObj)
-            {
-                LuaEngine.Instance.Reset();
-                LuaEngine.Instance.ReInit();
-            }
-        }
-
-        private void LoadScriptData()
-        {
-            lock (GameBase.lockObj)
-            {
-                //Setup callback display without triggering events
-                var scev = ZoneManager.Instance.CurrentGround.ActiveScriptEvent();
-                foreach (LuaEngine.EMapCallbacks s in scev)
-                {
-                    ScriptItems[(int)s].IsChecked = true;
-                }
-            }
-        }
-
-
-
     }
 }

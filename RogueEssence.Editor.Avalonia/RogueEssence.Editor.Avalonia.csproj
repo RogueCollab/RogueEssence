@@ -50,6 +50,9 @@
     <Compile Update="Views\DialogBoxes\RenameWindow.axaml.cs">
       <DependentUpon>RenameWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\GroundEditForm\GroundTabScript.axaml.cs">
+      <DependentUpon>GroundTabScript.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\GroundEditForm\Layers\EntityLayerWindow.axaml.cs">
       <DependentUpon>EntityLayerWindow.axaml</DependentUpon>
     </Compile>
@@ -110,5 +113,8 @@
     <Compile Update="Views\Textures\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 </Project>
