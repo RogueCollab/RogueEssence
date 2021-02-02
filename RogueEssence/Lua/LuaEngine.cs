@@ -600,6 +600,16 @@ namespace RogueEssence.Script
                     end
             ", "IDX function init");
 
+            //LTBL is a wrapper to access the LuaTable that some entiies have
+            RunString(@"
+                function LTBL(entity)
+                    if not entity then return nil end
+                    if not entity.LuaData then return nil end
+                    return entity.LuaData
+                end
+                ",
+                "LTBL");
+
             //Function to lookup a NPC spawner by name on the current level
             RunString(@"
                 SPWN = function(spawnername)
@@ -610,6 +620,7 @@ namespace RogueEssence.Script
                     return nil
                 end
             ", "SPWN function init");
+
 
             //Expose the lua system
             LuaState["LUA_ENGINE"] = this;
@@ -749,12 +760,12 @@ namespace RogueEssence.Script
 
                 //Deserialize the script variables and put them in the global
                 RunString(String.Format(@"local ok,res = Serpent.load('{0}')
-            if ok then
-                {1} = res
-            else
-                PrintInfo('LuaEngine.LoadSavedData(): Script var loading failed! Details : ' .. res)
-            end
-            ",
+                    if ok then
+                        {1} = res
+                    else
+                        PrintInfo('LuaEngine.LoadSavedData(): Script var loading failed! Details : ' .. res)
+                    end
+                    ",
                     loaded.ScriptVars, ScriptVariablesTableName));
             }
             //Tell the script we've just resumed a save!
@@ -781,6 +792,35 @@ namespace RogueEssence.Script
             }
             else
                 DiagManager.Instance.LogInfo("LuaEngine.SaveData(): Script var saving failed!");
+        }
+
+        /// <summary>
+        /// Dumps the specified lua table to a string, for serialization!
+        /// </summary>
+        /// <param name="tbl">lua table itself</param>
+        /// <returns>A string representation of the lua table.Returns null if failed!</returns>
+        public string SerializeLuaTable(LuaTable tbl)
+        {
+            object result = CallLuaFunctions("Serpent.dump", tbl).First();
+            if (result != null)
+                return result as string;
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Deserialize a lua table that was dumped to a string using the SerializeLuaTable method.
+        /// </summary>
+        /// <param name="serializedtbl"></param>
+        /// <returns></returns>
+        public LuaTable DeserializedLuaTable(string serializedtbl)
+        {
+            //Load returns a boolean and the result. The boolean is true if it succeeded.
+            object[] result = CallLuaFunctions("Serpent.load", serializedtbl).ToArray();
+            if ((bool)result[0])
+                return result[1] as LuaTable;
+            else
+                return null;
         }
 
         /// <summary>

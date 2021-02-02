@@ -7,6 +7,7 @@ using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -587,6 +588,23 @@ namespace RogueEssence.Dungeon
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Call this so the map unregisters its events and delegates.
+        ///
+        /// </summary>
+        public void DoCleanup()
+        {
+
+            foreach (Character c in IterateCharacters())
+                c.DoCleanup();
+        }
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+
         }
     }
 

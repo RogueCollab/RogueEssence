@@ -89,6 +89,8 @@ namespace RogueEssence.Dungeon
 
         private void exitMap()
         {
+            if (CurrentMap != null && CurrentMapID.IsValid())//only clean up maps that are valid (aka, not from editor mode)
+                CurrentMap.DoCleanup();
             CurrentMap = null;
             if (CurrentGround != null && CurrentMapID.IsValid())//only clean up maps that are valid (aka, not from editor mode)
                 CurrentGround.DoCleanup();

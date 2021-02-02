@@ -10,12 +10,13 @@ using RogueEssence.Dungeon;
 using RogueEssence.Script;
 using AABB;
 using System.Linq;
+using NLua;
 
 namespace RogueEssence.Ground
 {
 
     [Serializable]
-    public class GroundChar : GroundAIUser, ICharSprite, IBox
+    public class GroundChar : GroundAIUser, ICharSprite, IBox, IEntityWithLuaData
     {
         public CharData Data;
         public MonsterID CurrentForm { get { return Data.BaseForm; } }
@@ -36,6 +37,11 @@ namespace RogueEssence.Ground
         /// </summary>
         public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
 
+        public LuaTable LuaData
+        {
+            get { return Data.LuaDataTable; }
+            set { Data.LuaDataTable = value; }
+        }
 
         public uint Tags
         {
