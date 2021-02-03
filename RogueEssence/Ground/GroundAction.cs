@@ -24,7 +24,7 @@ namespace RogueEssence.Ground
         public int LocHeight { get; set; }
         public Dir8 CharDir { get; set; }
 
-        protected FrameTick ActionTime;
+        public FrameTick ActionTime { get; protected set; }
 
         protected Dir8 dirOffset;
         protected int opacity;
@@ -128,10 +128,9 @@ namespace RogueEssence.Ground
     public class WalkGroundAction : GroundAction
     {
         private bool run;
-        private FrameTick trueTime;
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
-            return CharSheet.TrueFrame(frames, trueTime.Ticks, false);
+            return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
         public WalkGroundAction(Loc loc, Dir8 dir, bool run, FrameTick prevTime)
@@ -139,13 +138,12 @@ namespace RogueEssence.Ground
             MapLoc = loc;
             CharDir = dir;
             this.run = run;
-            trueTime = prevTime;
+            ActionTime = prevTime;
         }
 
         public override void UpdateTime(FrameTick elapsedTime)
         {
-            base.UpdateTime(elapsedTime);
-            trueTime = (trueTime + elapsedTime * (run ? 2 : 1)) % AnimTotalTime;
+            base.UpdateTime(elapsedTime * (run ? 2 : 1));
         }
 
         public override void UpdateInput(GameAction action)
@@ -196,24 +194,32 @@ namespace RogueEssence.Ground
     [Serializable]
     public class SkidGroundAction : GroundAction
     {
-        private FrameTick prevTime;
+        private FrameTick skidTime;
+
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
-            return CharSheet.TrueFrame(frames, (prevTime + ActionTime).Ticks, false);
+            return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
         public SkidGroundAction(Loc loc, Dir8 dir, FrameTick prevTime)
         {
             MapLoc = loc;
             CharDir = dir;
-            this.prevTime = prevTime;
+            ActionTime = prevTime;
+        }
+
+
+        public override void UpdateTime(FrameTick elapsedTime)
+        {
+            base.UpdateTime(elapsedTime);
+            skidTime += elapsedTime;
         }
 
         public override void UpdateInput(GameAction action)
         {
             if (action.Type == GameAction.ActionType.Move)//start walk if ordered to
                 NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, ActionTime);
-            else if (ActionTime >= AnimTotalTime)//stop skid if timed out
+            else if (skidTime >= AnimTotalTime)//stop skid if timed out
                 NextAction = new IdleGroundAction(MapLoc, CharDir);
         }
 
@@ -285,23 +291,24 @@ namespace RogueEssence.Ground
     public class WalkToPositionGroundAction : GroundAction
     {
         private bool run;
-        private FrameTick trueTime;
+        private int moveRate;
         private Loc Destination;
         private Loc CurPos;
         private Action OnComplete;
 
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
-            return CharSheet.TrueFrame(frames, trueTime.Ticks, false);
+            return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
 
-        public WalkToPositionGroundAction(Loc loc, Dir8 dir, bool run, FrameTick prevTime, Loc destination, Action oncomplete = null)
+        public WalkToPositionGroundAction(Loc loc, Dir8 dir, bool run, int moveRate, FrameTick prevTime, Loc destination, Action oncomplete = null)
         {
             MapLoc = loc;
             CharDir = dir;
             this.run = run;
-            trueTime = prevTime;
+            ActionTime = prevTime;
+            this.moveRate = moveRate;
             Destination = destination;
             CurPos = MapLoc;
             OnComplete = oncomplete;
@@ -309,8 +316,7 @@ namespace RogueEssence.Ground
 
         public override void UpdateTime(FrameTick elapsedTime)
         {
-            base.UpdateTime(elapsedTime);
-            trueTime = (trueTime + elapsedTime * (run ? 2 : 1)) % AnimTotalTime;
+            base.UpdateTime(elapsedTime * (run ? 2 : 1));
         }
 
         public override void UpdateInput(GameAction action)
@@ -347,11 +353,10 @@ namespace RogueEssence.Ground
 
 
             Loc checkedmove = new Loc();
-            int moverate = (run ? 5 : 2);
             //Constrain the move vector components to the components of the position difference vector to
             // ensure we don't overshoot because of the move rate
-            checkedmove.X = Math.Min(Math.Abs(movediff.X), Math.Abs(movevec.X * moverate)) * Math.Sign(movevec.X);
-            checkedmove.Y = Math.Min(Math.Abs(movediff.Y), Math.Abs(movevec.Y * moverate)) * Math.Sign(movevec.Y);
+            checkedmove.X = Math.Min(Math.Abs(movediff.X), Math.Abs(movevec.X * moveRate)) * Math.Sign(movevec.X);
+            checkedmove.Y = Math.Min(Math.Abs(movediff.Y), Math.Abs(movevec.Y * moveRate)) * Math.Sign(movevec.Y);
 
             //Update facing direction. Ignore none, since it crashes the game.
             Dir8 newdir = movevec.ApproximateDir8();

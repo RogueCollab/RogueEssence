@@ -292,7 +292,10 @@ namespace RogueEssence.Script
         {
             if (curch == null || turnto == null)
                 return;
-            curch.CharDir = DirExt.ApproximateDir8(turnto.MapLoc - curch.MapLoc);
+            Dir8 destDir = DirExt.ApproximateDir8(turnto.MapLoc - curch.MapLoc);
+            if (destDir == Dir8.None)
+                destDir = turnto.CharDir.Reverse();
+            curch.CharDir = destDir;
         }
 
 
@@ -310,6 +313,8 @@ namespace RogueEssence.Script
             if (curch == null || turnto == null)
                 return new Coroutine(LuaEngine._DummyWait());
             Dir8 destDir = DirExt.ApproximateDir8(turnto.MapLoc - curch.MapLoc);
+            if (destDir == Dir8.None)
+                destDir = turnto.CharDir.Reverse();
             int turn = _CountDirectionDifference(curch.CharDir, destDir);
             return new Coroutine(_DoAnimatedTurn(curch, turn, framedur, turn < 0));
         }
@@ -444,7 +449,7 @@ namespace RogueEssence.Script
         /// <param name="pos"></param>
         /// <returns></returns>
         public LuaFunction MoveToLoc;
-        public YieldInstruction _MoveToLoc(GroundEntity ent, RogueElements.Loc pos, bool run = false)
+        public YieldInstruction _MoveToLoc(GroundEntity ent, Loc pos, bool run = false)
         {
             return _MoveToPosition(ent, pos.X, pos.Y, run);
         }
@@ -457,12 +462,17 @@ namespace RogueEssence.Script
         /// <param name="y"></param>
         /// <returns></returns>
         public LuaFunction MoveToPosition;
-        public YieldInstruction _MoveToPosition(GroundEntity ent, double x, double y, bool run = false)
+        public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false)
         {
             if(ent is GroundChar)
             {
                 GroundChar ch = (GroundChar)ent;
-                ch.StartAction(new WalkToPositionGroundAction(ch.Position, ch.Direction, run, new FrameTick(), new Loc((int)x, (int)y), () => { this.m_actionComplete = true; } ));
+                FrameTick prevTime = new FrameTick();
+                GroundAction prevAction = ch.GetCurrentAction();
+                if (prevAction is WalkToPositionGroundAction)
+                    prevTime = prevAction.ActionTime;
+                ch.StartAction(new WalkToPositionGroundAction(ch.Position, ch.Direction, run, run ? 5 : 2, prevTime,
+                    new Loc(x, y), () => { this.m_actionComplete = true; } ));
                 return new WaitUntil(() => { return this.m_actionComplete; });
             }
             return null;
