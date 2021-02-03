@@ -175,16 +175,10 @@ namespace RogueEssence.Ground
             }
 
             if (m_AICoro == null)
-            {
                 m_AICoro = CoroutineManager.Instance.StartCoroutine(RunAIUpdateFun());
-            }
-            else
-            {
-                if (!m_AICoro.FinishedYield())
-                    m_AICoro.MoveNext();
-                else
-                    m_AICoro = null;
-            }
+
+            if (m_AICoro.FinishedYield())
+                m_AICoro = null;
         }
 
 

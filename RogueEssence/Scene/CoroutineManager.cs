@@ -45,7 +45,6 @@ namespace RogueEssence
             if (contextidx < 0)
             {
                 Stack<Coroutine> stack = new Stack<Coroutine>();
-                stack.Push(coro);
                 m_coroutines.Add(stack);
                 contextidx = m_coroutines.Count - 1;
             }

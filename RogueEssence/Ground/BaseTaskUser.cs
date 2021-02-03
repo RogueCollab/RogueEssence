@@ -94,7 +94,7 @@ namespace RogueEssence.Ground
                 return;
 
             if (TaskState == ETaskState.None)
-                CoroutineManager.Instance.StartCoroutine(runToCompletion());
+                CoroutineManager.Instance.StartCoroutine(new Coroutine(runToCompletion()), true);
             else if (TaskState == ETaskState.Complete)
                 TaskState = ETaskState.None;
 
