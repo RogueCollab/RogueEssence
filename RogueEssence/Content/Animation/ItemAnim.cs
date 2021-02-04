@@ -8,8 +8,8 @@ namespace RogueEssence.Content
 
         public const int ITEM_ACTION_TIME = 20;
         
-        public ItemAnim(Loc startLoc, Loc endLoc, int sprite) : this(startLoc, endLoc, sprite, GraphicsManager.TileSize / 2, 0) { }
-        public ItemAnim(Loc startLoc, Loc endLoc, int sprite, int maxHeight, int waitTime)
+        public ItemAnim(Loc startLoc, Loc endLoc, string sprite) : this(startLoc, endLoc, sprite, GraphicsManager.TileSize / 2, 0) { }
+        public ItemAnim(Loc startLoc, Loc endLoc, string sprite, int maxHeight, int waitTime)
         {
             StartLoc = startLoc;
             EndLoc = endLoc;
@@ -18,7 +18,7 @@ namespace RogueEssence.Content
             WaitTime = waitTime;
         }
 
-        public int Sprite;
+        public string Sprite;
 
         public Loc StartLoc;
         public Loc EndLoc;
@@ -79,13 +79,13 @@ namespace RogueEssence.Content
         const int MAX_TILE_HEIGHT = 8;
         public const int ITEM_ACTION_TIME = 20;
         
-        public ItemDropAnim(Loc loc, int sprite)
+        public ItemDropAnim(Loc loc, string sprite)
         {
             EndLoc = loc;
             Sprite = sprite;
         }
 
-        public int Sprite;
+        public string Sprite;
 
         public Loc EndLoc;
 

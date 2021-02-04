@@ -1,4 +1,5 @@
 ﻿using System;
+using RogueEssence.Dev;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Data
@@ -19,7 +20,10 @@ namespace RogueEssence.Data
         }
 
         public LocalText Name { get; set; }
-        public int Sprite;
+
+
+        [Anim(0, "Item/")]
+        public string Sprite;
         public int Icon;
 
         [Dev.Multiline(0)]

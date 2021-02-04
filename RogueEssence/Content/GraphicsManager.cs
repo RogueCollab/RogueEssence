@@ -111,7 +111,7 @@ namespace RogueEssence.Content
         public static int TileSize { get { return DungeonTexSize * TEX_SIZE; } }
         public static int ScreenWidth;
         public static int ScreenHeight;
-        public static int MoneySprite;
+        public static string MoneySprite;
         public static int PortraitSize;
         public static List<string> Emotions;
         public static int SOSEmotion;
@@ -273,7 +273,7 @@ namespace RogueEssence.Content
                     ScreenHeight = Int32.Parse(screenHeight.InnerText);
 
                     XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
-                    MoneySprite = Int32.Parse(moneySprite.InnerText);
+                    MoneySprite = moneySprite.InnerText;
 
                     Emotions = new List<string>();
                     XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
@@ -521,11 +521,11 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tiles/", PathMod.HardMod(TILE_PATTERN), true, false);
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
-                Dev.ImportHelper.ImportAllItems(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
             if ((conversionFlags & AssetType.VFX) != AssetType.None)
                 Dev.ImportHelper.ImportAllVFX(PathMod.DEV_PATH+"Attacks/", PathMod.HardMod(PARTICLE_PATTERN), PathMod.HardMod(BEAM_PATTERN));
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
-                Dev.ImportHelper.ImportAllDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
             if ((conversionFlags & AssetType.Object) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Object/", PathMod.HardMod(OBJECT_PATTERN));
             if ((conversionFlags & AssetType.BG) != AssetType.None)
@@ -881,12 +881,12 @@ namespace RogueEssence.Content
             return newSheet;
         }
 
-        public static DirSheet GetIcon(int num)
+        public static DirSheet GetIcon(string num)
         {
             return getDirSheetCache(num.ToString(), ICON_PATTERN, iconCache);
         }
 
-        public static DirSheet GetItem(int num)
+        public static DirSheet GetItem(string num)
         {
             return getDirSheetCache(num.ToString(), ITEM_PATTERN, itemCache);
         }

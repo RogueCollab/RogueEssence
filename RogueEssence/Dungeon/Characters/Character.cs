@@ -2167,25 +2167,25 @@ namespace RogueEssence.Dungeon
             }
             else //if (DataManager.Instance.Save != null || !DataManager.Instance.Save.CutsceneMode)
             {
-                List<int> icons = new List<int>();
+                List<string> icons = new List<string>();
 
                 foreach (StatusEffect status in StatusEffects.Values)
                 {
                     StatusData entry = (StatusData)status.GetData();
                     StackState stack = status.StatusStates.GetWithDefault<StackState>();
-                    int emote = -1;
+                    string emote = "";
                     if (stack != null && stack.Stack < 0)
                         emote = entry.DropEmoticon;
                     else
                         emote = entry.Emoticon;
 
-                    if (emote > -1)
+                    if (emote != "")
                         icons.Add(emote);
-                    if (entry.FreeEmote > -1)
+                    if (entry.FreeEmote != "")
                     {
                         DirSheet iconSheet = GraphicsManager.GetIcon(entry.FreeEmote);
-                        Loc animPos = new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - /*iconOffset.X*/ -iconSheet.TileWidth / 2,
-                            MapLoc.Y + GraphicsManager.TileSize / 2 - /*iconOffset.Y*/ -iconSheet.TileHeight / 2 - LocHeight) - offset;
+                        Loc animPos = new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - iconSheet.TileWidth / 2,
+                            MapLoc.Y + GraphicsManager.TileSize / 2 - iconSheet.TileHeight / 2 - LocHeight) - offset;
                         int currentFrame = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(STATUS_FRAME_LENGTH) % (ulong)(iconSheet.TotalFrames));
                         iconSheet.DrawDir(spriteBatch, animPos.ToVector2(), currentFrame, CharDir);
                     }

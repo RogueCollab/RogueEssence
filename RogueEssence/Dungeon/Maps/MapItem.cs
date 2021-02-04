@@ -14,7 +14,7 @@ namespace RogueEssence.Dungeon
         public int Value;
         public int HiddenValue;
 
-        public int SpriteIndex
+        public string SpriteIndex
         {
             get
             {

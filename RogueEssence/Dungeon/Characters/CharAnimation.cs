@@ -152,7 +152,7 @@ namespace RogueEssence.Dungeon
         public Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
             Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
-            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, DirExt.AddAngles(CharDir, dirOffset), pointType, FrameMethod);
+            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
         }
 
         private int totalFrameTickFrame(List<CharAnimFrame> frames)
