@@ -832,12 +832,6 @@ namespace RogueEssence.Dungeon
 
         public CharAnimData CharAnimData;
 
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            ItemSprite = "";
-        }
-
         public ProjectileAction()
         {
             ItemSprite = "";
@@ -1103,13 +1097,6 @@ namespace RogueEssence.Dungeon
         public string ItemSprite;
 
         public CharAnimData CharAnimData;
-
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            ItemSprite = "";
-        }
 
         public ThrowAction()
         {

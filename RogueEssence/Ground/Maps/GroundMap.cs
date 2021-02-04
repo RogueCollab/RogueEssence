@@ -916,9 +916,6 @@ namespace RogueEssence.Ground
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
 
-            //Because we clear those on save, we'll need to assign a new array here
-            rand = new ReRandom(0);
-
             if (ActiveChar != null)
             {
                 ActiveChar.OnDeserializeMap(this);
