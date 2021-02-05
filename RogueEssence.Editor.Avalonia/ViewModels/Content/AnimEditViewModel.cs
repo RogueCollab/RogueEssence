@@ -52,6 +52,7 @@ namespace RogueEssence.Dev.ViewModels
             this.assetPattern = assetPattern;
             this.parent = parent;
 
+            //Anims.DataName = assetType.ToString() + ":";
             recomputeAnimList();
         }
 
