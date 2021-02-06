@@ -28,6 +28,7 @@ namespace RogueEssence.Dev.ViewModels
             Tiles = new MapTabTilesViewModel();
             Items = new MapTabItemsViewModel();
             Entities = new MapTabEntitiesViewModel();
+            Entrances = new MapTabEntrancesViewModel();
             Properties = new MapTabPropertiesViewModel();
             CurrentFile = "";
         }
@@ -37,6 +38,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabTilesViewModel Tiles { get; set; }
         public MapTabItemsViewModel Items { get; set; }
         public MapTabEntitiesViewModel Entities { get; set; }
+        public MapTabEntrancesViewModel Entrances { get; set; }
         public MapTabPropertiesViewModel Properties { get; set; }
 
         private string currentFile;
@@ -256,6 +258,7 @@ namespace RogueEssence.Dev.ViewModels
             Terrain.AutotileBrowser.TileSize = GraphicsManager.TileSize;
 
             Terrain.SetupLayerVisibility();
+            Entrances.SetupLayerVisibility();
             Properties.LoadMapProperties();
         }
 
@@ -338,6 +341,9 @@ namespace RogueEssence.Dev.ViewModels
                         break;
                     case 4://Entities
                         Entities.ProcessInput(input);
+                        break;
+                    case 5://Entrances
+                        Entrances.ProcessInput(input);
                         break;
                 }
             }

@@ -55,6 +55,9 @@
         <TabItem Name="tabEntities" Header="Entities" >
           <views:MapTabEntities DataContext="{Binding Entities}"/>
         </TabItem>
+        <TabItem Name="tabEntrances" Header="Entrances" >
+          <views:MapTabEntrances DataContext="{Binding Entrances}"/>
+        </TabItem>
         <TabItem Name="tabProperties" Header="Properties" >
           <views:MapTabProperties DataContext="{Binding Properties}"/>
         </TabItem>

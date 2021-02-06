@@ -35,6 +35,7 @@ namespace RogueEssence.Dev
         public ObjAnimData TileInProgress;
         public Rect RectInProgress;
         public bool ShowTerrain;
+        public bool ShowEntrances;
 
         public Rect RectPreview()
         {
@@ -198,6 +199,14 @@ namespace RogueEssence.Dev
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, color * 0.5f);
                         }
                     }
+                }
+            }
+
+            if (ShowEntrances)
+            {
+                foreach (LocRay8 entrance in ZoneManager.Instance.CurrentMap.EntryPoints)
+                {
+                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(entrance.Loc.X * GraphicsManager.TileSize - ViewRect.X, entrance.Loc.Y * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.White * 0.75f);
                 }
             }
 

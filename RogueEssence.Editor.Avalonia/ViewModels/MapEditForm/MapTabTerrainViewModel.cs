@@ -24,10 +24,7 @@ namespace RogueEssence.Dev.ViewModels
         public TileEditMode TerrainMode
         {
             get { return terrainMode; }
-            set
-            {
-                this.SetIfChanged(ref terrainMode, value);
-            }
+            set { this.SetIfChanged(ref terrainMode, value); }
         }
 
         public bool ShowTerrain

@@ -65,6 +65,9 @@
     <Compile Update="Views\GroundEditForm\GroundTabDecorations.axaml.cs">
       <DependentUpon>GroundTabDecorations.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\MapEditForm\MapTabEntrances.axaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
     <Compile Update="Views\MapEditForm\MapTabItems.axaml.cs">
       <DependentUpon>MapTabItems.axaml</DependentUpon>
     </Compile>
