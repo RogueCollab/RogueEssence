@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using RogueEssence.Dev.ViewModels;
 using RogueEssence.Dev.Views;
 using System;
 using System.Collections.Generic;
@@ -208,15 +209,20 @@ namespace RogueEssence.Dev
 
                 ClassBox cbxValue = new ClassBox();
                 MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
-                //if (attribute != null)
-                //    cbxValue.Size = new Size(0, 80);
+                if (attribute != null)
+                {
+                    //txtValue.Multiline = true;
+                    cbxValue.Height = 80;
+                    //txtValue.Size = new Size(0, 80);
+                }
                 //else
-                //    cbxValue.Size = new Size(0, 29);
-                cbxValue.LoadFromSource(member);
+                //    txtValue.Size = new Size(0, 20);
+                ClassBoxViewModel mv = new ClassBoxViewModel();
+                cbxValue.DataContext = mv;
                 control.Children.Add(cbxValue);
 
                 //add lambda expression for editing a single element
-                cbxValue.OnEditItem = (object element, ClassBox.EditElementOp op) =>
+                mv.OnEditItem += (object element, ClassBoxViewModel.EditElementOp op) =>
                 {
                     DataEditForm frmData = new DataEditForm();
                     frmData.Title = name + "/" + type.Name;
@@ -237,6 +243,7 @@ namespace RogueEssence.Dev
                     control.GetOwningForm().RegisterChild(frmData);
                     frmData.Show();
                 };
+                mv.LoadFromSource(member);
             }
             else
             {
@@ -500,7 +507,8 @@ namespace RogueEssence.Dev
             {
                 controlIndex++;
                 ClassBox cbxValue = (ClassBox)control.Children[controlIndex];
-                return cbxValue.Object;
+                ClassBoxViewModel mv = (ClassBoxViewModel)cbxValue.DataContext;
+                return mv.Object;
             }
             else
             {

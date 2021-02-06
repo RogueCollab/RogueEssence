@@ -29,6 +29,12 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
+            BlankBG = new ClassBoxViewModel();
+            BlankBG.OnMemberChanged += BlankBG_Changed;
+            BlankBG.OnEditItem += AutoTile_Edit;
+            FloorBG = new ClassBoxViewModel();
+            FloorBG.OnMemberChanged += FloorBG_Changed;
+            FloorBG.OnEditItem += AutoTile_Edit;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             TextureMap = new DictionaryBoxViewModel(form.MapEditForm);
@@ -123,6 +129,9 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ClassBoxViewModel BlankBG { get; set; }
+        public ClassBoxViewModel FloorBG { get; set; }
+
         public DictionaryBoxViewModel TextureMap { get; set; }
 
         public ObservableCollection<string> Music { get; }
@@ -138,12 +147,43 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void BlankBG_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.GetObject<AutoTile>();
+        }
+
+        public void FloorBG_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.FloorBG = FloorBG.GetObject<AutoTile>();
+        }
 
 
         public void TextureMap_Changed()
         {
             ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
         }
+        public void AutoTile_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Autotile", typeof(AutoTile), new object[0] { }, element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Autotile", typeof(AutoTile), new object[0] { }, true);
+                op(element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            //form.MapEditor.RegisterChild(frmData);
+            frmData.Show();
+        }
+
 
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
@@ -248,6 +288,8 @@ namespace RogueEssence.Dev.ViewModels
             ChosenElement = ChosenElement;
             ChosenScroll = ChosenScroll;
 
+            BlankBG.LoadFromSource(ZoneManager.Instance.CurrentMap.BlankBG);
+            FloorBG.LoadFromSource(ZoneManager.Instance.CurrentMap.FloorBG);
             TextureMap.LoadFromDict(ZoneManager.Instance.CurrentMap.TextureMap);
 
             bool foundSong = false;
