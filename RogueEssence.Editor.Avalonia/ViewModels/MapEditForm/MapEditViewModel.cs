@@ -29,6 +29,8 @@ namespace RogueEssence.Dev.ViewModels
             Items = new MapTabItemsViewModel();
             Entities = new MapTabEntitiesViewModel();
             Entrances = new MapTabEntrancesViewModel();
+            Spawns = new MapTabSpawnsViewModel();
+            Effects = new MapTabEffectsViewModel();
             Properties = new MapTabPropertiesViewModel();
             CurrentFile = "";
         }
@@ -39,6 +41,8 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabItemsViewModel Items { get; set; }
         public MapTabEntitiesViewModel Entities { get; set; }
         public MapTabEntrancesViewModel Entrances { get; set; }
+        public MapTabSpawnsViewModel Spawns { get; set; }
+        public MapTabEffectsViewModel Effects { get; set; }
         public MapTabPropertiesViewModel Properties { get; set; }
 
         private string currentFile;
@@ -259,6 +263,8 @@ namespace RogueEssence.Dev.ViewModels
 
             Terrain.SetupLayerVisibility();
             Entrances.SetupLayerVisibility();
+            Spawns.LoadMapSpawns();
+            Effects.LoadMapEffects();
             Properties.LoadMapProperties();
         }
 

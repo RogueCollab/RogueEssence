@@ -58,6 +58,12 @@
         <TabItem Name="tabEntrances" Header="Entrances" >
           <views:MapTabEntrances DataContext="{Binding Entrances}"/>
         </TabItem>
+        <TabItem Name="tabSpawns" Header="Spawns" >
+          <views:MapTabSpawns DataContext="{Binding Spawns}"/>
+        </TabItem>
+        <TabItem Name="tabEffects" Header="Effects" >
+          <views:MapTabEffects DataContext="{Binding Effects}"/>
+        </TabItem>
         <TabItem Name="tabProperties" Header="Properties" >
           <views:MapTabProperties DataContext="{Binding Properties}"/>
         </TabItem>
