@@ -566,7 +566,6 @@ namespace RogueEssence.Dungeon
         {
             BlankBG.Draw(spriteBatch, drawPos);
         }
-        }
 
         /// <summary>
         /// Call this so the map unregisters its events and delegates.
@@ -578,11 +577,6 @@ namespace RogueEssence.Dungeon
             foreach (Character c in IterateCharacters())
                 c.DoCleanup();
         }
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-
     }
 
     [Serializable]
