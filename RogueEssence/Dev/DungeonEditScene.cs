@@ -29,7 +29,6 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public Loc MouseLoc;
         public AutoTile AutoTileInProgress;
         public TerrainTile TerrainInProgress;
         public ObjAnimData TileInProgress;
@@ -61,10 +60,10 @@ namespace RogueEssence.Dev
 
         public override void UpdateMeta()
         {
-            InputManager input = GameManager.Instance.MetaInputManager;
+            base.UpdateMeta();
 
+            InputManager input = GameManager.Instance.MetaInputManager;
             var mapEditor = DiagManager.Instance.DevEditor.MapEditor;
-            MouseLoc = input.MouseLoc;
 
             if (mapEditor.Active)
                 mapEditor.ProcessInput(input);
@@ -261,18 +260,6 @@ namespace RogueEssence.Dev
 
             base.DrawDev(spriteBatch);
         }
-
-        public override void DrawDebug(SpriteBatch spriteBatch)
-        {
-            if (ZoneManager.Instance.CurrentMap != null)
-            {
-                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
-                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-            }
-        }
-
 
         public void EnterMapEdit(int entryPoint)
         {

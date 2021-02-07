@@ -29,7 +29,6 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public Loc MouseLoc;
         public AutoTile AutoTileInProgress;
         public bool? BlockInProgress;
         public Rect RectInProgress;
@@ -67,10 +66,10 @@ namespace RogueEssence.Dev
 
         public override void UpdateMeta()
         {
-            InputManager input = GameManager.Instance.MetaInputManager;
+            base.UpdateMeta();
 
+            InputManager input = GameManager.Instance.MetaInputManager;
             var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
-            MouseLoc = input.MouseLoc;
 
             if (groundEditor.Active)
                 groundEditor.ProcessInput(input);
@@ -246,19 +245,6 @@ namespace RogueEssence.Dev
             }
 
             base.DrawDev(spriteBatch);
-        }
-
-        public override void DrawDebug(SpriteBatch spriteBatch)
-        {
-            if (ZoneManager.Instance.CurrentGround != null)
-            {
-                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
-                Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
-                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Block X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-            }
         }
 
 
