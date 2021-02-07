@@ -148,7 +148,7 @@ namespace RogueEssence.Dev
                     }
                     else
                     {
-                        StackPanel sharedRowControl = (StackPanel)control.Children[controlIndex];
+                        Grid sharedRowControl = (Grid)control.Children[controlIndex];
                         int sharedRowControlIndex = 0;
                         for (int jj = 0; jj < tieredFields[ii].Count; jj++)
                         {
