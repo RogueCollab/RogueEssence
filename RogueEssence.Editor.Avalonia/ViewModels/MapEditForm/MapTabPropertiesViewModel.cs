@@ -16,30 +16,35 @@ namespace RogueEssence.Dev.ViewModels
     {
         public MapTabPropertiesViewModel()
         {
+            Sights = new ObservableCollection<string>();
+            for (int ii = 0; ii <= (int)Map.SightRange.Blind; ii++)
+                Sights.Add(((Map.SightRange)ii).ToLocal());
+
+            Elements = new ObservableCollection<string>();
+            string[] element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray();
+            for (int ii = 0; ii < element_names.Length; ii++)
+                Elements.Add(ii.ToString("D2") + ": " + element_names[ii]);
+
             ScrollEdges = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
-            BGs = new ObservableCollection<string>();
-            BGs.Add("---");
-            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "BG/");
-            for (int ii = 0; ii < dirs.Length; ii++)
-            {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                BGs.Add(filename);
-            }
 
-            Statuses = new CollectionBoxViewModel();
-            Statuses.OnMemberChanged += Statuses_Changed;
-            Statuses.OnEditItem += Statuses_EditItem;
-            PrepareEvents = new CollectionBoxViewModel();
-            PrepareEvents.OnMemberChanged += PrepareEvents_Changed;
-            PrepareEvents.OnEditItem += Events_EditItem;
-            StartEvents = new CollectionBoxViewModel();
-            StartEvents.OnMemberChanged += StartEvents_Changed;
-            StartEvents.OnEditItem += Events_EditItem;
-            CheckEvents = new CollectionBoxViewModel();
-            CheckEvents.OnMemberChanged += CheckEvents_Changed;
-            CheckEvents.OnEditItem += Events_EditItem;
+            BG = new ClassBoxViewModel();
+            BG.OnMemberChanged += BG_Changed;
+            BG.OnEditItem += MapBG_Edit;
+            BlankBG = new ClassBoxViewModel();
+            BlankBG.OnMemberChanged += BlankBG_Changed;
+            BlankBG.OnEditItem += AutoTile_Edit;
+            FloorBG = new ClassBoxViewModel();
+            FloorBG.OnMemberChanged += FloorBG_Changed;
+            FloorBG.OnEditItem += AutoTile_Edit;
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            TextureMap = new DictionaryBoxViewModel(form.MapEditForm);
+            TextureMap.OnMemberChanged += TextureMap_Changed;
+            TextureMap.OnEditKey += TextureMap_EditKey;
+            TextureMap.OnEditItem += TextureMap_EditItem;
+
             Music = new ObservableCollection<string>();
             reloadMusic();
 
@@ -57,6 +62,61 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ObservableCollection<string> Sights { get; }
+
+        public int ChosenTileSight
+        {
+            get { return (int)ZoneManager.Instance.CurrentMap.TileSight; }
+            set
+            {
+                ZoneManager.Instance.CurrentMap.TileSight = (Map.SightRange)value;
+                this.RaisePropertyChanged();
+            }
+        }
+        public int ChosenCharSight
+        {
+            get { return (int)ZoneManager.Instance.CurrentMap.CharSight; }
+            set
+            {
+                ZoneManager.Instance.CurrentMap.CharSight = (Map.SightRange)value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public bool NoRescue
+        {
+            get { return ZoneManager.Instance.CurrentMap.NoRescue; }
+            set
+            {
+                ZoneManager.Instance.CurrentMap.NoRescue = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public bool NoSwitch
+        {
+            get { return ZoneManager.Instance.CurrentMap.NoSwitching; }
+            set
+            {
+                ZoneManager.Instance.CurrentMap.NoSwitching = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
+        public ObservableCollection<string> Elements { get; }
+
+        public int ChosenElement
+        {
+            get { return ZoneManager.Instance.CurrentMap.Element; }
+            set
+            {
+                ZoneManager.Instance.CurrentMap.Element = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
         public ObservableCollection<string> ScrollEdges { get; }
 
         public int ChosenScroll
@@ -72,60 +132,11 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ClassBoxViewModel BG { get; set; }
+        public ClassBoxViewModel BlankBG { get; set; }
+        public ClassBoxViewModel FloorBG { get; set; }
 
-        public ObservableCollection<string> BGs { get; }
-
-        public int ChosenBG
-        {
-            get
-            {
-                int chosenAnim = BGs.IndexOf(ZoneManager.Instance.CurrentMap.BGAnim.AnimIndex);
-                if (chosenAnim == -1)
-                    chosenAnim = 0;
-                return chosenAnim;
-            }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.BGAnim.AnimIndex = value > 0 ? BGs[value] : "";
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public int BGFrameTime
-        {
-            get { return ZoneManager.Instance.CurrentMap.BGAnim.FrameTime; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.BGAnim.FrameTime = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public int BGMoveX
-        {
-            get { return ZoneManager.Instance.CurrentMap.BGMovement.X; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.BGMovement.X = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public int BGMoveY
-        {
-            get { return ZoneManager.Instance.CurrentMap.BGMovement.Y; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.BGMovement.Y = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public CollectionBoxViewModel Statuses { get; set; }
-        public CollectionBoxViewModel PrepareEvents { get; set; }
-        public CollectionBoxViewModel StartEvents { get; set; }
-        public CollectionBoxViewModel CheckEvents { get; set; }
-
+        public DictionaryBoxViewModel TextureMap { get; set; }
 
         public ObservableCollection<string> Music { get; }
 
@@ -140,79 +151,22 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void Statuses_Changed()
+        public void BG_Changed()
         {
-            Dictionary<int, MapStatus> statuses = new Dictionary<int, MapStatus>();
-            List<MapStatus> states = Statuses.GetList<List<MapStatus>>();
-            for (int ii = 0; ii < states.Count; ii++)
-                statuses[states[ii].ID] = states[ii];
-            ZoneManager.Instance.CurrentMap.Status = statuses;
+            ZoneManager.Instance.CurrentMap.Background = BG.GetObject<MapBG>();
         }
 
-        public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New Status";
-            else
-                frmData.Title = element.ToString();
+            frmData.Title = element.ToString();
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(Statuses) [" + index + "]", typeof(MapStatus), new object[0] { }, element, true);
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            frmData.SelectedOKEvent += async () =>
-            {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Statuses", typeof(MapStatus), new object[0] { }, true);
-
-                bool itemExists = false;
-
-                List<MapStatus> states = (List<MapStatus>)Statuses.GetList(typeof(List<MapStatus>));
-                for (int ii = 0; ii < states.Count; ii++)
-                {
-                    if (ii != index)
-                    {
-                        if (states[ii].ID == ((MapStatus)element).ID)
-                            itemExists = true;
-                    }
-                }
-
-                if (itemExists)
-                    await MessageBox.Show((Window)form.MapEditor, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
-                else
-                {
-                    op(index, element);
-                    frmData.Close();
-                }
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
-            };
-
-            //form.MapEditor.RegisterChild(frmData);
-            frmData.Show();
-        }
-
-        public void PrepareEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.PrepareEvents = PrepareEvents.GetList<List<SingleCharEvent>>();
-        }
-
-        public void Events_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
-        {
-            string name = "Events";
-            DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = name + "/" + "New Status";
-            else
-                frmData.Title = name + "/" + element.ToString();
-
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(List) " + name + "[" + index + "]", typeof(SingleCharEvent), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(SingleCharEvent), new object[0], true);
-                op(index, element);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                op(element);
                 frmData.Close();
             };
             frmData.SelectedCancelEvent += () =>
@@ -220,20 +174,102 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 
-        public void StartEvents_Changed()
+        public void BlankBG_Changed()
         {
-            ZoneManager.Instance.CurrentMap.StartEvents = StartEvents.GetList<List<SingleCharEvent>>();
+            ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.GetObject<AutoTile>();
         }
 
-        public void CheckEvents_Changed()
+        public void FloorBG_Changed()
         {
-            ZoneManager.Instance.CurrentMap.CheckEvents = CheckEvents.GetList<List<SingleCharEvent>>();
+            ZoneManager.Instance.CurrentMap.FloorBG = FloorBG.GetObject<AutoTile>();
         }
+
+        public void AutoTile_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Autotile", typeof(AutoTile), new object[0] { }, element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Autotile", typeof(AutoTile), new object[0] { }, true);
+                op(element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
+        }
+
+
+        public void TextureMap_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
+        }
+
+        public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmKey = new DataEditForm();
+            if (element == null)
+                frmKey.Title = "New Key";
+            else
+                frmKey.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmKey.ControlPanel, "(TextureMap) <New Key>", typeof(int), new object[0] { }, null, true);
+
+            frmKey.SelectedOKEvent += () =>
+            {
+                key = DataEditor.SaveClassControls(frmKey.ControlPanel, "TextureMap", typeof(int), new object[0] { }, true);
+                op(key, element);
+                frmKey.Close();
+            };
+            frmKey.SelectedCancelEvent += () =>
+            {
+                frmKey.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmKey);
+            frmKey.Show();
+        }
+
+        public void TextureMap_EditItem(object key, object element, DictionaryBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            if (element == null)
+                frmData.Title = "New Autotile";
+            else
+                frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "(TextureMap) [" + key.ToString() + "]", typeof(AutoTile), new object[0] { }, element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "TextureMap", typeof(AutoTile), new object[0] { }, true);
+                op(key, element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
+        }
+
 
         public void btnReloadMusic_Click()
         {
@@ -280,19 +316,17 @@ namespace RogueEssence.Dev.ViewModels
         public void LoadMapProperties()
         {
             MapName = MapName;
+            ChosenTileSight = ChosenTileSight;
+            ChosenCharSight = ChosenCharSight;
+            NoRescue = NoRescue;
+            NoSwitch = NoSwitch;
+            ChosenElement = ChosenElement;
             ChosenScroll = ChosenScroll;
-            ChosenBG = ChosenBG;
-            BGFrameTime = BGFrameTime;
-            BGMoveX = BGMoveX;
-            BGMoveY = BGMoveY;
 
-            List<MapStatus> states = new List<MapStatus>();
-            foreach (MapStatus state in ZoneManager.Instance.CurrentMap.Status.Values)
-                states.Add(state);
-            Statuses.LoadFromList(states);
-            PrepareEvents.LoadFromList(ZoneManager.Instance.CurrentMap.PrepareEvents);
-            StartEvents.LoadFromList(ZoneManager.Instance.CurrentMap.StartEvents);
-            CheckEvents.LoadFromList(ZoneManager.Instance.CurrentMap.CheckEvents);
+            BG.LoadFromSource(ZoneManager.Instance.CurrentMap.Background);
+            BlankBG.LoadFromSource(ZoneManager.Instance.CurrentMap.BlankBG);
+            FloorBG.LoadFromSource(ZoneManager.Instance.CurrentMap.FloorBG);
+            TextureMap.LoadFromDict(ZoneManager.Instance.CurrentMap.TextureMap);
 
             bool foundSong = false;
             for (int ii = 0; ii < Music.Count; ii++)

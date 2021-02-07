@@ -13,6 +13,8 @@ namespace RogueEssence.Ground
     //The game engine for Ground Mode, in which the player has free movement
     public abstract class BaseGroundScene : BaseScene
     {
+        public Loc MouseLoc;
+
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 
@@ -57,6 +59,12 @@ namespace RogueEssence.Ground
         }
 
 
+        public override void UpdateMeta()
+        {
+            base.UpdateMeta();
+            InputManager input = GameManager.Instance.MetaInputManager;
+            MouseLoc = input.MouseLoc;
+        }
 
 
         protected void UpdateCam(Loc focusedLoc)
@@ -131,7 +139,7 @@ namespace RogueEssence.Ground
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
             //draw the background
-            ZoneManager.Instance.CurrentGround.DrawBG(spriteBatch);
+            ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, Loc.Zero);
 
             for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
@@ -309,6 +317,22 @@ namespace RogueEssence.Ground
 
         public virtual void DrawDev(SpriteBatch spriteBatch)
         { }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
+                Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
+                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Block X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+            }
+        }
+
 
         public Loc ScreenCoordsToGroundCoords(Loc loc)
         {

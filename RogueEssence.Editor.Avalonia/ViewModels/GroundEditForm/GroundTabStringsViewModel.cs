@@ -15,7 +15,6 @@ using RogueEssence.Script;
 using System.Linq;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using RogueEssence.Dev.Models;
 using System.Diagnostics;
 using System.Resources.NetStandard;
 using System.Xml;

@@ -50,20 +50,28 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        //public void btnEditEmotes_Click()
-        //{
-
-        //}
+        public void btnEditEmotes_Click()
+        {
+            AnimEditViewModel mv = new AnimEditViewModel();
+            Views.AnimEditForm editForm = new Views.AnimEditForm();
+            mv.LoadDataEntries(GraphicsManager.AssetType.Icon, GraphicsManager.ICON_PATTERN, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
 
         //public void btnEditTiles_Click()
         //{
 
         //}
 
-        //public void btnEditItems_Click()
-        //{
-
-        //}
+        public void btnEditItems_Click()
+        {
+            AnimEditViewModel mv = new AnimEditViewModel();
+            Views.AnimEditForm editForm = new Views.AnimEditForm();
+            mv.LoadDataEntries(GraphicsManager.AssetType.Item, GraphicsManager.ITEM_PATTERN, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
 
         public void btnEditObjects_Click()
         {

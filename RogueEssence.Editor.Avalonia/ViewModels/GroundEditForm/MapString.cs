@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RogueEssence.Dev.Models
+namespace RogueEssence.Dev.ViewModels
 {
-    public class MapString
+    public class MapString : ViewModelBase
     {
         public MapString() { }
         public MapString(string key, string comment, string str)

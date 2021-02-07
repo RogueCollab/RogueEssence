@@ -28,8 +28,7 @@ namespace RogueEssence.Ground
         public Dictionary<int, MapStatus> Status;
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> ScriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
 
-        public BGAnimData BGAnim;
-        public Loc BGMovement;
+        public MapBG Background;
 
         public List<MapLayer> Layers;
 
@@ -84,7 +83,7 @@ namespace RogueEssence.Ground
 
             Status = new Dictionary<int, MapStatus>();
 
-            BGAnim = new BGAnimData();
+            Background = new MapBG();
 
             Name = new LocalText();
             Comment = "";
@@ -676,26 +675,6 @@ namespace RogueEssence.Ground
             }
         }
 
-        public void DrawBG(SpriteBatch spriteBatch)
-        {
-            if (BGAnim.AnimIndex != "")
-            {
-                DirSheet sheet = GraphicsManager.GetBackground(BGAnim.AnimIndex);
-
-                Loc diff = BGMovement * (int)FrameTick.TickToFrames(GraphicsManager.TotalFrameTick) / 60;
-                if (sheet.Width == 1 && sheet.Height == 1)
-                    sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color.White);
-                else
-                {
-                    for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
-                    {
-                        for (int y = diff.Y % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
-                            sheet.DrawDir(spriteBatch, new Vector2(x, y), BGAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), BGAnim.AnimDir, Color.White);
-                    }
-                }
-            }
-        }
-
         public void DrawDebug(int x, int y, int w, int h,
                             Action<int, int, int, int, float> drawCell,
                             Action<IObstacle> drawBox,
@@ -916,8 +895,7 @@ namespace RogueEssence.Ground
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
 
-            //Because we clear those on save, we'll need to assign a new array here
-            rand = new ReRandom(0);
+            //Background = new MapBG();
 
             if (ActiveChar != null)
             {

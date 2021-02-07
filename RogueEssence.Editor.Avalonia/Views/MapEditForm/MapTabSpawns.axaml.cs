@@ -1,14 +1,12 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public class ClassBox : UserControl
+    public class MapTabSpawns : UserControl
     {
-        public ClassBox()
+        public MapTabSpawns()
         {
             this.InitializeComponent();
         }
@@ -17,6 +15,5 @@ namespace RogueEssence.Dev.Views
         {
             AvaloniaXamlLoader.Load(this);
         }
-
     }
 }

@@ -35,7 +35,6 @@
       <MenuItem Header="_Tiles">
         <MenuItem Header="_Load from .png into Tileset" Command="{Binding ImportFromPng_Click}"/>
         <MenuItem Header="_Load Tileset into Map" Command="{Binding ImportFromTileset_Click}"/>
-        <MenuItem Header="_Load Standardize Frame Length" Command="{Binding StandardizeFrameLength_Click}"/>
       </MenuItem>
     </Menu>
     <Grid>
@@ -54,6 +53,15 @@
         </TabItem>
         <TabItem Name="tabEntities" Header="Entities" >
           <views:MapTabEntities DataContext="{Binding Entities}"/>
+        </TabItem>
+        <TabItem Name="tabEntrances" Header="Entrances" >
+          <views:MapTabEntrances DataContext="{Binding Entrances}"/>
+        </TabItem>
+        <TabItem Name="tabSpawns" Header="Spawns" >
+          <views:MapTabSpawns DataContext="{Binding Spawns}"/>
+        </TabItem>
+        <TabItem Name="tabEffects" Header="Effects" >
+          <views:MapTabEffects DataContext="{Binding Effects}"/>
         </TabItem>
         <TabItem Name="tabProperties" Header="Properties" >
           <views:MapTabProperties DataContext="{Binding Properties}"/>

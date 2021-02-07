@@ -2,6 +2,7 @@
 using ReactiveUI;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using System;
 using System.Collections.Generic;
@@ -18,14 +19,10 @@ namespace RogueEssence.Dev.ViewModels
             ScrollEdges = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
-            BGs = new ObservableCollection<string>();
-            BGs.Add("---");
-            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "BG/");
-            for (int ii = 0; ii < dirs.Length; ii++)
-            {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                BGs.Add(filename);
-            }
+
+            BG = new ClassBoxViewModel();
+            BG.OnMemberChanged += BG_Changed;
+            BG.OnEditItem += MapBG_Edit;
 
             Music = new ObservableCollection<string>();
             reloadMusic();
@@ -66,63 +63,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public ObservableCollection<string> BGs { get; }
-
-        public int ChosenBG
-        {
-            get
-            {
-                int chosenAnim = BGs.IndexOf(ZoneManager.Instance.CurrentGround.BGAnim.AnimIndex);
-                if (chosenAnim == -1)
-                    chosenAnim = 0;
-                return chosenAnim;
-            }
-            set
-            {
-                ZoneManager.Instance.CurrentGround.BGAnim.AnimIndex = value > 0 ? BGs[value] : "";
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public int BGFrameTime
-        {
-            get
-            {
-                return ZoneManager.Instance.CurrentGround.BGAnim.FrameTime;
-            }
-            set
-            {
-                ZoneManager.Instance.CurrentGround.BGAnim.FrameTime = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public int BGMoveX
-        {
-            get
-            {
-                return ZoneManager.Instance.CurrentGround.BGMovement.X;
-            }
-            set
-            {
-                ZoneManager.Instance.CurrentGround.BGMovement.X = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public int BGMoveY
-        {
-            get
-            {
-                return ZoneManager.Instance.CurrentGround.BGMovement.Y;
-            }
-            set
-            {
-                ZoneManager.Instance.CurrentGround.BGMovement.Y = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
+        public ClassBoxViewModel BG { get; set; }
 
         public ObservableCollection<string> Music { get; }
 
@@ -135,6 +76,35 @@ namespace RogueEssence.Dev.ViewModels
                 this.SetIfChanged(ref chosenMusic, value);
                 musicChanged();
             }
+        }
+
+
+        public void BG_Changed()
+        {
+            ZoneManager.Instance.CurrentGround.Background = BG.GetObject<MapBG>();
+        }
+
+        public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                op(element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
         }
 
         public void btnReloadMusic_Click()
@@ -183,11 +153,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             MapName = MapName;
             ChosenScroll = ChosenScroll;
-            ChosenBG = ChosenBG;
-            BGFrameTime = BGFrameTime;
-            BGMoveX = BGMoveX;
-            BGMoveY = BGMoveY;
-
+            
+            BG.LoadFromSource(ZoneManager.Instance.CurrentGround.Background);
 
             bool foundSong = false;
             for (int ii = 0; ii < Music.Count; ii++)

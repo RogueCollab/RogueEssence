@@ -8,7 +8,6 @@ using ReactiveUI;
 using RogueEssence.Content;
 using Avalonia.Controls;
 using System.Collections.ObjectModel;
-using RogueEssence.Dev.Models;
 using RogueEssence.Ground;
 using RogueEssence.Data;
 using System.IO;

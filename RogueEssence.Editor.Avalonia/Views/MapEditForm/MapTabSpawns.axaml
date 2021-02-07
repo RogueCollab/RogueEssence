@@ -1,19 +1,21 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="RogueEssence.Dev.Views.ClassBox">
+             x:Class="RogueEssence.Dev.Views.MapTabSpawns">
   <Design.DataContext>
-    <vm:ClassBoxViewModel/>
+    <vm:MapTabSpawnsViewModel/>
   </Design.DataContext>
-  <Grid>
+  <Grid Margin="4" >
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="80"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <Button Command="{Binding btnEdit_Click}">Edit</Button>
-    <TextBlock Text="{Binding Name}" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="Wrap" Width="180" Grid.Column="1"/>
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <TextBlock Margin="4">TODO</TextBlock>
   </Grid>
 </UserControl>

@@ -17,7 +17,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapEditForm : Window, IMapEditor
+    public class MapEditForm : ParentForm, IMapEditor
     {
 
         public bool Active { get; private set; }
@@ -55,6 +55,7 @@ namespace RogueEssence.Dev.Views
         public void Window_Closed(object sender, EventArgs e)
         {
             Active = false;
+            CloseChildren();
             GameManager.Instance.SceneOutcome = exitMapEdit();
         }
 

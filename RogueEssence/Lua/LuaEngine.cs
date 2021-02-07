@@ -56,9 +56,9 @@ namespace RogueEssence.Script
         /// <returns>One of the enum value.</returns>
         public static IEnumerable<EMapCallbacks> EnumerateCallbackTypes()
         {
+            yield return EMapCallbacks.Init;
             yield return EMapCallbacks.Enter;
             yield return EMapCallbacks.Update;
-            yield return EMapCallbacks.Init;
             yield break;
         }
 

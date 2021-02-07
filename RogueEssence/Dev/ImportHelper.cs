@@ -431,33 +431,6 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void ImportAllItems(string sourceDir, string destPattern)
-        {
-            try
-            {
-                DiagManager.Instance.LoadMsg = "Importing Items.";
-
-                string[] dirs = Directory.GetDirectories(sourceDir);
-                foreach (string dir in dirs)
-                {
-                    string fileName = Path.GetFileNameWithoutExtension(dir);
-                    int index = Int32.Parse(fileName);
-                    using (DirSheet sheet = DirSheet.Import(dir + "/None.png"))
-                    {
-                        using (FileStream stream = File.OpenWrite(String.Format(destPattern, index)))
-                        {
-                            using (BinaryWriter writer = new BinaryWriter(stream))
-                                sheet.Save(writer);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(new Exception("Error importing Items\n", ex));
-            }
-        }
-
         public static void ImportAllVFX(string sourceDir, string particlePattern, string beamPattern)
         {
             string[] dirs = Directory.GetDirectories(sourceDir + "Beam");
@@ -484,31 +457,6 @@ namespace RogueEssence.Dev
                 using (DirSheet sheet = DirSheet.Import(dir))
                 {
                     using (FileStream stream = File.OpenWrite(String.Format(particlePattern, asset_name)))
-                    {
-                        using (BinaryWriter writer = new BinaryWriter(stream))
-                            sheet.Save(writer);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Bakes all multi-directional spritesheets specified in the directory.
-        /// </summary>
-        /// <param name="sourceDir">Parent directory of the input files.</param>
-        /// <param name="cachePattern">Pattern expression to save the output files as.</param>
-        public static void ImportAllDirs(string sourceDir, string cachePattern)
-        {
-            string[] dirs = Directory.GetFiles(sourceDir, "*.png");
-            foreach (string dir in dirs)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(dir);
-                string[] components = fileName.Split('.');
-                int index = Int32.Parse(components[0]);
-
-                using (DirSheet sheet = DirSheet.Import(dir))
-                {
-                    using (FileStream stream = File.OpenWrite(String.Format(cachePattern, index)))
                     {
                         using (BinaryWriter writer = new BinaryWriter(stream))
                             sheet.Save(writer);

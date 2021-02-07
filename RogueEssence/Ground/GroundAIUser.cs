@@ -83,10 +83,9 @@ namespace RogueEssence.Ground
         /// </summary>
         public override void Think()
         {
-            if (!hasAI() || !ShouldAIRun())
-                base.Think();
-            else
-                UpdateAI(); //AI will handle tasks
+            if (hasAI() && ShouldAIRun())
+                UpdateAI();
+            base.Think();
         }
     }
 }

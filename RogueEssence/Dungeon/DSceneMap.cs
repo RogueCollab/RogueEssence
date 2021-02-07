@@ -220,7 +220,7 @@ namespace RogueEssence.Dungeon
                         }
 
                         if (!wantItem)
-                            LogPickup(new PickupItem(Text.FormatKey("MSG_PASS_ITEM", character.Name, itemName), -1, "", character.CharLoc, character, true));
+                            LogPickup(new PickupItem(Text.FormatKey("MSG_PASS_ITEM", character.Name, itemName), "", "", character.CharLoc, character, true));
                     }
                 }
 

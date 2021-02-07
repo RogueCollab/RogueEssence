@@ -547,11 +547,11 @@ namespace RogueEssence.Dungeon
 
 
         public AnimData Anim;
-        public int ItemAnim;
+        public string ItemAnim;
         public AttachPointEmitter Emitter;
 
         public CircleSweepHitbox(Character user, Alignment targetAlignments, bool hitTiles, bool burstOnWall, Loc startPoint, AnimData anim, FiniteEmitter tileEmitter,
-            AttachPointEmitter emitter, int speed, int delay, Dir8 dir, int maxDistance, bool boomerang, int item)
+            AttachPointEmitter emitter, int speed, int delay, Dir8 dir, int maxDistance, bool boomerang, string item)
             : base(user, startPoint * GraphicsManager.TileSize + dir.GetLoc() * GraphicsManager.TileSize / 2, tileEmitter, delay)
         {
             TargetAlignments = targetAlignments;
@@ -669,7 +669,7 @@ namespace RogueEssence.Dungeon
             DirSheet sheet = null;
             if (Anim.AnimIndex == "")
             {
-                if (ItemAnim < 0)
+                if (ItemAnim == "")
                     return null;
                 sheet = GraphicsManager.GetItem(ItemAnim);
             }
@@ -861,10 +861,10 @@ namespace RogueEssence.Dungeon
         public int MaxDistance;
 
         public AnimData Anim;
-        public int ItemAnim;
+        public string ItemAnim;
         public AttachPointEmitter Emitter;
 
-        public ArcingHitbox(Character user, Loc startPoint, AnimData anim, FiniteEmitter tileEmitter, AttachPointEmitter emitter, Loc endPoint, int speed, int item, int delay)
+        public ArcingHitbox(Character user, Loc startPoint, AnimData anim, FiniteEmitter tileEmitter, AttachPointEmitter emitter, Loc endPoint, int speed, string item, int delay)
             : base(user, startPoint * GraphicsManager.TileSize, tileEmitter, delay)
         {
             StartPoint = startPoint;
@@ -918,7 +918,7 @@ namespace RogueEssence.Dungeon
             DirSheet sheet = null;
             if (Anim.AnimIndex == "")
             {
-                if (ItemAnim < 0)
+                if (ItemAnim == "")
                     return null;
                 sheet = GraphicsManager.GetItem(ItemAnim);
             }

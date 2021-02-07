@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
 
             DictionaryBox lbxValue = new DictionaryBox();
             lbxValue.MaxHeight = 180;
-            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(lbxValue.GetOwningForm());
+            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm());
             lbxValue.DataContext = mv;
 
             Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);

@@ -15,6 +15,7 @@ namespace RogueEssence.Dungeon
     //The game engine for Dungeon Mode, in which everyone takes an ordered turn in lock-step
     public abstract class BaseDungeonScene : BaseScene
     {
+        public Loc MouseLoc;
 
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
@@ -75,6 +76,13 @@ namespace RogueEssence.Dungeon
             PendingDevEvent = null;
         }
 
+        public override void UpdateMeta()
+        {
+            base.UpdateMeta();
+
+            InputManager input = GameManager.Instance.MetaInputManager;
+            MouseLoc = input.MouseLoc;
+        }
 
         protected void UpdateCam(Loc focusedLoc)
         {
@@ -216,9 +224,6 @@ namespace RogueEssence.Dungeon
             foregroundDraw.Clear();
             shownChars.Clear();
 
-            //draw the background
-            ZoneManager.Instance.CurrentMap.DrawBG(spriteBatch);
-
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
@@ -344,6 +349,9 @@ namespace RogueEssence.Dungeon
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
+            //draw the background
+            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, Loc.Zero);
+
             spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 
             spriteBatch.End();
@@ -363,6 +371,19 @@ namespace RogueEssence.Dungeon
 
         public virtual void DrawDev(SpriteBatch spriteBatch)
         { }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentMap != null)
+            {
+                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
+                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+            }
+        }
 
         public Loc ScreenCoordsToGroundCoords(Loc loc)
         {

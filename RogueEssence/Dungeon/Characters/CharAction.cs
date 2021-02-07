@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Runtime.Serialization;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -825,13 +826,15 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Speed;
         public bool Boomerang;
-        public int Item;
+
+        [Anim(0, "Item/")]
+        public string ItemSprite;
 
         public CharAnimData CharAnimData;
 
         public ProjectileAction()
         {
-            Item = -1;
+            ItemSprite = "";
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             StreamEmitter = new EmptyShootingEmitter();
@@ -843,7 +846,7 @@ namespace RogueEssence.Dungeon
             Rays = other.Rays;
             Speed = other.Speed;
             Boomerang = other.Boomerang;
-            Item = other.Item;
+            ItemSprite = other.ItemSprite;
             CharAnimData = other.CharAnimData.Clone();
             Anim = new AnimData(other.Anim);
             Emitter = (AttachPointEmitter)other.Emitter.Clone();
@@ -891,7 +894,7 @@ namespace RogueEssence.Dungeon
                 shotEmitter.SetupEmit(actionContext.User.MapLoc + HitOffset * GraphicsManager.TileSize, testDir, modRange * GraphicsManager.TileSize, Speed * GraphicsManager.TileSize);
                 DungeonScene.Instance.CreateAnim(shotEmitter, DrawLayer.NoDraw);
             }
-            hitboxes.Add(new CircleSweepHitbox(actionContext.User, TargetAlignments, HitTiles, StopAtWall, actionContext.User.CharLoc + HitOffset, Anim, TileEmitter, Emitter, Speed, LagBehindTime, testDir, modRange, Boomerang, Item));
+            hitboxes.Add(new CircleSweepHitbox(actionContext.User, TargetAlignments, HitTiles, StopAtWall, actionContext.User.CharLoc + HitOffset, Anim, TileEmitter, Emitter, Speed, LagBehindTime, testDir, modRange, Boomerang, ItemSprite));
 
             Loc endPoint = actionContext.User.CharLoc + HitOffset + testDir.GetLoc() * modRange;
             actionContext.StrikeLandTiles.Add(endPoint);
@@ -899,7 +902,7 @@ namespace RogueEssence.Dungeon
         private void CreateTestHitbox(Character owner, Dir8 testDir, int mod, List<Hitbox> hitboxes)
         {
             int modRange = GetRangeBlock(owner, owner.CharLoc, TargetAlignments, testDir, mod, false);
-            hitboxes.Add(new CircleSweepHitbox(owner, TargetAlignments, HitTiles, StopAtWall, owner.CharLoc, Anim, TileEmitter, Emitter, Speed, LagBehindTime, testDir, modRange, Boomerang, Item));
+            hitboxes.Add(new CircleSweepHitbox(owner, TargetAlignments, HitTiles, StopAtWall, owner.CharLoc, Anim, TileEmitter, Emitter, Speed, LagBehindTime, testDir, modRange, Boomerang, ItemSprite));
         }
         public override IEnumerable<Loc> GetPreTargets(Character owner, Dir8 dir, int rangeMod)
         {
@@ -1089,7 +1092,9 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Speed;
         public ArcCoverage Coverage;
-        public int Item;
+
+        [Anim(0, "Item/")]
+        public string ItemSprite;
 
         public CharAnimData CharAnimData;
 
@@ -1097,7 +1102,7 @@ namespace RogueEssence.Dungeon
         {
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
-            Item = -1;
+            ItemSprite = "";
             CharAnimData = new CharAnimFrameType(0);
         }
         protected ThrowAction(ThrowAction other)
@@ -1106,7 +1111,7 @@ namespace RogueEssence.Dungeon
             Speed = other.Speed;
             Range = other.Range;
             Coverage = other.Coverage;
-            Item = other.Item;
+            ItemSprite = other.ItemSprite;
             CharAnimData = other.CharAnimData.Clone();
             Anim = new AnimData(other.Anim);
             Emitter = (AttachPointEmitter)other.Emitter.Clone();
@@ -1120,7 +1125,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(PassEmitter(actionContext.User));
             Loc landing = GetLanding(actionContext.User, actionContext.User.CharLoc + HitOffset, actionContext.User.CharDir, 0);
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ReleaseHitboxes(actionContext.User,
-                new ArcingHitbox(actionContext.User, actionContext.User.CharLoc + HitOffset, Anim, TileEmitter, Emitter, landing, Speed, Item, LagBehindTime),
+                new ArcingHitbox(actionContext.User, actionContext.User.CharLoc + HitOffset, Anim, TileEmitter, Emitter, landing, Speed, ItemSprite, LagBehindTime),
                 effect, tileEffect));
             actionContext.StrikeLandTiles.Add(landing);
         }
@@ -1154,7 +1159,7 @@ namespace RogueEssence.Dungeon
         }
         public override IEnumerable<Loc> GetPreTargets(Character owner, Dir8 dir, int rangeMod)
         {
-            ArcingHitbox hitbox = new ArcingHitbox(owner, owner.CharLoc, Anim, TileEmitter, Emitter, GetLanding(owner, owner.CharLoc, dir, rangeMod), Speed, Item, LagBehindTime);
+            ArcingHitbox hitbox = new ArcingHitbox(owner, owner.CharLoc, Anim, TileEmitter, Emitter, GetLanding(owner, owner.CharLoc, dir, rangeMod), Speed, ItemSprite, LagBehindTime);
 
             hitbox.PreCalculateAllTargets();
 
