@@ -7,6 +7,7 @@ using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -86,9 +87,7 @@ namespace RogueEssence.Dungeon
         public Dictionary<int, AutoTile> TextureMap;
         public int Element;
 
-        public BGAnimData BGAnim;
-        public Loc BGMovement;
-
+        public MapBG Background;
 
 
         public Loc? ViewCenter;
@@ -130,7 +129,7 @@ namespace RogueEssence.Dungeon
 
             BlankBG = new AutoTile();
 
-            BGAnim = new BGAnimData();
+            Background = new MapBG();
 
             PrepareEvents = new List<SingleCharEvent>();
             StartEvents = new List<SingleCharEvent>();
@@ -566,27 +565,6 @@ namespace RogueEssence.Dungeon
         public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
         {
             BlankBG.Draw(spriteBatch, drawPos);
-        }
-
-
-        public void DrawBG(SpriteBatch spriteBatch)
-        {
-            if (BGAnim.AnimIndex != "")
-            {
-                DirSheet sheet = GraphicsManager.GetBackground(BGAnim.AnimIndex);
-
-                Loc diff = BGMovement * (int)FrameTick.TickToFrames(GraphicsManager.TotalFrameTick) / 60;
-                if (sheet.Width == 1 && sheet.Height == 1)
-                    sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color.White);
-                else
-                {
-                    for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
-                    {
-                        for (int y = diff.Y % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
-                            sheet.DrawDir(spriteBatch, new Vector2(x, y), BGAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), BGAnim.AnimDir, Color.White);
-                    }
-                }
-            }
         }
     }
 

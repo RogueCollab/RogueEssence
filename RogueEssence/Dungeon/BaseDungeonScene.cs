@@ -216,9 +216,6 @@ namespace RogueEssence.Dungeon
             foregroundDraw.Clear();
             shownChars.Clear();
 
-            //draw the background
-            ZoneManager.Instance.CurrentMap.DrawBG(spriteBatch);
-
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
@@ -343,6 +340,9 @@ namespace RogueEssence.Dungeon
             GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
+
+            //draw the background
+            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, Loc.Zero);
 
             spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 

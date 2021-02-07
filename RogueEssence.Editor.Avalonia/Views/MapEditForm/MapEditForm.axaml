@@ -35,7 +35,6 @@
       <MenuItem Header="_Tiles">
         <MenuItem Header="_Load from .png into Tileset" Command="{Binding ImportFromPng_Click}"/>
         <MenuItem Header="_Load Tileset into Map" Command="{Binding ImportFromTileset_Click}"/>
-        <MenuItem Header="_Load Standardize Frame Length" Command="{Binding StandardizeFrameLength_Click}"/>
       </MenuItem>
     </Menu>
     <Grid>

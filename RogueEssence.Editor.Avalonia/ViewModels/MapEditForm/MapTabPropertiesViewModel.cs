@@ -29,6 +29,9 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
+            BG = new ClassBoxViewModel();
+            BG.OnMemberChanged += BG_Changed;
+            BG.OnEditItem += MapBG_Edit;
             BlankBG = new ClassBoxViewModel();
             BlankBG.OnMemberChanged += BlankBG_Changed;
             BlankBG.OnEditItem += AutoTile_Edit;
@@ -129,6 +132,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ClassBoxViewModel BG { get; set; }
         public ClassBoxViewModel BlankBG { get; set; }
         public ClassBoxViewModel FloorBG { get; set; }
 
@@ -147,6 +151,33 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void BG_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.Background = BG.GetObject<MapBG>();
+        }
+
+        public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                op(element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            //form.MapEditor.RegisterChild(frmData);
+            frmData.Show();
+        }
+
         public void BlankBG_Changed()
         {
             ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.GetObject<AutoTile>();
@@ -157,11 +188,6 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentMap.FloorBG = FloorBG.GetObject<AutoTile>();
         }
 
-
-        public void TextureMap_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
-        }
         public void AutoTile_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
             DataEditForm frmData = new DataEditForm();
@@ -184,6 +210,11 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Show();
         }
 
+
+        public void TextureMap_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
+        }
 
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
@@ -288,6 +319,7 @@ namespace RogueEssence.Dev.ViewModels
             ChosenElement = ChosenElement;
             ChosenScroll = ChosenScroll;
 
+            BG.LoadFromSource(ZoneManager.Instance.CurrentMap.Background);
             BlankBG.LoadFromSource(ZoneManager.Instance.CurrentMap.BlankBG);
             FloorBG.LoadFromSource(ZoneManager.Instance.CurrentMap.FloorBG);
             TextureMap.LoadFromDict(ZoneManager.Instance.CurrentMap.TextureMap);
