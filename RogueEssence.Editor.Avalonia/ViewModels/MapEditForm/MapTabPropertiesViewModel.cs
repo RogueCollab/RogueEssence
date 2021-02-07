@@ -174,7 +174,8 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 
@@ -206,7 +207,8 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 
@@ -237,7 +239,8 @@ namespace RogueEssence.Dev.ViewModels
                 frmKey.Close();
             };
 
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmKey);
             frmKey.Show();
         }
 
@@ -262,7 +265,8 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 

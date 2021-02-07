@@ -102,7 +102,8 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 

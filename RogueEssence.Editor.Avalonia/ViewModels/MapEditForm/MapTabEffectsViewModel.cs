@@ -49,6 +49,7 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentMap.Status = statuses;
         }
 
+        //TODO: move these events into ListEditor; they were generic enough to warrant copy+pasting
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             DataEditForm frmData = new DataEditForm();
@@ -77,7 +78,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
 
                 if (itemExists)
-                    await MessageBox.Show((Window)form.MapEditor, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBox.Show(form.MapEditForm, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     op(index, element);
@@ -89,7 +90,7 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //form.MapEditor.RegisterChild(frmData);
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 
@@ -115,8 +116,8 @@ namespace RogueEssence.Dev.ViewModels
                 frmData.Close();
             };
 
-            //DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            //form.MapEditor.RegisterChild(frmData);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 

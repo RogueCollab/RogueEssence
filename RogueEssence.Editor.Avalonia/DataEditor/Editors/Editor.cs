@@ -218,6 +218,7 @@ namespace RogueEssence.Dev
                 //else
                 //    txtValue.Size = new Size(0, 20);
                 ClassBoxViewModel mv = new ClassBoxViewModel();
+                mv.LoadFromSource(member);
                 cbxValue.DataContext = mv;
                 control.Children.Add(cbxValue);
 
@@ -243,7 +244,6 @@ namespace RogueEssence.Dev
                     control.GetOwningForm().RegisterChild(frmData);
                     frmData.Show();
                 };
-                mv.LoadFromSource(member);
             }
             else
             {

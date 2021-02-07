@@ -14,20 +14,17 @@ using System.ComponentModel;
 
 namespace RogueEssence.Dev.Views
 {
-    public class DataEditForm : Window
+    public class DataEditForm : ParentForm
     {
         public event Action SelectedOKEvent;
         public event Action SelectedCancelEvent;
 
         public StackPanel ControlPanel { get; }
 
-        private List<Window> children;
-
         public DataEditForm()
         {
             InitializeComponent();
 
-            children = new List<Window>();
             ControlPanel = this.FindControl<StackPanel>("stkContent");
 #if DEBUG
             this.AttachDevTools();
@@ -38,17 +35,6 @@ namespace RogueEssence.Dev.Views
         {
             AvaloniaXamlLoader.Load(this);
         }
-
-        public void RegisterChild(Window child)
-        {
-            children.Add(child);
-            child.Closed += (object sender, EventArgs e) =>
-            {
-                children.Remove(child);
-            };
-        }
-
-
 
 
         //TODO: this is a workaround to a bug in text wrapping
@@ -66,10 +52,7 @@ namespace RogueEssence.Dev.Views
             if (Design.IsDesignMode)
                 return;
 
-            for (int ii = children.Count-1; ii >= 0; ii--)
-            {
-                children[ii].Close();
-            }
+            CloseChildren();
         }
 
         public void btnOK_Click(object sender, RoutedEventArgs e)
