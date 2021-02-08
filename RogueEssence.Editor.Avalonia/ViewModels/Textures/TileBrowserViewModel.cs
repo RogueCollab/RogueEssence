@@ -18,20 +18,20 @@ namespace RogueEssence.Dev.ViewModels
         public Loc MultiSelect;
 
         private int autotile;
-        private int bordertile;
+        private HashSet<int> associates;
 
         public TileBrush(TileLayer layer, Loc multiSelect)
         {
             autotile = -1;
-            bordertile = -1;
+            associates = new HashSet<int>();
             this.layer = layer;
             MultiSelect = multiSelect;
         }
 
-        public TileBrush(int autotile, int bordertile)
+        public TileBrush(int autotile, HashSet<int> bordertile)
         {
             this.autotile = autotile;
-            this.bordertile = bordertile;
+            this.associates = bordertile;
             this.layer = new TileLayer();
             this.MultiSelect = Loc.One;
         }
@@ -45,9 +45,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (autotile > -1)
             {
-                AutoTile auto = new AutoTile(autotile, bordertile);
-                AutoTileData autoTile = DataManager.Instance.GetAutoTile(autotile);
-                auto.Layers.AddRange(autoTile.Tiles.Generic);
+                AutoTile auto = new AutoTile(autotile, associates);
                 return auto;
             }
 

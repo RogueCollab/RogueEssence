@@ -210,5 +210,10 @@ namespace RogueEssence.Content
         {
             return (obj != null) && Equals(obj as AnimDataBase);
         }
+
+        public override int GetHashCode()
+        {
+            return AnimIndex.GetHashCode() ^ FrameTime.GetHashCode();
+        }
     }
 }

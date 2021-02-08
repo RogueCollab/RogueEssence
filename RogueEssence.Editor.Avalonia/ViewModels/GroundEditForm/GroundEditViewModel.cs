@@ -222,6 +222,7 @@ namespace RogueEssence.Dev.ViewModels
                     ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
 
                     Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+                    Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
 
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
                 }

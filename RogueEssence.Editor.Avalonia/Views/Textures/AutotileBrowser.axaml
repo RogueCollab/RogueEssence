@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:data="clr-namespace:RogueEssence.Data;assembly=RogueEssence"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.AutotileBrowser">
@@ -13,6 +14,7 @@
   </Design.DataContext>
   <UserControl.Resources>
     <converters:TileConverter x:Key="TileConverter"/>
+    <converters:DataEntryConverter x:Key="DataEntryConverter"/>
   </UserControl.Resources>
   <Grid Margin="4" >
     <Grid.RowDefinitions>
@@ -22,11 +24,33 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition/>
+      <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <Image Source="{Binding Preview, Converter={StaticResource TileConverter}}"  VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="None" Grid.Row="0" Grid.Column="0"/>
-    <Image Source="{Binding BorderPreview, Converter={StaticResource TileConverter}}"  VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="None" Grid.Row="0" Grid.Column="1"/>
+    <Image Source="{Binding AssociatePreview, Converter={StaticResource TileConverter}}"  VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="None" Grid.Row="0" Grid.Column="1"/>
 
     <views:SearchListBox DataContext="{Binding Autotiles}" Margin="4" Grid.Row="1" Grid.Column="0"/>
-    <views:SearchListBox DataContext="{Binding BorderAutotiles}" Margin="4" Grid.Row="1" Grid.Column="1"/>
+    <views:SearchListBox DataContext="{Binding AssociateAutotiles}" Margin="4" Grid.Row="1" Grid.Column="1"/>
+    
+    <Grid Grid.Row="1" Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition/>
+        <RowDefinition Height="36"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <ListBox SelectionMode="AlwaysSelected" Items="{Binding Associates}" SelectedIndex="{Binding ChosenAssociate}" Margin="4,2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Converter={StaticResource DataEntryConverter}, ConverterParameter=1024}"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Button Command="{Binding btnAddTile_Click}" Margin="4,2" Grid.Row="1" Grid.Column="0" >Add</Button>
+      <Button Command="{Binding btnDeleteTile_Click}" Margin="4,2" Grid.Row="1" Grid.Column="1">Delete</Button>
+    </Grid>
+  
   </Grid>
 </UserControl>

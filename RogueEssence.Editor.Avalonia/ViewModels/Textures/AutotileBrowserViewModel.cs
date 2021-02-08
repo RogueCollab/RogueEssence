@@ -17,24 +17,34 @@ namespace RogueEssence.Dev.ViewModels
         public AutotileBrowserViewModel()
         {
             preview = TileFrame.Empty;
-            borderPreview = TileFrame.Empty;
+            associatePreview = TileFrame.Empty;
 
 
             Autotiles = new SearchListBoxViewModel();
             Autotiles.DataName = "Autotiles:";
             Autotiles.SelectedIndexChanged += Autotiles_SelectedIndexChanged;
 
-            BorderAutotiles = new SearchListBoxViewModel();
-            BorderAutotiles.DataName = "Border Autotiles:";
-            BorderAutotiles.SelectedIndexChanged += BorderAutotiles_SelectedIndexChanged;
+            AssociateAutotiles = new SearchListBoxViewModel();
+            AssociateAutotiles.DataName = "Associate Autotiles:";
+            AssociateAutotiles.SelectedIndexChanged += AssociateAutotiles_SelectedIndexChanged;
+
+            Associates = new ObservableCollection<int>();
 
             UpdateAutotilesList();
         }
 
         public SearchListBoxViewModel Autotiles { get; set; }
 
-        public SearchListBoxViewModel BorderAutotiles { get; set; }
+        public SearchListBoxViewModel AssociateAutotiles { get; set; }
 
+        public ObservableCollection<int> Associates { get; }
+
+        private int chosenAssociate;
+        public int ChosenAssociate
+        {
+            get => chosenAssociate;
+            set => this.SetIfChanged(ref chosenAssociate, value);
+        }
 
         /// <summary>
         /// The current tile being previewed
@@ -50,11 +60,11 @@ namespace RogueEssence.Dev.ViewModels
         /// <summary>
         /// The current tile being previewed
         /// </summary>
-        private TileFrame borderPreview;
-        public TileFrame BorderPreview
+        private TileFrame associatePreview;
+        public TileFrame AssociatePreview
         {
-            get => borderPreview;
-            set => this.SetIfChanged(ref borderPreview, value);
+            get => associatePreview;
+            set => this.SetIfChanged(ref associatePreview, value);
         }
 
         private int tileSize;
@@ -74,15 +84,21 @@ namespace RogueEssence.Dev.ViewModels
         /// </summary>
         public TileBrush GetBrush()
         {
-            return new TileBrush(Autotiles.InternalIndex-1, BorderAutotiles.InternalIndex - 1);
+            HashSet<int> associates = new HashSet<int>();
+            foreach (int tile in Associates)
+                associates.Add(tile);
+            return new TileBrush(Autotiles.InternalIndex - 1, associates);
         }
 
         public void SetBrush(AutoTile autotile)
         {
             Autotiles.SearchText = "";
             Autotiles.SelectedSearchIndex = autotile.AutoTileset + 1;
-            BorderAutotiles.SearchText = "";
-            BorderAutotiles.SelectedSearchIndex = autotile.BorderTileset + 1;
+            AssociateAutotiles.SearchText = "";
+            AssociateAutotiles.SelectedSearchIndex = 0;
+            Associates.Clear();
+            foreach (int tile in autotile.Associates)
+                Associates.Add(tile);
         }
 
 
@@ -92,10 +108,9 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             Autotiles.Clear();
-            BorderAutotiles.Clear();
+            AssociateAutotiles.Clear();
 
             Autotiles.AddItem("---");
-            BorderAutotiles.AddItem("---");
 
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count; ii++)
             {
@@ -104,10 +119,10 @@ namespace RogueEssence.Dev.ViewModels
                 if (24 == TileSize)
                 {
                     Autotiles.AddItem(ii.ToString("D3") + ": " + entry.Name.ToLocal());
-                    BorderAutotiles.AddItem(ii.ToString("D3") + ": " + entry.Name.ToLocal());
+                    AssociateAutotiles.AddItem(ii.ToString("D3") + ": " + entry.Name.ToLocal());
                 }
             }
-
+            Associates.Clear();
         }
 
 
@@ -119,20 +134,36 @@ namespace RogueEssence.Dev.ViewModels
                 return;
             }
             AutoTileData autoTile = DataManager.Instance.GetAutoTile(Autotiles.InternalIndex - 1);
-            Preview = autoTile.Tiles.Generic[0].Frames[0];
+            List<TileLayer> layer = autoTile.Tiles.GetLayers(-1);
+            Preview = layer[0].Frames[0];
         }
 
-        private void BorderAutotiles_SelectedIndexChanged()
+        private void AssociateAutotiles_SelectedIndexChanged()
         {
-            if (BorderAutotiles.InternalIndex == 0)
+            if (AssociateAutotiles.InternalIndex == 0)
             {
-                BorderPreview = TileFrame.Empty;
+                AssociatePreview = TileFrame.Empty;
                 return;
             }
-            AutoTileData autoTile = DataManager.Instance.GetAutoTile(BorderAutotiles.InternalIndex - 1);
-            BorderPreview = autoTile.Tiles.Generic[0].Frames[0];
+            AutoTileData autoTile = DataManager.Instance.GetAutoTile(AssociateAutotiles.InternalIndex - 1);
+            List<TileLayer> layer = autoTile.Tiles.GetLayers(-1);
+            AssociatePreview = layer[0].Frames[0];
+        }
+
+        public void btnAddTile_Click()
+        {
+            if (!Associates.Contains(AssociateAutotiles.InternalIndex))
+            {
+                Associates.Add(AssociateAutotiles.InternalIndex);
+                ChosenAssociate = Associates.Count - 1;
+            }
         }
 
 
+        public void btnDeleteTile_Click()
+        {
+            if (ChosenAssociate > -1)
+                Associates.RemoveAt(ChosenAssociate);
+        }
     }
 }

@@ -86,18 +86,21 @@ namespace RogueEssence.Dungeon
             {
                 Data.AutoTileData entry = Data.DataManager.Instance.GetAutoTile(tileset);
                 entry.Tiles.AutoTileArea(randSeed, rectStart, rectSize, new Loc(Width, Height),
-                    (int x, int y, List<TileLayer> tile) =>
+                    (int x, int y, int neighborCode) =>
                     {
-                        if (Collision.InBounds(Width, Height, new Loc(x, y)))
-                            Tiles[x][y].Layers = tile;
+                        Tiles[x][y].NeighborCode = neighborCode;
                     },
                     (int x, int y) =>
                     {
                         if (!Collision.InBounds(Width, Height, new Loc(x, y)))
                             return true;
-                        if (Tiles[x][y].AutoTileset != -1 && Tiles[x][y].AutoTileset == Tiles[x][y].BorderTileset)
-                            return false;
                         return Tiles[x][y].AutoTileset == tileset;
+                    },
+                    (int x, int y) =>
+                    {
+                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                            return true;
+                        return Tiles[x][y].AutoTileset == tileset || Tiles[x][y].Associates.Contains(tileset);
                     });
             }
         }

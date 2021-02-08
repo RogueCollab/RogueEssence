@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using ReactiveUI;
+using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
@@ -187,6 +188,7 @@ namespace RogueEssence.Dev.ViewModels
         public void FloorBG_Changed()
         {
             ZoneManager.Instance.CurrentMap.FloorBG = FloorBG.GetObject<AutoTile>();
+            ZoneManager.Instance.CurrentMap.CalculateAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
         }
 
         public void AutoTile_Edit(object element, ClassBoxViewModel.EditElementOp op)

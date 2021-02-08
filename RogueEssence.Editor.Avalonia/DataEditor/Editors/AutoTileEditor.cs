@@ -10,7 +10,7 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev
 {
-    public class AutoTileBaseEditor : Editor<AutoTileBase>
+    public class AutoTileEditor : Editor<AutoTileBase>
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
