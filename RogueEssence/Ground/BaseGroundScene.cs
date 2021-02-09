@@ -148,7 +148,9 @@ namespace RogueEssence.Ground
                     //if it's a tile on the discovery array, show it
                     bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
 
-                    if (!outOfBounds)
+                    if (outOfBounds)
+                        ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
+                    else
                         ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), false);
                 }
             }

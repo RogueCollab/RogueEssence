@@ -214,7 +214,8 @@ namespace RogueEssence.Dev.ViewModels
 
             lock (GameBase.lockObj)
             {
-                if (result)
+                bool sizeChanged = viewModel.TileSize != ZoneManager.Instance.CurrentGround.TileSize;
+                if (result && sizeChanged)
                 {
                     DiagManager.Instance.LoadMsg = "Retiling Map...";
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
@@ -223,6 +224,8 @@ namespace RogueEssence.Dev.ViewModels
 
                     Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
                     Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+                    ZoneManager.Instance.CurrentGround.BlankBG = new AutoTile();
+                    Properties.BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);
 
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
                 }

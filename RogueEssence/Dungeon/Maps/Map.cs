@@ -126,9 +126,9 @@ namespace RogueEssence.Dungeon
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
 
+            Background = new MapBG();
             BlankBG = new AutoTile();
 
-            Background = new MapBG();
 
             PrepareEvents = new List<SingleCharEvent>();
             StartEvents = new List<SingleCharEvent>();

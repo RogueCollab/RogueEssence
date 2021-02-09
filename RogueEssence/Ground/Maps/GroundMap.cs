@@ -29,6 +29,7 @@ namespace RogueEssence.Ground
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> ScriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
 
         public MapBG Background;
+        public AutoTile BlankBG;
 
         public List<MapLayer> Layers;
 
@@ -84,6 +85,7 @@ namespace RogueEssence.Ground
             Status = new Dictionary<int, MapStatus>();
 
             Background = new MapBG();
+            BlankBG = new AutoTile();
 
             Name = new LocalText();
             Comment = "";
@@ -666,6 +668,12 @@ namespace RogueEssence.Ground
             return destination;
         }
 
+
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
+        {
+            BlankBG.Draw(spriteBatch, drawPos);
+        }
+
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
         {
             foreach (MapLayer layer in Layers)
@@ -895,7 +903,9 @@ namespace RogueEssence.Ground
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
 
+
             //Background = new MapBG();
+            BlankBG = new AutoTile();
 
             if (ActiveChar != null)
             {
