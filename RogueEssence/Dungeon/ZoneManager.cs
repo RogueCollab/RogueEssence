@@ -35,10 +35,23 @@ namespace RogueEssence.Dungeon
         public static void LoadToState(BinaryReader reader, GameState state)
         {
             long length = reader.ReadInt64();
-            using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
+            try
             {
-                IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                state.Zone = (ZoneManager)formatter.Deserialize(classStream);
+                using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
+                {
+                    IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                    state.Zone = (ZoneManager)formatter.Deserialize(classStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+                state.Save.NextDest = DataManager.Instance.StartMap;
+
+                ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.StartMap.ID);
+                state.Zone = new ZoneManager();
+                state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.StartMap.ID);
+                state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.StartMap.StructID);
             }
         }
 
@@ -87,6 +100,13 @@ namespace RogueEssence.Dungeon
                 else
                     ZoneManager.Instance.CurrentZone.DevNewGround();
             }
+            else
+            {
+                if (!String.IsNullOrEmpty(name))
+                    ZoneManager.Instance.CurrentZone.DevLoadMap(name);
+                else
+                    ZoneManager.Instance.CurrentZone.DevNewMap();
+            }
         }
 
 
@@ -95,5 +115,6 @@ namespace RogueEssence.Dungeon
             if (CurrentZone != null)
                 CurrentZone.LuaEngineReload();
         }
+
     }
 }

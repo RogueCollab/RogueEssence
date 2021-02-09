@@ -53,19 +53,14 @@ namespace RogueEssence.Data
         }
         public static DataManager Instance { get { return instance; } }
 
-        public const string DATA_PATH = DiagManager.ASSET_PATH + "Data/";
+        public const string DATA_PATH = "Data/";
         public const string MAP_PATH = DATA_PATH + "Map/";
         public const string GROUND_PATH = DATA_PATH + "Ground/";
         public const string DATA_EXT = ".bin";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
+
         public const string FX_PATH = DATA_PATH + "SystemFX/";
-
-        public const string MUSIC_PATH = DiagManager.CONTENT_PATH + "Music/";
-        public const string SOUND_PATH = DiagManager.CONTENT_PATH + "Sound/";
-
-        public const string SCRIPT_PATH = DATA_PATH + "Script/";
-        public const string SCRIPT_CPATH = DATA_PATH + "Script/bin/";
 
         public const string SAVE_PATH = "SAVE/";
         public const string REPLAY_PATH = "REPLAY/";
@@ -77,9 +72,9 @@ namespace RogueEssence.Data
         public const string ROGUE_PATH = SAVE_PATH + "ROGUE/";
 
 
-        public const string SAVE_FILE_PATH = SAVE_PATH + "SAVE.rssv";
+        public const string SAVE_FILE_PATH = "SAVE.rssv";
         public const string QUICKSAVE_EXTENSION = ".rsqs";
-        public const string QUICKSAVE_FILE_PATH = SAVE_PATH + "QUICKSAVE" + QUICKSAVE_EXTENSION;
+        public const string QUICKSAVE_FILE_PATH = "QUICKSAVE" + QUICKSAVE_EXTENSION;
 
         public const string SOS_EXTENSION = ".sosmail";
         public const string AOK_EXTENSION = ".aokmail";
@@ -122,22 +117,10 @@ namespace RogueEssence.Data
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
 
-        public string HungerSE;
-        public string NullDmgSE;
-        public string CursedSE;
-        public string PickupSE;
-        public string PickupFoeSE;
-        public string ReplaceSE;
-        public string PlaceSE;
-        public string EquipSE;
-        public string MoneySE;
-        public string LeaderSE;
-        public string ReviveSE;
-
         public BattleFX HealFX;
         public BattleFX RestoreChargeFX;
         public BattleFX LoseChargeFX;
-        public BattleFX NoChargeFX;
+        public EmoteFX NoChargeFX;
         public BattleFX ElementFX;
         public BattleFX IntrinsicFX;
         public BattleFX SendHomeFX;
@@ -183,9 +166,6 @@ namespace RogueEssence.Data
             if (!Directory.Exists(RESCUE_OUT_PATH + AOK_PATH))
                 Directory.CreateDirectory(RESCUE_OUT_PATH + AOK_PATH);
 
-            if (!Directory.Exists(REPLAY_PATH))
-                Directory.CreateDirectory(REPLAY_PATH);
-
 
             MsgLog = new List<string>();
 
@@ -211,23 +191,21 @@ namespace RogueEssence.Data
 
         public void InitData()
         {
-
-            HealFX = (BattleFX)LoadData(FX_PATH + "Heal.fx", null);
-            RestoreChargeFX = (BattleFX)LoadData(FX_PATH + "RestoreCharge.fx", null);
-            LoseChargeFX = (BattleFX)LoadData(FX_PATH + "LoseCharge.fx", null);
-            NoChargeFX = (BattleFX)LoadData(FX_PATH + "NoCharge.fx", null);
-            ElementFX = (BattleFX)LoadData(FX_PATH + "Element.fx", null);
-            IntrinsicFX = (BattleFX)LoadData(FX_PATH + "Intrinsic.fx", null);
-            SendHomeFX = (BattleFX)LoadData(FX_PATH + "SendHome.fx", null);
-            ItemLostFX = (BattleFX)LoadData(FX_PATH + "ItemLost.fx", null);
-            WarpFX = (BattleFX)LoadData(FX_PATH + "Warp.fx", null);
-            KnockbackFX = (BattleFX)LoadData(FX_PATH + "Knockback.fx", null);
-            JumpFX = (BattleFX)LoadData(FX_PATH + "Jump.fx", null);
-            ThrowFX = (BattleFX)LoadData(FX_PATH + "Throw.fx", null);
-            LoadSystemSE();
+            HealFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Heal.fx"), null);
+            RestoreChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "RestoreCharge.fx"), null);
+            LoseChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "LoseCharge.fx"), null);
+            NoChargeFX = (EmoteFX)LoadData(PathMod.ModPath(FX_PATH + "NoCharge.fx"), null);
+            ElementFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Element.fx"), null);
+            IntrinsicFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Intrinsic.fx"), null);
+            SendHomeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "SendHome.fx"), null);
+            ItemLostFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "ItemLost.fx"), null);
+            WarpFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Warp.fx"), null);
+            KnockbackFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Knockback.fx"), null);
+            JumpFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Jump.fx"), null);
+            ThrowFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Throw.fx"), null);
 
 
-            UniversalEvent = (ActiveEffect)LoadData(DATA_PATH + "Universal.bin", null);
+            UniversalEvent = (ActiveEffect)LoadData(PathMod.ModPath(DATA_PATH + "Universal.bin"), null);
             LoadStartParams();
             LoadRarity();
 
@@ -251,58 +229,31 @@ namespace RogueEssence.Data
         }
 
 
-        private void LoadSystemSE()
+        public static void InitDataDirs(string baseFolder)
         {
-            string path = DATA_PATH + "SystemSE.xml";
-            //try to load from file
-            if (File.Exists(path))
+            Directory.CreateDirectory(Path.Join(baseFolder, DATA_PATH));
+            foreach (DataType type in Enum.GetValues(typeof(DataType)))
             {
-                try
-                {
-                    StartChars = new List<int>();
-
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    XmlNode sysSounds = xmldoc.DocumentElement.SelectSingleNode("Sounds");
-
-                    HungerSE = sysSounds.SelectSingleNode("Hunger").InnerText;
-                    NullDmgSE = sysSounds.SelectSingleNode("NullDmg").InnerText;
-                    CursedSE = sysSounds.SelectSingleNode("Cursed").InnerText;
-                    PickupSE = sysSounds.SelectSingleNode("Pickup").InnerText;
-                    PickupFoeSE = sysSounds.SelectSingleNode("PickupFoe").InnerText;
-                    ReplaceSE = sysSounds.SelectSingleNode("Replace").InnerText;
-                    PlaceSE = sysSounds.SelectSingleNode("Place").InnerText;
-                    EquipSE = sysSounds.SelectSingleNode("Equip").InnerText;
-                    MoneySE = sysSounds.SelectSingleNode("Money").InnerText;
-                    LeaderSE = sysSounds.SelectSingleNode("Leader").InnerText;
-                    ReviveSE = sysSounds.SelectSingleNode("Revive").InnerText;
-
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
+                if (type != DataManager.DataType.All && type != DataManager.DataType.None)
+                    Directory.CreateDirectory(Path.Join(baseFolder, DATA_PATH + type.ToString() + "/"));
             }
-            HungerSE = "";
-            NullDmgSE = "";
-            CursedSE = "";
-            PickupSE = "";
-            PickupFoeSE = "";
-            ReplaceSE = "";
-            PlaceSE = "";
-            EquipSE = "";
-            MoneySE = "";
-            LeaderSE = "";
-            ReviveSE = "";
+            Directory.CreateDirectory(Path.Join(baseFolder, MAP_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, GROUND_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, FX_PATH));
         }
+
+        public static void InitSaveDirs()
+        {
+            Directory.CreateDirectory(PathMod.ModSavePath(SAVE_PATH));
+            Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
+        }
+
 
         private void LoadRarity()
         {
             RarityMap = new Dictionary<(int, int), List<int>>();
 
-            string path = DataManager.DATA_PATH + "Rarity.xml";
+            string path = PathMod.ModPath(DATA_PATH + "Rarity.xml");
             //try to load from file
             if (File.Exists(path))
             {
@@ -340,7 +291,7 @@ namespace RogueEssence.Data
 
         private void LoadStartParams()
         {
-            string path = DATA_PATH + "StartParams.xml";
+            string path = PathMod.ModPath(DATA_PATH + "StartParams.xml");
             //try to load from file
             if (File.Exists(path))
             {
@@ -398,7 +349,7 @@ namespace RogueEssence.Data
         {
             try
             {
-                using (Stream stream = new FileStream(DATA_PATH + type.ToString() + "/index.idx", FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (Stream stream = new FileStream(PathMod.ModPath(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     using (BinaryReader reader = new BinaryReader(stream))
                     {
@@ -423,7 +374,7 @@ namespace RogueEssence.Data
             cache.Clear();
             for (int ii = 0; ii < DataIndices[type].Count; ii++)
             {
-                if (File.Exists(DataManager.DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT))
+                if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT)))
                 {
                     T data = (T)LoadData(ii, type.ToString());
                     cache.Add(ii, data);
@@ -433,7 +384,7 @@ namespace RogueEssence.Data
 
         public void SaveIndex(DataType type)
         {
-            using (Stream stream = new FileStream(DATA_PATH + type.ToString() + "/index.idx", FileMode.Create, FileAccess.Write, FileShare.None))
+            using (Stream stream = new FileStream(PathMod.HardMod(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
@@ -446,40 +397,41 @@ namespace RogueEssence.Data
 
         public static IEntryData LoadData(int indexNum, string subPath)
         {
-            return (IEntryData)LoadData(DataManager.DATA_PATH + subPath + "/" + indexNum + DataManager.DATA_EXT);
+            return (IEntryData)LoadData(PathMod.ModPath(DATA_PATH + subPath + "/" + indexNum + DATA_EXT));
         }
 
         public static object LoadData(string path, SerializationBinder binder = null)
         {
             using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (BinaryReader reader = new BinaryReader(stream))
-                {
+                //using (BinaryReader reader = new BinaryReader(stream))
+                //{
                     IFormatter formatter = new BinaryFormatter();
                     if (binder != null)
                         formatter.Binder = binder;
                     return formatter.Deserialize(stream);
-                }
+                //}
             }
         }
 
 
         public static void SaveData(int indexNum, string subPath, IEntryData entry)
         {
-            if (!Directory.Exists(DataManager.DATA_PATH + subPath))
-                Directory.CreateDirectory(DataManager.DATA_PATH + subPath);
-            SaveData(DataManager.DATA_PATH + subPath + "/" + indexNum + DataManager.DATA_EXT, entry);
+            string folder = PathMod.HardMod(DATA_PATH + subPath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            SaveData(folder + "/" + indexNum + DATA_EXT, entry);
         }
 
         public static void SaveData(string path, object entry)
         {
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
+                //using (BinaryWriter writer = new BinaryWriter(stream))
+                //{
                     IFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(stream, entry);
-                }
+                //}
             }
         }
 
@@ -491,7 +443,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Zone.ToString() + "/" + index + DataManager.DATA_EXT))
+                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Zone.ToString() + "/" + index + DATA_EXT)))
                 {
                     data = (ZoneData)LoadData(index, DataType.Zone.ToString());
                     return data;
@@ -509,7 +461,7 @@ namespace RogueEssence.Data
             Map mapData = null;
             try
             {
-                mapData = (Map)LoadData(MAP_PATH + name + ".rsmap");
+                mapData = (Map)LoadData(PathMod.ModPath(MAP_PATH + name + ".rsmap"));
                 return mapData;
             }
             catch (Exception ex)
@@ -525,7 +477,7 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
-                mapData = (GroundMap)LoadData(GROUND_PATH + name + ".rsground");
+                mapData = (GroundMap)LoadData(PathMod.ModPath(GROUND_PATH + name + ".rsground"));
                 return mapData;
             }
             catch (Exception ex)
@@ -566,7 +518,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Item.ToString() + "/" + index + DataManager.DATA_EXT))
+                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Item.ToString() + "/" + index + DATA_EXT)))
                 {
                     data = (ItemData)LoadData(index, DataType.Item.ToString());
                     itemCache.Add(index, data);
@@ -625,7 +577,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Status.ToString() + "/" + index + DataManager.DATA_EXT))
+                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Status.ToString() + "/" + index + DataManager.DATA_EXT)))
                 {
                     data = (StatusData)LoadData(index, DataType.Status.ToString());
                     statusCache.Add(index, data);
@@ -647,7 +599,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.Intrinsic.ToString() + "/" + index + DataManager.DATA_EXT))
+                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Intrinsic.ToString() + "/" + index + DATA_EXT)))
                 {
                     data = (IntrinsicData)LoadData(index, DataType.Intrinsic.ToString());
                     intrinsicCache.Add(index, data);
@@ -670,7 +622,7 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(DataManager.DATA_PATH + DataType.MapStatus.ToString() + "/" + index + DataManager.DATA_EXT))
+                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.MapStatus.ToString() + "/" + index + DATA_EXT)))
                 {
                     data = (MapStatusData)LoadData(index, DataType.MapStatus.ToString());
                     mapStatusCache.Add(index, data);
@@ -980,15 +932,15 @@ namespace RogueEssence.Data
                 {
                     return "";
                 }
-                else if (File.Exists(REPLAY_PATH + outFile + REPLAY_EXTENSION))
+                else if (File.Exists(PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION)))
                 {
-                    string renamedFile = GetNonConflictingSavePath(REPLAY_PATH, outFile, REPLAY_EXTENSION);
+                    string renamedFile = GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
 
                     if (renamedFile != null)
-                        Directory.Move(fullPath, REPLAY_PATH + renamedFile + REPLAY_EXTENSION);
+                        Directory.Move(fullPath, PathMod.ModSavePath(REPLAY_PATH, renamedFile + REPLAY_EXTENSION));
                 }
                 else
-                    Directory.Move(fullPath, REPLAY_PATH + outFile + REPLAY_EXTENSION);
+                    Directory.Move(fullPath, PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION));
                 return outFile + REPLAY_EXTENSION;
             }
             catch (Exception ex)
@@ -1131,7 +1083,7 @@ namespace RogueEssence.Data
                             reader.BaseStream.Seek(endPos, SeekOrigin.Begin);
                             //read location string
                             reader.ReadString();
-                            return Data.GameProgress.LoadMainData(reader);
+                            return GameProgress.LoadMainData(reader);
                         }
                     }
                 }
@@ -1195,7 +1147,7 @@ namespace RogueEssence.Data
                                 if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
                                     replay.QuicksavePos = reader.BaseStream.Position;
                                 //read team info
-                                replay.States.Add(ReadGameState(reader));
+                                replay.States.Add(ReadGameState(reader, false));
                             }
                             else if (type == (byte)ReplayData.ReplayLog.GameLog)
                             {
@@ -1354,11 +1306,29 @@ namespace RogueEssence.Data
         public MainProgress GetProgress()
         {
             //try to load from file
-            if (File.Exists(SAVE_FILE_PATH))
+            if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
             {
                 try
                 {
-                    using (FileStream stream = File.OpenRead(SAVE_FILE_PATH))
+                    using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                            return (MainProgress)GameProgress.LoadMainData(reader);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+
+                //TODO: v0.5: remove this
+                //versionless load
+                try
+                {
+                    using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                             return (MainProgress)GameProgress.LoadMainData(reader);
@@ -1399,7 +1369,7 @@ namespace RogueEssence.Data
 
         public void SaveGameState(GameState state)
         {
-            using (Stream stream = new FileStream(SAVE_FILE_PATH, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 //saves scene, zone, and ground, if there will be one...
                 using (BinaryWriter writer = new BinaryWriter(stream))
@@ -1409,6 +1379,12 @@ namespace RogueEssence.Data
 
         public void SaveGameState(BinaryWriter writer, GameState state)
         {
+            Version version = Versioning.GetVersion();
+            writer.Write(version.Major);
+            writer.Write(version.Minor);
+            writer.Write(version.Build);
+            writer.Write(version.Revision);
+
             GameProgress.SaveMainData(writer, state.Save);
             ZoneManager.SaveToState(writer, state);
 
@@ -1451,15 +1427,32 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public GameState LoadMainGameState()
         {
-            if (File.Exists(SAVE_FILE_PATH))
+            if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
             {
                 try
                 {
-                    using (Stream stream = new FileStream(SAVE_FILE_PATH, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         //loads dungeon, zone, and ground, if there will be one...
                         using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader);
+                            return ReadGameState(reader, false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //In this case, the error will be presented clearly to the player.  Do not signal.
+                    DiagManager.Instance.LogError(ex, false);
+                }
+
+                //TODO: v0.5: remove this
+                //versionless read
+                try
+                {
+                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        //loads dungeon, zone, and ground, if there will be one...
+                        using (BinaryReader reader = new BinaryReader(stream))
+                            return ReadGameState(reader, true);
                     }
                 }
                 catch (Exception ex)
@@ -1471,9 +1464,14 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public GameState ReadGameState(BinaryReader reader)
+        public GameState ReadGameState(BinaryReader reader, bool versionless)
         {
             GameState state = new GameState();
+            //TODO: v0.5: remove this
+            if (!versionless)
+            {
+                Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+            }
             state.Save = GameProgress.LoadMainData(reader);
             ZoneManager.LoadToState(reader, state);
             LuaEngine.Instance.UpdateZoneInstance();
@@ -1509,10 +1507,10 @@ namespace RogueEssence.Data
         {
             try
             {
-                if (File.Exists(SAVE_FILE_PATH))
-                    File.Delete(SAVE_FILE_PATH);
-                if (File.Exists(QUICKSAVE_FILE_PATH))
-                    File.Delete(QUICKSAVE_FILE_PATH);
+                if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
+                    File.Delete(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH));
+                if (File.Exists(PathMod.ModSavePath(SAVE_PATH, QUICKSAVE_FILE_PATH)))
+                    File.Delete(PathMod.ModSavePath(SAVE_PATH, QUICKSAVE_FILE_PATH));
 
                 //if (Directory.Exists(ROGUE_PATH))
                 //{

@@ -12,7 +12,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="20"/>
       <RowDefinition/>
-      <RowDefinition Height="40"/>
+      <RowDefinition Height="34"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -22,16 +22,14 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">Add, edit, or remove localized strings to be used by scripts on the map.</TextBlock>
-    <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5">
+    <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Items="{Binding MapStrings}" SelectedIndex="{Binding CurrentString, Mode=TwoWay}">
       <DataGrid.Columns>
-        <DataGridTextColumn Header="Key" />
-        <DataGridTextColumn Header="Comment" />
-        <DataGridTextColumn Header="EN" />
+        <DataGridTextColumn Header="Key" Binding="{Binding Key}"/>
+        <DataGridTextColumn Header="Comment" Binding="{Binding Comment}"/>
+        <DataGridTextColumn Header="String" Binding="{Binding String}" />
       </DataGrid.Columns>
     </DataGrid>
-    <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add String</Button>
-    <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete String</Button>
-    <Button Name="btnCommit" Command="{Binding btnCommit_Click}" Margin="4" Grid.Row="2" Grid.Column="2">Commit Strings</Button>
-    <Button Name="btnReload" Command="{Binding btnReload_Click}" Margin="4" Grid.Row="2" Grid.Column="3">Reload Strings</Button>
+    <Button Command="{Binding btnAddString_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add String</Button>
+    <Button Command="{Binding btnDeleteString_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete String</Button>
   </Grid>
 </UserControl>

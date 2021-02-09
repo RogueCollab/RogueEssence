@@ -31,6 +31,11 @@ namespace RogueEssence.Dungeon
         {
             ID = index;
         }
+        public TerrainTile(int index, AutoTile tex)
+        {
+            ID = index;
+            TileTex = tex;
+        }
         protected TerrainTile(TerrainTile other)
         {
             ID = other.ID;
@@ -47,6 +52,30 @@ namespace RogueEssence.Dungeon
             };
             foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, character));
+        }
+
+        public bool Equals(TerrainTile other)
+        {
+            if (other == null)
+                return false;
+
+            if (!TileTex.Equals(other.TileTex))
+                return false;
+
+            if (ID != other.ID)
+                return false;
+
+            return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj != null) && Equals(obj as TerrainTile);
+        }
+
+        public override int GetHashCode()
+        {
+            return TileTex.GetHashCode() ^ ID.GetHashCode();
         }
     }
 }

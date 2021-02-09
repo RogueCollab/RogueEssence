@@ -13,12 +13,15 @@ using Microsoft.Xna.Framework.Graphics;
 namespace RogueEssence.Dungeon
 {
     //The game engine for Dungeon Mode, in which everyone takes an ordered turn in lock-step
-    public partial class DungeonScene : BaseScene
+    public partial class DungeonScene : BaseDungeonScene
     {
         private static DungeonScene instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new DungeonScene();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static DungeonScene Instance { get { return instance; } }
         
@@ -37,7 +40,9 @@ namespace RogueEssence.Dungeon
 
         public bool SeeAll;
         public int DebugEmote;
-        
+        public GraphicsManager.AssetType DebugAsset;
+        public string DebugAnim;
+
         public ExplorerTeam ActiveTeam {  get { return ZoneManager.Instance.CurrentMap.ActiveTeam; } }
 
         
@@ -68,8 +73,6 @@ namespace RogueEssence.Dungeon
                 
         public IEnumerator<YieldInstruction> PendingLeaderAction;
         
-        public IEnumerator<YieldInstruction> PendingDevEvent;
-
         
         public bool RunMode;
         
@@ -99,36 +102,19 @@ namespace RogueEssence.Dungeon
         public MinimapState ShowMap;
 
         
-        private List<IDrawableSprite> groundDraw;
-        
-        private List<IDrawableSprite> otherDraw;
-        
-        /// <summary>
-        /// Rectangle of the tiles that must be drawn.
-        /// </summary>
-        private Rect viewTileRect;
-
         /// <summary>
         /// Rectangle of the tiles that are relevant to sight computation.
         /// </summary>
         private Rect sightRect;
         
         private float[][] charSightValues;
-
         
-        private BlendState subtractBlend;
-        
-        private RenderTarget2D gameScreen;
-
         public DungeonScene()
         {
 
             LevelGains = new List<CharIndex>();
             PickupItems = new List<PickupItem>();
             Hitboxes = new List<Hitbox>();
-
-            groundDraw = new List<IDrawableSprite>();
-            otherDraw = new List<IDrawableSprite>();
 
             LiveBattleLog = new LiveMsgLog();
             TeamModeNote = new TeamModeNotice();
@@ -142,22 +128,6 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < drawSight.X; ii++)
                 charSightValues[ii] = new float[drawSight.Y];
 
-            subtractBlend = new BlendState();
-            subtractBlend.ColorBlendFunction = BlendFunction.ReverseSubtract;
-            subtractBlend.AlphaBlendFunction = BlendFunction.ReverseSubtract;
-            subtractBlend.ColorSourceBlend = Blend.One;
-            subtractBlend.AlphaSourceBlend = Blend.One;
-            subtractBlend.ColorDestinationBlend = Blend.One;
-            subtractBlend.AlphaDestinationBlend = Blend.One;
-            subtractBlend.ColorWriteChannels = ColorWriteChannels.Alpha;
-
-            gameScreen = new RenderTarget2D(
-                GraphicsManager.GraphicsDevice,
-                GraphicsManager.ScreenWidth,
-                GraphicsManager.ScreenHeight,
-                false,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                DepthFormat.Depth24);
         }
 
         public override void Begin()
@@ -165,11 +135,12 @@ namespace RogueEssence.Dungeon
             GainedEXP = new List<EXPGain>();
             LevelGains = new List<CharIndex>();
             PendingLeaderAction = null;
-            PendingDevEvent = null;
+            base.Begin();
         }
 
         public override void UpdateMeta()
         {
+            base.UpdateMeta();
             InputManager input = GameManager.Instance.MetaInputManager;
 
             if (DataManager.Instance.CurrentReplay != null && !DataManager.Instance.CurrentReplay.OpenMenu)
@@ -294,10 +265,29 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.SE("Menu/Cancel");
         }
 
+        public IEnumerator<YieldInstruction> ProcessCheck()
+        {
+            //trigger check events- just before player action
+            List<SingleCharEvent> effects = new List<SingleCharEvent>();
+            effects.AddRange(ZoneManager.Instance.CurrentMap.CheckEvents);
+            foreach (SingleCharEvent effect in effects)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
+                if (GameManager.Instance.SceneOutcome != null)
+                    break;
+            }
+        }
+
         public override IEnumerator<YieldInstruction> ProcessInput()
         {
             if (!IsPlayerTurn())
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessAI());
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(ProcessCheck());
+
+                //the check events may have ended the scene
+                if (GameManager.Instance.SceneOutcome == null)
+                    yield return CoroutineManager.Instance.StartCoroutine(ProcessAI());
+            }
             else
             {
                 yield return new WaitUntil(AnimationsOver);
@@ -319,27 +309,20 @@ namespace RogueEssence.Dungeon
                 }
                 else
                 {
+                    yield return CoroutineManager.Instance.StartCoroutine(ProcessCheck());
+
                     if (IsPlayerLeaderTurn() && !CanUseTeamMode())
                         SetTeamMode(false);
 
-                    yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+                    //the check events may have ended the scene
+                    if (GameManager.Instance.SceneOutcome == null)
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
                 }
 
                 if (!GameManager.Instance.FrameProcessed)
                     yield return new WaitForFrames(1);
             }
 
-            if (GameManager.Instance.SceneOutcome == null && GameManager.Instance.FrameProcessed)
-            {
-                List<SingleCharEvent> effects = new List<SingleCharEvent>();
-                effects.AddRange(ZoneManager.Instance.CurrentMap.CheckEvents);
-                foreach (SingleCharEvent effect in effects)
-                {
-                    yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
-                    if (GameManager.Instance.SceneOutcome != null)
-                        break;
-                }
-            }
             if (IsGameOver())
             {
                 bool allowRescue = true;
@@ -729,23 +712,11 @@ namespace RogueEssence.Dungeon
 
                 Loc focusedLoc = GetFocusedMapLoc();
 
-
                 base.UpdateCamMod(elapsedTime, ref focusedLoc);
 
-                //update cam
-                windowScale = GraphicsManager.WindowZoom;
+                base.UpdateCam(focusedLoc);
 
-                scale = GameManager.Instance.Zoom.GetScale();
                 Loc viewCenter = focusedLoc;
-
-                if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Clamp)
-                    viewCenter = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(viewCenter.X, ZoneManager.Instance.CurrentMap.Width * GraphicsManager.TileSize - GraphicsManager.ScreenWidth / 2)),
-                        Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(viewCenter.Y, ZoneManager.Instance.CurrentMap.Height * GraphicsManager.TileSize - GraphicsManager.ScreenHeight / 2)));
-
-                ViewRect = new Rect((int)(viewCenter.X - GraphicsManager.ScreenWidth / scale / 2), (int)(viewCenter.Y - GraphicsManager.ScreenHeight / scale / 2),
-                    (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));
-                viewTileRect = new Rect((int)Math.Floor((float)ViewRect.X / GraphicsManager.TileSize), (int)Math.Floor((float)ViewRect.Y / GraphicsManager.TileSize),
-                    (ViewRect.End.X - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)ViewRect.X / GraphicsManager.TileSize), (ViewRect.End.Y - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)ViewRect.Y / GraphicsManager.TileSize));
 
                 base.Update(elapsedTime);
 
@@ -795,373 +766,132 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
+        protected override bool CanSeeTile(int xx, int yy)
+        {
+            if (SeeAll)
+                return true;
+            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                return true;
+            bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
+            return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[xx][yy] == Map.DiscoveryState.Traversed);
+        }
+
+        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy)
+        {
+            base.PrepareTileDraw(spriteBatch, xx, yy);
+
+            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(xx, yy), FocusedCharacter.Mobility))
+            {
+                if (Collision.InFront(FocusedCharacter.CharLoc, new Loc(xx, yy), FocusedCharacter.CharDir, -1))
+                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                else
+                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+            }
+        }
+
+        protected override void PrepareFrontDraw()
+        {
+            //draw hitboxes on top
+            foreach (Hitbox hitbox in Hitboxes)
+            {
+                if (CanSeeSprite(ViewRect, hitbox))
+                    AddToDraw(frontDraw, hitbox);
+            }
+
+            base.PrepareFrontDraw();
+        }
+
+        protected override bool CanSeeCharOnScreen(Character character)
+        {
+            if (!base.CanSeeCharOnScreen(character))
+                return false;
+            if (SeeAll)
+                return true;
+
+            foreach (Character member in ActiveTeam.Players)
+            {
+                if (member.SeeAllChars)
+                    return true;
+                else if (!member.Dead || member == FocusedCharacter)
+                {
+                    if (member == character)
+                        return true;
+                    else if (!character.Invis)
+                    {
+                        Map.SightRange sight = member.GetCharSight();
+                        foreach (Loc loc in character.GetLocsVisible())
+                        {
+                            if (Collision.InBounds(sightRect, loc))
+                            {
+                                if (sight == Map.SightRange.Clear)
+                                    return true;
+                                else
+                                {
+                                    Loc dest = loc - sightRect.Start;
+                                    if (charSightValues[dest.X][dest.Y] > 0f)
+                                        return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        protected override bool CanSeeHiddenItems()
+        {
+            if (SeeAll)
+                return true;
+
+            foreach (Character member in ActiveTeam.Players)
+            {
+                if (member.SeeWallItems)
+                    return true;
+            }
+            return false;
+        }
+
+        protected override void DrawItems(SpriteBatch spriteBatch, bool showHiddenItem)
+        {
+            base.DrawItems(spriteBatch, showHiddenItem);
+
+            //draw pickup items
+            foreach (PickupItem item in PickupItems)
+            {
+                if (CanSeeSprite(ViewRect, item))
+                {
+                    TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                    if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                    {
+                        if (showHiddenItem)
+                            item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                    }
+                    else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                    {
+                        if (terrain.BlockType == TerrainData.Mobility.Passable)
+                            item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                        else
+                            item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                    }
+                }
+            }
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (ZoneManager.Instance.CurrentMap != null)
             {
 
                 if (ShowMap != MinimapState.Detail)
-                {
-                    GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
-
-                    GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
-
-                    Matrix matrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
-                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
-
-                    groundDraw.Clear();
-                    otherDraw.Clear();
-                    //draw the background
-                    for (int jj = viewTileRect.Y-1; jj < viewTileRect.End.Y+1; jj++)
-                    {
-                        for (int ii = viewTileRect.X-1; ii < viewTileRect.End.X+1; ii++)
-                        {
-                            //if it's a tile on the discovery array, show it
-                            bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj));
-                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear || !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[ii][jj] == Map.DiscoveryState.Traversed) || SeeAll)
-                            {
-                                if (outOfBounds)
-                                    ZoneManager.Instance.CurrentMap.DrawBG(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start, new Loc(ii, jj));
-                                else
-                                {
-                                    ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start, new Loc(ii, jj));
-                                    EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Effect;
-                                    if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
-                                    {
-                                        if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
-                                            AddToDraw(otherDraw, effect);
-                                        else
-                                            AddToDraw(groundDraw, effect);
-                                    }
-                                    if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), FocusedCharacter.Mobility))
-                                    {
-                                        if (Collision.InFront(FocusedCharacter.CharLoc, new Loc(ii, jj), FocusedCharacter.CharDir, -1))
-                                            GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
-                                        else
-                                            GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    //draw effects laid on ground
-                    foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Bottom])
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(groundDraw, effect);
-                    }
-                    int charIndex = 0;
-                    while (charIndex < groundDraw.Count)
-                    {
-                        groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-
-                    List<Character> shownShadows = new List<Character>();
-
-                    //draw effects in object space
-                    //get all back effects, see if they're in the screen, and put them in the list, sorted
-                    foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Back])
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
-                    }
-                    List<Character> shownFoes = new List<Character>();
-                    if (!DataManager.Instance.HideChars)
-                    {
-                        //check if player/enemies is in the screen, put in list
-                        foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-                        {
-                            if (!character.Dead && CanSeeSprite(ViewRect, character))
-                            {
-                                bool seeChar = false;
-                                foreach (Character member in ActiveTeam.Players)
-                                {
-                                    if (SeeAll || member.SeeAllChars)
-                                    {
-                                        seeChar = true;
-                                        break;   
-                                    }
-                                    else if (!member.Dead || member == FocusedCharacter)
-                                    {
-                                        if (member == character)
-                                        {
-                                            seeChar = true;
-                                            break;
-                                        }
-                                        else if (!character.Invis)
-                                        {
-                                            Map.SightRange sight = member.GetCharSight();
-                                            foreach (Loc loc in character.GetLocsVisible())
-                                            {
-                                                if (Collision.InBounds(sightRect, loc))
-                                                {
-                                                    if (sight == Map.SightRange.Clear)
-                                                    {
-                                                        seeChar = true;
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        Loc dest = loc - sightRect.Start;
-                                                        if (charSightValues[dest.X][dest.Y] > 0f)
-                                                        {
-                                                            seeChar = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if (seeChar)
-                                {
-                                    AddToDraw(otherDraw, character);
-                                    shownShadows.Add(character);
-                                    if (Turn && Math.Abs(FocusedCharacter.CharLoc.X - character.CharLoc.X) <= 6)
-                                        shownFoes.Add(character);
-                                }
-                            }
-                        }
-                    }
-                    //get all effects, see if they're in the screen, and put them in the list, sorted
-                    foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Normal])
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
-                    }
-
-                    //draw shadows
-                    foreach (Character shadowChar in shownShadows)
-                    {
-                        TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[shadowChar.CharLoc.X][shadowChar.CharLoc.Y].Data.GetData();
-                        int terrainShadow = terrain.ShadowType;
-                        shadowChar.DrawShadow(spriteBatch, ViewRect.Start, terrainShadow);
-                    }
-
-
-                    //if it's a tile on the discovery array, show it
-                    bool showHiddenItem = SeeAll;
-
-                    if (!showHiddenItem)
-                    {
-                        foreach (Character member in ActiveTeam.Players)
-                        {
-                            if (member.SeeWallItems)
-                            {
-                                showHiddenItem = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    //draw items
-                    if (!DataManager.Instance.HideObjects)
-                    {
-                        foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
-                        {
-                            if (CanSeeSprite(ViewRect, item))
-                            {
-                                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                                if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
-                                {
-                                    if (showHiddenItem)
-                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
-                                }
-                                else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
-                                {
-                                    if (terrain.BlockType == TerrainData.Mobility.Passable)
-                                        item.Draw(spriteBatch, ViewRect.Start, Color.White);
-                                    else
-                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.7f);
-                                }
-                            }
-                        }
-                        //draw pickup items
-                        foreach (PickupItem item in PickupItems)
-                        {
-                            if (CanSeeSprite(ViewRect, item))
-                            {
-                                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                                if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
-                                {
-                                    if (showHiddenItem)
-                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
-                                }
-                                else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
-                                {
-                                    if (terrain.BlockType == TerrainData.Mobility.Passable)
-                                        item.Draw(spriteBatch, ViewRect.Start, Color.White);
-                                    else
-                                        item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
-                                }
-                            }
-                        }
-                    }
-
-                    //draw object
-                    charIndex = 0;
-                    for (int j = viewTileRect.Y; j < viewTileRect.End.Y; j++)
-                    {
-                        while (charIndex < otherDraw.Count)
-                        {
-                            int charY = otherDraw[charIndex].MapLoc.Y;
-                            if (charY == j * GraphicsManager.TileSize)
-                            {
-                                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                                charIndex++;
-                            }
-                            else
-                                break;
-                        }
-                        
-                        while (charIndex < otherDraw.Count)
-                        {
-                            int charY = otherDraw[charIndex].MapLoc.Y;
-                            if (charY < (j + 1) * GraphicsManager.TileSize)
-                            {
-                                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                                charIndex++;
-                            }
-                            else
-                                break;
-                        }
-                    }
-
-                    while (charIndex < otherDraw.Count)
-                    {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-
-                    //draw hitboxes on top
-                    otherDraw.Clear();
-                    foreach (Hitbox hitbox in Hitboxes)
-                    {
-                        if (CanSeeSprite(ViewRect, hitbox))
-                            AddToDraw(otherDraw, hitbox);
-                    }
-
-                    //draw effects in top
-                    foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Front])
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
-                    }
-                    charIndex = 0;
-                    while (charIndex < otherDraw.Count)
-                    {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-                    
-                    //draw effects in foreground
-                    otherDraw.Clear();
-                    foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Top])
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw(otherDraw, effect);
-                    }
-                    charIndex = 0;
-                    while (charIndex < otherDraw.Count)
-                    {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-
-                    foreach(Character hpChar in shownFoes)
-                    {
-                        Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
-                        GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
-                        int hpAmount = (hpChar.HP * 18 - 1) / hpChar.MaxHP + 1;
-                        Color hpColor = new Color(88, 248, 88);
-                        if (hpChar.HP * 4 <= hpChar.MaxHP)
-                            hpColor = new Color(248, 128, 88);
-                        else if (hpChar.HP * 2 <= hpChar.MaxHP)
-                            hpColor = new Color(248, 232, 88);
-                        GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(drawLoc.X + 1, drawLoc.Y + 1, hpAmount, 2), null, hpColor);
-                    }
-
-                    if (Diagonal)
-                    {
-                        int base_offset = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(3) % 6);
-                        if (base_offset >= 4)
-                            base_offset = 6 - base_offset;
-                        Vector2 arrow_offset = new Vector2(base_offset);
-                        Vector2 arrow_alt_offset = new Vector2(base_offset, -base_offset);
-                        GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileWidth, (GraphicsManager.ScreenHeight / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileHeight) - arrow_offset, 0, 0);
-                        GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale + GraphicsManager.TileSize) / 2, (GraphicsManager.ScreenHeight / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileHeight) + arrow_alt_offset, 2, 0);
-                        GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileWidth, (GraphicsManager.ScreenHeight / scale + GraphicsManager.TileSize) / 2) - arrow_alt_offset, 0, 2);
-                        GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale + GraphicsManager.TileSize) / 2, (GraphicsManager.ScreenHeight / scale + GraphicsManager.TileSize) / 2) + arrow_offset, 2, 2);
-                    }
-
-
-
-                    spriteBatch.End();
-
-
-                    //draw foreground (includes darkness)
-                    //prepare grid
-                    if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.GetTileSight() != Map.SightRange.Clear) && !SeeAll)
-                    {
-                        //subtractive blending
-                        spriteBatch.Begin(SpriteSortMode.Deferred, subtractBlend, SamplerState.PointClamp, null, null, null, matrix);
-
-                        for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
-                        {
-                            for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
-                            {
-                                //set tile sprite position
-                                if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
-                                {
-                                    if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
-                                }
-                                else if (!Collision.InBounds(sightRect, new Loc(ii, jj)))
-                                    GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
-                                else
-                                {
-                                    if (charSightValues[ii - sightRect.X][jj - sightRect.Y] < 1f)
-                                    {
-                                        GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null,
-                                            Color.White * DARK_TRANSPARENT * Math.Max(1f - charSightValues[ii - sightRect.X][jj - sightRect.Y], 0), new Vector2(GraphicsManager.TileSize));
-                                    }
-
-                                    for (int dir = 0; dir < DirExt.DIR8_COUNT; dir++)
-                                    {
-                                        foreach (VisionLoc tex in getDarknessTextures(new Loc(ii, jj), sightRect.Start, (Dir8)dir))
-                                        {
-                                            //draw in correct location
-                                            Loc dest = new Loc(ii * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.X, jj * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.Y)
-                                                + ((Dir8)dir).GetLoc() * (GraphicsManager.TileSize / 3);
-                                            GraphicsManager.Darkness.DrawTile(spriteBatch, dest.ToVector2(), tex.Loc.X, tex.Loc.Y, Color.White * tex.Weight);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        spriteBatch.End();
-                    }
-
-                    GraphicsManager.GraphicsDevice.SetRenderTarget(null);
-
-                    GraphicsManager.GraphicsDevice.Clear(Color.Black);
-
-                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
-
-                    spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
-
-                    spriteBatch.End();
-                }
+                    DrawGame(spriteBatch);
 
 
                 if ((ShowMap != MinimapState.None) && !Turn && !ShowActions && !DataManager.Instance.Save.CutsceneMode && MenuManager.Instance.MenuCount == 0)
                 {
                     //draw minimap
-                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                     TileSheet mapSheet = GraphicsManager.MapSheet;
 
@@ -1298,7 +1028,7 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
 
 
@@ -1358,32 +1088,136 @@ namespace RogueEssence.Dungeon
             spriteBatch.End();
         }
 
-        public virtual void DrawDev(SpriteBatch spriteBatch)
-        {
 
+        protected override void PostDraw(SpriteBatch spriteBatch)
+        {
+            //draw foreground (includes darkness)
+            //prepare grid
+            if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.GetTileSight() != Map.SightRange.Clear) && !SeeAll)
+            {
+                Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
+                //subtractive blending
+                spriteBatch.Begin(SpriteSortMode.Deferred, subtractBlend, SamplerState.PointClamp, null, null, null, matrix);
+
+                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                {
+                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                    {
+                        //set tile sprite position
+                        if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
+                        {
+                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                        }
+                        else if (!Collision.InBounds(sightRect, new Loc(ii, jj)))
+                            GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                        else
+                        {
+                            if (charSightValues[ii - sightRect.X][jj - sightRect.Y] < 1f)
+                            {
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null,
+                                    Color.White * DARK_TRANSPARENT * Math.Max(1f - charSightValues[ii - sightRect.X][jj - sightRect.Y], 0), new Vector2(GraphicsManager.TileSize));
+                            }
+
+                            for (int dir = 0; dir < DirExt.DIR8_COUNT; dir++)
+                            {
+                                foreach (VisionLoc tex in getDarknessTextures(new Loc(ii, jj), sightRect.Start, (Dir8)dir))
+                                {
+                                    //draw in correct location
+                                    Loc dest = new Loc(ii * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.X, jj * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.Y)
+                                        + ((Dir8)dir).GetLoc() * (GraphicsManager.TileSize / 3);
+                                    GraphicsManager.Darkness.DrawTile(spriteBatch, dest.ToVector2(), tex.Loc.X, tex.Loc.Y, Color.White * tex.Weight);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                spriteBatch.End();
+            }
+        }
+
+
+        public override void DrawOverlay(SpriteBatch spriteBatch)
+        {
+            if (Turn)
+            {
+                foreach (Character hpChar in shownChars)
+                {
+                    Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
+                    GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
+                    int hpAmount = (hpChar.HP * 18 - 1) / hpChar.MaxHP + 1;
+                    Color hpColor = new Color(88, 248, 88);
+                    if (hpChar.HP * 4 <= hpChar.MaxHP)
+                        hpColor = new Color(248, 128, 88);
+                    else if (hpChar.HP * 2 <= hpChar.MaxHP)
+                        hpColor = new Color(248, 232, 88);
+                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(drawLoc.X + 1, drawLoc.Y + 1, hpAmount, 2), null, hpColor);
+                }
+            }
+
+            if (Diagonal)
+            {
+                int base_offset = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(3) % 6);
+                if (base_offset >= 4)
+                    base_offset = 6 - base_offset;
+                Vector2 arrow_offset = new Vector2(base_offset);
+                Vector2 arrow_alt_offset = new Vector2(base_offset, -base_offset);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileWidth, (GraphicsManager.ScreenHeight / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileHeight) - arrow_offset, 0, 0);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale + GraphicsManager.TileSize) / 2, (GraphicsManager.ScreenHeight / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileHeight) + arrow_alt_offset, 2, 0);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileWidth, (GraphicsManager.ScreenHeight / scale + GraphicsManager.TileSize) / 2) - arrow_alt_offset, 0, 2);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale + GraphicsManager.TileSize) / 2, (GraphicsManager.ScreenHeight / scale + GraphicsManager.TileSize) / 2) + arrow_offset, 2, 2);
+            }
+
+
+
+            //draw example texture
+            if (DebugAsset != GraphicsManager.AssetType.None)
+            {
+                switch (DebugAsset)
+                {
+                    case GraphicsManager.AssetType.VFX:
+                        DirSheet dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
+                        dirSheet.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / scale / 2 - dirSheet.TileWidth / 2, GraphicsManager.ScreenHeight / scale / 2 - dirSheet.TileHeight / 2),
+                            (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % (ulong)dirSheet.TotalFrames),
+                            FocusedCharacter.CharDir, Color.White);
+
+                        break;
+                }
+            }
         }
 
         public override void DrawDebug(SpriteBatch spriteBatch)
         {
+            base.DrawDebug(spriteBatch);
             if (FocusedCharacter != null)
             {
                 PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.Appearance);
                 sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
 
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.CharLoc.X, FocusedCharacter.CharLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.CharLoc.X, FocusedCharacter.CharLoc.Y), null, DirV.Up, DirH.Right, Color.White);
 
                 MonsterID monId;
                 Loc offset;
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
+
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
+                Color frameColor = Color.White;
+                if (charSheet.IsAnimCopied(anim))
+                    frameColor = Color.Yellow;
+                if (!charSheet.HasOwnAnim(anim))
+                    frameColor = Color.Gray;
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
+
             }
+
             if (ZoneManager.Instance.CurrentMap != null)
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
-            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
+            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 102, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
 
             //if (GodMode)
             //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "God Mode", null, DirV.Up, DirH.Right, Color.LightYellow);
@@ -1441,18 +1275,6 @@ namespace RogueEssence.Dungeon
             }
             if (hp == 0)
                 GraphicsManager.HPMenu.DrawTile(spriteBatch, new Vector2(digitX, 8), 0, 0);
-        }
-
-        public Loc ScreenCoordsToMapCoords(Loc loc)
-        {
-            loc.X = (int)(loc.X / scale / windowScale);
-            loc.Y = (int)(loc.Y / scale / windowScale);
-            loc += ViewRect.Start;
-            loc = loc - (ViewRect.Start / GraphicsManager.TileSize * GraphicsManager.TileSize) + new Loc(GraphicsManager.TileSize);
-            loc /= GraphicsManager.TileSize;
-            loc = loc + (ViewRect.Start / GraphicsManager.TileSize) - new Loc(1);
-
-            return loc;
         }
 
         public void AddSeenLocs(VisionLoc loc, Map.SightRange sight)

@@ -16,7 +16,10 @@ namespace RogueEssence.Ground
         private static GroundScene instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new GroundScene();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static GroundScene Instance { get { return instance; } }
 
@@ -65,6 +68,7 @@ namespace RogueEssence.Ground
 
         public override void UpdateMeta()
         {
+            base.UpdateMeta();
             InputManager input = GameManager.Instance.MetaInputManager;
 
             if (input.JustPressed(FrameInput.InputType.Test))
@@ -95,10 +99,25 @@ namespace RogueEssence.Ground
                 PendingLeaderAction = null;
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessFrameInput());
+            if (PendingDevEvent != null)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
+                PendingDevEvent = null;
+            }
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+
+            if (!GameManager.Instance.FrameProcessed)
+                yield return new WaitForFrames(1);
+
+            if (GameManager.Instance.SceneOutcome == null)
+            {
+                //psy's notes: put everything related to the check events in the ground map, so its more encapsulated.
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnCheck());
+            }
         }
 
-        protected override IEnumerator<YieldInstruction> ProcessInput(InputManager input)
+        IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             GameAction action = new GameAction(GameAction.ActionType.None, Dir8.None);
 
@@ -266,19 +285,20 @@ namespace RogueEssence.Ground
                     int size = GraphicsManager.SysFont.SubstringWidth(message);
                     GraphicsManager.SysFont.DrawText(spriteBatch, (int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), message, null, DirV.None, DirH.None);
                 });
-            
+
+            base.DrawDebug(spriteBatch);
             if (FocusedCharacter != null)
             {
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.MapLoc.X, FocusedCharacter.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.MapLoc.X, FocusedCharacter.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
 
                 MonsterID monId;
                 Loc offset;
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
             }
 
         }

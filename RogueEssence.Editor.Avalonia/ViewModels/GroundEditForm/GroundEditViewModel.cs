@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using RogueEssence;
@@ -9,53 +10,63 @@ using Avalonia.Controls;
 using System.IO;
 using RogueEssence.Dev.Views;
 using RogueEssence.Content;
+using RogueElements;
+using RogueEssence.Script;
+using System.Linq;
+using ReactiveUI;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace RogueEssence.Dev.ViewModels
 {
     public class GroundEditViewModel : ViewModelBase
     {
-        public GroundEditViewModel(Window dialogParent)
+        public GroundEditViewModel()
         {
             Textures = new GroundTabTexturesViewModel();
+            Decorations = new GroundTabDecorationsViewModel();
             Walls = new GroundTabWallsViewModel();
             Entities = new GroundTabEntitiesViewModel();
             Properties = new GroundTabPropertiesViewModel();
-            Script = new GroundTabScriptViewModel();
             Strings = new GroundTabStringsViewModel();
-            DialogParent = dialogParent;
+            Script = new GroundTabScriptViewModel();
+            CurrentFile = "";
         }
 
         public GroundTabTexturesViewModel Textures { get; set; }
+        public GroundTabDecorationsViewModel Decorations { get; set; }
         public GroundTabWallsViewModel Walls { get; set; }
         public GroundTabEntitiesViewModel Entities { get; set; }
         public GroundTabPropertiesViewModel Properties { get; set; }
-        public GroundTabScriptViewModel Script { get; set; }
         public GroundTabStringsViewModel Strings { get; set; }
+        public GroundTabScriptViewModel Script { get; set; }
 
+        private string currentFile;
+        public string CurrentFile
+        {
+            get => currentFile;
+            set => this.SetIfChanged(ref currentFile, value);
+        }
 
-        public string CurrentFile;
-        public Window DialogParent;
+        private int selectedTabIndex;
+        public int SelectedTabIndex
+        {
+            get => selectedTabIndex;
+            set => this.SetIfChanged(ref selectedTabIndex, value);
+        }
 
 
         public void New_Click()
         {
-
-            //Check all callbacks by default
-            for (int ii = 0; ii < Script.ScriptItems.Count; ii++)
-                Script.ScriptItems[ii].IsChecked = true;
-
             CurrentFile = "";
 
-            lock (GameBase.lockObj)
-            {
-                //Schedule the map creation
-                GroundEditScene.Instance.PendingDevEvent = DoNew();
-            }
+            lock (GameBase.lockObj) //Schedule the map creation
+                DoNew();
         }
 
         public async void Open_Click()
         {
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -64,21 +75,24 @@ namespace RogueEssence.Dev.ViewModels
             filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
             openFileDialog.Filters.Add(filter);
 
-            string[] results = await openFileDialog.ShowAsync(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
             if (results.Length > 0)
             {
-                if (!comparePaths(Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH), Path.GetDirectoryName(results[0])))
-                    await MessageBox.Show(DialogParent, String.Format("Map can only be loaded from:\n{0}", Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
+                bool legalPath = false;
+                foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
+                {
+                    if (comparePaths(proposedPath, Path.GetDirectoryName(results[0])))
+                        legalPath = true;
+                }
+                if (!legalPath)
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.", PathMod.ModPath(DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
-                    {
-                        CurrentFile = results[0];
-
-                        //Schedule the map load
-                        GroundEditScene.Instance.PendingDevEvent = DoLoad(Path.GetFileNameWithoutExtension(results[0]));
-                    }
+                        DoLoad(Path.GetFileNameWithoutExtension(results[0]));
                 }
             }
         }
@@ -90,12 +104,12 @@ namespace RogueEssence.Dev.ViewModels
             else
             {
                 lock (GameBase.lockObj)
-                    GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
+                    DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
             }
         }
         public async void SaveAs_Click()
         {
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = mapDir;
 
@@ -104,22 +118,23 @@ namespace RogueEssence.Dev.ViewModels
             filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
             saveFileDialog.Filters.Add(filter);
 
-            string result = await saveFileDialog.ShowAsync(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string result = await saveFileDialog.ShowAsync(form.GroundEditForm);
 
             if (result != null)
             {
-                if (!comparePaths(Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH, Path.GetDirectoryName(result)))
-                    await MessageBox.Show(DialogParent, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
+                if (!comparePaths(PathMod.ModPath(DataManager.GROUND_PATH), Path.GetDirectoryName(result)))
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
                     {
                         string oldFilename = CurrentFile;
                         ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
-                        CurrentFile = result;
 
                         //Schedule saving the map
-                        GroundEditScene.Instance.PendingDevEvent = DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, oldFilename);
+                        DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
                     }
                 }
             }
@@ -127,7 +142,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void ImportFromPng_Click()
         {
-            string mapDir = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH);
+            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -136,24 +151,28 @@ namespace RogueEssence.Dev.ViewModels
             filter.Extensions.Add("png");
             openFileDialog.Filters.Add(filter);
 
-            string[] results = await openFileDialog.ShowAsync(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
             lock (GameBase.lockObj)
             {
                 if (results.Length > 0)
-                    GroundEditScene.Instance.PendingDevEvent = DoImportPng(results[0]);
+                    DoImportPng(results[0]);
             }
         }
 
 
         public async void ImportFromTileset_Click()
         {
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
             if (Textures.TileBrowser.CurrentTileset == "")
-                await MessageBox.Show(DialogParent, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(form.GroundEditForm, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
             else
             {
                 lock (GameBase.lockObj)
-                    GroundEditScene.Instance.PendingDevEvent = DoImportTileset(Textures.TileBrowser.CurrentTileset);
+                    DoImportTileset(Textures.TileBrowser.CurrentTileset);
             }
         }
 
@@ -165,7 +184,9 @@ namespace RogueEssence.Dev.ViewModels
             MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
             window.DataContext = viewModel;
 
-            bool result = await window.ShowDialog<bool>(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
 
             lock (GameBase.lockObj)
             {
@@ -187,24 +208,29 @@ namespace RogueEssence.Dev.ViewModels
             MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize);
             window.DataContext = viewModel;
 
-            bool result = await window.ShowDialog<bool>(DialogParent);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
 
             lock (GameBase.lockObj)
             {
-                if (result)
+                bool sizeChanged = viewModel.TileSize != ZoneManager.Instance.CurrentGround.TileSize;
+                if (result && sizeChanged)
                 {
                     DiagManager.Instance.LoadMsg = "Retiling Map...";
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
                     ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
 
-                    Textures.TileBrowser.SetTileSize(viewModel.TileSize);
+                    Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+                    Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+                    ZoneManager.Instance.CurrentGround.BlankBG = new AutoTile();
+                    Properties.BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);
 
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
                 }
             }
         }
-
 
         //public void Undo_Click()
         //{
@@ -216,9 +242,7 @@ namespace RogueEssence.Dev.ViewModels
 
         //}
 
-
-
-        private IEnumerator<YieldInstruction> DoNew()
+        private void DoNew()
         {
             //take all the necessary steps before and after moving to the map
 
@@ -226,16 +250,12 @@ namespace RogueEssence.Dev.ViewModels
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
             GameManager.Instance.ForceReady();
 
-
             ZoneManager.Instance.CurrentZone.DevNewGround();
 
             loadEditorSettings();
-
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-
-            yield break;
         }
-        private IEnumerator<YieldInstruction> DoLoad(string mapName)
+        private void DoLoad(string mapName)
         {
             //take all the necessary steps before and after moving to the map
 
@@ -245,17 +265,16 @@ namespace RogueEssence.Dev.ViewModels
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
 
+            CurrentFile = PathMod.ModPath(Path.Combine(DataManager.GROUND_PATH, mapName + DataManager.GROUND_EXT));
             loadEditorSettings();
-
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
 
-            yield break;
         }
 
         public void LoadFromCurrentGround()
         {
             if (ZoneManager.Instance.CurrentGround.AssetName != "")
-                CurrentFile = Path.Join(Directory.GetCurrentDirectory(), DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT);
+                CurrentFile = PathMod.ModPath(Path.Combine(DataManager.GROUND_PATH, ZoneManager.Instance.CurrentGround.AssetName + DataManager.GROUND_EXT));
             else
                 CurrentFile = "";
 
@@ -264,89 +283,70 @@ namespace RogueEssence.Dev.ViewModels
 
         private void loadEditorSettings()
         {
-            //lbxLayers.LoadFromList(ZoneManager.Instance.CurrentGround.Layers, IsLayerChecked);
-            //tileBrowser.SetTileSize(ZoneManager.Instance.CurrentGround.TileSize);
+            Textures.Layers.LoadLayers();
+            Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            Decorations.Layers.LoadLayers();
+            Entities.Layers.LoadLayers();
 
-            //RefreshTitle();
-            //UpdateHasScriptFolder();
-            //LoadMapProperties();
-            //SetupLayerVisibility();
-            //LoadAndSetupStrings();
+            Walls.SetupLayerVisibility();
+            Properties.LoadMapProperties();
+            Script.LoadScripts();
+            Strings.LoadStrings();
         }
 
-        private IEnumerator<YieldInstruction> DoImportPng(string filePath)
+        private void DoImportPng(string filePath)
         {
-            //string sheetName = Path.GetFileNameWithoutExtension(filePath);
-
-            //string outputFile = String.Format(GraphicsManager.TILE_PATTERN, sheetName);
-
-
-            ////load into tilesets
-            //using (BaseSheet tileset = BaseSheet.Import(filePath))
-            //{
-            //    List<BaseSheet> tileList = new List<BaseSheet>();
-            //    tileList.Add(tileset);
-            //    ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
-            //}
+            string sheetName = Path.GetFileNameWithoutExtension(filePath);
+            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
 
 
-            ////update the index
-            //using (FileStream stream = File.OpenRead(outputFile))
-            //{
-            //    using (BinaryReader reader = new BinaryReader(stream))
-            //    {
-            //        TileIndexNode guide = TileIndexNode.Load(reader);
-            //        GraphicsManager.TileIndex.Nodes[sheetName] = guide;
-            //    }
-            //}
+            //load into tilesets
+            using (BaseSheet tileset = BaseSheet.Import(filePath))
+            {
+                List<BaseSheet> tileList = new List<BaseSheet>();
+                tileList.Add(tileset);
+                ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+            }
 
-            //string search = Path.GetDirectoryName(String.Format(GraphicsManager.TILE_PATTERN, '*'));
-            //using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
-            //{
-            //    using (BinaryWriter writer = new BinaryWriter(stream))
-            //        GraphicsManager.TileIndex.Save(writer);
-            //}
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+            DevGraphicsManager.ClearCaches();
 
-            //GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-
-            //tileBrowser.UpdateTilesList();
-            //tileBrowser.SelectTileset(sheetName);
-            yield break;
+            Textures.TileBrowser.UpdateTilesList();
+            Textures.TileBrowser.SelectTileset(sheetName);
         }
 
-        private IEnumerator<YieldInstruction> DoImportTileset(string sheetName)
+        private void DoImportTileset(string sheetName)
         {
-            //Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
+            Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
-            //DiagManager.Instance.LoadMsg = "Loading Map...";
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-            //ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.UpLeft);
+            ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.UpLeft);
 
-            ////set tilesets
-            //for (int yy = 0; yy < newSize.Y; yy++)
-            //{
-            //    for (int xx = 0; xx < newSize.X; xx++)
-            //        ZoneManager.Instance.CurrentGround.Layers[lbxLayers.SelectedIndex].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
-            //}
+            //set tilesets
+            for (int yy = 0; yy < newSize.Y; yy++)
+            {
+                for (int xx = 0; xx < newSize.X; xx++)
+                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+            }
 
-            //DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-
-            yield break;
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
         }
 
-        private IEnumerator<YieldInstruction> DoSave(GroundMap curgrnd, string filepath, string oldfname)
+        private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
-            //DataManager.SaveData(filepath, curgrnd);
+            Script.SaveScripts();
+            DataManager.SaveData(filepath, curgrnd);
 
-            ////Actually create the script folder, and default script file.
-            //CreateOrCopyScriptData(oldfname, CurrentFile);
-            ////Strings will have to be created on demand!
-            //UpdateHasScriptFolder();
+            //Actually create the script folder, and default script file.
+            createOrCopyScriptData(oldfname, filepath);
+            //create or update the strings
+            Strings.SaveStrings();
 
-            //RefreshTitle();
-
-            yield break;
+            CurrentFile = filepath;
         }
 
 
@@ -357,5 +357,64 @@ namespace RogueEssence.Dev.ViewModels
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
+        /// <summary>
+        /// Call this when saving as, so that if the previous map name has a script folder with data in it,
+        /// we can copy it. And if it doesn't, we create a "blank slate" one!
+        /// </summary>
+        /// <param name="oldfilepath"></param>
+        /// <param name="newfilepath"></param>
+        private void createOrCopyScriptData(string oldfilepath, string newfilepath)
+        {
+            string oldmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
+            string newmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+
+            //Check if we have anything to copy at all!
+            if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))
+            {
+                Directory.CreateDirectory(newmapscriptdir);
+                foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
+                {
+                    //Path to the sub-directory within the script folder containing this file
+                    string subdirpath = f.Remove(oldmapscriptdir.Count()); //Not Count - 1 because of the last path separator!
+                    //Path to the sub-directory within the new script folder where we'll copy this file!
+                    string destpath = Path.Combine(newmapscriptdir, subdirpath);
+
+                    //Ensure all subdirectories are created recursively, if there are any!
+                    Directory.CreateDirectory(Path.GetDirectoryName(destpath));
+
+                    //Copy the file itself
+                    File.Copy(f, destpath, false);
+                }
+            }
+            else
+            {
+                //We just create a new one straight away!
+                LuaEngine.Instance.CreateNewMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
+            }
+        }
+
+
+
+        public void ProcessInput(InputManager input)
+        {
+            lock (GameBase.lockObj)
+            {
+                switch (selectedTabIndex)
+                {
+                    case 0://Textures
+                        Textures.ProcessInput(input);
+                        break;
+                    case 1://Decorations
+                        Decorations.ProcessInput(input);
+                        break;
+                    case 2://Walls
+                        Walls.ProcessInput(input);
+                        break;
+                    case 3://Entities
+                        Entities.ProcessInput(input);
+                        break;
+                }
+            }
+        }
     }
 }

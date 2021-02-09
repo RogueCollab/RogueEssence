@@ -65,6 +65,9 @@ namespace RogueEssence
             GraphicsManager.InitSystem(GraphicsDevice);
 
             CurrentPhase = LoadPhase.Content;
+            
+            LuaEngine.InitInstance();
+            GraphicsManager.InitStatic();
 
             Thread thread = new Thread(LoadInBackground);
             thread.IsBackground = true;
@@ -79,8 +82,6 @@ namespace RogueEssence
         {
             try
             {
-                LuaEngine.InitInstance();
-                GraphicsManager.InitStatic();
                 SoundManager.InitStatic();
 
                 DiagManager.Instance.LoadMsg = "Loading Content";
@@ -93,8 +94,8 @@ namespace RogueEssence
                 Dungeon.DungeonScene.InitInstance();
                 Ground.GroundScene.InitInstance();
             
-                //Dungeon.DungeonEditScene.InitInstance();
-                Dev.GroundEditScene.InitInstance();
+                DungeonEditScene.InitInstance();
+                GroundEditScene.InitInstance();
                 //Notify script engine
                 LuaEngine.Instance.OnDataLoad();
                 LuaEngine.Instance.UpdateExposedInstances();
@@ -185,7 +186,6 @@ namespace RogueEssence
                         lock (lockObj)
                         {
                             SoundManager.NewFrame();
-                            GraphicsManager.Update();
 
                             FrameInput input = new FrameInput();
                             if (DiagManager.Instance.ActiveDebugReplay != null && DiagManager.Instance.DebugReplayIndex < DiagManager.Instance.ActiveDebugReplay.Count)

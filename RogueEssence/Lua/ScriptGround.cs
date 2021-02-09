@@ -217,7 +217,10 @@ namespace RogueEssence.Script
         public void CharSetEmote(GroundChar chara, int emoteid, int cycles)
         {
             if (chara != null)
-                chara.StartEmote(DataManager.Instance.GetEmote(emoteid), cycles);
+            {
+                EmoteData emote = DataManager.Instance.GetEmote(emoteid);
+                chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));
+            }
         }
 
         /// <summary>
@@ -289,7 +292,10 @@ namespace RogueEssence.Script
         {
             if (curch == null || turnto == null)
                 return;
-            curch.CharDir = turnto.CharDir.Reverse();
+            Dir8 destDir = DirExt.ApproximateDir8(turnto.MapLoc - curch.MapLoc);
+            if (destDir == Dir8.None)
+                destDir = turnto.CharDir.Reverse();
+            curch.CharDir = destDir;
         }
 
 
@@ -306,7 +312,11 @@ namespace RogueEssence.Script
         {
             if (curch == null || turnto == null)
                 return new Coroutine(LuaEngine._DummyWait());
-            return new Coroutine(_DoAnimatedTurn(curch, _CountDirectionDifference(curch.CharDir, turnto.CharDir.Reverse()), framedur));
+            Dir8 destDir = DirExt.ApproximateDir8(turnto.MapLoc - curch.MapLoc);
+            if (destDir == Dir8.None)
+                destDir = turnto.CharDir.Reverse();
+            int turn = _CountDirectionDifference(curch.CharDir, destDir);
+            return new Coroutine(_DoAnimatedTurn(curch, turn, framedur, turn < 0));
         }
 
         /// <summary>
@@ -328,38 +338,43 @@ namespace RogueEssence.Script
         /// <param name="direction"></param>
         /// <param name="framedur"></param>
         public LuaFunction CharAnimateTurn;
-        public Coroutine _CharAnimateTurn(GroundChar ch, Dir8 direction, int framedur)
+        public Coroutine _CharAnimateTurn(GroundChar ch, Dir8 direction, int framedur, bool ccw)
         {
             if (ch == null || direction == Dir8.None)
                 return new Coroutine(LuaEngine._DummyWait());
-            return new Coroutine(_DoAnimatedTurn(ch, _CountDirectionDifference(ch.CharDir, direction), framedur));
+            return new Coroutine(_DoAnimatedTurn(ch, _CountDirectionDifference(ch.CharDir, direction), framedur, ccw));
         }
 
-        private IEnumerator<YieldInstruction> _DoAnimatedTurn(GroundChar curch, int turn, int framedur)
+        public LuaFunction CharAnimateTurnTo;
+        public Coroutine _CharAnimateTurnTo(GroundChar ch, Dir8 direction, int framedur)
+        {
+            if (ch == null || direction == Dir8.None)
+                return new Coroutine(LuaEngine._DummyWait());
+            int turn = _CountDirectionDifference(ch.CharDir, direction);
+            return new Coroutine(_DoAnimatedTurn(ch, turn, framedur, turn < 0));
+        }
+
+        private IEnumerator<YieldInstruction> _DoAnimatedTurn(GroundChar curch, int turn, int framedur, bool ccw)
         {
             if (turn == 0)
                 yield break;
             var oldact = curch.GetCurrentAction();
             curch.StartAction(new IdleNoAnim(curch.MapLoc, curch.CharDir));
+            Dir8 destDir = (Dir8)((8 + turn + (int)curch.CharDir) % 8);
             if (framedur <= 0) //instant turn
             {
-                curch.CharDir = (Dir8)(Math.Abs(turn + (int)curch.CharDir) % 7);
+                curch.CharDir = destDir;
                 yield break;
             }
             else
             {
-                bool clockwise = turn >= 0;
-                int incr = (clockwise) ? 1 : -1;
-                int cntdir = 0;
-                int waitfrms = framedur / Math.Abs(turn);
-
-                for (; cntdir != turn;
-                    curch.CharDir = (((int)curch.CharDir >= 7 && clockwise) ? //allow wrapping around
-                    (Dir8)0 : ((int)curch.CharDir <= 0 && !clockwise) ? (Dir8)7 :
-                    curch.CharDir + incr))
+                while (curch.CharDir != destDir)
                 {
-                    cntdir += incr;
-                    yield return new WaitForFrames(waitfrms);
+                    if (ccw)
+                        curch.CharDir = (Dir8)((7 + (int)curch.CharDir) % 8);
+                    else
+                        curch.CharDir = (Dir8)((1 + (int)curch.CharDir) % 8);
+                    yield return new WaitForFrames(framedur);
                 }
                 Debug.Assert(curch.CharDir != Dir8.None, "ScriptGround._DoAnimatedTurn(): Result of turn was none! Something went wrong!");
                 oldact.MapLoc = curch.MapLoc;
@@ -434,7 +449,7 @@ namespace RogueEssence.Script
         /// <param name="pos"></param>
         /// <returns></returns>
         public LuaFunction MoveToLoc;
-        public YieldInstruction _MoveToLoc(GroundEntity ent, RogueElements.Loc pos, bool run = false)
+        public YieldInstruction _MoveToLoc(GroundEntity ent, Loc pos, bool run = false)
         {
             return _MoveToPosition(ent, pos.X, pos.Y, run);
         }
@@ -447,12 +462,17 @@ namespace RogueEssence.Script
         /// <param name="y"></param>
         /// <returns></returns>
         public LuaFunction MoveToPosition;
-        public YieldInstruction _MoveToPosition(GroundEntity ent, double x, double y, bool run = false)
+        public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false)
         {
             if(ent is GroundChar)
             {
                 GroundChar ch = (GroundChar)ent;
-                ch.StartAction(new WalkToPositionGroundAction(ch.Position, ch.Direction, run, new FrameTick(), new Loc((int)x, (int)y), () => { this.m_actionComplete = true; } ));
+                FrameTick prevTime = new FrameTick();
+                GroundAction prevAction = ch.GetCurrentAction();
+                if (prevAction is WalkToPositionGroundAction)
+                    prevTime = prevAction.ActionTime;
+                ch.StartAction(new WalkToPositionGroundAction(ch.Position, ch.Direction, run, run ? 5 : 2, prevTime,
+                    new Loc(x, y), () => { this.m_actionComplete = true; } ));
                 return new WaitUntil(() => { return this.m_actionComplete; });
             }
             return null;
@@ -479,7 +499,8 @@ namespace RogueEssence.Script
         {
             //Implement stuff that should be written in lua!
             MoveInDirection = state.RunString("return function(_,chara, direction, duration) return coroutine.yield(GROUND:_MoveInDirection(chara, direction, duration)) end", "MoveInDirection").First() as LuaFunction;
-            CharAnimateTurn = state.RunString("return function(_,ch, direction, framedur) return coroutine.yield(GROUND:_CharAnimateTurn(ch, direction, framedur)) end", "CharAnimateTurn").First() as LuaFunction;
+            CharAnimateTurn = state.RunString("return function(_,ch, direction, framedur, ccw) return coroutine.yield(GROUND:_CharAnimateTurn(ch, direction, framedur, ccw)) end", "CharAnimateTurn").First() as LuaFunction;
+            CharAnimateTurnTo = state.RunString("return function(_,ch, direction, framedur) return coroutine.yield(GROUND:_CharAnimateTurnTo(ch, direction, framedur)) end", "CharAnimateTurn").First() as LuaFunction;
             CharTurnToCharAnimated = state.RunString("return function(_,curch, turnto, framedur) return coroutine.yield(GROUND:_CharTurnToCharAnimated(curch, turnto, framedur)) end", "CharTurnToCharAnimated").First() as LuaFunction;
 
             MoveToMarker = state.RunString("return function(_,ent, mark, shouldrun) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun)) end", "MoveToMarker").First() as LuaFunction;

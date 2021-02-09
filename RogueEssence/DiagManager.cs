@@ -18,20 +18,8 @@ namespace RogueEssence
         }
         public static DiagManager Instance { get { return instance; } }
 
-        public const string CONTENT_PATH = ASSET_PATH + "Content/";
         public const string LOG_PATH = "LOG/";
-
-
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
-#if !DEBUG && !PROFILING
-        public const string ASSET_PATH = "";
-        public const string DEV_PATH = "DevContent/";
-        public const string TEMP_PATH = "temp/";
-#else
-        public const string ASSET_PATH = "../../../../Asset/";
-        public const string DEV_PATH = "../../../../RawAsset/";
-        public const string TEMP_PATH = "../../../../temp/";
-#endif
 
 
         object lockObj = new object();
@@ -71,9 +59,13 @@ namespace RogueEssence
         {
             if (!Directory.Exists(LOG_PATH))
                 Directory.CreateDirectory(LOG_PATH);
+            if (!Directory.Exists(PathMod.MODS_PATH))
+                Directory.CreateDirectory(PathMod.MODS_PATH);
             Settings.InitStatic();
 
             CurSettings = LoadSettings();
+
+
         }
 
         public void SetErrorListener(LogAdded errorAdded)
@@ -220,7 +212,13 @@ namespace RogueEssence
             {
                 string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), diagInfo);
                 if (DevMode)
+                {
+#if DEBUG
                     Debug.WriteLine(fullMsg);
+#else
+                    Console.WriteLine(fullMsg);
+#endif
+                }
 
                 try
                 {
@@ -463,6 +461,7 @@ namespace RogueEssence
                 xmldoc.Save("Contacts.xml");
             }
         }
+
 
         public string GetControlString(FrameInput.InputType inputType)
         {

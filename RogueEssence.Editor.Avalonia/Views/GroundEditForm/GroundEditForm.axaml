@@ -5,12 +5,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
         x:Class="RogueEssence.Dev.Views.GroundEditForm"
-        Title="Dev Controls" Height="500" Width="850" Opened="Window_Loaded" Closed="Window_Closed">
+        Width="850" Height="540" Opened="Window_Loaded" Closed="Window_Closed">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
-        <vm:DevFormViewModel/>
+        <vm:GroundEditViewModel/>
     </Design.DataContext>
+  <Window.Resources>
+    <converters:FileToTitleConverter x:Key="FileToTitleConverter"/>
+  </Window.Resources>
+  <Window.Title>
+    <Binding Path="CurrentFile" Converter="{StaticResource FileToTitleConverter}"/>
+  </Window.Title>
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="_File">
@@ -18,21 +25,27 @@
         <MenuItem Header="_Open" Command="{Binding Open_Click}"/>
         <MenuItem Header="_Save" Command="{Binding Save_Click}"/>
         <MenuItem Header="_Save As" Command="{Binding SaveAs_Click}"/>
-        <Separator/>
-        <MenuItem Header="_Load Map from Tileset" Command="{Binding ImportFromTileset_Click}"/>
-        <MenuItem Header="_Load Tileset from .png" Command="{Binding ImportFromPng_Click}"/>
       </MenuItem>
       <MenuItem Header="_Edit">
         <MenuItem Header="Resize Map" Command="{Binding ReSize_Click}"/>
         <MenuItem Header="Re-Tile Map" Command="{Binding ReTile_Click}"/>
+        <Separator/>
         <MenuItem Header="Undo" Command="{Binding Undo_Click}"/>
         <MenuItem Header="Redo" Command="{Binding Redo_Click}"/>
       </MenuItem>
+      <MenuItem Header="_Tiles">
+        <MenuItem Header="_Load from .png into Tileset" Command="{Binding ImportFromPng_Click}"/>
+        <MenuItem Header="_Load Tileset into Layer" Command="{Binding ImportFromTileset_Click}"/>
+        <MenuItem Header="_Load Standardize Frame Length" Command="{Binding StandardizeFrameLength_Click}"/>
+      </MenuItem>
     </Menu>
     <Grid>
-      <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="4" >
+      <TabControl Name="tabOptions" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex}" Margin="2">
         <TabItem Name="tabTextures" Header="Textures" >
           <views:GroundTabTextures DataContext="{Binding Textures}"/>
+        </TabItem>
+        <TabItem Name="tabDecorations" Header="Decorations" >
+          <views:GroundTabDecorations DataContext="{Binding Decorations}"/>
         </TabItem>
         <TabItem Name="tabWalls" Header="Walls" >
           <views:GroundTabWalls DataContext="{Binding Walls}"/>
@@ -43,11 +56,11 @@
         <TabItem Name="tabProperties" Header="Properties" >
           <views:GroundTabProperties DataContext="{Binding Properties}"/>
         </TabItem>
-        <TabItem Name="tabScript" Header="Script" >
-          <views:GroundTabScript DataContext="{Binding Script}"/>
-        </TabItem>
         <TabItem Name="tabStrings" Header="Strings" >
           <views:GroundTabStrings DataContext="{Binding Strings}"/>
+        </TabItem>
+        <TabItem Name="tabScript" Header="Script" >
+          <views:GroundTabScript DataContext="{Binding Script}"/>
         </TabItem>
       </TabControl>
     </Grid>

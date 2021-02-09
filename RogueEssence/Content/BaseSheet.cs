@@ -133,6 +133,12 @@ namespace RogueEssence.Content
             spriteBatch.Draw(defaultTex, destRect, Color.White);
         }
 
+        public void SetTexture(Texture2D tex)
+        {
+            baseTexture.Dispose();
+            baseTexture = tex;
+        }
+
         public bool IsBlank(int srcPx, int srcPy, int srcW, int srcH)
         {
             Color[] color = new Color[srcW * srcH];
@@ -158,7 +164,10 @@ namespace RogueEssence.Content
             for (int ii = 0; ii < tex.Width * tex.Height; ii++)
             {
                 if (reverse)
-                    color[ii] = new Color(color[ii].R * 255 / color[ii].A, color[ii].G * 255 / color[ii].A, color[ii].B * 255 / color[ii].A, color[ii].A);
+                {
+                    if (color[ii].A > 0)
+                        color[ii] = new Color(color[ii].R * 255 / color[ii].A, color[ii].G * 255 / color[ii].A, color[ii].B * 255 / color[ii].A, color[ii].A);
+                }
                 else
                     color[ii] = new Color(color[ii].R * color[ii].A / 255, color[ii].G * color[ii].A / 255, color[ii].B * color[ii].A / 255, color[ii].A);
             }
@@ -181,6 +190,40 @@ namespace RogueEssence.Content
             tempTex.Dispose();
         }
 
+        public Rectangle GetCoveredRect(Rectangle bounds)
+        {
+            return GetCoveredRect(baseTexture, bounds);
+        }
+
+        /// <summary>
+        /// Returns the rectangle bound of all nontransparent pixels within the specified bound.
+        /// </summary>
+        /// <param name="tex"></param>
+        /// <param name="bounds"></param>
+        /// <returns>Rectangle bounds relative to input bounds.</returns>
+        public static Rectangle GetCoveredRect(Texture2D tex, Rectangle bounds)
+        {
+            int top = bounds.Height;
+            int left = bounds.Width;
+            int bottom = 0;
+            int right = 0;
+            Color[] color = new Color[bounds.Width * bounds.Height];
+            tex.GetData<Color>(0, bounds, color, 0, color.Length);
+            for (int ii = 0; ii < bounds.Width * bounds.Height; ii++)
+            {
+                if (color[ii].A > 0)
+                {
+                    int locX = ii % bounds.Width;
+                    int locY = ii / bounds.Width;
+                    top = Math.Min(locY, top);
+                    left = Math.Min(locX, left);
+                    bottom = Math.Max(locY + 1, bottom);
+                    right = Math.Max(locX + 1, right);
+                }
+            }
+            return new Rectangle(left, top, right - left, bottom - top);
+        }
+
         public static Texture2D CreateTexCopy(Texture2D source)
         {
             Texture2D copy = new Texture2D(device, source.Width, source.Height);
@@ -195,10 +238,37 @@ namespace RogueEssence.Content
             BaseSheet.Blit(source.baseTexture, baseTexture, srcPx, srcPy, srcW, srcH, destX, destY);
         }
 
+
+        public static void Blit(BaseSheet source, Texture2D dest, int srcPx, int srcPy, int srcW, int srcH, int destX, int destY)
+        {
+            BaseSheet.Blit(source.baseTexture, dest, srcPx, srcPy, srcW, srcH, destX, destY);
+        }
+
         public static void Blit(Texture2D source, Texture2D dest, int srcPx, int srcPy, int srcW, int srcH, int destX, int destY)
+        {
+            Blit(source, dest, srcPx, srcPy, srcW, srcH, destX, destY, SpriteEffects.None);
+        }
+
+        public static void Blit(Texture2D source, Texture2D dest, int srcPx, int srcPy, int srcW, int srcH, int destX, int destY, SpriteEffects flip)
         {
             Color[] color = new Color[srcW * srcH];
             source.GetData<Color>(0, new Rectangle(srcPx, srcPy, srcW, srcH), color, 0, color.Length);
+            bool flipH = (flip & SpriteEffects.FlipHorizontally) != SpriteEffects.None;
+            bool flipV = (flip & SpriteEffects.FlipVertically) != SpriteEffects.None;
+            if (flipH || flipV)
+            {
+                Color[] newColor = new Color[srcW * srcH];
+                for (int xx = 0; xx < srcW; xx++)
+                {
+                    for (int yy = 0; yy < srcH; yy++)
+                    {
+                        int srcIdx = yy * srcW + xx;
+                        int destIdx = (flipV ? srcH - yy - 1 : yy) * srcW + (flipH ? srcW - xx - 1 : xx);
+                        newColor[destIdx] = color[srcIdx];
+                    }
+                }
+                color = newColor;
+            }
             dest.SetData<Color>(0, new Rectangle(destX, destY, srcW, srcH), color, 0, color.Length);
         }
 

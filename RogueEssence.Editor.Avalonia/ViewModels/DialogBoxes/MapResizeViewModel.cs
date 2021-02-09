@@ -25,7 +25,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return mapWidth; }
             set
             {
-                this.RaiseAndSetIfChanged(ref mapWidth, value);
+                this.SetIfChanged(ref mapWidth, value);
             }
         }
 
@@ -35,7 +35,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return mapHeight; }
             set
             {
-                this.RaiseAndSetIfChanged(ref mapHeight, value);
+                this.SetIfChanged(ref mapHeight, value);
             }
         }
 
@@ -45,7 +45,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return resizeDir; }
             set
             {
-                this.RaiseAndSetIfChanged(ref resizeDir, value);
+                this.SetIfChanged(ref resizeDir, value);
             }
         }
 

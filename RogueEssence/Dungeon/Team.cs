@@ -13,10 +13,13 @@ namespace RogueEssence.Dungeon
     {
         public List<Character> Players;
 
+        private List<InvItem> inventory;
+
 
         public Team()
         {
             Players = new List<Character>();
+            inventory = new List<InvItem>();
         }
         
         public abstract int GetLeaderIndex();
@@ -32,6 +35,96 @@ namespace RogueEssence.Dungeon
                     yield return character;
             }
         }
+
+        public int GetInvCount()
+        {
+            return inventory.Count;
+        }
+
+        public InvItem GetInv(int slot)
+        {
+            return inventory[slot];
+        }
+
+        public IEnumerable<InvItem> EnumerateInv()
+        {
+            foreach (InvItem item in inventory)
+                yield return item;
+        }
+
+        public void AddToInv(InvItem invItem)
+        {
+            inventory.Add(invItem);
+            UpdateInv(null, invItem);
+        }
+        public void RemoveFromInv(int index)
+        {
+            InvItem invItem = inventory[index];
+            inventory.RemoveAt(index);
+            UpdateInv(invItem, null);
+        }
+        public void UpdateInv(InvItem oldItem, InvItem newItem)
+        {
+            bool update = false;
+            if (oldItem != null)
+            {
+                ItemData itemEntry = DataManager.Instance.GetItem(oldItem.ID);
+                if (itemEntry.BagEffect)
+                    update = true;
+            }
+            if (newItem != null)
+            {
+                ItemData itemEntry = DataManager.Instance.GetItem(newItem.ID);
+                if (itemEntry.BagEffect)
+                    update = true;
+            }
+            if (oldItem == null && newItem == null)
+                update = true;
+            if (update)
+            {
+                foreach (Character chara in Players)
+                    chara.RefreshTraits();
+            }
+        }
+
+        public void SortItems()
+        {
+            List<InvItem> newInv = new List<InvItem>();
+            //for each inv item
+            for (int kk = 0; kk < inventory.Count; kk++)
+            {
+                //find its new place
+                for (int ii = newInv.Count; ii >= 0; ii--)
+                {
+                    if (ii == 0 || SucceedsInvItem(inventory[kk], newInv[ii - 1]))
+                    {
+                        newInv.Insert(ii, inventory[kk]);
+                        break;
+                    }
+                }
+            }
+            inventory = newInv;
+        }
+
+        private bool SucceedsInvItem(InvItem inv1, InvItem inv2)
+        {
+            ItemData entry1 = DataManager.Instance.GetItem(inv1.ID);
+            ItemData entry2 = DataManager.Instance.GetItem(inv2.ID);
+            if (entry1.UsageType > entry2.UsageType)
+                return true;
+            else if (entry1.UsageType < entry2.UsageType)
+                return false;
+            return (inv1.ID >= inv2.ID);
+        }
+
+        public int GetInvValue()
+        {
+            int invValue = 0;
+            foreach (InvItem item in inventory)
+                invValue += item.GetSellValue();
+            return invValue;
+        }
+
 
         IEnumerator<Character> IEnumerable<Character>.GetEnumerator() { return Players.GetEnumerator(); }
         IEnumerator IEnumerable.GetEnumerator() { return Players.GetEnumerator(); }
@@ -87,13 +180,10 @@ namespace RogueEssence.Dungeon
         public int Fame;
         public int RankExtra;
 
-        private List<InvItem> inventory;
-
         public ExplorerTeam()
         {
             Name = "";
             Assembly = new List<Character>();
-            inventory = new List<InvItem>();
             BoxStorage = new List<InvItem>();
             Storage = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
         }
@@ -117,57 +207,6 @@ namespace RogueEssence.Dungeon
             return slots;
         }
 
-        public int GetInvCount()
-        {
-            return inventory.Count;
-        }
-
-        public InvItem GetInv(int slot)
-        {
-            return inventory[slot];
-        }
-
-        public IEnumerable<InvItem> EnumerateInv()
-        {
-            foreach(InvItem item in inventory)
-                yield return item;
-        }
-
-        public void AddToInv(InvItem invItem)
-        {
-            inventory.Add(invItem);
-            UpdateInv(null, invItem);
-        }
-        public void RemoveFromInv(int index)
-        {
-            InvItem invItem = inventory[index];
-            inventory.RemoveAt(index);
-            UpdateInv(invItem, null);
-        }
-        public void UpdateInv(InvItem oldItem, InvItem newItem)
-        {
-            bool update = false;
-            if (oldItem != null)
-            {
-                ItemData itemEntry = DataManager.Instance.GetItem(oldItem.ID);
-                if (itemEntry.BagEffect)
-                    update = true;
-            }
-            if (newItem != null)
-            {
-                ItemData itemEntry = DataManager.Instance.GetItem(newItem.ID);
-                if (itemEntry.BagEffect)
-                    update = true;
-            }
-            if (oldItem == null && newItem == null)
-                update = true;
-            if (update)
-            {
-                foreach (Character chara in Players)
-                    chara.RefreshTraits();
-            }
-        }
-
         public int GetMaxTeam(Zone zone)
         {
             int slots = MAX_TEAM_SLOTS;
@@ -184,24 +223,6 @@ namespace RogueEssence.Dungeon
                 return Players[0].BaseName;
         }
 
-        public void SortItems()
-        {
-            List<InvItem> newInv = new List<InvItem>();
-            //for each inv item
-            for (int kk = 0; kk < inventory.Count; kk++)
-            {
-                //find its new place
-                for (int ii = newInv.Count; ii >= 0; ii--)
-                {
-                    if (ii == 0 || SucceedsInvItem(inventory[kk], newInv[ii - 1]))
-                    {
-                        newInv.Insert(ii, inventory[kk]);
-                        break;
-                    }
-                }
-            }
-            inventory = newInv;
-        }
 
         public List<InvItem> TakeItems(List<int> indices, bool remove = true)
         {
@@ -262,25 +283,6 @@ namespace RogueEssence.Dungeon
                 else
                     Storage[item.ID]++;
             }
-        }
-
-        private bool SucceedsInvItem(InvItem inv1, InvItem inv2)
-        {
-            ItemData entry1 = DataManager.Instance.GetItem(inv1.ID);
-            ItemData entry2 = DataManager.Instance.GetItem(inv2.ID);
-            if (entry1.UsageType > entry2.UsageType)
-                return true;
-            else if (entry1.UsageType < entry2.UsageType)
-                return false;
-            return (inv1.ID >= inv2.ID);
-        }
-
-        public int GetInvValue()
-        {
-            int invValue = 0;
-            foreach (InvItem item in inventory)
-                invValue += item.GetSellValue();
-            return invValue;
         }
 
         public int GetTotalScore()

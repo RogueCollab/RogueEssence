@@ -25,7 +25,7 @@ namespace RogueEssence.Ground
         /// <summary>
         /// Contains the type of thinking this entity does
         /// </summary>
-        public virtual EThink ThinkType { get; set; }
+        public abstract EThink ThinkType { get; }
 
         /// <summary>
         /// Current task
@@ -39,11 +39,16 @@ namespace RogueEssence.Ground
 
         enum ETaskState
         {
-            None = -1,
-            Running = 0,
-            Complete = 1,
+            None = 0,
+            Running = 1,
+            Complete = 2,
         }
         [NonSerialized] private ETaskState TaskState = ETaskState.None;
+
+        public BaseTaskUser() : base() { }
+
+        protected BaseTaskUser(BaseTaskUser other) : base(other)
+        { }
 
         /// <summary>
         /// Set the entity's current task to the one specified in parameters.
@@ -89,7 +94,7 @@ namespace RogueEssence.Ground
                 return;
 
             if (TaskState == ETaskState.None)
-                CoroutineManager.Instance.StartCoroutine(runToCompletion());
+                CoroutineManager.Instance.StartCoroutine(new Coroutine(runToCompletion()), true);
             else if (TaskState == ETaskState.Complete)
                 TaskState = ETaskState.None;
 

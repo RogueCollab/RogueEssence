@@ -1,0 +1,34 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.DevTabMods">
+  <Design.DataContext>
+    <vm:DevTabModsViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="40"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock VerticalAlignment="Bottom" Text="{Binding CurrentMod}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"></TextBlock>
+    <TreeView Items="{Binding Mods}" SelectedItem="{Binding ChosenMod}" SelectionMode="AlwaysSelected" Margin="4" Grid.Row="1" Grid.ColumnSpan="3">
+      <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="vm:ModsNodeViewModel" ItemsSource="{Binding Nodes}">
+          <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+        </TreeDataTemplate>
+      </TreeView.DataTemplates>
+    </TreeView>
+    <Button Command="{Binding btnSwitch_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Switch To</Button>
+    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Add New</Button>
+    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="2">Delete</Button>
+  </Grid>
+</UserControl>

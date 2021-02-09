@@ -8,7 +8,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class ObjAnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "Object/")]
+        [Anim(0, "Object/")]
         public override string AnimIndex { get; set; }
 
         public ObjAnimData()
@@ -30,7 +30,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class BeamAnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "Beam/")]
+        [Anim(0, "Beam/")]
         public override string AnimIndex { get; set; }
 
         public BeamAnimData()
@@ -57,7 +57,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class BGAnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "BG/")]
+        [Anim(0, "BG/")]
         public override string AnimIndex { get; set; }
 
         public BGAnimData()
@@ -84,7 +84,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class AnimData : AnimDataBase
     {
-        [Anim(0, DiagManager.CONTENT_PATH + "Particle/")]
+        [Anim(0, "Particle/")]
         public override string AnimIndex { get; set; }
 
         public AnimData()
@@ -183,6 +183,37 @@ namespace RogueEssence.Content
         public override string ToString()
         {
             return "[" + (AnimIndex == "" ? "\"---\"" : "\""+AnimIndex+"\"") + " Frames: " + FrameTime + " ]";
+        }
+
+        public bool Equals(AnimDataBase other)
+        {
+            if (other == null)
+                return false;
+
+            if (AnimIndex != other.AnimIndex)
+                return false;
+            if (FrameTime == other.FrameTime)
+                return false;
+            if (Alpha == other.Alpha)
+                return false;
+            if (StartFrame == other.StartFrame)
+                return false;
+            if (EndFrame == other.EndFrame)
+                return false;
+            if (AnimDir == other.AnimDir)
+                return false;
+
+            return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj != null) && Equals(obj as AnimDataBase);
+        }
+
+        public override int GetHashCode()
+        {
+            return AnimIndex.GetHashCode() ^ FrameTime.GetHashCode();
         }
     }
 }

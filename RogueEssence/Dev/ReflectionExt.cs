@@ -182,18 +182,18 @@ namespace RogueEssence.Dev
                 return type.Name;
         }
 
-        public static List<Assembly> GetDependentAssemblies(Assembly assembly)
+        public static List<Assembly> GetDependentAssemblies(params Assembly[] assemblies)
         {
-            int startIndex = 0;
+            List<int> startIndices = new List<int>();
             Assembly[] candAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            bool[] traversed = new bool[candAssemblies.Length];
             List<int>[] assemblyToDependents = new List<int>[candAssemblies.Length];
             Dictionary<string, int> assemblyNameLookup = new Dictionary<string, int>();
             for (int ii = 0; ii < candAssemblies.Length; ii++)
             {
-                assemblyNameLookup[candAssemblies[ii].FullName] = ii;
-                if (candAssemblies[ii] == assembly)
-                    startIndex = ii;
+                //TODO: we don't use full names here because of version disagreements; is there a better way?
+                assemblyNameLookup[candAssemblies[ii].GetName().Name] = ii;
+                if (assemblies.Contains(candAssemblies[ii]))
+                    startIndices.Add(ii);
                 assemblyToDependents[ii] = new List<int>();
             }
             for (int ii = 0; ii < candAssemblies.Length; ii++)
@@ -202,25 +202,26 @@ namespace RogueEssence.Dev
                 for (int jj = 0; jj < names.Length; jj++)
                 {
                     int nn;
-                    if (assemblyNameLookup.TryGetValue(names[jj].FullName, out nn))
+                    if (assemblyNameLookup.TryGetValue(names[jj].Name, out nn))
                         assemblyToDependents[nn].Add(ii);
                 }
             }
             List<Assembly> resultAssemblies = new List<Assembly>();
-            traverseDependentAssemblies(candAssemblies, traversed, assemblyToDependents, assemblyNameLookup, resultAssemblies, startIndex);
+            bool[] traversed = new bool[candAssemblies.Length];
+            foreach(int startIndex in startIndices)
+                traverseDependentAssemblies(candAssemblies, traversed, assemblyToDependents, assemblyNameLookup, resultAssemblies, startIndex);
             return resultAssemblies;
         }
 
         private static void traverseDependentAssemblies(Assembly[] candAssemblies, bool[] traversed, List<int>[] assemblyToDependents,
             Dictionary<string, int> assemblyNameLookup, List<Assembly> resultAssemblies, int startIndex)
         {
+            if (traversed[startIndex])
+                return;
             resultAssemblies.Add(candAssemblies[startIndex]);
             traversed[startIndex] = true;
             foreach (int dependent in assemblyToDependents[startIndex])
-            {
-                if (!traversed[dependent])
-                    traverseDependentAssemblies(candAssemblies, traversed, assemblyToDependents, assemblyNameLookup, resultAssemblies, dependent);
-            }
+                traverseDependentAssemblies(candAssemblies, traversed, assemblyToDependents, assemblyNameLookup, resultAssemblies, dependent);
         }
 
         /// <summary>
@@ -239,10 +240,21 @@ namespace RogueEssence.Dev
 
         public static Type[] GetAssignableTypes(this Type type)
         {
-            List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
-            List<Type> types = getAssignableTypes(false, 2, dependentAssemblies.ToArray(), type);
-            types.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
-            return types.ToArray();
+            if (type.IsArray)
+            {
+                Type arrayType = type.GetElementType();
+                Type[] assignableArrays = arrayType.GetAssignableTypes();
+                for (int ii = 0; ii < assignableArrays.Length; ii++)
+                    assignableArrays[ii] = assignableArrays[ii].MakeArrayType();
+                return assignableArrays;
+            }
+            else
+            {
+                List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
+                List<Type> types = getAssignableTypes(false, 3, dependentAssemblies.ToArray(), type);
+                types.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
+                return types.ToArray();
+            }
         }
 
         private static List<Type> getAssignableTypes(bool allowAbstract, int recursionDepth, Assembly[] searchAssemblies, params Type[] constraints)
@@ -250,14 +262,18 @@ namespace RogueEssence.Dev
             if (recursionDepth == 0)
                 return new List<Type>();
 
-            List<Type> children = new List<Type>();
+            
 
+            List<Type> children = new List<Type>();
             foreach (Assembly assembly in searchAssemblies)
             {
                 Type[] types = assembly.GetTypes();
                 for (int ii = 0; ii < types.Length; ii++)
                 {
                     Type checkType = types[ii];
+                    //non-public classes cannot be used
+                    if (!checkType.IsPublic)
+                        continue;
                     //check if assignable; must be assignable to all
                     if (!allowAbstract && checkType.IsAbstract)
                         continue;
@@ -284,12 +300,17 @@ namespace RogueEssence.Dev
                         children.Add(checkType);
                     else
                     {
+                        //checkType is now currently a generic type whos argument-less form inherits from the constraint type's argument-less form
+                        //now, in order to see if the generic type itself has a filled form that can satisfy the constraint,
+                        //we must first fill all argument-less parameters with the existing arguments of the constraint
+                        //as well as check to see if the arguments that ARE filled are filled with the right types
+
                         //checkType contains unassigned generic parameters
                         //constraints may have assigned generic parameters
                         //if they do, tracebackType maps back to them
                         Type[] checkArgs = checkType.GetGenericArguments();
                         Type[] paramsFromBase = new Type[checkArgs.Length];
-
+                        bool correctFill = true;
                         for (int jj = 0; jj < tracebackType.Length; jj++)
                         {
                             Type[] filledArgs = constraints[jj].GetGenericArguments();
@@ -297,22 +318,26 @@ namespace RogueEssence.Dev
 
                             for (int kk = 0; kk < tracebackArgs.Length; kk++)
                             {
-                                if (tracebackArgs[kk].IsGenericParameter && paramsFromBase[kk] == null)
+                                if (tracebackArgs[kk].IsGenericParameter && paramsFromBase[tracebackArgs[kk].GenericParameterPosition] == null)
                                     paramsFromBase[tracebackArgs[kk].GenericParameterPosition] = filledArgs[kk];
+                                else if (tracebackArgs[kk] != filledArgs[kk])
+                                    correctFill = false;
                             }
                         }
-                        Type[] chosenParams = new Type[checkArgs.Length];
+                        if (correctFill)
+                        {
+                            Type[] chosenParams = new Type[checkArgs.Length];
 
-                        //TODO: place proclaimed types beforehand,
-                        //and let recursion bump into those,
-                        //instead of the other way around?
+                            //TODO: place proclaimed types beforehand,
+                            //and let recursion bump into those,
+                            //instead of the other way around?
 
-                        Stack<Type[]> pendingParams = new Stack<Type[]>();
-                        pendingParams.Push(paramsFromBase);
-                        Stack<int> typeIndex = new Stack<int>();
-                        typeIndex.Push(0);
-                        defSpecifiedGenericParameter(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, pendingParams, typeIndex, new Stack<Type[]>(), new Stack<int>());
-
+                            Stack<Type[]> pendingParams = new Stack<Type[]>();
+                            pendingParams.Push(paramsFromBase);
+                            Stack<int> typeIndex = new Stack<int>();
+                            typeIndex.Push(0);
+                            defSpecifiedGenericParameter(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, pendingParams, typeIndex, new Stack<Type[]>(), new Stack<int>());
+                        }
                     }
                 }
             }
@@ -545,6 +570,17 @@ namespace RogueEssence.Dev
             }
         }
 
+        /// <summary>
+        /// Takes a non-constructed generic type and gets all possible constructions via recursion.
+        /// Constructed types are added to the children parameter.
+        /// </summary>
+        /// <param name="children">The full list of child classes to the original type used in GetAssignableTypes</param>
+        /// <param name="recursionDepth"></param>
+        /// <param name="searchAssemblies"></param>
+        /// <param name="checkType"></param>
+        /// <param name="checkArgs"></param>
+        /// <param name="chosenParams"></param>
+        /// <param name="openTypes"></param>
         private static void recurseTypeParamConstraints(List<Type> children, int recursionDepth, Assembly[] searchAssemblies, Type checkType, Type[] checkArgs, Type[] chosenParams, int openTypes)
         {
             if (openTypes == 0)
@@ -556,22 +592,36 @@ namespace RogueEssence.Dev
 
             // get all possible types for the first wave of generic type arguments:
             Type[][] possibleParams = new Type[checkArgs.Length][];
-            // -the ones that are not constrained by other generic type arguments or non-constructed generic types
+            // the ones that are not constrained by other generic type arguments or non-constructed generic types
             for (int jj = 0; jj < checkArgs.Length; jj++)
             {
                 //skip the params already chosen
                 if (chosenParams[jj] != null)
                     continue;
                 Type[] tpConstraints = checkArgs[jj].GetGenericParameterConstraints();
+                //skip if this param is being constrained by other unassigned generic type arguments, or non-constructed generic types
                 if (hasOpenConstraint(chosenParams, tpConstraints))
                     continue;
-                
-                possibleParams[jj] = getAssignableTypes(true, recursionDepth-1, searchAssemblies, tpConstraints).ToArray();
+                //if this param is constrained by other generic type arguments, they will have been assigned at this point
+                //it must be reflected in the constraints
+                fillUnassignedConstraints(chosenParams, tpConstraints);
+
+                Assembly[] assemblies = new Assembly[tpConstraints.Length];
+                for (int kk = 0; kk < assemblies.Length; kk++)
+                    assemblies[kk] = tpConstraints[kk].Assembly;
+                List<Assembly> dependentAssemblies = GetDependentAssemblies(assemblies);
+                possibleParams[jj] = getAssignableTypes(true, recursionDepth-1, dependentAssemblies.ToArray(), tpConstraints).ToArray();
             }
 
             recurseTypeParams(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, openTypes, possibleParams, 0);
         }
 
+        /// <summary>
+        /// Check to see if the constraints are unassigned generic type arguments, or non-constructed generic types
+        /// </summary>
+        /// <param name="chosenParams"></param>
+        /// <param name="constraints"></param>
+        /// <returns></returns>
         private static bool hasOpenConstraint(Type[] chosenParams, Type[] constraints)
         {
             foreach (Type constraint in constraints)
@@ -583,25 +633,79 @@ namespace RogueEssence.Dev
             return false;
         }
 
-
+        /// <summary>
+        /// Check to see if the constraint is an unassigned generic type argument, or a non-constructed generic type.
+        /// </summary>
+        /// <param name="chosenParams"></param>
+        /// <param name="tConstraint"></param>
+        /// <returns></returns>
         private static bool isOpenConstraint(Type[] chosenParams, Type tConstraint)
         {
             if (tConstraint.IsGenericParameter)
-                return chosenParams[tConstraint.GenericParameterPosition].ContainsGenericParameters;
+            {
+                Type type = chosenParams[tConstraint.GenericParameterPosition];
+                if (type == null)
+                    return true;
+                return type.ContainsGenericParameters;
+            }
             else if (tConstraint.ContainsGenericParameters)
             {
                 Type[] typeArguments = tConstraint.GetGenericArguments();
 
                 foreach (Type tParam in typeArguments)
-                    return isOpenConstraint(chosenParams, tParam);
+                {
+                    if (isOpenConstraint(chosenParams, tParam))
+                        return true;
+                }
             }
             return false;
         }
 
+        private static void fillUnassignedConstraints(Type[] chosenParams, Type[] constraints)
+        {
+            for (int ii = 0; ii < constraints.Length; ii++)
+                constraints[ii] = getConstructedConstraint(chosenParams, constraints[ii]);
+        }
+
+        private static Type getConstructedConstraint(Type[] chosenParams, Type tConstraint)
+        {
+            if (tConstraint.IsGenericParameter)
+                return chosenParams[tConstraint.GenericParameterPosition];
+            else if (tConstraint.ContainsGenericParameters)
+            {
+                Type[] typeArguments = tConstraint.GetGenericArguments();
+                for (int ii = 0; ii < typeArguments.Length; ii++)
+                    typeArguments[ii] = getConstructedConstraint(chosenParams, typeArguments[ii]);
+
+                //type argument filling only works for generic type definitions.
+                //tConstraint, being a constraint, is not a generic type definition at start.
+                //so it must be converted
+                Type typeDefConstraint = tConstraint.GetGenericTypeDefinition();
+                return typeDefConstraint.MakeGenericType(typeArguments);
+            }
+            return tConstraint;
+        }
+
+        /// <summary>
+        /// Takes a jagged array of types that serve as candidates for the unconstructed generic type and adds all combinations to the children list.
+        /// </summary>
+        /// <param name="children"></param>
+        /// <param name="recursionDepth"></param>
+        /// <param name="searchAssemblies"></param>
+        /// <param name="checkType">The uconstructed generic type</param>
+        /// <param name="checkArgs"></param>
+        /// <param name="chosenParams"></param>
+        /// <param name="openTypes"></param>
+        /// <param name="possibleParams">THe jagged array of types</param>
+        /// <param name="paramIndex"></param>
         private static void recurseTypeParams(List<Type> children, int recursionDepth, Assembly[] searchAssemblies, Type checkType, Type[] checkArgs, Type[] chosenParams, int openTypes, Type[][] possibleParams, int paramIndex)
         {
-            while (paramIndex < checkArgs.Length && chosenParams[paramIndex] != null)
+            //skip the params that have been chosen already, and the possibleParam slots that haven't been filled
+            while (paramIndex < checkArgs.Length && (chosenParams[paramIndex] != null || possibleParams[paramIndex] == null))
                 paramIndex++;
+            //base case.  All params have been chosen.  It's time to construct the type.
+            //it is also possible that not all types have been chosen because the possibleParams had some null entries
+            //those null entries are due to the argument at that position being dependent upon other params.
             if (paramIndex == checkArgs.Length)
             {
                 recurseTypeParamConstraints(children, recursionDepth, searchAssemblies, checkType, checkArgs, chosenParams, openTypes);

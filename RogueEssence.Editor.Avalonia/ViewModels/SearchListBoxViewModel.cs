@@ -26,17 +26,18 @@ namespace RogueEssence.Dev.ViewModels
         public string DataName
         {
             get { return dataName; }
-            set { this.RaiseAndSetIfChanged(ref dataName, value); }
+            set { this.SetIfChanged(ref dataName, value); }
         }
 
         private string searchText;
         public string SearchText
         {
             get { return searchText; }
-            set { this.RaiseAndSetIfChanged(ref searchText, value); }
+            set { this.SetIfChanged(ref searchText, value); }
         }
 
         public ObservableCollection<string> SearchItems { get; }
+        public int Count => entries.Count;
 
 
         private int selectedSearchIndex;
@@ -45,8 +46,9 @@ namespace RogueEssence.Dev.ViewModels
             get { return selectedSearchIndex; }
             set
             {
-                this.RaiseAndSetIfChanged(ref selectedSearchIndex, value);
-                InternalIndex = entryMap[selectedSearchIndex];
+                InternalIndex = (value > -1 && value < entryMap.Count) ? entryMap[value] : -1;
+                this.RaiseAndSet(ref selectedSearchIndex, value);
+                SelectedIndexChanged?.Invoke();
             }
         }
 
@@ -54,7 +56,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
         public event EventHandler<RoutedEventArgs> ListBoxMouseDoubleClick;
-        public event EventHandler<SelectionChangedEventArgs> SelectedIndexChanged;
+        public event Action SelectedIndexChanged;
 
         public void SetName(string name)
         {
@@ -67,7 +69,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (SearchText == "" || entries[entries.Count - 1].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
             {
-                SearchItems.Add((entries.Count - 1) + ": " + entries[entries.Count - 1]);
+                SearchItems.Add(entries[entries.Count - 1]);
                 entryMap.Add(entries.Count - 1);
             }
         }
@@ -99,7 +101,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (SearchText == "" || entries[entryMap[index]].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
             {
-                SearchItems[index] = entryMap[index] + ": " + entry;
+                SearchItems[index] = entry;
             }
             else
             {
@@ -129,7 +131,7 @@ namespace RogueEssence.Dev.ViewModels
             if (oldAppears && newAppears)
             {
                 //change
-                SearchItems[shownIndex] = internalIndex + ": " + entry;
+                SearchItems[shownIndex] = entry;
             }
             else if (oldAppears)
             {
@@ -144,11 +146,26 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (entryMap[ii] < internalIndex)
                     {
-                        SearchItems.Insert(ii, internalIndex + ": " + entry);
+                        SearchItems.Insert(ii, entry);
                         entryMap.Insert(ii, internalIndex);
                         break;
                     }
                 }
+            }
+        }
+
+        public void RemoveInternalAt(int internalIndex)
+        {
+            bool oldAppears = (SearchText == "" || entries[internalIndex].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1);
+            entries.RemoveAt(internalIndex);
+
+            int shownIndex = entryMap.IndexOf(internalIndex);
+
+            if (oldAppears)
+            {
+                //remove
+                SearchItems.RemoveAt(shownIndex);
+                entryMap.RemoveAt(shownIndex);
             }
         }
 
@@ -165,8 +182,8 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (SearchText == "" || entries[ii].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
                 {
-                    SearchItems.Add(ii + ": " + entries[ii]);
                     entryMap.Add(ii);
+                    SearchItems.Add(entries[ii]);
                     if (ii == internalIndex)
                         index = entryMap.Count - 1;
                 }
@@ -183,11 +200,6 @@ namespace RogueEssence.Dev.ViewModels
         public void txtSearch_TextChanged(string text)
         {
             RefreshFilter();
-        }
-
-        public void lbxItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SelectedIndexChanged?.Invoke(sender, e);
         }
 
         public void lbxItems_DoubleClick(object sender, RoutedEventArgs e)

@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -21,14 +22,17 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
-        public int Emoticon;
-        public int DropEmoticon;
-        public int FreeEmote;
+
+        [Anim(0, "Icon/")]
+        public string Emoticon;
+        [Anim(0, "Icon/")]
+        public string DropEmoticon;
+        [Anim(0, "Icon/")]
+        public string FreeEmote;
         public DrawEffect DrawEffect;
         public bool Targeted;
 
         //initial state for variables
-        [Dev.SubGroup]
         public StateCollection<StatusState> StatusStates;
 
         public PriorityList<SkillChangeEvent> OnSkillChanges;
@@ -40,9 +44,9 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Desc = new LocalText();
             Comment = "";
-            Emoticon = -1;
-            DropEmoticon = -1;
-            FreeEmote = -1;
+            Emoticon = "";
+            DropEmoticon = "";
+            FreeEmote = "";
             DrawEffect = DrawEffect.None;
 
             StatusStates = new StateCollection<StatusState>();

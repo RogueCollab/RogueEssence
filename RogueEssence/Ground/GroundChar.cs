@@ -41,12 +41,15 @@ namespace RogueEssence.Ground
         {
             get
             {
-                if (!EntEnabled)
+                if (!EntEnabled || CollisionDisabled)
                     return 0u;
 
                 return 1u;
             }
         }
+
+        public override Color DevEntColoring => Color.Aqua;
+        public override EThink ThinkType => EThink.Always;
 
 
         //DRAWING LOGIC
@@ -55,6 +58,8 @@ namespace RogueEssence.Ground
 
         [NonSerialized]
         private Emote currentEmote;
+
+        public bool CollisionDisabled;
 
         private Loc drawOffset { get { return currentCharAction.DrawOffset; } }
         public override Loc MapLoc
@@ -67,7 +72,7 @@ namespace RogueEssence.Ground
             set { currentCharAction.MapLoc = value; }
         }
 
-        public void SetMapLoc(Loc loc)
+        public override void SetMapLoc(Loc loc)
         {
             Rect orig = currentCharAction.Collider;
             currentCharAction.MapLoc = loc;
@@ -109,12 +114,10 @@ namespace RogueEssence.Ground
             currentCharAction = new IdleGroundAction(newLoc, charDir);
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
-            DevEntColoring = Color.Aqua;
             TriggerType = EEntityTriggerTypes.Action;
             ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
 
             //By default all groundcharacters think
-            ThinkType = EThink.Always;
             AIEnabled = true;
             IsInteracting = false;
         }
@@ -128,13 +131,29 @@ namespace RogueEssence.Ground
             Data.BaseForm = appearance;
             Data.Nickname = nickname;
         }
-
-        public void StartEmote(EmoteData data, int cycles)
+        protected GroundChar(GroundChar other)
         {
-            if (data == null)
-                currentEmote = null;
-            else
-                currentEmote = new Emote(data.Anim, data.LocHeight, cycles);
+            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
+                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+            Data = new CharData(other.Data);
+
+            currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
+            CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
+
+            //from base
+            EntEnabled = other.EntEnabled;
+            Collider = other.Collider;
+            EntName = other.EntName;
+            Direction = other.Direction;
+            triggerType = other.triggerType;
+        }
+        public override GroundEntity Clone() { return new GroundChar(this); }
+
+
+        public void StartEmote(Emote emote)
+        {
+            currentEmote = emote;
         }
 
         public void StartAction(GroundAction action)
@@ -241,7 +260,7 @@ namespace RogueEssence.Ground
 
         private ICollisionResponse basicCollision(ICollision collision)
         {
-            if (DataManager.Instance.Save.CutsceneMode)
+            if (DataManager.Instance.Save.CutsceneMode || CollisionDisabled)
                 return null;
 
             if (collision.Other.Tags == 0)
@@ -261,17 +280,26 @@ namespace RogueEssence.Ground
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
-            int teamShadow = 1;
-            currentCharAction.DrawShadow(spriteBatch, offset, sheet, new Loc(1, teamShadow * 2));
+
+            Loc shadowType = new Loc(0, 0 + sheet.ShadowSize * 2);
+            Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
+
+            GraphicsManager.Shadows.DrawTile(spriteBatch,
+                (shadowPoint - offset).ToVector2() - new Vector2(GraphicsManager.Shadows.TileWidth / 2, GraphicsManager.Shadows.TileHeight / 2),
+                shadowType.X, shadowType.Y);
         }
 
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
             currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
-                currentEmote.Draw(spriteBatch, offset - MapLoc - drawOffset);
+            {
+                Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
+                currentEmote.Draw(spriteBatch, offset - head - drawOffset);
+            }
         }
 
 
@@ -348,14 +376,15 @@ namespace RogueEssence.Ground
             ReloadPosition();
         }
 
-        public override ScriptEvent FindEvent(string eventname)
+        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            foreach (var entry in ScriptEvents)
-            {
-                if (entry.Value.EventName().Contains(eventname))
-                    return entry.Value;
-            }
-            return null;
+            return ScriptEvents.ContainsKey(ev);
+        }
+
+        public override void SyncScriptEvents()
+        {
+            foreach (var ev in ScriptEvents.Keys)
+                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
         }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
@@ -443,7 +472,6 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            DevEntColoring = Color.Aqua;
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
         }
     }

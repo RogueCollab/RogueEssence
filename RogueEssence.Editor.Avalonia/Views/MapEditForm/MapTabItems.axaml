@@ -1,0 +1,81 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.MapTabItems">
+  <Design.DataContext>
+    <vm:MapTabItemsViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ComparisonConverter x:Key="ComparisonConverter"/>
+    <converters:IntInSetConverter x:Key="ValidIdxConverter"/>
+  </UserControl.Resources>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="38"/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Grid Grid.Row="0" Margin="4">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="16"/>
+        <RowDefinition Height="26"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Mode</TextBlock>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.SelectEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="0">Select/Move</RadioButton>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.PlaceEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="1">Add New</RadioButton>
+    </Grid>
+    <Grid Grid.Row="1" Margin="4">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="80"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Column="0">Item:</TextBlock>
+      <ComboBox Items="{Binding ItemTypes}" SelectedIndex="{Binding ChosenItem}" VirtualizationMode="Simple" VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+      <TabControl TabStripPlacement="Top" SelectedIndex="{Binding TabIndex}" Margin="4" Grid.Row="1" Grid.ColumnSpan="2">
+        <TabItem Header="Money" IsVisible="{Binding Path=ChosenItem, Converter={StaticResource ValidIdxConverter}, ConverterParameter=true}">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="80"/>
+              <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right">Amount:</TextBlock>
+            <NumericUpDown Value="{Binding Amount}" Minimum="1" VerticalAlignment="Center" Margin="4,2" Grid.Column="1"></NumericUpDown>
+          </Grid>
+        </TabItem>
+        <TabItem Header="Item" IsVisible="{Binding Path=ChosenItem, Converter={StaticResource ValidIdxConverter}, ConverterParameter=true}">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="40"/>
+              <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="80"/>
+              <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right">Hidden Value:</TextBlock>
+            <NumericUpDown Value="{Binding HiddenValue}" VerticalAlignment="Center" Margin="4,2" Grid.Column="1"></NumericUpDown>
+            <CheckBox Margin="4" IsChecked="{Binding Cursed}" Grid.Row="1" Grid.ColumnSpan="2">Cursed</CheckBox>
+          </Grid>
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </Grid>
+</UserControl>

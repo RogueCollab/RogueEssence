@@ -7,11 +7,12 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class AutoTileBase
     {
-        public delegate void PlacementMethod(int x, int y, List<TileLayer> tile);
+        public delegate void PlacementMethod(int x, int y, int neighborCode);
         public delegate bool QueryMethod(int x, int y);
-        public abstract void AutoTileArea(ReRandom rand, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod queryMethod);
-        public abstract TileLayer[] Generic { get; }
+        //TODO: pass a seed instead, and choose variation based on the static aspect of the seed
+        public abstract void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod);
 
+        public abstract List<TileLayer> GetLayers(int neighborCode);
         protected bool IsBlocked(QueryMethod queryMethod, int x, int y, Dir8 dir)
         {
             Loc loc = new Loc(x,y) + dir.GetLoc();
@@ -19,22 +20,18 @@ namespace RogueEssence.Dungeon
             return queryMethod(loc.X, loc.Y);
         }
 
-        protected TileLayer SelectTile(ReRandom rand, List<TileLayer> anims)
-        {
 
-            if (anims.Count > 0)
+        protected int SelectTileVariant(ReRandom rand, int count)
+        {
+            int index = 0;
+            for (int ii = 0; ii < count - 1; ii++)
             {
-                int index = 0;
-                for (int ii = 0; ii < anims.Count - 1; ii++)
-                {
-                    if (rand.Next() % 2 == 0)
-                        index++;
-                    else
-                        break;
-                }
-                return anims[index];
+                if (rand.Next() % 2 == 0)
+                    index++;
+                else
+                    break;
             }
-            return new TileLayer();
+            return index;
         }
     }
 }

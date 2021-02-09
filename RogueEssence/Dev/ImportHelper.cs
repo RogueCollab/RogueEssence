@@ -6,6 +6,7 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System.Diagnostics;
+using System.Xml;
 
 namespace RogueEssence.Dev
 {
@@ -18,10 +19,10 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in Directory.GetFiles(search, pattern))
+                foreach (string dir in PathMod.GetModFiles(search, pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
-                    int num = Convert.ToInt32(file.Split('-')[1]);
+                    int num = Convert.ToInt32(file);
                     using (FileStream stream = File.OpenRead(dir))
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
@@ -33,7 +34,7 @@ namespace RogueEssence.Dev
 
                 }
 
-                using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
+                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         fullGuide.Save(writer);
@@ -52,7 +53,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in Directory.GetFiles(search, pattern))
+                foreach (string dir in PathMod.GetModFiles(search, pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     using (FileStream stream = File.OpenRead(dir))
@@ -65,7 +66,7 @@ namespace RogueEssence.Dev
                     }
                 }
 
-                using (FileStream stream = new FileStream(search + "/index.idx", FileMode.Create, FileAccess.Write))
+                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                         fullGuide.Save(writer);
@@ -105,7 +106,6 @@ namespace RogueEssence.Dev
 
             using (CharSheet sprite = CharSheet.Import(spriteDir))
             {
-
                 using (MemoryStream stream = new MemoryStream())
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
@@ -148,7 +148,7 @@ namespace RogueEssence.Dev
                     spriteData[formData] = writingBytes;
                 }
             }
-            DiagManager.Instance.LogInfo("Loaded "+pngs.Length+" files from " + Path.GetFullPath(spriteDir));
+            DiagManager.Instance.LogInfo("Loaded " + pngs.Length + " files from " + Path.GetFullPath(spriteDir));
         }
 
         public static void ImportSpecies(string spriteDir, string destFile, BakeSpecies bakeMethod, int index)
@@ -215,7 +215,7 @@ namespace RogueEssence.Dev
             foreach (MonsterID key in spritePositions.Keys)
                 guide.AddSubValue(0, key.Form, key.Skin, (int)key.Gender);
 
-            using (FileStream stream = new FileStream(destinationPath, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            using (FileStream stream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
@@ -240,6 +240,7 @@ namespace RogueEssence.Dev
 
 
         public static string[] TILE_TITLES = { "wall", "ground", "water" };
+        private static readonly string[] TILE_NODE_TITLES = { "Wall", "Floor", "Secondary" };
 
         public static int GetDirSize(string dirString)
         {
@@ -429,33 +430,6 @@ namespace RogueEssence.Dev
             }
         }
 
-        
-        public static void ImportAllItems(string sourceDir, string destPattern)
-        {
-            try
-            {
-                DiagManager.Instance.LoadMsg = "Importing Items.";
-
-                string[] dirs = Directory.GetDirectories(sourceDir);
-                foreach (string dir in dirs)
-                {
-                    string fileName = Path.GetFileNameWithoutExtension(dir);
-                    int index = Int32.Parse(fileName);
-                    using (DirSheet sheet = DirSheet.Import(dir + "/None.png"))
-                    {
-                        using (FileStream stream = File.OpenWrite(String.Format(destPattern, index)))
-                        {
-                            using (BinaryWriter writer = new BinaryWriter(stream))
-                                sheet.Save(writer);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(new Exception("Error importing Items\n", ex));
-            }
-        }
 
         public static void ImportAllVFX(string sourceDir, string particlePattern, string beamPattern)
         {
@@ -483,31 +457,6 @@ namespace RogueEssence.Dev
                 using (DirSheet sheet = DirSheet.Import(dir))
                 {
                     using (FileStream stream = File.OpenWrite(String.Format(particlePattern, asset_name)))
-                    {
-                        using (BinaryWriter writer = new BinaryWriter(stream))
-                            sheet.Save(writer);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Bakes all multi-directional spritesheets specified in the directory.
-        /// </summary>
-        /// <param name="sourceDir">Parent directory of the input files.</param>
-        /// <param name="cachePattern">Pattern expression to save the output files as.</param>
-        public static void ImportAllDirs(string sourceDir, string cachePattern)
-        {
-            string[] dirs = Directory.GetFiles(sourceDir, "*.png");
-            foreach (string dir in dirs)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(dir);
-                string[] components = fileName.Split('.');
-                int index = Int32.Parse(components[1]);
-
-                using (DirSheet sheet = DirSheet.Import(dir))
-                {
-                    using (FileStream stream = File.OpenWrite(String.Format(cachePattern, index)))
                     {
                         using (BinaryWriter writer = new BinaryWriter(stream))
                             sheet.Save(writer);
@@ -583,9 +532,6 @@ namespace RogueEssence.Dev
         /// <param name="cacheDir"></param>
         public static void ImportAllAutoTiles(string sourceDir, string cacheDir)
         {
-            //TODO: create a version for one tile import
-            int index = 0;
-
             string[] sizeDirs = Directory.GetDirectories(sourceDir);
             foreach (string sizeDir in sizeDirs)
             {
@@ -604,13 +550,24 @@ namespace RogueEssence.Dev
 
                     DiagManager.Instance.LoadMsg = "Importing " + outputName;
 
+                    // Read XML for layer mapping
+                    XmlDocument document = new XmlDocument();
+                    document.Load(Path.Join(sizeDir, fileName, "tileset.xml"));
+
                     int TOTAL_TILES = 47;
 
                     try
                     {
                         int currentTier = 0;
-                        foreach (string tileTitle in TILE_TITLES)
+                        for (int nn = 0; nn < TILE_TITLES.Length; nn++)
                         {
+                            string tileTitle = TILE_TITLES[nn];
+                            string tileNodeTitle = TILE_NODE_TITLES[nn];
+                            XmlNode node = document.SelectSingleNode("//LegacyDungeonTileset/RogueEssence/" + tileNodeTitle);
+                            int index = -1;
+                            if (node != null)
+                                index = Int32.Parse(node.InnerText);
+
                             AutoTileData autoTile = new AutoTileData();
                             AutoTileAdjacent entry = new AutoTileAdjacent();
 
@@ -677,6 +634,12 @@ namespace RogueEssence.Dev
 
                             if (layerIndex > 0)
                             {
+                                if (index == -1)
+                                {
+                                    throw new KeyNotFoundException(String.Format(
+                                        "Layer index mapping for layer {0} for {1} missing.", tileTitle, fileName));
+                                }
+
                                 ImportTileVariant(entry.Tilex00, totalArray[0]);
                                 ImportTileVariant(entry.Tilex01, totalArray[1]);
                                 ImportTileVariant(entry.Tilex02, totalArray[2]);
@@ -731,7 +694,6 @@ namespace RogueEssence.Dev
 
                                 DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
                                 Debug.WriteLine(String.Format("{0:D3}: {1}", index, autoTile.Name));
-                                index++;
                             }
                         }
                     }

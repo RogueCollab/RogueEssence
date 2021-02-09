@@ -9,7 +9,7 @@ namespace RogueEssence.Dungeon
     public class PickupItem : IDrawableSprite
     {
         public string PickupMessage;
-        public int SpriteIndex;
+        public string SpriteIndex;
         public string Sound;
         public Loc TileLoc;
         public Character WaitingChar;
@@ -18,7 +18,7 @@ namespace RogueEssence.Dungeon
         public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
         public int LocHeight { get { return 0; } }
 
-        public PickupItem(string msg, int sprite, string sound, Loc loc, Character waitChar, bool localMsg)
+        public PickupItem(string msg, string sprite, string sound, Loc loc, Character waitChar, bool localMsg)
         {
             PickupMessage = msg;
             SpriteIndex = sprite;
@@ -28,6 +28,7 @@ namespace RogueEssence.Dungeon
             LocalMsg = localMsg;
         }
 
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Draw(spriteBatch, offset, Color.White);
@@ -35,7 +36,7 @@ namespace RogueEssence.Dungeon
 
         public void Draw(SpriteBatch spriteBatch, Loc offset, Color color)
         {
-            if (SpriteIndex > -1)
+            if (SpriteIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 

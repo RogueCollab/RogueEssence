@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
 
         public static void ReserializeData(string dataPath, string ext, SerializationBinder binder)
         {
-            foreach (string dir in Directory.GetFiles(dataPath, "*"+ext))
+            foreach (string dir in PathMod.GetModFiles(dataPath, "*"+ext))
             {
                 IEntryData data = (IEntryData)DataManager.LoadData(dir, binder);
                 DataManager.SaveData(dir, data);
@@ -48,7 +48,7 @@ namespace RogueEssence.Dev
             {
                 EntryDataIndex fullGuide = new EntryDataIndex();
 
-                foreach (string dir in Directory.GetFiles(dataPath, "*"+DataManager.DATA_EXT))
+                foreach (string dir in PathMod.GetModFiles(dataPath, "*"+DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file);
@@ -58,7 +58,7 @@ namespace RogueEssence.Dev
                     fullGuide.Entries[num] = data.GenerateEntrySummary();
                 }
 
-                using (Stream stream = new FileStream(dataPath + "index.idx", FileMode.Create, FileAccess.Write, FileShare.None))
+                using (Stream stream = new FileStream(PathMod.ModPath(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                     {
@@ -85,7 +85,7 @@ namespace RogueEssence.Dev
 
         public static void DemoData(string dataPath, string ext)
         {
-            foreach (string dir in Directory.GetFiles(dataPath, "*" + ext))
+            foreach (string dir in PathMod.GetModFiles(dataPath, "*" + ext))
             {
                 IEntryData data = (IEntryData)DataManager.LoadData(dir);
                 if (!data.Released)

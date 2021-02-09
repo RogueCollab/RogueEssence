@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -28,7 +29,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenGround
         {
             get { return chosenGround; }
-            set { this.RaiseAndSetIfChanged(ref chosenGround, value); }
+            set { this.SetIfChanged(ref chosenGround, value); }
         }
 
 
@@ -40,7 +41,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return chosenZone; }
             set
             {
-                this.RaiseAndSetIfChanged(ref chosenZone, value);
+                this.SetIfChanged(ref chosenZone, value);
                 ZoneChanged();
             }
         }
@@ -51,7 +52,7 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenStructure
         {
             get { return chosenStructure; }
-            set { this.RaiseAndSetIfChanged(ref chosenStructure, value);
+            set { this.SetIfChanged(ref chosenStructure, value);
                 StructureChanged();
             }
         }
@@ -62,14 +63,17 @@ namespace RogueEssence.Dev.ViewModels
         public int ChosenFloor
         {
             get { return chosenFloor; }
-            set { this.RaiseAndSetIfChanged(ref chosenFloor, value); }
+            set { this.SetIfChanged(ref chosenFloor, value); }
         }
 
         private void ZoneChanged()
         {
+            if (chosenZone == -1)
+                return;
+
             lock (GameBase.lockObj)
             {
-                int temp = chosenZone;
+                int temp = chosenStructure;
                 Structures.Clear();
                 ZoneData zone = DataManager.Instance.GetZone(chosenZone);
                 for (int ii = 0; ii < zone.Structures.Count; ii++)
@@ -102,7 +106,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "MapChoice", cbMaps.SelectedIndex);
+                DevForm.SetConfig("MapChoice", chosenGround);
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(1, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
@@ -112,9 +116,9 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                //Registry.SetValue(DiagManager.REG_PATH, "ZoneChoice", cbZones.SelectedIndex);
-                //Registry.SetValue(DiagManager.REG_PATH, "StructChoice", cbStructure.SelectedIndex);
-                //Registry.SetValue(DiagManager.REG_PATH, "FloorChoice", cbFloor.SelectedIndex);
+                DevForm.SetConfig("ZoneChoice", chosenZone);
+                DevForm.SetConfig("StructChoice", chosenStructure);
+                DevForm.SetConfig("FloorChoice", chosenFloor);
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
             }

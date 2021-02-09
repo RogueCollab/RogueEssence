@@ -17,7 +17,10 @@ namespace RogueEssence.Dev
         private static GroundEditScene instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new GroundEditScene();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static GroundEditScene Instance { get { return instance; } }
 
@@ -26,10 +29,10 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public Loc MouseLoc;
         public AutoTile AutoTileInProgress;
         public bool? BlockInProgress;
         public Rect RectInProgress;
+        public bool ShowWalls;
 
         public Rect TileRectPreview()
         {
@@ -63,19 +66,33 @@ namespace RogueEssence.Dev
 
         public override void UpdateMeta()
         {
-            InputManager input = GameManager.Instance.MetaInputManager;
+            base.UpdateMeta();
 
+            InputManager input = GameManager.Instance.MetaInputManager;
             var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
 
             if (groundEditor.Active)
-            {
                 groundEditor.ProcessInput(input);
-            }
         }
 
 
+        public override IEnumerator<YieldInstruction> ProcessInput()
+        {
+            GameManager.Instance.FrameProcessed = false;
 
-        protected override IEnumerator<YieldInstruction> ProcessInput(InputManager input)
+            if (PendingDevEvent != null)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
+                PendingDevEvent = null;
+            }
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+
+            if (!GameManager.Instance.FrameProcessed)
+                yield return new WaitForFrames(1);
+        }
+
+        IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             Loc dirLoc = Loc.Zero;
             bool fast = !input.BaseKeyDown(Keys.LeftShift);
@@ -153,19 +170,22 @@ namespace RogueEssence.Dev
                 }
 
                 //draw the blocks
-                int texSize = ZoneManager.Instance.CurrentGround.TexSize;
-                for (int jj = viewTileRect.Y * texSize; jj < viewTileRect.End.Y * texSize; jj++)
+                if (ShowWalls)
                 {
-                    for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
+                    int texSize = ZoneManager.Instance.CurrentGround.TexSize;
+                    for (int jj = viewTileRect.Y * texSize; jj < viewTileRect.End.Y * texSize; jj++)
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                        for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
                         {
-                            bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
-                            if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
-                                blocked = BlockInProgress.Value;
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                            {
+                                bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
+                                if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
+                                    blocked = BlockInProgress.Value;
 
-                            if (blocked)
-                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.5f);
+                                if (blocked)
+                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.6f);
+                            }
                         }
                     }
                 }
@@ -227,23 +247,10 @@ namespace RogueEssence.Dev
             base.DrawDev(spriteBatch);
         }
 
-        public override void DrawDebug(SpriteBatch spriteBatch)
-        {
-            if (ZoneManager.Instance.CurrentGround != null)
-            {
-                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
-                Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
-                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Block X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-            }
-        }
-
 
         public void EnterGroundEdit(int entryPoint)
         {
-            if (ZoneManager.Instance.CurrentGround.Markers.Count > 0)
+            if (ZoneManager.Instance.CurrentGround.Entities[0].Markers.Count > 0)
             {
                 LocRay8 entry = ZoneManager.Instance.CurrentGround.GetEntryPoint(entryPoint);
                 FocusedLoc = entry.Loc;

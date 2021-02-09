@@ -13,10 +13,11 @@ namespace RogueEssence
         public List<IFinishableSprite>[] Anims;
         
         public ScreenMover ScreenShake;
-                
-        protected float windowScale;
 
+        protected float windowScale;
+        protected float matrixScale;
         protected float scale;
+        protected float drawScale;
 
         public Rect ViewRect { get; protected set; }
 

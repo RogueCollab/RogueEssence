@@ -32,6 +32,7 @@ namespace RogueEssence
         public Dir8 PrevDirection { get { return PrevInput.Direction; } }
         public Dir8 Direction { get { return CurrentInput.Direction; } }
 
+        public Loc PrevMouseLoc { get { return PrevInput.MouseLoc; } }
         public Loc MouseLoc { get { return CurrentInput.MouseLoc; } }
 
         public InputManager()

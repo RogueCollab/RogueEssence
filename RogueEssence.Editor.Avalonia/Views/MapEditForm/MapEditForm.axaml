@@ -1,0 +1,72 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+        x:Class="RogueEssence.Dev.Views.MapEditForm"
+        Width="850" Height="540" Opened="Window_Loaded" Closed="Window_Closed">
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+        <vm:MapEditViewModel/>
+    </Design.DataContext>
+  <Window.Resources>
+    <converters:FileToTitleConverter x:Key="FileToTitleConverter"/>
+  </Window.Resources>
+  <Window.Title>
+    <Binding Path="CurrentFile" Converter="{StaticResource FileToTitleConverter}"/>
+  </Window.Title>
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_New" Command="{Binding New_Click}"/>
+        <MenuItem Header="_Open" Command="{Binding Open_Click}"/>
+        <MenuItem Header="_Save" Command="{Binding Save_Click}"/>
+        <MenuItem Header="_Save As" Command="{Binding SaveAs_Click}"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Resize Map" Command="{Binding ReSize_Click}"/>
+        <Separator/>
+        <MenuItem Header="Undo" Command="{Binding Undo_Click}"/>
+        <MenuItem Header="Redo" Command="{Binding Redo_Click}"/>
+      </MenuItem>
+      <MenuItem Header="_Tiles">
+        <MenuItem Header="_Load from .png into Tileset" Command="{Binding ImportFromPng_Click}"/>
+        <MenuItem Header="_Load Tileset into Map" Command="{Binding ImportFromTileset_Click}"/>
+      </MenuItem>
+    </Menu>
+    <Grid>
+      <TabControl Name="tabOptions" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex}" Margin="2">
+        <TabItem Name="tabTextures" Header="Textures" >
+          <views:MapTabTextures DataContext="{Binding Textures}"/>
+        </TabItem>
+        <TabItem Name="tabTerrain" Header="Terrain" >
+          <views:MapTabTerrain DataContext="{Binding Terrain}"/>
+        </TabItem>
+        <TabItem Name="tabTiles" Header="Tiles" >
+          <views:MapTabTiles DataContext="{Binding Tiles}"/>
+        </TabItem>
+        <TabItem Name="tabItems" Header="Items" >
+          <views:MapTabItems DataContext="{Binding Items}"/>
+        </TabItem>
+        <TabItem Name="tabEntities" Header="Entities" >
+          <views:MapTabEntities DataContext="{Binding Entities}"/>
+        </TabItem>
+        <TabItem Name="tabEntrances" Header="Entrances" >
+          <views:MapTabEntrances DataContext="{Binding Entrances}"/>
+        </TabItem>
+        <TabItem Name="tabSpawns" Header="Spawns" >
+          <views:MapTabSpawns DataContext="{Binding Spawns}"/>
+        </TabItem>
+        <TabItem Name="tabEffects" Header="Effects" >
+          <views:MapTabEffects DataContext="{Binding Effects}"/>
+        </TabItem>
+        <TabItem Name="tabProperties" Header="Properties" >
+          <views:MapTabProperties DataContext="{Binding Properties}"/>
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </DockPanel>
+</Window>

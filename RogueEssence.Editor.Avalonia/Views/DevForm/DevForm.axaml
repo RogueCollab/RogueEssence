@@ -12,24 +12,27 @@
         <vm:DevFormViewModel/>
     </Design.DataContext>
   <Grid>
-    <TabControl Name="tabOptions" TabStripPlacement="Top" Margin="4" >
-      <TabItem Name="tabGame" Header="Game" >
+    <TabControl TabStripPlacement="Top" Margin="2">
+      <TabItem Header="Game" >
         <views:DevTabGame DataContext="{Binding Game}"/>
       </TabItem>
-      <TabItem Name="tabSprite" Header="Player" >
+      <TabItem Header="Player" >
         <views:DevTabPlayer DataContext="{Binding Player}"/>
       </TabItem>
-      <TabItem Name="tabData" Header="Data" >
+      <TabItem Header="Travel" >
+        <views:DevTabTravel DataContext="{Binding Travel}"/>
+      </TabItem>
+      <TabItem Header="Data" >
         <views:DevTabData DataContext="{Binding Data}"/>
       </TabItem>
-      <TabItem Name="tabSprites" Header="Sprites" >
+      <TabItem Header="Sprites" >
         <views:DevTabSprites DataContext="{Binding Sprites}"/>
       </TabItem>
-      <TabItem Name="tabScript" Header="Script" >
+      <TabItem Header="Script" >
         <views:DevTabScript DataContext="{Binding Script}"/>
       </TabItem>
-      <TabItem Name="tabTravel" Header="Travel" >
-        <views:DevTabTravel DataContext="{Binding Travel}"/>
+      <TabItem Header="Mods" >
+        <views:DevTabMods DataContext="{Binding Mods}"/>
       </TabItem>
     </TabControl>
   </Grid>

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using Avalonia.Interactivity;
 using Avalonia.Controls;
 
 namespace RogueEssence.Dev.ViewModels
@@ -29,26 +28,24 @@ namespace RogueEssence.Dev.ViewModels
         public string Name
         {
             get { return name; }
-            set { this.RaiseAndSetIfChanged(ref name, value); }
+            set { this.SetIfChanged(ref name, value); }
         }
 
 
         public void AddEntries(string[] entries)
         {
             for (int ii = 0; ii < entries.Length; ii++)
-            {
-                SearchList.AddItem(entries[ii]);
-            }
+                SearchList.AddItem(ii.ToString("D3") + ": " + entries[ii]);
         }
 
         public void ModifyEntry(int index, string entry)
         {
-            SearchList.SetInternalEntry(index, entry);
+            SearchList.SetInternalEntry(index, index.ToString("D3") + ": " + entry);
         }
 
         public void AddEntry(string entry)
         {
-            SearchList.AddItem(entry);
+            SearchList.AddItem(SearchList.Count.ToString("D3") + ": " + entry);
         }
 
         public void btnAdd_Click()

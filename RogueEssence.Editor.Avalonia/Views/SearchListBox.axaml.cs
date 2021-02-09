@@ -22,20 +22,18 @@ namespace RogueEssence.Dev.Views
         public void slb_DataContextChanged(object sender, EventArgs e)
         {
             ViewModels.SearchListBoxViewModel viewModel = (ViewModels.SearchListBoxViewModel)DataContext;
+            if (viewModel == null)
+                return;
             TextBox textBox = this.FindControl<TextBox>("txtSearch");
+            //TODO: memory leak?
             textBox.GetObservable(TextBox.TextProperty).Subscribe(viewModel.txtSearch_TextChanged);
-        }
-
-
-        public void lbxItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ViewModels.SearchListBoxViewModel viewModel = (ViewModels.SearchListBoxViewModel)DataContext;
-            viewModel.lbxItems_SelectionChanged(sender, e);
         }
 
         public void lbxItems_DoubleClick(object sender, RoutedEventArgs e)
         {
             ViewModels.SearchListBoxViewModel viewModel = (ViewModels.SearchListBoxViewModel)DataContext;
+            if (viewModel == null)
+                return;
             viewModel.lbxItems_DoubleClick(sender, e);
         }
     }

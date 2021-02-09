@@ -220,7 +220,7 @@ namespace RogueEssence.Dungeon
                         }
 
                         if (!wantItem)
-                            LogPickup(new PickupItem(Text.FormatKey("MSG_PASS_ITEM", character.Name, itemName), -1, "", character.CharLoc, character, true));
+                            LogPickup(new PickupItem(Text.FormatKey("MSG_PASS_ITEM", character.Name, itemName), "", "", character.CharLoc, character, true));
                     }
                 }
 
@@ -299,7 +299,7 @@ namespace RogueEssence.Dungeon
             {
                 ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
                 ((ExplorerTeam)memberTeam).Money += item.Value;
-                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.Name, Text.FormatKey("MONEY_AMOUNT", item.Value)), item.SpriteIndex, DataManager.Instance.MoneySE, item.TileLoc, character, false));
+                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.Name, Text.FormatKey("MONEY_AMOUNT", item.Value)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
             }
             else
             {
@@ -340,7 +340,7 @@ namespace RogueEssence.Dungeon
                     msg = Text.FormatKey("MSG_PICKUP_ITEM", character.Name, item.GetDungeonName());
                 }
                 bool teamCharacter = ActiveTeam.Players.Contains(character);
-                LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? DataManager.Instance.PickupSE : DataManager.Instance.PickupFoeSE, item.TileLoc, character, false));
+                LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE, item.TileLoc, character, false));
             }
         }
 
@@ -355,7 +355,7 @@ namespace RogueEssence.Dungeon
             InvItem item = mapItem.MakeInvItem();
 
             bool teamCharacter = ActiveTeam.Players.Contains(character);
-            GameManager.Instance.SE(teamCharacter ? DataManager.Instance.PickupSE : DataManager.Instance.PickupFoeSE);
+            GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
             if (character.EquippedItem.ID > -1)
             {
                 LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.Name, item.GetName(), character.EquippedItem.GetName()));
@@ -379,7 +379,7 @@ namespace RogueEssence.Dungeon
 
             if (invSlot == BattleContext.EQUIP_ITEM_SLOT && character.EquippedItem.Cursed && !character.CanRemoveStuck)
             {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
+                GameManager.Instance.SE(GraphicsManager.CursedSE);
                 LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", character.Name, character.EquippedItem.GetName()), false, true);
                 yield break;
             }
@@ -411,7 +411,7 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
 
                     bool teamCharacter = ActiveTeam.Players.Contains(character);
-                    GameManager.Instance.SE(teamCharacter ? DataManager.Instance.PickupSE : DataManager.Instance.PickupFoeSE);
+                    GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
 
                     LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.Name, item.GetDungeonName(), invItem.GetName()));
 
@@ -424,7 +424,7 @@ namespace RogueEssence.Dungeon
                     memberTeam.RemoveFromInv(invSlot);
                     ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
 
-                    GameManager.Instance.SE(DataManager.Instance.ReplaceSE);
+                    GameManager.Instance.SE(GraphicsManager.ReplaceSE);
 
                     LogMsg(Text.FormatKey("MSG_REPLACE_ITEM", item.GetDungeonName(), invItem.GetName()));
 
@@ -450,7 +450,7 @@ namespace RogueEssence.Dungeon
                 }
 
                 ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
-                GameManager.Instance.SE(DataManager.Instance.PlaceSE);
+                GameManager.Instance.SE(GraphicsManager.PlaceSE);
 
                 LogMsg(Text.FormatKey("MSG_PLACE_ITEM", character.Name, invItem.GetName()));
 
@@ -539,7 +539,7 @@ namespace RogueEssence.Dungeon
                 itemChar = memberTeam.Players[teamSlot];
             if (itemChar.EquippedItem.Cursed && !itemChar.CanRemoveStuck)
             {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
+                GameManager.Instance.SE(GraphicsManager.CursedSE);
                 LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", itemChar.Name, itemChar.EquippedItem.GetName()), false, true);
                 yield break;
             }
@@ -556,7 +556,7 @@ namespace RogueEssence.Dungeon
                 InvItem item = ((ExplorerTeam)memberTeam).GetInv(invSlot);
                 ((ExplorerTeam)memberTeam).RemoveFromInv(invSlot);
 
-                GameManager.Instance.SE(DataManager.Instance.EquipSE);
+                GameManager.Instance.SE(GraphicsManager.EquipSE);
 
                 if (itemChar.EquippedItem.ID > -1)
                 {
@@ -586,7 +586,7 @@ namespace RogueEssence.Dungeon
             Character itemChar = memberTeam.Players[teamSlot];
             if (itemChar.EquippedItem.Cursed && !itemChar.CanRemoveStuck)
             {
-                GameManager.Instance.SE(DataManager.Instance.CursedSE);
+                GameManager.Instance.SE(GraphicsManager.CursedSE);
                 LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", itemChar.Name, itemChar.EquippedItem.GetName()), false, true);
                 yield break;
             }
@@ -596,7 +596,7 @@ namespace RogueEssence.Dungeon
             InvItem item = itemChar.EquippedItem;
             ((ExplorerTeam)memberTeam).AddToInv(item);
             itemChar.DequipItem();
-            GameManager.Instance.SE(DataManager.Instance.EquipSE);
+            GameManager.Instance.SE(GraphicsManager.EquipSE);
             LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.Name, item.GetName()));
 
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
@@ -981,7 +981,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!silent)
                 {
-                    ItemAnim itemAnim = new ItemAnim(start, loc, item.IsMoney ? MapItem.MONEY_SPRITE : Data.DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    ItemAnim itemAnim = new ItemAnim(start, loc, item.IsMoney ? GraphicsManager.MoneySprite : Data.DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
                     CreateAnim(itemAnim, DrawLayer.Normal);
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }

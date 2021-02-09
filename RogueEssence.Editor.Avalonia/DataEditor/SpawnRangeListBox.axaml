@@ -1,0 +1,54 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             x:Class="RogueEssence.Dev.Views.SpawnRangeListBox">
+  <Design.DataContext>
+    <vm:SpawnRangeListBoxViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
+    <converters:PercentConverter x:Key="PercentConverter"/>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition Height="40"/>
+      <RowDefinition Height="44"/>
+      <RowDefinition Height="40"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition Width="40"/>
+    </Grid.ColumnDefinitions>
+    <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="4" MinHeight="50">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Start"
+                      Binding="{Binding Start}" />
+        <DataGridTextColumn Header="End"
+                      Binding="{Binding End}" />
+        <DataGridTextColumn Header="Weight"
+                      Binding="{Binding Weight}" />
+        <DataGridTextColumn Header="Value"
+                            Binding="{Binding Value}" />
+      </DataGrid.Columns>
+    </DataGrid>
+    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">Add</Button>
+    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="2">Delete</Button>
+    <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="4">^</Button>
+    <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="1" Grid.Column="4">v</Button>
+    <Slider IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentWeight}" TickFrequency="20" Minimum="1" Maximum="255" Margin="4" Grid.Row="2" Grid.ColumnSpan="4"/>
+    <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="2" Grid.Column="4">Weight</TextBlock>
+    <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="3" Grid.Column="0">Start:</TextBlock>
+    <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" Minimum="1" Maximum="{Binding CurrentEnd}" Margin="4" Grid.Row="3" Grid.Column="1"/>
+    <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="3" Grid.Column="2">End:</TextBlock>
+    <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentEnd}" Minimum="{Binding CurrentStart}" Margin="4" Grid.Row="3" Grid.Column="3"/>
+  </Grid>
+</UserControl>

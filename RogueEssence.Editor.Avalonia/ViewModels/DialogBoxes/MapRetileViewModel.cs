@@ -22,7 +22,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return tileSize; }
             set
             {
-                this.RaiseAndSetIfChanged(ref tileSize, value);
+                this.SetIfChanged(ref tileSize, value);
                 AllowConfirm = (tileSize % 8 == 0);
             }
         }
@@ -33,7 +33,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return allowConfirm; }
             set
             {
-                this.RaiseAndSetIfChanged(ref allowConfirm, value);
+                this.SetIfChanged(ref allowConfirm, value);
             }
         }
 

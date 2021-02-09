@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueElements", "RogueEleme
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaypointServer", "WaypointServer\WaypointServer.csproj", "{E7F9BD44-2223-4D92-9C68-EF03618F4304}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEssence.Editor.WinForms", "RogueEssence.Editor.WinForms\RogueEssence.Editor.WinForms.csproj", "{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEssence.Editor.Avalonia", "RogueEssence.Editor.Avalonia\RogueEssence.Editor.Avalonia.csproj", "{04BB699C-51C8-4775-A7A0-145F220EFA20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEssence.Examples", "RogueEssence.Examples\RogueEssence.Examples.csproj", "{9A88DA05-9713-4DFC-8BDB-9D7306128072}"
@@ -55,14 +53,6 @@ Global
 		{E7F9BD44-2223-4D92-9C68-EF03618F4304}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E7F9BD44-2223-4D92-9C68-EF03618F4304}.Release|x64.ActiveCfg = Release|Any CPU
 		{E7F9BD44-2223-4D92-9C68-EF03618F4304}.Release|x64.Build.0 = Release|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Debug|x64.Build.0 = Debug|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|x64.ActiveCfg = Release|Any CPU
-		{C4B69AF0-4AFF-4934-BF91-AF841B3E722A}.Release|x64.Build.0 = Release|Any CPU
 		{9A88DA05-9713-4DFC-8BDB-9D7306128072}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9A88DA05-9713-4DFC-8BDB-9D7306128072}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A88DA05-9713-4DFC-8BDB-9D7306128072}.Debug|x64.ActiveCfg = Debug|Any CPU

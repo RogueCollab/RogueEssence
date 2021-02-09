@@ -59,8 +59,6 @@ namespace RogueEssence
         private int timeSinceError;
         private int longestFrame;
 
-        public GraphicsManager.GameZoom Zoom;
-
         private float fadeAmount;
         private bool fadeWhite;
         private float titleFadeAmount;
@@ -85,8 +83,6 @@ namespace RogueEssence
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
 
-            Zoom = GraphicsManager.GameZoom.x1;
-
             DiagManager.Instance.SetErrorListener(OnError);
         }
 
@@ -101,8 +97,8 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
 
-            if (System.IO.File.Exists(DataManager.SOUND_PATH + newSE + ".ogg"))
-                SoundManager.PlaySound(DataManager.SOUND_PATH + newSE + ".ogg", 1);
+            if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), 1);
         }
 
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
@@ -120,9 +116,9 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 yield break;
 
-            if (System.IO.File.Exists(DataManager.SOUND_PATH + newSE + ".ogg"))
+            if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
             {
-                int pauseFrames = SoundManager.PlaySound(DataManager.SOUND_PATH + newSE + ".ogg");
+                int pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
                 yield return new WaitForFrames(pauseFrames);
             }
         }
@@ -287,7 +283,7 @@ namespace RogueEssence
 
         public bool IsInGame()
         {
-            return (ZoneManager.Instance.CurrentZone != null && ZoneManager.Instance.CurrentMap != null &&
+            return (GameManager.Instance.CurrentScene == DungeonScene.Instance &&
                 DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null);
         }
 
@@ -317,16 +313,43 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> RestartToTitle()
         {
-            removeStateVariables();
+            cleanup();
+            reInit();
             MoveToScene(new TitleScene(false));
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
-        private void removeStateVariables()
+
+        public IEnumerator<YieldInstruction> SetMod(string modPath, bool fade)
         {
-            //remove all state variables
+            if (fade)
+                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+
+            cleanup();
+            PathMod.Mod = modPath;
+            reInit();
+            TitleScene.TitleMenuSaveState = null;
+            MoveToScene(new TitleScene(true));
+            //clean up and reload all caches
+            GraphicsManager.ReloadStatic();
+            DataManager.Instance.InitData();
+            LuaEngine.Instance.OnDataLoad();
+            DataManager.InitSaveDirs();
+            //call data editor's load method to reload the dropdowns
+            DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.All);
+
+            if (fade)
+                yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
+        }
+
+        private void cleanup()
+        {
             DataManager.Instance.SetProgress(null);
             ZoneManager.Instance.Cleanup();
+        }
+        private void reInit()
+        {
+            //remove all state variables
             DungeonScene.InitInstance();
             GroundScene.InitInstance();
             LuaEngine.Instance.Reset();
@@ -347,7 +370,7 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> MoveToEditor(bool newGround, string name)
         {
-            BaseScene destScene = GroundEditScene.Instance;// newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
+            BaseScene destScene = newGround ? (BaseScene)GroundEditScene.Instance : (BaseScene)DungeonEditScene.Instance;
 
             ZoneLoc destLoc = ZoneLoc.Invalid;
             if (ZoneManager.Instance.CurrentZoneID > -1)
@@ -364,13 +387,9 @@ namespace RogueEssence
             MoveToScene(destScene);
 
             if (newGround)
-            {
                 GroundEditScene.Instance.EnterGroundEdit(0);
-            }
             else
-            {
-
-            }
+                DungeonEditScene.Instance.EnterMapEdit(0);
             if (DataManager.Instance.Save != null)
                 DataManager.Instance.Save.NextDest = destLoc;
             yield break;
@@ -673,7 +692,8 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> ReturnToReplayMenu()
         {
-            removeStateVariables();
+            cleanup();
+            reInit();
             MoveToScene(new TitleScene(true));
 
             MenuBase.Transparent = false;
@@ -788,11 +808,11 @@ namespace RogueEssence
 
             if (MetaInputManager.MouseWheelDiff != 0)
             {
-                Zoom -= MetaInputManager.MouseWheelDiff / 120;
-                if (Zoom < GraphicsManager.GameZoom.x8Near)
-                    Zoom = GraphicsManager.GameZoom.x8Near;
-                if (Zoom > GraphicsManager.GameZoom.x8Far)
-                    Zoom = GraphicsManager.GameZoom.x8Far;
+                GraphicsManager.Zoom -= MetaInputManager.MouseWheelDiff / 120;
+                if (GraphicsManager.Zoom < GraphicsManager.GameZoom.x8Near)
+                    GraphicsManager.Zoom = GraphicsManager.GameZoom.x8Near;
+                if (GraphicsManager.Zoom > GraphicsManager.GameZoom.x8Far)
+                    GraphicsManager.Zoom = GraphicsManager.GameZoom.x8Far;
             }
 
             CurrentScene.UpdateMeta();
@@ -854,11 +874,11 @@ namespace RogueEssence
                 MusicFadeTime -= elapsedTime;
                 if (MusicFadeTime <= FrameTick.Zero)
                 {
-                    if (System.IO.File.Exists(DataManager.MUSIC_PATH + NextSong))
+                    if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.MUSIC_PATH + NextSong)))
                     {
                         Song = NextSong;
                         NextSong = null;
-                        SoundManager.PlayBGM(DataManager.MUSIC_PATH + Song);
+                        SoundManager.PlayBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + Song));
                     }
                     else
                     {
@@ -878,8 +898,8 @@ namespace RogueEssence
                     if (FanfareTime <= FrameTick.Zero)
                     {
                         int pauseFrames = 0;
-                        if (!String.IsNullOrEmpty(QueuedFanfare) && System.IO.File.Exists(DataManager.SOUND_PATH + QueuedFanfare + ".ogg"))
-                            pauseFrames = SoundManager.PlaySound(DataManager.SOUND_PATH + QueuedFanfare + ".ogg", 1) + FANFARE_WAIT_EXTRA;
+                        if (!String.IsNullOrEmpty(QueuedFanfare) && System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg")))
+                            pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg"), 1) + FANFARE_WAIT_EXTRA;
                         CurrentFanfarePhase = FanfarePhase.Wait;
                         if (FanfareTime < pauseFrames)
                             FanfareTime = FrameTick.FromFrames(pauseFrames);
@@ -976,7 +996,7 @@ namespace RogueEssence
                 CurrentScene.DrawDebug(spriteBatch);
 
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("Zoom: {0}", Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
             }
 
             GraphicsManager.SysFont.DrawText(spriteBatch, 2, 32, String.Format("{0:D2} FPS  {1:D5} Longest", fps, longestFrame), null, DirV.Up, DirH.Left, Color.White);

@@ -8,17 +8,27 @@ using System.Xml;
 
 namespace RogueEssence.Content
 {
-
     public class CharFrameType
     {
         public string Name;
         public bool IsDash;
+        public List<int> Fallbacks;
 
         public CharFrameType(string name, bool isDash)
         {
             Name = name;
             IsDash = isDash;
+            Fallbacks = new List<int>();
         }
+    }
+
+    public enum ActionPointType
+    {
+        Shadow,
+        Center,
+        Head,
+        LeftHand,
+        RightHand
     }
 
     public class CharAnimFrame
@@ -46,10 +56,6 @@ namespace RogueEssence.Content
 
     public class CharAnimSequence
     {
-        public int RushPoint;
-        public int HitPoint;
-        public int ReturnPoint;
-
         public List<CharAnimFrame> Frames;
 
         public CharAnimSequence()
@@ -60,35 +66,95 @@ namespace RogueEssence.Content
 
     public class CharAnimGroup
     {
+        public int InternalIndex;
+        public int CopyOf;
+        public List<CharAnimSequence> Sequences;
 
-        public CharAnimSequence[] Sequences;
+        public int RushFrame;
+        public int HitFrame;
+        public int ReturnFrame;
 
         public CharAnimGroup()
         {
-            Sequences = new CharAnimSequence[DirExt.DIR8_COUNT];
-            for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
-                Sequences[ii] = new CharAnimSequence();
+            InternalIndex = -1;
+            CopyOf = -1;
+            Sequences = new List<CharAnimSequence>();
+            RushFrame = -1;
+            HitFrame = -1;
+            ReturnFrame = -1;
+        }
+
+        public CharAnimSequence SeqAtDir(Dir8 dir)
+        {
+            int sequenceIndex = Math.Min((int)dir, Sequences.Count - 1);
+            return Sequences[sequenceIndex];
         }
     }
 
+
+    public class OffsetData
+    {
+        public Loc CenterFlip { get { return flip(Center); } }
+        public Loc HeadFlip { get { return flip(Head); } }
+        public Loc LeftHandFlip { get { return flip(LeftHand); } }
+        public Loc RightHandFlip { get { return flip(RightHand); } }
+
+        public Loc Center { get; private set; }
+        public Loc Head { get; private set; }
+        public Loc LeftHand { get; private set; }
+        public Loc RightHand { get; private set; }
+
+        public OffsetData()
+        { }
+        public OffsetData(Loc center, Loc head, Loc leftHand, Loc rightHand)
+        {
+            this.Center = center;
+            this.Head = head;
+            this.LeftHand = leftHand;
+            this.RightHand = rightHand;
+        }
+
+        private Loc flip(Loc loc)
+        {
+            return new Loc(-loc.X - 1, loc.Y);
+        }
+
+        public void AddLoc(Loc loc)
+        {
+            Center += loc;
+            Head += loc;
+            LeftHand += loc;
+            RightHand += loc;
+        }
+
+
+        public Rectangle GetCoveredRect()
+        {
+            int top = Math.Min(Math.Min(Center.Y, Head.Y), Math.Min(LeftHand.Y, RightHand.Y));
+            int left = Math.Min(Math.Min(Center.X, Head.X), Math.Min(LeftHand.X, RightHand.X));
+            int bottom = Math.Max(Math.Max(Center.Y, Head.Y), Math.Max(LeftHand.Y, RightHand.Y)) + 1;
+            int right = Math.Max(Math.Max(Center.X, Head.X), Math.Max(LeftHand.X, RightHand.X)) + 1;
+
+            return new Rectangle(left, top, right - left, bottom - top);
+        }
+    }
 
 
     public class CharSheet : TileSheet
     {
         //class made specifically for characters, with their own actions and animations
-        private Dictionary<int, CharAnimGroup> animData;
-        public int ShadowSize { get; private set; }
-        //public CharSheet(int width, int height, int tileWidth, int tileHeight)
-        //    : base(width, height, tileWidth, tileHeight)
-        //{
-        //    animData = new Dictionary<int,CharAnimGroup>();
-        //}
+        public Dictionary<int, CharAnimGroup> AnimData;
+        public int ShadowSize;
+        //offsets are relative to the center of each image
+        public List<OffsetData> OffsetData;
 
-        protected CharSheet(Texture2D tex, int tileWidth, int tileHeight, int shadowSize, Dictionary<int, CharAnimGroup> animData)
+
+        protected CharSheet(Texture2D tex, int tileWidth, int tileHeight, int shadowSize, Dictionary<int, CharAnimGroup> animData, List<OffsetData> offsetData)
             : base(tex, tileWidth, tileHeight)
         {
-            this.animData = animData;
-            ShadowSize = shadowSize;
+            this.AnimData = animData;
+            this.OffsetData = offsetData;
+            this.ShadowSize = shadowSize;
         }
 
         //frompath (import) will take a folder containing all elements (xml and all animations, or xml and a sheet)
@@ -96,18 +162,29 @@ namespace RogueEssence.Content
         //save will save as .chara
 
 
-        private static void mapDuplicates(List<(Texture2D img, Rectangle rect)> imgs, List<(Texture2D img, Rectangle rect)> final_imgs, CharAnimFrame[] img_map)
+        private static void mapDuplicates(List<(Texture2D img, Rectangle rect, OffsetData offsets)> imgs, List<(Texture2D img, Rectangle rect, OffsetData offsets)> final_imgs, CharAnimFrame[] img_map, bool offsetCheck)
         {
             for (int xx = 0; xx < imgs.Count; xx++)
             {
                 bool dupe = false;
                 for (int yy = 0; yy < final_imgs.Count; yy++)
                 {
-                    CharAnimFrame imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, final_imgs[yy].rect, imgs[xx].rect);
-                    if (imgs_equal != null)
+                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, false) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false, imgs[xx].img.Width % 2 == 1));
+                    if (imgs_equal)
                     {
-                        imgs_equal.Frame = new Loc(yy, 0);
-                        img_map[xx] = imgs_equal;
+                        CharAnimFrame map_frame = new CharAnimFrame();
+                        map_frame.Frame = new Loc(yy, 0);
+                        img_map[xx] = map_frame;
+                        dupe = true;
+                        break;
+                    }
+                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, true) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true, imgs[xx].img.Width % 2 == 1));
+                    if (flip_equal)
+                    {
+                        CharAnimFrame map_frame = new CharAnimFrame();
+                        map_frame.Frame = new Loc(yy, 0);
+                        map_frame.Flip = true;
+                        img_map[xx] = map_frame;
                         dupe = true;
                         break;
                     }
@@ -124,174 +201,91 @@ namespace RogueEssence.Content
             }
         }
 
-        private static CharAnimFrame imgsEqual(Texture2D img1, Texture2D img2, Rectangle rect1, Rectangle rect2)
+        /// <summary>
+        /// Assume 0,0 to be the center of their respective images. Images can be of different sizes.
+        /// </summary>
+        /// <param name="img1"></param>
+        /// <param name="img2"></param>
+        /// <param name="rect1"></param>
+        /// <param name="rect2"></param>
+        /// <returns></returns>
+        private static bool imgsEqual(Texture2D img1, Texture2D img2, bool flip)
         {
+            if (img1.Width != img2.Width || img1.Height != img2.Height)
+                return false;
 
-            if (rect1.Width != rect2.Width || rect1.Height != rect2.Height)
-                return null;
+            Color[] data1 = new Color[img1.Width * img1.Height];
+            img1.GetData<Color>(0, null, data1, 0, data1.Length);
+            Color[] data2 = new Color[img2.Width * img2.Height];
+            img2.GetData<Color>(0, null, data2, 0, data2.Length);
 
-
-            Color[] data1 = new Color[rect1.Width * rect1.Height];
-            img1.GetData<Color>(0, rect1, data1, 0, data1.Length);
-            Color[] data2 = new Color[rect2.Width * rect2.Height];
-            img2.GetData<Color>(0, rect2, data2, 0, data2.Length);
-
-            //check against similarity
-            bool equal = true;
             for (int ii = 0; ii < data1.Length; ii++)
             {
-                if (data1[ii] != data2[ii])
-                    equal = false;
-                if (!equal)
-                    break;
+                int result_ii = ii;
+                if (flip)
+                {
+                    int yPoint = ii / img1.Width;
+                    int xPoint = ii % img1.Width;
+                    result_ii = (yPoint + 1) * img1.Width - 1 - xPoint;
+                }
+                if (data1[ii] != data2[result_ii])
+                    return false;
             }
-
-            //check against flip similarity
-
-            if (equal)
-            {
-                CharAnimFrame frame = new CharAnimFrame();
-                frame.Offset = new Loc(rect2.X - rect1.X, rect2.Y - rect1.Y);
-                return frame;
-            }
-
-            equal = true;
-            for (int ii = 0; ii < data1.Length; ii++)
-            {
-                int yPoint = (ii / rect2.Width + 1) * rect2.Width;
-                int reverse_ii = yPoint - 1 - (ii - yPoint + rect2.Width);
-                if (data1[ii] != data2[reverse_ii])
-                    equal = false;
-                if (!equal)
-                    break;
-            }
-
-            if (equal)
-            {
-                Rectangle rev_rect = new Rectangle(img1.Width - rect2.Right, rect2.Y, img1.Width - rect2.X, rect2.Height);
-                CharAnimFrame frame = new CharAnimFrame();
-                frame.Offset = new Loc(rev_rect.X - rect1.X, rev_rect.Y - rect1.Y);
-                frame.Flip = true;
-                return frame;
-            }
-            return null;
+            return true;
         }
 
-        private static Rectangle getCoveredRect(Texture2D tex)
+        private static bool offsetsEqual(OffsetData offset1, OffsetData offset2, bool flip, bool oddWidth)
         {
-            int top = tex.Height;
-            int left = tex.Width;
-            int bottom = 0;
-            int right = 0;
-            Color[] color = new Color[tex.Width * tex.Height];
-            tex.GetData<Color>(0, new Rectangle(0, 0, tex.Width, tex.Height), color, 0, color.Length);
-            for (int ii = 0; ii < tex.Width * tex.Height; ii++)
+            Loc center = offset2.Center;
+            Loc head = offset2.Head;
+            Loc leftHand = offset2.LeftHand;
+            Loc rightHand = offset2.RightHand;
+            if (flip)
             {
-                if (color[ii].A > 0)
-                {
-                    Loc loc = new Loc(ii % tex.Width, ii / tex.Width);
-                    top = Math.Min(loc.Y, top);
-                    left = Math.Min(loc.X, left);
-                    bottom = Math.Max(loc.Y + 1, bottom);
-                    right = Math.Max(loc.X + 1, right);
-                }
+                center = offset2.CenterFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
+                head = offset2.HeadFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
+                leftHand = offset2.LeftHandFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
+                rightHand = offset2.RightHandFlip + (oddWidth ? Loc.UnitX : Loc.Zero);
             }
-            return new Rectangle(left, top, right - left, bottom - top);
+
+            if (offset1.Center != center)
+                return false;
+            if (offset1.Head != head)
+                return false;
+            if (offset1.LeftHand != leftHand)
+                return false;
+            if (offset1.RightHand != rightHand)
+                return false;
+
+            return true;
+        }
+
+        private static Loc?[] getOffsetFromRGB(Texture2D img, Rectangle rect, bool black, bool r, bool g, bool b, bool white)
+        {
+            Color[] data = new Color[rect.Width * rect.Height];
+            img.GetData<Color>(0, rect, data, 0, data.Length);
+
+            Loc?[] results = new Loc?[5];
+            //TODO: check against repeats and failures to find a value
+            for (int ii = 0; ii < data.Length; ii++)
+            {
+                if (black && data[ii] == Color.Black)
+                    results[0] = new Loc(ii % rect.Width, ii / rect.Width);
+                if (r && data[ii].R == 255)
+                    results[1] = new Loc(ii % rect.Width, ii / rect.Width);
+                if (g && data[ii].G == 255)
+                    results[2] = new Loc(ii % rect.Width, ii / rect.Width);
+                if (b && data[ii].B == 255)
+                    results[3] = new Loc(ii % rect.Width, ii / rect.Width);
+                if (white && data[ii] == Color.White)
+                    results[4] = new Loc(ii % rect.Width, ii / rect.Width);
+            }
+            return results;
         }
 
         public static new CharSheet Import(string path)
         {
-            if (File.Exists(path + "FrameData.xml"))
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "FrameData.xml");
-                int tileWidth = Convert.ToInt32(doc.SelectSingleNode("FrameData/FrameWidth").InnerText);
-                int tileHeight = Convert.ToInt32(doc.SelectSingleNode("FrameData/FrameHeight").InnerText);
-                int shadowSize = Convert.ToInt32(doc.SelectSingleNode("FrameData/ShadowSize").InnerText);
-                int framerate = Convert.ToInt32(doc.SelectSingleNode("FrameData/FrameRate").InnerText);
-
-                Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
-
-                //load all available tilesets
-                List<(Texture2D, Rectangle)> frames = new List<(Texture2D, Rectangle)>();
-                List<(int frameType, int dir, int frame)> frameToSequence = new List<(int, int, int)>();
-                //get all frames
-                for (int kk = 0; kk < GraphicsManager.Actions.Count; kk++)
-                {
-                    CharFrameType frameType = GraphicsManager.Actions[kk];
-                    if (File.Exists(path + frameType.Name.ToString() + ".png"))
-                    {
-                        Texture2D newSheet = null;
-                        using (FileStream fileStream = new FileStream(path + frameType.Name.ToString() + ".png", FileMode.Open, FileAccess.Read, FileShare.Read))
-                            newSheet = ImportTex(fileStream);
-
-                        CharAnimGroup sequence = new CharAnimGroup();
-                        //automatically calculate frame durations and use preset offsets
-                        for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
-                        {
-                            int index = ii;
-                            bool flip = false;
-                            if (ii >= (newSheet.Height / tileHeight))
-                            {
-                                if ((newSheet.Height / tileHeight) == 1)
-                                    index = 0;
-                                else
-                                {
-                                    index = DirExt.DIR8_COUNT - ii;
-                                    flip = true;
-                                }
-                            }
-                            int totalTime = 0;
-                            for (int jj = 0; jj < (newSheet.Width / tileWidth); jj++)
-                            {
-                                Texture2D frameTex = new Texture2D(device, tileWidth, tileHeight);
-
-                                BaseSheet.Blit(newSheet, frameTex, jj * tileWidth, index * tileHeight, tileWidth, tileHeight, 0, 0);
-                                Rectangle rect = getCoveredRect(frameTex);
-                                frames.Add((frameTex, rect));
-
-                                CharAnimFrame frame = new CharAnimFrame();
-                                frame.Flip = flip;
-                                totalTime += framerate;
-                                frame.EndTime = totalTime;
-                                sequence.Sequences[ii].Frames.Add(frame);
-                                frameToSequence.Add((kk, ii, jj));
-                            }
-                        }
-                        animData[kk] = sequence;
-
-                        newSheet.Dispose();
-                    }
-                }
-                if (frames.Count == 0)
-                    return null;
-
-                CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
-                List<(Texture2D, Rectangle)> finalFrames = new List<(Texture2D, Rectangle)>();
-                mapDuplicates(frames, finalFrames, frameMap);
-
-
-                int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
-                Texture2D tex = new Texture2D(device, maxSize * tileWidth, maxSize * tileHeight);
-
-                for (int ii = 0; ii < finalFrames.Count; ii++)
-                    BaseSheet.Blit(finalFrames[ii].Item1, tex, 0, 0, tileWidth, tileHeight, tileWidth * (ii % maxSize), tileHeight * (ii / maxSize));
-
-                for (int ii = 0; ii < frames.Count; ii++)
-                {
-                    CharAnimFrame animFrame = animData[frameToSequence[ii].frameType].Sequences[frameToSequence[ii].dir].Frames[frameToSequence[ii].frame];
-                    CharAnimFrame mapFrame = frameMap[ii];
-                    animFrame.Flip = (mapFrame.Flip != animFrame.Flip);
-                    animFrame.Offset = animFrame.Offset + mapFrame.Offset;
-                    int finalIndex = mapFrame.Frame.X;
-                    animFrame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
-
-                    frames[ii].Item1.Dispose();
-                }
-
-                return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData);
-            }
-            else if (File.Exists(path + "Animations.xml"))
+            if (File.Exists(path + "Animations.xml"))
             {
                 Texture2D tex = null;
                 using (FileStream fileStream = new FileStream(path + "sheet.png", FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -302,19 +296,31 @@ namespace RogueEssence.Content
 
                 int tileWidth = Convert.ToInt32(doc.SelectSingleNode("AnimData/FrameWidth").InnerText);
                 int tileHeight = Convert.ToInt32(doc.SelectSingleNode("AnimData/FrameHeight").InnerText);
+                if (tileWidth % 2 == 1 || tileHeight % 2 == 1)
+                    throw new InvalidDataException("Tile width and tile height must be even numbers!");
                 int shadowSize = Convert.ToInt32(doc.SelectSingleNode("AnimData/ShadowSize").InnerText);
+                int tilesX = tex.Width / tileWidth;
+                int tilesY = tex.Height / tileHeight;
+
+                Loc center = new Loc(tileWidth, tileHeight) / 2;
+                List<OffsetData> offsetData = new List<OffsetData>();
+                for (int ii = 0; ii < tilesX * tilesY; ii++)
+                    offsetData.Add(new OffsetData(Loc.Zero, Loc.Zero, Loc.Zero, Loc.Zero));
 
                 //read anim data first
-                List<CharAnimSequence> sequenceList = new List<CharAnimSequence>();
+                List<(CharAnimSequence sequence, int rushFrame, int hitFrame, int returnFrame)> sequenceList = new List<(CharAnimSequence, int, int, int)>();
 
                 XmlNode sequenceNode = doc.SelectSingleNode("AnimData/AnimSequenceTable");
                 XmlNodeList sequences = sequenceNode.SelectNodes("AnimSequence");
                 foreach (XmlNode sequence in sequences)
                 {
                     CharAnimSequence frameList = new CharAnimSequence();
-                    frameList.RushPoint = Convert.ToInt32(sequence.SelectSingleNode("RushPoint").InnerText);
-                    frameList.HitPoint = Convert.ToInt32(sequence.SelectSingleNode("HitPoint").InnerText);
-                    frameList.ReturnPoint = Convert.ToInt32(sequence.SelectSingleNode("ReturnPoint").InnerText);
+                    int rushTime = Convert.ToInt32(sequence.SelectSingleNode("RushPoint").InnerText);
+                    int hitTime = Convert.ToInt32(sequence.SelectSingleNode("HitPoint").InnerText);
+                    int returnTime = Convert.ToInt32(sequence.SelectSingleNode("ReturnPoint").InnerText);
+                    int rushFrame = -1;
+                    int hitFrame = -1;
+                    int returnFrame = -1;
 
                     XmlNodeList frames = sequence.SelectNodes("AnimFrame");
                     int totalDuration = 0;
@@ -322,7 +328,13 @@ namespace RogueEssence.Content
                     {
                         CharAnimFrame sequenceFrame = new CharAnimFrame();
                         int frameIndex = Convert.ToInt32(frame.SelectSingleNode("MetaFrameGroupIndex").InnerText);
-                        sequenceFrame.Frame = new Loc(frameIndex % (tex.Width / tileWidth), frameIndex / (tex.Width / tileWidth));
+                        sequenceFrame.Frame = new Loc(frameIndex % tilesX, frameIndex / tilesX);
+                        if (totalDuration < rushTime)
+                            rushFrame = frameList.Frames.Count;
+                        if (totalDuration < hitTime)
+                            hitFrame = frameList.Frames.Count;
+                        if (totalDuration < returnTime)
+                            returnFrame = frameList.Frames.Count;
                         totalDuration += Convert.ToInt32(frame.SelectSingleNode("Duration").InnerText);
                         sequenceFrame.EndTime = totalDuration;
                         sequenceFrame.Flip = Convert.ToBoolean(Convert.ToInt32(frame.SelectSingleNode("HFlip").InnerText));
@@ -332,130 +344,810 @@ namespace RogueEssence.Content
                         sequenceFrame.ShadowOffset = new Loc(Convert.ToInt32(shadow.SelectSingleNode("XOffset").InnerText), Convert.ToInt32(shadow.SelectSingleNode("YOffset").InnerText));
                         frameList.Frames.Add(sequenceFrame);
                     }
-                    sequenceList.Add(frameList);
+                    sequenceList.Add((frameList, rushFrame, hitFrame, returnFrame));
                 }
 
                 Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
 
                 XmlNode groupNode = doc.SelectSingleNode("AnimData/AnimGroupTable");
-                XmlNodeList animGroups = groupNode.SelectNodes("AnimGroup");
                 int groupIndex = 0;
-                foreach (XmlNode animGroup in animGroups)
+                foreach (XmlNode animGroupNode in groupNode.SelectNodes("AnimGroup"))
                 {
-                    XmlNodeList sequenceIndices = animGroup.SelectNodes("AnimSequenceIndex");
+                    XmlNodeList sequenceIndices = animGroupNode.SelectNodes("AnimSequenceIndex");
                     int dirIndex = 0;
                     CharAnimGroup group = new CharAnimGroup();
                     foreach (XmlNode sequenceIndex in sequenceIndices)
                     {
                         int indexNum = Convert.ToInt32(sequenceIndex.InnerText);
-                        group.Sequences[dirIndex] = new CharAnimSequence();
-                        group.Sequences[dirIndex].RushPoint = sequenceList[indexNum].RushPoint;
-                        group.Sequences[dirIndex].HitPoint = sequenceList[indexNum].HitPoint;
-                        group.Sequences[dirIndex].ReturnPoint = sequenceList[indexNum].ReturnPoint;
-                        foreach (CharAnimFrame frame in sequenceList[indexNum].Frames)
-                            group.Sequences[dirIndex].Frames.Add(new CharAnimFrame(frame));
+                        CharAnimSequence sequence = new CharAnimSequence();
+                        group.RushFrame = sequenceList[indexNum].rushFrame;
+                        group.HitFrame = sequenceList[indexNum].hitFrame;
+                        group.ReturnFrame = sequenceList[indexNum].returnFrame;
+                        foreach (CharAnimFrame frame in sequenceList[indexNum].sequence.Frames)
+                            sequence.Frames.Add(new CharAnimFrame(frame));
+                        group.Sequences.Add(sequence);
                         dirIndex++;
                     }
                     if (dirIndex > 0)
                         animData.Add(groupIndex, group);
                     groupIndex++;
                 }
+                return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
+            }
+            else if (File.Exists(path + "FrameData.xml"))
+            {
+                Texture2D tex = null;
+                using (FileStream fileStream = new FileStream(path + "Anim.png", FileMode.Open, FileAccess.Read, FileShare.Read))
+                    tex = ImportTex(fileStream);
 
-                return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData);
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path + "FrameData.xml");
+
+                int tileWidth = Convert.ToInt32(doc.SelectSingleNode("AnimData/FrameWidth").InnerText);
+                int tileHeight = Convert.ToInt32(doc.SelectSingleNode("AnimData/FrameHeight").InnerText);
+                if (tileWidth % 2 == 1 || tileHeight % 2 == 1)
+                    throw new InvalidDataException("Tile width and tile height must be even numbers!");
+                int shadowSize = Convert.ToInt32(doc.SelectSingleNode("AnimData/ShadowSize").InnerText);
+                int tilesX = tex.Width / tileWidth;
+                int tilesY = tex.Height / tileHeight;
+
+
+                int maxFrames = 0;
+                Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
+                XmlNode animsNode = doc.SelectSingleNode("AnimData/Anims");
+                foreach (XmlNode animGroupNode in animsNode.SelectNodes("Anim"))
+                {
+                    CharAnimGroup animGroup = new CharAnimGroup();
+                    XmlNode nameNode = animGroupNode.SelectSingleNode("Name");
+                    int animIndex = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, nameNode.InnerText, true) == 0); });
+                    if (animIndex == -1)
+                        throw new InvalidDataException(String.Format("Could not find index for anim named '{0}'!", nameNode.InnerText));
+
+                    XmlNode internalIndexNode = animGroupNode.SelectSingleNode("Index");
+                    if (internalIndexNode != null)
+                        animGroup.InternalIndex = Convert.ToInt32(internalIndexNode.InnerText);
+
+                    XmlNode copyOfNode = animGroupNode.SelectSingleNode("CopyOf");
+                    if (copyOfNode != null)
+                        animGroup.CopyOf = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, copyOfNode.InnerText, true) == 0); });
+                    else
+                    {
+                        XmlNode rushFrame = animGroupNode.SelectSingleNode("RushFrame");
+                        if (rushFrame != null)
+                            animGroup.RushFrame = Convert.ToInt32(rushFrame.InnerText);
+                        XmlNode hitFrame = animGroupNode.SelectSingleNode("HitFrame");
+                        if (hitFrame != null)
+                            animGroup.HitFrame = Convert.ToInt32(hitFrame.InnerText);
+                        XmlNode returnFrame = animGroupNode.SelectSingleNode("ReturnFrame");
+                        if (returnFrame != null)
+                            animGroup.ReturnFrame = Convert.ToInt32(returnFrame.InnerText);
+
+                        XmlNode sequencesNode = animGroupNode.SelectSingleNode("Sequences");
+                        foreach (XmlNode sequenceNode in sequencesNode.SelectNodes("AnimSequence"))
+                        {
+                            CharAnimSequence sequence = new CharAnimSequence();
+
+                            XmlNodeList frames = sequenceNode.SelectNodes("AnimFrame");
+                            int totalDuration = 0;
+                            foreach (XmlNode frame in frames)
+                            {
+                                CharAnimFrame sequenceFrame = new CharAnimFrame();
+                                int frameIndex = Convert.ToInt32(frame.SelectSingleNode("FrameIndex").InnerText);
+                                maxFrames = Math.Max(frameIndex, maxFrames);
+                                sequenceFrame.Frame = new Loc(frameIndex % tilesX, frameIndex / tilesX);
+                                totalDuration += Convert.ToInt32(frame.SelectSingleNode("Duration").InnerText);
+                                sequenceFrame.EndTime = totalDuration;
+                                sequenceFrame.Flip = Convert.ToBoolean(Convert.ToInt32(frame.SelectSingleNode("HFlip").InnerText));
+                                XmlNode offset = frame.SelectSingleNode("Sprite");
+                                sequenceFrame.Offset = new Loc(Convert.ToInt32(offset.SelectSingleNode("XOffset").InnerText), Convert.ToInt32(offset.SelectSingleNode("YOffset").InnerText));
+                                XmlNode shadow = frame.SelectSingleNode("Shadow");
+                                sequenceFrame.ShadowOffset = new Loc(Convert.ToInt32(shadow.SelectSingleNode("XOffset").InnerText), Convert.ToInt32(shadow.SelectSingleNode("YOffset").InnerText));
+                                sequence.Frames.Add(sequenceFrame);
+                            }
+                            animGroup.Sequences.Add(sequence);
+                        }
+                    }
+                    animData[animIndex] = animGroup;
+                }
+
+
+
+                Texture2D offsetTex = null;
+                using (FileStream fileStream = new FileStream(path + "Offsets.png", FileMode.Open, FileAccess.Read, FileShare.Read))
+                    offsetTex = ImportTex(fileStream);
+                Loc tileCenter = new Loc(tileWidth, tileHeight) / 2;
+                List<OffsetData> offsetData = new List<OffsetData>();
+                for (int ii = 0; ii < tilesX * tilesY; ii++)
+                {
+                    if (ii > maxFrames)
+                        break;
+                    Loc tileLoc = new Loc(ii % tilesX, ii / tilesX);
+                    Rectangle tileRect = new Rectangle(tileLoc.X * tileWidth, tileLoc.Y * tileHeight, tileWidth, tileHeight);
+                    Loc?[] frameOffset = getOffsetFromRGB(offsetTex, tileRect, true, true, true, true, false);
+                    OffsetData offsets = new OffsetData(tileCenter, tileCenter, tileCenter, tileCenter);
+                    if (frameOffset[2].HasValue)
+                    {
+                        Loc center = frameOffset[2].Value;
+                        Loc head = center;
+                        if (frameOffset[0].HasValue)
+                            head = frameOffset[0].Value;
+                        Loc leftHand = frameOffset[1].Value;
+                        Loc rightHand = frameOffset[3].Value;
+                        offsets = new OffsetData(center, head, leftHand, rightHand);
+                    }
+                    //center the offsets to the center of the frametex
+                    offsets.AddLoc(-tileCenter);
+
+                    offsetData.Add(offsets);
+                }
+                offsetTex.Dispose();
+
+                return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
+            }
+            else if (File.Exists(path + "AnimData.xml"))
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path + "AnimData.xml");
+                int shadowSize = Convert.ToInt32(doc.SelectSingleNode("AnimData/ShadowSize").InnerText);
+
+                Dictionary<int, (Loc size, CharAnimGroup group, List<int> endTimes)> sequenceList = new Dictionary<int, (Loc, CharAnimGroup, List<int>)>();
+                XmlNode animsNode = doc.SelectSingleNode("AnimData/Anims");
+                foreach (XmlNode animGroupNode in animsNode.SelectNodes("Anim"))
+                {
+                    CharAnimGroup animGroup = new CharAnimGroup();
+                    List<int> endList = new List<int>();
+                    XmlNode nameNode = animGroupNode.SelectSingleNode("Name");
+                    int animIndex = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, nameNode.InnerText, true) == 0); });
+                    if (animIndex == -1)
+                        throw new InvalidDataException(String.Format("Could not find index for anim named '{0}'!", nameNode.InnerText));
+
+                    XmlNode internalIndexNode = animGroupNode.SelectSingleNode("Index");
+                    if (internalIndexNode != null)
+                        animGroup.InternalIndex = Convert.ToInt32(internalIndexNode.InnerText);
+                    Loc animSize = Loc.Zero;
+                    XmlNode copyOfNode = animGroupNode.SelectSingleNode("CopyOf");
+                    if (copyOfNode != null)
+                        animGroup.CopyOf = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, copyOfNode.InnerText, true) == 0); });
+                    else
+                    {
+                        int tileWidth = Convert.ToInt32(animGroupNode.SelectSingleNode("FrameWidth").InnerText);
+                        int tileHeight = Convert.ToInt32(animGroupNode.SelectSingleNode("FrameHeight").InnerText);
+                        animSize = new Loc(tileWidth, tileHeight);
+
+                        XmlNode rushFrame = animGroupNode.SelectSingleNode("RushFrame");
+                        if (rushFrame != null)
+                            animGroup.RushFrame = Convert.ToInt32(rushFrame.InnerText);
+                        XmlNode hitFrame = animGroupNode.SelectSingleNode("HitFrame");
+                        if (hitFrame != null)
+                            animGroup.HitFrame = Convert.ToInt32(hitFrame.InnerText);
+                        XmlNode returnFrame = animGroupNode.SelectSingleNode("ReturnFrame");
+                        if (returnFrame != null)
+                            animGroup.ReturnFrame = Convert.ToInt32(returnFrame.InnerText);
+
+                        XmlNodeList durations = animGroupNode.SelectNodes("Durations/Duration");
+                        int totalDuration = 0;
+                        foreach (XmlNode duration in durations)
+                        {
+                            CharAnimFrame sequenceFrame = new CharAnimFrame();
+                            totalDuration += Convert.ToInt32(duration.InnerText);
+                            endList.Add(totalDuration);
+                        }
+                    }
+                    sequenceList[animIndex] = (animSize, animGroup, endList);
+                }
+
+                int maxWidth = 0;
+                int maxHeight = 0;
+
+                Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
+                //load all available tilesets
+                List<(Texture2D img, Rectangle rect, OffsetData offsets)> frames = new List<(Texture2D, Rectangle, OffsetData)>();
+                List<(int frameType, int dir, int frame)> frameToSequence = new List<(int, int, int)>();
+                //get all frames
+                //TODO: check against animations present in png files but missing from xml
+                foreach (int kk in sequenceList.Keys)
+                {
+                    CharFrameType frameType = GraphicsManager.Actions[kk];
+
+                    Loc tileSize = sequenceList[kk].size;
+                    int tileWidth = tileSize.X;
+                    int tileHeight = tileSize.Y;
+                    List<int> endList = sequenceList[kk].endTimes;
+
+                    CharAnimGroup animGroup = sequenceList[kk].group;
+                    if (animGroup.CopyOf > -1)
+                    {
+                        animData[kk] = animGroup;
+                        continue;
+                    }
+
+                    Texture2D animSheet = null;
+                    using (FileStream fileStream = new FileStream(path + frameType.Name + "-Anim.png", FileMode.Open, FileAccess.Read, FileShare.Read))
+                        animSheet = ImportTex(fileStream);
+                    Texture2D shadowSheet = null;
+                    using (FileStream fileStream = new FileStream(path + frameType.Name + "-Shadow.png", FileMode.Open, FileAccess.Read, FileShare.Read))
+                        shadowSheet = ImportTex(fileStream);
+                    Texture2D offsetSheet = null;
+                    using (FileStream fileStream = new FileStream(path + frameType.Name + "-Offsets.png", FileMode.Open, FileAccess.Read, FileShare.Read))
+                        offsetSheet = ImportTex(fileStream);
+
+
+                    //check against inconsistent sizing
+                    if (animSheet.Width != shadowSheet.Width || animSheet.Width != offsetSheet.Width ||
+                        animSheet.Height != shadowSheet.Height || animSheet.Height != offsetSheet.Height)
+                        throw new InvalidDataException(String.Format("Anim/Offset/Shadow images of {0} are not the same size!", frameType.Name));
+
+                    //check against bad tile size
+                    if (animSheet.Width % tileWidth != 0 || animSheet.Height % tileHeight != 0)
+                        throw new InvalidDataException(String.Format("Anim sheet {0} is {1}x{2} and is not divisible by a tile size of {3}x{4}!", frameType.Name, animSheet.Width, animSheet.Height, tileWidth, tileHeight));
+
+                    int totalX = animSheet.Width / tileWidth;
+                    int totalY = animSheet.Height / tileHeight;
+                    //check against inconsistent duration count
+                    if (endList.Count != totalX)
+                        throw new InvalidDataException(String.Format("Duration list of {0} is not the same length as the number of frames in the anim!", frameType.Name));
+
+                    //automatically calculate frame durations and use preset offsets
+                    for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
+                    {
+                        //convert from clockwise PMD style to counterclockwise PMDO style
+                        int sheetIndex = (DirExt.DIR8_COUNT - ii) % DirExt.DIR8_COUNT;
+                        if (sheetIndex >= animSheet.Height / tileHeight)
+                            continue;
+                        CharAnimSequence sequence = new CharAnimSequence();
+                        for (int jj = 0; jj < (animSheet.Width / tileWidth); jj++)
+                        {
+                            Rectangle tileRect = new Rectangle(jj * tileWidth, sheetIndex * tileHeight, tileWidth, tileHeight);
+                            Rectangle imgCoveredRect = GetCoveredRect(animSheet, tileRect);
+                            if (imgCoveredRect.Width <= 0)
+                                imgCoveredRect = new Rectangle(tileWidth / 2, tileHeight / 2, 1, 1);
+
+                            //first blit, then edit the rect sizes
+                            Texture2D frameTex = new Texture2D(device, imgCoveredRect.Width, imgCoveredRect.Height);
+                            BaseSheet.Blit(animSheet, frameTex, jj * tileWidth + imgCoveredRect.X, sheetIndex * tileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
+                            //the final tile size must be able to contain this image
+                            maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
+                            maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
+
+                            Loc boundsCenter = new Loc(imgCoveredRect.Center.X, imgCoveredRect.Center.Y);
+
+                            Loc?[] frameOffset = getOffsetFromRGB(offsetSheet, tileRect, true, true, true, true, false);
+                            OffsetData offsets = new OffsetData(boundsCenter, boundsCenter, boundsCenter, boundsCenter);
+                            if (frameOffset[2].HasValue)
+                            {
+                                Loc center = frameOffset[2].Value;
+                                Loc head = center;
+                                if (frameOffset[0].HasValue)
+                                    head = frameOffset[0].Value;
+                                Loc leftHand = frameOffset[1].Value;
+                                Loc rightHand = frameOffset[3].Value;
+                                offsets = new OffsetData(center, head, leftHand, rightHand);
+                            }
+                            //center the offsets to the center of the frametex
+                            offsets.AddLoc(-boundsCenter);
+
+                            //get the farthest that the offsets can cover, relative to the image
+                            Rectangle offsetCoveredRect = offsets.GetCoveredRect();
+                            Rectangle centeredOffsetRect = centerBounds(offsetCoveredRect);
+
+                            //the final tile size must be able to contain the offsets
+                            maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
+                            maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
+
+
+                            frames.Add((frameTex, imgCoveredRect, offsets));
+
+                            CharAnimFrame frame = new CharAnimFrame();
+                            frame.Offset = boundsCenter - tileSize / 2;
+                            frame.EndTime = endList[jj];
+
+                            Loc?[] shadowOffset = getOffsetFromRGB(shadowSheet, tileRect, false, false, false, false, true);
+                            if (shadowOffset[4].HasValue)
+                                frame.ShadowOffset = shadowOffset[4].Value - tileSize / 2;
+                            
+                            sequence.Frames.Add(frame);
+                            frameToSequence.Add((kk, ii, jj));
+                        }
+                        animGroup.Sequences.Add(sequence);
+                    }
+                    animData[kk] = animGroup;
+
+                    animSheet.Dispose();
+                    shadowSheet.Dispose();
+                    offsetSheet.Dispose();
+                }
+                if (frames.Count == 0)
+                    return null;
+
+                //make frame sizes even
+                maxWidth = roundUpToMult(maxWidth, 2);
+                maxHeight = roundUpToMult(maxHeight, 2);
+
+                CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
+                List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
+                mapDuplicates(frames, finalFrames, frameMap, true);
+
+                int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
+                Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+
+                List<OffsetData> offsetData = new List<OffsetData>();
+                for (int ii = 0; ii < finalFrames.Count; ii++)
+                {
+                    int diffX = maxWidth / 2 - finalFrames[ii].img.Width / 2;
+                    int diffY = maxHeight / 2 - finalFrames[ii].img.Height / 2;
+                    BaseSheet.Blit(finalFrames[ii].img, tex, 0, 0, finalFrames[ii].img.Width, finalFrames[ii].img.Height,
+                        maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY);
+                    OffsetData endData = finalFrames[ii].offsets;
+
+                    offsetData.Add(endData);
+                }
+
+                for (int ii = 0; ii < frames.Count; ii++)
+                {
+                    CharAnimFrame animFrame = animData[frameToSequence[ii].frameType].Sequences[frameToSequence[ii].dir].Frames[frameToSequence[ii].frame];
+                    CharAnimFrame mapFrame = frameMap[ii];
+                    animFrame.Flip = mapFrame.Flip;
+                    int finalIndex = mapFrame.Frame.X;
+                    //if an image with an odd number of pixels is flipped, it must be moved over slightly
+                    if (animFrame.Flip && frames[ii].Item1.Width % 2 == 1)
+                        animFrame.Offset = animFrame.Offset + Loc.UnitX;
+                    animFrame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
+                }
+
+                for (int ii = 0; ii < frames.Count; ii++)
+                    frames[ii].Item1.Dispose();
+
+                // automatically add default animation
+                {
+                    CharAnimGroup anim = new CharAnimGroup();
+                    CharAnimGroup parentGroup = animData[GraphicsManager.IdleAction];
+                    while(parentGroup.CopyOf > -1)
+                        parentGroup = animData[parentGroup.CopyOf];
+                    foreach (CharAnimSequence sequence in parentGroup.Sequences)
+                    {
+                        CharAnimSequence newSequence = new CharAnimSequence();
+                        CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
+                        frame.EndTime = 1;
+                        newSequence.Frames.Add(frame);
+                        anim.Sequences.Add(newSequence);
+                    }
+                    animData[0] = anim;
+                }
+
+                return new CharSheet(tex, maxWidth, maxHeight, shadowSize, animData, offsetData);
             }
             else
-                throw new InvalidOperationException("Error finding FrameData.xml or Animations.xml in " + path + ".");
+                throw new InvalidOperationException("Error finding AnimData.xml, FrameData.xml or Animations.xml in " + path + ".");
 
         }
 
-
-        public static void Export(CharSheet sheet, string baseDirectory)
+        public void CollapseOffsets()
         {
-            using (Stream stream = new FileStream(baseDirectory + "sheet.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                ExportTex(stream, sheet.baseTexture);
+            int maxWidth = 0;
+            int maxHeight = 0;
 
-
-            XmlDocument doc = new XmlDocument();
-            XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
-            doc.AppendChild(configNode);
-
-
-
-            XmlNode docNode = doc.CreateElement("AnimData");
-            docNode.AppendInnerTextChild(doc, "FrameWidth", sheet.TileWidth.ToString());
-            docNode.AppendInnerTextChild(doc, "FrameHeight", sheet.TileHeight.ToString());
-            docNode.AppendInnerTextChild(doc, "ShadowSize", sheet.ShadowSize.ToString());
-
-            List<CharAnimSequence> sequenceList = new List<CharAnimSequence>();
+            Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
+            //load all available tilesets
+            List<(Texture2D img, Rectangle rect, OffsetData offsets)> frames = new List<(Texture2D, Rectangle, OffsetData)>();
+            //get all frames
+            for (int kk = 0; kk < OffsetData.Count; kk++)
             {
-                XmlNode groupNode = doc.CreateElement("AnimGroupTable");
+                int xx = kk % TotalX;
+                int yy = kk / TotalX;
+                Rectangle tileRect = new Rectangle(xx * TileWidth, yy * TileHeight, TileWidth, TileHeight);
+                Rectangle imgCoveredRect = GetCoveredRect(baseTexture, tileRect);
+                if (imgCoveredRect.Width <= 0)
+                    imgCoveredRect = new Rectangle(TileWidth / 2, TileHeight / 2, 1, 1);
 
-                for (int ii = 0; ii < GraphicsManager.Actions.Count; ii++)
+                //first blit, then edit the rect sizes
+                Texture2D frameTex = new Texture2D(device, imgCoveredRect.Width, imgCoveredRect.Height);
+                BaseSheet.Blit(baseTexture, frameTex, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
+                //the final tile size must be able to contain this image
+                maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
+                maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
+
+                OffsetData offsets = OffsetData[kk];
+
+                //get the farthest that the offsets can cover, relative to the image
+                Rectangle offsetCoveredRect = offsets.GetCoveredRect();
+                Rectangle centeredOffsetRect = centerBounds(offsetCoveredRect);
+
+                //the final tile size must be able to contain the offsets
+                maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
+                maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
+
+                frames.Add((frameTex, imgCoveredRect, offsets));
+            }
+
+            //make frame sizes even
+            maxWidth = roundUpToMult(maxWidth, 2);
+            maxHeight = roundUpToMult(maxHeight, 2);
+
+            CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
+            List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
+            mapDuplicates(frames, finalFrames, frameMap, false);
+
+            int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
+            Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+
+            List<OffsetData> offsetData = new List<OffsetData>();
+            for (int ii = 0; ii < finalFrames.Count; ii++)
+            {
+                int diffX = maxWidth / 2 - finalFrames[ii].img.Width / 2;
+                int diffY = maxHeight / 2 - finalFrames[ii].img.Height / 2;
+                BaseSheet.Blit(finalFrames[ii].img, tex, 0, 0, finalFrames[ii].img.Width, finalFrames[ii].img.Height,
+                    maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY);
+                OffsetData endData = finalFrames[ii].offsets;
+
+                offsetData.Add(endData);
+            }
+
+            foreach(int key in AnimData.Keys)
+            {
+                CharAnimGroup group = AnimData[key];
+                foreach (CharAnimSequence seq in group.Sequences)
                 {
-                    XmlNode animGroup = doc.CreateElement("AnimGroup");
-
-                    if (sheet.animData.ContainsKey(ii))
+                    foreach (CharAnimFrame frame in seq.Frames)
                     {
-                        foreach (CharAnimSequence sequence in sheet.animData[ii].Sequences)
+                        Loc frameFrom = frame.Frame;
+                        int fromIndex = frameFrom.Y * TotalX + frameFrom.X;
+                        CharAnimFrame mapFrame = frameMap[fromIndex];
+                        frame.Flip ^= mapFrame.Flip;
+                        int finalIndex = mapFrame.Frame.X;
+                        if (frames[fromIndex].Item1.Width % 2 == 1 && mapFrame.Flip)
                         {
-                            animGroup.AppendInnerTextChild(doc, "AnimSequenceIndex", sequenceList.Count.ToString());
-                            sequenceList.Add(sequence);
+                            if (frame.Flip)
+                                frame.Offset = frame.Offset + Loc.UnitX;
+                            else
+                                frame.Offset = frame.Offset - Loc.UnitX;
+                        }
+                        frame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
+                    }
+                }
+            }
+            for(int ii = 0; ii < frames.Count; ii++)
+                frames[ii].Item1.Dispose();
+
+            SetTileTexture(tex, maxWidth, maxHeight);
+            OffsetData = offsetData;
+        }
+
+        private static Rectangle addToBounds(Rectangle frame, Loc add)
+        {
+            return new Rectangle(frame.X + add.X, frame.Y + add.Y, frame.Width, frame.Height);
+        }
+        private static Rectangle combineExtents(Rectangle frame1, Rectangle frame2)
+        {
+            int startX = Math.Min(frame1.X, frame2.X);
+            int startY = Math.Min(frame1.Y, frame2.Y);
+            int endX = Math.Max(frame1.Right, frame2.Right);
+            int endY = Math.Max(frame1.Bottom, frame2.Bottom);
+            return new Rectangle(startX, startY, endX - startX, endY - startY);
+        }
+
+        private static Rectangle mirrorRect(Rectangle rect)
+        {
+            return new Rectangle(-rect.Right, rect.Y, rect.Width, rect.Height);
+        }
+
+        private static Rectangle centerBounds(Rectangle rect)
+        {
+            int minX = Math.Min(rect.X, -rect.Right);
+            int minY = Math.Min(rect.Y, -rect.Bottom);
+
+            int maxX = Math.Max(-rect.X, rect.Right);
+            int maxY = Math.Max(-rect.Y, rect.Bottom);
+            return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+        }
+
+        private static int roundUpToMult(int inInt, int inMult)
+        {
+            int subInt = inInt - 1;
+            int div = subInt / inMult;
+            return (div + 1) * inMult;
+        }
+
+        private static Rectangle roundUpBox(Rectangle minBox)
+        {
+            int newWidth = roundUpToMult(minBox.Width, 8);
+            int newHeight = roundUpToMult(minBox.Height, 8);
+            int startX = minBox.X + (minBox.Width - newWidth) / 2;
+            int startY = minBox.Y + (minBox.Height - newHeight) / 2;
+            return new Rectangle(startX, startY, newWidth, newHeight);
+        }
+
+        private static void setOffsetsToRGB(Color[] colors, int imgWidth, Loc loc, Color newCol)
+        {
+            Color oldCol = colors[loc.Y * imgWidth + loc.X];
+            colors[loc.Y * imgWidth + loc.X] = new Color(Math.Max(oldCol.R, newCol.R), Math.Max(oldCol.G, newCol.G), Math.Max(oldCol.B, newCol.B), 255);
+        }
+
+        public static void Export(CharSheet sheet, string baseDirectory, bool singleFrames)
+        {
+            if (singleFrames)
+            {
+                using (Stream stream = new FileStream(baseDirectory + "Anim.png", FileMode.Create, FileAccess.Write, FileShare.None))
+                    ExportTex(stream, sheet.baseTexture);
+
+                Texture2D particleImg = new Texture2D(device, sheet.baseTexture.Width, sheet.baseTexture.Height);
+                Color[] particleColors = new Color[particleImg.Width * particleImg.Height];
+
+                Loc tileSize = new Loc(sheet.TileWidth, sheet.TileHeight);
+                for (int ii = 0; ii < sheet.OffsetData.Count; ii++)
+                {
+                    OffsetData offsets = sheet.OffsetData[ii];
+                    Loc tilePos = new Loc(ii % sheet.TotalX, ii / sheet.TotalX) * tileSize;
+                    tilePos = tilePos + tileSize / 2;
+                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.Center, new Color(0, 255, 0, 255));
+                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.Head, new Color(0, 0, 0, 255));
+                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.LeftHand, new Color(255, 0, 0, 255));
+                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.RightHand, new Color(0, 0, 255, 255));
+                }
+
+                particleImg.SetData<Color>(0, null, particleColors, 0, particleColors.Length);
+                using (Stream stream = new FileStream(baseDirectory + "Offsets.png", FileMode.Create, FileAccess.Write, FileShare.None))
+                    ExportTex(stream, particleImg);
+
+
+                XmlDocument doc = new XmlDocument();
+                XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
+                doc.AppendChild(configNode);
+
+
+                XmlNode docNode = doc.CreateElement("AnimData");
+                docNode.AppendInnerTextChild(doc, "FrameWidth", sheet.TileWidth.ToString());
+                docNode.AppendInnerTextChild(doc, "FrameHeight", sheet.TileHeight.ToString());
+                docNode.AppendInnerTextChild(doc, "ShadowSize", sheet.ShadowSize.ToString());
+
+
+                XmlNode animsNode = doc.CreateElement("Anims");
+
+                foreach (int key in sheet.AnimData.Keys)
+                {
+                    if (key == 0)
+                        continue;
+
+                    CharAnimGroup group = sheet.AnimData[key];
+                    XmlNode animGroupNode = doc.CreateElement("Anim");
+
+                    animGroupNode.AppendInnerTextChild(doc, "Name", GraphicsManager.Actions[key].Name);
+                    if (group.InternalIndex > -1)
+                        animGroupNode.AppendInnerTextChild(doc, "Index", group.InternalIndex.ToString());
+                    if (group.CopyOf > -1)
+                        animGroupNode.AppendInnerTextChild(doc, "CopyOf", GraphicsManager.Actions[group.CopyOf].Name);
+                    else
+                    {
+                        if (group.RushFrame > -1)
+                            animGroupNode.AppendInnerTextChild(doc, "RushFrame", group.RushFrame.ToString());
+                        if (group.HitFrame > -1)
+                            animGroupNode.AppendInnerTextChild(doc, "HitFrame", group.HitFrame.ToString());
+                        if (group.ReturnFrame > -1)
+                            animGroupNode.AppendInnerTextChild(doc, "ReturnFrame", group.ReturnFrame.ToString());
+
+                        XmlNode sequencesNode = doc.CreateElement("Sequences");
+                        foreach (CharAnimSequence animSequence in group.Sequences)
+                        {
+                            XmlNode sequenceNode = doc.CreateElement("AnimSequence");
+
+                            int duration = 0;
+                            foreach (CharAnimFrame sequenceFrame in animSequence.Frames)
+                            {
+                                XmlNode frame = doc.CreateElement("AnimFrame");
+
+                                int frameIndex = sequenceFrame.Frame.Y * sheet.TotalX + sequenceFrame.Frame.X;
+                                frame.AppendInnerTextChild(doc, "FrameIndex", frameIndex.ToString());
+
+                                frame.AppendInnerTextChild(doc, "Duration", (sequenceFrame.EndTime - duration).ToString());
+                                duration = sequenceFrame.EndTime;
+
+                                frame.AppendInnerTextChild(doc, "HFlip", sequenceFrame.Flip ? "1" : "0");
+
+                                XmlNode offset = doc.CreateElement("Sprite");
+                                offset.AppendInnerTextChild(doc, "XOffset", sequenceFrame.Offset.X.ToString());
+                                offset.AppendInnerTextChild(doc, "YOffset", sequenceFrame.Offset.Y.ToString());
+                                frame.AppendChild(offset);
+
+                                XmlNode shadow = doc.CreateElement("Shadow");
+                                shadow.AppendInnerTextChild(doc, "XOffset", sequenceFrame.ShadowOffset.X.ToString());
+                                shadow.AppendInnerTextChild(doc, "YOffset", sequenceFrame.ShadowOffset.Y.ToString());
+                                frame.AppendChild(shadow);
+
+                                sequenceNode.AppendChild(frame);
+                            }
+
+                            sequencesNode.AppendChild(sequenceNode);
+                        }
+
+                        animGroupNode.AppendChild(sequencesNode);
+                    }
+                    animsNode.AppendChild(animGroupNode);
+                }
+                docNode.AppendChild(animsNode);
+
+                doc.AppendChild(docNode);
+
+                doc.Save(baseDirectory + "FrameData.xml");
+            }
+            else
+            {
+                // calculate the max bounds of each animation
+                // this is relative to the center of the frame
+                List<(Rectangle, Rectangle)> frames_bounds_tight = new List<(Rectangle, Rectangle)>();
+                // use offsets because they conveniently give the actual number of unique frames
+                for (int ii = 0; ii < sheet.OffsetData.Count; ii++)
+                {
+                    Loc rectStart = new Loc(ii % sheet.TotalX, ii / sheet.TotalX);
+                    Rectangle crop_rect = GetCoveredRect(sheet.baseTexture, new Rectangle(rectStart.X * sheet.TileWidth, rectStart.Y * sheet.TileHeight, sheet.TileWidth, sheet.TileHeight));
+
+                    Rectangle frame_rect = addToBounds(crop_rect, new Loc(-sheet.TileWidth / 2, -sheet.TileHeight / 2));
+                    frame_rect = combineExtents(frame_rect, sheet.OffsetData[ii].GetCoveredRect());
+                    frames_bounds_tight.Add((crop_rect, frame_rect));
+                }
+
+                Dictionary<int, Rectangle> groupBounds = new Dictionary<int, Rectangle>();
+                Rectangle shadow_rect = new Rectangle(-GraphicsManager.MarkerShadow.Width / 2, -GraphicsManager.MarkerShadow.Height / 2, GraphicsManager.MarkerShadow.Width, GraphicsManager.MarkerShadow.Height);
+                Rectangle shadow_rect_tight = GraphicsManager.MarkerShadow.GetCoveredRect(new Rectangle(0, 0, GraphicsManager.MarkerShadow.Width, GraphicsManager.MarkerShadow.Height));
+
+                // get max bounds for all animations
+                foreach (int key in sheet.AnimData.Keys)
+                {
+                    if (key == 0)
+                        continue;
+                    if (sheet.AnimData[key].CopyOf > -1)
+                        continue;
+
+                    Rectangle maxBounds = new Rectangle(10000, 10000, -20000, -20000);
+                    foreach (CharAnimSequence sequence in sheet.AnimData[key].Sequences)
+                    {
+                        foreach (CharAnimFrame frame in sequence.Frames)
+                        {
+                            Rectangle frame_rect = frames_bounds_tight[frame.Frame.X + frame.Frame.Y * sheet.TotalX].Item2;
+                            if (frame.Flip)
+                                frame_rect = mirrorRect(frame_rect);
+                            frame_rect = addToBounds(frame_rect, frame.Offset);
+                            maxBounds = combineExtents(maxBounds, frame_rect);
+                            Rectangle shadowBounds = addToBounds(shadow_rect_tight, new Loc(shadow_rect.X, shadow_rect.Y));
+                            shadowBounds = addToBounds(shadowBounds, frame.ShadowOffset);
+                            maxBounds = combineExtents(maxBounds, shadowBounds);
+                        }
+                        // round up to nearest x8
+                        maxBounds = centerBounds(maxBounds);
+                        maxBounds = roundUpBox(maxBounds);
+                        groupBounds[key] = maxBounds;
+                    }
+                }
+
+
+                foreach (int key in sheet.AnimData.Keys)
+                {
+                    if (key == 0)
+                        continue;
+
+                    if (sheet.AnimData[key].CopyOf > -1)
+                        continue;
+
+                    Rectangle maxBounds = groupBounds[key];
+                    int framesPerAnim = sheet.AnimData[key].Sequences[0].Frames.Count;
+
+                    Texture2D animImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
+                    Texture2D particleImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
+                    Color[] particleColors = new Color[particleImg.Width * particleImg.Height];
+                    Texture2D shadowImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
+
+                    for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
+                    {
+                        int sheetIndex = (DirExt.DIR8_COUNT - ii) % DirExt.DIR8_COUNT;
+                        if (sheetIndex >= sheet.AnimData[key].Sequences.Count)
+                            continue;
+                        CharAnimSequence sequence = sheet.AnimData[key].Sequences[ii];
+                        for (int jj = 0; jj < sequence.Frames.Count; jj++)
+                        {
+                            CharAnimFrame frame = sequence.Frames[jj];
+                            //get the absolute position of the rectangle to blit from
+                            Rectangle crop_rect = frames_bounds_tight[frame.Frame.X + frame.Frame.Y * sheet.TotalX].Item1;
+                            Rectangle source_rect = new Rectangle(frame.Frame.X * sheet.TileWidth + crop_rect.X, frame.Frame.Y * sheet.TileHeight + crop_rect.Y,
+                                crop_rect.Width, crop_rect.Height);
+
+                            Loc tilePos = new Loc(jj * maxBounds.Width, sheetIndex * maxBounds.Height);
+                            //add half of the maxbounds to get the center
+                            Loc centerPos = tilePos + new Loc(maxBounds.Width, maxBounds.Height) / 2;
+                            //add the anim frame's offset to get center of actual sprite
+                            Loc framePos = centerPos + frame.Offset;
+                            //subtract half the atlas tile size for the draw position based on the atlas
+                            Loc atlasPastePos = framePos - new Loc(sheet.TileWidth, sheet.TileHeight) / 2;
+                            //add frame rect start to the source value to get the exact draw position on the anim sheet
+                            Rectangle crop_dest_rect = crop_rect;
+                            if (frame.Flip)
+                            {
+                                crop_dest_rect = mirrorRect(crop_dest_rect);
+                                crop_dest_rect.X += sheet.TileWidth;
+                            }
+                            Loc pastePos = atlasPastePos + new Loc(crop_dest_rect.X, crop_dest_rect.Y);
+
+                            BaseSheet.Blit(sheet.baseTexture, animImg, source_rect.X, source_rect.Y, source_rect.Width, source_rect.Height,
+                                pastePos.X, pastePos.Y, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+
+                            OffsetData offsets = sheet.OffsetData[frame.Frame.X + frame.Frame.Y * sheet.TotalX];
+                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.CenterFlip : offsets.Center), new Color(0, 255, 0, 255));
+                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.HeadFlip : offsets.Head), new Color(0, 0, 0, 255));
+                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.LeftHandFlip : offsets.LeftHand), new Color(255, 0, 0, 255));
+                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.RightHandFlip : offsets.RightHand), new Color(0, 0, 255, 255));
+
+                            Loc shadowPos = centerPos + frame.ShadowOffset;
+                            shadowPos = shadowPos + new Loc(shadow_rect.X, shadow_rect.Y);
+                            shadowPos = shadowPos + new Loc(shadow_rect_tight.X, shadow_rect_tight.Y);
+
+                            BaseSheet.Blit(GraphicsManager.MarkerShadow, shadowImg, shadow_rect_tight.X, shadow_rect_tight.Y, shadow_rect_tight.Width,
+                                shadow_rect_tight.Height, shadowPos.X, shadowPos.Y);
                         }
                     }
 
-                    groupNode.AppendChild(animGroup);
+                    string name = GraphicsManager.Actions[key].Name;
+                    using (Stream stream = new FileStream(baseDirectory + name + "-Anim.png", FileMode.Create, FileAccess.Write, FileShare.None))
+                        ExportTex(stream, animImg);
+                    particleImg.SetData<Color>(0, null, particleColors, 0, particleColors.Length);
+                    using (Stream stream = new FileStream(baseDirectory + name + "-Offsets.png", FileMode.Create, FileAccess.Write, FileShare.None))
+                        ExportTex(stream, particleImg);
+                    using (Stream stream = new FileStream(baseDirectory + name + "-Shadow.png", FileMode.Create, FileAccess.Write, FileShare.None))
+                        ExportTex(stream, shadowImg);
+
+                    animImg.Dispose();
+                    particleImg.Dispose();
+                    shadowImg.Dispose();
                 }
 
-                docNode.AppendChild(groupNode);
-            }
+                XmlDocument doc = new XmlDocument();
+                XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
+                doc.AppendChild(configNode);
 
-            {
-                XmlNode sequenceNode = doc.CreateElement("AnimSequenceTable");
+                XmlNode docNode = doc.CreateElement("AnimData");
+                docNode.AppendInnerTextChild(doc, "ShadowSize", sheet.ShadowSize.ToString());
 
-                foreach (CharAnimSequence frameList in sequenceList)
+                XmlNode animsNode = doc.CreateElement("Anims");
+
+                foreach (int key in sheet.AnimData.Keys)
                 {
-                    XmlNode sequence = doc.CreateElement("AnimSequence");
+                    if (key == 0)
+                        continue;
 
-                    sequence.AppendInnerTextChild(doc, "RushPoint", frameList.RushPoint.ToString());
-                    sequence.AppendInnerTextChild(doc, "HitPoint", frameList.HitPoint.ToString());
-                    sequence.AppendInnerTextChild(doc, "ReturnPoint", frameList.ReturnPoint.ToString());
+                    CharAnimGroup group = sheet.AnimData[key];
+                    XmlNode animGroupNode = doc.CreateElement("Anim");
 
-                    int duration = 0;
-                    foreach (CharAnimFrame sequenceFrame in frameList.Frames)
+                    animGroupNode.AppendInnerTextChild(doc, "Name", GraphicsManager.Actions[key].Name);
+                    if (group.InternalIndex > -1)
+                        animGroupNode.AppendInnerTextChild(doc, "Index", group.InternalIndex.ToString());
+                    if (group.CopyOf > -1)
+                        animGroupNode.AppendInnerTextChild(doc, "CopyOf", GraphicsManager.Actions[group.CopyOf].Name);
+                    else
                     {
-                        XmlNode frame = doc.CreateElement("AnimFrame");
+                        animGroupNode.AppendInnerTextChild(doc, "FrameWidth", groupBounds[key].Width.ToString());
+                        animGroupNode.AppendInnerTextChild(doc, "FrameHeight", groupBounds[key].Height.ToString());
 
-                        int frameIndex = sequenceFrame.Frame.Y * sheet.TotalX + sequenceFrame.Frame.X;
-                        frame.AppendInnerTextChild(doc, "MetaFrameGroupIndex", frameIndex.ToString());
+                        if (group.RushFrame > -1)
+                            animGroupNode.AppendInnerTextChild(doc, "RushFrame", group.RushFrame.ToString());
+                        if (group.HitFrame > -1)
+                            animGroupNode.AppendInnerTextChild(doc, "HitFrame", group.HitFrame.ToString());
+                        if (group.ReturnFrame > -1)
+                            animGroupNode.AppendInnerTextChild(doc, "ReturnFrame", group.ReturnFrame.ToString());
 
-                        frame.AppendInnerTextChild(doc, "Duration", (sequenceFrame.EndTime - duration).ToString());
-                        duration = sequenceFrame.EndTime;
-
-                        frame.AppendInnerTextChild(doc, "HFlip", sequenceFrame.Flip ? "1" : "0");
-
-                        XmlNode offset = doc.CreateElement("Sprite");
-                        offset.AppendInnerTextChild(doc, "XOffset", sequenceFrame.Offset.X.ToString());
-                        offset.AppendInnerTextChild(doc, "YOffset", sequenceFrame.Offset.Y.ToString());
-                        frame.AppendChild(offset);
-
-                        XmlNode shadow = doc.CreateElement("Shadow");
-                        shadow.AppendInnerTextChild(doc, "XOffset", sequenceFrame.ShadowOffset.X.ToString());
-                        shadow.AppendInnerTextChild(doc, "YOffset", sequenceFrame.ShadowOffset.Y.ToString());
-                        frame.AppendChild(shadow);
-
-                        sequence.AppendChild(frame);
+                        XmlNode durations = doc.CreateElement("Durations");
+                        int curTime = 0;
+                        foreach (CharAnimFrame frame in group.Sequences[0].Frames)
+                        {
+                            int dur = frame.EndTime - curTime;
+                            durations.AppendInnerTextChild(doc, "Duration", dur.ToString());
+                            curTime = frame.EndTime;
+                        }
+                        animGroupNode.AppendChild(durations);
                     }
-
-                    sequenceNode.AppendChild(sequence);
+                    animsNode.AppendChild(animGroupNode);
                 }
+                docNode.AppendChild(animsNode);
 
-                docNode.AppendChild(sequenceNode);
+                doc.AppendChild(docNode);
+
+                doc.Save(baseDirectory + "AnimData.xml");
             }
-
-            doc.AppendChild(docNode);
-
-            doc.Save(baseDirectory + "Animations.xml");
-
         }
 
         public static new CharSheet Load(BinaryReader reader)
@@ -473,6 +1165,19 @@ namespace RogueEssence.Content
             int tileHeight = reader.ReadInt32();
             int shadowSize = reader.ReadInt32();
 
+
+            int offsetCount = reader.ReadInt32();
+            List<OffsetData> offsetData = new List<OffsetData>();
+            for (int ii = 0; ii < offsetCount; ii++)
+            {
+                Loc center = new Loc(reader.ReadInt32(), reader.ReadInt32());
+                Loc head = new Loc(reader.ReadInt32(), reader.ReadInt32());
+                Loc leftHand = new Loc(reader.ReadInt32(), reader.ReadInt32());
+                Loc rightHand = new Loc(reader.ReadInt32(), reader.ReadInt32());
+                OffsetData offset = new OffsetData(center, head, leftHand, rightHand);
+                offsetData.Add(offset);
+            }
+
             Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
 
             int keyCount = reader.ReadInt32();
@@ -481,11 +1186,21 @@ namespace RogueEssence.Content
                 int frameType = reader.ReadInt32();
 
                 CharAnimGroup group = new CharAnimGroup();
-                for (int jj = 0; jj < DirExt.DIR8_COUNT; jj++)
+                group.InternalIndex = reader.ReadInt32();
+                group.CopyOf = reader.ReadInt32();
+                if (group.CopyOf > -1)
                 {
-                    group.Sequences[jj].RushPoint = reader.ReadInt32();
-                    group.Sequences[jj].HitPoint = reader.ReadInt32();
-                    group.Sequences[jj].ReturnPoint = reader.ReadInt32();
+                    animData[frameType] = group;
+                    continue;
+                }
+                group.RushFrame = reader.ReadInt32();
+                group.HitFrame = reader.ReadInt32();
+                group.ReturnFrame = reader.ReadInt32();
+
+                int sequenceCount = reader.ReadInt32();
+                for (int jj = 0; jj < sequenceCount; jj++)
+                {
+                    CharAnimSequence sequence = new CharAnimSequence();
                     int frameCount = reader.ReadInt32();
                     int totalTime = 0;
                     for (int kk = 0; kk < frameCount; kk++)
@@ -497,19 +1212,20 @@ namespace RogueEssence.Content
                         frame.Flip = reader.ReadBoolean();
                         frame.Offset = new Loc(reader.ReadInt32(), reader.ReadInt32());
                         frame.ShadowOffset = new Loc(reader.ReadInt32(), reader.ReadInt32());
-                        group.Sequences[jj].Frames.Add(frame);
+                        sequence.Frames.Add(frame);
                     }
+                    group.Sequences.Add(sequence);
                 }
                 animData[frameType] = group;
             }
 
-            return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData);
+            return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
 
         }
 
         public static new CharSheet LoadError()
         {
-            return new CharSheet(defaultTex, defaultTex.Width, defaultTex.Height, 0, new Dictionary<int, CharAnimGroup>());
+            return new CharSheet(defaultTex, defaultTex.Width, defaultTex.Height, 0, new Dictionary<int, CharAnimGroup>(), new List<OffsetData>());
         }
 
         public override void Save(BinaryWriter writer)
@@ -517,21 +1233,42 @@ namespace RogueEssence.Content
             base.Save(writer);
 
             writer.Write(ShadowSize);
-            writer.Write(animData.Keys.Count);
-            foreach (int frameType in animData.Keys)
+            writer.Write(OffsetData.Count);
+            for (int ii = 0; ii < OffsetData.Count; ii++)
+            {
+                writer.Write(OffsetData[ii].Center.X);
+                writer.Write(OffsetData[ii].Center.Y);
+                writer.Write(OffsetData[ii].Head.X);
+                writer.Write(OffsetData[ii].Head.Y);
+                writer.Write(OffsetData[ii].LeftHand.X);
+                writer.Write(OffsetData[ii].LeftHand.Y);
+                writer.Write(OffsetData[ii].RightHand.X);
+                writer.Write(OffsetData[ii].RightHand.Y);
+            }
+
+            writer.Write(AnimData.Keys.Count);
+            foreach (int frameType in AnimData.Keys)
             {
                 writer.Write(frameType);
-                CharAnimGroup sequence = animData[frameType];
-                for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
+                CharAnimGroup animGroup = AnimData[frameType];
+
+                writer.Write(animGroup.InternalIndex);
+                writer.Write(animGroup.CopyOf);
+                if (animGroup.CopyOf > -1)
+                    continue;
+
+                writer.Write(animGroup.RushFrame);
+                writer.Write(animGroup.HitFrame);
+                writer.Write(animGroup.ReturnFrame);
+
+                writer.Write(animGroup.Sequences.Count);
+                for (int ii = 0; ii < animGroup.Sequences.Count; ii++)
                 {
-                    writer.Write(sequence.Sequences[ii].RushPoint);
-                    writer.Write(sequence.Sequences[ii].HitPoint);
-                    writer.Write(sequence.Sequences[ii].ReturnPoint);
-                    writer.Write(sequence.Sequences[ii].Frames.Count);
+                    writer.Write(animGroup.Sequences[ii].Frames.Count);
                     int prevTime = 0;
-                    for (int jj = 0; jj < sequence.Sequences[ii].Frames.Count; jj++)
+                    for (int jj = 0; jj < animGroup.Sequences[ii].Frames.Count; jj++)
                     {
-                        CharAnimFrame frame = sequence.Sequences[ii].Frames[jj];
+                        CharAnimFrame frame = animGroup.Sequences[ii].Frames[jj];
                         writer.Write(frame.Frame.X);
                         writer.Write(frame.Frame.Y);
                         writer.Write(frame.EndTime - prevTime);
@@ -550,56 +1287,133 @@ namespace RogueEssence.Content
         //however, also need a way to determine frame for an animation playing at the true specified speed
         public void DrawChar(SpriteBatch spriteBatch, int type, Dir8 dir, Vector2 pos, DetermineFrame frameMethod, Color color)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                List<CharAnimFrame> frames = animData[type].Sequences[(int)dir].Frames;
-                CharAnimFrame frame = frames[frameMethod(frames)];
-                DrawTile(spriteBatch, pos + frame.Offset.ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                CharAnimSequence seq = group.SeqAtDir(dir);
+                int frameNum = frameMethod(seq.Frames);
+                CharAnimFrame frame = seq.Frames[frameNum];
+                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                DrawTile(spriteBatch, pos + AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset).ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
             }
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
         }
-        public void DrawShadow(SpriteBatch spriteBatch, int type, Dir8 dir, Vector2 pos, Loc shadowType, DetermineFrame frameMethod)
+        public Loc GetActionPoint(int type, Dir8 dir, ActionPointType pointType, DetermineFrame frameMethod)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                List<CharAnimFrame> frames = animData[type].Sequences[(int)dir].Frames;
-                CharAnimFrame frame = frames[frameMethod(frames)];
-                GraphicsManager.Shadows.DrawTile(spriteBatch,
-                    pos + new Vector2(TileWidth / 2, TileHeight / 2 + 4) - new Vector2(GraphicsManager.Shadows.TileWidth / 2, GraphicsManager.Shadows.TileHeight / 2) + frame.ShadowOffset.ToVector2(),
-                    shadowType.X, shadowType.Y);
+                List<CharAnimFrame> frames = group.SeqAtDir(dir).Frames;
+                int frameNum = frameMethod(frames);
+                CharAnimFrame frame = frames[frameNum];
+                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                if (pointType == ActionPointType.Shadow)
+                    return AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].ShadowOffset, frame.ShadowOffset);
+
+                OffsetData offset = OffsetData[frame.Frame.Y * TotalX + frame.Frame.X];
+                Loc chosenLoc = Loc.Zero;
+                switch (pointType)
+                {
+                    case ActionPointType.Center:
+                        chosenLoc = frame.Flip ? offset.CenterFlip : offset.Center;
+                        break;
+                    case ActionPointType.Head:
+                        chosenLoc = frame.Flip ? offset.HeadFlip : offset.Head;
+                        break;
+                    case ActionPointType.LeftHand:
+                        chosenLoc = frame.Flip ? offset.LeftHandFlip : offset.LeftHand;
+                        break;
+                    case ActionPointType.RightHand:
+                        chosenLoc = frame.Flip ? offset.RightHandFlip : offset.RightHand;
+                        break;
+                }
+                return AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].Offset, frame.Offset) + chosenLoc;
             }
+            return Loc.Zero;
         }
 
         public void DrawCharFrame(SpriteBatch spriteBatch, int type, Dir8 dir, Vector2 pos, int frameNum, Color color)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                CharAnimFrame frame = animData[type].Sequences[(int)dir].Frames[frameNum];
-                DrawTile(spriteBatch, pos + frame.Offset.ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                CharAnimSequence seq = group.SeqAtDir(dir);
+                CharAnimFrame frame = seq.Frames[frameNum];
+                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                DrawTile(spriteBatch, pos + AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset).ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
             }
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
         }
 
+        private Loc AdjustOffset(int type, int rushFrame, int frameNum, Loc rushOffset, Loc offset)
+        {
+            if (GraphicsManager.Actions[type].IsDash)
+            {
+                if (frameNum > rushFrame)
+                {
+                    Loc diff = offset - rushOffset;
+                    return rushOffset + (diff / 2);
+                }
+            }
+            
+            return offset;
+        }
+
         public int GetCurrentFrame(int type, Dir8 dir, DetermineFrame frameMethod)
         {
-            if (animData.ContainsKey(type))
-                return frameMethod(animData[type].Sequences[(int)dir].Frames);
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
+                return frameMethod(group.SeqAtDir(dir).Frames);
             else
                 return 0;
         }
 
-        public bool HasAnim(int type)
+        public bool HasOwnAnim(int type)
         {
-            return animData.ContainsKey(type);
+            CharAnimGroup group;
+            if (!AnimData.TryGetValue(type, out group))
+                return false;
+            return group.CopyOf == -1;
+        }
+
+        public bool IsAnimCopied(int type)
+        {
+            foreach (int otherType in AnimData.Keys)
+            {
+                CharAnimGroup group = AnimData[otherType];
+                if (group.CopyOf == type)
+                    return true;
+            }
+            return false;
+        }
+
+        private CharAnimGroup getReferencedAnim(int type)
+        {
+            int fallbackIndex = -1;
+            CharFrameType actionData = GraphicsManager.Actions[type];
+            CharAnimGroup group;
+            while (!AnimData.TryGetValue(type, out group))
+            {
+                fallbackIndex++;
+                if (fallbackIndex < actionData.Fallbacks.Count)
+                    type = actionData.Fallbacks[fallbackIndex];
+                else
+                    return null;
+            }
+
+            while (group.CopyOf > -1)
+                group = AnimData[group.CopyOf];
+            return group;
         }
 
         public int GetTotalTime(int type, Dir8 dir)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                CharAnimSequence frameList = animData[type].Sequences[(int)dir];
+                CharAnimSequence frameList = group.SeqAtDir(dir);
                 if (frameList.Frames.Count > 0)
                     return frameList.Frames[frameList.Frames.Count - 1].EndTime;
             }
@@ -609,10 +1423,14 @@ namespace RogueEssence.Content
 
         public int GetReturnTime(int type, Dir8 dir)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                CharAnimSequence frameList = animData[type].Sequences[(int)dir];
-                return frameList.ReturnPoint;
+                CharAnimSequence frameList = group.SeqAtDir(dir);
+                if (group.ReturnFrame > -1)
+                    return frameList.Frames[group.ReturnFrame].EndTime;
+                else
+                    return frameList.Frames[frameList.Frames.Count - 1].EndTime;
             }
             return 0;
         }
@@ -620,10 +1438,14 @@ namespace RogueEssence.Content
 
         public int GetHitTime(int type, Dir8 dir)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                CharAnimSequence frameList = animData[type].Sequences[(int)dir];
-                return frameList.HitPoint;
+                CharAnimSequence frameList = group.SeqAtDir(dir);
+                if (group.HitFrame > -1)
+                    return frameList.Frames[group.HitFrame].EndTime;
+                else
+                    return frameList.Frames[frameList.Frames.Count - 1].EndTime;
             }
             return 0;
         }
@@ -631,10 +1453,14 @@ namespace RogueEssence.Content
 
         public int GetRushTime(int type, Dir8 dir)
         {
-            if (animData.ContainsKey(type))
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
             {
-                CharAnimSequence frameList = animData[type].Sequences[(int)dir];
-                return frameList.RushPoint;
+                CharAnimSequence frameList = group.SeqAtDir(dir);
+                if (group.RushFrame > -1)
+                    return frameList.Frames[group.RushFrame].EndTime;
+                else
+                    return 0;
             }
             return 0;
         }

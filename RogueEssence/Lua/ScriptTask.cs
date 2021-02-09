@@ -16,6 +16,7 @@ namespace RogueEssence.Script
         //===========================================
         public LuaFunction WaitStartEntityTask;
         public LuaFunction WaitEntityTask;
+        public LuaFunction JoinCoroutines;
 
         //===========================================
         //  Methods
@@ -159,6 +160,29 @@ namespace RogueEssence.Script
             return null;
         }
 
+        public Coroutine _JoinCoroutines(LuaTable coroTable)
+        {
+            List<Coroutine> coroutines = new List<Coroutine>();
+            foreach (object val in coroTable.Values)
+                coroutines.Add((Coroutine)val);
+            return new Coroutine(_WaitForTasksDone(coroutines));
+        }
+
+        private IEnumerator<YieldInstruction> _WaitForTasksDone(List<Coroutine> coroutines)
+        {
+            while (true)
+            {
+                for (int ii = coroutines.Count - 1; ii >= 0; ii--)
+                {
+                    if (coroutines[ii].FinishedYield())
+                        coroutines.RemoveAt(ii);
+                }
+                if (coroutines.Count == 0)
+                    yield break;
+                yield return new WaitForFrames(1);
+            }
+        }
+
         private IEnumerator<YieldInstruction> callScriptFunction(LuaFunction luaFun)
         {
             //Create a lua iterator function for the lua coroutine
@@ -187,6 +211,7 @@ namespace RogueEssence.Script
         {
             WaitStartEntityTask = state.RunString("return function(_, ent, fun) return coroutine.yield(TASK:_WaitStartEntityTask(ent, fun)) end").First() as LuaFunction;
             WaitEntityTask = state.RunString("return function(_, ent) return coroutine.yield(TASK:_WaitEntityTask(ent)) end").First() as LuaFunction;
+            JoinCoroutines = state.RunString("return function(_, ent) return coroutine.yield(TASK:_JoinCoroutines(ent)) end").First() as LuaFunction;
         }
     }
 }

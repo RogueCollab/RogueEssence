@@ -26,21 +26,21 @@ namespace RogueEssence.Dev.ViewModels
         public string ScriptLog
         {
             get { return scriptLog; }
-            set { this.RaiseAndSetIfChanged(ref scriptLog, value); }
+            set { this.SetIfChanged(ref scriptLog, value); }
         }
 
         private int scriptCaret;
         public int ScriptCaret
         {
             get { return scriptCaret; }
-            set { this.RaiseAndSetIfChanged(ref scriptCaret, value); }
+            set { this.SetIfChanged(ref scriptCaret, value); }
         }
 
         private string scriptLine;
         public string ScriptLine
         {
             get { return scriptLine; }
-            set { this.RaiseAndSetIfChanged(ref scriptLine, value); }
+            set { this.SetIfChanged(ref scriptLine, value); }
         }
 
         public void btnReloadScripts_Click()

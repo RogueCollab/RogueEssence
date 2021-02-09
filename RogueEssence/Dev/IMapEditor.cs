@@ -13,11 +13,7 @@ namespace RogueEssence.Dev
         }
 
         bool Active { get; }
-        TileEditMode Mode { get; }
 
-        void PaintTile(Loc loc, TileLayer anim);
-        TileLayer GetBrush();
-        void EyedropTile(Loc loc);
-        void FillTile(Loc loc, TileLayer anim);
+        void ProcessInput(InputManager input);
     }
 }

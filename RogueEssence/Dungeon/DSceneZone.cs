@@ -265,11 +265,9 @@ namespace RogueEssence.Dungeon
             }
             else
             {
-                GameManager.Instance.SE(DataManager.Instance.ReviveSE);
+                GameManager.Instance.SE(GraphicsManager.ReviveSE);
                 GameManager.Instance.SetFade(true, true);
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
-
-                GameManager.Instance.BGM("Rescue.ogg", true);
 
                 int nameLength = action[3];
                 string name = "";
@@ -624,7 +622,7 @@ namespace RogueEssence.Dungeon
 
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.BaseName));
 
-                    GameManager.Instance.SE(DataManager.Instance.LeaderSE);
+                    GameManager.Instance.SE(GraphicsManager.LeaderSE);
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
                     yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(ActiveTeam.Leader));
                 }

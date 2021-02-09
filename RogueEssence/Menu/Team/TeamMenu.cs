@@ -38,8 +38,13 @@ namespace RogueEssence.Menu
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 int teamIndex = team.Count;
-                CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                bool disabled = (sendHome && turnChar.Char == team.Count);//disable the current turn choice in send home mode
+                bool disabled = false;
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                    if (sendHome && turnChar.Char == team.Count)//disable the current turn choice in send home mode
+                        disabled = true;
+                }
                 if (checkSkin)
                     disabled |= DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead;
 

@@ -7,4 +7,9 @@ namespace RogueEssence.Dev
     {
         public SoundAttribute(int flags) : base(flags) { }
     }
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class MusicAttribute : PassableAttribute
+    {
+        public MusicAttribute(int flags) : base(flags) { }
+    }
 }

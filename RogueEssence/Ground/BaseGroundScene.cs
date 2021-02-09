@@ -13,13 +13,17 @@ namespace RogueEssence.Ground
     //The game engine for Ground Mode, in which the player has free movement
     public abstract class BaseGroundScene : BaseScene
     {
+        public Loc MouseLoc;
+
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 
         private List<IDrawableSprite> groundDraw;
 
-        private List<IDrawableSprite> otherDraw;
-        
+        private List<IDrawableSprite> objectDraw;
+
+        private List<IDrawableSprite> foregroundDraw;
+
         protected Rect viewTileRect;
         
 
@@ -29,9 +33,8 @@ namespace RogueEssence.Ground
         {
 
             groundDraw = new List<IDrawableSprite>();
-            otherDraw = new List<IDrawableSprite>();
-
-            Loc drawSight = getDrawSight();
+            objectDraw = new List<IDrawableSprite>();
+            foregroundDraw = new List<IDrawableSprite>();
 
             gameScreen = new RenderTarget2D(
                 GraphicsManager.GraphicsDevice,
@@ -42,45 +45,26 @@ namespace RogueEssence.Ground
                 DepthFormat.Depth24);
         }
 
+        public void ZoomChanged()
+        {
+            int zoomMult = Math.Min(GraphicsManager.WindowZoom, (int)Math.Max(1, 1 / GraphicsManager.Zoom.GetScale()));
+            gameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                GraphicsManager.ScreenWidth * zoomMult, GraphicsManager.ScreenHeight * zoomMult,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+        }
+
         public override void Begin()
         {
             PendingDevEvent = null;
         }
 
 
-
-        public override IEnumerator<YieldInstruction> ProcessInput()
+        public override void UpdateMeta()
         {
-            GameManager.Instance.FrameProcessed = false;
-
-
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessFrameInput());
+            base.UpdateMeta();
+            InputManager input = GameManager.Instance.MetaInputManager;
+            MouseLoc = input.MouseLoc;
         }
-
-
-        public IEnumerator<YieldInstruction> ProcessFrameInput()
-        {
-            if (PendingDevEvent != null)
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
-                PendingDevEvent = null;
-            }
-            else
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
-
-            if (!GameManager.Instance.FrameProcessed)
-                yield return new WaitForFrames(1);
-
-            if (GameManager.Instance.SceneOutcome == null)
-            {
-                //psy's notes: put everything related to the check events in the ground map, so its more encapsulated.
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnCheck());
-
-            }
-        }
-
-        protected abstract IEnumerator<YieldInstruction> ProcessInput(InputManager input);
-
 
 
         protected void UpdateCam(Loc focusedLoc)
@@ -89,7 +73,17 @@ namespace RogueEssence.Ground
             //update cam
             windowScale = GraphicsManager.WindowZoom;
 
-            scale = GameManager.Instance.Zoom.GetScale();
+            scale = GraphicsManager.Zoom.GetScale();
+
+            matrixScale = windowScale;
+            drawScale = scale;
+            while (matrixScale > 1 && drawScale < 1)
+            {
+                matrixScale /= 2;
+                drawScale *= 2;
+            }
+
+
             Loc viewCenter = focusedLoc;
 
             if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
@@ -111,14 +105,14 @@ namespace RogueEssence.Ground
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
 
-                Matrix matrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+                Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
                 groundDraw.Clear();
-                otherDraw.Clear();
+                objectDraw.Clear();
+                foregroundDraw.Clear();
 
                 DrawGame(spriteBatch);
-
 
                 spriteBatch.End();
 
@@ -127,7 +121,7 @@ namespace RogueEssence.Ground
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(windowScale, windowScale, 1)));
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                 spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 
@@ -145,7 +139,7 @@ namespace RogueEssence.Ground
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
             //draw the background
-            ZoneManager.Instance.CurrentGround.DrawBG(spriteBatch);
+            ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, Loc.Zero);
 
             for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
@@ -154,16 +148,24 @@ namespace RogueEssence.Ground
                     //if it's a tile on the discovery array, show it
                     bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
 
-                    if (!outOfBounds)
+                    if (outOfBounds)
+                        ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
+                    else
                         ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), false);
                 }
             }
 
             //draw effects laid on ground
-            foreach (IDrawableSprite effect in ZoneManager.Instance.CurrentGround.Anims)
+            foreach (AnimLayer layer in ZoneManager.Instance.CurrentGround.Decorations)
             {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(groundDraw, effect);
+                if (layer.Visible)
+                {
+                    foreach (IDrawableSprite effect in layer.Anims)
+                    {
+                        if (CanSeeSprite(ViewRect, effect))
+                            AddToDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, effect);
+                    }
+                }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
             {
@@ -174,6 +176,8 @@ namespace RogueEssence.Ground
             while (charIndex < groundDraw.Count)
             {
                 groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                if (GameManager.Instance.ShowDebug)
+                    groundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -184,7 +188,7 @@ namespace RogueEssence.Ground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Back])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
 
             if (!DataManager.Instance.HideChars)
@@ -196,7 +200,7 @@ namespace RogueEssence.Ground
                         continue;
                     if (CanSeeSprite(ViewRect, character))
                     {
-                        AddToDraw(otherDraw, character);
+                        AddToDraw(objectDraw, character);
                         shownShadows.Add(character);
                     }
                 }
@@ -205,7 +209,7 @@ namespace RogueEssence.Ground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Normal])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
 
             //draw shadows
@@ -218,12 +222,12 @@ namespace RogueEssence.Ground
             //draw items
             if (!DataManager.Instance.HideObjects)
             {
-                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.GroundObjects)
+                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].GroundObjects)
                 {
                     if (!item.EntEnabled)
                         continue;
                     if (CanSeeSprite(ViewRect, item))
-                        AddToDraw(otherDraw, item);
+                        AddToDraw(objectDraw, item);
                 }
             }
 
@@ -231,24 +235,28 @@ namespace RogueEssence.Ground
             charIndex = 0;
             for (int j = viewTileRect.Y; j < viewTileRect.End.Y; j++)
             {
-                while (charIndex < otherDraw.Count)
+                while (charIndex < objectDraw.Count)
                 {
-                    int charY = otherDraw[charIndex].MapLoc.Y;
+                    int charY = objectDraw[charIndex].MapLoc.Y;
                     if (charY == j * ZoneManager.Instance.CurrentGround.TileSize)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        if (GameManager.Instance.ShowDebug)
+                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
                         break;
                 }
 
-                while (charIndex < otherDraw.Count)
+                while (charIndex < objectDraw.Count)
                 {
-                    int charY = otherDraw[charIndex].MapLoc.Y;
+                    int charY = objectDraw[charIndex].MapLoc.Y;
                     if (charY < (j + 1) * ZoneManager.Instance.CurrentGround.TileSize)
                     {
-                        otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        if (GameManager.Instance.ShowDebug)
+                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -256,9 +264,11 @@ namespace RogueEssence.Ground
                 }
             }
 
-            while (charIndex < otherDraw.Count)
+            while (charIndex < objectDraw.Count)
             {
-                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                if (GameManager.Instance.ShowDebug)
+                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -266,12 +276,14 @@ namespace RogueEssence.Ground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(objectDraw, effect);
             }
             charIndex = 0;
-            while (charIndex < otherDraw.Count)
+            while (charIndex < objectDraw.Count)
             {
-                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                if (GameManager.Instance.ShowDebug)
+                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -289,16 +301,17 @@ namespace RogueEssence.Ground
             }
 
             //draw effects in foreground
-            otherDraw.Clear();
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Top])
             {
                 if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(otherDraw, effect);
+                    AddToDraw(foregroundDraw, effect);
             }
             charIndex = 0;
-            while (charIndex < otherDraw.Count)
+            while (charIndex < foregroundDraw.Count)
             {
-                otherDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                if (GameManager.Instance.ShowDebug)
+                    foregroundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -306,6 +319,22 @@ namespace RogueEssence.Ground
 
         public virtual void DrawDev(SpriteBatch spriteBatch)
         { }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
+                Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
+                Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Block X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+            }
+        }
+
 
         public Loc ScreenCoordsToGroundCoords(Loc loc)
         {
@@ -342,12 +371,6 @@ namespace RogueEssence.Ground
 
             return loc;
         }
-
-        static Loc getDrawSight()
-        {
-            return Character.GetSightDims() * 2 + new Loc(1, 2);
-        }
-
 
         public void LogMsg(string msg)
         {

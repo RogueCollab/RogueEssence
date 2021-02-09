@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
         public MusicMenu(MusicChoice choice)
         {
             this.choice = choice;
-            files = Directory.GetFiles(DataManager.MUSIC_PATH);
+            files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             flatChoices.Add(new MenuTextChoice("---", () => { choose(""); }));
