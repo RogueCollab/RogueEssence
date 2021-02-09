@@ -903,9 +903,8 @@ namespace RogueEssence.Ground
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
 
-
             //Background = new MapBG();
-            BlankBG = new AutoTile();
+            //BlankBG = new AutoTile();
 
             if (ActiveChar != null)
             {

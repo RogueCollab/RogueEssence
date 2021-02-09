@@ -122,13 +122,13 @@
     <Compile Update="Views\UserControls\LayerBox.axaml.cs">
       <DependentUpon>LayerBox.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Textures\EntityBrowser.axaml.cs">
+    <Compile Update="Views\GroundEditForm\EntityBrowser.axaml.cs">
       <DependentUpon>EntityBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Textures\AutotileBrowser.axaml.cs">
+    <Compile Update="DataEditor\AutotileBrowser.axaml.cs">
       <DependentUpon>AutotileBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Textures\TileBrowser.axaml.cs">
+    <Compile Update="DataEditor\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
