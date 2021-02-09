@@ -118,6 +118,9 @@ namespace RogueEssence.Dungeon
 
         public override List<TileLayer> GetLayers(int neighborCode)
         {
+            if (neighborCode == -1)
+                new List<TileLayer>() { Center };
+
             List<TileLayer> tileList = new List<TileLayer>();
             int mask = Convert.ToInt32("11110000", 2);
             if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000000", 2))

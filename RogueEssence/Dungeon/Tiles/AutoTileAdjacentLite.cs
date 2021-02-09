@@ -235,6 +235,9 @@ namespace RogueEssence.Dungeon
 
         public override List<TileLayer> GetLayers(int neighborCode)
         {
+            if (neighborCode == -1)
+                new List<TileLayer>() { Center[0] };
+
             int lowerCode = neighborCode & Convert.ToInt32("11111111", 2);
             int upperCode = neighborCode >> 8 & Convert.ToInt32("11111111", 2);
 

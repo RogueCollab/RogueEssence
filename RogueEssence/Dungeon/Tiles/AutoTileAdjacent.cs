@@ -198,21 +198,21 @@ namespace RogueEssence.Dungeon
 
         public override List<TileLayer> GetLayers(int neighborCode)
         {
+            if (neighborCode == -1)
+                return TilexFF[0];
+
             int lowerCode = neighborCode & Convert.ToInt32("11111111", 2);
             int upperCode = neighborCode >> 8 & Convert.ToInt32("11111111", 2);
 
             List<List<TileLayer>> tileVars = GetTileVariants(lowerCode);
-            List<TileLayer> tileList = new List<TileLayer>();
-            AddBoundedLayer(tileList, tileVars, upperCode);
-
-            return tileList;
+            return AddBoundedLayer(tileVars, upperCode);
         }
 
-        private void AddBoundedLayer(List<TileLayer> results, List<List<TileLayer>> variants, int variantCode)
+        private List<TileLayer> AddBoundedLayer(List<List<TileLayer>> variants, int variantCode)
         {
             if (variants.Count == 0)
-                return;
-            results.AddRange(variants[Math.Min(variantCode, variants.Count - 1)]);
+                return new List<TileLayer>();
+            return variants[Math.Min(variantCode, variants.Count - 1)];
         }
 
 

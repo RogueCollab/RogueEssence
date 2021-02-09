@@ -11,6 +11,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             Layers = new TextureLayerBoxViewModel();
             TileBrowser = new TileBrowserViewModel();
+            TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();
         }
 

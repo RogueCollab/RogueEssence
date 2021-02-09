@@ -1,0 +1,23 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             x:Class="RogueEssence.Dev.Views.TileBox">
+  <Design.DataContext>
+    <vm:TileBoxViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:TileConverter x:Key="TileConverter"/>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80"/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Button Command="{Binding btnEdit_Click}">Edit</Button>
+    <Image Source="{Binding Preview, Converter={StaticResource TileConverter}}" Margin="4" VerticalAlignment="Center" HorizontalAlignment="Left" Stretch="None" Grid.Column="1"/>
+  </Grid>
+</UserControl>

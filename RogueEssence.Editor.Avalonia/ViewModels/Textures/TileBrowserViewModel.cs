@@ -190,9 +190,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-
-
-
+        public bool CanMultiSelect;
 
 
         /// <summary>
@@ -248,6 +246,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void SelectTile(Loc loc, bool shiftMode, bool ctrlMode)
         {
+            if (!CanMultiSelect)
+                shiftMode = false;
             //normal mode:
             //no mods: choose new start
             //shift: multiselect

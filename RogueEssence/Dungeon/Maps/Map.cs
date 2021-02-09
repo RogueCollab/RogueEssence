@@ -83,7 +83,6 @@ namespace RogueEssence.Dungeon
         public CategorySpawnChooser<InvItem> ItemSpawns;
 
         public AutoTile BlankBG;
-        public AutoTile FloorBG;
         public Dictionary<int, AutoTile> TextureMap;
         public int Element;
 
@@ -137,7 +136,6 @@ namespace RogueEssence.Dungeon
 
             Status = new Dictionary<int, MapStatus>();
 
-            FloorBG = new AutoTile();
             TextureMap = new Dictionary<int, AutoTile>();
 
             CurrentTurnMap = new TurnState();
@@ -360,8 +358,6 @@ namespace RogueEssence.Dungeon
                     if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
                     {
                         AutoTile outTile;
-                        if (Tiles[ii][jj].FloorTile.Layers.Count == 0)
-                            Tiles[ii][jj].FloorTile = FloorBG.Copy();
                         if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))
                             Tiles[ii][jj].Data.TileTex = outTile.Copy();
 

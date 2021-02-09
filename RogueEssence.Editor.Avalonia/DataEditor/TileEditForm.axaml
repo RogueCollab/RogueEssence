@@ -1,0 +1,35 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+        x:Class="RogueEssence.Dev.Views.TileEditForm"
+        Title="{Binding Name}" Width="640" Height="420" >
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+      <vm:TileEditViewModel/>
+    </Design.DataContext>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition Height="34"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TabControl TabStripPlacement="Top" SelectedIndex="{Binding TabIndex}" Margin="4" Grid.ColumnSpan="2">
+      <TabItem Header="Tiles" >
+        <views:TileBrowser DataContext="{Binding TileBrowser}"/>
+      </TabItem>
+      <TabItem Header="Autotiles" >
+        <views:AutotileBrowser DataContext="{Binding AutotileBrowser}"/>
+      </TabItem>
+    </TabControl>
+    <Button Command="{Binding btnOK_Click}" Margin="4" Grid.Row="1" Grid.Column="0">OK</Button>
+    <Button Command="{Binding btnCancel_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Cancel</Button>
+  </Grid>
+</Window>

@@ -26,10 +26,7 @@
         <RowDefinition Height="36"/>
         <RowDefinition Height="22"/>
         <RowDefinition Height="48"/>
-        <RowDefinition Height="22"/>
-        <RowDefinition Height="48"/>
-        <RowDefinition Height="22"/>
-        <RowDefinition Height="48"/>
+        <RowDefinition />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="80"/>
@@ -51,11 +48,9 @@
       <ComboBox Items="{Binding ScrollEdges}" SelectedIndex="{Binding ChosenScroll}" Margin="4" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"/>
       <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="5" Grid.ColumnSpan="2">Background:</TextBlock>
       <views:ClassBox DataContext="{Binding BG}" Margin="4,2" Grid.Row="6" Grid.ColumnSpan="2"/>
-      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="7" Grid.ColumnSpan="2">Blank Tiles:</TextBlock>
-      <views:ClassBox DataContext="{Binding BlankBG}" Margin="4,2" Grid.Row="8" Grid.ColumnSpan="2"/>
-      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="9" Grid.ColumnSpan="2">Floor Tiles:</TextBlock>
-      <views:ClassBox DataContext="{Binding FloorBG}" Margin="4,2" Grid.Row="10" Grid.ColumnSpan="2"/>
-      <Grid Grid.Row="5" Grid.RowSpan="6" Grid.Column="2" Grid.ColumnSpan="2">
+      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2">Blank Tiles:</TextBlock>
+      <views:TileBox DataContext="{Binding BlankBG}" Margin="4,2" Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="2"/>
+      <Grid Grid.Row="7" Grid.ColumnSpan="2">
         <Grid.RowDefinitions>
           <RowDefinition Height="20"/>
           <RowDefinition/>

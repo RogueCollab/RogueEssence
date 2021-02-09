@@ -12,6 +12,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabTerrainViewModel()
         {
             TileBrowser = new TileBrowserViewModel();
+            TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();
 
             TerrainTypes = new ObservableCollection<string>();

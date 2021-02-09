@@ -7,63 +7,60 @@ using RogueEssence.Data;
 using System.Drawing;
 using Avalonia.Controls;
 using RogueEssence.Dev.Views;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
-    public class AutoTileEditor : Editor<AutoTileBase>
+    public class AutoTileEditor : Editor<AutoTile>
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadMemberControl(AutoTileBase obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, AutoTile member)
         {
-            //if (type == typeof(List<TileLayer>))
-            //{
-            //    List<TileLayer> anims = (List<TileLayer>)member;
-            //    LoadLabelControl(control, name);
+            LoadLabelControl(control, name);
 
-            //    Dev.TilePreview preview = new Dev.TilePreview();
-            //    preview.Size = new Size(GraphicsManager.TileSize, GraphicsManager.TileSize);
-            //    preview.SetChosenAnim(anims.Count > 0 ? anims[0] : new TileLayer());
-            //    preview.Tag = member;
-            //    control.Controls.Add(preview);
-            //    preview.TileClick += (object sender, EventArgs e) =>
-            //    {
-            //        Dev.ElementForm frmData = new Dev.ElementForm();
-            //        frmData.Text = "Edit Tile";
-            //        Rectangle boxRect = new Rectangle(new Point(), frmData.Size);
-            //        DataEditor.loadClassControls(frmData.ControlPanel, name, type, attributes, preview.Tag, true);
+            TileBox cbxValue = new TileBox();
+            TileBoxViewModel mv = new TileBoxViewModel();
+            cbxValue.DataContext = mv;
 
-            //        if (frmData.ShowDialog() == DialogResult.OK)
-            //        {
-            //            object element = preview.Tag;
-            //            DataEditor.saveClassControls(frmData.ControlPanel, name, type, attributes, ref element, true);
-            //            List<TileLayer> new_anims = (List<TileLayer>)element;
-            //            preview.SetChosenAnim(new_anims.Count > 0 ? new_anims[0] : new TileLayer());
-            //            preview.Tag = element;
-            //        }
-            //    };
-            //}
-            //else
-            //{
-                base.LoadMemberControl(obj, control, name, type, attributes, member, isWindow);
-            //}
+            //add lambda expression for editing a single element
+            mv.OnEditItem += (AutoTile element, TileBoxViewModel.EditElementOp op) =>
+            {
+                TileEditForm frmData = new TileEditForm();
+                TileEditViewModel tmv = new TileEditViewModel();
+                frmData.DataContext = tmv;
+                tmv.Name = name + "/" + type.Name;
+
+                //load as if eyedropping
+                tmv.TileBrowser.TileSize = GraphicsManager.TileSize;
+                tmv.LoadTile(element);
+
+                tmv.SelectedOKEvent += () =>
+                {
+                    element = tmv.GetTile();
+                    op(element);
+                    frmData.Close();
+                };
+                tmv.SelectedCancelEvent += () =>
+                {
+                    frmData.Close();
+                };
+
+                control.GetOwningForm().RegisterChild(frmData);
+                frmData.Show();
+            };
+            mv.LoadFromSource(member);
+            control.Children.Add(cbxValue);
         }
 
-        public override object SaveMemberControl(AutoTileBase obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        public override AutoTile SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
-            //if (type == typeof(List<TileLayer>))
-            //{
-            //    int controlIndex = 0;
-            //    controlIndex++;
-            //    Dev.TilePreview preview = (Dev.TilePreview)control.Controls[controlIndex];
-            //    member = preview.Tag;
-            //    controlIndex++;
-            //}
-            //else
-            //{
-                return base.SaveMemberControl(obj, control, name, type, attributes, isWindow);
-            //}
+            int controlIndex = 0;
+            controlIndex++;
+            TileBox lbxValue = (TileBox)control.Children[controlIndex];
+            TileBoxViewModel mv = (TileBoxViewModel)lbxValue.DataContext;
+            return mv.Tile;
         }
     }
 }

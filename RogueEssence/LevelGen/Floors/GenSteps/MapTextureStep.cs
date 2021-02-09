@@ -16,6 +16,7 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
         public int WaterTileset;
 
+        public bool LayeredGround;
         public bool IndependentGround;
 
         [Dev.DataType(0, DataManager.DataType.Element, false)]
@@ -26,7 +27,6 @@ namespace RogueEssence.LevelGen
         public override void Apply(T map)
         {
             map.Map.BlankBG = new AutoTile(BlockTileset);
-            map.Map.FloorBG = new AutoTile(GroundTileset);
             map.Map.TextureMap[0] = new AutoTile(GroundTileset);
             if (IndependentGround)
             {
@@ -42,6 +42,14 @@ namespace RogueEssence.LevelGen
             map.Map.TextureMap[4] = new AutoTile(WaterTileset, GroundTileset);
             map.Map.TextureMap[5] = new AutoTile(WaterTileset, GroundTileset);
             map.Map.Element = GroundElement;
+            if (LayeredGround)
+            {
+                for (int xx = 0; xx < map.Width; xx++)
+                {
+                    for (int yy = 0; yy < map.Height; yy++)
+                        map.Tiles[xx][yy].FloorTile = new AutoTile(GroundTileset);
+                }
+            }
         }
 
     }
