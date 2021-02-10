@@ -4,6 +4,7 @@
 <PortraitSize>256</PortraitSize>
 <ScreenWidth>320</ScreenWidth>
 <ScreenHeight>240</ScreenHeight>
+<MoneySprite>Money</MoneySprite>
 <Emotions>
   <Emotion>Normal</Emotion>
 </Emotions>

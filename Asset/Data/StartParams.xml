@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+<StartChars>
+  <StartChar>1</StartChar>
+</StartChars>
+<StartTeams>
+  <StartTeam>Test</StartTeam>
+</StartTeams>
+<StartLevel>1</StartLevel>
+<MaxLevel>100</MaxLevel>
+<StartPersonality>0</StartPersonality>
+<StartMap>
+  <Zone>1</Zone>
+  <Segment>-1</Segment>
+  <ID>1</ID>
+  <Entry>0</Entry>
+</StartMap>
+</root>
