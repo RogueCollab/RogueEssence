@@ -54,6 +54,7 @@ namespace RogueEssence.Examples
                 GraphicsManager.AssetType convertAssets = GraphicsManager.AssetType.None;
                 DataManager.DataType convertIndices = DataManager.DataType.None;
                 DataManager.DataType reserializeIndices = DataManager.DataType.None;
+                DataManager.DataType dump = DataManager.DataType.None;
                 string langArgs = "";
                 for (int ii = 1; ii < args.Length; ii++)
                 {
@@ -115,6 +116,28 @@ namespace RogueEssence.Examples
                         }
                         ii += jj - 1;
                     }
+                    else if (args[ii] == "-dump")
+                    {
+                        int jj = 1;
+                        while (args.Length > ii + jj)
+                        {
+                            DataManager.DataType conv = DataManager.DataType.None;
+                            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+                            {
+                                if (args[ii + jj].ToLower() == type.ToString().ToLower())
+                                {
+                                    conv = type;
+                                    break;
+                                }
+                            }
+                            if (conv != DataManager.DataType.None)
+                                dump |= conv;
+                            else
+                                break;
+                            jj++;
+                        }
+                        ii += jj - 1;
+                    }
                     else if (args[ii] == "-reserialize")
                     {
                         int jj = 1;
@@ -170,6 +193,64 @@ namespace RogueEssence.Examples
                     return;
                 }
 
+                //For exporting to data
+                if (dump > DataManager.DataType.None)
+                {
+                    LuaEngine.InitInstance();
+
+                    {
+                        DataManager.InitInstance();
+                        DataInfo.AddEditorOps();
+                        DataInfo.AddSystemFX();
+                        DataInfo.AddUniversalData();
+
+                        if ((dump & DataManager.DataType.Element) != DataManager.DataType.None)
+                            DataInfo.AddElementData();
+                        if ((dump & DataManager.DataType.GrowthGroup) != DataManager.DataType.None)
+                            DataInfo.AddGrowthGroupData();
+                        if ((dump & DataManager.DataType.SkillGroup) != DataManager.DataType.None)
+                            DataInfo.AddSkillGroupData();
+                        if ((dump & DataManager.DataType.Emote) != DataManager.DataType.None)
+                            DataInfo.AddEmoteData();
+                        if ((dump & DataManager.DataType.AI) != DataManager.DataType.None)
+                            DataInfo.AddAIData();
+                        if ((dump & DataManager.DataType.Tile) != DataManager.DataType.None)
+                            DataInfo.AddTileData();
+                        if ((dump & DataManager.DataType.Terrain) != DataManager.DataType.None)
+                            DataInfo.AddTerrainData();
+                        if ((dump & DataManager.DataType.Rank) != DataManager.DataType.None)
+                            DataInfo.AddRankData();
+                        if ((dump & DataManager.DataType.Skin) != DataManager.DataType.None)
+                            DataInfo.AddSkinData();
+
+                        if ((dump & DataManager.DataType.Monster) != DataManager.DataType.None)
+                            DataInfo.AddMonsterData();
+
+                        if ((dump & DataManager.DataType.Skill) != DataManager.DataType.None)
+                            DataInfo.AddSkillData();
+
+                        if ((dump & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
+                            DataInfo.AddIntrinsicData();
+                        if ((dump & DataManager.DataType.Status) != DataManager.DataType.None)
+                            DataInfo.AddStatusData();
+                        if ((dump & DataManager.DataType.MapStatus) != DataManager.DataType.None)
+                            DataInfo.AddMapStatusData();
+
+                        if ((dump & DataManager.DataType.Item) != DataManager.DataType.None)
+                            DataInfo.AddItemData();
+
+                        if ((dump & DataManager.DataType.Zone) != DataManager.DataType.None)
+                        {
+                            DataInfo.AddMapData();
+                            DataInfo.AddGroundData();
+                            DataInfo.AddZoneData();
+                        }
+
+                        DevHelper.RunIndexing(dump);
+                    }
+                    return;
+                }
+
                 if (langArgs != "" && DiagManager.Instance.CurSettings.Language == "")
                 {
                     if (langArgs.Length > 0)
@@ -189,6 +270,7 @@ namespace RogueEssence.Examples
 
                 if (DiagManager.Instance.DevMode)
                 {
+                    InitDataEditor();
                     AppBuilder builder = Dev.Program.BuildAvaloniaApp();
                     builder.StartWithClassicDesktopLifetime(args);
                 }
@@ -217,6 +299,49 @@ namespace RogueEssence.Examples
             CoreDllMap.Register(fnaAssembly);
             //load SDL first before FNA3D to sidestep multiple dylibs problem
             SDL.SDL_GetPlatform();
+        }
+
+        public static void InitDataEditor()
+        {
+            DataEditor.Init();
+            DataEditor.AddConverter(new AnimDataEditor());
+            DataEditor.AddConverter(new SoundEditor());
+            DataEditor.AddConverter(new MusicEditor());
+            DataEditor.AddConverter(new EntryDataEditor());
+            DataEditor.AddConverter(new FrameTypeEditor());
+
+            DataEditor.AddConverter(new BaseEmitterEditor());
+            DataEditor.AddConverter(new BattleDataEditor());
+            DataEditor.AddConverter(new BattleFXEditor());
+            DataEditor.AddConverter(new CircleSquareEmitterEditor());
+            DataEditor.AddConverter(new CombatActionEditor());
+            DataEditor.AddConverter(new ExplosionDataEditor());
+            DataEditor.AddConverter(new ShootingEmitterEditor());
+            DataEditor.AddConverter(new SkillDataEditor());
+            DataEditor.AddConverter(new ColumnAnimEditor());
+            DataEditor.AddConverter(new StaticAnimEditor());
+            DataEditor.AddConverter(new TypeDictEditor());
+            DataEditor.AddConverter(new SpawnListEditor());
+            DataEditor.AddConverter(new SpawnRangeListEditor());
+            DataEditor.AddConverter(new PriorityListEditor());
+            DataEditor.AddConverter(new PriorityEditor());
+            DataEditor.AddConverter(new SegLocEditor());
+            DataEditor.AddConverter(new LocEditor());
+            DataEditor.AddConverter(new IntRangeEditor());
+            DataEditor.AddConverter(new FlagTypeEditor());
+            DataEditor.AddConverter(new ColorEditor());
+            DataEditor.AddConverter(new TypeEditor());
+            DataEditor.AddConverter(new ArrayEditor());
+            DataEditor.AddConverter(new DictionaryEditor());
+            DataEditor.AddConverter(new ListEditor());
+            DataEditor.AddConverter(new EnumEditor());
+            DataEditor.AddConverter(new StringEditor());
+            DataEditor.AddConverter(new DoubleEditor());
+            DataEditor.AddConverter(new SingleEditor());
+            DataEditor.AddConverter(new BooleanEditor());
+            DataEditor.AddConverter(new IntEditor());
+            DataEditor.AddConverter(new ByteEditor());
+            DataEditor.AddConverter(new ObjectEditor());
         }
     }
 
