@@ -142,6 +142,9 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
+            //TODO: v0.5: remove this
+            if (inventory == null)
+                inventory = new List<InvItem>();
             ReconnectTeamReference();
         }
         protected virtual void ReconnectTeamReference()
