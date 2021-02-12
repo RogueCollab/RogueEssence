@@ -1468,12 +1468,16 @@ namespace RogueEssence.Data
         {
             GameState state = new GameState();
             //TODO: v0.5: remove this
+            Version version = new Version();
             if (!versionless)
-            {
-                Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-            }
+                version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+
             state.Save = GameProgress.LoadMainData(reader);
-            ZoneManager.LoadToState(reader, state);
+            if (version < Versioning.GetVersion())
+                ZoneManager.LoadDefaultState(state);
+            else
+                ZoneManager.LoadToState(reader, state);
+
             LuaEngine.Instance.UpdateZoneInstance();
 
 

@@ -903,10 +903,13 @@ namespace RogueEssence.Ground
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
 
-            //Background = new MapBG();
-            //BlankBG = new AutoTile();
+            //TODO: v0.5: remove this
+            if (Background == null)
+                Background = new MapBG();
+            if (BlankBG == null)
+                BlankBG = new AutoTile();
 
-            if (ActiveChar != null)
+                if (ActiveChar != null)
             {
                 ActiveChar.OnDeserializeMap(this);
                 signCharToMap(ActiveChar);
