@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+<Sounds>
+  <Hunger>Battle/Hunger</Hunger>
+  <NullDmg>Battle/Miss</NullDmg>
+  <Cursed>Battle/Cursed</Cursed>
+  <Pickup>Battle/Pick_Up</Pickup>
+  <PickupFoe>Battle/Pick_Up_Foe</PickupFoe>
+  <Replace>Battle/Replace</Replace>
+  <Place>Battle/Place</Place>
+  <Equip>Battle/Equip</Equip>
+  <Money>Battle/Money</Money>
+  <Leader>Battle/Leader</Leader>
+  <Revive>Battle/Revive</Revive>
+</Sounds>
+<TitleBG>Title</TitleBG>
+<TitleBGM>Title.ogg</TitleBGM>
+<MonsterBGM>Monster.ogg</MonsterBGM>
+</root>
