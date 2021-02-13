@@ -985,6 +985,8 @@ namespace RogueEssence.Data
 
         public bool FoundRecords(string mainPath)
         {
+            if (!Directory.Exists(mainPath))
+                return false;
             string[] files = Directory.GetFiles(mainPath);
             return ContainsNonTrivialFiles(files);
         }
@@ -1009,14 +1011,17 @@ namespace RogueEssence.Data
         {
             List<RecordHeaderData> results = new List<RecordHeaderData>();
 
-            string[] files = Directory.GetFiles(recordDir, "*" + ext);
-            foreach (string file in files)
+            if (Directory.Exists(recordDir))
             {
-                if (!IsNonTrivialFile(file))
-                    continue;
+                string[] files = Directory.GetFiles(recordDir, "*" + ext);
+                foreach (string file in files)
+                {
+                    if (!IsNonTrivialFile(file))
+                        continue;
 
-                RecordHeaderData record = GetRecordHeader(file);
-                results.Add(record);
+                    RecordHeaderData record = GetRecordHeader(file);
+                    results.Add(record);
+                }
             }
             return results;
         }
