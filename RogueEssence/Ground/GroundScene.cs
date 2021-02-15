@@ -215,6 +215,17 @@ namespace RogueEssence.Ground
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
+
+                //Make entities think!
+                foreach (GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
+                {
+                    if (ent.EntEnabled && ent.GetType().IsSubclassOf(typeof(GroundAIUser)))
+                    {
+                        GroundAIUser tu = (GroundAIUser)ent;
+                        tu.Think();
+                    }
+                }
+
                 //update the hitboxes' movements
 
                 //update the team/enemies
@@ -227,16 +238,6 @@ namespace RogueEssence.Ground
                 {
                     if (character.EntEnabled)
                         character.Collide();
-                }
-
-                //Make entities think!
-                foreach(GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
-                {
-                    if (ent.EntEnabled && ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
-                    {
-                        BaseTaskUser tu = (BaseTaskUser)ent;
-                        tu.Think();
-                    }
                 }
 
 

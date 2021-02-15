@@ -294,7 +294,6 @@ namespace RogueEssence.Ground
         private int moveRate;
         private Loc Destination;
         private Loc CurPos;
-        private Action OnComplete;
 
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
@@ -302,7 +301,9 @@ namespace RogueEssence.Ground
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
 
-        public WalkToPositionGroundAction(Loc loc, Dir8 dir, bool run, int moveRate, FrameTick prevTime, Loc destination, Action oncomplete = null)
+        public bool Complete { get { return Destination == CurPos; } }
+
+        public WalkToPositionGroundAction(Loc loc, Dir8 dir, bool run, int moveRate, FrameTick prevTime, Loc destination)
         {
             MapLoc = loc;
             CharDir = dir;
@@ -311,7 +312,6 @@ namespace RogueEssence.Ground
             this.moveRate = moveRate;
             Destination = destination;
             CurPos = MapLoc;
-            OnComplete = oncomplete;
         }
 
         public override void UpdateTime(FrameTick elapsedTime)
@@ -321,13 +321,8 @@ namespace RogueEssence.Ground
 
         public override void UpdateInput(GameAction action)
         {
-            Loc vecdiff = Destination - CurPos;
-            if (vecdiff.Length() <= 0)
-            {
+            if (Complete)
                 NextAction = new IdleGroundAction(CurPos, CharDir);
-                if(OnComplete != null)
-                    OnComplete.Invoke();
-            }
         }
 
         public override void Update(FrameTick elapsedTime)

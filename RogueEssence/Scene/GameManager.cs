@@ -52,6 +52,7 @@ namespace RogueEssence
         public bool Paused;
         public bool AdvanceFrame;
         public bool ShowDebug;
+        public string DebugUI;
 
         public bool FrameProcessed;
 
@@ -79,6 +80,7 @@ namespace RogueEssence
         public GameManager()
         {
             fadedTitle = "";
+            DebugUI = "";
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
@@ -1003,6 +1005,12 @@ namespace RogueEssence
             GraphicsManager.SysFont.DrawText(spriteBatch, 2, 42, Versioning.GetVersion().ToString(), null, DirV.Up, DirH.Left, Color.White);
             if (DataManager.Instance.CurrentReplay != null)
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
+            if (DebugUI != null)
+            {
+                string[] lines = DebugUI.Split('\n');
+                for(int ii = 0; ii < lines.Length; ii++)
+                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - 2 + (ii + 1 - lines.Length) * 10, lines[ii], null, DirV.Down, DirH.Left, Color.White);
+            }
         }
 
         private void OnError(string msg)

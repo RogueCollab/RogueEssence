@@ -90,6 +90,16 @@ namespace RogueEssence.Script
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
         }
 
+        public void SetDebugUI(string str)
+        {
+            GameManager.Instance.DebugUI = str;
+        }
+
+        public string GetDebugUI()
+        {
+            return GameManager.Instance.DebugUI;
+        }
+
         /// <summary>
         /// Leave current map and load up the title screen
         /// </summary>
