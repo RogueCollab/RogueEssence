@@ -985,6 +985,8 @@ namespace RogueEssence.Data
 
         public bool FoundRecords(string mainPath)
         {
+            if (!Directory.Exists(mainPath))
+                return false;
             string[] files = Directory.GetFiles(mainPath);
             return ContainsNonTrivialFiles(files);
         }
@@ -1009,14 +1011,17 @@ namespace RogueEssence.Data
         {
             List<RecordHeaderData> results = new List<RecordHeaderData>();
 
-            string[] files = Directory.GetFiles(recordDir, "*" + ext);
-            foreach (string file in files)
+            if (Directory.Exists(recordDir))
             {
-                if (!IsNonTrivialFile(file))
-                    continue;
+                string[] files = Directory.GetFiles(recordDir, "*" + ext);
+                foreach (string file in files)
+                {
+                    if (!IsNonTrivialFile(file))
+                        continue;
 
-                RecordHeaderData record = GetRecordHeader(file);
-                results.Add(record);
+                    RecordHeaderData record = GetRecordHeader(file);
+                    results.Add(record);
+                }
             }
             return results;
         }
@@ -1468,12 +1473,16 @@ namespace RogueEssence.Data
         {
             GameState state = new GameState();
             //TODO: v0.5: remove this
+            Version version = new Version();
             if (!versionless)
-            {
-                Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-            }
+                version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+
             state.Save = GameProgress.LoadMainData(reader);
-            ZoneManager.LoadToState(reader, state);
+            if (version < Versioning.GetVersion())
+                ZoneManager.LoadDefaultState(state);
+            else
+                ZoneManager.LoadToState(reader, state);
+
             LuaEngine.Instance.UpdateZoneInstance();
 
 

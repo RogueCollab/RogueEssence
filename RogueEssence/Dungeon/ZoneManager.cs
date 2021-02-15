@@ -34,9 +34,9 @@ namespace RogueEssence.Dungeon
         }
         public static void LoadToState(BinaryReader reader, GameState state)
         {
-            long length = reader.ReadInt64();
             try
             {
+                long length = reader.ReadInt64();
                 using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
                 {
                     IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -46,13 +46,17 @@ namespace RogueEssence.Dungeon
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex);
-                state.Save.NextDest = DataManager.Instance.StartMap;
-
-                ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.StartMap.ID);
-                state.Zone = new ZoneManager();
-                state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.StartMap.ID);
-                state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.StartMap.StructID);
+                LoadDefaultState(state);
             }
+        }
+        public static void LoadDefaultState(GameState state)
+        {
+            state.Save.NextDest = DataManager.Instance.StartMap;
+
+            ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.StartMap.ID);
+            state.Zone = new ZoneManager();
+            state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.StartMap.ID);
+            state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.StartMap.StructID);
         }
 
         public Zone CurrentZone { get; private set; }

@@ -23,6 +23,9 @@ namespace RogueEssence.Dev.ViewModels
             BG = new ClassBoxViewModel();
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
+            BlankBG = new TileBoxViewModel();
+            BlankBG.OnMemberChanged += BlankBG_Changed;
+            BlankBG.OnEditItem += AutoTile_Edit;
 
             Music = new ObservableCollection<string>();
             reloadMusic();
@@ -64,6 +67,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
         public ClassBoxViewModel BG { get; set; }
+        public TileBoxViewModel BlankBG { get; set; }
 
         public ObservableCollection<string> Music { get; }
 
@@ -103,7 +107,41 @@ namespace RogueEssence.Dev.ViewModels
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.RegisterChild(frmData);
+            form.GroundEditForm.RegisterChild(frmData);
+            frmData.Show();
+        }
+
+
+        public void BlankBG_Changed()
+        {
+            ZoneManager.Instance.CurrentGround.BlankBG = BlankBG.Tile;
+        }
+
+        public void AutoTile_Edit(AutoTile element, TileBoxViewModel.EditElementOp op)
+        {
+            TileEditForm frmData = new TileEditForm();
+            TileEditViewModel tmv = new TileEditViewModel();
+            frmData.DataContext = tmv;
+            tmv.Name = element.ToString();
+
+            //load as if eyedropping
+            tmv.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            tmv.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            tmv.LoadTile(element);
+
+            tmv.SelectedOKEvent += () =>
+            {
+                element = tmv.GetTile();
+                op(element);
+                frmData.Close();
+            };
+            tmv.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.GroundEditForm.RegisterChild(frmData);
             frmData.Show();
         }
 
@@ -155,6 +193,7 @@ namespace RogueEssence.Dev.ViewModels
             ChosenScroll = ChosenScroll;
             
             BG.LoadFromSource(ZoneManager.Instance.CurrentGround.Background);
+            BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);
 
             bool foundSong = false;
             for (int ii = 0; ii < Music.Count; ii++)

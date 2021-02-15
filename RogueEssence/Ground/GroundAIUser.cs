@@ -81,11 +81,10 @@ namespace RogueEssence.Ground
         /// Reimplemented think method to take into account AI.
         /// Think shouldn't be blocking by definition. Anything blocking should be run as a task, or game action.
         /// </summary>
-        public override void Think()
+        public virtual void Think()
         {
             if (hasAI() && ShouldAIRun())
                 UpdateAI();
-            base.Think();
         }
     }
 }

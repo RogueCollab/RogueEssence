@@ -7,8 +7,6 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class AutoTileStacked : AutoTileBase
     {
-        public override TileLayer[] Generic { get { return new TileLayer[] { Center }; } }
-
         public TileLayer TopLeft;
         public TileLayer Top;
         public TileLayer TopRight;
@@ -74,18 +72,18 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             for (int xx = 0; xx < rectSize.X; xx++)
             {
                 for (int yy = 0; yy < rectSize.Y; yy++)
                 {
                     int neighborCode = -1;
-                    if (queryMethod(xx + rectStart.X, yy + rectStart.Y))
+                    if (Collision.InBounds(totalSize.X, totalSize.Y, rectStart + new Loc(xx, yy)) && presenceMethod(xx + rectStart.X, yy + rectStart.Y))
                         neighborCode = textureWaterTile(xx + rectStart.X, yy + rectStart.Y, queryMethod);
                     
                     if (neighborCode != -1)
-                        placementMethod(rectStart.X + xx, rectStart.Y + yy, GetTile(neighborCode));
+                        placementMethod(rectStart.X + xx, rectStart.Y + yy, neighborCode);
                 }
             }
         }
@@ -118,8 +116,11 @@ namespace RogueEssence.Dungeon
             return tex_num;
         }
 
-        private List<TileLayer> GetTile(int neighborCode)
+        public override List<TileLayer> GetLayers(int neighborCode)
         {
+            if (neighborCode == -1)
+                new List<TileLayer>() { Center };
+
             List<TileLayer> tileList = new List<TileLayer>();
             int mask = Convert.ToInt32("11110000", 2);
             if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000000", 2))

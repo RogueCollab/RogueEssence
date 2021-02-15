@@ -16,6 +16,7 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
         public int WaterTileset;
 
+        public bool LayeredGround;
         public bool IndependentGround;
 
         [Dev.DataType(0, DataManager.DataType.Element, false)]
@@ -25,16 +26,30 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(T map)
         {
-
-            AutoTileData entry = DataManager.Instance.GetAutoTile(BlockTileset);
-            map.Map.BlankBG = new AutoTile(entry.Tiles.Generic);
-            map.Map.FloorBG = new AutoTile(GroundTileset, IndependentGround ? -1 : BlockTileset);
-            map.Map.TextureMap[1] = new AutoTile(BlockTileset, -1);
-            map.Map.TextureMap[2] = new AutoTile(BlockTileset, -1);
-            map.Map.TextureMap[3] = new AutoTile(WaterTileset, -1);
-            map.Map.TextureMap[4] = new AutoTile(WaterTileset, -1);
-            map.Map.TextureMap[5] = new AutoTile(WaterTileset, -1);
+            map.Map.BlankBG = new AutoTile(BlockTileset);
+            map.Map.TextureMap[0] = new AutoTile(GroundTileset);
+            if (IndependentGround)
+            {
+                map.Map.TextureMap[1] = new AutoTile(BlockTileset, GroundTileset);
+                map.Map.TextureMap[2] = new AutoTile(BlockTileset, GroundTileset);
+            }
+            else
+            {
+                map.Map.TextureMap[1] = new AutoTile(BlockTileset);
+                map.Map.TextureMap[2] = new AutoTile(BlockTileset);
+            }
+            map.Map.TextureMap[3] = new AutoTile(WaterTileset, GroundTileset);
+            map.Map.TextureMap[4] = new AutoTile(WaterTileset, GroundTileset);
+            map.Map.TextureMap[5] = new AutoTile(WaterTileset, GroundTileset);
             map.Map.Element = GroundElement;
+            if (LayeredGround)
+            {
+                for (int xx = 0; xx < map.Width; xx++)
+                {
+                    for (int yy = 0; yy < map.Height; yy++)
+                        map.Tiles[xx][yy].FloorTile = new AutoTile(GroundTileset);
+                }
+            }
         }
 
     }

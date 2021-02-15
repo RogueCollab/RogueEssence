@@ -7,8 +7,6 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class AutoTileAdjacent : AutoTileBase
     {
-        public override TileLayer[] Generic { get { return TilexFF[0].ToArray(); } }
-
         public List<List<TileLayer>> Tilex00;
         public List<List<TileLayer>> Tilex01;
         public List<List<TileLayer>> Tilex02;
@@ -109,7 +107,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             int[][] mainArray = new int[rectSize.X][];
             for (int ii = 0; ii < rectSize.X; ii++)
@@ -123,7 +121,7 @@ namespace RogueEssence.Dungeon
             {
                 for (int yy = 0; yy < rectSize.Y; yy++)
                 {
-                    if (queryMethod(rectStart.X + xx, rectStart.Y + yy))
+                    if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(xx, yy)) && presenceMethod(rectStart.X + xx, rectStart.Y + yy))
                         textureMainBlock(mainArray, rectStart, rectStart.X + xx, rectStart.Y + yy, queryMethod);
                 }
             }
@@ -142,7 +140,7 @@ namespace RogueEssence.Dungeon
                     {
                         int neighborCode = mainArray[xx - rectStart.X][yy - rectStart.Y];
                         if (neighborCode != -1)
-                            placementMethod(xx, yy, GetTile(new ReRandom(subSeed), neighborCode));
+                            placementMethod(xx, yy, GetVariantCode(new ReRandom(subSeed), neighborCode));
                     }
                 }
                 while (yy < totalSize.Y)
@@ -191,127 +189,135 @@ namespace RogueEssence.Dungeon
             textureArray[x - rectStart.X][y - rectStart.Y] = texn_um;
         }
 
-        private List<TileLayer> GetTile(ReRandom rand, int neighborCode)
+        private int GetVariantCode(ReRandom rand, int neighborCode)
+        {
+            List<List<TileLayer>> tileVars = GetTileVariants(neighborCode);
+            return SelectTileVariant(rand, tileVars.Count) << 8 | neighborCode;
+        }
+
+
+        public override List<TileLayer> GetLayers(int neighborCode)
+        {
+            if (neighborCode == -1)
+                return TilexFF[0];
+
+            int lowerCode = neighborCode & Convert.ToInt32("11111111", 2);
+            int upperCode = neighborCode >> 8 & Convert.ToInt32("11111111", 2);
+
+            List<List<TileLayer>> tileVars = GetTileVariants(lowerCode);
+            return AddBoundedLayer(tileVars, upperCode);
+        }
+
+        private List<TileLayer> AddBoundedLayer(List<List<TileLayer>> variants, int variantCode)
+        {
+            if (variants.Count == 0)
+                return new List<TileLayer>();
+            return variants[Math.Min(variantCode, variants.Count - 1)];
+        }
+
+
+        private List<List<TileLayer>> GetTileVariants(int neighborCode)
         {
             switch (neighborCode)
             {
                 case 0x00:
-                    return SelectTileLayers(rand, Tilex00);
+                    return Tilex00;
                 case 0x01:
-                    return SelectTileLayers(rand, Tilex01);
+                    return Tilex01;
                 case 0x02:
-                    return SelectTileLayers(rand, Tilex02);
+                    return Tilex02;
                 case 0x03:
-                    return SelectTileLayers(rand, Tilex03);
+                    return Tilex03;
                 case 0x13:
-                    return SelectTileLayers(rand, Tilex13);
+                    return Tilex13;
                 case 0x04:
-                    return SelectTileLayers(rand, Tilex04);
+                    return Tilex04;
                 case 0x05:
-                    return SelectTileLayers(rand, Tilex05);
+                    return Tilex05;
                 case 0x06:
-                    return SelectTileLayers(rand, Tilex06);
+                    return Tilex06;
                 case 0x26:
-                    return SelectTileLayers(rand, Tilex26);
+                    return Tilex26;
                 case 0x07:
-                    return SelectTileLayers(rand, Tilex07);
+                    return Tilex07;
                 case 0x17:
-                    return SelectTileLayers(rand, Tilex17);
+                    return Tilex17;
                 case 0x27:
-                    return SelectTileLayers(rand, Tilex27);
+                    return Tilex27;
                 case 0x37:
-                    return SelectTileLayers(rand, Tilex37);
+                    return Tilex37;
                 case 0x08:
-                    return SelectTileLayers(rand, Tilex08);
+                    return Tilex08;
                 case 0x09:
-                    return SelectTileLayers(rand, Tilex09);
+                    return Tilex09;
                 case 0x89:
-                    return SelectTileLayers(rand, Tilex89);
+                    return Tilex89;
                 case 0x0A:
-                    return SelectTileLayers(rand, Tilex0A);
+                    return Tilex0A;
                 case 0x0B:
-                    return SelectTileLayers(rand, Tilex0B);
+                    return Tilex0B;
                 case 0x1B:
-                    return SelectTileLayers(rand, Tilex1B);
+                    return Tilex1B;
                 case 0x8B:
-                    return SelectTileLayers(rand, Tilex8B);
+                    return Tilex8B;
                 case 0x9B:
-                    return SelectTileLayers(rand, Tilex9B);
+                    return Tilex9B;
                 case 0x0C:
-                    return SelectTileLayers(rand, Tilex0C);
+                    return Tilex0C;
                 case 0x4C:
-                    return SelectTileLayers(rand, Tilex4C);
+                    return Tilex4C;
                 case 0x0D:
-                    return SelectTileLayers(rand, Tilex0D);
+                    return Tilex0D;
                 case 0x4D:
-                    return SelectTileLayers(rand, Tilex4D);
+                    return Tilex4D;
                 case 0x8D:
-                    return SelectTileLayers(rand, Tilex8D);
+                    return Tilex8D;
                 case 0xCD:
-                    return SelectTileLayers(rand, TilexCD);
+                    return TilexCD;
                 case 0x0E:
-                    return SelectTileLayers(rand, Tilex0E);
+                    return Tilex0E;
                 case 0x2E:
-                    return SelectTileLayers(rand, Tilex2E);
+                    return Tilex2E;
                 case 0x4E:
-                    return SelectTileLayers(rand, Tilex4E);
+                    return Tilex4E;
                 case 0x6E:
-                    return SelectTileLayers(rand, Tilex6E);
+                    return Tilex6E;
                 case 0x0F:
-                    return SelectTileLayers(rand, Tilex0F);
+                    return Tilex0F;
                 case 0x1F:
-                    return SelectTileLayers(rand, Tilex1F);
+                    return Tilex1F;
                 case 0x2F:
-                    return SelectTileLayers(rand, Tilex2F);
+                    return Tilex2F;
                 case 0x3F:
-                    return SelectTileLayers(rand, Tilex3F);
+                    return Tilex3F;
                 case 0x4F:
-                    return SelectTileLayers(rand, Tilex4F);
+                    return Tilex4F;
                 case 0x5F:
-                    return SelectTileLayers(rand, Tilex5F);
+                    return Tilex5F;
                 case 0x6F:
-                    return SelectTileLayers(rand, Tilex6F);
+                    return Tilex6F;
                 case 0x7F:
-                    return SelectTileLayers(rand, Tilex7F);
+                    return Tilex7F;
                 case 0x8F:
-                    return SelectTileLayers(rand, Tilex8F);
+                    return Tilex8F;
                 case 0x9F:
-                    return SelectTileLayers(rand, Tilex9F);
+                    return Tilex9F;
                 case 0xAF:
-                    return SelectTileLayers(rand, TilexAF);
+                    return TilexAF;
                 case 0xBF:
-                    return SelectTileLayers(rand, TilexBF);
+                    return TilexBF;
                 case 0xCF:
-                    return SelectTileLayers(rand, TilexCF);
+                    return TilexCF;
                 case 0xDF:
-                    return SelectTileLayers(rand, TilexDF);
+                    return TilexDF;
                 case 0xEF:
-                    return SelectTileLayers(rand, TilexEF);
+                    return TilexEF;
                 case 0xFF:
-                    return SelectTileLayers(rand, TilexFF);
+                    return TilexFF;
+                default:
+                    return TilexFF;
             }
-
-            return new List<TileLayer>();
         }
 
-
-        protected List<TileLayer> SelectTileLayers(ReRandom rand, List<List<TileLayer>> anims)
-        {
-            List<TileLayer> returnLayers = new List<TileLayer>();
-            if (anims.Count > 0)
-            {
-                int index = 0;
-                for (int ii = 0; ii < anims.Count - 1; ii++)
-                {
-                    if (rand.Next() % 2 == 0)
-                        index++;
-                    else
-                        break;
-                }
-                foreach (TileLayer anim in anims[index])
-                    returnLayers.Add(new TileLayer(anim));
-            }
-            return returnLayers;
-        }
     }
 }

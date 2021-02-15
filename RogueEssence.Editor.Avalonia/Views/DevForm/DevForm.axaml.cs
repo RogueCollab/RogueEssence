@@ -340,14 +340,15 @@ namespace RogueEssence.Dev.Views
 
         private static void loadDevConfig()
         {
-            string configPath = GetConfigPath();
-            string folderPath = Path.GetDirectoryName(configPath);
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
             devConfig = new Dictionary<string, string>();
+
             try
             {
+                string configPath = GetConfigPath();
+                string folderPath = Path.GetDirectoryName(configPath);
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
                 if (File.Exists(configPath))
                 {
                     using (FileStream stream = File.OpenRead(configPath))
@@ -434,7 +435,7 @@ namespace RogueEssence.Dev.Views
             switch (CoreDllMap.OS)
             {
                 case "osx":
-                    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "/Library/Application Support/RogueEssence/config");
+                    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
                 default:
                     return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence/config");
             }

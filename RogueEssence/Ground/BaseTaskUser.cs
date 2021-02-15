@@ -32,19 +32,6 @@ namespace RogueEssence.Ground
         /// </summary>
         [NonSerialized] private GroundTask Task = null;
 
-        /// <summary>
-        /// The coroutine returning the current task's state.
-        /// </summary>
-        //[NonSerialized] private Coroutine TaskState = null;
-
-        enum ETaskState
-        {
-            None = 0,
-            Running = 1,
-            Complete = 2,
-        }
-        [NonSerialized] private ETaskState TaskState = ETaskState.None;
-
         public BaseTaskUser() : base() { }
 
         protected BaseTaskUser(BaseTaskUser other) : base(other)
@@ -62,6 +49,7 @@ namespace RogueEssence.Ground
                 return false;
 
             Task = task;
+            CoroutineManager.Instance.StartCoroutine(new Coroutine(runToCompletion()), true);
             return true;
         }
 
@@ -74,6 +62,7 @@ namespace RogueEssence.Ground
         {
             yield return new WaitWhile(() => { return Task != null && !Task.Finished(); });
             Task = task;
+            CoroutineManager.Instance.StartCoroutine(new Coroutine(runToCompletion()), true);
         }
 
         /// <summary>
@@ -85,39 +74,12 @@ namespace RogueEssence.Ground
             return Task;
         }
 
-        /// <summary>
-        /// Update tasks specifically.
-        /// </summary>
-        public virtual void UpdateTask()
-        {
-            if (Task == null)
-                return;
-
-            if (TaskState == ETaskState.None)
-                CoroutineManager.Instance.StartCoroutine(new Coroutine(runToCompletion()), true);
-            else if (TaskState == ETaskState.Complete)
-                TaskState = ETaskState.None;
-
-            if (Task.Finished())
-                Task = null;
-        }
-
         private IEnumerator<YieldInstruction> runToCompletion()
         {
-            TaskState = ETaskState.Running;
-
             yield return CoroutineManager.Instance.StartCoroutine(Task.Run(this));
 
-            TaskState = ETaskState.Complete;
+            Task = null;
         }
 
-        /// <summary>
-        /// Think method. Handles running tasks.
-        /// Think shouldn't be blocking by definition. We defer actually executing tasks/coroutines to the GameManager.
-        /// </summary>
-        public virtual void Think()
-        {
-            UpdateTask();
-        }
     }
 }

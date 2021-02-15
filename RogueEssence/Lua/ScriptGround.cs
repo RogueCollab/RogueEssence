@@ -16,8 +16,6 @@ namespace RogueEssence.Script
     /// </summary>
     class ScriptGround : ILuaEngineComponent
     {
-        bool m_actionComplete = false;
-
         public void Hide(string entityname)
         {
             GroundEntity found = ZoneManager.Instance.CurrentGround.FindEntity(entityname);
@@ -441,19 +439,6 @@ namespace RogueEssence.Script
                 DiagManager.Instance.LogInfo("ScriptGround.TeleportTo(): Got invalid entity!");
         }
 
-
-        /// <summary>
-        /// Makes an entity move to a Loc
-        /// </summary>
-        /// <param name="ent"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public LuaFunction MoveToLoc;
-        public YieldInstruction _MoveToLoc(GroundEntity ent, Loc pos, bool run = false)
-        {
-            return _MoveToPosition(ent, pos.X, pos.Y, run);
-        }
-
         /// <summary>
         /// Makes an entity move to the selected position over a certain time.
         /// </summary>
@@ -462,7 +447,7 @@ namespace RogueEssence.Script
         /// <param name="y"></param>
         /// <returns></returns>
         public LuaFunction MoveToPosition;
-        public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false)
+        public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false, int speed = 2)
         {
             if(ent is GroundChar)
             {
@@ -471,9 +456,12 @@ namespace RogueEssence.Script
                 GroundAction prevAction = ch.GetCurrentAction();
                 if (prevAction is WalkToPositionGroundAction)
                     prevTime = prevAction.ActionTime;
-                ch.StartAction(new WalkToPositionGroundAction(ch.Position, ch.Direction, run, run ? 5 : 2, prevTime,
-                    new Loc(x, y), () => { this.m_actionComplete = true; } ));
-                return new WaitUntil(() => { return this.m_actionComplete; });
+                WalkToPositionGroundAction newAction = new WalkToPositionGroundAction(ch.Position, ch.Direction, run, speed, prevTime, new Loc(x, y));
+                ch.StartAction(newAction);
+                return new WaitUntil(() =>
+                {
+                    return newAction.Complete;
+                });
             }
             return null;
         }
@@ -485,9 +473,9 @@ namespace RogueEssence.Script
         /// <param name="mark"></param>
         /// <returns></returns>
         public LuaFunction MoveToMarker;
-        public YieldInstruction _MoveToMarker(GroundEntity ent, GroundMarker mark, bool run = false)
+        public YieldInstruction _MoveToMarker(GroundEntity ent, GroundMarker mark, bool run = false, int speed = 2)
         {
-            return _MoveToPosition(ent, mark.X, mark.Y, run);
+            return _MoveToPosition(ent, mark.X, mark.Y, run, speed);
         }
 
         //
@@ -503,9 +491,8 @@ namespace RogueEssence.Script
             CharAnimateTurnTo = state.RunString("return function(_,ch, direction, framedur) return coroutine.yield(GROUND:_CharAnimateTurnTo(ch, direction, framedur)) end", "CharAnimateTurn").First() as LuaFunction;
             CharTurnToCharAnimated = state.RunString("return function(_,curch, turnto, framedur) return coroutine.yield(GROUND:_CharTurnToCharAnimated(curch, turnto, framedur)) end", "CharTurnToCharAnimated").First() as LuaFunction;
 
-            MoveToMarker = state.RunString("return function(_,ent, mark, shouldrun) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun)) end", "MoveToMarker").First() as LuaFunction;
-            MoveToPosition = state.RunString("return function(_,ent, x, y, shouldrun) return coroutine.yield(GROUND:_MoveToPosition(ent, x, y, shouldrun)) end", "MoveToPosition").First() as LuaFunction;
-            MoveToLoc = state.RunString("return function(_,ent, pos, shouldrun) return coroutine.yield(GROUND:_MoveToLoc(ent, pos, shouldrun)) end", "MoveToLoc").First() as LuaFunction;
+            MoveToMarker = state.RunString("return function(_,ent, mark, shouldrun, speed) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun, speed)) end", "MoveToMarker").First() as LuaFunction;
+            MoveToPosition = state.RunString("return function(_,ent, x, y, shouldrun, speed) return coroutine.yield(GROUND:_MoveToPosition(ent, x, y, shouldrun, speed)) end", "MoveToPosition").First() as LuaFunction;
         }
     }
 }

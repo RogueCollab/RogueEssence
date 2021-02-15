@@ -83,7 +83,6 @@ namespace RogueEssence.Dungeon
         public CategorySpawnChooser<InvItem> ItemSpawns;
 
         public AutoTile BlankBG;
-        public AutoTile FloorBG;
         public Dictionary<int, AutoTile> TextureMap;
         public int Element;
 
@@ -127,9 +126,9 @@ namespace RogueEssence.Dungeon
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
 
+            Background = new MapBG();
             BlankBG = new AutoTile();
 
-            Background = new MapBG();
 
             PrepareEvents = new List<SingleCharEvent>();
             StartEvents = new List<SingleCharEvent>();
@@ -137,7 +136,6 @@ namespace RogueEssence.Dungeon
 
             Status = new Dictionary<int, MapStatus>();
 
-            FloorBG = new AutoTile();
             TextureMap = new Dictionary<int, AutoTile>();
 
             CurrentTurnMap = new TurnState();
@@ -352,7 +350,6 @@ namespace RogueEssence.Dungeon
 
         public void CalculateAutotiles(Loc rectStart, Loc rectSize)
         {
-            HashSet<int> floortilesets = new HashSet<int>();
             HashSet<int> blocktilesets = new HashSet<int>();
             for (int ii = rectStart.X; ii < rectStart.X + rectSize.X; ii++)
             {
@@ -361,50 +358,33 @@ namespace RogueEssence.Dungeon
                     if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
                     {
                         AutoTile outTile;
-                        if (Tiles[ii][jj].FloorTile.Layers.Count == 0)
-                            Tiles[ii][jj].FloorTile = FloorBG.Copy();
                         if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))
                             Tiles[ii][jj].Data.TileTex = outTile.Copy();
 
-                        if (Tiles[ii][jj].FloorTile.AutoTileset > -1)
-                            floortilesets.Add(Tiles[ii][jj].FloorTile.AutoTileset);
                         if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
                             blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
                     }
                 }
             }
-            foreach (int tileset in floortilesets)
-            {
-                AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(Rand.FirstSeed, rectStart, rectSize, new Loc(Width, Height),
-                    (int x, int y, List<TileLayer> tile) =>
-                    {
-                        if (Collision.InBounds(Width, Height, new Loc(x, y)))
-                            Tiles[x][y].FloorTile.Layers = tile;
-                    },
-                    (int x, int y) =>
-                    {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
-                            return true;
-                        if (Tiles[x][y].Data.TileTex.AutoTileset != -1 && Tiles[x][y].Data.TileTex.AutoTileset == Tiles[x][y].FloorTile.BorderTileset)
-                            return false;
-                        return Tiles[x][y].FloorTile.AutoTileset == tileset;
-                    });
-            }
             foreach (int tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
                 entry.Tiles.AutoTileArea(Rand.FirstSeed, rectStart, rectSize, new Loc(Width, Height),
-                    (int x, int y, List<TileLayer> tile) =>
+                    (int x, int y, int neighborCode) =>
                     {
-                        if (Collision.InBounds(Width, Height, new Loc(x, y)))
-                            Tiles[x][y].Data.TileTex.Layers = tile;
+                        Tiles[x][y].Data.TileTex.NeighborCode = neighborCode;
                     },
                     (int x, int y) =>
                     {
                         if (!Collision.InBounds(Width, Height, new Loc(x, y)))
                             return true;
                         return Tiles[x][y].Data.TileTex.AutoTileset == tileset;
+                    },
+                    (int x, int y) =>
+                    {
+                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                            return true;
+                        return Tiles[x][y].Data.TileTex.AutoTileset == tileset || Tiles[x][y].Data.TileTex.Associates.Contains(tileset);
                     });
             }
         }

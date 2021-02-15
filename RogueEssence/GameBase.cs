@@ -156,8 +156,16 @@ namespace RogueEssence
                     {
                         if (DiagManager.Instance.DevMode)
                         {
+                            try
+                            {
+                                DiagManager.Instance.DevEditor.Load(this);
+                            }
+                            catch (Exception ex)
+                            {
+                                DiagManager.Instance.LogError(ex);
+                                throw ex;
+                            }
 
-                            DiagManager.Instance.DevEditor.Load(this);
                             while (!DiagManager.Instance.DevEditor.LoadComplete)
                                 Thread.Sleep(10);
 
@@ -180,9 +188,10 @@ namespace RogueEssence
 
                 if (CurrentPhase == LoadPhase.Ready)
                 {
-                    DiagManager.Instance.DevEditor.Update(gameTime);
                     try
                     {
+                        DiagManager.Instance.DevEditor.Update(gameTime);
+
                         lock (lockObj)
                         {
                             SoundManager.NewFrame();

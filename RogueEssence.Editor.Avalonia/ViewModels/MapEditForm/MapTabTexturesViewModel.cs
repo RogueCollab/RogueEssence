@@ -10,6 +10,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabTexturesViewModel()
         {
             TileBrowser = new TileBrowserViewModel();
+            TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();
         }
 

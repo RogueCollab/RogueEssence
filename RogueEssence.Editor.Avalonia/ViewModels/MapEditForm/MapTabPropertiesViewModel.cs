@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using ReactiveUI;
+using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
@@ -32,12 +33,9 @@ namespace RogueEssence.Dev.ViewModels
             BG = new ClassBoxViewModel();
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
-            BlankBG = new ClassBoxViewModel();
+            BlankBG = new TileBoxViewModel();
             BlankBG.OnMemberChanged += BlankBG_Changed;
             BlankBG.OnEditItem += AutoTile_Edit;
-            FloorBG = new ClassBoxViewModel();
-            FloorBG.OnMemberChanged += FloorBG_Changed;
-            FloorBG.OnEditItem += AutoTile_Edit;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             TextureMap = new DictionaryBoxViewModel(form.MapEditForm);
@@ -47,7 +45,6 @@ namespace RogueEssence.Dev.ViewModels
 
             Music = new ObservableCollection<string>();
             reloadMusic();
-
         }
 
 
@@ -133,8 +130,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public ClassBoxViewModel BG { get; set; }
-        public ClassBoxViewModel BlankBG { get; set; }
-        public ClassBoxViewModel FloorBG { get; set; }
+        public TileBoxViewModel BlankBG { get; set; }
 
         public DictionaryBoxViewModel TextureMap { get; set; }
 
@@ -181,28 +177,28 @@ namespace RogueEssence.Dev.ViewModels
 
         public void BlankBG_Changed()
         {
-            ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.GetObject<AutoTile>();
+            ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.Tile;
         }
 
-        public void FloorBG_Changed()
+        public void AutoTile_Edit(AutoTile element, TileBoxViewModel.EditElementOp op)
         {
-            ZoneManager.Instance.CurrentMap.FloorBG = FloorBG.GetObject<AutoTile>();
-        }
+            TileEditForm frmData = new TileEditForm();
+            TileEditViewModel tmv = new TileEditViewModel();
+            frmData.DataContext = tmv;
+            tmv.Name = element.ToString();
 
-        public void AutoTile_Edit(object element, ClassBoxViewModel.EditElementOp op)
-        {
-            DataEditForm frmData = new DataEditForm();
-            frmData.Title = element.ToString();
+            //load as if eyedropping
+            tmv.TileBrowser.TileSize = GraphicsManager.TileSize;
+            tmv.AutotileBrowser.TileSize = GraphicsManager.TileSize;
+            tmv.LoadTile(element);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "Autotile", typeof(AutoTile), new object[0] { }, element, true);
-
-            frmData.SelectedOKEvent += () =>
+            tmv.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Autotile", typeof(AutoTile), new object[0] { }, true);
+                element = tmv.GetTile();
                 op(element);
                 frmData.Close();
             };
-            frmData.SelectedCancelEvent += () =>
+            tmv.SelectedCancelEvent += () =>
             {
                 frmData.Close();
             };
@@ -325,7 +321,6 @@ namespace RogueEssence.Dev.ViewModels
 
             BG.LoadFromSource(ZoneManager.Instance.CurrentMap.Background);
             BlankBG.LoadFromSource(ZoneManager.Instance.CurrentMap.BlankBG);
-            FloorBG.LoadFromSource(ZoneManager.Instance.CurrentMap.FloorBG);
             TextureMap.LoadFromDict(ZoneManager.Instance.CurrentMap.TextureMap);
 
             bool foundSong = false;
