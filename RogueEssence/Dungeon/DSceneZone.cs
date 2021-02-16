@@ -28,6 +28,11 @@ namespace RogueEssence.Dungeon
 
         public override void Exit()
         {
+            ResetAnims();
+        }
+
+        public IEnumerator<YieldInstruction> ExitFloor()
+        {
             if (ZoneManager.Instance.CurrentMap != null)
             {
                 //remove statuses
@@ -44,11 +49,12 @@ namespace RogueEssence.Dungeon
                     if (data.CarryOver)
                         ZoneManager.Instance.CurrentZone.CarryOver.Add(status);
                 }
-                ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
-                ResetAnims();
 
                 //Notify script engine
-                LuaEngine.Instance.OnDungeonFloorEnd();
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnExitMap());
+
+                ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
+
             }
         }
 
@@ -118,8 +124,7 @@ namespace RogueEssence.Dungeon
             foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
 
-            //Notify script engine
-            LuaEngine.Instance.OnDungeonFloorBegin();
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterMap());
         }
 
 

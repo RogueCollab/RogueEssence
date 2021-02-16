@@ -45,9 +45,10 @@ namespace RogueEssence.Dungeon
         public GroundMap CurrentGround { get; private set; }
 
         public List<MapStatus> CarryOver;
-        
 
-
+        /// <summary>
+        /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
+        /// </summary>
         private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
 
         public Zone(ulong seed, int zoneIndex)
@@ -261,6 +262,45 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneInit(/*assetName, this*/);
         }
 
+
+
+        public IEnumerator<YieldInstruction> OnEnterMap()
+        {
+            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+
+            //Do script event for map
+
+            //then zone
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterMap, this, CurrentMapID.Segment, CurrentMapID.ID));
+
+            //Notify script engine
+            LuaEngine.Instance.OnDungeonFloorBegin();
+        }
+
+        public IEnumerator<YieldInstruction> OnExitMap()
+        {
+            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+
+            //Do script event for map
+
+            //then zone
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.ExitMap, this, CurrentMapID.Segment, CurrentMapID.ID));
+
+            //Notify script engine
+            LuaEngine.Instance.OnDungeonFloorEnd();
+        }
+
+        public IEnumerator<YieldInstruction> OnEnterSegment()
+        {
+            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, CurrentMapID.Segment, CurrentMapID.ID));
+
+            //Notify script engine
+            LuaEngine.Instance.OnZoneSegmentStart(/*assetName, this*/);
+        }
+
         public IEnumerator<YieldInstruction> OnExitSegment(GameProgress.ResultType result, bool rescuing)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
@@ -269,7 +309,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.ExitSegment, this, result, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
 
             //Notify script engine
-            LuaEngine.Instance.OnDungeonSegmentEnd(/*assetName, this*/);
+            LuaEngine.Instance.OnZoneSegmentEnd(/*assetName, this*/);
         }
 
         public IEnumerator<YieldInstruction> OnAllyInteract(Character chara, Character target)

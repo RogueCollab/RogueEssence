@@ -41,6 +41,12 @@ namespace RogueEssence.Ground
 
         public override void Exit()
         {
+            ResetAnims();
+        }
+
+
+        public IEnumerator<YieldInstruction> ExitGround()
+        {
             if (ZoneManager.Instance.CurrentGround != null)
             {
                 //Notify script engine
@@ -48,8 +54,8 @@ namespace RogueEssence.Ground
 
                 ZoneManager.Instance.CurrentGround.SetPlayerChar(null);
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
-                ResetAnims();
             }
+            yield break;
         }
 
         public void ResetGround()

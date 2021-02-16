@@ -51,10 +51,7 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public string DungeonAssetName()
         {
-            //if (ZoneManager.Instance.CurrentZone != null)
-            //    return ZoneManager.Instance.CurrentZone.AssetName;
-            //else
-            //    return "NULL";
+            //return ZoneManager.Instance.CurrentZone.AssetName;
             throw new NotImplementedException();
         }
 
@@ -64,10 +61,7 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public string DungeonLocaleName()
         {
-            if (ZoneManager.Instance.CurrentZone != null)
-                return ZoneManager.Instance.CurrentZone.Name.ToLocal();
-            else
-                return "NULL";
+            return ZoneManager.Instance.CurrentZone.Name.ToLocal();
         }
     }
 }

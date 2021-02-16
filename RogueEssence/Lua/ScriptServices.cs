@@ -10,7 +10,7 @@ namespace RogueEssence.Script
 
 
     /// <summary>
-    ///
+    /// Component handling managing script services and various script related tasks
     /// </summary>
     class ScriptServices : ILuaEngineComponent
     {
@@ -25,6 +25,7 @@ namespace RogueEssence.Script
         #region Constants
         public static readonly string SInterfaceInstanceName = "SCRIPT";
         public static readonly int ScriptSvcUpdateInt = 20;
+        public static readonly string ScriptSvcDir = "services";
         #endregion
 
         #region Variables
@@ -117,8 +118,31 @@ namespace RogueEssence.Script
             }
         }
 
+        /// Get a service's lua instance by name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public LuaTable GetService(string name)
+        {
+            if (m_services.ContainsKey(name))
+                return m_services[name].lobj;
+            else
+                return null;
+        }
+
+
         /// <summary>
-        ///
+        /// Returns the path to the services directory
+        /// </summary>
+        /// <returns></returns>
+        public string ServiceDirectoryPath()
+        {
+            return String.Format("{0}//{1}", LuaEngine.SCRIPT_PATH, ScriptSvcDir);
+        }
+
+        /// <summary>
+        /// Used to subscribe a lua function to be called on a pre-defined service callback for the given service.
+        /// Essentially, use this to register lua callbacks for a lua service.
         /// </summary>
         public void Subscribe(string svc, string eventname, LuaFunction fn)
         {

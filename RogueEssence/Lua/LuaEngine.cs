@@ -103,14 +103,20 @@ namespace RogueEssence.Script
         public enum EZoneCallbacks
         {
             Init = 0,    //When the zone is not yet active and being setup
-            //Enter,          //When the zone is just being entered
+            EnterSegment,          //When a segment is being entered
             ExitSegment,  //When a segment is exited by escape, defeat, completion, etc.
+            EnterMap,          //When a map is being entered
+            ExitMap,  //When a map is exited
+            //TODO: move these events to services
             AllyInteract,
             Rescued
         }
 
         public static readonly string ZoneCurrentScriptSym = "CURZONESCR";
         public static readonly string ZoneScriptInitFun = "{0}.Init";
+        public static readonly string ZoneScriptEnterMapFun = "{0}.EnterMap";
+        public static readonly string ZoneScriptExitMapFun = "{0}.ExitMap";
+        public static readonly string ZoneScriptEnterSegmentFun = "{0}.EnterSegment";
         public static readonly string ZoneScriptExitSegmentFun = "{0}.ExitSegment";
         public static readonly string ZoneScriptAllyInteractFun = "{0}.AllyInteract";
         public static readonly string ZoneScriptRescuedFun = "{0}.Rescued";
@@ -132,8 +138,14 @@ namespace RogueEssence.Script
                 //    return String.Format(ZoneScriptEnterFun, zonename);
                 case EZoneCallbacks.Init:
                     return String.Format(ZoneScriptInitFun, zonename);
+                case EZoneCallbacks.EnterSegment:
+                    return String.Format(ZoneScriptEnterSegmentFun, zonename);
                 case EZoneCallbacks.ExitSegment:
                     return String.Format(ZoneScriptExitSegmentFun, zonename);
+                case EZoneCallbacks.EnterMap:
+                    return String.Format(ZoneScriptEnterMapFun, zonename);
+                case EZoneCallbacks.ExitMap:
+                    return String.Format(ZoneScriptExitMapFun, zonename);
                 case EZoneCallbacks.AllyInteract:
                     return String.Format(ZoneScriptAllyInteractFun, zonename);
                 case EZoneCallbacks.Rescued:
@@ -224,6 +236,7 @@ namespace RogueEssence.Script
             DungeonFloorEnd,
 
             ZoneInit,
+            DungeonSegmentStart,
             DungeonSegmentEnd,
 
             GroundModeBegin,
@@ -299,6 +312,7 @@ namespace RogueEssence.Script
         private ScriptStrings m_scriptstr;
         private ScriptTask m_scripttask;
         private ScriptAI m_scriptai;
+        private ScriptXML m_scriptxml;
 
         //Engine time
         private TimeSpan m_nextUpdate;
@@ -403,6 +417,7 @@ namespace RogueEssence.Script
             m_scriptdungeon = new ScriptDungeon();
             m_scripttask = new ScriptTask();
             m_scriptai = new ScriptAI();
+            m_scriptxml = new ScriptXML();
 
             //Expose symbols
             ExposeInterface();
@@ -654,6 +669,7 @@ namespace RogueEssence.Script
             LuaState["STRINGS"] = m_scriptstr;
             LuaState["TASK"] = m_scripttask;
             LuaState["AI"] = m_scriptai;
+            LuaState["XML"] = m_scriptxml;
 
         }
 
@@ -729,6 +745,7 @@ namespace RogueEssence.Script
             m_scriptdungeon.SetupLuaFunctions(this);
             m_scripttask.SetupLuaFunctions(this);
             m_scriptai.SetupLuaFunctions(this);
+            m_scriptxml.SetupLuaFunctions(this);
 
             //If script vars aren't initialized in the save, do it now!
             DiagManager.Instance.LogInfo("[SE]:Checking if we need to initialize the script variables saved state..");
@@ -1502,7 +1519,12 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.ZoneInit.ToString());
         }
 
-        public void OnDungeonSegmentEnd()
+        public void OnZoneSegmentStart()
+        {
+            m_scrsvc.Publish(EServiceEvents.DungeonSegmentStart.ToString());
+        }
+
+        public void OnZoneSegmentEnd()
         {
             m_scrsvc.Publish(EServiceEvents.DungeonSegmentEnd.ToString());
         }
