@@ -38,64 +38,6 @@ namespace RogueEssence.Script
     /// </summary>
     public partial class LuaEngine
     {
-        #region MAP_EVENTS
-        /// <summary>
-        /// The available callbacks a map's lua script may receive from the engine.
-        /// </summary>
-        public enum EMapCallbacks
-        {
-            Init = 0,    //When the map is not yet displayed and being setup
-            Enter,          //When the map is just being displayed an the game fades-in
-            Update         //When the game script engine ticks
-        }
-
-        /// <summary>
-        /// Utility function for the EMapCallbacks enum. Allows iterating all the enum's values.
-        /// Meant to be used with a foreach loop
-        /// </summary>
-        /// <returns>One of the enum value.</returns>
-        public static IEnumerable<EMapCallbacks> EnumerateCallbackTypes()
-        {
-            yield return EMapCallbacks.Init;
-            yield return EMapCallbacks.Enter;
-            yield return EMapCallbacks.Update;
-            yield break;
-        }
-
-        //Name for common map callback functions
-        public static readonly string MapCurrentScriptSym = "CURMAPSCR";
-        public static readonly string MapScriptEnterFun = "{0}.Enter";
-        public static readonly string MapScriptUpdateFun = "{0}.Update";
-        public static readonly string MapScriptInitFun = "{0}.Init";
-        //The last one is optional, and is called before the map script is unloaded, so the script may do any needed cleanup
-        public static readonly string MapCleanupFun = "{0}.Cleanup";
-
-        /// <summary>
-        /// Create the name of a map's expected callback function in its script.
-        /// Each specifc callbacks has its own name and format.
-        /// </summary>
-        /// <param name="callbackformat"></param>
-        /// <param name="mapname"></param>
-        /// <returns></returns>
-        public static string MakeMapScriptCallbackName(string mapname, EMapCallbacks callback)
-        {
-            switch (callback)
-            {
-                case EMapCallbacks.Enter:
-                    return String.Format(MapScriptEnterFun, mapname);
-                case EMapCallbacks.Update:
-                    return String.Format(MapScriptUpdateFun, mapname);
-                case EMapCallbacks.Init:
-                    return String.Format(MapScriptInitFun, mapname);
-                default:
-                    {
-                        throw new Exception("LuaEngine.MakeMapScriptCallbackName(): Unknown callback!");
-                    }
-            }
-        }
-        #endregion
-
-
         #region ZONE_EVENTS
         /// <summary>
         /// The available callbacks a zone's lua script may receive from the engine.
@@ -105,21 +47,13 @@ namespace RogueEssence.Script
             Init = 0,    //When the zone is not yet active and being setup
             EnterSegment,          //When a segment is being entered
             ExitSegment,  //When a segment is exited by escape, defeat, completion, etc.
-            EnterMap,          //When a map is being entered
-            ExitMap,  //When a map is exited
             //TODO: move these events to services
             AllyInteract,
-            Rescued
+            Rescued,
+            Invalid
         }
 
         public static readonly string ZoneCurrentScriptSym = "CURZONESCR";
-        public static readonly string ZoneScriptInitFun = "{0}.Init";
-        public static readonly string ZoneScriptEnterMapFun = "{0}.EnterMap";
-        public static readonly string ZoneScriptExitMapFun = "{0}.ExitMap";
-        public static readonly string ZoneScriptEnterSegmentFun = "{0}.EnterSegment";
-        public static readonly string ZoneScriptExitSegmentFun = "{0}.ExitSegment";
-        public static readonly string ZoneScriptAllyInteractFun = "{0}.AllyInteract";
-        public static readonly string ZoneScriptRescuedFun = "{0}.Rescued";
         //The last one is optional, and is called before the map script is unloaded, so the script may do any needed cleanup
         public static readonly string ZoneCleanupFun = "{0}.Cleanup";
 
@@ -132,33 +66,134 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public static string MakeZoneScriptCallbackName(string zonename, EZoneCallbacks callback)
         {
-            switch (callback)
-            {
-                //case EZoneCallbacks.Enter:
-                //    return String.Format(ZoneScriptEnterFun, zonename);
-                case EZoneCallbacks.Init:
-                    return String.Format(ZoneScriptInitFun, zonename);
-                case EZoneCallbacks.EnterSegment:
-                    return String.Format(ZoneScriptEnterSegmentFun, zonename);
-                case EZoneCallbacks.ExitSegment:
-                    return String.Format(ZoneScriptExitSegmentFun, zonename);
-                case EZoneCallbacks.EnterMap:
-                    return String.Format(ZoneScriptEnterMapFun, zonename);
-                case EZoneCallbacks.ExitMap:
-                    return String.Format(ZoneScriptExitMapFun, zonename);
-                case EZoneCallbacks.AllyInteract:
-                    return String.Format(ZoneScriptAllyInteractFun, zonename);
-                case EZoneCallbacks.Rescued:
-                    return String.Format(ZoneScriptRescuedFun, zonename);
-                default:
-                    {
-                        throw new Exception("LuaEngine.MakeZoneScriptCallbackName(): Unknown callback!");
-                    }
-            }
+            if (callback < 0 && callback >= EZoneCallbacks.Invalid)
+                throw new Exception("LuaEngine.MakeZoneScriptCallbackName(): Unknown callback!");
+            return String.Format("{0}.{1}", zonename, callback.ToString());
         }
 
         #endregion
 
+
+        #region MAP_EVENTS
+        /// <summary>
+        /// The available callbacks a map's lua script may receive from the engine.
+        /// </summary>
+        public enum EMapCallbacks
+        {
+            Init = 0,    //When the map is not yet displayed and being setup
+            Enter,          //When the map is just being displayed an the game fades-in
+            Exit,          //When the map has finished fading out before transition to the next
+            Update,         //When the game script engine ticks
+
+            Invalid
+        }
+        //Name for common map callback functions
+        public static readonly string MapCurrentScriptSym = "CURMAPSCR";
+        //The last one is optional, and is called before the map script is unloaded, so the script may do any needed cleanup
+        public static readonly string MapCleanupFun = "{0}.Cleanup";
+
+
+        /// <summary>
+        /// Utility function for the EMapCallbacks enum. Allows iterating all the enum's values.
+        /// Meant to be used with a foreach loop
+        /// </summary>
+        /// <returns>One of the enum value.</returns>
+        public static IEnumerable<EMapCallbacks> EnumerateCallbackTypes()
+        {
+            for (int ii = (int)EMapCallbacks.Init; ii < (int)EMapCallbacks.Invalid; ++ii)
+                yield return (EMapCallbacks)ii;
+        }
+
+        /// <summary>
+        /// Create the name of a map's expected callback function in its script.
+        /// Each specifc callbacks has its own name and format.
+        /// </summary>
+        /// <param name="callbackformat"></param>
+        /// <param name="mapname"></param>
+        /// <returns></returns>
+        public static string MakeMapScriptCallbackName(string mapname, EMapCallbacks callback)
+        {
+            if (callback < 0 && callback >= EMapCallbacks.Invalid)
+                throw new Exception("LuaEngine.MakeMapScriptCallbackName(): Unknown callback!");
+            return String.Format("{0}.{1}", mapname, callback.ToString());
+        }
+        #endregion
+
+
+
+        #region MAP_EVENTS
+
+        /// <summary>
+        /// Possible lua callbacks for a given dungeon floor
+        /// </summary>
+        public enum EDungeonMapCallbacks
+        {
+            Init = 0,   //When the map is not yet displayed and being setup
+            Enter,      //When the map is just being displayed an the game fades-in
+            Exit,       //When the player is leaving a dungeon floor
+
+            Invalid,
+        }
+
+        //Name for common map callback functions
+        public static readonly string DungeonMapCurrentScriptSym = "CURDUNMAPSCR";
+        //The last one is optional, and is called before the map script is unloaded, so the script may do any needed cleanup
+        public static readonly string DungeonMapCleanupFun = "{0}.Cleanup";
+
+        /// <summary>
+        /// Enumerate the values in the EDungeonFloorCallbacks enum
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<EDungeonMapCallbacks> EnumerateDungeonFloorCallbackTypes()
+        {
+            for (int ii = (int)EDungeonMapCallbacks.Init; ii < (int)EDungeonMapCallbacks.Invalid; ++ii)
+                yield return (EDungeonMapCallbacks)ii;
+        }
+
+        /// <summary>
+        /// Returns the name string for a lua callback function for the given dungeon's floor
+        /// </summary>
+        /// <param name="zonename"></param>
+        /// <param name="floornumber"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public static string MakeDungeonMapScriptCallbackName(string zonename, int floornumber, EDungeonMapCallbacks callback)
+        {
+            return MakeDungeonMapScriptCallbackName(MakeDungeonFloorAssetName(zonename, floornumber), callback);
+        }
+
+        public static string MakeDungeonMapScriptCallbackName(string floorname, EDungeonMapCallbacks callback)
+        {
+            if (callback < 0 && callback >= EDungeonMapCallbacks.Invalid)
+                throw new Exception("LuaEngine.MakeDungeonMapScriptCallbackName(): Unknown callback!");
+            return String.Format("{0}.{1}", floorname, callback.ToString());
+        }
+
+        /// <summary>
+        /// Generates an asset name for the given floor in the given dungeon. Mainly used for scripts.
+        /// </summary>
+        /// <param name="dungeonname"></param>
+        /// <param name="floornumber"></param>
+        /// <returns></returns>
+        public static string MakeDungeonFloorAssetName(string dungeonname, int floornumber)
+        {
+            return String.Format("{0}.floor{1}", dungeonname, floornumber);
+        }
+
+        /// <summary>
+        /// Return the name string for a lua callback for all the non-overriden dungeon floor events, for a given dungeon.
+        /// </summary>
+        /// <param name="dungeonname"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public static string MakeDefaultDungeonFloorCallbackName(string dungeonname, EDungeonMapCallbacks callback)
+        {
+            if (callback < 0 && callback >= EDungeonMapCallbacks.Invalid)
+                throw new Exception("LuaEngine.MakeDefaultDungeonFloorCallbackName(): Unknown callback!");
+            return String.Format("{0}.floordefault.{1}", dungeonname, callback.ToString());
+        }
+
+        #endregion
 
         #region ENTITY_EVENT
         /// <summary>
@@ -186,11 +221,8 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public static IEnumerator<EEntLuaEventTypes> IterateLuaEntityEvents()
         {
-            yield return EEntLuaEventTypes.Action;
-            yield return EEntLuaEventTypes.Touch;
-            yield return EEntLuaEventTypes.Think;
-            yield return EEntLuaEventTypes.Update;
-            yield return EEntLuaEventTypes.EntSpawned;
+            for (int ii = (int)EEntLuaEventTypes.Action; ii < (int)EEntLuaEventTypes.Invalid; ++ii)
+                yield return (EEntLuaEventTypes)ii;
         }
 
         /// <summary>
@@ -231,9 +263,10 @@ namespace RogueEssence.Script
 
             DungeonModeBegin,
             DungeonModeEnd,
-            DungeonFloorPrepare,
-            DungeonFloorBegin,
-            DungeonFloorEnd,
+
+            DungeonMapInit,
+            DungeonFloorEnter,
+            DungeonFloorExit,
 
             ZoneInit,
             DungeonSegmentStart,
@@ -241,6 +274,8 @@ namespace RogueEssence.Script
 
             GroundModeBegin,
             GroundModeEnd,
+
+            GroundMapInit,
             GroundMapEnter,
             GroundMapExit,
 
@@ -253,7 +288,7 @@ namespace RogueEssence.Script
             for (int cntev = 0; cntev < (int)EServiceEvents._NBEvents; ++cntev)
                 yield return (EServiceEvents)cntev;
         }
-#endregion
+        #endregion
 
         #region MAIN_SCRIPTS
         /// <summary>
@@ -293,6 +328,10 @@ namespace RogueEssence.Script
         public const string MAP_SCRIPT_DIR = SCRIPT_PATH + "ground/";
         public static readonly string MapPackageEntryPointName = "init"; //filename of the map's main script file that the engine will run when the map is loaded (by default lua package entrypoints are init.lua)
 
+        public static readonly string DungeonMapScriptPath = "map.{0}";
+        public const string DUNGEON_MAP_SCRIPT_DIR = SCRIPT_PATH + "map/";
+        public static readonly string DungeonMapPackageEntryPointName = "init";
+
         public static readonly string ZoneScriptPath = "zone.{0}";
         public const string ZONE_SCRIPT_DIR = SCRIPT_PATH + "zone/";
         public static readonly string ZonePackageEntryPointName = "init"; //filename of the zone's main script file that the engine will run when the zone is loaded (by default lua package entrypoints are init.lua)
@@ -319,8 +358,6 @@ namespace RogueEssence.Script
         private GameTime m_curtime = new GameTime();
 
         //Properties
-        public string CurZonePackagePath { get; internal set; } //Path to the currently loaded zone script, aka the last zone script to have been run
-        public string   CurMapPackagePath { get; internal set; } //Path to the currently loaded map script, aka the last map script to have been run
         public Lua      LuaState { get; set; }
         public GameTime Curtime { get { return m_curtime; } set { m_curtime = value; } }
 
@@ -534,6 +571,7 @@ namespace RogueEssence.Script
 
             RunString(ZoneCurrentScriptSym + " = nil");
             RunString(MapCurrentScriptSym + " = nil");
+            RunString(DungeonMapCurrentScriptSym + " = nil");
 
             //Make empty script variable table
             LuaState.NewTable(ScriptVariablesTableName);
@@ -673,17 +711,6 @@ namespace RogueEssence.Script
 
         }
 
-        /// <summary>
-        /// Since some  instance of the game's internal change on map load and various event, this function is here to update them.
-        /// </summary>
-        public void UpdateExposedInstances()
-        {
-            //LuaState["_GROUND"] = GroundScene.Instance;
-            //LuaState["_DUNGEON"] = DungeonScene.Instance;
-            //LuaState["_ZONE"] = ZoneManager.Instance;
-            //LuaState["_GAME"] = GameManager.Instance;
-            //LuaState["_DATA"] = DataManager.Instance;
-        }
         public void UpdateZoneInstance()
         {
             LuaState["_ZONE"] = ZoneManager.Instance;
@@ -1008,7 +1035,6 @@ namespace RogueEssence.Script
                 LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZoneScriptPath, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
                           abspath);
-                CurZonePackagePath = zonepath; //Set this only on success
             }
             catch (Exception e)
             {
@@ -1051,6 +1077,76 @@ namespace RogueEssence.Script
             ");
         }
 
+
+
+
+        /// <summary>
+        /// Makes the full absolute path to the directory a map's script should be in.
+        /// </summary>
+        /// <param name="mapname">AssetName of the map to look for.</param>
+        /// <returns>Absolute path to the map's script directory.</returns>
+        public string _MakeDungeonMapScriptPath(string mapname)
+        {
+            return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
+                   string.Format(DungeonMapScriptPath, mapname).Replace('.', '/'); //The physical path to the map's script dir
+        }
+
+        /// <summary>
+        /// Load and execute the script of a zone.
+        /// </summary>
+        /// <param name="mapassetname">The AssetName of the zone for which we have to load the script of</param>
+        public void RunDungeonMapScript(string mapassetname)
+        {
+            string mappath = _MakeDungeonMapScriptPath(mapassetname);
+            try
+            {
+                string abspath = Path.GetFullPath(mappath + "/init.lua");
+                LuaState.LoadFile(abspath);
+                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(DungeonMapScriptPath, mapassetname), DungeonMapCurrentScriptSym, mapassetname),
+                          abspath);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunDungeonMapScript(): Error running dungeon map script!:\n" + e.Message + "\npath:\n" + mappath);
+            }
+        }
+
+        /// <summary>
+        /// Use this to clean up the traces left behind by a zone package.
+        /// Also collects garbages.
+        /// </summary>
+        /// <param name="zoneassetname"></param>
+        public void CleanDungeonMapScript(string mapassetname)
+        {
+            RunString(@"
+                local tbllen = 0
+                for k,v in pairs(_ENV) do
+                    tbllen = tbllen + 1
+                end
+                print('=>_ENV pre-cleanup:' .. tostring(tbllen))
+            ");
+
+            RunString(
+                    String.Format(@"
+                        if {2} then
+                            xpcall( {2}, PrintStack)
+                        end
+                        package.loaded.{0} = nil
+                        {1} = nil
+                        {0} = nil
+                        collectgarbage()", mapassetname, DungeonMapCurrentScriptSym, String.Format(DungeonMapCleanupFun, DungeonMapCurrentScriptSym)),
+                      "CleanMapScript");
+
+            RunString(@"
+                local tbllen = 0
+                for k,v in pairs(_ENV) do
+                    tbllen = tbllen + 1
+                end
+                print('=>_ENV post cleanup:' .. tostring(tbllen))
+            ");
+        }
+
+
         /// <summary>
         /// Makes the full absolute path to the directory a map's script should be in.
         /// </summary>
@@ -1075,7 +1171,6 @@ namespace RogueEssence.Script
                 LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(MapScriptPath, mapassetname), MapCurrentScriptSym, mapassetname),
                           abspath);
-                CurMapPackagePath = mappath; //Set this only on success
             }
             catch (Exception e)
             {
@@ -1444,9 +1539,7 @@ namespace RogueEssence.Script
         {
             m_scriptUI.Reset();
             DiagManager.Instance.LogInfo("LuaEngine.OnGroundMapInit()..");
-            //Update the exposed globals to the various parts of the game engine, since things change between loads
-            UpdateExposedInstances();
-            m_scrsvc.Publish("OnGroundMapInit", mapname, map);
+            m_scrsvc.Publish(EServiceEvents.GroundMapInit.ToString(), mapname, map);
 
         }
 
@@ -1463,11 +1556,11 @@ namespace RogueEssence.Script
         /// <summary>
         /// #TODO: Call this when a ground map is exited!
         /// </summary>
-        public void OnGroundMapExit(/*GroundResult result*/)
+        public void OnGroundMapExit(string mapname, GroundMap mapobj)
         {
             //Do stuff..
             DiagManager.Instance.LogInfo("LuaEngine.OnGroundMapExit()..");
-            m_scrsvc.Publish(EServiceEvents.GroundMapExit.ToString());
+            m_scrsvc.Publish(EServiceEvents.GroundMapExit.ToString(), mapname, mapobj);
         }
 
         /// <summary>
@@ -1489,29 +1582,29 @@ namespace RogueEssence.Script
         /// <summary>
         /// #TODO: Call this when a dungeon map starts!
         /// </summary>
-        public void OnDungeonFloorPrepare(/*DungeonInfo info*/)
+        public void OnDungeonMapInit(string mapname, Map mapobj)
         {
             //Stop lua execution, and save stack or something?
-            DiagManager.Instance.LogInfo("LuaEngine.DungeonFloorPrepare()..");
-            UpdateExposedInstances();
-            m_scrsvc.Publish(EServiceEvents.DungeonFloorPrepare.ToString());
+            DiagManager.Instance.LogInfo("LuaEngine.OnDungeonMapInit()..");
+            m_scrsvc.Publish(EServiceEvents.DungeonMapInit.ToString());
         }
 
         /// <summary>
         /// When entering a new dungeon floor this is called
         /// </summary>
-        public void OnDungeonFloorBegin()
+        public void OnDungeonMapEnter(string mapname, Map mapobj)
         {
-            m_scrsvc.Publish(EServiceEvents.DungeonFloorBegin.ToString());
+            DiagManager.Instance.LogInfo("LuaEngine.OnDungeonMapEnter()..");
+            m_scrsvc.Publish(EServiceEvents.DungeonFloorEnter.ToString(), mapname);
         }
 
         /// <summary>
         /// When leaving a dungeon floor this is called.
         /// </summary>
         /// <param name="floor">Floor on which was just exited</param>
-        public void OnDungeonFloorEnd()
+        public void OnDungeonMapExit(string mapname, Map mapobj)
         {
-            m_scrsvc.Publish(EServiceEvents.DungeonFloorEnd.ToString());
+            m_scrsvc.Publish(EServiceEvents.DungeonFloorExit.ToString());
         }
 
         public void OnZoneInit()

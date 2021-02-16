@@ -450,7 +450,7 @@ namespace RogueEssence
                     BGM(ZoneManager.Instance.CurrentMap.Music, true);
 
                 DungeonScene.Instance.EnterFloor(destId.EntryPoint);
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.PrepareFloor());
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
                 if (IsFaded())
                 {

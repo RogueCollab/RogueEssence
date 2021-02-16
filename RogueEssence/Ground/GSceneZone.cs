@@ -50,8 +50,8 @@ namespace RogueEssence.Ground
             if (ZoneManager.Instance.CurrentGround != null)
             {
                 //Notify script engine
-                LuaEngine.Instance.OnGroundMapExit();
-
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnExit());
+                
                 ZoneManager.Instance.CurrentGround.SetPlayerChar(null);
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
             }
@@ -79,7 +79,7 @@ namespace RogueEssence.Ground
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetSingleLineName());
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetSingleLineName()));
             //psy's note: might as well help encapsulate map stuff
-            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnBegin());
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnEnter());
         }
 
         public IEnumerator<YieldInstruction> SuspendGame()

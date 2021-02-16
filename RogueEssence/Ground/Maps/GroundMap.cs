@@ -143,7 +143,7 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> OnInit()
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
-            Script.LuaEngine.Instance.RunMapScript(AssetName);
+            LuaEngine.Instance.RunMapScript(AssetName);
 
             //Reload the map events
             foreach (var ev in ScriptEvents)
@@ -177,7 +177,7 @@ namespace RogueEssence.Ground
         /// Called by the GroundScene when the map is in "Begin" stage.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> OnBegin()
+        public IEnumerator<YieldInstruction> OnEnter()
         {
             //Ensure the AI is enabled
             GroundAI.GlobalAIEnabled = true;
@@ -187,7 +187,15 @@ namespace RogueEssence.Ground
 
             //Notify script engine
             LuaEngine.Instance.OnGroundMapEnter(AssetName, this);
-            yield break;
+        }
+
+        public IEnumerator<YieldInstruction> OnExit()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.Exit));
+
+            //Notify script engine
+            LuaEngine.Instance.OnGroundMapExit(AssetName, this);
         }
 
         /// <summary>

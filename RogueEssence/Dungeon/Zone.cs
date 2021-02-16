@@ -262,34 +262,6 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneInit(/*assetName, this*/);
         }
 
-
-
-        public IEnumerator<YieldInstruction> OnEnterMap()
-        {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
-
-            //Do script event for map
-
-            //then zone
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterMap, this, CurrentMapID.Segment, CurrentMapID.ID));
-
-            //Notify script engine
-            LuaEngine.Instance.OnDungeonFloorBegin();
-        }
-
-        public IEnumerator<YieldInstruction> OnExitMap()
-        {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
-
-            //Do script event for map
-
-            //then zone
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.ExitMap, this, CurrentMapID.Segment, CurrentMapID.ID));
-
-            //Notify script engine
-            LuaEngine.Instance.OnDungeonFloorEnd();
-        }
-
         public IEnumerator<YieldInstruction> OnEnterSegment()
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;

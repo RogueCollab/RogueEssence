@@ -50,12 +50,10 @@ namespace RogueEssence.Script
         public string CurrentScriptDir()
         {
             //We can get the path 3 ways.
-            if (!String.IsNullOrEmpty(m_state.CurMapPackagePath))
-                return m_state.CurMapPackagePath;
-            else if (ZoneManager.Instance.CurrentGround != null)
+            if (ZoneManager.Instance.CurrentGround != null)
                 return ZoneManager.Instance.CurrentGround.AssetName;
             else if (ZoneManager.Instance.CurrentMap != null)
-                throw new NotImplementedException("ScriptServices.CurrentScriptDir(): Dungeon map script packages path handling not implemented yet!!");
+                return ZoneManager.Instance.CurrentMap.AssetName;
             else
                 throw new Exception("ScriptServices.CurrentScriptDir(): No map lua package currently loaded! And no map currently loaded either! Cannot assemble the current package path!");
         }

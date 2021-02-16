@@ -35,6 +35,9 @@ namespace RogueEssence.Dungeon
         {
             if (ZoneManager.Instance.CurrentMap != null)
             {
+                //Notify script engine
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnExit());
+
                 //remove statuses
                 foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.Players)
                     character.OnRemove();
@@ -49,9 +52,6 @@ namespace RogueEssence.Dungeon
                     if (data.CarryOver)
                         ZoneManager.Instance.CurrentZone.CarryOver.Add(status);
                 }
-
-                //Notify script engine
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnExitMap());
 
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
 
@@ -73,11 +73,8 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public IEnumerator<YieldInstruction> PrepareFloor()
+        public IEnumerator<YieldInstruction> InitFloor()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
-
             //start emitters for existing map status
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 mapStatus.StartEmitter(Anims);
@@ -87,11 +84,14 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
 
             //Notify script engine
-             LuaEngine.Instance.OnDungeonFloorPrepare();
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
         }
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
+
             ZoneManager.Instance.CurrentMap.Begun = true;
             //process map-start events (dialogue, map condition announcement, etc)
             foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
@@ -124,7 +124,7 @@ namespace RogueEssence.Dungeon
             foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
 
-            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterMap());
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
         }
 
 
