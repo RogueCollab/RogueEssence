@@ -121,7 +121,7 @@ namespace RogueEssence.Script
 
 
 
-        #region MAP_EVENTS
+        #region DUNGEON_MAP_EVENTS
 
         /// <summary>
         /// Possible lua callbacks for a given dungeon floor
@@ -1135,7 +1135,7 @@ namespace RogueEssence.Script
                         {1} = nil
                         {0} = nil
                         collectgarbage()", mapassetname, DungeonMapCurrentScriptSym, String.Format(DungeonMapCleanupFun, DungeonMapCurrentScriptSym)),
-                      "CleanMapScript");
+                      "CleanDungeonMapScript");
 
             RunString(@"
                 local tbllen = 0

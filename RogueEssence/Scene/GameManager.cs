@@ -420,7 +420,7 @@ namespace RogueEssence
             }
             
             if (!sameSegment || forceNewZone)
-                ZoneManager.Instance.CurrentZone.OnEnterSegment();
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment());
 
 
             //Transparency mode

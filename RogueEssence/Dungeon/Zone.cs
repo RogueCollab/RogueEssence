@@ -307,8 +307,6 @@ namespace RogueEssence.Dungeon
         {
             if (ScriptEvents.ContainsKey(ev))
                 yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(parms));
-            else
-                yield break;
         }
 
 
