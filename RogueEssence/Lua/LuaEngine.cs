@@ -209,12 +209,6 @@ namespace RogueEssence.Script
             Invalid,
         }
         
-        public static readonly string ActionFun = "Action";
-        public static readonly string TouchFun = "Touch";
-        public static readonly string ThinkFun = "Think";
-        public static readonly string UpdateFun = "Update";
-        public static readonly string EntSpawnedFun = "EntSpawned";
-
         /// <summary>
         ///
         /// </summary>
@@ -225,24 +219,11 @@ namespace RogueEssence.Script
                 yield return (EEntLuaEventTypes)ii;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        public static readonly List<string> EntLuaEventTypeNames = new List<string>
-        {
-            ActionFun,
-            TouchFun,
-            ThinkFun,
-            UpdateFun,
-            EntSpawnedFun,
-        };
-
         public static string MakeLuaEntityCallbackName(string entname, EEntLuaEventTypes type)
         {
-            if (type < EEntLuaEventTypes.Invalid)
-                return String.Format("{2}.{0}_{1}", entname, EntLuaEventTypeNames[(int)type], MapCurrentScriptSym);
-            else
+            if (type < 0 && type >= EEntLuaEventTypes.Invalid)
                 throw new Exception("LuaEngine.MakeLuaEntityCallbackName(): Invalid Lua entity event type!");
+            return String.Format("{2}.{0}_{1}", entname, type.ToString(), MapCurrentScriptSym);
         }
 #endregion
 
