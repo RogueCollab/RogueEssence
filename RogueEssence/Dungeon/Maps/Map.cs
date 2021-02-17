@@ -563,7 +563,8 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> OnInit()
         {
             DiagManager.Instance.LogInfo("Map.OnInit(): Initializing the map..");
-            LuaEngine.Instance.RunDungeonMapScript(AssetName);
+            if (AssetName != "")
+                LuaEngine.Instance.RunDungeonMapScript(AssetName);
 
             //Check for floor specific events in the current dungeon's package.
             //Reload the map events

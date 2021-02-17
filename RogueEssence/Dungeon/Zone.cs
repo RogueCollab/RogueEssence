@@ -249,7 +249,8 @@ namespace RogueEssence.Dungeon
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             DiagManager.Instance.LogInfo("Zone.OnInit(): Initializing the zone..");
-            LuaEngine.Instance.RunZoneScript(assetName);
+            if (assetName != "")
+                LuaEngine.Instance.RunZoneScript(assetName);
 
             //Reload the map events
             foreach (var ev in ScriptEvents)

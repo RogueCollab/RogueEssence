@@ -143,7 +143,8 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> OnInit()
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
-            LuaEngine.Instance.RunMapScript(AssetName);
+            if (AssetName != "")
+                LuaEngine.Instance.RunMapScript(AssetName);
 
             //Reload the map events
             foreach (var ev in ScriptEvents)

@@ -890,18 +890,6 @@ namespace RogueEssence.Script
             public string Namespace { get { return m_Namespace;} set { m_Namespace = value;} }
             public string Assembly { get { return m_Assembly; } set { m_Assembly = value; } }
         }
-    }
-
-
-    /**************************************************************************************
-     * LuaEngine
-     **************************************************************************************/
-    /// <summary>
-    /// Manager for the program-wide lua state.
-    /// Acces to interpreter.
-    /// </summary>
-    partial class LuaEngine
-    {
 
         /// <summary>
         /// Instantiate a lua module's Class table using its metatable's "__call" definition
@@ -1031,7 +1019,7 @@ namespace RogueEssence.Script
             string zonepath = _MakeZoneScriptPath(zoneassetname);
             try
             {
-                string abspath = System.IO.Path.GetFullPath(zonepath + "/init.lua");
+                string abspath = Path.GetFullPath(zonepath + "/init.lua");
                 LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZoneScriptPath, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
                           abspath);
@@ -1059,7 +1047,7 @@ namespace RogueEssence.Script
 
             RunString(
                     String.Format(@"
-                        if {2} then
+                        if {1} and {2} then
                             xpcall( {2}, PrintStack)
                         end
                         package.loaded.{0} = nil
@@ -1128,7 +1116,7 @@ namespace RogueEssence.Script
 
             RunString(
                     String.Format(@"
-                        if {2} then
+                        if {1} and {2} then
                             xpcall( {2}, PrintStack)
                         end
                         package.loaded.{0} = nil
@@ -1154,7 +1142,7 @@ namespace RogueEssence.Script
         /// <returns>Absolute path to the map's script directory.</returns>
         public string _MakeMapScriptPath(string mapname)
         {
-            return System.IO.Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
+            return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
                    string.Format(MapScriptPath, mapname).Replace('.', '/'); //The physical path to the map's script dir
         }
 
@@ -1195,7 +1183,7 @@ namespace RogueEssence.Script
 
             RunString(
                     String.Format(@"
-                        if {2} then
+                        if {1} and {2} then
                             xpcall( {2}, PrintStack)
                         end
                         package.loaded.{0} = nil
@@ -1223,13 +1211,13 @@ namespace RogueEssence.Script
             try
             {
                 //Check if files exists already
-                if (!System.IO.Directory.Exists(mappath))
-                    System.IO.Directory.CreateDirectory(mappath);
+                if (!Directory.Exists(mappath))
+                    Directory.CreateDirectory(mappath);
 
                 string packageentry = String.Format("{1}/{0}.lua", MapPackageEntryPointName, mappath);
-                if (!System.IO.File.Exists(packageentry))
+                if (!File.Exists(packageentry))
                 {
-                    using (var fstream = System.IO.File.CreateText(packageentry))
+                    using (var fstream = File.CreateText(packageentry))
                     {
                         //Insert comment header
                         fstream.WriteLine(
@@ -1392,12 +1380,6 @@ namespace RogueEssence.Script
             }
         }
 
-    };
-
-    //Lua accessible functions
-    partial class LuaEngine
-    {
-
 
         /// <summary>
         /// Makes a .net Action to be used in lua
@@ -1472,17 +1454,8 @@ namespace RogueEssence.Script
             return (BaseTaskUser)o;
         }
 
-    }
 
-    /**************************************************************************************
-     * LuaEngine
-     **************************************************************************************/
-    /// <summary>
-    /// Manager for the program-wide lua state.
-    /// Engine services!
-    /// </summary>
-    partial class LuaEngine
-    {
+
         /// <summary>
         /// Call this when DataManager is being initialized
         /// </summary>
