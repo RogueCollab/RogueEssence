@@ -365,8 +365,8 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="newfilepath"></param>
         private void createOrCopyScriptData(string oldfilepath, string newfilepath)
         {
-            string oldmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
-            string newmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+            string oldmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
+            string newmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
 
             //Check if we have anything to copy at all!
             if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))

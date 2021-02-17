@@ -132,8 +132,6 @@ namespace RogueEssence.Ground
         {
             if (ScriptEvents.ContainsKey(ev))
                 yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(this));
-            else
-                yield break;
         }
 
         /// <summary>
@@ -918,7 +916,8 @@ namespace RogueEssence.Ground
             if (BlankBG == null)
                 BlankBG = new AutoTile();
 
-                if (ActiveChar != null)
+
+            if (ActiveChar != null)
             {
                 ActiveChar.OnDeserializeMap(this);
                 signCharToMap(ActiveChar);

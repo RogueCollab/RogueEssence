@@ -38,7 +38,7 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                string mapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile));
+                string mapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile));
                 mapscriptdir = Path.GetFullPath(mapscriptdir);
                 Process.Start("explorer.exe", mapscriptdir);
             }

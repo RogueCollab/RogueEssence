@@ -16,7 +16,7 @@ namespace RogueEssence.Dev.Converters
             string file = (string)value;
             if (file == "")
                 return "Script Data [Map not yet saved]";
-            string mapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(file));
+            string mapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(file));
             return String.Format("Script Data [{0}]", Path.GetFullPath(mapscriptdir));
         }
 

@@ -324,20 +324,20 @@ namespace RogueEssence.Script
         #endregion
 
         //Paths
-        public static readonly string MapScriptPath = "ground.{0}";
+        public const string MAP_SCRIPT_PATTERN = "ground.{0}";
         public const string MAP_SCRIPT_DIR = SCRIPT_PATH + "ground/";
-        public static readonly string MapPackageEntryPointName = "init"; //filename of the map's main script file that the engine will run when the map is loaded (by default lua package entrypoints are init.lua)
+        public const string MAP_SCRIPT_ENTRY_POINT = "init"; //filename of the map's main script file that the engine will run when the map is loaded (by default lua package entrypoints are init.lua)
 
-        public static readonly string DungeonMapScriptPath = "map.{0}";
+        public const string DUNGEON_MAP_SCRIPT_PATTERN = "map.{0}";
         public const string DUNGEON_MAP_SCRIPT_DIR = SCRIPT_PATH + "map/";
-        public static readonly string DungeonMapPackageEntryPointName = "init";
+        public const string DUNGEON_MAP_SCRIPT_ENTRY_POINT = "init";
 
-        public static readonly string ZoneScriptPath = "zone.{0}";
+        public const string ZONE_SCRIPT_PATTERN = "zone.{0}";
         public const string ZONE_SCRIPT_DIR = SCRIPT_PATH + "zone/";
-        public static readonly string ZonePackageEntryPointName = "init"; //filename of the zone's main script file that the engine will run when the zone is loaded (by default lua package entrypoints are init.lua)
+        public const string ZONE_SCRIPT_ENTRY_POINT = "init"; //filename of the zone's main script file that the engine will run when the zone is loaded (by default lua package entrypoints are init.lua)
 
         //Global lua symbol names
-        private static readonly string ScriptVariablesTableName = "SV"; //Name of the table of script variables that gets loaded and saved with the game
+        private const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -574,8 +574,8 @@ namespace RogueEssence.Script
             RunString(DungeonMapCurrentScriptSym + " = nil");
 
             //Make empty script variable table
-            LuaState.NewTable(ScriptVariablesTableName);
-            LuaState[ScriptVariablesTableName + ".__ALL_SET"] = "OK"; //This is just a debug variable, to make sure the table isn't overwritten at runtime by something else, and help track down issues linked to that.
+            LuaState.NewTable(SCRIPT_VARS_NAME);
+            LuaState[SCRIPT_VARS_NAME + ".__ALL_SET"] = "OK"; //This is just a debug variable, to make sure the table isn't overwritten at runtime by something else, and help track down issues linked to that.
 
             //Add the list of available Callbacknames
             FillServiceEventsTable();
@@ -810,7 +810,7 @@ namespace RogueEssence.Script
                         PrintInfo('LuaEngine.LoadSavedData(): Script var loading failed! Details : ' .. res)
                     end
                     ",
-                    loaded.ScriptVars, ScriptVariablesTableName));
+                    loaded.ScriptVars, SCRIPT_VARS_NAME));
             }
             //Tell the script we've just resumed a save!
             m_scrsvc.Publish("LoadSavedData");
@@ -826,7 +826,7 @@ namespace RogueEssence.Script
 
             //Save script engine stuff here!
             DiagManager.Instance.LogInfo("LuaEngine.SaveData()..");
-            object[] result = RunString(String.Format("return Serpent.dump({0})", ScriptVariablesTableName));
+            object[] result = RunString(String.Format("return Serpent.dump({0})", SCRIPT_VARS_NAME));
             if (result != null && result[0] != null)
             {
                 save.ScriptVars = result[0] as string;
@@ -1004,10 +1004,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public string _MakeZoneScriptPath(string zonename)
+        public static string MakeZoneScriptPath(string zonename)
         {
             return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
-                   string.Format(ZoneScriptPath, zonename).Replace('.', '/'); //The physical path to the map's script dir
+                   string.Format(ZONE_SCRIPT_PATTERN, zonename).Replace('.', '/'); //The physical path to the map's script dir
         }
 
         /// <summary>
@@ -1016,12 +1016,12 @@ namespace RogueEssence.Script
         /// <param name="zoneassetname">The AssetName of the zone for which we have to load the script of</param>
         public void RunZoneScript(string zoneassetname)
         {
-            string zonepath = _MakeZoneScriptPath(zoneassetname);
+            string zonepath = MakeZoneScriptPath(zoneassetname);
             try
             {
                 string abspath = Path.GetFullPath(zonepath + "/init.lua");
                 LuaState.LoadFile(abspath);
-                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZoneScriptPath, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
+                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZONE_SCRIPT_PATTERN, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
                           abspath);
             }
             catch (Exception e)
@@ -1073,10 +1073,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public string _MakeDungeonMapScriptPath(string mapname)
+        public static string MakeDungeonMapScriptPath(string mapname)
         {
             return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
-                   string.Format(DungeonMapScriptPath, mapname).Replace('.', '/'); //The physical path to the map's script dir
+                   string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'); //The physical path to the map's script dir
         }
 
         /// <summary>
@@ -1085,12 +1085,12 @@ namespace RogueEssence.Script
         /// <param name="mapassetname">The AssetName of the zone for which we have to load the script of</param>
         public void RunDungeonMapScript(string mapassetname)
         {
-            string mappath = _MakeDungeonMapScriptPath(mapassetname);
+            string mappath = MakeDungeonMapScriptPath(mapassetname);
             try
             {
                 string abspath = Path.GetFullPath(mappath + "/init.lua");
                 LuaState.LoadFile(abspath);
-                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(DungeonMapScriptPath, mapassetname), DungeonMapCurrentScriptSym, mapassetname),
+                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapassetname), DungeonMapCurrentScriptSym, mapassetname),
                           abspath);
             }
             catch (Exception e)
@@ -1140,10 +1140,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public string _MakeMapScriptPath(string mapname)
+        public static string MakeMapScriptPath(string mapname)
         {
             return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
-                   string.Format(MapScriptPath, mapname).Replace('.', '/'); //The physical path to the map's script dir
+                   string.Format(MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'); //The physical path to the map's script dir
         }
 
         /// <summary>
@@ -1152,12 +1152,12 @@ namespace RogueEssence.Script
         /// <param name="mapassetname">The AssetName of the map for which we have to load the script of</param>
         public void RunMapScript(string mapassetname)
         {
-            string mappath = _MakeMapScriptPath(mapassetname);
+            string mappath = MakeMapScriptPath(mapassetname);
             try
             {
                 string abspath = Path.GetFullPath(mappath + "/init.lua");
                 LuaState.LoadFile(abspath);
-                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(MapScriptPath, mapassetname), MapCurrentScriptSym, mapassetname),
+                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(MAP_SCRIPT_PATTERN, mapassetname), MapCurrentScriptSym, mapassetname),
                           abspath);
             }
             catch (Exception e)
@@ -1207,14 +1207,14 @@ namespace RogueEssence.Script
         /// <param name="mapassetname"></param>
         public void CreateNewMapScriptDir(string mapassetname)
         {
-            string mappath = _MakeMapScriptPath(mapassetname);
+            string mappath = MakeMapScriptPath(mapassetname);
             try
             {
                 //Check if files exists already
                 if (!Directory.Exists(mappath))
                     Directory.CreateDirectory(mappath);
 
-                string packageentry = String.Format("{1}/{0}.lua", MapPackageEntryPointName, mappath);
+                string packageentry = String.Format("{1}/{0}.lua", MAP_SCRIPT_ENTRY_POINT, mappath);
                 if (!File.Exists(packageentry))
                 {
                     using (var fstream = File.CreateText(packageentry))
@@ -1241,7 +1241,7 @@ namespace RogueEssence.Script
                         "-------------------------------\n" +
                         "-- Map Callbacks\n" +
                         "-------------------------------",
-                        MapPackageEntryPointName + ".lua", mapassetname, DateTime.Now.ToString());
+                        MAP_SCRIPT_ENTRY_POINT + ".lua", mapassetname, DateTime.Now.ToString());
 
                         //Insert the default map functions and comment header
                         foreach (EMapCallbacks fn in EnumerateCallbackTypes())
