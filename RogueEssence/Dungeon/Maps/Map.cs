@@ -635,6 +635,8 @@ namespace RogueEssence.Dungeon
             //TODO: v0.5: remove this
             if (ScriptEvents == null)
                 ScriptEvents = new Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent>();
+            if (AllyTeams == null)
+                AllyTeams = new List<Team>();
         }
     }
 

@@ -12,6 +12,7 @@ namespace RogueEssence.Dungeon
     public abstract class Team : IEnumerable<Character>, IGroupSpawnable
     {
         public List<Character> Players;
+        public List<Character> Guests;
 
         private List<InvItem> inventory;
 
@@ -19,6 +20,7 @@ namespace RogueEssence.Dungeon
         public Team()
         {
             Players = new List<Character>();
+            Guests = new List<Character>();
             inventory = new List<InvItem>();
         }
         
@@ -145,8 +147,11 @@ namespace RogueEssence.Dungeon
             //TODO: v0.5: remove this
             if (inventory == null)
                 inventory = new List<InvItem>();
+            if (Guests == null)
+                Guests = new List<Character>();
             ReconnectTeamReference();
         }
+
         protected virtual void ReconnectTeamReference()
         {
             //reconnect Players' references

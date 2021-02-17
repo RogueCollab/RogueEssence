@@ -37,7 +37,8 @@ namespace RogueEssence.Dungeon
 
         public List<MapItem> Items;
         public List<Team> MapTeams;
-        
+        public List<Team> AllyTeams;
+
 
         public BaseMap()
         {
@@ -46,6 +47,7 @@ namespace RogueEssence.Dungeon
 
             Items = new List<MapItem>();
             MapTeams = new List<Team>();
+            AllyTeams = new List<Team>();
         }
         
         public void LoadRand(ReRandom rand)
