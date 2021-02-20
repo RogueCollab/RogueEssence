@@ -534,7 +534,7 @@ namespace RogueEssence.Dungeon
                             GameAction.ActionType cmdType = GameAction.ActionType.None;
                             if (input.Direction.IsDiagonal())
                                 cmdType = GameAction.ActionType.Dir;
-                            else if (FrameTick.FromFrames(input.InputTime) >= FrameTick.FromFrames(2) || input.Direction == Dir8.None)
+                            else if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(2) || input.Direction == Dir8.None)
                                 cmdType = GameAction.ActionType.Dir;
 
                             if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(moveRun ? 1 : 5))
@@ -586,7 +586,7 @@ namespace RogueEssence.Dungeon
                                     cmdType = GameAction.ActionType.Move;
                             }
 
-                            if (turn)
+                            if (turn && cmdType == GameAction.ActionType.Move)
                                 cmdType = GameAction.ActionType.Dir;
 
                             if (!diagonal || input.Direction.IsDiagonal())
