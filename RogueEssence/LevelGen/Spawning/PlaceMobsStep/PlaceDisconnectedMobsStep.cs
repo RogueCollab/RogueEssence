@@ -102,10 +102,10 @@ namespace RogueEssence.LevelGen
                         continue;
 
 
-                    if (freeTiles.Count >= newTeam.Players.Count)
+                    if (freeTiles.Count >= newTeam.MemberGuestCount)
                     {
-                        Loc[] locs = new Loc[newTeam.Players.Count];
-                        for (int jj = 0; jj < newTeam.Players.Count; jj++)
+                        Loc[] locs = new Loc[newTeam.MemberGuestCount];
+                        for (int jj = 0; jj < locs.Length; jj++)
                         {
                             int randIndex = map.Rand.Next(freeTiles.Count);
                             locs[jj] = freeTiles[randIndex];

@@ -420,7 +420,7 @@ namespace RogueEssence.Dungeon
                     GameManager.Instance.SE("Menu/Skip");
 
                     CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                    if (turnChar.Team == -1)
+                    if (turnChar.Faction == Faction.Player)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
                 }
                 else if (input.JustPressed(FrameInput.InputType.ItemMenu))
@@ -1014,13 +1014,34 @@ namespace RogueEssence.Dungeon
                         }
                     }
 
-                    for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
+                    foreach (Team team in ZoneManager.Instance.CurrentMap.AllyTeams)
                     {
-                        if (!ActiveTeam.Players[ii].Dead)
+                        foreach (Character character in team)
                         {
-                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(ActiveTeam.Players[ii].CharLoc.X, ActiveTeam.Players[ii].CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                3, (ii == ActiveTeam.LeaderIndex) ? ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1) : 0,
-                                (ii == ActiveTeam.LeaderIndex) ? Color.White : Color.Yellow);
+                            if (!character.Dead)
+                            {
+                                bool seen = false;
+                                foreach (Character player in ActiveTeam.Players)
+                                {
+                                    if (!player.Dead && player.CanSeeCharacter(character))
+                                    {
+                                        seen = true;
+                                        break;
+                                    }
+                                }
+                                if (seen || SeeAll)
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Green);
+                            }
+                        }
+                    }
+
+                    foreach(Character player in ActiveTeam)
+                    {
+                        if (!player.Dead)
+                        {
+                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
+                                3, (player == ActiveTeam.Leader) ? ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1) : 0,
+                                (player == ActiveTeam.Leader) ? Color.White : Color.Yellow);
                         }
                     }
 

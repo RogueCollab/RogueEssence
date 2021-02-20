@@ -215,6 +215,29 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Players[index];
         }
 
+
+        public int GetGuestPartyCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests.Count;
+        }
+
+        /// <summary>
+        /// Return the guests as a LuaTable
+        /// </summary>
+        /// <returns></returns>
+        public LuaTable GetGuestPartyTable()
+        {
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
+            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Guests)
+                addfn.Call(tbl, ent);
+            return tbl;
+        }
+        public Character GetGuestPartyMember(int index)
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests[index];
+        }
+
         public object GetPlayerAssemblyCount()
         {
             return DataManager.Instance.Save.ActiveTeam.Assembly.Count;
@@ -257,7 +280,28 @@ namespace RogueEssence.Script
             }
 
             DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
+        }
 
+        public void AddGuestTeam(Character character)
+        {
+            DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
+        }
+
+        /// <summary>
+        /// Removes the character from the team, placing its item back in the inventory.
+        /// </summary>
+        /// <param name="slot"></param>
+        public void RemoveGuestTeam(int slot)
+        {
+            Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
+
+            if (player.EquippedItem.ID > -1)
+            {
+                InvItem heldItem = player.EquippedItem;
+                player.DequipItem();
+            }
+
+            DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
         }
 
 
@@ -467,6 +511,11 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
         }
 
+        public object GetGuestEquippedItem(int slot)
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
+        }
+
         public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
         {
             for (int i = 0; i < count; ++i)
@@ -493,6 +542,10 @@ namespace RogueEssence.Script
         public void TakePlayerEquippedItem(int slot)
         {
             DataManager.Instance.Save.ActiveTeam.Players[slot].DequipItem();
+        }
+        public void TakeGuestEquippedItem(int slot)
+        {
+            DataManager.Instance.Save.ActiveTeam.Guests[slot].DequipItem();
         }
 
         public int GetPlayerStorageCount()

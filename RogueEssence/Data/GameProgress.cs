@@ -296,6 +296,11 @@ namespace RogueEssence.Data
                     RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, true);
                     ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
+                for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, true);
+                    //no backref for guests
+                }
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
                 {
                     RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, true);
@@ -438,7 +443,7 @@ namespace RogueEssence.Data
         /// </summary>
         protected void ClearDungeonItems()
         {
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam)
             {
                 if (character.EquippedItem.ID > -1)
                 {
@@ -564,7 +569,7 @@ namespace RogueEssence.Data
             }
 
             //remove equips
-            foreach (Character player in save.ActiveTeam.Players)
+            foreach (Character player in save.ActiveTeam)
             {
                 if (player.EquippedItem.ID > -1)
                 {
@@ -674,7 +679,7 @@ namespace RogueEssence.Data
 
             TotalAdventures++;
 
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam)
             {
                 character.Dead = false;
                 character.FullRestore();

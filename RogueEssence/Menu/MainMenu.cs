@@ -38,7 +38,7 @@ namespace RogueEssence.Menu
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
                     CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                    if (turnChar.Team == -1)
+                    if (turnChar.Faction == Faction.Player)
                         mainIndex = turnChar.Char;
                 }
                 MenuManager.Instance.AddMenu(new SkillMenu(mainIndex), false);

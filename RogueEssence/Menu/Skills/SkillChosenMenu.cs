@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                if (turnChar.Team == -1 && turnChar.Char == teamIndex)
+                if (turnChar.Faction == Faction.Player && turnChar.Char == teamIndex)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_USE"), useAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_SWITCH"), switchAction));

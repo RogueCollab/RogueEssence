@@ -95,10 +95,7 @@ namespace RogueEssence.Dungeon
             get
             {
                 CharIndex turnChar = CurrentTurnMap.GetCurrentTurnChar();
-                if (turnChar.Team > -1)
-                    return MapTeams[turnChar.Team].Players[turnChar.Char];
-                else
-                    return ActiveTeam.Players[turnChar.Char];
+                return LookupCharIndex(turnChar);
             }
         }
 
@@ -214,9 +211,18 @@ namespace RogueEssence.Dungeon
                                 return;
                         }
 
+                        foreach (Team team in AllyTeams)
+                        {
+                            foreach (Character character in team)
+                            {
+                                if (!character.Dead && character.CharLoc == testLoc)
+                                    return;
+                            }
+                        }
+
                         foreach (Team team in MapTeams)
                         {
-                            foreach (Character character in team.Players)
+                            foreach (Character character in team)
                             {
                                 if (!character.Dead && character.CharLoc == testLoc)
                                     return;
@@ -263,14 +269,16 @@ namespace RogueEssence.Dungeon
                         }
 
 
-                        if (resultLocs.Count >= newTeam.Players.Count)
+                        if (resultLocs.Count >= newTeam.Players.Count + newTeam.Guests.Count)
                         {
                             for (int jj = 0; jj < newTeam.Players.Count; jj++)
                                 newTeam.Players[jj].CharLoc = resultLocs[jj];
+                            for (int jj = 0; jj < newTeam.Guests.Count; jj++)
+                                newTeam.Guests[jj].CharLoc = resultLocs[newTeam.Players.Count + jj];
 
                             MapTeams.Add(newTeam);
 
-                            foreach (Character member in newTeam.Players)
+                            foreach (Character member in newTeam)
                             {
                                 member.RefreshTraits();
                                 respawns.Add(member);
@@ -283,6 +291,20 @@ namespace RogueEssence.Dungeon
             return respawns;
         }
 
+
+        public Team GetTeam(Faction faction, int teamIndex)
+        {
+            switch (faction)
+            {
+                case Faction.Foe:
+                    return MapTeams[teamIndex];
+                case Faction.Friend:
+                    return AllyTeams[teamIndex];
+                default:
+                    return ActiveTeam;
+            }
+        }
+
         public void EnterMap(ExplorerTeam activeTeam, LocRay8 entryPoint)
         {
             ActiveTeam = activeTeam;
@@ -290,7 +312,7 @@ namespace RogueEssence.Dungeon
             ActiveTeam.Leader.CharLoc = entryPoint.Loc;
             if (entryPoint.Dir != Dir8.None)
                 ActiveTeam.Leader.CharDir = entryPoint.Dir;
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam)
             {
                 //TODO: there may be a problem here; the method for finding a free space searches through all characters already in the map
                 //since the active team has already been added to the map, all characters are counted and can block themselves when reassigning locations
@@ -311,25 +333,36 @@ namespace RogueEssence.Dungeon
 
         public Character LookupCharIndex(CharIndex charIndex)
         {
-            Character character = null;
-            if (charIndex.Team == -1)
-                character = ActiveTeam.Players[charIndex.Char];
+            Team team = GetTeam(charIndex.Faction, charIndex.Team);
+            List<Character> playerList;
+            if (charIndex.Guest)
+                playerList = team.Guests;
             else
-                character = MapTeams[charIndex.Team].Players[charIndex.Char];
-            return character;
+                playerList = team.Players;
+
+            return playerList[charIndex.Char];
         }
 
         public CharIndex GetCharIndex(Character character)
         {
-            int charIndex = ActiveTeam.GetCharIndex(character);
-            if (charIndex > -1)
-                return new CharIndex(-1, charIndex);
+            {
+                CharIndex charIndex = ActiveTeam.GetCharIndex(character);
+                if (charIndex != CharIndex.Invalid)
+                    return new CharIndex(Faction.Player, 0, charIndex.Guest, charIndex.Char);
+            }
+
+            for (int ii = 0; ii < AllyTeams.Count; ii++)
+            {
+                CharIndex charIndex = AllyTeams[ii].GetCharIndex(character);
+                if (charIndex != CharIndex.Invalid)
+                    return new CharIndex(Faction.Friend, ii, charIndex.Guest, charIndex.Char);
+            }
 
             for (int ii = 0; ii < MapTeams.Count; ii++)
             {
-                charIndex = MapTeams[ii].GetCharIndex(character);
-                if (charIndex > -1)
-                    return new CharIndex(ii, charIndex);
+                CharIndex charIndex = MapTeams[ii].GetCharIndex(character);
+                if (charIndex != CharIndex.Invalid)
+                    return new CharIndex(Faction.Foe, ii, charIndex.Guest, charIndex.Char);
             }
 
             return CharIndex.Invalid;
@@ -428,6 +461,12 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character player in ActiveTeam.Players)
                     yield return player;
+            }
+
+            foreach (Team team in AllyTeams)
+            {
+                foreach (Character character in team.Players)
+                    yield return character;
             }
 
             foreach (Team team in MapTeams)

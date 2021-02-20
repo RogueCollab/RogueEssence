@@ -474,14 +474,28 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
+            {
+                Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
+                if (team.Players.Contains(ent))
+                    team.Players.Remove(ent);
+                if (team.Guests.Contains(ent))
+                    team.Guests.Remove(ent);
+
+                if (team.MemberGuestCount == 0)
+                    ZoneManager.Instance.CurrentMap.AllyTeams.RemoveAt(ii);
+            }
+
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
             {
-                if (ZoneManager.Instance.CurrentMap.MapTeams[ii].Players.Contains(ent))
-                {
-                    ZoneManager.Instance.CurrentMap.MapTeams[ii].Players.Remove(ent);
-                    if (ZoneManager.Instance.CurrentMap.MapTeams[ii].Players.Count == 0)
-                        ZoneManager.Instance.CurrentMap.MapTeams.RemoveAt(ii);
-                }
+                Team team = ZoneManager.Instance.CurrentMap.MapTeams[ii];
+                if (team.Players.Contains(ent))
+                    team.Players.Remove(ent);
+                if (team.Guests.Contains(ent))
+                    team.Guests.Remove(ent);
+
+                if (team.MemberGuestCount == 0)
+                    ZoneManager.Instance.CurrentMap.MapTeams.RemoveAt(ii);
             }
         }
 

@@ -1382,6 +1382,37 @@ namespace RogueEssence.Data
             }
         }
 
+        private void saveTeamMemberStatusRefs(BinaryWriter writer, ref int totalStatusRefs, Faction faction, int teamIndex, bool guest, List<Character> playerList)
+        {
+            for (int jj = 0; jj < playerList.Count; jj++)
+            {
+                foreach (StatusEffect status in playerList[jj].IterateStatusEffects())
+                {
+                    if (status.TargetChar != null)
+                    {
+                        CharIndex charIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(status.TargetChar);
+                        writer.Write((int)faction);//team
+                        writer.Write(teamIndex);//team
+                        writer.Write(guest);//guest
+                        writer.Write(jj);//player
+                        writer.Write(status.ID);//status ID
+                        writer.Write((int)charIndex.Faction);//target team index
+                        writer.Write(charIndex.Team);//target team index
+                        writer.Write(charIndex.Char);//target char index
+                        writer.Write(charIndex.Guest);//target char index
+
+                        totalStatusRefs++;
+                    }
+                }
+            }
+        }
+
+        private void saveTeamStatusRefs(BinaryWriter writer, ref int totalStatusRefs, Faction faction, int teamIndex, Team team)
+        {
+            saveTeamMemberStatusRefs(writer, ref totalStatusRefs, faction, teamIndex, false, team.Players);
+            saveTeamMemberStatusRefs(writer, ref totalStatusRefs, faction, teamIndex, true, team.Guests);
+        }
+
         public void SaveGameState(BinaryWriter writer, GameState state)
         {
             Version version = Versioning.GetVersion();
@@ -1399,26 +1430,14 @@ namespace RogueEssence.Data
                 writer.Write(0);
                 //on top level: save status references
                 int totalStatusRefs = 0;
-                for (int ii = -1; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
-                {
-                    Team team = (ii == -1) ? Save.ActiveTeam : ZoneManager.Instance.CurrentMap.MapTeams[ii];
-                    for (int jj = 0; jj < team.Players.Count; jj++)
-                    {
-                        foreach (StatusEffect status in team.Players[jj].IterateStatusEffects())
-                        {
-                            if (status.TargetChar != null)
-                            {
-                                CharIndex charIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(status.TargetChar);
-                                writer.Write(ii);//team
-                                writer.Write(jj);//player
-                                writer.Write(status.ID);//status ID
-                                writer.Write(charIndex.Team);//target team index
-                                writer.Write(charIndex.Char);//target char index
-                                totalStatusRefs++;
-                            }
-                        }
-                    }
-                }
+
+                saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Player, 0, Save.ActiveTeam);
+
+                for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
+                    saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Friend, ii, ZoneManager.Instance.CurrentMap.AllyTeams[ii]);
+                for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
+                    saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Foe, ii, ZoneManager.Instance.CurrentMap.MapTeams[ii]);
+
                 writer.BaseStream.Seek(currentPos, SeekOrigin.Begin);
                 writer.Write(totalStatusRefs);
                 writer.BaseStream.Seek(0, SeekOrigin.End);
@@ -1495,16 +1514,47 @@ namespace RogueEssence.Data
                 int totalStatusRefs = reader.ReadInt32();
                 for (int ii = 0; ii < totalStatusRefs; ii++)
                 {
+                    Faction faction = (Faction)reader.ReadInt32();//faction
                     int teamIndex = reader.ReadInt32();//team
+                    bool guest = reader.ReadBoolean();//guest
                     int player = reader.ReadInt32();//player
                     int statusID = reader.ReadInt32();//status ID
+                    Faction targetFaction = (Faction)reader.ReadInt32();//target faction index
                     int targetTeamIndex = reader.ReadInt32();//target team index
+                    bool targetGuest = reader.ReadBoolean();//target guest status
                     int targetChar = reader.ReadInt32();//target char index
-                    Team team = (teamIndex == -1) ? state.Save.ActiveTeam : state.Zone.CurrentMap.MapTeams[teamIndex];
-                    StatusEffect status = team.Players[player].StatusEffects[statusID];
-                    Team targetTeam = (targetTeamIndex == -1) ? state.Save.ActiveTeam : state.Zone.CurrentMap.MapTeams[targetTeamIndex];
-                    status.TargetChar = targetTeam.Players[targetChar];
-                    status.TargetChar.StatusesTargetingThis.Add(new StatusRef(status.ID, team.Players[player]));
+                    Team team = null;
+                    switch (faction)
+                    {
+                        case Faction.Foe:
+                            team = state.Zone.CurrentMap.MapTeams[teamIndex];
+                            break;
+                        case Faction.Friend:
+                            team = state.Zone.CurrentMap.AllyTeams[teamIndex];
+                            break;
+                        default:
+                            team = state.Save.ActiveTeam;
+                            break;
+                    }
+                    List<Character> playerList = guest ? team.Guests : team.Players;
+                    StatusEffect status = playerList[player].StatusEffects[statusID];
+
+                    Team targetTeam = null;
+                    switch (targetFaction)
+                    {
+                        case Faction.Foe:
+                            targetTeam = state.Zone.CurrentMap.MapTeams[targetTeamIndex];
+                            break;
+                        case Faction.Friend:
+                            targetTeam = state.Zone.CurrentMap.AllyTeams[targetTeamIndex];
+                            break;
+                        default:
+                            targetTeam = state.Save.ActiveTeam;
+                            break;
+                    }
+                    List<Character> targetPlayerList = targetGuest ? targetTeam.Guests : targetTeam.Players;
+                    status.TargetChar = targetPlayerList[targetChar];
+                    status.TargetChar.StatusesTargetingThis.Add(new StatusRef(status.ID, playerList[player]));
                 }
             }
             

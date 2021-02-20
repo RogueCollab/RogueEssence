@@ -2,18 +2,30 @@
 
 namespace RogueEssence.Dungeon
 {
+    public enum Faction
+    {
+        None = -1,
+        Player = 0,
+        Friend = 1,
+        Foe = 2
+    }
+
     [Serializable]
     public struct CharIndex
     {
+        public Faction Faction;
         public int Team;
+        public bool Guest;
         public int Char;
 
-        public CharIndex(int teamIndex, int memberIndex)
+        public CharIndex(Faction faction, int teamIndex, bool guest, int memberIndex)
         {
+            Faction = faction;
             Team = teamIndex;
+            Guest = guest;
             Char = memberIndex;
         }
-        private static readonly CharIndex invalid = new CharIndex(-1, -1);
+        private static readonly CharIndex invalid = new CharIndex(Faction.None, -1, false, -1);
 
         public static CharIndex Invalid { get { return invalid; } }
 
@@ -24,7 +36,7 @@ namespace RogueEssence.Dungeon
 
         public bool Equals(CharIndex other)
         {
-            return (Team == other.Team && Char == other.Char);
+            return (Faction == other.Faction && Team == other.Team && Guest == other.Guest && Char == other.Char);
         }
 
         public override int GetHashCode()

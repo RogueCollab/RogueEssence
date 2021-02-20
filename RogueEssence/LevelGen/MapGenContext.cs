@@ -62,6 +62,7 @@ namespace RogueEssence.LevelGen
         public bool TilesInitialized { get { return Map.Tiles != null; } }
 
         public List<MapItem> Items { get { return Map.Items; } }
+        public List<Team> AllyTeams { get { return Map.AllyTeams; } }
         public List<Team> MapTeams { get { return Map.MapTeams; } }
 
         public PostProcTile[][] PostProcGrid { get; private set; }
@@ -208,9 +209,17 @@ namespace RogueEssence.LevelGen
             if (TileBlocked(loc))
                 return false;
 
+            foreach (Team team in AllyTeams)
+            {
+                foreach (Character character in team)
+                {
+                    if (!character.Dead && character.CharLoc == loc)
+                        return false;
+                }
+            }
             foreach (Team team in MapTeams)
             {
-                foreach (Character character in team.Players)
+                foreach (Character character in team)
                 {
                     if (!character.Dead && character.CharLoc == loc)
                         return false;
@@ -223,10 +232,12 @@ namespace RogueEssence.LevelGen
         {
             if (locs != null)
             {
-                if (locs.Length != itemBatch.Players.Count)
+                if (locs.Length != itemBatch.MemberGuestCount)
                     throw new Exception("Team members not matching locations!");
                 for (int ii = 0; ii < itemBatch.Players.Count; ii++)
                     itemBatch.Players[ii].CharLoc = locs[ii];
+                for (int ii = 0; ii < itemBatch.Guests.Count; ii++)
+                    itemBatch.Guests[ii].CharLoc = locs[itemBatch.Players.Count + ii];
             }
 
             MapTeams.Add(itemBatch);

@@ -7,11 +7,15 @@ namespace RogueEssence.Dungeon
     public class TurnState
     {
         public TurnOrder CurrentOrder;
+
+        /// <summary>
+        /// The list of characters (represented by index) scheduled to take a turn within the current faction.
+        /// </summary>
         public List<CharIndex> TurnToChar;
 
         public TurnState()
         {
-            CurrentOrder = new TurnOrder(0, false, 0);
+            CurrentOrder = new TurnOrder(0, Faction.Player, 0);
             TurnToChar = new List<CharIndex>();
         }
 
@@ -22,8 +26,12 @@ namespace RogueEssence.Dungeon
 
 
 
-        public void UpdateCharRemoval(int removedTeam, int charIndex)
+        public void UpdateCharRemoval(Faction faction, int removedTeam, int charIndex)
         {
+            //The TurnToChar list will always contain only one faction's worth of turns.
+            //which faction can be automatically deduced from CurrentOrder.Faction
+            if (faction != CurrentOrder.Faction)
+                return;
             //all characters on the team with an index higher than the removed char need to be decremented to reflect their new position
             //the removed character (if they're in this turn map, which may not be true) needs to be removed
 
@@ -35,7 +43,7 @@ namespace RogueEssence.Dungeon
                 if (turnChar.Team == removedTeam)
                 {
                     if (turnChar.Char > charIndex)
-                        TurnToChar[ii] = new CharIndex(turnChar.Team, turnChar.Char - 1);
+                        TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, turnChar.Char - 1);
                     else if (turnChar.Char == charIndex)
                     {
                         TurnToChar.RemoveAt(ii);
@@ -48,15 +56,19 @@ namespace RogueEssence.Dungeon
                 CurrentOrder.TurnIndex--;
         }
 
-        public void UpdateTeamRemoval(int removedTeam)
+        public void UpdateTeamRemoval(Faction faction, int removedTeam)
         {
+            //The TurnToChar list will always contain only one faction's worth of turns.
+            //which faction can be automatically deduced from CurrentOrder.Faction
+            if (faction != CurrentOrder.Faction)
+                return;
+
             //all characters with a team index higher than the removed char need to be decremented to reflect their new position
-            //keep in mind: team -1 is never removed
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
                 if (turnChar.Team > removedTeam)
-                    TurnToChar[ii] = new CharIndex(turnChar.Team - 1, turnChar.Char);
+                    TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team - 1, turnChar.Guest, turnChar.Char);
             }
         }
 
@@ -88,21 +100,23 @@ namespace RogueEssence.Dungeon
             return false;
         }
         
-        public void LoadTeamTurnMap(int teamIndex, Team team)
+        public void LoadTeamTurnMap(Faction faction, int teamIndex, Team team)
         {
             //team members start off with their turns organized in-order
             //with the exception being the leader
-            loadTeamMemberTurnMap(teamIndex, team, team.GetLeaderIndex());
+            loadTeamMemberTurnMap(faction, teamIndex, false, team.GetLeaderIndex(), team.Players);
             for (int ii = 0; ii < team.Players.Count; ii++)
             {
                 if (ii != team.GetLeaderIndex())
-                    loadTeamMemberTurnMap(teamIndex, team, ii);
+                    loadTeamMemberTurnMap(faction, teamIndex, false, ii, team.Players);
             }
+            for (int ii = 0; ii < team.Guests.Count; ii++)
+                loadTeamMemberTurnMap(faction, teamIndex, true, ii, team.Guests);
         }
 
-        private void loadTeamMemberTurnMap(int teamIndex, Team team, int charIndex)
+        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, List<Character> playerList)
         {
-            Character character = team.Players[charIndex];
+            Character character = playerList[charIndex];
             if (!character.Dead)
             {
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
@@ -113,40 +127,41 @@ namespace RogueEssence.Dungeon
             }
 
             if (IsEligibleToMove(character))
-                TurnToChar.Add(new CharIndex(teamIndex, charIndex));
+                TurnToChar.Add(new CharIndex(faction, teamIndex, guest, charIndex));
         }
 
 
-        public void AdjustDemotion(int teamIndex, int newSlot)
+        public void AdjustDemotion(Faction faction, int teamIndex, bool guest, int newSlot)
         {
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == teamIndex)
+                if (turnChar.Faction == faction && turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
                     if (turnChar.Char == 0) //team member of char index 0 is now the last member of the team
-                        TurnToChar[ii] = new CharIndex(turnChar.Team, newSlot);
+                        TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, newSlot);
                     else//also decrement everyone else in team
-                        TurnToChar[ii] = new CharIndex(turnChar.Team, turnChar.Char - 1);
+                        TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, turnChar.Char - 1);
                     //Maybe we should update their turn position, since they're last.
                     //however, this code is only called for enemy death, so it's probably okay
                 }
             }
         }
 
-        public void AdjustPromotion(int teamIndex, int newSlot)
+        public void AdjustPromotion(Faction faction, int teamIndex, bool guest, int newSlot)
         {
             //this code is not necessarily safe when dealing with enemy teams,
             //but this only gets called when a player team messes with their team formation,
             //and when it's specifically the leader's turn.
             //so this code will ride on those assumptions
+            //TODO: extend to allow other teams to promote
 
             //first put the current leader where it belongs (in order)
             CharIndex leaderChar = TurnToChar[0];
             for (int ii = TurnToChar.Count - 1; ii > 0; ii--)
             {
                 CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == teamIndex)
+                if (turnChar.Faction == faction && turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
                     if (turnChar.Char < leaderChar.Char)
                     {
@@ -160,7 +175,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == teamIndex)
+                if (turnChar.Faction == faction && turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
                     if (turnChar.Char == newSlot)
                     {

@@ -92,7 +92,10 @@ namespace RogueEssence.Dev.ViewModels
         public void btnDespawn_Click()
         {
             lock (GameBase.lockObj)
+            {
+                ZoneManager.Instance.CurrentMap.AllyTeams.Clear();
                 ZoneManager.Instance.CurrentMap.MapTeams.Clear();
+            }
         }
 
         public void btnSpawnItem_Click()

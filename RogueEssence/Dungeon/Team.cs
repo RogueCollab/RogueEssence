@@ -28,6 +28,8 @@ namespace RogueEssence.Dungeon
 
         public Character Leader { get { return Players[GetLeaderIndex()]; } }
 
+        public int MemberGuestCount { get { return Players.Count + Guests.Count; } }
+
         public IEnumerable<Character> IterateByRank()
         {
             yield return Leader;
@@ -86,6 +88,8 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character chara in Players)
                     chara.RefreshTraits();
+                foreach (Character chara in Guests)
+                    chara.RefreshTraits();
             }
         }
 
@@ -128,17 +132,34 @@ namespace RogueEssence.Dungeon
         }
 
 
-        IEnumerator<Character> IEnumerable<Character>.GetEnumerator() { return Players.GetEnumerator(); }
-        IEnumerator IEnumerable.GetEnumerator() { return Players.GetEnumerator(); }
+        IEnumerator<Character> IEnumerable<Character>.GetEnumerator()
+        {
+            foreach (Character chara in Players)
+                yield return chara;
+            foreach (Character chara in Guests)
+                yield return chara;
+        }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            foreach (Character chara in Players)
+                yield return chara;
+            foreach (Character chara in Guests)
+                yield return chara;
+        }
 
-        public int GetCharIndex(Character character)
+        public CharIndex GetCharIndex(Character character)
         {
             for (int jj = 0; jj < Players.Count; jj++)
             {
                 if (character == Players[jj])
-                    return jj;
+                    return new CharIndex(Faction.None, -1, false, jj);
             }
-            return -1;
+            for (int jj = 0; jj < Guests.Count; jj++)
+            {
+                if (character == Guests[jj])
+                    return new CharIndex(Faction.None, -1, true, jj);
+            }
+            return CharIndex.Invalid;
         }
 
         [OnDeserialized]
@@ -156,6 +177,8 @@ namespace RogueEssence.Dungeon
         {
             //reconnect Players' references
             foreach (Character player in Players)
+                player.MemberTeam = this;
+            foreach (Character player in Guests)
                 player.MemberTeam = this;
         }
     }
