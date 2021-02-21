@@ -556,8 +556,8 @@ namespace RogueEssence.Dungeon
             team.Players.RemoveAt(charIndex.Char);
 
             //update leader
-            if (team is ExplorerTeam && charIndex.Char < team.GetLeaderIndex())
-                ((ExplorerTeam)team).LeaderIndex--;
+            if (charIndex.Char < team.LeaderIndex)
+                team.LeaderIndex--;
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex.Faction, charIndex.Team, charIndex.Char);
 
@@ -638,10 +638,11 @@ namespace RogueEssence.Dungeon
                     result.Success = ActionResult.ResultType.Success;
 
                     //change the leader index
+                    int oldLeader = ActiveTeam.LeaderIndex;
                     ActiveTeam.LeaderIndex = charIndex;
 
                     //re-order map order as well
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(Faction.Player, 0, false, ActiveTeam.LeaderIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, charIndex);
 
                     focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
 
@@ -674,16 +675,18 @@ namespace RogueEssence.Dungeon
                 ActiveTeam.Players.RemoveAt(charIndex);
                 ActiveTeam.Players.Insert(charIndex+1, character);
 
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustSlotSwap(Faction.Player, 0, false, charIndex, charIndex+1);
+
                 //update the leader indices
                 if (ActiveTeam.LeaderIndex == charIndex)
                 {
                     ActiveTeam.LeaderIndex++;
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(Faction.Player, 0, false, ActiveTeam.LeaderIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex, ActiveTeam.LeaderIndex);
                 }
                 else if (ActiveTeam.LeaderIndex == charIndex + 1)
                 {
                     ActiveTeam.LeaderIndex--;
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(Faction.Player, 0, false, ActiveTeam.LeaderIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex + 1, ActiveTeam.LeaderIndex);
                 }
 
 
@@ -701,28 +704,20 @@ namespace RogueEssence.Dungeon
             return -1;
         }
 
-        private void genericReorderDeadPlayerList(Faction faction, int teamIndex, bool guest)
+        private void genericReorderDeadPlayerList(Faction faction, int teamIndex)
         {
             Team team = ZoneManager.Instance.CurrentMap.GetTeam(faction, teamIndex);
-            List<Character> playerList;
-            if (guest)
-                playerList = team.Guests;
-            else
-                playerList = team.Players;
 
-            int liveIndex = getLiveIndex(playerList);
-            if (liveIndex > 0)
+            int liveIndex = getLiveIndex(team.Players);
+
+            if (team.Leader.Dead && liveIndex != -1)
             {
-                for (int ii = 0; ii < liveIndex; ii++)
-                {
-                    //move this character to the end of the team
-                    Character character = playerList[0];
-                    playerList.RemoveAt(0);
-                    playerList.Add(character);
+                //switch leader to this
+                int oldLeader = team.LeaderIndex;
+                team.LeaderIndex = liveIndex;
 
-                    //re-order map order as well
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustDemotion(faction, teamIndex, guest, playerList.Count - 1);
-                }
+                //re-order map order as well
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(faction, teamIndex, false, oldLeader, liveIndex);
             }
         }
 
@@ -735,28 +730,21 @@ namespace RogueEssence.Dungeon
                 if (team.Leader.Dead && liveIndex != -1)
                 {
                     //switch leader to this
-                    ActiveTeam.LeaderIndex = liveIndex;
+                    int oldLeader = team.LeaderIndex;
+                    team.LeaderIndex = liveIndex;
 
                     //re-order map order as well
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(Faction.Player, 0, false, liveIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, liveIndex);
 
                     LogMsg(Text.FormatKey("MSG_LEADER_SWAP", team.Leader.BaseName));
                 }
-
-                genericReorderDeadPlayerList(Faction.Player, 0, true);
             }
 
             for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.AllyTeams.Count; jj++)
-            {
-                genericReorderDeadPlayerList(Faction.Friend, jj, false);
-                genericReorderDeadPlayerList(Faction.Friend, jj, true);
-            }
+                genericReorderDeadPlayerList(Faction.Friend, jj);
 
             for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.MapTeams.Count; jj++)
-            {
-                genericReorderDeadPlayerList(Faction.Foe, jj, false);
-                genericReorderDeadPlayerList(Faction.Foe, jj, true);
-            }
+                genericReorderDeadPlayerList(Faction.Foe, jj);
         }
 
         public void RemoveDeadTeams()

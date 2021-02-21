@@ -14,6 +14,8 @@ namespace RogueEssence.Dungeon
         public List<Character> Players;
         public List<Character> Guests;
 
+        public int LeaderIndex;
+
         private List<InvItem> inventory;
 
 
@@ -24,19 +26,14 @@ namespace RogueEssence.Dungeon
             inventory = new List<InvItem>();
         }
         
-        public abstract int GetLeaderIndex();
-
-        public Character Leader { get { return Players[GetLeaderIndex()]; } }
+        public Character Leader { get { return Players[LeaderIndex]; } }
 
         public int MemberGuestCount { get { return Players.Count + Guests.Count; } }
 
         public IEnumerable<Character> IterateByRank()
         {
             foreach(Character character in IterateMainByRank())
-            {
-                if (character != Leader)
-                    yield return character;
-            }
+                yield return character;
             foreach (Character character in Guests)
                 yield return character;
         }
@@ -191,8 +188,6 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class MonsterTeam : Team
     {
-        public override int GetLeaderIndex() { return 0; }
-
         public bool Unrecruitable;
     }
 
@@ -200,9 +195,6 @@ namespace RogueEssence.Dungeon
     public class ExplorerTeam : Team
     {
         public const int MAX_TEAM_SLOTS = 4;
-
-        public int LeaderIndex;
-        public override int GetLeaderIndex() {return LeaderIndex;}
 
         public int MaxInv;
 

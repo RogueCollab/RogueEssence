@@ -176,7 +176,7 @@ namespace RogueEssence.Script
         /// <returns>Index of the currently player controlled entity in the party.</returns>
         public int GetTeamLeaderIndex()
         {
-            return DataManager.Instance.Save.ActiveTeam.GetLeaderIndex();
+            return DataManager.Instance.Save.ActiveTeam.LeaderIndex;
         }
         public void SetTeamLeaderIndex(int idx)
         {

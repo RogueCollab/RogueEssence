@@ -250,7 +250,7 @@ namespace RogueEssence.Ground
             team.Players.RemoveAt(charIndex);
 
             //update leader
-            if (charIndex < team.GetLeaderIndex())
+            if (charIndex < team.LeaderIndex)
                 team.LeaderIndex--;
 
         }
