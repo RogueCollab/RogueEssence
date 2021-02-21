@@ -9,7 +9,7 @@ using RogueEssence.LevelGen;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class Team : IEnumerable<Character>, IGroupSpawnable
+    public abstract class Team : IGroupSpawnable
     {
         public List<Character> Players;
         public List<Character> Guests;
@@ -32,13 +32,33 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<Character> IterateByRank()
         {
+            foreach(Character character in IterateMainByRank())
+            {
+                if (character != Leader)
+                    yield return character;
+            }
+            foreach (Character character in Guests)
+                yield return character;
+        }
+
+        public IEnumerable<Character> IterateMainByRank()
+        {
             yield return Leader;
-            foreach(Character character in Players)
+            foreach (Character character in Players)
             {
                 if (character != Leader)
                     yield return character;
             }
         }
+
+        public IEnumerable<Character> EnumerateChars()
+        {
+            foreach (Character chara in Players)
+                yield return chara;
+            foreach (Character chara in Guests)
+                yield return chara;
+        }
+
 
         public int GetInvCount()
         {
@@ -131,21 +151,6 @@ namespace RogueEssence.Dungeon
             return invValue;
         }
 
-
-        IEnumerator<Character> IEnumerable<Character>.GetEnumerator()
-        {
-            foreach (Character chara in Players)
-                yield return chara;
-            foreach (Character chara in Guests)
-                yield return chara;
-        }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            foreach (Character chara in Players)
-                yield return chara;
-            foreach (Character chara in Guests)
-                yield return chara;
-        }
 
         public CharIndex GetCharIndex(Character character)
         {

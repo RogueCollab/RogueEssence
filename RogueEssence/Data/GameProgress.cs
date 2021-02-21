@@ -443,7 +443,7 @@ namespace RogueEssence.Data
         /// </summary>
         protected void ClearDungeonItems()
         {
-            foreach (Character character in ActiveTeam)
+            foreach (Character character in ActiveTeam.EnumerateChars())
             {
                 if (character.EquippedItem.ID > -1)
                 {
@@ -569,7 +569,7 @@ namespace RogueEssence.Data
             }
 
             //remove equips
-            foreach (Character player in save.ActiveTeam)
+            foreach (Character player in save.ActiveTeam.EnumerateChars())
             {
                 if (player.EquippedItem.ID > -1)
                 {
@@ -679,7 +679,7 @@ namespace RogueEssence.Data
 
             TotalAdventures++;
 
-            foreach (Character character in ActiveTeam)
+            foreach (Character character in ActiveTeam.EnumerateChars())
             {
                 character.Dead = false;
                 character.FullRestore();

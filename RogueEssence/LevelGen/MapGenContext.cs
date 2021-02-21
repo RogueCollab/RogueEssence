@@ -211,7 +211,7 @@ namespace RogueEssence.LevelGen
 
             foreach (Team team in AllyTeams)
             {
-                foreach (Character character in team)
+                foreach (Character character in team.EnumerateChars())
                 {
                     if (!character.Dead && character.CharLoc == loc)
                         return false;
@@ -219,7 +219,7 @@ namespace RogueEssence.LevelGen
             }
             foreach (Team team in MapTeams)
             {
-                foreach (Character character in team)
+                foreach (Character character in team.EnumerateChars())
                 {
                     if (!character.Dead && character.CharLoc == loc)
                         return false;

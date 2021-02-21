@@ -39,7 +39,7 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnExit());
 
                 //remove statuses
-                foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam)
+                foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.EnumerateChars())
                     character.OnRemove();
 
                 ZoneManager.Instance.CurrentMap.ActiveTeam = null;
@@ -97,7 +97,7 @@ namespace RogueEssence.Dungeon
             foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
 
-            foreach (Character character in ActiveTeam)
+            foreach (Character character in ActiveTeam.EnumerateChars())
                 yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
 
             //process player happenings
@@ -193,7 +193,7 @@ namespace RogueEssence.Dungeon
 
 
             //heal players
-            foreach (Character character in ActiveTeam.IterateByRank())
+            foreach (Character character in ActiveTeam.IterateMainByRank())
             {
                 if (character.Dead)
                 {
@@ -764,16 +764,17 @@ namespace RogueEssence.Dungeon
             for (int ii = ZoneManager.Instance.CurrentMap.AllyTeams.Count - 1; ii >= 0; ii--)
             {
                 bool allDead = true;
-                foreach (Character character in ZoneManager.Instance.CurrentMap.AllyTeams[ii])
+                Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
+                foreach (Character character in team.EnumerateChars())
                 {
                     if (!character.Dead)
                         allDead = false;
                 }
                 if (allDead)
                 {
-                    for (int jj = ZoneManager.Instance.CurrentMap.AllyTeams[ii].Guests.Count - 1; jj >= 0; jj--)
+                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
                         RemoveChar(new CharIndex(Faction.Friend, ii, true, jj));
-                    for (int jj = ZoneManager.Instance.CurrentMap.AllyTeams[ii].Players.Count - 1; jj >= 0; jj--)
+                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
                         RemoveChar(new CharIndex(Faction.Friend, ii, false, jj));
                 }
             }
@@ -781,16 +782,17 @@ namespace RogueEssence.Dungeon
             for (int ii = ZoneManager.Instance.CurrentMap.MapTeams.Count - 1; ii >= 0; ii--)
             {
                 bool allDead = true;
-                foreach (Character character in ZoneManager.Instance.CurrentMap.MapTeams[ii])
+                Team team = ZoneManager.Instance.CurrentMap.MapTeams[ii];
+                foreach (Character character in team.EnumerateChars())
                 {
                     if (!character.Dead)
                         allDead = false;
                 }
                 if (allDead)
                 {
-                    for (int jj = ZoneManager.Instance.CurrentMap.MapTeams[ii].Guests.Count - 1; jj >= 0; jj--)
+                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
                         RemoveChar(new CharIndex(Faction.Foe, ii, true, jj));
-                    for (int jj = ZoneManager.Instance.CurrentMap.MapTeams[ii].Players.Count - 1; jj >= 0; jj--)
+                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
                         RemoveChar(new CharIndex(Faction.Foe, ii, false, jj));
                 }
             }

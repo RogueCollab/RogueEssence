@@ -213,7 +213,7 @@ namespace RogueEssence.Dungeon
 
                         foreach (Team team in AllyTeams)
                         {
-                            foreach (Character character in team)
+                            foreach (Character character in team.EnumerateChars())
                             {
                                 if (!character.Dead && character.CharLoc == testLoc)
                                     return;
@@ -222,7 +222,7 @@ namespace RogueEssence.Dungeon
 
                         foreach (Team team in MapTeams)
                         {
-                            foreach (Character character in team)
+                            foreach (Character character in team.EnumerateChars())
                             {
                                 if (!character.Dead && character.CharLoc == testLoc)
                                     return;
@@ -278,7 +278,7 @@ namespace RogueEssence.Dungeon
 
                             MapTeams.Add(newTeam);
 
-                            foreach (Character member in newTeam)
+                            foreach (Character member in newTeam.EnumerateChars())
                             {
                                 member.RefreshTraits();
                                 respawns.Add(member);
@@ -312,7 +312,7 @@ namespace RogueEssence.Dungeon
             ActiveTeam.Leader.CharLoc = entryPoint.Loc;
             if (entryPoint.Dir != Dir8.None)
                 ActiveTeam.Leader.CharDir = entryPoint.Dir;
-            foreach (Character character in ActiveTeam)
+            foreach (Character character in ActiveTeam.EnumerateChars())
             {
                 //TODO: there may be a problem here; the method for finding a free space searches through all characters already in the map
                 //since the active team has already been added to the map, all characters are counted and can block themselves when reassigning locations

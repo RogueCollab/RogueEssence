@@ -467,7 +467,7 @@ namespace RogueEssence.Dungeon
             if (character == FocusedCharacter && !character.AttackOnly)
             {
                 Loc frontLoc = FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc();
-                foreach(Character member in ActiveTeam)
+                foreach(Character member in ActiveTeam.EnumerateChars())
                 {
                     if (member.CharLoc == frontLoc && !member.Dead)
                     {
