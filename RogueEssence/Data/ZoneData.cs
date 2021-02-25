@@ -38,6 +38,7 @@ namespace RogueEssence.Data
 
         public bool NoEXP { get; set; }
         public int Level { get; set; }
+        public bool LevelCap { get; set; }
         public bool TeamRestrict { get; set; }
         public int TeamSize { get; set; }
         public bool MoneyRestrict { get; set; }
@@ -54,7 +55,7 @@ namespace RogueEssence.Data
                 if (structure.IsRelevant)
                     totalFloors += structure.FloorCount;
             }
-            return new ZoneEntrySummary(Name, Released, Comment, NoEXP, Level, TeamRestrict, TeamSize, MoneyRestrict, BagRestrict, BagSize, Rescues, totalFloors, Rogue);
+            return new ZoneEntrySummary(Name, Released, Comment, NoEXP, Level, LevelCap, TeamRestrict, TeamSize, MoneyRestrict, BagRestrict, BagSize, Rescues, totalFloors, Rogue);
         }
 
 
@@ -102,6 +103,7 @@ namespace RogueEssence.Data
 
             zone.NoEXP = NoEXP;
             zone.Level = Level;
+            zone.LevelCap = LevelCap;
             zone.TeamRestrict = TeamRestrict;
             zone.TeamSize = TeamSize;
             zone.MoneyRestrict = MoneyRestrict;
@@ -123,6 +125,7 @@ namespace RogueEssence.Data
     {
         public bool NoEXP;
         public int Level;
+        public bool LevelCap;
         public bool TeamRestrict;
         public int TeamSize;
         public bool MoneyRestrict;
@@ -137,11 +140,12 @@ namespace RogueEssence.Data
 
         }
 
-        public ZoneEntrySummary(LocalText name, bool released, string comment, bool noEXP, int level, bool teamRestrict, int teamSize, bool moneyRestrict, int bagRestrict, int bagSize, int rescues, int countedFloors, RogueStatus rogue)
+        public ZoneEntrySummary(LocalText name, bool released, string comment, bool noEXP, int level, bool levelCap, bool teamRestrict, int teamSize, bool moneyRestrict, int bagRestrict, int bagSize, int rescues, int countedFloors, RogueStatus rogue)
             : base(name, released, comment)
         {
             NoEXP = noEXP;
             Level = level;
+            LevelCap = levelCap;
             TeamRestrict = teamRestrict;
             TeamSize = teamSize;
             MoneyRestrict = moneyRestrict;

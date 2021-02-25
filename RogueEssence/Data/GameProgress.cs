@@ -288,7 +288,7 @@ namespace RogueEssence.Data
 
         public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool silent)
         {
-            if (zone.Level > -1)
+            if (zone.LevelCap)
             {
                 StartLevel = zone.Level;
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)

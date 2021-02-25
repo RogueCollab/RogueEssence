@@ -44,7 +44,12 @@ namespace RogueEssence.Menu
                 if (zoneEntry.NoEXP)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_EXP"), new Loc()));
                 if (zoneEntry.Level > -1)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), new Loc()));
+                {
+                    if (zoneEntry.LevelCap)
+                        rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), new Loc()));
+                    else
+                        rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), new Loc()));
+                }
                 if (zoneEntry.TeamSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_TEAM", zoneEntry.TeamSize), new Loc(),
                         (DataManager.Instance.Save.ActiveTeam.Players.Count > zoneEntry.TeamSize) ? Color.Red : Color.White));
