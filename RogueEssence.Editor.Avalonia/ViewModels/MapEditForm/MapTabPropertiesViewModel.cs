@@ -212,6 +212,7 @@ namespace RogueEssence.Dev.ViewModels
         public void TextureMap_Changed()
         {
             ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
+            ZoneManager.Instance.CurrentMap.CalculateAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
         }
 
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)

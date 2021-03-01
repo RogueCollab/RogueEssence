@@ -12,6 +12,8 @@ namespace RogueEssence.Dev
 
         public static object CreateMinimalInstance(Type type)
         {
+            if (type.IsValueType)
+                return Activator.CreateInstance(type);
             ConstructorInfo[] ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
             if (ctors.Length > 0)
             {

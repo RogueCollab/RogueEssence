@@ -12,11 +12,13 @@ namespace RogueEssence.Dungeon
     {
         public List<TileLayer> Layers;
 
+        [Dev.DataType(0, DataManager.DataType.AutoTile, true)]
         public int AutoTileset { get; private set; }
-        
+
         /// <summary>
         /// Tilesets that are considered this tileset for texture computing purposes.  Only used for Autotiles
         /// </summary>
+        [Dev.DataType(1, DataManager.DataType.AutoTile, false)]
         public HashSet<int> Associates { get; private set; }
         public int NeighborCode;
 
