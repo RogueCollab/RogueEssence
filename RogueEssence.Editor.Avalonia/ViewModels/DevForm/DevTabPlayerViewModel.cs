@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -31,8 +32,16 @@ namespace RogueEssence.Dev.ViewModels
                     return;
                 lock (GameBase.lockObj)
                 {
-                    if (GameManager.Instance.IsInGame())
-                        DungeonScene.Instance.FocusedCharacter.Level = level;
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    {
+                        if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                            DungeonScene.Instance.FocusedCharacter.Level = level;
+                    }
+                    else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                    {
+                        if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0)
+                            DataManager.Instance.Save.ActiveTeam.Leader.Level = level;
+                    }
                 }
             }
         }
@@ -41,8 +50,16 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 int upd = 0;
-                if (GameManager.Instance.IsInGame())
-                    upd = DungeonScene.Instance.FocusedCharacter.Level;
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                        upd = DungeonScene.Instance.FocusedCharacter.Level;
+                }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0)
+                        upd = DataManager.Instance.Save.ActiveTeam.Leader.Level;
+                }
 
                 Level = upd;
             }
@@ -114,19 +131,39 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    Character character = DungeonScene.Instance.FocusedCharacter;
-                    BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
+                    if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                    {
+                        Character character = DungeonScene.Instance.FocusedCharacter;
+                        BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                    while (character.BaseSkills[0].SkillNum > -1)
-                        character.DeleteSkill(0);
-                    List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                    foreach (int skill in final_skills)
-                        character.LearnSkill(skill, true);
+                        while (character.BaseSkills[0].SkillNum > -1)
+                            character.DeleteSkill(0);
+                        List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
+                        foreach (int skill in final_skills)
+                            character.LearnSkill(skill, true);
 
-                    DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
+                        DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
+                    }
                 }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0)
+                    {
+                        Character character = DataManager.Instance.Save.ActiveTeam.Leader;
+                        BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
+
+                        while (character.BaseSkills[0].SkillNum > -1)
+                            character.DeleteSkill(0);
+                        List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
+                        foreach (int skill in final_skills)
+                            character.LearnSkill(skill, true);
+                        GameManager.Instance.SE("Menu/Sort");
+                    }
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
 
@@ -176,6 +213,23 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (GameManager.Instance.IsInGame())
                     DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+
+
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                        DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0 && GroundScene.Instance.FocusedCharacter != null)
+                    {
+                        Character character = DataManager.Instance.Save.ActiveTeam.Leader;
+                        character.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                        GroundChar leaderChar = GroundScene.Instance.FocusedCharacter;
+                        ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader, leaderChar.MapLoc, leaderChar.CharDir, "PLAYER"));
+                    }
+                }
             }
         }
 
