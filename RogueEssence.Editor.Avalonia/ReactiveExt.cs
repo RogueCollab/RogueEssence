@@ -14,7 +14,7 @@ namespace RogueEssence.Dev
             this TObj reactiveObject,
             ref TRet backingField,
             TRet newValue,
-            [CallerMemberName] string? propertyName = null)
+            [CallerMemberName] string propertyName = null)
             where TObj : IReactiveObject
         {
 
@@ -30,7 +30,7 @@ namespace RogueEssence.Dev
             this TObj reactiveObject,
             ref TRet backingField,
             TRet newValue,
-            [CallerMemberName] string? propertyName = null)
+            [CallerMemberName] string propertyName = null)
             where TObj : IReactiveObject
         {
             if (propertyName == null)

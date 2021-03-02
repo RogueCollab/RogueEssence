@@ -78,8 +78,7 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case NotifyCollectionChangedAction.Move:
                     throw new NotImplementedException();
-                    break;
-
+                    //break;
                 case NotifyCollectionChangedAction.Reset:
                     _models.Clear();
                     foreach (var m in e.NewItems.OfType<TModel>())
