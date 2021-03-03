@@ -767,6 +767,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> CheckLevelSkills(Character player, int oldLevel)
         {
+            if (!ActiveTeam.Players.Contains(player))
+                yield break;
+            
             BaseMonsterForm entry = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
             for (int ii = oldLevel + 1; ii <= player.Level; ii++)
             {
