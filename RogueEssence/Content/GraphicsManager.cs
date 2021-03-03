@@ -85,8 +85,8 @@ namespace RogueEssence.Content
             }
         }
 
-        public const string BASE_PATH = PathMod.ASSET_PATH + "Base/";
-        public const string FONT_PATTERN = PathMod.ASSET_PATH + "Font/{0}.font";
+        public static string BASE_PATH { get => PathMod.ASSET_PATH + "Base/"; }
+        public static string FONT_PATTERN { get => PathMod.ASSET_PATH + "Font/{0}.font"; }
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
@@ -253,82 +253,80 @@ namespace RogueEssence.Content
         {
             string path = BASE_PATH + "GFXParams.xml";
             //try to load from file
-            if (File.Exists(path))
+
+            try
             {
-                try
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(path);
+
+                XmlNode tileSize = xmldoc.DocumentElement.SelectSingleNode("TileSize");
+                DungeonTexSize = Int32.Parse(tileSize.InnerText) / TEX_SIZE;
+
+                XmlNode portraitSize = xmldoc.DocumentElement.SelectSingleNode("PortraitSize");
+                PortraitSize = Int32.Parse(portraitSize.InnerText);
+
+                XmlNode screenWidth = xmldoc.DocumentElement.SelectSingleNode("ScreenWidth");
+                ScreenWidth = Int32.Parse(screenWidth.InnerText);
+
+                XmlNode screenHeight = xmldoc.DocumentElement.SelectSingleNode("ScreenHeight");
+                ScreenHeight = Int32.Parse(screenHeight.InnerText);
+
+                XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
+                MoneySprite = moneySprite.InnerText;
+
+                Emotions = new List<string>();
+                XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
+                foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
+                    Emotions.Add(emotion.InnerText);
+
+                XmlNode sosEmotion = xmldoc.DocumentElement.SelectSingleNode("SOSEmotion");
+                SOSEmotion = Int32.Parse(sosEmotion.InnerText);
+
+                XmlNode aokEmotion = xmldoc.DocumentElement.SelectSingleNode("AOKEmotion");
+                AOKEmotion = Int32.Parse(aokEmotion.InnerText);
+
+                Actions = new List<CharFrameType>();
+                List<List<string>> fallbacks = new List<List<string>>();
+                XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
+                foreach (XmlNode action in actions.SelectNodes("Action"))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    XmlNode tileSize = xmldoc.DocumentElement.SelectSingleNode("TileSize");
-                    DungeonTexSize = Int32.Parse(tileSize.InnerText) / TEX_SIZE;
-
-                    XmlNode portraitSize = xmldoc.DocumentElement.SelectSingleNode("PortraitSize");
-                    PortraitSize = Int32.Parse(portraitSize.InnerText);
-
-                    XmlNode screenWidth = xmldoc.DocumentElement.SelectSingleNode("ScreenWidth");
-                    ScreenWidth = Int32.Parse(screenWidth.InnerText);
-
-                    XmlNode screenHeight = xmldoc.DocumentElement.SelectSingleNode("ScreenHeight");
-                    ScreenHeight = Int32.Parse(screenHeight.InnerText);
-
-                    XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
-                    MoneySprite = moneySprite.InnerText;
-
-                    Emotions = new List<string>();
-                    XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
-                    foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
-                        Emotions.Add(emotion.InnerText);
-
-                    XmlNode sosEmotion = xmldoc.DocumentElement.SelectSingleNode("SOSEmotion");
-                    SOSEmotion = Int32.Parse(sosEmotion.InnerText);
-
-                    XmlNode aokEmotion = xmldoc.DocumentElement.SelectSingleNode("AOKEmotion");
-                    AOKEmotion = Int32.Parse(aokEmotion.InnerText);
-
-                    Actions = new List<CharFrameType>();
-                    List<List<string>> fallbacks = new List<List<string>>();
-                    XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
-                    foreach (XmlNode action in actions.SelectNodes("Action"))
-                    {
-                        XmlNode actionName = action.SelectSingleNode("Name");
-                        XmlNode actionDash = action.SelectSingleNode("Dash");
-                        Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
-                        List<string> actionFallbacks = new List<string>();
-                        foreach (XmlNode fallback in action.SelectNodes("Fallback"))
-                            actionFallbacks.Add(fallback.InnerText);
-                        fallbacks.Add(actionFallbacks);
-                    }
-                    for (int ii = 0; ii < fallbacks.Count; ii++)
-                    {
-                        foreach (string fallback in fallbacks[ii])
-                        {
-                            int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
-                            Actions[ii].Fallbacks.Add(fallbackIndex);
-                        }
-                    }
-
-                    XmlNode hurtAction = xmldoc.DocumentElement.SelectSingleNode("HurtAction");
-                    HurtAction = Int32.Parse(hurtAction.InnerText);
-
-                    XmlNode walkAction = xmldoc.DocumentElement.SelectSingleNode("WalkAction");
-                    WalkAction = Int32.Parse(walkAction.InnerText);
-
-                    XmlNode idleAction = xmldoc.DocumentElement.SelectSingleNode("IdleAction");
-                    IdleAction = Int32.Parse(idleAction.InnerText);
-
-                    XmlNode sleepAction = xmldoc.DocumentElement.SelectSingleNode("SleepAction");
-                    SleepAction = Int32.Parse(sleepAction.InnerText);
-
-                    XmlNode chargeAction = xmldoc.DocumentElement.SelectSingleNode("ChargeAction");
-                    ChargeAction = Int32.Parse(chargeAction.InnerText);
-
-                    return;
+                    XmlNode actionName = action.SelectSingleNode("Name");
+                    XmlNode actionDash = action.SelectSingleNode("Dash");
+                    Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
+                    List<string> actionFallbacks = new List<string>();
+                    foreach (XmlNode fallback in action.SelectNodes("Fallback"))
+                        actionFallbacks.Add(fallback.InnerText);
+                    fallbacks.Add(actionFallbacks);
                 }
-                catch (Exception ex)
+                for (int ii = 0; ii < fallbacks.Count; ii++)
                 {
-                    DiagManager.Instance.LogError(ex);
+                    foreach (string fallback in fallbacks[ii])
+                    {
+                        int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                        Actions[ii].Fallbacks.Add(fallbackIndex);
+                    }
                 }
+
+                XmlNode hurtAction = xmldoc.DocumentElement.SelectSingleNode("HurtAction");
+                HurtAction = Int32.Parse(hurtAction.InnerText);
+
+                XmlNode walkAction = xmldoc.DocumentElement.SelectSingleNode("WalkAction");
+                WalkAction = Int32.Parse(walkAction.InnerText);
+
+                XmlNode idleAction = xmldoc.DocumentElement.SelectSingleNode("IdleAction");
+                IdleAction = Int32.Parse(idleAction.InnerText);
+
+                XmlNode sleepAction = xmldoc.DocumentElement.SelectSingleNode("SleepAction");
+                SleepAction = Int32.Parse(sleepAction.InnerText);
+
+                XmlNode chargeAction = xmldoc.DocumentElement.SelectSingleNode("ChargeAction");
+                ChargeAction = Int32.Parse(chargeAction.InnerText);
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
             }
         }
 

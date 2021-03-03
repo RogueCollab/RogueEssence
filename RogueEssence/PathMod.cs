@@ -11,15 +11,9 @@ namespace RogueEssence
 {
     public static class PathMod
     {
-#if !DEBUG && !PROFILING
-        public const string ASSET_PATH = "";
-        public const string DEV_PATH = "DevContent/";
-        public const string TEMP_PATH = "temp/";
-#else
-        public const string ASSET_PATH = "../../../../Asset/";
-        public const string DEV_PATH = "../../../../RawAsset/";
-        public const string TEMP_PATH = "../../../../temp/";
-#endif
+        public static string ASSET_PATH = "";
+        public static string DEV_PATH = "RawAsset/";
+
         public const string MODS_PATH = "MODS/";
 
         public static string Mod = "";
