@@ -881,12 +881,12 @@ namespace RogueEssence.Content
 
         public static DirSheet GetIcon(string num)
         {
-            return getDirSheetCache(num.ToString(), ICON_PATTERN, iconCache);
+            return getDirSheetCache(num, ICON_PATTERN, iconCache);
         }
 
         public static DirSheet GetItem(string num)
         {
-            return getDirSheetCache(num.ToString(), ITEM_PATTERN, itemCache);
+            return getDirSheetCache(num, ITEM_PATTERN, itemCache);
         }
 
         public static DirSheet GetBackground(string num)
