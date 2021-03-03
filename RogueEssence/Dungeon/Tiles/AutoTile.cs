@@ -4,6 +4,7 @@ using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {

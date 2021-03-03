@@ -18,10 +18,10 @@ namespace RogueEssence.Dev.ViewModels
     {
         public LayerBoxViewModel()
         {
-            Layers = new WrappedObservableCollection<T>();
+            Layers = new ReversedObservableCollection<T>();
         }
 
-        public WrappedObservableCollection<T> Layers { get; }
+        public ReversedObservableCollection<T> Layers { get; }
         public event Action SelectedLayerChanged;
 
         private int chosenLayer;

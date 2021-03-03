@@ -11,7 +11,7 @@ namespace RogueEssence.Dev.ViewModels
     /// </summary>
     /// <typeparam name="TViewModel">Type of ViewModels in collection</typeparam>
     /// <typeparam name="TModel">Type of models in underlying collection</typeparam>
-    public class WrappedObservableCollection<TModel> : ObservableCollection<TModel>
+    public class ReversedObservableCollection<TModel> : ObservableCollection<TModel>
 
     {
         private IList<TModel> _models;
@@ -23,7 +23,7 @@ namespace RogueEssence.Dev.ViewModels
         /// Determines whether the collection of ViewModels should be
         /// fetched from the model collection on construction
         /// </param>
-        public WrappedObservableCollection()
+        public ReversedObservableCollection()
         {
             // Register change handling for synchronization
             // from ViewModels to Models
@@ -38,7 +38,7 @@ namespace RogueEssence.Dev.ViewModels
             _synchDisabled = true;
             Clear();
             foreach (TModel model in models)
-                Add(model);
+                Insert(0, model);
             _synchDisabled = false;
         }
 
@@ -60,7 +60,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case NotifyCollectionChangedAction.Add:
                     foreach (var m in e.NewItems.OfType<TModel>())
-                        _models.Insert(e.NewStartingIndex, m);
+                        _models.Insert(_models.Count - e.NewStartingIndex, m);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -72,7 +72,7 @@ namespace RogueEssence.Dev.ViewModels
                     int curIndex = e.NewStartingIndex;
                     foreach (var m in e.NewItems.OfType<TModel>())
                     {
-                        _models[curIndex] = m;
+                        _models[_models.Count-curIndex-1] = m;
                         curIndex++;
                     }
                     break;
@@ -82,7 +82,7 @@ namespace RogueEssence.Dev.ViewModels
                 case NotifyCollectionChangedAction.Reset:
                     _models.Clear();
                     foreach (var m in e.NewItems.OfType<TModel>())
-                        _models.Add(m);
+                        _models.Insert(0, m);
                     break;
             }
         }
