@@ -546,18 +546,22 @@ namespace RogueEssence.Dungeon
 
             Team team = ZoneManager.Instance.CurrentMap.GetTeam(charIndex.Faction, charIndex.Team);
 
-            Character character;
-            if (charIndex.Guest)
-                character = team.Guests[charIndex.Char];
-            else
-                character = team.Players[charIndex.Char];
+            List<Character> playerList = (charIndex.Guest) ? team.Guests : team.Players;
+            Character character = playerList[charIndex.Char];
 
             character.OnRemove();
             team.Players.RemoveAt(charIndex.Char);
 
             //update leader
-            if (charIndex.Char < team.LeaderIndex)
-                team.LeaderIndex--;
+            if (!charIndex.Guest)
+            {
+                if (charIndex.Char < team.LeaderIndex)
+                    team.LeaderIndex--;
+                if (team.LeaderIndex >= playerList.Count)
+                    team.LeaderIndex = playerList.Count - 1;
+                if (team.LeaderIndex < 0)
+                    team.LeaderIndex = 0;
+            }
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex.Faction, charIndex.Team, charIndex.Char);
 
@@ -710,7 +714,7 @@ namespace RogueEssence.Dungeon
 
             int liveIndex = getLiveIndex(team.Players);
 
-            if (team.Leader.Dead && liveIndex != -1)
+            if (liveIndex != -1 && team.Leader.Dead)
             {
                 //switch leader to this
                 int oldLeader = team.LeaderIndex;
@@ -727,7 +731,7 @@ namespace RogueEssence.Dungeon
                 Team team = ZoneManager.Instance.CurrentMap.ActiveTeam;
                 int liveIndex = getLiveIndex(team.Players);
 
-                if (team.Leader.Dead && liveIndex != -1)
+                if (liveIndex != -1 && team.Leader.Dead)
                 {
                     //switch leader to this
                     int oldLeader = team.LeaderIndex;
