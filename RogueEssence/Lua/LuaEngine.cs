@@ -756,9 +756,9 @@ namespace RogueEssence.Script
             m_scriptxml.SetupLuaFunctions(this);
 
             //If script vars aren't initialized in the save, do it now!
-            DiagManager.Instance.LogInfo("[SE]:Checking if we need to initialize the script variables saved state..");
-            if (DataManager.Instance != null && DataManager.Instance.Save != null && String.IsNullOrEmpty(DataManager.Instance.Save.ScriptVars))
-                SaveData(DataManager.Instance.Save);
+            //DiagManager.Instance.LogInfo("[SE]:Checking if we need to initialize the script variables saved state..");
+            //if (DataManager.Instance != null && DataManager.Instance.Save != null && String.IsNullOrEmpty(DataManager.Instance.Save.ScriptVars))
+            //    SaveData(DataManager.Instance.Save);
 
             //Run main script
             DiagManager.Instance.LogInfo(String.Format("[SE]:Running {0} script..", MainScripts[EMainScripts.MAIN]));
@@ -793,6 +793,10 @@ namespace RogueEssence.Script
                     ",
                     loaded.ScriptVars, SCRIPT_VARS_NAME));
             }
+            if (loaded != null)
+            {
+                loaded.ActiveTeam.LoadLua();
+            }
             //Tell the script we've just resumed a save!
             m_scrsvc.Publish("LoadSavedData");
         }
@@ -817,6 +821,7 @@ namespace RogueEssence.Script
             }
             else
                 DiagManager.Instance.LogInfo("LuaEngine.SaveData(): Script var saving failed!");
+            save.ActiveTeam.SaveLua();
         }
 
         /// <summary>
@@ -826,9 +831,9 @@ namespace RogueEssence.Script
         /// <returns>A string representation of the lua table.Returns null if failed!</returns>
         public string SerializeLuaTable(LuaTable tbl)
         {
-            object result = CallLuaFunctions("Serpent.dump", tbl).First();
-            if (result != null)
-                return result as string;
+            object[] result = CallLuaFunctions("Serpent.dump", tbl);
+            if (result != null && result[0] != null)
+                return result[0] as string;
             else
                 return null;
         }
@@ -912,17 +917,18 @@ namespace RogueEssence.Script
         /// <returns>Returns the array of objects that the lua interpreter returns after executing the method.</returns>
         public object[] CallLuaMemberFun(string objname, string funname, params object[] args)
         {
-            string fpath = objname + "." + funname;
-            LuaFunction fun = LuaState.GetFunction(fpath);
-            if (fun == null)
-            {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaMemberFun(): Tried to call undefined method " + fpath + "!");
-                return null;
-            }
-            List<object> ar = (args == null) ? new List<object>() : new List<object>(args);
-            ar.Insert(0, LuaState[objname]);
             try
             {
+                string fpath = objname + "." + funname;
+                LuaFunction fun = LuaState.GetFunction(fpath);
+                if (fun == null)
+                {
+                    DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaMemberFun(): Tried to call undefined method " + fpath + "!");
+                    return null;
+                }
+                List<object> ar = (args == null) ? new List<object>() : new List<object>(args);
+                ar.Insert(0, LuaState[objname]);
+
                 return m_UnpackParamsAndRun.Call(fun, ar.ToArray()); //fun.Call(ar.ToArray()); //We need to pass the "self" parameter first
             }
             catch (Exception e)
@@ -941,15 +947,16 @@ namespace RogueEssence.Script
         /// <returns>Returns the array of objects that the lua interpreter returns after executing the method.</returns>
         public object[] CallLuaFunctions(string path, params object[] args)
         {
-            var scriptFunc = LuaState[path] as LuaFunction;
-            if (scriptFunc == null)
-            {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaFunctions(): Tried to call undefined function " + path + "!");
-                return null;
-            }
 
             try
             {
+                var scriptFunc = LuaState[path] as LuaFunction;
+                if (scriptFunc == null)
+                {
+                    DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaFunctions(): Tried to call undefined function " + path + "!");
+                    return null;
+                }
+
                 return m_UnpackParamsAndRun.Call(scriptFunc, args);
                 //return scriptFunc.Call(args);
             }

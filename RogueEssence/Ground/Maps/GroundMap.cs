@@ -874,6 +874,31 @@ namespace RogueEssence.Ground
                 if (ent != null)
                     ent.LuaEngineReload();
             }
+            LoadLua();
+        }
+
+        public void SaveLua()
+        {
+            foreach (EntityLayer layer in Entities)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundChar v in layer.IterateCharacters())
+                        v.Data.SaveLua();
+                }
+            }
+        }
+
+        public void LoadLua()
+        {
+            foreach (EntityLayer layer in Entities)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundChar v in layer.IterateCharacters())
+                        v.Data.LoadLua();
+                }
+            }
         }
 
         public void RemoveMapScriptEvent(LuaEngine.EMapCallbacks ev)

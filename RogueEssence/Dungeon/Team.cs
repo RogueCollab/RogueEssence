@@ -18,7 +18,6 @@ namespace RogueEssence.Dungeon
 
         private List<InvItem> inventory;
 
-
         public Team()
         {
             Players = new List<Character>();
@@ -182,6 +181,22 @@ namespace RogueEssence.Dungeon
                 player.MemberTeam = this;
             foreach (Character player in Guests)
                 player.MemberTeam = this;
+        }
+
+        public virtual void SaveLua()
+        {
+            foreach (Character player in Players)
+                player.SaveLua();
+            foreach (Character player in Guests)
+                player.SaveLua();
+        }
+
+        public virtual void LoadLua()
+        {
+            foreach (Character player in Players)
+                player.LoadLua();
+            foreach (Character player in Guests)
+                player.LoadLua();
         }
     }
 
@@ -391,6 +406,20 @@ namespace RogueEssence.Dungeon
             base.ReconnectTeamReference();
             foreach (Character player in Assembly)
                 player.MemberTeam = this;
+        }
+
+        public override void SaveLua()
+        {
+            base.SaveLua();
+            foreach (Character player in Assembly)
+                player.SaveLua();
+        }
+
+        public override void LoadLua()
+        {
+            base.LoadLua();
+            foreach (Character player in Assembly)
+                player.LoadLua();
         }
     }
 

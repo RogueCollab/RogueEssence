@@ -175,8 +175,7 @@ namespace RogueEssence.Dungeon
                 BaseIntrinsics.Add(newForm.Intrinsic3);
         }
 
-        [OnSerializing]
-        internal void OnSerializing(StreamingContext context)
+        public void SaveLua()
         {
             string serialized = Script.LuaEngine.Instance.SerializeLuaTable(LuaDataTable);
             if (serialized != null)
@@ -185,8 +184,7 @@ namespace RogueEssence.Dungeon
                 DiagManager.Instance.LogInfo("CharData.OnSerializing(): Couldn't serialize lua data table!!");
         }
 
-        [OnDeserialized]
-        internal void OnDeserialized(StreamingContext context)
+        public void LoadLua()
         {
             if (ScriptVars == null)
             {

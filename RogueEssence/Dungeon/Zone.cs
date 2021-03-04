@@ -85,8 +85,24 @@ namespace RogueEssence.Dungeon
         {
             foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
                 scriptEvent.LuaEngineReload();
+            if (CurrentMap != null)
+                CurrentMap.LuaEngineReload();
             if (CurrentGround != null)
                 CurrentGround.LuaEngineReload();
+        }
+        public void SaveLua()
+        {
+            if (CurrentMap != null)
+                CurrentMap.SaveLua();
+            if (CurrentGround != null)
+                CurrentGround.SaveLua();
+        }
+        public void LoadLua()
+        {
+            if (CurrentMap != null)
+                CurrentMap.LoadLua();
+            if (CurrentGround != null)
+                CurrentGround.LoadLua();
         }
 
         private void exitMap()

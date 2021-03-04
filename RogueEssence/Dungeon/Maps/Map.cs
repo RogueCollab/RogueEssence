@@ -651,6 +651,26 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(this));
         }
 
+        public void LuaEngineReload()
+        {
+            LoadLua();
+        }
+
+        public void LoadLua()
+        {
+            foreach (Team team in AllyTeams)
+                team.LoadLua();
+            foreach (Team team in MapTeams)
+                team.LoadLua();
+        }
+        public void SaveLua()
+        {
+            foreach (Team team in AllyTeams)
+                team.SaveLua();
+            foreach (Team team in MapTeams)
+                team.SaveLua();
+        }
+
         /// <summary>
         /// Call this so the map unregisters its events and delegates.
         ///
