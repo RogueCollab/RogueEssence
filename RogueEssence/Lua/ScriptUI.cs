@@ -354,10 +354,10 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
-                m_curchoice = new SellMenu(0, (List<Dungeon.InvSlot> chosenGoods) =>
+                m_curchoice = new SellMenu(0, (List<InvSlot> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
-                    foreach (Dungeon.InvSlot chosenGood in chosenGoods)
+                    foreach (InvSlot chosenGood in chosenGoods)
                         addfn.Call(m_choiceresult, chosenGood);
                 });
             }
@@ -367,7 +367,82 @@ namespace RogueEssence.Script
             }
         }
 
+        public void StorageMenu()
+        {
+            try
+            {
+                m_choiceresult = null;
+                m_curchoice = new DepositMenu(0);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.StorageMenu(): Encountered exception:\n{0}", e.Message));
+            }
+        }
 
+        public void WithdrawMenu()
+        {
+            try
+            {
+                m_choiceresult = null;
+                m_curchoice = new WithdrawMenu(0, true, onChooseSlot);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.WithdrawMenu(): Encountered exception:\n{0}", e.Message));
+            }
+        }
+
+        private void onChooseSlot(List<int> slots)
+        {
+            //store item
+            List<InvItem> items = DataManager.Instance.Save.ActiveTeam.TakeItems(slots);
+
+            foreach (InvItem item in items)
+            {
+                ItemData entry = DataManager.Instance.GetItem(item.ID);
+                int existingStack = -1;
+                if (entry.MaxStack > 1)
+                {
+                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
+                    {
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
+                        {
+                            existingStack = jj;
+                            break;
+                        }
+                    }
+                }
+                if (existingStack > -1)
+                {
+                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).HiddenValue += item.HiddenValue;
+                    DataManager.Instance.Save.ActiveTeam.UpdateInv(DataManager.Instance.Save.ActiveTeam.GetInv(existingStack), DataManager.Instance.Save.ActiveTeam.GetInv(existingStack));
+                }
+                else
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+            }
+        }
+
+
+        public void BankMenu()
+        {
+            try
+            {
+                m_choiceresult = null;
+                m_curchoice = new BankMenu(DataManager.Instance.Save.ActiveTeam.Money, onChooseAmount);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.BankMenu(): Encountered exception:\n{0}", e.Message));
+            }
+        }
+
+        private void onChooseAmount(int amount)
+        {
+            long total = (long)DataManager.Instance.Save.ActiveTeam.Bank + DataManager.Instance.Save.ActiveTeam.Money;
+            DataManager.Instance.Save.ActiveTeam.Bank = (int)(total - amount);
+            DataManager.Instance.Save.ActiveTeam.Money = amount;
+        }
 
         public void SpoilsMenu(LuaTable appraisalMap)
         {
@@ -679,14 +754,23 @@ namespace RogueEssence.Script
                 IDictionaryEnumerator dict = choicespairs.GetEnumerator();
                 while (dict.MoveNext())
                 {
-                    string choicetext = dict.Value as string;
+                    string choicetext = "";
+                    bool enabled = true;
+                    if (dict.Value is string)
+                        choicetext = dict.Value as string;
+                    else if (dict.Value is LuaTable)
+                    {
+                        LuaTable tbl = dict.Value as LuaTable;
+                        choicetext = (string)tbl[1];
+                        enabled = (bool)tbl[2];
+                    }
                     object choiceval = dict.Key;
 
                     if (defaultchoice.Equals(choiceval))
                         mappedDefault = choices.Count;
                     if (cancelchoice.Equals(choiceval))
                         mappedCancel = choices.Count;
-                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; }));
+                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; }, enabled));
                 }
 
                 //Make a choice menu, and check if we display a speaker or not
@@ -735,82 +819,7 @@ namespace RogueEssence.Script
         // Built-In Menus
         //================================================================
 
-        public LuaFunction ShowTeamStorageMenu;
         public LuaFunction ShowTravelMenu;
-
-        public Coroutine _StorageFlow()
-        {
-            return new Coroutine(storageFlow());
-        }
-
-        private IEnumerator<YieldInstruction> storageFlow()
-        {
-            GameManager.Instance.SE("Menu/Skip");
-            //show the player the storage menu
-            bool exit = false;
-            while (!exit)
-            {
-                bool hasItems = (DataManager.Instance.Save.ActiveTeam.GetInvCount() > 0);
-                foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
-                    hasItems |= (player.EquippedItem.ID > -1);
-
-                bool hasStorage = (DataManager.Instance.Save.ActiveTeam.BoxStorage.Count > 0);
-                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
-                {
-                    if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
-                    {
-                        hasStorage = true;
-                        break;
-                    }
-                }
-
-                List<DialogueChoice> choices = new List<DialogueChoice>();
-                choices.Add(new DialogueChoice(Text.FormatKey("MENU_STORAGE_STORE"), () => { MenuManager.Instance.AddMenu(new DepositMenu(0), false); }, hasItems));
-                choices.Add(new DialogueChoice(Text.FormatKey("MENU_STORAGE_TAKE_ITEM"), () => { MenuManager.Instance.AddMenu(new WithdrawMenu(0, true, onChooseSlot), false); }, hasStorage));
-                //choices.Add(new DialogueChoice(Text.FormatKey("MENU_STORAGE_TAKE_BOX"), () => { }));
-                choices.Add(new DialogueChoice(Text.FormatKey("MENU_STORAGE_MONEY"), () => { MenuManager.Instance.AddMenu(new BankMenu(DataManager.Instance.Save.ActiveTeam.Money, onChooseAmount), false); }));
-                choices.Add(new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () => { exit = true; }));
-                QuestionDialog dialog = MenuManager.Instance.CreateMultiQuestion(Text.FormatKey("DLG_WHAT_DO"), false, choices, 0, 3);
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(dialog));
-            }
-        }
-
-        private void onChooseAmount(int amount)
-        {
-            long total = (long)DataManager.Instance.Save.ActiveTeam.Bank + DataManager.Instance.Save.ActiveTeam.Money;
-            DataManager.Instance.Save.ActiveTeam.Bank = (int)(total - amount);
-            DataManager.Instance.Save.ActiveTeam.Money = amount;
-        }
-
-        private void onChooseSlot(List<int> slots)
-        {
-            //store item
-            List<InvItem> items = DataManager.Instance.Save.ActiveTeam.TakeItems(slots);
-
-            foreach (InvItem item in items)
-            {
-                ItemData entry = DataManager.Instance.GetItem(item.ID);
-                int existingStack = -1;
-                if (entry.MaxStack > 1)
-                {
-                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
-                    {
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
-                        {
-                            existingStack = jj;
-                            break;
-                        }
-                    }
-                }
-                if (existingStack > -1)
-                {
-                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).HiddenValue += item.HiddenValue;
-                    DataManager.Instance.Save.ActiveTeam.UpdateInv(DataManager.Instance.Save.ActiveTeam.GetInv(existingStack), DataManager.Instance.Save.ActiveTeam.GetInv(existingStack));
-                }
-                else
-                    DataManager.Instance.Save.ActiveTeam.AddToInv(item);
-            }
-        }
 
 
         public Coroutine _TravelMenuFlow(LuaTable dungeons, LuaTable grounds)
@@ -905,7 +914,6 @@ namespace RogueEssence.Script
         //
         public override void SetupLuaFunctions(LuaEngine state)
         {
-            ShowTeamStorageMenu = state.RunString("return function(_) return coroutine.yield(UI:_StorageFlow()) end").First() as LuaFunction;
             ShowTravelMenu = state.RunString("return function(_,dungeons,grounds) return coroutine.yield(UI:_TravelMenuFlow(dungeons,grounds)) end").First() as LuaFunction;
 
             WaitDialog = state.RunString(@"
