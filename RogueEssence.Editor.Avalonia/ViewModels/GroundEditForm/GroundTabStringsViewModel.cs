@@ -131,10 +131,11 @@ namespace RogueEssence.Dev.ViewModels
                     //Add all strings matching the specified language code
                     foreach (MapString str in MapStrings)
                     {
-                        if (str.Translations.ContainsKey(code))
-                            resx.AddResource(new ResXDataNode(str.Key, str.Translations[code]) { Comment = "" });
-                        else
-                            resx.AddResource(new ResXDataNode(str.Key, "") { Comment = "" }); //Put an empty string by default
+                        string tl;
+                        if (!str.Translations.TryGetValue(code, out tl))
+                            tl = "";
+                        if (tl != "" || code == "en")
+                            resx.AddResource(new ResXDataNode(str.Key, tl) { Comment = "" });
                     }
                     resx.Generate();
                     resx.Close();
