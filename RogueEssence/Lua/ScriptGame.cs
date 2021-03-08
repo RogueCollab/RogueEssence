@@ -458,6 +458,7 @@ namespace RogueEssence.Script
             if (newData.Form >= entry.Forms.Count)
                 newData.Form = 0;
             character.Promote(newData);
+            character.FullRestore();
             branch.OnPromote(character, false);
             //remove exception item if there is one...
             if (bypass)

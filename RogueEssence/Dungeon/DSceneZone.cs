@@ -661,6 +661,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> SpecialIntro(Character chara)
         {
+            if (chara.Dead)
+                yield break;
+
             SkinData skin = DataManager.Instance.GetSkin(chara.Appearance.Skin);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(chara, chara, skin.LeaderFX));
         }
