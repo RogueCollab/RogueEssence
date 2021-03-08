@@ -198,9 +198,25 @@ namespace RogueEssence.Ground
                     else if (input.JustPressed(FrameInput.InputType.LeaderSwap4))
                         action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, 3, 0);
                     else if (input.JustPressed(FrameInput.InputType.LeaderSwapBack))
-                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (DataManager.Instance.Save.ActiveTeam.LeaderIndex + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, 0);
+                    {
+                        int newSlot = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
+                        do
+                        {
+                            newSlot = (newSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count;
+                        }
+                        while (!canSwitchToChar(newSlot));
+                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                    }
                     else if (input.JustPressed(FrameInput.InputType.LeaderSwapForth))
-                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (DataManager.Instance.Save.ActiveTeam.LeaderIndex + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, 0);
+                    {
+                        int newSlot = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
+                        do
+                        {
+                            newSlot = (newSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count;
+                        }
+                        while (!canSwitchToChar(newSlot));
+                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                    }
                 }
             }
 

@@ -214,6 +214,13 @@ namespace RogueEssence.Ground
         }
 
 
+        private bool canSwitchToChar(int charIndex)
+        {
+            Character character = DataManager.Instance.Save.ActiveTeam.Players[charIndex];
+            if (character.Dead)
+                return false;
+            return true;
+        }
 
         public IEnumerator<YieldInstruction> MakeLeader(int charIndex, bool silent)
         {
@@ -221,8 +228,7 @@ namespace RogueEssence.Ground
                 GameManager.Instance.SE("Menu/Cancel");
             else
             {
-                Character character = DataManager.Instance.Save.ActiveTeam.Players[charIndex];
-                if (character.Dead)
+                if (!canSwitchToChar(charIndex))
                     GameManager.Instance.SE("Menu/Cancel");
                 else
                 {

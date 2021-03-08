@@ -635,9 +635,25 @@ namespace RogueEssence.Dungeon
                         else if (input.JustPressed(FrameInput.InputType.LeaderSwap4))
                             action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, 3, 0);
                         else if (input.JustPressed(FrameInput.InputType.LeaderSwapBack))
-                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (ActiveTeam.LeaderIndex + ActiveTeam.Players.Count - 1) % ActiveTeam.Players.Count, 0);
+                        {
+                            int newSlot = ActiveTeam.LeaderIndex;
+                            do
+                            {
+                                newSlot = (newSlot + ActiveTeam.Players.Count - 1) % ActiveTeam.Players.Count;
+                            }
+                            while (!canSwitchToChar(newSlot));
+                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                        }
                         else if (input.JustPressed(FrameInput.InputType.LeaderSwapForth))
-                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (ActiveTeam.LeaderIndex + 1) % ActiveTeam.Players.Count, 0);
+                        {
+                            int newSlot = ActiveTeam.LeaderIndex;
+                            do
+                            {
+                                newSlot = (newSlot + 1) % ActiveTeam.Players.Count;
+                            }
+                            while (!canSwitchToChar(newSlot));
+                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                        }
                     }
                 }
 

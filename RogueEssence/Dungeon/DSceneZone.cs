@@ -611,6 +611,16 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        private bool canSwitchToChar(int charIndex)
+        {
+            Character character = ActiveTeam.Players[charIndex];
+            if (character.Dead)
+                return false;
+            if (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
+                return false;
+            return true;
+        }
+
         public IEnumerator<YieldInstruction> MakeLeader(int charIndex, ActionResult result)
         {
             if (CurrentCharacter != ActiveTeam.Leader)
@@ -632,10 +642,7 @@ namespace RogueEssence.Dungeon
             }
             else
             {
-                Character character = ActiveTeam.Players[charIndex];
-                if (character.Dead)
-                    GameManager.Instance.SE("Menu/Cancel");
-                else if (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
+                if (!canSwitchToChar(charIndex))
                     GameManager.Instance.SE("Menu/Cancel");
                 else
                 {
