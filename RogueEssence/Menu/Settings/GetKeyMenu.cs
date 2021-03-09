@@ -2,6 +2,7 @@
 using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -10,15 +11,17 @@ namespace RogueEssence.Menu
         public delegate void OnChooseKey(Keys key);
 
         private OnChooseKey chooseKeyAction;
+        private Action refuseAction;
 
         private HashSet<Keys> forbidden;
 
-        public GetKeyMenu(HashSet<Keys> forbidden, OnChooseKey action)
+        public GetKeyMenu(HashSet<Keys> forbidden, OnChooseKey action, Action refuseAction)
         {
             Bounds = new Rect();
 
             this.forbidden = forbidden;
             this.chooseKeyAction = action;
+            this.refuseAction = refuseAction;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -35,6 +38,7 @@ namespace RogueEssence.Menu
         {
             Visible = true;
 
+            bool pressed = false;
             for (int ii = 0; ii < 0xf5; ii++)
             {
                 if (input.BaseKeyPressed((Keys)ii))
@@ -47,8 +51,15 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.RemoveMenu();
                         chooseKeyAction((Keys)ii);
                     }
+                    pressed = true;
                     break;
                 }
+            }
+            if (!pressed && input.AnyButtonPressed())
+            {
+                GameManager.Instance.SE("Menu/Cancel");
+                MenuManager.Instance.RemoveMenu();
+                refuseAction();
             }
         }
     }
