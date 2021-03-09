@@ -1211,15 +1211,30 @@ namespace RogueEssence.Dungeon
             //draw example texture
             if (DebugAsset != GraphicsManager.AssetType.None)
             {
+                DirSheet dirSheet = null;
                 switch (DebugAsset)
                 {
                     case GraphicsManager.AssetType.VFX:
-                        DirSheet dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
-                        dirSheet.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / scale / 2 - dirSheet.TileWidth / 2, GraphicsManager.ScreenHeight / scale / 2 - dirSheet.TileHeight / 2),
-                            (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % (ulong)dirSheet.TotalFrames),
-                            FocusedCharacter.CharDir, Color.White);
-
+                        dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
                         break;
+                    case GraphicsManager.AssetType.Icon:
+                        dirSheet = GraphicsManager.GetIcon(DebugAnim);
+                        break;
+                    case GraphicsManager.AssetType.BG:
+                        dirSheet = GraphicsManager.GetBackground(DebugAnim);
+                        break;
+                    case GraphicsManager.AssetType.Object:
+                        dirSheet = GraphicsManager.GetObject(DebugAnim);
+                        break;
+                    case GraphicsManager.AssetType.Item:
+                        dirSheet = GraphicsManager.GetItem(DebugAnim);
+                        break;
+                }
+                if (dirSheet != null)
+                {
+                    dirSheet.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / scale / 2 - dirSheet.TileWidth / 2, GraphicsManager.ScreenHeight / scale / 2 - dirSheet.TileHeight / 2),
+                        (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % (ulong)dirSheet.TotalFrames),
+                        FocusedCharacter.CharDir, Color.White);
                 }
             }
         }

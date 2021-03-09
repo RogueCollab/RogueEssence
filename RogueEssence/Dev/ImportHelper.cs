@@ -431,32 +431,16 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void ImportAllVFX(string sourceDir, string particlePattern, string beamPattern)
+        public static void ImportAllBeams(string sourceDir, string cachePattern)
         {
-            string[] dirs = Directory.GetDirectories(sourceDir + "Beam");
+            string[] dirs = Directory.GetFiles(sourceDir, "*.png");
             foreach (string dir in dirs)
             {
                 string fileName = Path.GetFileNameWithoutExtension(dir);
                 string asset_name = fileName;
                 using (BeamSheet sheet = BeamSheet.Import(dir + "/"))
                 {
-                    using (FileStream stream = File.OpenWrite(String.Format(beamPattern, asset_name)))
-                    {
-                        using (BinaryWriter writer = new BinaryWriter(stream))
-                            sheet.Save(writer);
-                    }
-                }
-            }
-            dirs = Directory.GetFiles(sourceDir + "Particle", "*.png");
-            foreach (string dir in dirs)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(dir);
-                string[] components = fileName.Split('.');
-                string asset_name = components[0];
-
-                using (DirSheet sheet = DirSheet.Import(dir))
-                {
-                    using (FileStream stream = File.OpenWrite(String.Format(particlePattern, asset_name)))
+                    using (FileStream stream = File.OpenWrite(String.Format(cachePattern, asset_name)))
                     {
                         using (BinaryWriter writer = new BinaryWriter(stream))
                             sheet.Save(writer);
@@ -489,7 +473,6 @@ namespace RogueEssence.Dev
                 }
             }
         }
-
 
         public static void ImportAllFonts(string sourceDir, string cachePattern)
         {

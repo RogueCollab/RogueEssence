@@ -153,47 +153,60 @@ namespace RogueEssence.Dev.ViewModels
             this.parent = parent;
             if (sprites)
             {
-                OpList.Add(new OpContainer(new CharSheetDummyOp("Export as Single Sheet"), ExportSingleSheet));
+                OpList.Add(new OpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
                 foreach (CharSheetOp op in DevGraphicsManager.CharSheetOps)
                     OpList.Add(new OpContainer(op, () => applyOpToCharSheet(op)));
             }
 
             lock (GameBase.lockObj)
+                reloadFullList();
+        }
+
+
+        public async void mnuMassImport_Click()
+        {
+            await MessageBox.Show(parent, "Note: Importing a sprite to a slot that is already filled will automatically overwrite the old one.", "Mass Import", MessageBox.MessageBoxButtons.Ok);
+
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            string folder = await openFileDialog.ShowAsync(parent);
+
+            if (folder != "")
             {
-                CharaIndexNode charaNode = GetIndexNode();
-                for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
+
+                try
                 {
-                    FormEntrySummary dex = (FormEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
-
-                    MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
-                    MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
-                    for (int jj = 0; jj < dex.FormTexts.Count; jj++)
-                    {
-                        MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
-                        MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.FormTexts[jj].ToLocal(), formID, hasSprite(charaNode, formID));
-                        for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
-                        {
-                            SkinData skinData = DataManager.Instance.GetSkin(kk);
-                            if (!skinData.Challenge)
-                            {
-                                MonsterID skinID = new MonsterID(ii, jj, kk, Gender.Unknown);
-                                MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
-                                for (int mm = 0; mm < 3; mm++)
-                                {
-                                    MonsterID genderID = new MonsterID(ii, jj, kk, (Gender)mm);
-                                    MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
-                                    skinNode.Nodes.Add(genderNode);
-                                }
-
-                                formNode.Nodes.Add(skinNode);
-                            }
-                        }
-
-                        node.Nodes.Add(formNode);
-                    }
-
-                    Monsters.Add(node);
+                    lock (GameBase.lockObj)
+                        MassImport(CachedPath);
                 }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
+        public async void mnuReIndex_Click()
+        {
+            try
+            {
+                lock (GameBase.lockObj)
+                    ReIndex();
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                await MessageBox.Show(parent, "Error when reindexing.\n\n" + ex.Message, "Reindex Failed", MessageBox.MessageBoxButtons.Ok);
+                return;
             }
         }
 
@@ -237,7 +250,6 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     lock (GameBase.lockObj)
                         Import(CachedPath, formdata);
-                    chosenMonster.Filled = true;
                 }
                 catch (Exception ex)
                 {
@@ -254,7 +266,6 @@ namespace RogueEssence.Dev.ViewModels
             {
                 lock (GameBase.lockObj)
                     Import(CachedPath, chosenMonster.ID);
-                chosenMonster.Filled = true;
             }
             catch (Exception ex)
             {
@@ -264,14 +275,14 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void ExportSingleSheet()
+        public void ExportMultiSheet()
         {
-            ExportFlow(true);
+            ExportFlow(false);
         }
 
         public void btnExport_Click()
         {
-            ExportFlow(false);
+            ExportFlow(true);
         }
 
         public async void ExportFlow(bool singleSheet)
@@ -322,10 +333,75 @@ namespace RogueEssence.Dev.ViewModels
 
             lock (GameBase.lockObj)
                 Delete(formdata);
-
-            chosenMonster.Filled = false;
         }
 
+
+
+
+        private void reloadFullList()
+        {
+            Monsters.Clear();
+            CharaIndexNode charaNode = GetIndexNode();
+            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+            {
+                FormEntrySummary dex = (FormEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
+
+                MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
+                MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
+                for (int jj = 0; jj < dex.FormTexts.Count; jj++)
+                {
+                    MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
+                    MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.FormTexts[jj].ToLocal(), formID, hasSprite(charaNode, formID));
+                    for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
+                    {
+                        SkinData skinData = DataManager.Instance.GetSkin(kk);
+                        if (!skinData.Challenge)
+                        {
+                            MonsterID skinID = new MonsterID(ii, jj, kk, Gender.Unknown);
+                            MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
+                            for (int mm = 0; mm < 3; mm++)
+                            {
+                                MonsterID genderID = new MonsterID(ii, jj, kk, (Gender)mm);
+                                MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
+                                skinNode.Nodes.Add(genderNode);
+                            }
+
+                            formNode.Nodes.Add(skinNode);
+                        }
+                    }
+
+                    node.Nodes.Add(formNode);
+                }
+
+                Monsters.Add(node);
+            }
+        }
+
+        private void MassImport(string currentPath)
+        {
+            if (checkSprites)
+                ImportHelper.ImportAllChars(currentPath, PathMod.HardMod(GetPattern()));
+            else
+                ImportHelper.ImportAllPortraits(currentPath, PathMod.HardMod(GetPattern()));
+
+            GraphicsManager.RebuildIndices(GetAssetType());
+            GraphicsManager.ClearCaches(GetAssetType());
+
+            DiagManager.Instance.LogInfo("Mass import complete.");
+
+            reloadFullList();
+        }
+
+        private void ReIndex()
+        {
+
+            GraphicsManager.RebuildIndices(GetAssetType());
+            GraphicsManager.ClearCaches(GetAssetType());
+
+            DiagManager.Instance.LogInfo("All files re-indexed.");
+
+            reloadFullList();
+        }
 
         private void Import(string currentPath, MonsterID currentForm)
         {
@@ -343,22 +419,15 @@ namespace RogueEssence.Dev.ViewModels
             //save data
             ImportHelper.SaveSpecies(fileName, data);
 
-            if (checkSprites)
-            {
-                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Chara);
-                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Chara);
-            }
-            else
-            {
-                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Portrait);
-                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Portrait);
-            }
+            GraphicsManager.RebuildIndices(GetAssetType());
+            GraphicsManager.ClearCaches(GetAssetType());
 
 
             DiagManager.Instance.LogInfo("Frames from:\n" +
                 currentPath +
                 "\nhave been imported to:" + GetFormString(currentForm));
 
+            chosenMonster.Filled = true;
         }
 
 
@@ -394,19 +463,12 @@ namespace RogueEssence.Dev.ViewModels
             //save data
             ImportHelper.SaveSpecies(fileName, data);
 
-            if (checkSprites)
-            {
-                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Chara);
-                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Chara);
-            }
-            else
-            {
-                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Portrait);
-                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Portrait);
-            }
+            GraphicsManager.RebuildIndices(GetAssetType());
+            GraphicsManager.ClearCaches(GetAssetType());
 
             DiagManager.Instance.LogInfo("Deleted frames for:" + GetFormString(formdata));
 
+            chosenMonster.Filled = false;
         }
 
         private void WriteSpeciesData(Dictionary<MonsterID, byte[]> spriteData, MonsterID formData, CharSheet sprite)
@@ -493,10 +555,23 @@ namespace RogueEssence.Dev.ViewModels
 
         private string GetFilename(int num)
         {
+            return PathMod.HardMod(String.Format(GetPattern(), num));
+        }
+
+        private string GetPattern()
+        {
             if (checkSprites)
-                return PathMod.HardMod(String.Format(GraphicsManager.CHARA_PATTERN, num));
+                return GraphicsManager.CHARA_PATTERN;
             else
-                return PathMod.HardMod(String.Format(GraphicsManager.PORTRAIT_PATTERN, num));
+                return GraphicsManager.PORTRAIT_PATTERN;
+        }
+
+        private GraphicsManager.AssetType GetAssetType()
+        {
+            if (checkSprites)
+                return GraphicsManager.AssetType.Chara;
+            else
+                return GraphicsManager.AssetType.Portrait;
         }
     }
 }

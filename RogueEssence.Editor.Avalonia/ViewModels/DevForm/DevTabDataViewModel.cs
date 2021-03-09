@@ -94,7 +94,7 @@ namespace RogueEssence.Dev.ViewModels
                 DataListFormViewModel choices = new DataListFormViewModel();
                 choices.Name = dataType.ToString();
                 string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                choices.AddEntries(entries);
+                choices.SetEntries(entries);
 
                 choices.SelectedOKEvent += () =>
                 {
@@ -168,6 +168,19 @@ namespace RogueEssence.Dev.ViewModels
                         };
 
                         editor.Show();
+                    }
+                };
+
+                choices.SelectedReindexEvent += () =>
+                {
+                    lock (GameBase.lockObj)
+                    {
+                        DevHelper.RunIndexing(dataType);
+                        DataManager.Instance.LoadIndex(dataType);
+                        DataManager.Instance.ClearCache(dataType);
+                        DiagManager.Instance.DevEditor.ReloadData(dataType);
+                        string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                        choices.SetEntries(entries);
                     }
                 };
 

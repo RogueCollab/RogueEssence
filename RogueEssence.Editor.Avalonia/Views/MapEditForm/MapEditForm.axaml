@@ -21,20 +21,20 @@
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="_File">
-        <MenuItem Header="_New" Command="{Binding New_Click}"/>
-        <MenuItem Header="_Open" Command="{Binding Open_Click}"/>
-        <MenuItem Header="_Save" Command="{Binding Save_Click}"/>
-        <MenuItem Header="_Save As" Command="{Binding SaveAs_Click}"/>
+        <MenuItem Header="_New" Command="{Binding mnuNew_Click}"/>
+        <MenuItem Header="_Open" Command="{Binding mnuOpen_Click}"/>
+        <MenuItem Header="_Save" Command="{Binding mnuSave_Click}"/>
+        <MenuItem Header="_Save As" Command="{Binding mnuSaveAs_Click}"/>
       </MenuItem>
       <MenuItem Header="_Edit">
-        <MenuItem Header="Resize Map" Command="{Binding ReSize_Click}"/>
+        <MenuItem Header="Resize Map" Command="{Binding mnuReSize_Click}"/>
         <Separator/>
-        <MenuItem Header="Undo" Command="{Binding Undo_Click}"/>
-        <MenuItem Header="Redo" Command="{Binding Redo_Click}"/>
+        <MenuItem Header="Undo" Command="{Binding mnuUndo_Click}"/>
+        <MenuItem Header="Redo" Command="{Binding mnuRedo_Click}"/>
       </MenuItem>
       <MenuItem Header="_Tiles">
-        <MenuItem Header="_Load from .png into Tileset" Command="{Binding ImportFromPng_Click}"/>
-        <MenuItem Header="_Load Tileset into Map" Command="{Binding ImportFromTileset_Click}"/>
+        <MenuItem Header="_Load from .png into Tileset" Command="{Binding mnuImportFromPng_Click}"/>
+        <MenuItem Header="_Load Tileset into Map" Command="{Binding mnuImportFromTileset_Click}"/>
       </MenuItem>
     </Menu>
     <Grid>

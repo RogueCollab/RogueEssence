@@ -498,13 +498,13 @@ namespace RogueEssence.Content
         }
 
         /// <summary>
-        /// Bakes all assets from the "Work files" directory specified in the flags.
+        /// Bakes all assets from the "Raw Asset" directory specified in the flags.
         /// </summary>
         /// <param name="conversionFlags">Chooses which asset type to bake</param>
         public static void RunConversions(AssetType conversionFlags)
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
-                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH+"Font/", FONT_PATTERN);
+                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH + "Font/", FONT_PATTERN);
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
                 Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", PathMod.HardMod(CHARA_PATTERN));
@@ -521,7 +521,10 @@ namespace RogueEssence.Content
             if ((conversionFlags & AssetType.Item) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
             if ((conversionFlags & AssetType.VFX) != AssetType.None)
-                Dev.ImportHelper.ImportAllVFX(PathMod.DEV_PATH+"Attacks/", PathMod.HardMod(PARTICLE_PATTERN), PathMod.HardMod(BEAM_PATTERN));
+            {
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Attacks/Particle", PathMod.HardMod(PARTICLE_PATTERN));
+                Dev.ImportHelper.ImportAllBeams(PathMod.DEV_PATH + "Attacks/Beam", PathMod.HardMod(BEAM_PATTERN));
+            }
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
             if ((conversionFlags & AssetType.Object) != AssetType.None)

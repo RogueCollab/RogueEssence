@@ -72,6 +72,38 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public async void mnuMassImport_Click()
+        {
+            await MessageBox.Show(parent, "Note: Importing a sprite to a slot that is already filled will automatically overwrite the old one.", "Mass Import", MessageBox.MessageBoxButtons.Ok);
+
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            string folder = await openFileDialog.ShowAsync(parent);
+
+            if (folder != "")
+            {
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        MassImport(CachedPath);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
         public async void btnImport_Click()
         {
             //remember addresses in registry
@@ -172,6 +204,22 @@ namespace RogueEssence.Dev.ViewModels
 
             lock (GameBase.lockObj)
                 Delete(animIdx);
+
+        }
+
+
+
+        private void MassImport(string currentPath)
+        {
+            ImportHelper.ImportAllNameDirs(currentPath, PathMod.HardMod(GetPattern()));
+
+            GraphicsManager.RebuildIndices(assetType);
+            GraphicsManager.ClearCaches(assetType);
+
+            DiagManager.Instance.LogInfo("Mass import complete.");
+
+            //recompute
+            recomputeAnimList();
         }
 
 
@@ -234,13 +282,13 @@ namespace RogueEssence.Dev.ViewModels
             if (File.Exists(animPath))
                 File.Delete(animPath);
 
-            anims.RemoveAt(animIdx);
-            Anims.RemoveInternalAt(animIdx);
-
             GraphicsManager.RebuildIndices(assetType);
             GraphicsManager.ClearCaches(assetType);
 
             DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
+
+            anims.RemoveAt(animIdx);
+            Anims.RemoveInternalAt(animIdx);
 
         }
 
@@ -261,5 +309,25 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+
+        private string GetPattern()
+        {
+            switch (assetType)
+            {
+                case GraphicsManager.AssetType.VFX:
+                    return GraphicsManager.PARTICLE_PATTERN;
+                case GraphicsManager.AssetType.Icon:
+                    return GraphicsManager.ICON_PATTERN;
+                case GraphicsManager.AssetType.Object:
+                    return GraphicsManager.OBJECT_PATTERN;
+                case GraphicsManager.AssetType.Item:
+                    return GraphicsManager.ITEM_PATTERN;
+                case GraphicsManager.AssetType.BG:
+                    return GraphicsManager.BG_PATTERN;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
     }
 }
