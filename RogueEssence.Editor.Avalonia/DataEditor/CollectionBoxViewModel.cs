@@ -93,7 +93,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void btnDelete_Click()
         {
-            if (SelectedIndex > -1)
+            if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
                 Collection.RemoveAt(SelectedIndex);
                 OnMemberChanged?.Invoke();

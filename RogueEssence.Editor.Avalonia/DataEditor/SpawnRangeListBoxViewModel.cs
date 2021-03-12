@@ -173,7 +173,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void btnDelete_Click()
         {
-            if (CurrentElement > -1)
+            if (CurrentElement > -1 && CurrentElement < Collection.Count)
                 Collection.RemoveAt(CurrentElement);
         }
 
