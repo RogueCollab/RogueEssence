@@ -587,12 +587,16 @@ namespace RogueEssence.Content
                     if (endList.Count != totalX)
                         throw new InvalidDataException(String.Format("Duration list of {0} is not the same length as the number of frames in the anim!", frameType.Name));
 
+                    //check against bad sequence amounts
+                    if (totalY != 1 && totalY != 8)
+                        throw new InvalidDataException(String.Format("Anim for {0} must be one-directional or 8-directional!", frameType.Name));
+
                     //automatically calculate frame durations and use preset offsets
                     for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
                     {
                         //convert from clockwise PMD style to counterclockwise PMDO style
                         int sheetIndex = (DirExt.DIR8_COUNT - ii) % DirExt.DIR8_COUNT;
-                        if (sheetIndex >= animSheet.Height / tileHeight)
+                        if (sheetIndex >= totalY)
                             continue;
                         CharAnimSequence sequence = new CharAnimSequence();
                         for (int jj = 0; jj < (animSheet.Width / tileWidth); jj++)
