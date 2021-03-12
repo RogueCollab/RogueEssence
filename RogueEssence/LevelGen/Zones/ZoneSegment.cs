@@ -145,7 +145,6 @@ namespace RogueEssence.LevelGen
             else
                 throw new Exception("Requested a map id out of range.");
         }
-
     }
 
 
@@ -165,6 +164,17 @@ namespace RogueEssence.LevelGen
         }
 
         public abstract IGenContext GetMap(ZoneGenContext zoneContext);
+
+        public override string ToString()
+        {
+            foreach (ZonePostProc step in PostProcessingSteps)
+            {
+                var startStep = step as FloorNameIDPostProc;
+                if (startStep != null)
+                    return LocalText.FormatLocalText(startStep.Name, FloorCount.ToString()).ToLocal().Replace('\n', ' ');
+            }
+            return String.Format("[{0}] {1}F", this.GetType().Name, FloorCount);
+        }
     }
 
     [Serializable]

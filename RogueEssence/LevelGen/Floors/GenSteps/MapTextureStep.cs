@@ -52,6 +52,14 @@ namespace RogueEssence.LevelGen
             }
         }
 
+
+        public override string ToString()
+        {
+            string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[GroundTileset].Name.ToLocal();
+            string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[BlockTileset].Name.ToLocal();
+            string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[WaterTileset].Name.ToLocal();
+            return String.Format("{0}: {1}/{2}/{3}", this.GetType().Name, ground, wall, secondary);
+        }
     }
 
 }

@@ -4,10 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.DictionaryBox">
   <Design.DataContext>
     <vm:DictionaryBoxViewModel/>
   </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
+  </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
@@ -23,7 +27,7 @@
         <DataGridTextColumn Header="Key"
                       Binding="{Binding Key}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Value}" />
+                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
       </DataGrid.Columns>
     </DataGrid>
     <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>

@@ -77,5 +77,10 @@ namespace RogueEssence.Dungeon
         {
             return TileTex.GetHashCode() ^ ID.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return (ID > -1) ? DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID].Name.ToLocal() : "[EMPTY]";
+        }
     }
 }

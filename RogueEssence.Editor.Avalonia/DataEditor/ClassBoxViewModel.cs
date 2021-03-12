@@ -34,7 +34,7 @@ namespace RogueEssence.Dev.ViewModels
         public void LoadFromSource(object source)
         {
             Object = source;
-            Name = Object.ToString();
+            Name = DataEditor.GetClassEntryString(Object);
         }
 
         private void updateSource(object source)

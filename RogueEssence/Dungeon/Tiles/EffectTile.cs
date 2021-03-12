@@ -144,5 +144,11 @@ namespace RogueEssence.Dungeon
 
             return new Loc(sheet.TileWidth, sheet.TileHeight);
         }
+
+        public override string ToString()
+        {
+            string local = (ID > -1) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[ID].Name.ToLocal() : "NULL";
+            return string.Format("{0}: {1}", this.GetType().Name, local);
+        }
     }
 }

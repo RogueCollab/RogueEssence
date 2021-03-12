@@ -89,5 +89,9 @@ namespace RogueEssence.LevelGen
             }
         }
 
+        public override string ToString()
+        {
+            return String.Format("{0}: Amt:{1} Clump:{2}", this.GetType().Name, Amount.ToString(), ClumpFactor);
+        }
     }
 }

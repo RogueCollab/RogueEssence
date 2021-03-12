@@ -116,5 +116,24 @@ namespace RogueEssence.Dungeon
         {
             return AutoTileset.GetHashCode() ^ Associates.GetHashCode() ^ Layers.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            if (AutoTileset > -1)
+                return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[AutoTileset].Name.ToLocal());
+            else
+            {
+                if (Layers.Count > 0)
+                {
+                    TileLayer layer = Layers[0];
+                    if (layer.Frames.Count > 0)
+                    {
+                        TileFrame frame = layer.Frames[0];
+                        return String.Format("AutoTile {0}: {1}", frame.Sheet, frame.TexLoc.ToString());
+                    }
+                }
+            }
+            return "[EMPTY]";
+        }
     }
 }

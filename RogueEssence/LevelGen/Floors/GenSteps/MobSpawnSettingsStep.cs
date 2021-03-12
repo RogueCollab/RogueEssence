@@ -29,5 +29,11 @@ namespace RogueEssence.LevelGen
             if (MaxFoes > -1)
                 map.MaxFoes = MaxFoes;
         }
+
+
+        public override string ToString()
+        {
+            return String.Format("{0}: MaxFoes:{1} RespawnTurns:{2}", this.GetType().Name, RespawnTime, RespawnTime);
+        }
     }
 }

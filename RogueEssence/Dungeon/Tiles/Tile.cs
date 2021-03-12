@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dungeon
 {
@@ -50,6 +52,19 @@ namespace RogueEssence.Dungeon
             if (tile == null)
                 return false;
             return tile.ID == ID;
+        }
+
+        public override string ToString()
+        {
+            List<string> values = new List<string>();
+            if (Data.ID > -1)
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[Data.ID].Name.ToLocal());
+            if (Effect.ID > -1)
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[Effect.ID].Name.ToLocal());
+            if (FloorTile.AutoTileset > -1)
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[FloorTile.AutoTileset].Name.ToLocal());
+            string features = string.Join("/", values);
+            return string.Format("{0}: {1}", this.GetType().Name, features);
         }
     }
 }

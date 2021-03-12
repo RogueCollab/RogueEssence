@@ -38,5 +38,10 @@ namespace RogueEssence.LevelGen
         }
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
         public MoneySpawn Pick(IRandom rand) { return new MoneySpawn(rand.Next(Min, Max)); }
+
+        public override string ToString()
+        {
+            return string.Format("[{0},{1})", this.Min, this.Max);
+        }
     }
 }
