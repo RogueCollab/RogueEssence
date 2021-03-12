@@ -24,7 +24,7 @@ namespace RogueEssence.Dev.Views
 
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
-            ViewModels.CollectionBoxViewModel viewModel = (ViewModels.CollectionBoxViewModel)DataContext;
+            ViewModels.DictionaryBoxViewModel viewModel = (ViewModels.DictionaryBoxViewModel)DataContext;
             if (viewModel == null)
                 return;
             viewModel.lbxCollection_DoubleClick(sender, e);
