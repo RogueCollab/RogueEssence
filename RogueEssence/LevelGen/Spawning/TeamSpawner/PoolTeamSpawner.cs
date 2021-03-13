@@ -84,6 +84,8 @@ namespace RogueEssence.LevelGen
         {
             List<MobSpawn> chosenSpawns = new List<MobSpawn>();
 
+            if (!TeamSizes.CanPick)
+                return chosenSpawns;
             int teamSize = TeamSizes.Pick(rand);
 
             bool selectedLeader = false;
