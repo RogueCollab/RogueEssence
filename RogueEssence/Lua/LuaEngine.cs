@@ -604,6 +604,18 @@ namespace RogueEssence.Script
                   end
             ", "OBJ function init");
 
+            //Marker lookup
+            RunString(@"
+                MRKR = function(name)
+                    if _ZONE.CurrentGround then
+                      return _ZONE.CurrentGround:GetMarker(name)
+                    elseif _ZONE.CurrentMap then
+                      assert(false, 'MRKR(' .. name .. '): unimplemented on dungeon maps!!!!')
+                    end
+                    return nil
+                  end
+            ", "OBJ function init");
+
             //Character localized name
             RunString(@"
                 CHName = function(name)

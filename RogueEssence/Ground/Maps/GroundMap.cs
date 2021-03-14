@@ -359,12 +359,11 @@ namespace RogueEssence.Ground
         /// <returns>Forund object, or null</returns>
         public GroundObject GetObj(string instancename)
         {
-            GroundObject found = null;
-            if ((found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; })) == null)
-            {
-                //Maybe warn or something??
-            }
-            return found;
+            GroundObject found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; });
+            if (found != null)
+                return found;
+
+            return null;
         }
 
 
@@ -408,6 +407,20 @@ namespace RogueEssence.Ground
         {
             if (Entities[0].Markers.Contains(mark))
                 Entities[0].Markers.Remove(mark);
+        }
+
+
+        /// <summary>
+        /// Finds a named marker in the marker table for this map.
+        /// </summary>
+        /// <param name="name">Name of the marker</param>
+        /// <returns>The found marker, or null if not found.</returns>
+        public GroundMarker GetMarker(string name)
+        {
+            int index = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
+            if (index > -1)
+                return Entities[0].Markers[index];
+            return null;
         }
 
 
@@ -716,19 +729,6 @@ namespace RogueEssence.Ground
 
         }
 
-
-        /// <summary>
-        /// Finds a named marker in the marker table for this map.
-        /// </summary>
-        /// <param name="name">Name of the marker</param>
-        /// <returns>The found marker, or null if not found.</returns>
-        private GroundMarker FindMarker(string name)
-        {
-            int index = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
-            if (index > -1)
-                return Entities[0].Markers[index];
-            return null;
-        }
         /// <summary>
         /// Returns the position and location of an entry point for the current map by index.
         /// </summary>
@@ -748,7 +748,7 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public LocRay8 GetEntryPoint(string name)
         {
-            GroundMarker mark = FindMarker(name);
+            GroundMarker mark = GetMarker(name);
             if (mark == null)
                 throw new KeyNotFoundException(String.Format("GroundMap.GetMarkerPosition({0}): Couldn't find the specified Marker!", name));
 
@@ -762,7 +762,7 @@ namespace RogueEssence.Ground
         /// <param name="pos"></param>
         public void SetMarkerPosition(string name, Loc pos)
         {
-            GroundMarker mark = FindMarker(name);
+            GroundMarker mark = GetMarker(name);
             if (mark == null)
                 throw new KeyNotFoundException(String.Format("GroundMap.SetMarkerPosition({0},{1}): Couldn't find the specified Marker!", name, pos));
             mark.Position = pos;
