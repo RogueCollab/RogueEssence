@@ -65,7 +65,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int totalChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int totalChoice = CurrentChoiceTotal;
             int index = availableItems[totalChoice];
             if (index < DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
                 summaryMenu.SetItem(new InvItem(index, false, 1));

@@ -53,7 +53,7 @@ namespace RogueEssence.Menu
 
         private void choose(int choice)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
             List<int> invSlots = new List<int>();
             invSlots.Add(choice);
 
@@ -63,14 +63,14 @@ namespace RogueEssence.Menu
 
         protected override void ChoseMultiIndex(List<int> slots)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
 
             MenuManager.Instance.AddMenu(new BuyChosenMenu(slots, startIndex, Goods[slots[0]].Item1.ID, action), true);
         }
 
         protected override void ChoiceChanged()
         {
-            InvItem item = Goods[CurrentPage * SpacesPerPage + CurrentChoice].Item1;
+            InvItem item = Goods[CurrentChoiceTotal].Item1;
             summaryMenu.SetItem(item);
             base.ChoiceChanged();
         }

@@ -38,9 +38,9 @@ namespace RogueEssence.LevelGen
                 map.Map.TextureMap[1] = new AutoTile(BlockTileset);
                 map.Map.TextureMap[2] = new AutoTile(BlockTileset);
             }
-            map.Map.TextureMap[3] = new AutoTile(WaterTileset, GroundTileset);
-            map.Map.TextureMap[4] = new AutoTile(WaterTileset, GroundTileset);
-            map.Map.TextureMap[5] = new AutoTile(WaterTileset, GroundTileset);
+            for(int ii = 3; ii < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count; ii++)
+                map.Map.TextureMap[ii] = new AutoTile(WaterTileset, GroundTileset);
+
             map.Map.Element = GroundElement;
             if (LayeredGround)
             {

@@ -67,7 +67,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[CurrentPage * SpacesPerPage + CurrentChoice]);
+            Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[CurrentChoiceTotal]);
             Description.Text = entry.Desc.ToLocal();
 
             base.ChoiceChanged();

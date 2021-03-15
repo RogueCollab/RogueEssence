@@ -67,7 +67,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            summaryMenu.SetSkill(forgottenSkills[CurrentPage * SpacesPerPage + CurrentChoice]);
+            summaryMenu.SetSkill(forgottenSkills[CurrentChoiceTotal]);
             
             base.ChoiceChanged();
         }

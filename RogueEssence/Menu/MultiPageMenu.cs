@@ -13,6 +13,8 @@ namespace RogueEssence.Menu
         public int SpacesPerPage;
         public bool ShowPagesOnSingle;
 
+        public int CurrentChoiceTotal { get => CurrentPage * SpacesPerPage + CurrentChoice; }
+
         protected void Initialize(Loc start, int width, string title, IChoosable[][] totalChoices, int defaultChoice, int defaultPage, int spacesPerPage)
         {
             Initialize(start, width, title, totalChoices, defaultChoice, defaultPage, spacesPerPage, true, -1);

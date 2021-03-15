@@ -47,7 +47,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int totalChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int totalChoice = CurrentChoiceTotal;
             summaryMenu.SetSong(totalChoice > 0 ? files[totalChoice-1] : "");
             base.ChoiceChanged();
         }

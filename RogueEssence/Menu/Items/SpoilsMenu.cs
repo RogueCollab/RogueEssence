@@ -50,7 +50,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            InvItem item = Goods[CurrentPage * SpacesPerPage + CurrentChoice].Item2;
+            InvItem item = Goods[CurrentChoiceTotal].Item2;
             summaryMenu.SetItem(item);
             base.ChoiceChanged();
         }

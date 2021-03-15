@@ -56,7 +56,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Character subjectChar = DungeonScene.Instance.ActiveTeam.Assembly[CurrentPage * SpacesPerPage + CurrentChoice];
+            Character subjectChar = DungeonScene.Instance.ActiveTeam.Assembly[CurrentChoiceTotal];
             summaryMenu.SetMember(subjectChar);
 
             portrait.Speaker = subjectChar.BaseForm;

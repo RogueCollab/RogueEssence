@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int choice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int choice = CurrentChoiceTotal;
             if (choice < dungeonIndices.Count)
             {
                 summaryMenu.Visible = true;
