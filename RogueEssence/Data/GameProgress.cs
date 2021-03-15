@@ -340,6 +340,7 @@ namespace RogueEssence.Data
             List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
             foreach (int skill in final_skills)
                 character.LearnSkill(skill, true);
+            character.Relearnables = new List<bool>();
         }
 
         public IEnumerator<YieldInstruction> RestoreLevel()
@@ -432,6 +433,14 @@ namespace RogueEssence.Data
                     }
                     character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
                 }
+            }
+
+            //restore remembered skills
+            for (int ii = 0; ii < charFrom.Relearnables.Count; ii++)
+            {
+                if (ii >= character.Relearnables.Count)
+                    character.Relearnables.Add(false);
+                character.Relearnables[ii] |= charFrom.Relearnables[ii];
             }
 
             //restoreCharLevel the backref
