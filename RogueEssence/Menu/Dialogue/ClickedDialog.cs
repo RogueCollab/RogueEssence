@@ -8,6 +8,8 @@ namespace RogueEssence.Menu
 
     public class ClickedDialog : DialogueBox
     {
+        private const int HOLD_CANCEL_TIME = 30;
+
         private Action action;
 
         public ClickedDialog(string message, bool sound, Action action)
@@ -21,7 +23,7 @@ namespace RogueEssence.Menu
             //needs to update the cursor's flashing?
             //do we need this cursor to be separate from the mid-message pauses?
 
-            if (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+            if (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel] && TotalTextTime >= HOLD_CANCEL_TIME
                 || input.JustPressed(FrameInput.InputType.LeftMouse))
             {
                 //close this

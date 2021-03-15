@@ -24,6 +24,7 @@ namespace RogueEssence.Menu
         public DialogueText Text;
         public bool Sound;
 
+        protected FrameTick TotalTextTime;
         protected FrameTick CurrentTextTime;
 
         public abstract void ProcessTextDone(InputManager input);
@@ -73,6 +74,7 @@ namespace RogueEssence.Menu
 
         public void ProcessActions(FrameTick elapsedTime)
         {
+            TotalTextTime += elapsedTime;
             CurrentTextTime += elapsedTime;
         }
 
