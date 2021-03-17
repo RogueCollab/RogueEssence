@@ -193,7 +193,7 @@ namespace RogueEssence.Content
         private static LRUCache<string, DirSheet> iconCache;
         private static LRUCache<string, DirSheet> itemCache;
         private static LRUCache<string, DirSheet> objectCache;
-        private static LRUCache<TileFrame, BaseSheet> tileCache;
+        private static LRUCache<TileAddr, BaseSheet> tileCache;
         private static LRUCache<string, DirSheet> bgCache;
 
         public static FontSheet TextFont { get; private set; }
@@ -421,7 +421,7 @@ namespace RogueEssence.Content
             iconCache.OnItemRemoved = DisposeCachedObject;
             itemCache = new LRUCache<string, DirSheet>(ITEM_CACHE_SIZE);
             itemCache.OnItemRemoved = DisposeCachedObject;
-            tileCache = new LRUCache<TileFrame, BaseSheet>(TILE_CACHE_SIZE_PIXELS);
+            tileCache = new LRUCache<TileAddr, BaseSheet>(TILE_CACHE_SIZE_PIXELS);
             tileCache.ItemCount = CountPixels;
             tileCache.OnItemRemoved = DisposeCachedObject;
             bgCache = new LRUCache<string, DirSheet>(BG_CACHE_SIZE);
@@ -471,6 +471,7 @@ namespace RogueEssence.Content
             MenuBG.Dispose();
 
             tileCache.Clear();
+            //no need to clear tileIndexCache; it should happen automatically with all OnRemoves
             objectCache.Clear();
             bgCache.Clear();
             itemCache.Clear();
@@ -627,6 +628,7 @@ namespace RogueEssence.Content
             {
                 TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
                 tileCache.Clear();
+                //no need to clear tileIndexCache; it should happen automatically with all OnRemoves
                 DiagManager.Instance.LogInfo("Tilesets Reloaded.");
             }
 
@@ -956,11 +958,12 @@ namespace RogueEssence.Content
 
         public static BaseSheet GetTile(TileFrame tileTex)
         {
-            BaseSheet sheet;
-            if (tileCache.TryGetValue(tileTex, out sheet))
-                return sheet;
-
             long tilePos = TileIndex.GetPosition(tileTex.Sheet, tileTex.TexLoc);
+            TileAddr addr = new TileAddr(tilePos, tileTex.Sheet);
+
+            BaseSheet sheet;
+            if (tileCache.TryGetValue(addr, out sheet))
+                return sheet;
 
             if (tilePos > 0)
             {
@@ -974,7 +977,7 @@ namespace RogueEssence.Content
                             reader.BaseStream.Seek(tilePos, SeekOrigin.Begin);
 
                             sheet = BaseSheet.Load(reader);
-                            tileCache.Add(tileTex, sheet);
+                            tileCache.Add(addr, sheet);
                             return sheet;
                         }
                     }
@@ -986,7 +989,7 @@ namespace RogueEssence.Content
             }
 
             BaseSheet newSheet = BaseSheet.LoadError();
-            tileCache.Add(tileTex, newSheet);
+            tileCache.Add(addr, newSheet);
             return newSheet;
         }
 

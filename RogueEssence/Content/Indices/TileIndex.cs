@@ -126,4 +126,43 @@ namespace RogueEssence.Content
         }
     }
 
+    public struct TileAddr
+    {
+        public string Sheet;
+        public long Addr;
+
+        public TileAddr(long addr, string sheet)
+        {
+            Addr = addr;
+            Sheet = sheet;
+        }
+
+
+        public override bool Equals(object obj)
+        {
+            return (obj is TileAddr) && Equals((TileAddr)obj);
+        }
+
+        public bool Equals(TileAddr other)
+        {
+            return (Addr == other.Addr && Sheet == other.Sheet);
+        }
+
+        public override int GetHashCode()
+        {
+            return Addr.GetHashCode() ^ Sheet.GetHashCode();
+        }
+
+        public static bool operator ==(TileAddr value1, TileAddr value2)
+        {
+            return value1.Equals(value2);
+        }
+
+        public static bool operator !=(TileAddr value1, TileAddr value2)
+        {
+            return !(value1 == value2);
+        }
+
+    }
+
 }

@@ -7,6 +7,7 @@ using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System.Diagnostics;
 using System.Xml;
+using System.Linq;
 
 namespace RogueEssence.Dev
 {
@@ -356,7 +357,10 @@ namespace RogueEssence.Dev
             foreach (BaseSheet sheet in tileList)
                 imgWidth = Math.Max(sheet.Width, imgWidth);
 
-            Dictionary<Loc, byte[]> tileData = new Dictionary<Loc, byte[]>();
+            Dictionary<Loc, int> tileData = new Dictionary<Loc, int>();
+            List<byte[]> tileBytes = new List<byte[]>();
+            List<long> positions = new List<long>();
+            long currentPosition = 0;
 
             foreach (BaseSheet sheet in tileList)
             {
@@ -386,7 +390,25 @@ namespace RogueEssence.Dev
                                     tileTex.Save(mw);
                                 byte[] bytes = ms.ToArray();
 
-                                tileData.Add(new Loc(x, y + imgHeight / tileSize), bytes);
+                                int existingData = -1;
+                                for (int nn = 0; nn < tileBytes.Count; nn++)
+                                {
+                                    if (bytes.Length == tileBytes[nn].Length && bytes.SequenceEqual(tileBytes[nn]))
+                                    {
+                                        existingData = nn;
+                                        break;
+                                    }
+                                }
+
+                                if (existingData == -1)
+                                {
+                                    tileData.Add(new Loc(x, y + imgHeight / tileSize), tileBytes.Count);
+                                    positions.Add(currentPosition);
+                                    tileBytes.Add(bytes);
+                                    currentPosition += bytes.LongLength;
+                                }
+                                else
+                                    tileData.Add(new Loc(x, y + imgHeight / tileSize), existingData);
                             }
                         }
                     }
@@ -398,17 +420,14 @@ namespace RogueEssence.Dev
             TileIndexNode tileGuide = new TileIndexNode();
             tileGuide.TileSize = tileSize;
             Dictionary<Loc, long> spritePositions = new Dictionary<Loc, long>();
-            long currentPosition = 0;
             foreach (Loc key in tileData.Keys)
-            {
-                spritePositions[key] = currentPosition;
-                currentPosition += tileData[key].LongLength;
-            }
+                spritePositions[key] = positions[tileData[key]];
+
             foreach (Loc key in spritePositions.Keys)
                 tileGuide.Positions[key] = 0;
 
 
-            using (System.IO.FileStream spriteStream = new System.IO.FileStream(destFile, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            using (FileStream spriteStream = new FileStream(destFile, FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter writer = new BinaryWriter(spriteStream))
                 {
@@ -417,14 +436,14 @@ namespace RogueEssence.Dev
 
                     //update how much space it takes
                     foreach (Loc key in spritePositions.Keys)
-                        tileGuide.Positions[key] = spritePositions[key] + writer.BaseStream.Position;
+                        tileGuide.Positions[key] = writer.BaseStream.Position + spritePositions[key];
 
                     //save it again
                     writer.Seek(0, SeekOrigin.Begin);
                     tileGuide.Save(writer);
 
                     //save data
-                    foreach (byte[] data in tileData.Values)
+                    foreach (byte[] data in tileBytes)
                         writer.Write(data);
                 }
             }
