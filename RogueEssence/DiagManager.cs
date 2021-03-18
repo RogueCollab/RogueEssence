@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Text;
 using System.Diagnostics;
 using RogueEssence.Dev;
+using System.Runtime.Serialization;
 
 namespace RogueEssence
 {
@@ -28,6 +29,7 @@ namespace RogueEssence
 
         private LogAdded errorAddedEvent;
 
+        public SerializationBinder UpgradeBinder { get; set; }
         public bool RecordingInput { get { return (ActiveDebugReplay == null && inputWriter != null); } }
         private BinaryWriter inputWriter;
         public List<FrameInput> ActiveDebugReplay;

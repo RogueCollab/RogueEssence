@@ -9,20 +9,42 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
-        public static void Reserialize(DataManager.DataType conversionFlags, SerializationBinder binder)
+        public static void ReserializeBase()
+        {
+            {
+                string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
+                object data = DataManager.LoadData(dir, DiagManager.Instance.UpgradeBinder);
+                DataManager.SaveData(dir, data);
+            }
+
+            string editPath = Path.Combine(PathMod.RESOURCE_PATH, "Extensions");
+            foreach (string dir in Directory.GetFiles(editPath, "*.op"))
+            {
+                object data = DataManager.LoadData(dir, DiagManager.Instance.UpgradeBinder);
+                DataManager.SaveData(dir, data);
+            }
+
+            foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*.fx"))
+            {
+                object data = DataManager.LoadData(dir, DiagManager.Instance.UpgradeBinder);
+                DataManager.SaveData(dir, data);
+            }
+        }
+
+        public static void Reserialize(DataManager.DataType conversionFlags)
         {
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                    ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, binder);
+                    ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT);
             }
         }
 
-        public static void ReserializeData(string dataPath, string ext, SerializationBinder binder)
+        public static void ReserializeData(string dataPath, string ext)
         {
             foreach (string dir in PathMod.GetModFiles(dataPath, "*"+ext))
             {
-                IEntryData data = (IEntryData)DataManager.LoadData(dir, binder);
+                IEntryData data = (IEntryData)DataManager.LoadData(dir, DiagManager.Instance.UpgradeBinder);
                 DataManager.SaveData(dir, data);
             }
         }

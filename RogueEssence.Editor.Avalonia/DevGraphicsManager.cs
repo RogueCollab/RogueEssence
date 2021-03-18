@@ -10,7 +10,6 @@ namespace RogueEssence.Dev
 {
     public class DevGraphicsManager
     {
-        public static string RESOURCE_PATH { get => PathMod.ASSET_PATH + "Editor/"; }
 
         private static LRUCache<TileAddr, Bitmap> tileCache;
         private static LRUCache<string, Bitmap> tilesetCache;
@@ -23,15 +22,15 @@ namespace RogueEssence.Dev
         public static void Init()
         {
             CharSheetOps = new List<CharSheetOp>();
-            foreach (string path in Directory.GetFiles(Path.Combine(RESOURCE_PATH, "Extensions"), "*.op"))
+            foreach (string path in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
                 CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
                 CharSheetOps.Add(newOp);
             }
 
 
-            IconO = new Bitmap(Path.Combine(RESOURCE_PATH, "UI/O.png"));
-            IconX = new Bitmap(Path.Combine(RESOURCE_PATH, "UI/X.png"));
+            IconO = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI/O.png"));
+            IconX = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI/X.png"));
 
             tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);

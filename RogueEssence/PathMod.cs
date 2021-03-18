@@ -13,6 +13,7 @@ namespace RogueEssence
     {
         public static string ASSET_PATH = "";
         public static string DEV_PATH = "RawAsset/";
+        public static string RESOURCE_PATH { get => ASSET_PATH + "Editor/"; }
 
         public const string MODS_PATH = "MODS/";
 

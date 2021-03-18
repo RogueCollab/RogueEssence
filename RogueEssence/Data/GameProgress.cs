@@ -488,6 +488,8 @@ namespace RogueEssence.Data
             using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
             {
                 IFormatter formatter = new BinaryFormatter();
+                if (DiagManager.Instance.UpgradeBinder != null)
+                    formatter.Binder = DiagManager.Instance.UpgradeBinder;
                 GameProgress outsave = (GameProgress)formatter.Deserialize(classStream); //Had to tweak this around a bit, so I could notify the script engine to load the script save data
                 return outsave;
             }
