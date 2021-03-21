@@ -58,6 +58,9 @@ public static class CoreDllMap
         if (registeredAssemblies.ContainsKey(assembly))
             return;
 
+        if (String.IsNullOrEmpty(assembly.Location))
+            return;
+
         // Read config XML and store details within MapDictionary
         string xmlPath = Path.Combine(
             Path.GetDirectoryName(assembly.Location),
