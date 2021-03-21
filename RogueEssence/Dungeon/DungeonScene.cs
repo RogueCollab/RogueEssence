@@ -192,28 +192,14 @@ namespace RogueEssence.Dungeon
             {
                 //For Test
                 DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
-                LogMsg("TESTING...");
-                string baseStr = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG!?";
-                string resultStr = "";
-                for (int ii = 0; ii < baseStr.Length; ii++)
-                {
-                    if (baseStr[ii] != ' ')
-                    {
-                        int en = (int)baseStr[ii];
-                        int un = en + 0xE000;
-                        resultStr = resultStr + (char)un;
-                    }
-                    else
-                        resultStr += ' ';
-                }
-                LogMsg(resultStr);
-                BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
-                ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
-                ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
-                ActiveTeam.Leader.DefBonus = form.GetMaxStatBonus(Stat.Defense);
-                ActiveTeam.Leader.MAtkBonus = form.GetMaxStatBonus(Stat.MAtk);
-                ActiveTeam.Leader.MDefBonus = form.GetMaxStatBonus(Stat.MDef);
-                ActiveTeam.Leader.SpeedBonus = form.GetMaxStatBonus(Stat.Speed);
+                LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote]));
+                //BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
+                //ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
+                //ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
+                //ActiveTeam.Leader.DefBonus = form.GetMaxStatBonus(Stat.Defense);
+                //ActiveTeam.Leader.MAtkBonus = form.GetMaxStatBonus(Stat.MAtk);
+                //ActiveTeam.Leader.MDefBonus = form.GetMaxStatBonus(Stat.MDef);
+                //ActiveTeam.Leader.SpeedBonus = form.GetMaxStatBonus(Stat.Speed);
             }
 
             if (input.Direction != Dir8.None && input.Direction != input.PrevDirection && input[FrameInput.InputType.Ctrl])

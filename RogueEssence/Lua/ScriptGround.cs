@@ -449,7 +449,13 @@ namespace RogueEssence.Script
         public LuaFunction MoveToPosition;
         public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false, int speed = 2)
         {
-            if(ent is GroundChar)
+            if (speed < 1)
+            {
+                DiagManager.Instance.LogInfo("ScriptGround.MoveToPosition(): Got invalid walk speed!");
+                return null;
+            }
+
+            if (ent is GroundChar)
             {
                 GroundChar ch = (GroundChar)ent;
                 FrameTick prevTime = new FrameTick();
@@ -463,6 +469,8 @@ namespace RogueEssence.Script
                     return newAction.Complete;
                 });
             }
+            else
+                DiagManager.Instance.LogInfo("ScriptGround.MoveToPosition(): Got invalid entity!");
             return null;
         }
 

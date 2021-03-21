@@ -729,9 +729,7 @@ namespace RogueEssence
             if (DataManager.Instance.Save == null)
                 newGamePlus(seed);
             else
-            {
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
-            }
 
             DataManager.Instance.Save.NextDest = dest;
             DataManager.Instance.Save.RestartLogs(MathUtils.Rand.NextUInt64());
@@ -741,24 +739,25 @@ namespace RogueEssence
 
         private void newGamePlus(ulong seed)
         {
+            try
+            {
+                DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+                DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+                LuaEngine.Instance.OnDebugLoad();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid debug team!");
+                return;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Money = 1000;
-            DataManager.Instance.Save.ActiveTeam.Bank = 1000000;
-            for(int ii = 0; ii < DataManager.Instance.StartChars.Count && ii < 4; ii++)
-                DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[ii], 0, 0, Gender.Unknown), DataManager.Instance.MaxLevel / 2, -1, 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[0], 0, 0, Gender.Unknown), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
-
-            DataManager.Instance.Save.ActiveTeam.Leader.IsFounder = true;
-            for (int ii = 1; ii < 100 && ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
-            {
-                DataManager.Instance.Save.ActiveTeam.Assembly.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(ii, 0, 0, Gender.Unknown), DataManager.Instance.MaxLevel / 2, -1, 0));
-            }
-
-            for (int ii = 0; ii < DataManager.Instance.Save.DungeonUnlocks.Length; ii++)
-                DataManager.Instance.Save.DungeonUnlocks[ii] = GameProgress.UnlockState.Discovered;
         }
 
         public void UpdateMeta()
@@ -804,9 +803,9 @@ namespace RogueEssence
                 {
                     MenuManager.Instance.ClearMenus();
                     if (MetaInputManager[FrameInput.InputType.ShowDebug])
-                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 1234);
+                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 0);
                     else
-                        SceneOutcome = DebugWarp(new ZoneLoc(1, new SegLoc(-1, 11), 0), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.GroundZone, new SegLoc(-1, 0), 0), 0);
                 }
             }
 

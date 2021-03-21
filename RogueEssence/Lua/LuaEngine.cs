@@ -237,6 +237,7 @@ namespace RogueEssence.Script
             Deinit,
             GraphicsLoad,
             GraphicsUnload,
+            DebugLoad,
             Restart,
             Update,
 
@@ -1490,6 +1491,10 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.GraphicsUnload.ToString());
         }
 
+        public void OnDebugLoad()
+        {
+            m_scrsvc.Publish(EServiceEvents.DebugLoad.ToString());
+        }
 
         /// <summary>
         /// Called when the game mode switches to GroundMode!

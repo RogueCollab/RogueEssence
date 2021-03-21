@@ -113,6 +113,7 @@ namespace RogueEssence.Data
         public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
         public int StartPersonality;
+        public int GroundZone;
         public ZoneLoc StartMap;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
@@ -319,6 +320,9 @@ namespace RogueEssence.Data
 
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
                     StartPersonality = Int32.Parse(startPersonality.InnerText);
+
+                    XmlNode groundZone = xmldoc.DocumentElement.SelectSingleNode("GroundZone");
+                    GroundZone = Int32.Parse(groundZone.InnerText);
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(Int32.Parse(startMap.SelectSingleNode("Zone").InnerText),

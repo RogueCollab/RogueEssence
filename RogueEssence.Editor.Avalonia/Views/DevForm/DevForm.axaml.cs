@@ -166,7 +166,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    ZoneData zone = DataManager.Instance.GetZone(1);
+                    ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.GroundZone);
                     devViewModel.Travel.Grounds.Clear();
                     for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
                         devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);

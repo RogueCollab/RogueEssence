@@ -61,7 +61,7 @@ namespace RogueEssence.Ground
             //if (!connected)
             //    yield break;
 
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new GetHelpMenu()));
+            //yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new GetHelpMenu()));
 
             yield break;
         }
@@ -72,9 +72,7 @@ namespace RogueEssence.Ground
             InputManager input = GameManager.Instance.MetaInputManager;
 
             if (input.JustPressed(FrameInput.InputType.Test))
-            {
                 PendingLeaderAction = test();
-            }
 
             if (input.JustReleased(FrameInput.InputType.RightMouse) && input[FrameInput.InputType.Ctrl])
             {
