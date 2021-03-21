@@ -74,7 +74,9 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref chosenMonster, value);
-                SpeciesChanged();
+
+                if (chosenMonster > -1)
+                    SpeciesChanged();
             }
         }
 
@@ -86,7 +88,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return chosenForm; }
             set { this.SetIfChanged(ref chosenForm, value);
-                UpdateSprite();
+                if (chosenForm > -1)
+                    UpdateSprite();
             }
         }
 
@@ -97,7 +100,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return chosenSkin; }
             set { this.SetIfChanged(ref chosenSkin, value);
-                UpdateSprite();
+                if (chosenSkin > -1)
+                    UpdateSprite();
             }
         }
 
@@ -108,7 +112,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return chosenGender; }
             set { this.SetIfChanged(ref chosenGender, value);
-                UpdateSprite();
+                if (chosenGender > -1)
+                    UpdateSprite();
             }
         }
 
@@ -170,9 +175,6 @@ namespace RogueEssence.Dev.ViewModels
         bool updating;
         private void SpeciesChanged()
         {
-            if (chosenMonster == -1)
-                return;
-
             bool prevUpdate = updating;
             updating = true;
 
