@@ -272,6 +272,48 @@ namespace RogueEssence.Content
             dest.SetData<Color>(0, new Rectangle(destX, destY, srcW, srcH), color, 0, color.Length);
         }
 
+
+        public static void Blit(Color[] source, Color[] dest, Point srcSz, Point destSz, Point destPt, SpriteEffects flip)
+        {
+            bool flipH = (flip & SpriteEffects.FlipHorizontally) != SpriteEffects.None;
+            bool flipV = (flip & SpriteEffects.FlipVertically) != SpriteEffects.None;
+            if (flipH || flipV)
+            {
+                Color[] newColor = new Color[source.Length];
+                for (int xx = 0; xx < srcSz.X; xx++)
+                {
+                    for (int yy = 0; yy < srcSz.Y; yy++)
+                    {
+                        int srcIdx = yy * srcSz.X + xx;
+                        int destIdx = (flipV ? srcSz.Y - yy - 1 : yy) * srcSz.X + (flipH ? srcSz.X - xx - 1 : xx);
+                        newColor[destIdx] = source[srcIdx];
+                    }
+                }
+                source = newColor;
+            }
+            for (int xx = 0; xx < srcSz.X; xx++)
+            {
+                for (int yy = 0; yy < srcSz.Y; yy++)
+                {
+                    int srcIdx = yy * srcSz.X + xx;
+                    int destIdx = (yy + destPt.Y) * destSz.X + (xx + destPt.X);
+                    dest[destIdx] = source[srcIdx];
+                }
+            }
+        }
+
+        public static Color[] GetData(BaseSheet source, int srcPx, int srcPy, int srcW, int srcH)
+        {
+            return GetData(source.baseTexture, srcPx, srcPy, srcW, srcH);
+        }
+
+        public static Color[] GetData(Texture2D source, int srcPx, int srcPy, int srcW, int srcH)
+        {
+            Color[] color = new Color[srcW * srcH];
+            source.GetData<Color>(0, new Rectangle(srcPx, srcPy, srcW, srcH), color, 0, color.Length);
+            return color;
+        }
+
         public void BlitColor(Color srcColor, int srcW, int srcH, int destX, int destY)
         {
             BaseSheet.BlitColor(srcColor, baseTexture, srcW, srcH, destX, destY);

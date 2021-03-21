@@ -20,6 +20,9 @@
       <MenuItem Header="_Edit">
         <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}"/>
         <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}"/>
+        <Separator/>
+        <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}"/>
+        <MenuItem Header="Mass Export Multi Sheet" Command="{Binding mnuMassExportMulti_Click}"/>
       </MenuItem>
     </Menu>
     <Grid>

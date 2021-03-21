@@ -104,6 +104,36 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public async void mnuMassExport_Click()
+        {
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            string folder = await openFileDialog.ShowAsync(parent);
+
+            if (folder != "")
+            {
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        MassExport(CachedPath);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
         public async void btnImport_Click()
         {
             //remember addresses in registry
@@ -248,6 +278,15 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        private void MassExport(string currentPath)
+        {
+            string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                Export(currentPath + filename, filename);
+            }
+        }
 
         private void Export(string currentPath, string anim)
         {

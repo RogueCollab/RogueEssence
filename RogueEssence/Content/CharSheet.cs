@@ -162,14 +162,16 @@ namespace RogueEssence.Content
         //save will save as .chara
 
 
-        private static void mapDuplicates(List<(Texture2D img, Rectangle rect, OffsetData offsets)> imgs, List<(Texture2D img, Rectangle rect, OffsetData offsets)> final_imgs, CharAnimFrame[] img_map, bool offsetCheck)
+        private static void mapDuplicates(List<(Color[] img, Rectangle rect, OffsetData offsets)> imgs, List<(Color[] img, Rectangle rect, OffsetData offsets)> final_imgs, CharAnimFrame[] img_map, bool offsetCheck)
         {
             for (int xx = 0; xx < imgs.Count; xx++)
             {
                 bool dupe = false;
                 for (int yy = 0; yy < final_imgs.Count; yy++)
                 {
-                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, false) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false, imgs[xx].img.Width % 2 == 1));
+                    Point szFinal = new Point(final_imgs[yy].rect.Width, final_imgs[yy].rect.Height);
+                    Point sz = new Point(imgs[xx].rect.Width, imgs[xx].rect.Height);
+                    bool imgs_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, szFinal, sz, false) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, false, sz.X % 2 == 1));
                     if (imgs_equal)
                     {
                         CharAnimFrame map_frame = new CharAnimFrame();
@@ -178,7 +180,7 @@ namespace RogueEssence.Content
                         dupe = true;
                         break;
                     }
-                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, true) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true, imgs[xx].img.Width % 2 == 1));
+                    bool flip_equal = imgsEqual(final_imgs[yy].img, imgs[xx].img, szFinal, sz, true) && (!offsetCheck || offsetsEqual(final_imgs[yy].offsets, imgs[xx].offsets, true, sz.X % 2 == 1));
                     if (flip_equal)
                     {
                         CharAnimFrame map_frame = new CharAnimFrame();
@@ -204,29 +206,25 @@ namespace RogueEssence.Content
         /// <summary>
         /// Assume 0,0 to be the center of their respective images. Images can be of different sizes.
         /// </summary>
-        /// <param name="img1"></param>
-        /// <param name="img2"></param>
-        /// <param name="rect1"></param>
-        /// <param name="rect2"></param>
+        /// <param name="data1"></param>
+        /// <param name="data2"></param>
+        /// <param name="sz1"></param>
+        /// <param name="sz2"></param>
+        /// <param name="flip"></param>
         /// <returns></returns>
-        private static bool imgsEqual(Texture2D img1, Texture2D img2, bool flip)
+        private static bool imgsEqual(Color[] data1, Color[] data2, Point sz1, Point sz2, bool flip)
         {
-            if (img1.Width != img2.Width || img1.Height != img2.Height)
+            if (sz1 != sz2)
                 return false;
-
-            Color[] data1 = new Color[img1.Width * img1.Height];
-            img1.GetData<Color>(0, null, data1, 0, data1.Length);
-            Color[] data2 = new Color[img2.Width * img2.Height];
-            img2.GetData<Color>(0, null, data2, 0, data2.Length);
 
             for (int ii = 0; ii < data1.Length; ii++)
             {
                 int result_ii = ii;
                 if (flip)
                 {
-                    int yPoint = ii / img1.Width;
-                    int xPoint = ii % img1.Width;
-                    result_ii = (yPoint + 1) * img1.Width - 1 - xPoint;
+                    int yPoint = ii / sz1.X;
+                    int xPoint = ii % sz1.X;
+                    result_ii = (yPoint + 1) * sz1.X - 1 - xPoint;
                 }
                 if (data1[ii] != data2[result_ii])
                     return false;
@@ -541,7 +539,7 @@ namespace RogueEssence.Content
 
                 Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
                 //load all available tilesets
-                List<(Texture2D img, Rectangle rect, OffsetData offsets)> frames = new List<(Texture2D, Rectangle, OffsetData)>();
+                List<(Color[] img, Rectangle rect, OffsetData offsets)> frames = new List<(Color[], Rectangle, OffsetData)>();
                 List<(int frameType, int dir, int frame)> frameToSequence = new List<(int, int, int)>();
                 //get all frames
                 //TODO: check against animations present in png files but missing from xml
@@ -607,8 +605,7 @@ namespace RogueEssence.Content
                                 imgCoveredRect = new Rectangle(tileWidth / 2, tileHeight / 2, 1, 1);
 
                             //first blit, then edit the rect sizes
-                            Texture2D frameTex = new Texture2D(device, imgCoveredRect.Width, imgCoveredRect.Height);
-                            BaseSheet.Blit(animSheet, frameTex, jj * tileWidth + imgCoveredRect.X, sheetIndex * tileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
+                            Color[] frameTex = BaseSheet.GetData(animSheet, jj * tileWidth + imgCoveredRect.X, sheetIndex * tileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height);
                             //the final tile size must be able to contain this image
                             maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
                             maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
@@ -668,19 +665,20 @@ namespace RogueEssence.Content
                 maxHeight = roundUpToMult(maxHeight, 2);
 
                 CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
-                List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
+                List<(Color[] img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Color[], Rectangle, OffsetData)>();
                 mapDuplicates(frames, finalFrames, frameMap, true);
 
                 int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
-                Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+                Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
+                Color[] texColors = new Color[texSize.X * texSize.Y];
 
-                List<OffsetData> offsetData = new List<OffsetData>();
+                List <OffsetData> offsetData = new List<OffsetData>();
                 for (int ii = 0; ii < finalFrames.Count; ii++)
                 {
-                    int diffX = maxWidth / 2 - finalFrames[ii].img.Width / 2;
-                    int diffY = maxHeight / 2 - finalFrames[ii].img.Height / 2;
-                    BaseSheet.Blit(finalFrames[ii].img, tex, 0, 0, finalFrames[ii].img.Width, finalFrames[ii].img.Height,
-                        maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY);
+                    int diffX = maxWidth / 2 - finalFrames[ii].rect.Width / 2;
+                    int diffY = maxHeight / 2 - finalFrames[ii].rect.Height / 2;
+                    BaseSheet.Blit(finalFrames[ii].img, texColors, new Point(finalFrames[ii].rect.Width, finalFrames[ii].rect.Height), texSize,
+                        new Point(maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY), SpriteEffects.None);
                     OffsetData endData = finalFrames[ii].offsets;
 
                     offsetData.Add(endData);
@@ -693,13 +691,10 @@ namespace RogueEssence.Content
                     animFrame.Flip = mapFrame.Flip;
                     int finalIndex = mapFrame.Frame.X;
                     //if an image with an odd number of pixels is flipped, it must be moved over slightly
-                    if (animFrame.Flip && frames[ii].Item1.Width % 2 == 1)
+                    if (animFrame.Flip && frames[ii].rect.Width % 2 == 1)
                         animFrame.Offset = animFrame.Offset + Loc.UnitX;
                     animFrame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
                 }
-
-                for (int ii = 0; ii < frames.Count; ii++)
-                    frames[ii].Item1.Dispose();
 
                 // automatically add default animation
                 {
@@ -718,6 +713,9 @@ namespace RogueEssence.Content
                     animData[0] = anim;
                 }
 
+                Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+                tex.SetData<Color>(0, null, texColors, 0, texColors.Length);
+
                 return new CharSheet(tex, maxWidth, maxHeight, shadowSize, animData, offsetData);
             }
             else
@@ -732,7 +730,7 @@ namespace RogueEssence.Content
 
             Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
             //load all available tilesets
-            List<(Texture2D img, Rectangle rect, OffsetData offsets)> frames = new List<(Texture2D, Rectangle, OffsetData)>();
+            List<(Color[] img, Rectangle rect, OffsetData offsets)> frames = new List<(Color[], Rectangle, OffsetData)>();
             //get all frames
             for (int kk = 0; kk < OffsetData.Count; kk++)
             {
@@ -744,8 +742,7 @@ namespace RogueEssence.Content
                     imgCoveredRect = new Rectangle(TileWidth / 2, TileHeight / 2, 1, 1);
 
                 //first blit, then edit the rect sizes
-                Texture2D frameTex = new Texture2D(device, imgCoveredRect.Width, imgCoveredRect.Height);
-                BaseSheet.Blit(baseTexture, frameTex, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height, 0, 0);
+                Color[] frameTex = BaseSheet.GetData(baseTexture, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height);
                 //the final tile size must be able to contain this image
                 maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
                 maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
@@ -768,19 +765,20 @@ namespace RogueEssence.Content
             maxHeight = roundUpToMult(maxHeight, 2);
 
             CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
-            List<(Texture2D img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Texture2D, Rectangle, OffsetData)>();
+            List<(Color[] img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Color[], Rectangle, OffsetData)>();
             mapDuplicates(frames, finalFrames, frameMap, false);
 
             int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
-            Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+            Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
+            Color[] texColors = new Color[texSize.X * texSize.Y];
 
             List<OffsetData> offsetData = new List<OffsetData>();
             for (int ii = 0; ii < finalFrames.Count; ii++)
             {
-                int diffX = maxWidth / 2 - finalFrames[ii].img.Width / 2;
-                int diffY = maxHeight / 2 - finalFrames[ii].img.Height / 2;
-                BaseSheet.Blit(finalFrames[ii].img, tex, 0, 0, finalFrames[ii].img.Width, finalFrames[ii].img.Height,
-                    maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY);
+                int diffX = maxWidth / 2 - finalFrames[ii].rect.Width / 2;
+                int diffY = maxHeight / 2 - finalFrames[ii].rect.Height / 2;
+                BaseSheet.Blit(finalFrames[ii].img, texColors, new Point(finalFrames[ii].rect.Width, finalFrames[ii].rect.Height), texSize,
+                    new Point(maxWidth * (ii % maxSize) + diffX, maxHeight * (ii / maxSize) + diffY), SpriteEffects.None);
                 OffsetData endData = finalFrames[ii].offsets;
 
                 offsetData.Add(endData);
@@ -798,7 +796,7 @@ namespace RogueEssence.Content
                         CharAnimFrame mapFrame = frameMap[fromIndex];
                         frame.Flip ^= mapFrame.Flip;
                         int finalIndex = mapFrame.Frame.X;
-                        if (frames[fromIndex].Item1.Width % 2 == 1 && mapFrame.Flip)
+                        if (frames[fromIndex].rect.Width % 2 == 1 && mapFrame.Flip)
                         {
                             if (frame.Flip)
                                 frame.Offset = frame.Offset + Loc.UnitX;
@@ -809,8 +807,8 @@ namespace RogueEssence.Content
                     }
                 }
             }
-            for(int ii = 0; ii < frames.Count; ii++)
-                frames[ii].Item1.Dispose();
+            Texture2D tex = new Texture2D(device, maxSize * maxWidth, maxSize * maxHeight);
+            tex.SetData<Color>(0, null, texColors, 0, texColors.Length);
 
             SetTileTexture(tex, maxWidth, maxHeight);
             OffsetData = offsetData;
@@ -873,8 +871,8 @@ namespace RogueEssence.Content
                 using (Stream stream = new FileStream(baseDirectory + "Anim.png", FileMode.Create, FileAccess.Write, FileShare.None))
                     ExportTex(stream, sheet.baseTexture);
 
-                Texture2D particleImg = new Texture2D(device, sheet.baseTexture.Width, sheet.baseTexture.Height);
-                Color[] particleColors = new Color[particleImg.Width * particleImg.Height];
+                Point imgSize = new Point(sheet.baseTexture.Width, sheet.baseTexture.Height);
+                Color[] particleColors = new Color[imgSize.X * imgSize.Y];
 
                 Loc tileSize = new Loc(sheet.TileWidth, sheet.TileHeight);
                 for (int ii = 0; ii < sheet.OffsetData.Count; ii++)
@@ -882,16 +880,13 @@ namespace RogueEssence.Content
                     OffsetData offsets = sheet.OffsetData[ii];
                     Loc tilePos = new Loc(ii % sheet.TotalX, ii / sheet.TotalX) * tileSize;
                     tilePos = tilePos + tileSize / 2;
-                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.Center, new Color(0, 255, 0, 255));
-                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.Head, new Color(0, 0, 0, 255));
-                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.LeftHand, new Color(255, 0, 0, 255));
-                    setOffsetsToRGB(particleColors, particleImg.Width, tilePos + offsets.RightHand, new Color(0, 0, 255, 255));
+                    setOffsetsToRGB(particleColors, imgSize.X, tilePos + offsets.Center, new Color(0, 255, 0, 255));
+                    setOffsetsToRGB(particleColors, imgSize.X, tilePos + offsets.Head, new Color(0, 0, 0, 255));
+                    setOffsetsToRGB(particleColors, imgSize.X, tilePos + offsets.LeftHand, new Color(255, 0, 0, 255));
+                    setOffsetsToRGB(particleColors, imgSize.X, tilePos + offsets.RightHand, new Color(0, 0, 255, 255));
                 }
 
-                particleImg.SetData<Color>(0, null, particleColors, 0, particleColors.Length);
-                using (Stream stream = new FileStream(baseDirectory + "Offsets.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                    ExportTex(stream, particleImg);
-
+                exportColors(baseDirectory + "Offsets.png", particleColors, imgSize);
 
                 XmlDocument doc = new XmlDocument();
                 XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
@@ -976,21 +971,25 @@ namespace RogueEssence.Content
             {
                 // calculate the max bounds of each animation
                 // this is relative to the center of the frame
-                List<(Rectangle, Rectangle)> frames_bounds_tight = new List<(Rectangle, Rectangle)>();
+                List<(Rectangle crop_rect, Rectangle frame_rect, Color[] colors)> frames_data = new List<(Rectangle, Rectangle, Color[])>();
                 // use offsets because they conveniently give the actual number of unique frames
                 for (int ii = 0; ii < sheet.OffsetData.Count; ii++)
                 {
                     Loc rectStart = new Loc(ii % sheet.TotalX, ii / sheet.TotalX);
                     Rectangle crop_rect = GetCoveredRect(sheet.baseTexture, new Rectangle(rectStart.X * sheet.TileWidth, rectStart.Y * sheet.TileHeight, sheet.TileWidth, sheet.TileHeight));
+                    Rectangle source_rect = new Rectangle(rectStart.X * sheet.TileWidth + crop_rect.X, rectStart.Y * sheet.TileHeight + crop_rect.Y,
+                        crop_rect.Width, crop_rect.Height);
+                    Color[] frame_colors = BaseSheet.GetData(sheet, source_rect.X, source_rect.Y, source_rect.Width, source_rect.Height);
 
                     Rectangle frame_rect = addToBounds(crop_rect, new Loc(-sheet.TileWidth / 2, -sheet.TileHeight / 2));
                     frame_rect = combineExtents(frame_rect, sheet.OffsetData[ii].GetCoveredRect());
-                    frames_bounds_tight.Add((crop_rect, frame_rect));
+                    frames_data.Add((crop_rect, frame_rect, frame_colors));
                 }
 
                 Dictionary<int, Rectangle> groupBounds = new Dictionary<int, Rectangle>();
                 Rectangle shadow_rect = new Rectangle(-GraphicsManager.MarkerShadow.Width / 2, -GraphicsManager.MarkerShadow.Height / 2, GraphicsManager.MarkerShadow.Width, GraphicsManager.MarkerShadow.Height);
                 Rectangle shadow_rect_tight = GraphicsManager.MarkerShadow.GetCoveredRect(new Rectangle(0, 0, GraphicsManager.MarkerShadow.Width, GraphicsManager.MarkerShadow.Height));
+                Color[] markerColors = BaseSheet.GetData(GraphicsManager.MarkerShadow, shadow_rect_tight.X, shadow_rect_tight.Y, shadow_rect_tight.Width, shadow_rect_tight.Height);
 
                 // get max bounds for all animations
                 foreach (int key in sheet.AnimData.Keys)
@@ -1005,7 +1004,7 @@ namespace RogueEssence.Content
                     {
                         foreach (CharAnimFrame frame in sequence.Frames)
                         {
-                            Rectangle frame_rect = frames_bounds_tight[frame.Frame.X + frame.Frame.Y * sheet.TotalX].Item2;
+                            Rectangle frame_rect = frames_data[frame.Frame.X + frame.Frame.Y * sheet.TotalX].frame_rect;
                             if (frame.Flip)
                                 frame_rect = mirrorRect(frame_rect);
                             frame_rect = addToBounds(frame_rect, frame.Offset);
@@ -1033,10 +1032,10 @@ namespace RogueEssence.Content
                     Rectangle maxBounds = groupBounds[key];
                     int framesPerAnim = sheet.AnimData[key].Sequences[0].Frames.Count;
 
-                    Texture2D animImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
-                    Texture2D particleImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
-                    Color[] particleColors = new Color[particleImg.Width * particleImg.Height];
-                    Texture2D shadowImg = new Texture2D(device, maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
+                    Point imgSize = new Point(maxBounds.Width * framesPerAnim, maxBounds.Height * sheet.AnimData[key].Sequences.Count);
+                    Color[] animColors = new Color[imgSize.X * imgSize.Y];
+                    Color[] particleColors = new Color[imgSize.X * imgSize.Y];
+                    Color[] shadowColors = new Color[imgSize.X * imgSize.Y];
 
                     for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
                     {
@@ -1048,9 +1047,10 @@ namespace RogueEssence.Content
                         {
                             CharAnimFrame frame = sequence.Frames[jj];
                             //get the absolute position of the rectangle to blit from
-                            Rectangle crop_rect = frames_bounds_tight[frame.Frame.X + frame.Frame.Y * sheet.TotalX].Item1;
+                            Rectangle crop_rect = frames_data[frame.Frame.X + frame.Frame.Y * sheet.TotalX].crop_rect;
                             Rectangle source_rect = new Rectangle(frame.Frame.X * sheet.TileWidth + crop_rect.X, frame.Frame.Y * sheet.TileHeight + crop_rect.Y,
                                 crop_rect.Width, crop_rect.Height);
+                            Color[] frameColors = frames_data[frame.Frame.X + frame.Frame.Y * sheet.TotalX].colors;
 
                             Loc tilePos = new Loc(jj * maxBounds.Width, sheetIndex * maxBounds.Height);
                             //add half of the maxbounds to get the center
@@ -1068,36 +1068,29 @@ namespace RogueEssence.Content
                             }
                             Loc pastePos = atlasPastePos + new Loc(crop_dest_rect.X, crop_dest_rect.Y);
 
-                            BaseSheet.Blit(sheet.baseTexture, animImg, source_rect.X, source_rect.Y, source_rect.Width, source_rect.Height,
-                                pastePos.X, pastePos.Y, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                            BaseSheet.Blit(frameColors, animColors, new Point(source_rect.Width, source_rect.Height), imgSize,
+                                new Point(pastePos.X, pastePos.Y), frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
 
                             OffsetData offsets = sheet.OffsetData[frame.Frame.X + frame.Frame.Y * sheet.TotalX];
-                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.CenterFlip : offsets.Center), new Color(0, 255, 0, 255));
-                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.HeadFlip : offsets.Head), new Color(0, 0, 0, 255));
-                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.LeftHandFlip : offsets.LeftHand), new Color(255, 0, 0, 255));
-                            setOffsetsToRGB(particleColors, particleImg.Width, framePos + (frame.Flip ? offsets.RightHandFlip : offsets.RightHand), new Color(0, 0, 255, 255));
+                            setOffsetsToRGB(particleColors, imgSize.X, framePos + (frame.Flip ? offsets.CenterFlip : offsets.Center), new Color(0, 255, 0, 255));
+                            setOffsetsToRGB(particleColors, imgSize.X, framePos + (frame.Flip ? offsets.HeadFlip : offsets.Head), new Color(0, 0, 0, 255));
+                            setOffsetsToRGB(particleColors, imgSize.X, framePos + (frame.Flip ? offsets.LeftHandFlip : offsets.LeftHand), new Color(255, 0, 0, 255));
+                            setOffsetsToRGB(particleColors, imgSize.X, framePos + (frame.Flip ? offsets.RightHandFlip : offsets.RightHand), new Color(0, 0, 255, 255));
 
                             Loc shadowPos = centerPos + frame.ShadowOffset;
                             shadowPos = shadowPos + new Loc(shadow_rect.X, shadow_rect.Y);
                             shadowPos = shadowPos + new Loc(shadow_rect_tight.X, shadow_rect_tight.Y);
 
-                            BaseSheet.Blit(GraphicsManager.MarkerShadow, shadowImg, shadow_rect_tight.X, shadow_rect_tight.Y, shadow_rect_tight.Width,
-                                shadow_rect_tight.Height, shadowPos.X, shadowPos.Y);
+                            BaseSheet.Blit(markerColors, shadowColors, new Point(shadow_rect_tight.Width, shadow_rect_tight.Height), imgSize,
+                                new Point(shadowPos.X, shadowPos.Y), SpriteEffects.None);
                         }
                     }
-
                     string name = GraphicsManager.Actions[key].Name;
-                    using (Stream stream = new FileStream(baseDirectory + name + "-Anim.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                        ExportTex(stream, animImg);
-                    particleImg.SetData<Color>(0, null, particleColors, 0, particleColors.Length);
-                    using (Stream stream = new FileStream(baseDirectory + name + "-Offsets.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                        ExportTex(stream, particleImg);
-                    using (Stream stream = new FileStream(baseDirectory + name + "-Shadow.png", FileMode.Create, FileAccess.Write, FileShare.None))
-                        ExportTex(stream, shadowImg);
 
-                    animImg.Dispose();
-                    particleImg.Dispose();
-                    shadowImg.Dispose();
+                    exportColors(baseDirectory + name + "-Anim.png", animColors, imgSize);
+                    exportColors(baseDirectory + name + "-Offsets.png", particleColors, imgSize);
+                    exportColors(baseDirectory + name + "-Shadow.png", shadowColors, imgSize);
+
                 }
 
                 XmlDocument doc = new XmlDocument();
@@ -1153,6 +1146,16 @@ namespace RogueEssence.Content
                 doc.Save(baseDirectory + "AnimData.xml");
             }
         }
+
+        private static void exportColors(string fileName, Color[] colors, Point imgSize)
+        {
+            Texture2D animImg = new Texture2D(device, imgSize.X, imgSize.Y);
+            animImg.SetData<Color>(0, null, colors, 0, colors.Length);
+            using (Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                ExportTex(stream, animImg);
+            animImg.Dispose();
+        }
+
 
         public static new CharSheet Load(BinaryReader reader)
         {

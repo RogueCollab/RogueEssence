@@ -195,6 +195,45 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void mnuMassExportMulti_Click()
+        {
+            MassExportFlow(false);
+        }
+        public void mnuMassExport_Click()
+        {
+            MassExportFlow(true);
+        }
+
+        public async void MassExportFlow(bool singleSheet)
+        {
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            string folder = await openFileDialog.ShowAsync(parent);
+
+            if (folder != "")
+            {
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        MassExport(CachedPath, singleSheet);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
         public async void mnuReIndex_Click()
         {
             try
@@ -431,9 +470,46 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        private void MassExport(string currentPath, bool singleSheet)
+        {
+            CharaIndexNode charaNode = GetIndexNode();
+            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+            {
+                FormEntrySummary dex = (FormEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
+
+                MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
+                if (hasSprite(charaNode, dexID))
+                    Export(currentPath + ii.ToString("D4") + "/", dexID, singleSheet);
+                for (int jj = 0; jj < dex.FormTexts.Count; jj++)
+                {
+                    MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
+                    if (hasSprite(charaNode, formID))
+                        Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID, singleSheet);
+                    for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
+                    {
+                        SkinData skinData = DataManager.Instance.GetSkin(kk);
+                        if (!skinData.Challenge)
+                        {
+                            MonsterID skinID = new MonsterID(ii, jj, kk, Gender.Unknown);
+                            if (hasSprite(charaNode, skinID))
+                                Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/", skinID, singleSheet);
+                            for (int mm = 0; mm < 3; mm++)
+                            {
+                                MonsterID genderID = new MonsterID(ii, jj, kk, (Gender)mm);
+                                if (hasSprite(charaNode, genderID))
+                                    Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         private void Export(string currentPath, MonsterID currentForm, bool singleSheet)
         {
+            if (!Directory.Exists(currentPath))
+                Directory.CreateDirectory(currentPath);
+
             if (checkSprites)
             {
                 CharSheet sheet = GraphicsManager.GetChara(currentForm);
