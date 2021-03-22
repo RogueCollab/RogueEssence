@@ -1,0 +1,44 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+        x:Class="RogueEssence.Dev.Views.TilesetEditForm"
+        Title="Tiles" Height="280" Width="300">
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+      <vm:TilesetEditViewModel/>
+    </Design.DataContext>
+  <Window.Resources>
+  </Window.Resources>
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}"/>
+        <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}"/>
+        <Separator/>
+        <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}"/>
+      </MenuItem>
+    </Menu>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="34"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <views:SearchListBox DataContext="{Binding Tilesets}" Margin="4" Grid.ColumnSpan="4"/>
+      <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button>
+      <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button>
+      <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Export</Button>
+      <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button>
+    </Grid>
+  </DockPanel>
+</Window>

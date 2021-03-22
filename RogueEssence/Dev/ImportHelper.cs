@@ -270,84 +270,88 @@ namespace RogueEssence.Dev
             foreach (string sizeDir in sizeDirs)
             {
                 int tileSize = GetDirSize(sizeDir);
-                if (tileSize == 0)
-                    continue;
+                ImportAllTiles(sizeDir, cachePattern, includeTile, includeAutotile, tileSize);
+            }
+        }
 
-                if (includeTile)
+        public static void ImportAllTiles(string sourceDir, string cachePattern, bool includeTile, bool includeAutotile, int tileSize)
+        {
+            if (tileSize == 0)
+                return;
+
+            if (includeTile)
+            {
+                string[] dirs = Directory.GetFiles(sourceDir, "*.png");
+                //go through each sprite folder, and each form folder
+                for (int ii = 0; ii < dirs.Length; ii++)
                 {
-                    string[] dirs = Directory.GetFiles(sizeDir, "*.png");
-                    //go through each sprite folder, and each form folder
-                    for (int ii = 0; ii < dirs.Length; ii++)
+                    string fileName = Path.GetFileNameWithoutExtension(dirs[ii]);
+                    string outputFile = String.Format(cachePattern, fileName);
+
+                    try
                     {
-                        string fileName = Path.GetFileNameWithoutExtension(dirs[ii]);
-                        string outputFile = String.Format(cachePattern, fileName);
-
-                        try
-                        {
-                            DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
-                            using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
-                            {
-                                List<BaseSheet> tileList = new List<BaseSheet>();
-                                tileList.Add(tileset);
-                                SaveTileSheet(tileList, outputFile, tileSize);
-                            }
-                        }
-
-                        catch (Exception ex)
-                        {
-                            DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
-                        }
-                    }
-                }
-
-                if (includeAutotile)
-                {
-                    string[] dirs = Directory.GetDirectories(sizeDir);
-                    for (int ii = 0; ii < dirs.Length; ii++)
-                    {
-                        string fileName = Path.GetFileName(dirs[ii]);
-                        string[] info = fileName.Split('.');
-                        string outputFile = String.Format(cachePattern, info[0]);
-                        DiagManager.Instance.LoadMsg = "Importing " + info[0];
-
-                        try
+                        DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
+                        using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
                         {
                             List<BaseSheet> tileList = new List<BaseSheet>();
-                            foreach (string tileTitle in TILE_TITLES)
-                            {
-                                int layerIndex = 0;
-                                while (true)
-                                {
-                                    string[] layers = Directory.GetFiles(dirs[ii], tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
-                                    if (layers.Length == 1)
-                                    {
-                                        BaseSheet tileset = BaseSheet.Import(layers[0]);
-                                        tileList.Add(tileset);
-                                    }
-                                    else if (layers.Length > 1)
-                                    {
-                                        throw new Exception("More files than expected");
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                    layerIndex++;
-                                }
-                            }
+                            tileList.Add(tileset);
                             SaveTileSheet(tileList, outputFile, tileSize);
-                            foreach (BaseSheet tex in tileList)
-                                tex.Dispose();
                         }
-                        catch (Exception ex)
+                    }
+
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                    }
+                }
+            }
+
+            if (includeAutotile)
+            {
+                string[] dirs = Directory.GetDirectories(sourceDir);
+                for (int ii = 0; ii < dirs.Length; ii++)
+                {
+                    string fileName = Path.GetFileName(dirs[ii]);
+                    string[] info = fileName.Split('.');
+                    string outputFile = String.Format(cachePattern, info[0]);
+                    DiagManager.Instance.LoadMsg = "Importing " + info[0];
+
+                    try
+                    {
+                        List<BaseSheet> tileList = new List<BaseSheet>();
+                        foreach (string tileTitle in TILE_TITLES)
                         {
-                            DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
+                            int layerIndex = 0;
+                            while (true)
+                            {
+                                string[] layers = Directory.GetFiles(dirs[ii], tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
+                                if (layers.Length == 1)
+                                {
+                                    BaseSheet tileset = BaseSheet.Import(layers[0]);
+                                    tileList.Add(tileset);
+                                }
+                                else if (layers.Length > 1)
+                                {
+                                    throw new Exception("More files than expected");
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                layerIndex++;
+                            }
                         }
+                        SaveTileSheet(tileList, outputFile, tileSize);
+                        foreach (BaseSheet tex in tileList)
+                            tex.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(new Exception("Error importing " + fileName + "\n", ex));
                     }
                 }
             }
         }
-
 
         public static void SaveTileSheet(List<BaseSheet> tileList, string destFile, int tileSize)
         {

@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="RogueEssence.Dev.Views.MapRetileWindow"
-        Title="Re-Tile Map" Height="180" Width="280" Opened="Window_Loaded">
+        Title="Tileset Size" Height="180" Width="280" Opened="Window_Loaded">
   <Design.DataContext>
     <vm:MapRetileViewModel/>
   </Design.DataContext>
@@ -23,7 +23,7 @@
     </Grid.ColumnDefinitions>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Tile Size (Pixels)</TextBlock>
     <NumericUpDown Value="{Binding TileSize}" Minimum="1" Maximum="256" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"></NumericUpDown>
-    <TextBlock Margin="4" TextWrapping="Wrap" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Tile size must be divisible by 8. All textures will be erased from all layers upon completing this operation."/>
+    <TextBlock Margin="4" TextWrapping="Wrap" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Message}"/>
     <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="0">OK</Button>
     <Button Click="btnCancel_Click" Margin="4" Grid.Row="3" Grid.Column="1">Cancel</Button>
   </Grid>

@@ -42,6 +42,9 @@
     <Compile Update="DataEditor\DataEditForm.axaml.cs">
       <DependentUpon>DataEditForm.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Content\TilesetEditForm.axaml.cs">
+      <DependentUpon>TilesetEditForm.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Content\AnimEditForm.axaml.cs">
       <DependentUpon>AnimEditForm.axaml</DependentUpon>
     </Compile>

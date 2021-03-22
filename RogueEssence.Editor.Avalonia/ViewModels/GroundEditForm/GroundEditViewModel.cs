@@ -205,7 +205,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void mnuReTile_Click()
         {
             MapRetileWindow window = new MapRetileWindow();
-            MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize);
+            MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize, "Tile size must be divisible by 8. All textures will be erased from all layers upon completing this operation.");
             window.DataContext = viewModel;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -330,7 +330,16 @@ namespace RogueEssence.Dev.ViewModels
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                {
+                    AutoTile tile = new AutoTile();
+                    TileFrame newFrame = new TileFrame(new Loc(xx, yy), sheetName);
+                    //check for emptiness
+                    long tilePos = GraphicsManager.TileIndex.GetPosition(newFrame.Sheet, newFrame.TexLoc);
+                    if (tilePos > 0)
+                        tile.Layers.Add(new TileLayer(newFrame));
+
+                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = tile;
+                }
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);

@@ -11,9 +11,10 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class MapRetileViewModel : ViewModelBase
     {
-        public MapRetileViewModel(int origSize)
+        public MapRetileViewModel(int origSize, string msg)
         {
             TileSize = origSize;
+            Message = msg;
         }
 
         private int tileSize;
@@ -37,5 +38,15 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+        private string message;
+        public string Message
+        {
+            get { return message; }
+            set
+            {
+                this.SetIfChanged(ref message, value);
+            }
+        }
     }
 }
