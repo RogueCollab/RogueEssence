@@ -4,10 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.CollectionBox">
   <Design.DataContext>
     <vm:CollectionBoxViewModel/>
   </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
+  </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
@@ -19,7 +23,13 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <ListBox Name="lbxItems" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50"/>
+    <ListBox Name="lbxItems" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Converter={StaticResource ClassEntryConverter}}"/>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
     <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
     <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>

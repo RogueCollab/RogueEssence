@@ -76,7 +76,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int index = CurrentPage * SpacesPerPage + CurrentChoice;
+            int index = CurrentChoiceTotal;
             if (index < mapIndices.Count)
             {
                 int entryIndex = mapIndices[index];

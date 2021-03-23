@@ -41,15 +41,21 @@ namespace RogueEssence.Ground
 
         public override void Exit()
         {
+            ResetAnims();
+        }
+
+
+        public IEnumerator<YieldInstruction> ExitGround()
+        {
             if (ZoneManager.Instance.CurrentGround != null)
             {
                 //Notify script engine
-                LuaEngine.Instance.OnGroundMapExit();
-
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnExit());
+                
                 ZoneManager.Instance.CurrentGround.SetPlayerChar(null);
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
-                ResetAnims();
             }
+            yield break;
         }
 
         public void ResetGround()
@@ -73,7 +79,7 @@ namespace RogueEssence.Ground
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetSingleLineName());
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetSingleLineName()));
             //psy's note: might as well help encapsulate map stuff
-            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnBegin());
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnEnter());
         }
 
         public IEnumerator<YieldInstruction> SuspendGame()
@@ -208,6 +214,13 @@ namespace RogueEssence.Ground
         }
 
 
+        private bool canSwitchToChar(int charIndex)
+        {
+            Character character = DataManager.Instance.Save.ActiveTeam.Players[charIndex];
+            if (character.Dead)
+                return false;
+            return true;
+        }
 
         public IEnumerator<YieldInstruction> MakeLeader(int charIndex, bool silent)
         {
@@ -215,8 +228,7 @@ namespace RogueEssence.Ground
                 GameManager.Instance.SE("Menu/Cancel");
             else
             {
-                Character character = DataManager.Instance.Save.ActiveTeam.Players[charIndex];
-                if (character.Dead)
+                if (!canSwitchToChar(charIndex))
                     GameManager.Instance.SE("Menu/Cancel");
                 else
                 {
@@ -244,7 +256,7 @@ namespace RogueEssence.Ground
             team.Players.RemoveAt(charIndex);
 
             //update leader
-            if (charIndex < team.GetLeaderIndex())
+            if (charIndex < team.LeaderIndex)
                 team.LeaderIndex--;
 
         }

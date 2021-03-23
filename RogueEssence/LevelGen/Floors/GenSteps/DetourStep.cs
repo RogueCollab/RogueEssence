@@ -68,15 +68,15 @@ namespace RogueEssence.LevelGen
 
                             List<Loc> resultLocs = new List<Loc>();
                             foreach (Loc resultLoc in Grid.FindClosestConnectedTiles(new Loc(), new Loc(map.Width, map.Height),
-                                checkSpawnOpen, checkSpawnBlock, checkDiagSpawnBlock, loc, newTeam.Players.Count))
+                                checkSpawnOpen, checkSpawnBlock, checkDiagSpawnBlock, loc, newTeam.MemberGuestCount))
                             {
                                 resultLocs.Add(resultLoc);
                             }
 
-                            if (resultLocs.Count >= newTeam.Players.Count)
+                            if (resultLocs.Count >= newTeam.MemberGuestCount)
                             {
-                                Loc[] locs = new Loc[newTeam.Players.Count];
-                                for (int jj = 0; jj < newTeam.Players.Count; jj++)
+                                Loc[] locs = new Loc[newTeam.MemberGuestCount];
+                                for (int jj = 0; jj < locs.Length; jj++)
                                     locs[jj] = resultLocs[jj];
                                 map.PlaceItems(newTeam, locs);
                                 break;

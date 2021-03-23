@@ -95,7 +95,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int chosenSlot = CurrentPage * SpacesPerPage + CurrentChoice;
+            int chosenSlot = CurrentChoiceTotal;
             defaultChoice = chosenSlot;
             InvItem item = getChosenItemID(chosenSlot);
 

@@ -12,6 +12,7 @@
   <UserControl.Resources>
     <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
     <converters:PercentConverter x:Key="PercentConverter"/>
+    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -37,7 +38,7 @@
         <DataGridTextColumn Header="Weight"
                       Binding="{Binding Weight}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Value}" />
+                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
       </DataGrid.Columns>
     </DataGrid>
     <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">Add</Button>

@@ -122,7 +122,7 @@ namespace RogueEssence.Menu
             {
                 actionButtons[index] = button;
                 refresh();
-            }), true);
+            }, () => { refresh(); }), true);
 
         }
 

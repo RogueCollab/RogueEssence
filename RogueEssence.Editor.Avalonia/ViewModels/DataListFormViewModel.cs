@@ -13,6 +13,7 @@ namespace RogueEssence.Dev.ViewModels
         public delegate void ItemSelectedEvent();
         public event ItemSelectedEvent SelectedOKEvent;
         public event ItemSelectedEvent SelectedAddEvent;
+        public event ItemSelectedEvent SelectedReindexEvent;
 
         public DataListFormViewModel()
         {
@@ -32,8 +33,9 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public void AddEntries(string[] entries)
+        public void SetEntries(string[] entries)
         {
+            SearchList.Clear();
             for (int ii = 0; ii < entries.Length; ii++)
                 SearchList.AddItem(ii.ToString("D3") + ": " + entries[ii]);
         }
@@ -48,15 +50,20 @@ namespace RogueEssence.Dev.ViewModels
             SearchList.AddItem(SearchList.Count.ToString("D3") + ": " + entry);
         }
 
+        public void mnuReIndex_Click()
+        {
+            SelectedReindexEvent?.Invoke();
+        }
+
         public void btnAdd_Click()
         {
             SelectedAddEvent?.Invoke();
         }
 
-        public void btnDelete_Click()
-        {
+        //public void btnDelete_Click()
+        //{
 
-        }
+        //}
 
         public void slbEntries_MouseDoubleClick(object sender, RoutedEventArgs e)
         {

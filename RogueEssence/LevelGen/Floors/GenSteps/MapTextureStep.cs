@@ -38,9 +38,9 @@ namespace RogueEssence.LevelGen
                 map.Map.TextureMap[1] = new AutoTile(BlockTileset);
                 map.Map.TextureMap[2] = new AutoTile(BlockTileset);
             }
-            map.Map.TextureMap[3] = new AutoTile(WaterTileset, GroundTileset);
-            map.Map.TextureMap[4] = new AutoTile(WaterTileset, GroundTileset);
-            map.Map.TextureMap[5] = new AutoTile(WaterTileset, GroundTileset);
+            for(int ii = 3; ii < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count; ii++)
+                map.Map.TextureMap[ii] = new AutoTile(WaterTileset, GroundTileset);
+
             map.Map.Element = GroundElement;
             if (LayeredGround)
             {
@@ -52,6 +52,14 @@ namespace RogueEssence.LevelGen
             }
         }
 
+
+        public override string ToString()
+        {
+            string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[GroundTileset].Name.ToLocal();
+            string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[BlockTileset].Name.ToLocal();
+            string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[WaterTileset].Name.ToLocal();
+            return String.Format("{0}: {1}/{2}/{3}", this.GetType().Name, ground, wall, secondary);
+        }
     }
 
 }

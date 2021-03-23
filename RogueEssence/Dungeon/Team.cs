@@ -9,32 +9,52 @@ using RogueEssence.LevelGen;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class Team : IEnumerable<Character>, IGroupSpawnable
+    public abstract class Team : IGroupSpawnable
     {
         public List<Character> Players;
+        public List<Character> Guests;
+
+        public int LeaderIndex;
 
         private List<InvItem> inventory;
-
 
         public Team()
         {
             Players = new List<Character>();
+            Guests = new List<Character>();
             inventory = new List<InvItem>();
         }
         
-        public abstract int GetLeaderIndex();
+        public Character Leader { get { return Players[LeaderIndex]; } }
 
-        public Character Leader { get { return Players[GetLeaderIndex()]; } }
+        public int MemberGuestCount { get { return Players.Count + Guests.Count; } }
 
         public IEnumerable<Character> IterateByRank()
         {
+            foreach(Character character in IterateMainByRank())
+                yield return character;
+            foreach (Character character in Guests)
+                yield return character;
+        }
+
+        public IEnumerable<Character> IterateMainByRank()
+        {
             yield return Leader;
-            foreach(Character character in Players)
+            foreach (Character character in Players)
             {
                 if (character != Leader)
                     yield return character;
             }
         }
+
+        public IEnumerable<Character> EnumerateChars()
+        {
+            foreach (Character chara in Players)
+                yield return chara;
+            foreach (Character chara in Guests)
+                yield return chara;
+        }
+
 
         public int GetInvCount()
         {
@@ -84,6 +104,8 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character chara in Players)
                     chara.RefreshTraits();
+                foreach (Character chara in Guests)
+                    chara.RefreshTraits();
             }
         }
 
@@ -126,17 +148,19 @@ namespace RogueEssence.Dungeon
         }
 
 
-        IEnumerator<Character> IEnumerable<Character>.GetEnumerator() { return Players.GetEnumerator(); }
-        IEnumerator IEnumerable.GetEnumerator() { return Players.GetEnumerator(); }
-
-        public int GetCharIndex(Character character)
+        public CharIndex GetCharIndex(Character character)
         {
             for (int jj = 0; jj < Players.Count; jj++)
             {
                 if (character == Players[jj])
-                    return jj;
+                    return new CharIndex(Faction.None, -1, false, jj);
             }
-            return -1;
+            for (int jj = 0; jj < Guests.Count; jj++)
+            {
+                if (character == Guests[jj])
+                    return new CharIndex(Faction.None, -1, true, jj);
+            }
+            return CharIndex.Invalid;
         }
 
         [OnDeserialized]
@@ -145,21 +169,40 @@ namespace RogueEssence.Dungeon
             //TODO: v0.5: remove this
             if (inventory == null)
                 inventory = new List<InvItem>();
+            if (Guests == null)
+                Guests = new List<Character>();
             ReconnectTeamReference();
         }
+
         protected virtual void ReconnectTeamReference()
         {
             //reconnect Players' references
             foreach (Character player in Players)
                 player.MemberTeam = this;
+            foreach (Character player in Guests)
+                player.MemberTeam = this;
+        }
+
+        public virtual void SaveLua()
+        {
+            foreach (Character player in Players)
+                player.SaveLua();
+            foreach (Character player in Guests)
+                player.SaveLua();
+        }
+
+        public virtual void LoadLua()
+        {
+            foreach (Character player in Players)
+                player.LoadLua();
+            foreach (Character player in Guests)
+                player.LoadLua();
         }
     }
 
     [Serializable]
     public class MonsterTeam : Team
     {
-        public override int GetLeaderIndex() { return 0; }
-
         public bool Unrecruitable;
     }
 
@@ -167,9 +210,6 @@ namespace RogueEssence.Dungeon
     public class ExplorerTeam : Team
     {
         public const int MAX_TEAM_SLOTS = 4;
-
-        public int LeaderIndex;
-        public override int GetLeaderIndex() {return LeaderIndex;}
 
         public int MaxInv;
 
@@ -366,6 +406,20 @@ namespace RogueEssence.Dungeon
             base.ReconnectTeamReference();
             foreach (Character player in Assembly)
                 player.MemberTeam = this;
+        }
+
+        public override void SaveLua()
+        {
+            base.SaveLua();
+            foreach (Character player in Assembly)
+                player.SaveLua();
+        }
+
+        public override void LoadLua()
+        {
+            base.LoadLua();
+            foreach (Character player in Assembly)
+                player.LoadLua();
         }
     }
 

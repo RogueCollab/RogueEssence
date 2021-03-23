@@ -8,17 +8,10 @@ using RogueEssence.Data;
 using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
 using System.Runtime.Serialization;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dungeon
 {
-    public interface IMobSpawnMap
-    {
-        IRandom Rand { get; }
-        bool Begun { get; }
-
-        int ID { get; }
-    }
-
     //Contains all data within a dungeon map, and a few helper functions
     [Serializable]
     public class Map : BaseMap, IEntryData
@@ -61,6 +54,8 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public string AssetName { get; set; }
 
+        public Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent> ScriptEvents;
+
         public string Music;
         public SightRange TileSight;
         public SightRange CharSight;
@@ -100,10 +95,7 @@ namespace RogueEssence.Dungeon
             get
             {
                 CharIndex turnChar = CurrentTurnMap.GetCurrentTurnChar();
-                if (turnChar.Team > -1)
-                    return MapTeams[turnChar.Team].Players[turnChar.Char];
-                else
-                    return ActiveTeam.Players[turnChar.Char];
+                return LookupCharIndex(turnChar);
             }
         }
 
@@ -119,6 +111,8 @@ namespace RogueEssence.Dungeon
             Name = new LocalText();
             Comment = "";
             Music = "";
+
+            ScriptEvents = new Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent>();
 
             TileSight = SightRange.Clear;
             CharSight = SightRange.Clear;
@@ -217,9 +211,18 @@ namespace RogueEssence.Dungeon
                                 return;
                         }
 
+                        foreach (Team team in AllyTeams)
+                        {
+                            foreach (Character character in team.EnumerateChars())
+                            {
+                                if (!character.Dead && character.CharLoc == testLoc)
+                                    return;
+                            }
+                        }
+
                         foreach (Team team in MapTeams)
                         {
-                            foreach (Character character in team.Players)
+                            foreach (Character character in team.EnumerateChars())
                             {
                                 if (!character.Dead && character.CharLoc == testLoc)
                                     return;
@@ -266,14 +269,16 @@ namespace RogueEssence.Dungeon
                         }
 
 
-                        if (resultLocs.Count >= newTeam.Players.Count)
+                        if (resultLocs.Count >= newTeam.Players.Count + newTeam.Guests.Count)
                         {
                             for (int jj = 0; jj < newTeam.Players.Count; jj++)
                                 newTeam.Players[jj].CharLoc = resultLocs[jj];
+                            for (int jj = 0; jj < newTeam.Guests.Count; jj++)
+                                newTeam.Guests[jj].CharLoc = resultLocs[newTeam.Players.Count + jj];
 
                             MapTeams.Add(newTeam);
 
-                            foreach (Character member in newTeam.Players)
+                            foreach (Character member in newTeam.EnumerateChars())
                             {
                                 member.RefreshTraits();
                                 respawns.Add(member);
@@ -286,6 +291,20 @@ namespace RogueEssence.Dungeon
             return respawns;
         }
 
+
+        public Team GetTeam(Faction faction, int teamIndex)
+        {
+            switch (faction)
+            {
+                case Faction.Foe:
+                    return MapTeams[teamIndex];
+                case Faction.Friend:
+                    return AllyTeams[teamIndex];
+                default:
+                    return ActiveTeam;
+            }
+        }
+
         public void EnterMap(ExplorerTeam activeTeam, LocRay8 entryPoint)
         {
             ActiveTeam = activeTeam;
@@ -293,7 +312,7 @@ namespace RogueEssence.Dungeon
             ActiveTeam.Leader.CharLoc = entryPoint.Loc;
             if (entryPoint.Dir != Dir8.None)
                 ActiveTeam.Leader.CharDir = entryPoint.Dir;
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam.EnumerateChars())
             {
                 //TODO: there may be a problem here; the method for finding a free space searches through all characters already in the map
                 //since the active team has already been added to the map, all characters are counted and can block themselves when reassigning locations
@@ -314,25 +333,36 @@ namespace RogueEssence.Dungeon
 
         public Character LookupCharIndex(CharIndex charIndex)
         {
-            Character character = null;
-            if (charIndex.Team == -1)
-                character = ActiveTeam.Players[charIndex.Char];
+            Team team = GetTeam(charIndex.Faction, charIndex.Team);
+            List<Character> playerList;
+            if (charIndex.Guest)
+                playerList = team.Guests;
             else
-                character = MapTeams[charIndex.Team].Players[charIndex.Char];
-            return character;
+                playerList = team.Players;
+
+            return playerList[charIndex.Char];
         }
 
         public CharIndex GetCharIndex(Character character)
         {
-            int charIndex = ActiveTeam.GetCharIndex(character);
-            if (charIndex > -1)
-                return new CharIndex(-1, charIndex);
+            {
+                CharIndex charIndex = ActiveTeam.GetCharIndex(character);
+                if (charIndex != CharIndex.Invalid)
+                    return new CharIndex(Faction.Player, 0, charIndex.Guest, charIndex.Char);
+            }
+
+            for (int ii = 0; ii < AllyTeams.Count; ii++)
+            {
+                CharIndex charIndex = AllyTeams[ii].GetCharIndex(character);
+                if (charIndex != CharIndex.Invalid)
+                    return new CharIndex(Faction.Friend, ii, charIndex.Guest, charIndex.Char);
+            }
 
             for (int ii = 0; ii < MapTeams.Count; ii++)
             {
-                charIndex = MapTeams[ii].GetCharIndex(character);
-                if (charIndex > -1)
-                    return new CharIndex(ii, charIndex);
+                CharIndex charIndex = MapTeams[ii].GetCharIndex(character);
+                if (charIndex != CharIndex.Invalid)
+                    return new CharIndex(Faction.Foe, ii, charIndex.Guest, charIndex.Char);
             }
 
             return CharIndex.Invalid;
@@ -431,6 +461,12 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character player in ActiveTeam.Players)
                     yield return player;
+            }
+
+            foreach (Team team in AllyTeams)
+            {
+                foreach (Character character in team.Players)
+                    yield return character;
             }
 
             foreach (Team team in MapTeams)
@@ -546,289 +582,122 @@ namespace RogueEssence.Dungeon
         {
             BlankBG.Draw(spriteBatch, drawPos);
         }
+
+        //========================
+        //  Script Stuff
+        //========================
+
+        /// <summary>
+        /// Called before the map is displayed to run script events and etc.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> OnInit()
+        {
+            DiagManager.Instance.LogInfo("Map.OnInit(): Initializing the map..");
+            if (AssetName != "")
+                LuaEngine.Instance.RunDungeonMapScript(AssetName);
+
+            //Check for floor specific events in the current dungeon's package.
+            //Reload the map events
+            foreach (var ev in ScriptEvents)
+                ev.Value.ReloadEvent();
+
+
+            //!TODO: Handle entity callbacks maybe?
+
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EDungeonMapCallbacks.Init));
+
+            //Notify script engine
+            LuaEngine.Instance.OnDungeonMapInit(AssetName, this);
+        }
+
+        public IEnumerator<YieldInstruction> OnEnter()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EDungeonMapCallbacks.Enter));
+
+            LuaEngine.Instance.OnDungeonMapEnter(AssetName, this);
+        }
+
+        public IEnumerator<YieldInstruction> OnExit()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EDungeonMapCallbacks.Exit));
+
+            LuaEngine.Instance.OnDungeonMapExit(AssetName, this);
+        }
+
+        /// <summary>
+        /// Search the current dungeon's lua package for defined floor callbacks functions, and add those that were found.
+        /// </summary>
+        private void LoadScriptEvents()
+        {
+            foreach (var ev in LuaEngine.EnumerateDungeonFloorCallbackTypes())
+            {
+                string cbackn = LuaEngine.MakeDungeonMapScriptCallbackName(AssetName, ev);
+                if (LuaEngine.Instance.DoesFunctionExists(cbackn))
+                    ScriptEvents[ev] = new ScriptEvent(cbackn);
+            }
+        }
+
+        /// <summary>
+        /// Runs the specified script event for the current dungeon floor map if it exists. Or fallbacks to the dungeon set default floor event.
+        /// </summary>
+        /// <param name="ev">The event to run.</param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> RunScriptEvent(LuaEngine.EDungeonMapCallbacks ev)
+        {
+            //If we have a floor specific script event to run, do it, or run the default dungeon specified script event for this floor event if there is one defined.
+            if (ScriptEvents.ContainsKey(ev))
+                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(this));
+        }
+
+        public void LuaEngineReload()
+        {
+            LoadLua();
+        }
+
+        public void LoadLua()
+        {
+            foreach (Team team in AllyTeams)
+                team.LoadLua();
+            foreach (Team team in MapTeams)
+                team.LoadLua();
+        }
+        public void SaveLua()
+        {
+            foreach (Team team in AllyTeams)
+                team.SaveLua();
+            foreach (Team team in MapTeams)
+                team.SaveLua();
+        }
+
+        /// <summary>
+        /// Call this so the map unregisters its events and delegates.
+        ///
+        /// </summary>
+        public void DoCleanup()
+        {
+            foreach (var e in ScriptEvents)
+                e.Value.DoCleanup();
+            ScriptEvents.Clear();
+
+            if (ActiveTeam != null)
+            {
+                foreach (Character c in IterateCharacters())
+                    c.DoCleanup();
+            }
+        }
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: v0.5: remove this
+            if (ScriptEvents == null)
+                ScriptEvents = new Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent>();
+            if (AllyTeams == null)
+                AllyTeams = new List<Team>();
+        }
     }
 
-    [Serializable]
-    public abstract class BaseMap : IMobSpawnMap
-    {
 
-        //includes all start points
-        public List<LocRay8> EntryPoints;
-
-        protected ReRandom rand;
-        public ReRandom Rand { get { return rand; } }
-        IRandom IMobSpawnMap.Rand { get { return rand; } }
-        public bool Begun { get; set; }
-
-        public int ID { get; set; }
-
-        public bool NoRescue;
-        public bool NoSwitching;
-        public bool DropTitle;
-
-        public Tile[][] Tiles;
-
-        public int Width { get { return Tiles.Length; } }
-        public int Height { get { return Tiles[0].Length; } }
-
-        public List<MapItem> Items;
-        public List<Team> MapTeams;
-        
-
-        public BaseMap()
-        {
-            rand = new ReRandom(0);
-            EntryPoints = new List<LocRay8>();
-
-            Items = new List<MapItem>();
-            MapTeams = new List<Team>();
-        }
-        
-        public void LoadRand(ReRandom rand)
-        {
-            this.rand = rand;
-        }
-
-        public virtual void CreateNew(int width, int height)
-        {
-            Tiles = new Tile[width][];
-            for (int ii = 0; ii < width; ii++)
-            {
-                Tiles[ii] = new Tile[height];
-                for (int jj = 0; jj < height; jj++)
-                    Tiles[ii][jj] = new Tile(0, new Loc(ii, jj));
-            }
-        }
-
-        public Tile GetTile(Loc loc)
-        {
-            if (!Collision.InBounds(Width, Height, loc))
-                return null;
-            return Tiles[loc.X][loc.Y];
-        }
-
-
-        public int GetItem(Loc loc)
-        {
-            for (int ii = 0; ii < Items.Count; ii++)
-            {
-                if (Items[ii].TileLoc == loc)
-                    return ii;
-            }
-            return -1;
-        }
-
-        public bool TileBlocked(Loc loc)
-        {
-            return TileBlocked(loc, false);
-        }
-
-        public bool TileBlocked(Loc loc, bool inclusive)
-        {
-            return TileBlocked(loc, inclusive, false);
-        }
-
-        public bool TileBlocked(Loc loc, bool inclusive, bool diagonal)
-        {
-            return TileBlocked(loc, inclusive ? UInt32.MaxValue : 0, diagonal);
-        }
-
-        public bool TileBlocked(Loc loc, uint mobility)
-        {
-            return TileBlocked(loc, mobility, false);
-        }
-
-        public bool TileBlocked(Loc loc, uint mobility, bool diagonal)
-        {
-            if (!Collision.InBounds(Width, Height, loc))
-                return true;
-
-            Tile tile = Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
-            if (TerrainBlocked(terrain, mobility, diagonal))
-                return true;
-            if (tile.Effect.ID > -1)
-            {
-                TileData effect = DataManager.Instance.GetTile(tile.Effect.ID);
-                if (EffectTileBlocked(effect, diagonal))
-                    return true;
-            }
-            return false;
-        }
-        public bool TerrainBlocked(Loc loc, uint mobility)
-        {
-            if (!Collision.InBounds(Width, Height, loc))
-                return true;
-
-            Tile tile = Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
-            return TerrainBlocked(terrain, mobility, false);
-        }
-
-        public bool TerrainBlocked(TerrainData terrain, uint mobility, bool diagonal)
-        {
-            if (diagonal && !terrain.BlockDiagonal)
-                return false;
-            if (terrain.BlockType == TerrainData.Mobility.Impassable)
-                return true;
-            if (terrain.BlockType == TerrainData.Mobility.Passable)
-                return false;
-
-            return ((1U << (int)terrain.BlockType) & mobility) == 0;
-        }
-
-        public bool EffectTileBlocked(TileData effect, bool diagonal)
-        {
-            //doesn't apply here; for now, assume all effects block diagonal if they block at all
-            //if (diagonal && !effect.BlockDiagonal)
-            //    return false;
-            if (effect.StepType == TileData.TriggerType.Unlockable || effect.StepType == TileData.TriggerType.Blocker)
-                return true;
-
-            return false;
-        }
-
-
-
-        public bool CanItemLand(Loc loc, bool voluntary, bool ignoreItem)
-        {
-            uint mobility = 0;
-            mobility |= (1U << (int)TerrainData.Mobility.Water);
-            if (!voluntary)
-            {
-                mobility |= (1U << (int)TerrainData.Mobility.Lava);
-                mobility |= (1U << (int)TerrainData.Mobility.Abyss);
-            }
-            if (TileBlocked(loc, mobility, false))
-                return false;
-            if (Tiles[loc.X][loc.Y].Effect.ID > -1)
-                return false;
-
-            if (ignoreItem)
-                return true;
-
-            return (GetItem(loc) == -1);
-        }
-
-        public Loc? FindItemlessTile(Loc origin, int range)
-        {
-            return FindItemlessTile(origin, range, false);
-        }
-
-        public Loc? FindItemlessTile(Loc origin, int range, bool voluntary)
-        {
-            return FindItemlessTile(origin, origin - new Loc(range), new Loc(range * 2 + 1), voluntary);
-        }
-        public Loc? FindItemlessTile(Loc origin, Loc start, Loc end, bool voluntary)
-        {
-            return Grid.FindClosestConnectedTile(start, end,
-                (Loc testLoc) =>
-                {
-                    return CanItemLand(testLoc, voluntary, false);
-                },
-                (Loc testLoc) =>
-                {
-                    Tile tile = GetTile(testLoc);
-                    if (tile == null)
-                        return true;
-                    if (tile.Data.GetData().BlockType == TerrainData.Mobility.Impassable)
-                        return true;
-                    return false;
-                },
-                (Loc testLoc) =>
-                {
-                    Tile tile = GetTile(testLoc);
-                    if (tile == null)
-                        return true;
-                    TerrainData terrain = tile.Data.GetData();
-                    if (!terrain.BlockDiagonal)
-                        return false;
-                    if (terrain.BlockType == TerrainData.Mobility.Impassable)
-                        return true;
-                    return false;
-                },
-                origin);
-        }
-
-
-        public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc)
-        {
-            Tiles[loc.X][loc.Y].FloorTile.Draw(spriteBatch, drawPos);
-            Tiles[loc.X][loc.Y].Data.TileTex.Draw(spriteBatch, drawPos);
-        }  
-    }
-
-    // TODO: probably make this more generic; this is made specifically for item categories in maps at present.
-    [Serializable]
-    public class CategorySpawnChooser<T> : IRandPicker<T>
-    {
-        public SpawnDict<string, SpawnList<T>> Spawns;
-
-        public CategorySpawnChooser()
-        {
-            Spawns = new SpawnDict<string, SpawnList<T>>();
-        }
-        public CategorySpawnChooser(SpawnDict<string, SpawnList<T>> spawns)
-        {
-            Spawns = spawns;
-        }
-        public CategorySpawnChooser(CategorySpawnChooser<T> other)
-        {
-            Spawns = new SpawnDict<string, SpawnList<T>>();
-            foreach (string key in other.Spawns.GetKeys())
-            {
-                SpawnList<T> list = new SpawnList<T>();
-                SpawnList<T> otherList = other.Spawns.GetSpawn(key);
-                for (int ii = 0; ii < otherList.Count; ii++)
-                    list.Add(otherList.GetSpawn(ii), otherList.GetSpawnRate(ii));
-                Spawns.Add(key, list, other.Spawns.GetSpawnRate(key));
-            }
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            foreach (SpawnList<T> element in Spawns)
-            {
-                foreach (T item in element)
-                    yield return item;
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-        public T Pick(IRandom rand)
-        {
-            SpawnDict<string, SpawnList<T>> tempSpawn = new SpawnDict<string, SpawnList<T>>();
-            foreach (string key in Spawns.GetKeys())
-            {
-                SpawnList<T> otherList = Spawns.GetSpawn(key);
-                if (!otherList.CanPick)
-                    continue;
-                tempSpawn.Add(key, otherList, Spawns.GetSpawnRate(key));
-            }
-            SpawnList<T> choice = tempSpawn.Pick(rand);
-            return choice.Pick(rand);
-        }
-
-        public bool ChangesState => false;
-        public bool CanPick
-        {
-            get
-            {
-                if (!Spawns.CanPick)
-                    return false;
-                foreach (SpawnList<T> spawn in Spawns)
-                {
-                    if (spawn.CanPick)
-                        return true;
-                }
-                return false;
-            }
-        }
-
-        public IRandPicker<T> CopyState()
-        {
-            return new CategorySpawnChooser<T>(this);
-        }
-    }
 }

@@ -6,13 +6,15 @@ using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Runtime.Serialization;
+using RogueEssence.Script;
+using NLua;
 
 namespace RogueEssence.Dungeon
 {
     
 
     [Serializable]
-    public class Character : CharData, ICharSprite
+    public class Character : CharData, ICharSprite, IEntityWithLuaData
     {
 
         public const int MAX_FULLNESS = 100;
@@ -116,6 +118,11 @@ namespace RogueEssence.Dungeon
 
         public InvItem EquippedItem;
 
+        public LuaTable LuaData
+        {
+            get { return LuaDataTable; }
+            set { LuaDataTable = value; }
+        }
 
         int movementSpeed;
         public int MovementSpeed
@@ -2230,6 +2237,17 @@ namespace RogueEssence.Dungeon
             return new Loc(GraphicsManager.GetChara(Appearance).TileWidth, GraphicsManager.GetChara(Appearance).TileHeight);
         }
 
+        //
+        //Script Stuff
+        //
+
+        /// <summary>
+        /// Cleanup references and etc from the script engine if needed
+        /// </summary>
+        public void DoCleanup()
+        {
+            //!TODO: Implement this when we add character specific events in dungeon mode
+        }
 
         private Loc serializationLoc;
         private Dir8 serializationDir;

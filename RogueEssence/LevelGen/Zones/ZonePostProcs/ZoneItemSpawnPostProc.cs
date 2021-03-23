@@ -54,7 +54,7 @@ namespace RogueEssence.LevelGen
                 SpawnList<InvItem> slicedList = Spawns[key].Spawns.GetSpawnList(zoneContext.CurrentID);
 
                 // add the spawnlist under the current key, with the key having the spawnrate for this id
-                if (slicedList.CanPick && Spawns[key].SpawnRates[zoneContext.CurrentID] > 0)
+                if (slicedList.CanPick && Spawns[key].SpawnRates.ContainsItem(zoneContext.CurrentID) && Spawns[key].SpawnRates[zoneContext.CurrentID] > 0)
                     spawns.Add(key, slicedList, Spawns[key].SpawnRates[zoneContext.CurrentID]);
             }
 

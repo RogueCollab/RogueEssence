@@ -4,7 +4,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
+  <UserControl.Resources>
+    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
+  </UserControl.Resources>
   <Grid MaxHeight="180">
     <Grid.RowDefinitions>
       <RowDefinition/>
@@ -22,7 +26,7 @@
         <DataGridTextColumn Header="Priority"
                       Binding="{Binding PriorityObj}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Value}" />
+                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
       </DataGrid.Columns>
     </DataGrid>
     <Button Click="btnAdd_Click" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>

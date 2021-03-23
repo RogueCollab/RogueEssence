@@ -17,8 +17,15 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(T map)
         {
+            //still use the old seed
+            ulong seed = map.Rand.FirstSeed;
             map.Map = DataManager.Instance.GetMap(MapID);
+            map.InitSeed(seed);
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0}: Map:{1}", this.GetType().Name, this.MapID);
+        }
     }
 }

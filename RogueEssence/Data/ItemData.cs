@@ -74,6 +74,7 @@ namespace RogueEssence.Data
         {
             Name = new LocalText();
             Desc = new LocalText();
+            Sprite = "";
             Icon = -1;
             Comment = "";
 

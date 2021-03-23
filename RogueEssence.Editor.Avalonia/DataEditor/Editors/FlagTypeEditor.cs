@@ -61,7 +61,8 @@ namespace RogueEssence.Dev
 
                 control.Children.Add(sharedRowPanel);
             }
-            throw new InvalidOperationException("No constraints set for member!");
+            else
+                throw new InvalidOperationException("No constraints set for member!");
         }
 
 
@@ -79,7 +80,8 @@ namespace RogueEssence.Dev
                 ComboBox cbValue = (ComboBox)subGrid.Children[1];
                 return new FlagType(children[cbValue.SelectedIndex]);
             }
-            throw new InvalidOperationException("No constraints set for member!");
+            else
+                throw new InvalidOperationException("No constraints set for member!");
         }
     }
 }

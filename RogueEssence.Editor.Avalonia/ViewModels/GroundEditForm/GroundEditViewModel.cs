@@ -56,7 +56,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public void New_Click()
+        public void mnuNew_Click()
         {
             CurrentFile = "";
 
@@ -64,7 +64,7 @@ namespace RogueEssence.Dev.ViewModels
                 DoNew();
         }
 
-        public async void Open_Click()
+        public async void mnuOpen_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -97,17 +97,17 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void Save_Click()
+        public void mnuSave_Click()
         {
             if (CurrentFile == "")
-                SaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
+                mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
                 lock (GameBase.lockObj)
                     DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
             }
         }
-        public async void SaveAs_Click()
+        public async void mnuSaveAs_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -140,7 +140,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public async void ImportFromPng_Click()
+        public async void mnuImportFromPng_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -163,7 +163,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public async void ImportFromTileset_Click()
+        public async void mnuImportFromTileset_Click()
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
@@ -177,7 +177,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public async void ReSize_Click()
+        public async void mnuReSize_Click()
         {
 
             MapResizeWindow window = new MapResizeWindow();
@@ -202,10 +202,10 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public async void ReTile_Click()
+        public async void mnuReTile_Click()
         {
             MapRetileWindow window = new MapRetileWindow();
-            MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize);
+            MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize, "Tile size must be divisible by 8. All textures will be erased from all layers upon completing this operation.");
             window.DataContext = viewModel;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -232,12 +232,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        //public void Undo_Click()
+        //public void mnuUndo_Click()
         //{
 
         //}
 
-        //public void Redo_Click()
+        //public void mnuRedo_Click()
         //{
 
         //}
@@ -330,7 +330,16 @@ namespace RogueEssence.Dev.ViewModels
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                {
+                    AutoTile tile = new AutoTile();
+                    TileFrame newFrame = new TileFrame(new Loc(xx, yy), sheetName);
+                    //check for emptiness
+                    long tilePos = GraphicsManager.TileIndex.GetPosition(newFrame.Sheet, newFrame.TexLoc);
+                    if (tilePos > 0)
+                        tile.Layers.Add(new TileLayer(newFrame));
+
+                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = tile;
+                }
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
@@ -365,8 +374,8 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="newfilepath"></param>
         private void createOrCopyScriptData(string oldfilepath, string newfilepath)
         {
-            string oldmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
-            string newmapscriptdir = LuaEngine.Instance._MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+            string oldmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
+            string newmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
 
             //Check if we have anything to copy at all!
             if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))

@@ -11,15 +11,17 @@ namespace RogueEssence.Menu
         public delegate void OnChooseButton(Buttons button);
 
         private OnChooseButton chooseButtonAction;
+        private Action refuseAction;
 
         private HashSet<Buttons> forbidden;
 
-        public GetButtonMenu(HashSet<Buttons> forbidden, OnChooseButton action)
+        public GetButtonMenu(HashSet<Buttons> forbidden, OnChooseButton action, Action refuseAction)
         {
             Bounds = new Rect();
 
             this.forbidden = forbidden;
             this.chooseButtonAction = action;
+            this.refuseAction = refuseAction;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -36,6 +38,7 @@ namespace RogueEssence.Menu
         {
             Visible = true;
 
+            bool pressed = false;
             foreach (Buttons button in Enum.GetValues(typeof(Buttons)))
             {
                 if (input.BaseButtonPressed(button))
@@ -48,8 +51,15 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.RemoveMenu();
                         chooseButtonAction(button);
                     }
+                    pressed = true;
                     break;
                 }
+            }
+            if (!pressed && input.AnyKeyPressed())
+            {
+                GameManager.Instance.SE("Menu/Cancel");
+                MenuManager.Instance.RemoveMenu();
+                refuseAction();
             }
         }
     }

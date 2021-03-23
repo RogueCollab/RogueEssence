@@ -15,44 +15,55 @@
   <Window.Resources>
     <converters:OXConverter x:Key="OXConverter"/>
   </Window.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="34"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <TreeView Items="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
-      <TreeView.DataTemplates>
-        <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="24"/>
-              <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}" Stretch="None" Grid.Column="0"/>
-            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="1"/>
-          </Grid>
-        </TreeDataTemplate>
-      </TreeView.DataTemplates>
-      <TreeView.ContextMenu>
-        <ContextMenu Items="{Binding OpList}">
-          <ContextMenu.Styles>
-            <Style Selector="MenuItem">
-              <Setter Property="Header" Value="{Binding Name}"/>
-              <Setter Property="Command" Value="{Binding Command}"/>
-            </Style>
-          </ContextMenu.Styles>
-        </ContextMenu>
-      </TreeView.ContextMenu>
-    </TreeView>
-    <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button>
-    <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button>
-    <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Export</Button>
-    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button>
-  </Grid>
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}"/>
+        <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}"/>
+        <Separator/>
+        <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}"/>
+        <MenuItem Header="Mass Export Multi Sheet" Command="{Binding mnuMassExportMulti_Click}"/>
+      </MenuItem>
+    </Menu>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="34"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TreeView Items="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
+        <TreeView.DataTemplates>
+          <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}" Stretch="None" Grid.Column="0"/>
+              <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="1"/>
+            </Grid>
+          </TreeDataTemplate>
+        </TreeView.DataTemplates>
+        <TreeView.ContextMenu>
+          <ContextMenu Items="{Binding OpList}">
+            <ContextMenu.Styles>
+              <Style Selector="MenuItem">
+                <Setter Property="Header" Value="{Binding Name}"/>
+                <Setter Property="Command" Value="{Binding Command}"/>
+              </Style>
+            </ContextMenu.Styles>
+          </ContextMenu>
+        </TreeView.ContextMenu>
+      </TreeView>
+      <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button>
+      <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button>
+      <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Export</Button>
+      <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button>
+    </Grid>
+  </DockPanel>
 </Window>

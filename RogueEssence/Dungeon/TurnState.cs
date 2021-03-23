@@ -7,11 +7,15 @@ namespace RogueEssence.Dungeon
     public class TurnState
     {
         public TurnOrder CurrentOrder;
+
+        /// <summary>
+        /// The list of characters (represented by index) scheduled to take a turn within the current faction.
+        /// </summary>
         public List<CharIndex> TurnToChar;
 
         public TurnState()
         {
-            CurrentOrder = new TurnOrder(0, false, 0);
+            CurrentOrder = new TurnOrder(0, Faction.Player, 0);
             TurnToChar = new List<CharIndex>();
         }
 
@@ -22,8 +26,12 @@ namespace RogueEssence.Dungeon
 
 
 
-        public void UpdateCharRemoval(int removedTeam, int charIndex)
+        public void UpdateCharRemoval(Faction faction, int removedTeam, int charIndex)
         {
+            //The TurnToChar list will always contain only one faction's worth of turns.
+            //which faction can be automatically deduced from CurrentOrder.Faction
+            if (faction != CurrentOrder.Faction)
+                return;
             //all characters on the team with an index higher than the removed char need to be decremented to reflect their new position
             //the removed character (if they're in this turn map, which may not be true) needs to be removed
 
@@ -35,7 +43,7 @@ namespace RogueEssence.Dungeon
                 if (turnChar.Team == removedTeam)
                 {
                     if (turnChar.Char > charIndex)
-                        TurnToChar[ii] = new CharIndex(turnChar.Team, turnChar.Char - 1);
+                        TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, turnChar.Char - 1);
                     else if (turnChar.Char == charIndex)
                     {
                         TurnToChar.RemoveAt(ii);
@@ -48,15 +56,19 @@ namespace RogueEssence.Dungeon
                 CurrentOrder.TurnIndex--;
         }
 
-        public void UpdateTeamRemoval(int removedTeam)
+        public void UpdateTeamRemoval(Faction faction, int removedTeam)
         {
+            //The TurnToChar list will always contain only one faction's worth of turns.
+            //which faction can be automatically deduced from CurrentOrder.Faction
+            if (faction != CurrentOrder.Faction)
+                return;
+
             //all characters with a team index higher than the removed char need to be decremented to reflect their new position
-            //keep in mind: team -1 is never removed
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
                 if (turnChar.Team > removedTeam)
-                    TurnToChar[ii] = new CharIndex(turnChar.Team - 1, turnChar.Char);
+                    TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team - 1, turnChar.Guest, turnChar.Char);
             }
         }
 
@@ -88,21 +100,23 @@ namespace RogueEssence.Dungeon
             return false;
         }
         
-        public void LoadTeamTurnMap(int teamIndex, Team team)
+        public void LoadTeamTurnMap(Faction faction, int teamIndex, Team team)
         {
             //team members start off with their turns organized in-order
             //with the exception being the leader
-            loadTeamMemberTurnMap(teamIndex, team, team.GetLeaderIndex());
+            loadTeamMemberTurnMap(faction, teamIndex, false, team.LeaderIndex, team.Players);
             for (int ii = 0; ii < team.Players.Count; ii++)
             {
-                if (ii != team.GetLeaderIndex())
-                    loadTeamMemberTurnMap(teamIndex, team, ii);
+                if (ii != team.LeaderIndex)
+                    loadTeamMemberTurnMap(faction, teamIndex, false, ii, team.Players);
             }
+            for (int ii = 0; ii < team.Guests.Count; ii++)
+                loadTeamMemberTurnMap(faction, teamIndex, true, ii, team.Guests);
         }
 
-        private void loadTeamMemberTurnMap(int teamIndex, Team team, int charIndex)
+        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, List<Character> playerList)
         {
-            Character character = team.Players[charIndex];
+            Character character = playerList[charIndex];
             if (!character.Dead)
             {
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
@@ -113,63 +127,85 @@ namespace RogueEssence.Dungeon
             }
 
             if (IsEligibleToMove(character))
-                TurnToChar.Add(new CharIndex(teamIndex, charIndex));
+                TurnToChar.Add(new CharIndex(faction, teamIndex, guest, charIndex));
         }
 
-
-        public void AdjustDemotion(int teamIndex, int newSlot)
+        public void AdjustSlotSwap(Faction faction, int teamIndex, bool guest, int oldSlot, int newSlot)
         {
+            if (faction != CurrentOrder.Faction)
+                return;
+
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == teamIndex)
+                if (turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
-                    if (turnChar.Char == 0) //team member of char index 0 is now the last member of the team
-                        TurnToChar[ii] = new CharIndex(turnChar.Team, newSlot);
-                    else//also decrement everyone else in team
-                        TurnToChar[ii] = new CharIndex(turnChar.Team, turnChar.Char - 1);
-                    //Maybe we should update their turn position, since they're last.
-                    //however, this code is only called for enemy death, so it's probably okay
+                    if (turnChar.Char == oldSlot)
+                        TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, newSlot);
+                    else if (turnChar.Char == newSlot)
+                        TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, oldSlot);
                 }
             }
         }
 
-        public void AdjustPromotion(int teamIndex, int newSlot)
-        {
-            //this code is not necessarily safe when dealing with enemy teams,
-            //but this only gets called when a player team messes with their team formation,
-            //and when it's specifically the leader's turn.
-            //so this code will ride on those assumptions
 
-            //first put the current leader where it belongs (in order)
-            CharIndex leaderChar = TurnToChar[0];
-            for (int ii = TurnToChar.Count - 1; ii > 0; ii--)
-            {
-                CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == teamIndex)
-                {
-                    if (turnChar.Char < leaderChar.Char)
-                    {
-                        TurnToChar.RemoveAt(0);
-                        TurnToChar.Insert(ii, leaderChar);
-                        break;
-                    }
-                }
-            }
-            //then, promote the new one
+        public void AdjustLeaderSwap(Faction faction, int teamIndex, bool guest, int oldSlot, int newSlot)
+        {
+            if (faction != CurrentOrder.Faction)
+                return;
+
+            //find the index of the oldslot
+            //move it to the place it belongs if it wasnt a leader
+            int oldIdx = -1;
+            int destIdx = -1;
+
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == teamIndex)
+                if (turnChar.Team == teamIndex && turnChar.Guest == guest)
+                {
+                    if (turnChar.Char == oldSlot)
+                        oldIdx = ii;
+                    //keep updating the destIdx; we want the highest index equal to or lower than the leader's idx
+                    if (turnChar.Char <= oldSlot)
+                        destIdx = ii+1;
+                }
+            }
+
+            //if we couldn't find the old leader index, don't need to change anything
+            if (oldIdx > -1)
+            {
+                if (oldIdx < destIdx)
+                    destIdx--;
+                CharIndex leaderIndex = TurnToChar[oldIdx];
+                TurnToChar.RemoveAt(oldIdx);
+                TurnToChar.Insert(destIdx, leaderIndex);
+            }
+
+            //find the index of the newslot
+            //move it to the front
+            int newIdx = -1;
+            int firstIdx = 0;
+
+            for (int ii = 0; ii < TurnToChar.Count; ii++)
+            {
+                CharIndex turnChar = TurnToChar[ii];
+                if (turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
                     if (turnChar.Char == newSlot)
-                    {
-                        TurnToChar.RemoveAt(ii);
-                        TurnToChar.Insert(0, turnChar);
-                        break;
-                    }
+                        newIdx = ii;
                 }
+                if (turnChar.Team < teamIndex)
+                    firstIdx = ii + 1;
+            }
+
+            if (newIdx > -1)
+            {
+                CharIndex leaderIndex = TurnToChar[newIdx];
+                TurnToChar.RemoveAt(newIdx);
+                TurnToChar.Insert(firstIdx, leaderIndex);
             }
         }
+
     }
 }

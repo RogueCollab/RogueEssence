@@ -110,7 +110,7 @@ namespace RogueEssence.Menu
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
                 GameManager.Instance.SE("Menu/Confirm");
-                int totalChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+                int totalChoice = CurrentChoiceTotal;
                 CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : -1, this);
                 MenuManager.Instance.AddMenu(menu, true);
             }
@@ -120,7 +120,7 @@ namespace RogueEssence.Menu
 
         public void UpdateExtraInfo()
         {
-            int totalChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int totalChoice = CurrentChoiceTotal;
             
             if (totalChoice > 0)
             {

@@ -602,12 +602,19 @@ namespace RogueEssence.Dungeon
             if (target == null) return Alignment.Foe;
             if (attacker == target)
                 return Alignment.Self;
-            if (attacker.MemberTeam == target.MemberTeam)
-                return (target.EnemyOfFriend && action) ? Alignment.Foe : Alignment.Friend;
-            else if (attacker.MemberTeam is MonsterTeam && target.MemberTeam is MonsterTeam)
-                return (target.EnemyOfFriend && action) ? Alignment.Foe : Alignment.Friend;
-            else
+
+            if (target.EnemyOfFriend && action)
                 return Alignment.Foe;
+
+            if (attacker.MemberTeam == target.MemberTeam)
+                return Alignment.Friend;
+
+            CharIndex attackerIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(attacker);
+            CharIndex targetIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(target);
+            if ((attackerIndex.Faction == Faction.Foe) == (targetIndex.Faction == Faction.Foe))
+                return Alignment.Friend;
+            
+            return Alignment.Foe;
         }
 
         public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets)

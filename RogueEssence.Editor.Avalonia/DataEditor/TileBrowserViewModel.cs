@@ -244,24 +244,24 @@ namespace RogueEssence.Dev.ViewModels
             Tilesets.SelectedSearchIndex = tileIndices.FindIndex(str => (str == sheetName));
         }
 
-        public void SelectTile(Loc loc, bool shiftMode, bool ctrlMode)
+        public void SelectTile(Loc loc, bool rcMode, bool shiftMode)
         {
             if (!CanMultiSelect)
-                shiftMode = false;
+                rcMode = false;
             //normal mode:
             //no mods: choose new start
-            //shift: multiselect
+            //rclick: multiselect
 
             //animation mode:
             //no mods: change the current frame
-            //shift: multiselect
-            //ctrl: add a new frame and cancel multiselect
-            //ctrl+shift: add a new frame and preserve multiselect
+            //rclick: multiselect
+            //shift: add a new frame and cancel multiselect
+            //rclick+shift: add a new frame and preserve multiselect
 
-            if (ctrlMode && Animated)
+            if (shiftMode && Animated)
             {
                 SelectedTile = new TileFrame(loc, CurrentTileset);
-                if (!shiftMode)
+                if (!rcMode)
                     MultiSelect = Loc.One;
 
                 //add the (one) frame
@@ -270,7 +270,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             else
             {
-                if (shiftMode)
+                if (rcMode)
                 {
                     //Update selected tile / multiselect
                     if (SelectedTile.Sheet != CurrentTileset)

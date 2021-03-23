@@ -120,7 +120,7 @@ namespace RogueEssence.Menu
 
         private void choose(int choice)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
 
             MenuManager.Instance.RemoveMenu();
 
@@ -130,7 +130,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Tuple<int, int[]> trade = Goods[AllowedGoods[CurrentPage * SpacesPerPage + CurrentChoice]];
+            Tuple<int, int[]> trade = Goods[AllowedGoods[CurrentChoiceTotal]];
             ItemData entry = DataManager.Instance.GetItem(trade.Item1);
             InvItem item = new InvItem(trade.Item1);
             summaryMenu.SetItem(item);

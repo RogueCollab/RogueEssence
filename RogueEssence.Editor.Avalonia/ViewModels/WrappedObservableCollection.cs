@@ -60,7 +60,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case NotifyCollectionChangedAction.Add:
                     foreach (var m in e.NewItems.OfType<TModel>())
-                        _models.Add(m);
+                        _models.Insert(e.NewStartingIndex, m);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -78,8 +78,7 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case NotifyCollectionChangedAction.Move:
                     throw new NotImplementedException();
-                    break;
-
+                    //break;
                 case NotifyCollectionChangedAction.Reset:
                     _models.Clear();
                     foreach (var m in e.NewItems.OfType<TModel>())

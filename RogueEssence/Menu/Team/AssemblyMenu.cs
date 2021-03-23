@@ -80,31 +80,31 @@ namespace RogueEssence.Menu
         public void ChooseLeader(int choice)
         {
             DataManager.Instance.Save.ActiveTeam.LeaderIndex = choice;
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentPage * SpacesPerPage + CurrentChoice, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
             teamChanged();
         }
 
         public void ChooseTeam(int choice)
         {
             GroundScene.Instance.SilentSendHome(choice);
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentPage * SpacesPerPage + CurrentChoice, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
             teamChanged();
         }
         public void ChooseAssembly(int choice)
         {
             GroundScene.Instance.SilentAddToTeam(choice);
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentPage * SpacesPerPage + CurrentChoice, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
             teamChanged();
         }
         public void ReleaseAssembly(int choice)
         {
             DataManager.Instance.Save.ActiveTeam.Assembly.RemoveAt(choice);
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentPage * SpacesPerPage + CurrentChoice, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
         }
         public void ConfirmRename(string name)
         {
             MenuManager.Instance.RemoveMenu();
-            int currentChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int currentChoice = CurrentChoiceTotal;
             if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
             {
                 DataManager.Instance.Save.ActiveTeam.Players[currentChoice].Nickname = name;
@@ -112,12 +112,12 @@ namespace RogueEssence.Menu
             }
             else
                 DataManager.Instance.Save.ActiveTeam.Assembly[currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count].Nickname = name;
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentPage * SpacesPerPage + CurrentChoice, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
         }
         public void ToggleFave()
         {
             MenuManager.Instance.RemoveMenu();
-            int currentChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int currentChoice = CurrentChoiceTotal;
             if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
                 DataManager.Instance.Save.ActiveTeam.Players[currentChoice].IsFavorite = !DataManager.Instance.Save.ActiveTeam.Players[currentChoice].IsFavorite;
             else
@@ -140,7 +140,7 @@ namespace RogueEssence.Menu
             }
             else if (input.JustPressed(FrameInput.InputType.SelectItems))
             {
-                int currentChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+                int currentChoice = CurrentChoiceTotal;
                 //instantly put the team on or remove it
                 if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
                 {
@@ -173,7 +173,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int currentChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int currentChoice = CurrentChoiceTotal;
             Character subjectChar = null;
             if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
                 subjectChar = DataManager.Instance.Save.ActiveTeam.Players[currentChoice];

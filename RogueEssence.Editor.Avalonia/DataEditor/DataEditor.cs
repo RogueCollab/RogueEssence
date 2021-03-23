@@ -21,27 +21,43 @@ namespace RogueEssence.Dev
 {
     public static class DataEditor
     {
-        private static List<IEditor> converters;
+        private static List<IClassConverter> converters;
+        private static List<IEditor> editors;
 
         public static object clipboardObj;
 
         public static void Init()
         {
             clipboardObj = new object();
-            converters = new List<IEditor>();
+            converters = new List<IClassConverter>();
+            editors = new List<IEditor>();
         }
 
-        public static void AddConverter(IEditor converter)
+        public static void AddEditor(IEditor editor)
+        {
+            //maintain inheritance order
+            for (int ii = 0; ii < editors.Count; ii++)
+            {
+                if (editor.GetConvertingType().IsSubclassOf(editors[ii].GetConvertingType()))
+                {
+                    editors.Insert(ii, editor);
+                    return;
+                }
+                else if (editor.GetConvertingType() == editors[ii].GetConvertingType() && editor.GetAttributeType() != null && editors[ii].GetAttributeType() == null)
+                {
+                    editors.Insert(ii, editor);
+                    return;
+                }
+            }
+            editors.Add(editor);
+        }
+
+        public static void AddConverter(IClassConverter converter)
         {
             //maintain inheritance order
             for (int ii = 0; ii < converters.Count; ii++)
             {
-                if (converter.GetConvertingType().IsSubclassOf(converters[ii].GetConvertingType()))
-                {
-                    converters.Insert(ii, converter);
-                    return;
-                }
-                else if (converter.GetConvertingType() == converters[ii].GetConvertingType() && converter.GetAttributeType() != null && converters[ii].GetAttributeType() == null)
+                if (converter.GetConvertingType().IsSubclassOf(editors[ii].GetConvertingType()))
                 {
                     converters.Insert(ii, converter);
                     return;
@@ -56,22 +72,43 @@ namespace RogueEssence.Dev
             LoadClassControls(control, obj.ToString(), obj.GetType(), new object[0], obj, true);
         }
 
+        public static string GetClassEntryString(object obj)
+        {
+            if (obj == null)
+                return "NULL";
+
+            Type objType = obj.GetType();
+
+            foreach (IClassConverter converter in converters)
+            {
+                Type editType = converter.GetConvertingType();
+                if (editType.IsAssignableFrom(objType))
+                    return converter.GetClassString(obj);
+            }
+
+            string toStr = obj.ToString();
+            if (toStr != obj.GetType().Name)
+                return toStr;
+
+            return obj.GetType().Name;
+        }
+
         private static IEditor findEditor(Type objType, object[] attributes)
         {
-            foreach (IEditor converter in converters)
+            foreach (IEditor editor in editors)
             {
-                Type convertType = converter.GetConvertingType();
-                if (convertType.IsAssignableFrom(objType))
+                Type editType = editor.GetConvertingType();
+                if (editType.IsAssignableFrom(objType))
                 {
-                    Type attrType = converter.GetAttributeType();
+                    Type attrType = editor.GetAttributeType();
                     if (attrType == null)
-                        return converter;
+                        return editor;
                     else
                     {
                         foreach (object attr in attributes)
                         {
                             if (attr.GetType() == attrType)
-                                return converter;
+                                return editor;
                         }
                     }
                 }

@@ -61,7 +61,7 @@ namespace RogueEssence.Menu
 
         private void choose(InvSlot slot)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
 
             MenuManager.Instance.RemoveMenu();
             action(new List<InvSlot>() { slot });
@@ -70,7 +70,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoseMultiIndex(List<int> slots)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
 
             List<int> heldIDs = new List<int>();
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
@@ -102,7 +102,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            InvItem item = getChosenItemID(CurrentPage * SpacesPerPage + CurrentChoice);
+            InvItem item = getChosenItemID(CurrentChoiceTotal);
             summaryMenu.SetItem(item);
             base.ChoiceChanged();
         }
@@ -152,7 +152,7 @@ namespace RogueEssence.Menu
         public IEnumerator<YieldInstruction> SortCommand()
         {
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.SortItems, Dir8.None)));
-            MenuManager.Instance.ReplaceMenu(new DepositMenu(0));
+            MenuManager.Instance.ReplaceMenu(new AppraiseMenu(CurrentChoiceTotal, action));
         }
     }
 }

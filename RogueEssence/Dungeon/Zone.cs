@@ -16,6 +16,7 @@ namespace RogueEssence.Dungeon
 
         public bool NoEXP;
         public int Level;
+        public bool LevelCap;
         public bool TeamRestrict;
         public int TeamSize;
         public bool MoneyRestrict;
@@ -45,9 +46,10 @@ namespace RogueEssence.Dungeon
         public GroundMap CurrentGround { get; private set; }
 
         public List<MapStatus> CarryOver;
-        
 
-
+        /// <summary>
+        /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
+        /// </summary>
         private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
 
         public Zone(ulong seed, int zoneIndex)
@@ -83,12 +85,30 @@ namespace RogueEssence.Dungeon
         {
             foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
                 scriptEvent.LuaEngineReload();
+            if (CurrentMap != null)
+                CurrentMap.LuaEngineReload();
             if (CurrentGround != null)
                 CurrentGround.LuaEngineReload();
+        }
+        public void SaveLua()
+        {
+            if (CurrentMap != null)
+                CurrentMap.SaveLua();
+            if (CurrentGround != null)
+                CurrentGround.SaveLua();
+        }
+        public void LoadLua()
+        {
+            if (CurrentMap != null)
+                CurrentMap.LoadLua();
+            if (CurrentGround != null)
+                CurrentGround.LoadLua();
         }
 
         private void exitMap()
         {
+            if (CurrentMap != null && CurrentMapID.IsValid())//only clean up maps that are valid (aka, not from editor mode)
+                CurrentMap.DoCleanup();
             CurrentMap = null;
             if (CurrentGround != null && CurrentMapID.IsValid())//only clean up maps that are valid (aka, not from editor mode)
                 CurrentGround.DoCleanup();
@@ -246,7 +266,8 @@ namespace RogueEssence.Dungeon
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             DiagManager.Instance.LogInfo("Zone.OnInit(): Initializing the zone..");
-            LuaEngine.Instance.RunZoneScript(assetName);
+            if (assetName != "")
+                LuaEngine.Instance.RunZoneScript(assetName);
 
             //Reload the map events
             foreach (var ev in ScriptEvents)
@@ -259,6 +280,17 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneInit(/*assetName, this*/);
         }
 
+        public IEnumerator<YieldInstruction> OnEnterSegment()
+        {
+            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, CurrentMapID.Segment, CurrentMapID.ID));
+
+            //Notify script engine
+            LuaEngine.Instance.OnZoneSegmentStart(/*assetName, this*/);
+        }
+
         public IEnumerator<YieldInstruction> OnExitSegment(GameProgress.ResultType result, bool rescuing)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
@@ -267,7 +299,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.ExitSegment, this, result, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
 
             //Notify script engine
-            LuaEngine.Instance.OnDungeonSegmentEnd(/*assetName, this*/);
+            LuaEngine.Instance.OnZoneSegmentEnd(/*assetName, this*/);
         }
 
         public IEnumerator<YieldInstruction> OnAllyInteract(Character chara, Character target)
@@ -293,8 +325,6 @@ namespace RogueEssence.Dungeon
         {
             if (ScriptEvents.ContainsKey(ev))
                 yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(parms));
-            else
-                yield break;
         }
 
 

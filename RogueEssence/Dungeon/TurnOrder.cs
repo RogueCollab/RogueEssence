@@ -6,14 +6,14 @@ namespace RogueEssence.Dungeon
     public struct TurnOrder
     {
         public int TurnTier;
-        public bool EnemyFaction;
+        public Faction Faction;
         public int TurnIndex;
         public bool SkipAll;
 
-        public TurnOrder(int turnTier, bool enemyFaction, int turnIndex)
+        public TurnOrder(int turnTier, Faction faction, int turnIndex)
         {
             TurnTier = turnTier;
-            EnemyFaction = enemyFaction;
+            Faction = faction;
             TurnIndex = turnIndex;
             SkipAll = false;
         }

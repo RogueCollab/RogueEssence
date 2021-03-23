@@ -61,7 +61,7 @@ namespace RogueEssence.Ground
             //if (!connected)
             //    yield break;
 
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new GetHelpMenu()));
+            //yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new GetHelpMenu()));
 
             yield break;
         }
@@ -72,9 +72,7 @@ namespace RogueEssence.Ground
             InputManager input = GameManager.Instance.MetaInputManager;
 
             if (input.JustPressed(FrameInput.InputType.Test))
-            {
                 PendingLeaderAction = test();
-            }
 
             if (input.JustReleased(FrameInput.InputType.RightMouse) && input[FrameInput.InputType.Ctrl])
             {
@@ -198,9 +196,25 @@ namespace RogueEssence.Ground
                     else if (input.JustPressed(FrameInput.InputType.LeaderSwap4))
                         action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, 3, 0);
                     else if (input.JustPressed(FrameInput.InputType.LeaderSwapBack))
-                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (DataManager.Instance.Save.ActiveTeam.LeaderIndex + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, 0);
+                    {
+                        int newSlot = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
+                        do
+                        {
+                            newSlot = (newSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count;
+                        }
+                        while (!canSwitchToChar(newSlot));
+                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                    }
                     else if (input.JustPressed(FrameInput.InputType.LeaderSwapForth))
-                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (DataManager.Instance.Save.ActiveTeam.LeaderIndex + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, 0);
+                    {
+                        int newSlot = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
+                        do
+                        {
+                            newSlot = (newSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count;
+                        }
+                        while (!canSwitchToChar(newSlot));
+                        action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                    }
                 }
             }
 
@@ -215,6 +229,17 @@ namespace RogueEssence.Ground
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
+
+                //Make entities think!
+                foreach (GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
+                {
+                    if (ent.EntEnabled && ent.GetType().IsSubclassOf(typeof(GroundAIUser)))
+                    {
+                        GroundAIUser tu = (GroundAIUser)ent;
+                        tu.Think();
+                    }
+                }
+
                 //update the hitboxes' movements
 
                 //update the team/enemies
@@ -227,16 +252,6 @@ namespace RogueEssence.Ground
                 {
                     if (character.EntEnabled)
                         character.Collide();
-                }
-
-                //Make entities think!
-                foreach(GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
-                {
-                    if (ent.EntEnabled && ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
-                    {
-                        BaseTaskUser tu = (BaseTaskUser)ent;
-                        tu.Think();
-                    }
                 }
 
 

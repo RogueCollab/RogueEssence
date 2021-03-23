@@ -128,7 +128,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void Autotiles_SelectedIndexChanged()
         {
-            if (Autotiles.InternalIndex == 0)
+            if (Autotiles.InternalIndex <= 0)
             {
                 Preview = TileFrame.Empty;
                 return;

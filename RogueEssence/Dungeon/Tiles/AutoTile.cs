@@ -4,6 +4,7 @@ using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -12,11 +13,13 @@ namespace RogueEssence.Dungeon
     {
         public List<TileLayer> Layers;
 
+        [Dev.DataType(0, DataManager.DataType.AutoTile, true)]
         public int AutoTileset { get; private set; }
-        
+
         /// <summary>
         /// Tilesets that are considered this tileset for texture computing purposes.  Only used for Autotiles
         /// </summary>
+        [Dev.DataType(1, DataManager.DataType.AutoTile, false)]
         public HashSet<int> Associates { get; private set; }
         public int NeighborCode;
 
@@ -112,6 +115,25 @@ namespace RogueEssence.Dungeon
         public override int GetHashCode()
         {
             return AutoTileset.GetHashCode() ^ Associates.GetHashCode() ^ Layers.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries.Count)
+                return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[AutoTileset].Name.ToLocal());
+            else
+            {
+                if (Layers.Count > 0)
+                {
+                    TileLayer layer = Layers[0];
+                    if (layer.Frames.Count > 0)
+                    {
+                        TileFrame frame = layer.Frames[0];
+                        return String.Format("AutoTile {0}: {1}", frame.Sheet, frame.TexLoc.ToString());
+                    }
+                }
+            }
+            return "[EMPTY]";
         }
     }
 }

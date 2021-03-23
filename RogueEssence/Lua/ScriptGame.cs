@@ -90,6 +90,16 @@ namespace RogueEssence.Script
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
         }
 
+        public void SetDebugUI(string str)
+        {
+            GameManager.Instance.DebugUI = str;
+        }
+
+        public string GetDebugUI()
+        {
+            return GameManager.Instance.DebugUI;
+        }
+
         /// <summary>
         /// Leave current map and load up the title screen
         /// </summary>
@@ -166,7 +176,7 @@ namespace RogueEssence.Script
         /// <returns>Index of the currently player controlled entity in the party.</returns>
         public int GetTeamLeaderIndex()
         {
-            return DataManager.Instance.Save.ActiveTeam.GetLeaderIndex();
+            return DataManager.Instance.Save.ActiveTeam.LeaderIndex;
         }
         public void SetTeamLeaderIndex(int idx)
         {
@@ -203,6 +213,29 @@ namespace RogueEssence.Script
         public Character GetPlayerPartyMember(int index)
         {
             return DataManager.Instance.Save.ActiveTeam.Players[index];
+        }
+
+
+        public int GetGuestPartyCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests.Count;
+        }
+
+        /// <summary>
+        /// Return the guests as a LuaTable
+        /// </summary>
+        /// <returns></returns>
+        public LuaTable GetGuestPartyTable()
+        {
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
+            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Guests)
+                addfn.Call(tbl, ent);
+            return tbl;
+        }
+        public Character GetGuestPartyMember(int index)
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests[index];
         }
 
         public object GetPlayerAssemblyCount()
@@ -247,7 +280,28 @@ namespace RogueEssence.Script
             }
 
             DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
+        }
 
+        public void AddGuestTeam(Character character)
+        {
+            DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
+        }
+
+        /// <summary>
+        /// Removes the character from the team, placing its item back in the inventory.
+        /// </summary>
+        /// <param name="slot"></param>
+        public void RemoveGuestTeam(int slot)
+        {
+            Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
+
+            if (player.EquippedItem.ID > -1)
+            {
+                InvItem heldItem = player.EquippedItem;
+                player.DequipItem();
+            }
+
+            DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
         }
 
 
@@ -404,6 +458,7 @@ namespace RogueEssence.Script
             if (newData.Form >= entry.Forms.Count)
                 newData.Form = 0;
             character.Promote(newData);
+            character.FullRestore();
             branch.OnPromote(character, false);
             //remove exception item if there is one...
             if (bypass)
@@ -457,6 +512,11 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
         }
 
+        public object GetGuestEquippedItem(int slot)
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
+        }
+
         public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
         {
             for (int i = 0; i < count; ++i)
@@ -483,6 +543,10 @@ namespace RogueEssence.Script
         public void TakePlayerEquippedItem(int slot)
         {
             DataManager.Instance.Save.ActiveTeam.Players[slot].DequipItem();
+        }
+        public void TakeGuestEquippedItem(int slot)
+        {
+            DataManager.Instance.Save.ActiveTeam.Guests[slot].DequipItem();
         }
 
         public int GetPlayerStorageCount()

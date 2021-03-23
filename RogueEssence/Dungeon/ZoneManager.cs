@@ -19,6 +19,7 @@ namespace RogueEssence.Dungeon
         
         public static void SaveToState(BinaryWriter writer, GameState state)
         {
+            state.Zone.SaveLua();
             using (MemoryStream classStream = new MemoryStream())
             {
                 IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -31,6 +32,7 @@ namespace RogueEssence.Dungeon
         public static void LoadFromState(ZoneManager state)
         {
             instance = state;
+            instance.LoadLua();
         }
         public static void LoadToState(BinaryReader reader, GameState state)
         {
@@ -119,6 +121,15 @@ namespace RogueEssence.Dungeon
             if (CurrentZone != null)
                 CurrentZone.LuaEngineReload();
         }
-
+        public void SaveLua()
+        {
+            if (CurrentZone != null)
+                CurrentZone.SaveLua();
+        }
+        public void LoadLua()
+        {
+            if (CurrentZone != null)
+                CurrentZone.LoadLua();
+        }
     }
 }

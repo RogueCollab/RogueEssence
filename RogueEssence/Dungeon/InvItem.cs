@@ -44,7 +44,7 @@ namespace RogueEssence.Dungeon
 
         public override string GetName()
         {
-            Data.ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = Data.DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
                 return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
             else
@@ -53,7 +53,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            Data.ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = Data.DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
                 return (Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
             else
@@ -62,7 +62,7 @@ namespace RogueEssence.Dungeon
 
         public int GetSellValue()
         {
-            Data.ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = Data.DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
                 return entry.Price * HiddenValue;
             else

@@ -4,8 +4,9 @@
     <OutputType>Library</OutputType>
     <RootNamespace>RogueEssence</RootNamespace>
     <AssemblyName>RogueEssence</AssemblyName>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="LevelGen\Zones\ZonePostProcs\FloorChancePostProc.cs" />

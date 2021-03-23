@@ -10,9 +10,8 @@ namespace RogueEssence.Dev
 {
     public class DevGraphicsManager
     {
-        public const string RESOURCE_PATH = PathMod.ASSET_PATH + "Editor/";
 
-        private static LRUCache<TileFrame, Bitmap> tileCache;
+        private static LRUCache<TileAddr, Bitmap> tileCache;
         private static LRUCache<string, Bitmap> tilesetCache;
 
         public static Bitmap IconO;
@@ -23,27 +22,29 @@ namespace RogueEssence.Dev
         public static void Init()
         {
             CharSheetOps = new List<CharSheetOp>();
-            foreach (string path in Directory.GetFiles(Path.Combine(RESOURCE_PATH, "Extensions"), "*.op"))
+            foreach (string path in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
                 CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
                 CharSheetOps.Add(newOp);
             }
 
 
-            IconO = new Bitmap(Path.Combine(RESOURCE_PATH, "UI/O.png"));
-            IconX = new Bitmap(Path.Combine(RESOURCE_PATH, "UI/X.png"));
+            IconO = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI/O.png"));
+            IconX = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI/X.png"));
 
-            tileCache = new LRUCache<TileFrame, Bitmap>(2000);
+            tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
         }
 
         public static Bitmap GetTile(TileFrame tileTex)
         {
-            Bitmap sheet;
-            if (tileCache.TryGetValue(tileTex, out sheet))
-                return sheet;
 
             long tilePos = GraphicsManager.TileIndex.GetPosition(tileTex.Sheet, tileTex.TexLoc);
+            TileAddr addr = new TileAddr(tilePos, tileTex.Sheet);
+
+            Bitmap sheet;
+            if (tileCache.TryGetValue(addr, out sheet))
+                return sheet;
 
             if (tilePos > 0)
             {
@@ -65,7 +66,7 @@ namespace RogueEssence.Dev
                         }
                     }
 
-                    tileCache.Add(tileTex, sheet);
+                    tileCache.Add(addr, sheet);
                     return sheet;
                 }
                 catch (Exception ex)

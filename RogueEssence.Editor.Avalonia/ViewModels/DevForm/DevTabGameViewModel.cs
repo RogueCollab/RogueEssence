@@ -81,18 +81,31 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                MonsterTeam team = new MonsterTeam();
-                Character new_mob = DungeonScene.Instance.FocusedCharacter.Clone(team);
-                ZoneManager.Instance.CurrentMap.MapTeams.Add(new_mob.MemberTeam);
-                new_mob.RefreshTraits();
-                DungeonScene.Instance.PendingDevEvent = new_mob.OnMapStart();
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    MonsterTeam team = new MonsterTeam();
+                    Character new_mob = DungeonScene.Instance.FocusedCharacter.Clone(team);
+                    ZoneManager.Instance.CurrentMap.MapTeams.Add(new_mob.MemberTeam);
+                    new_mob.RefreshTraits();
+                    DungeonScene.Instance.PendingDevEvent = new_mob.OnMapStart();
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
 
         public void btnDespawn_Click()
         {
             lock (GameBase.lockObj)
-                ZoneManager.Instance.CurrentMap.MapTeams.Clear();
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    ZoneManager.Instance.CurrentMap.AllyTeams.Clear();
+                    ZoneManager.Instance.CurrentMap.MapTeams.Clear();
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
+            }
         }
 
         public void btnSpawnItem_Click()
@@ -127,23 +140,28 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig("StatusChoice", chosenStatus);
                 StatusData entry = DataManager.Instance.GetStatus(chosenStatus);
-                if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    Character player = DungeonScene.Instance.FocusedCharacter;
-                    if (entry.Targeted)
-                        DungeonScene.Instance.LogMsg(String.Format("This is a targeted status."), false, true);
-                    else
+                    if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
                     {
-                        if (player.StatusEffects.ContainsKey(chosenStatus))
-                            DungeonScene.Instance.PendingDevEvent = player.RemoveStatusEffect(chosenStatus);
+                        Character player = DungeonScene.Instance.FocusedCharacter;
+                        if (entry.Targeted)
+                            DungeonScene.Instance.LogMsg(String.Format("This is a targeted status."), false, true);
                         else
                         {
-                            StatusEffect status = new StatusEffect(chosenStatus);
-                            status.LoadFromData();
-                            DungeonScene.Instance.PendingDevEvent = player.AddStatusEffect(status);
+                            if (player.StatusEffects.ContainsKey(chosenStatus))
+                                DungeonScene.Instance.PendingDevEvent = player.RemoveStatusEffect(chosenStatus);
+                            else
+                            {
+                                StatusEffect status = new StatusEffect(chosenStatus);
+                                status.LoadFromData();
+                                DungeonScene.Instance.PendingDevEvent = player.AddStatusEffect(status);
+                            }
                         }
                     }
                 }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
 
@@ -152,14 +170,31 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm.SetConfig("SkillChoice", chosenSkill);
-                if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    Character player = DungeonScene.Instance.FocusedCharacter;
-                    if (player.BaseSkills[CharData.MAX_SKILL_SLOTS - 1].SkillNum > -1)
-                        player.DeleteSkill(0);
-                    player.LearnSkill(chosenSkill, true);
-                    DungeonScene.Instance.LogMsg(String.Format("Taught {1} to {0}.", player.Name, DataManager.Instance.GetSkill(chosenSkill).Name.ToLocal()), false, true);
+                    if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                    {
+                        Character player = DungeonScene.Instance.FocusedCharacter;
+                        if (player.BaseSkills[CharData.MAX_SKILL_SLOTS - 1].SkillNum > -1)
+                            player.DeleteSkill(0);
+                        player.LearnSkill(chosenSkill, true);
+                        DungeonScene.Instance.LogMsg(String.Format("Taught {1} to {0}.", player.Name, DataManager.Instance.GetSkill(chosenSkill).Name.ToLocal()), false, true);
+                    }
                 }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0)
+                    {
+                        Character player = DataManager.Instance.Save.ActiveTeam.Leader;
+                        if (player.BaseSkills[CharData.MAX_SKILL_SLOTS - 1].SkillNum > -1)
+                            player.DeleteSkill(0);
+                        player.LearnSkill(chosenSkill, true);
+                        GameManager.Instance.SE("Menu/Sort");
+                    }
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
 
@@ -168,18 +203,22 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm.SetConfig("SkillChoice", chosenSkill);
-                Character player = DungeonScene.Instance.FocusedCharacter;
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    if (DungeonScene.Instance.GetMatchup(player, character) == Alignment.Foe)
+                    Character player = DungeonScene.Instance.FocusedCharacter;
+                    foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                     {
-                        if (character.BaseSkills[CharData.MAX_SKILL_SLOTS - 1].SkillNum > -1)
-                            character.DeleteSkill(0);
-                        character.LearnSkill(chosenSkill, true);
+                        if (DungeonScene.Instance.GetMatchup(player, character) == Alignment.Foe)
+                        {
+                            if (character.BaseSkills[CharData.MAX_SKILL_SLOTS - 1].SkillNum > -1)
+                                character.DeleteSkill(0);
+                            character.LearnSkill(chosenSkill, true);
+                        }
                     }
-
+                    DungeonScene.Instance.LogMsg(String.Format("Taught {0} to all foes.", DataManager.Instance.GetSkill(chosenSkill).Name.ToLocal()), false, true);
                 }
-                DungeonScene.Instance.LogMsg(String.Format("Taught {0} to all foes.", DataManager.Instance.GetSkill(chosenSkill).Name.ToLocal()), false, true);
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
 
@@ -188,12 +227,27 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm.SetConfig("IntrinsicChoice", chosenIntrinsic);
-                if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    Character player = DungeonScene.Instance.FocusedCharacter;
-                    player.LearnIntrinsic(chosenIntrinsic, 0);
-                    DungeonScene.Instance.LogMsg(String.Format("Gave {1} to {0}.", player.Name, DataManager.Instance.GetIntrinsic(chosenIntrinsic).Name.ToLocal()), false, true);
+                    if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
+                    {
+                        Character player = DungeonScene.Instance.FocusedCharacter;
+                        player.LearnIntrinsic(chosenIntrinsic, 0);
+                        DungeonScene.Instance.LogMsg(String.Format("Gave {1} to {0}.", player.Name, DataManager.Instance.GetIntrinsic(chosenIntrinsic).Name.ToLocal()), false, true);
+                    }
                 }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0)
+                    {
+                        Character player = DataManager.Instance.Save.ActiveTeam.Leader;
+                        player.LearnIntrinsic(chosenIntrinsic, 0);
+                        GameManager.Instance.SE("Menu/Sort");
+                    }
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
 
@@ -202,13 +256,19 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm.SetConfig("IntrinsicChoice", chosenIntrinsic);
-                Character player = DungeonScene.Instance.FocusedCharacter;
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    if (DungeonScene.Instance.GetMatchup(player, character) == Alignment.Foe)
-                        character.LearnIntrinsic(chosenIntrinsic, 0);
+                    Character player = DungeonScene.Instance.FocusedCharacter;
+                    foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                    {
+                        if (DungeonScene.Instance.GetMatchup(player, character) == Alignment.Foe)
+                            character.LearnIntrinsic(chosenIntrinsic, 0);
+                    }
+                    DungeonScene.Instance.LogMsg(String.Format("Gave {0} to all foes.", DataManager.Instance.GetIntrinsic(chosenIntrinsic).Name.ToLocal()), false, true);
                 }
-                DungeonScene.Instance.LogMsg(String.Format("Gave {0} to all foes.", DataManager.Instance.GetIntrinsic(chosenIntrinsic).Name.ToLocal()), false, true);
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
         }
     }

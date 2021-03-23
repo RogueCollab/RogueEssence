@@ -67,10 +67,10 @@ namespace RogueEssence.LevelGen
                         });
 
                     //this actually places the members of the team in random scattered locations, leaving them to group together via wandering
-                    if (freeTiles.Count >= newTeam.Players.Count)
+                    if (freeTiles.Count >= newTeam.MemberGuestCount)
                     {
-                        Loc[] locs = new Loc[newTeam.Players.Count];
-                        for (int jj = 0; jj < newTeam.Players.Count; jj++)
+                        Loc[] locs = new Loc[newTeam.MemberGuestCount];
+                        for (int jj = 0; jj < locs.Length; jj++)
                         {
                             int randIndex = map.Rand.Next(freeTiles.Count);
                             locs[jj] = freeTiles[randIndex];
@@ -89,5 +89,9 @@ namespace RogueEssence.LevelGen
             }
         }
 
+        public override string ToString()
+        {
+            return String.Format("{0}: Amt:{1} Clump:{2}", this.GetType().Name, Amount.ToString(), ClumpFactor);
+        }
     }
 }

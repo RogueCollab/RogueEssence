@@ -239,6 +239,13 @@ namespace RogueEssence.Script
             if (!m_bfunvalid)
                 DiagManager.Instance.LogInfo("TransientScriptEvent.TransientScriptEvent(): lua function passed as parameter is null!");
         }
+        public TransientScriptEvent(string luafun)
+        {
+            m_luafun = LuaEngine.Instance.RunString("return " + luafun).First() as LuaFunction;
+            m_bfunvalid = luafun != null;
+            if (!m_bfunvalid)
+                DiagManager.Instance.LogInfo("TransientScriptEvent.TransientScriptEvent(): lua function path passed as parameter is invalid!");
+        }
 
         public override string EventName()
         {

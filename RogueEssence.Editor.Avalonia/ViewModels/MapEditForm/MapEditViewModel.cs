@@ -60,7 +60,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public void New_Click()
+        public void mnuNew_Click()
         {
             CurrentFile = "";
 
@@ -68,7 +68,7 @@ namespace RogueEssence.Dev.ViewModels
                 DoNew();
         }
 
-        public async void Open_Click()
+        public async void mnuOpen_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -101,17 +101,17 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void Save_Click()
+        public void mnuSave_Click()
         {
             if (CurrentFile == "")
-                SaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
+                mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
                 lock (GameBase.lockObj)
                     DoSave(ZoneManager.Instance.CurrentMap, CurrentFile, CurrentFile);
             }
         }
-        public async void SaveAs_Click()
+        public async void mnuSaveAs_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -144,7 +144,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public async void ImportFromPng_Click()
+        public async void mnuImportFromPng_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -167,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public async void ImportFromTileset_Click()
+        public async void mnuImportFromTileset_Click()
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
@@ -181,7 +181,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public async void ReSize_Click()
+        public async void mnuReSize_Click()
         {
             MapResizeWindow window = new MapResizeWindow();
             MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height);
@@ -205,12 +205,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        //public void Undo_Click()
+        //public void mnuUndo_Click()
         //{
 
         //}
 
-        //public void Redo_Click()
+        //public void mnuRedo_Click()
         //{
 
         //}

@@ -288,13 +288,18 @@ namespace RogueEssence.Data
 
         public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool silent)
         {
-            if (zone.Level > -1)
+            if (zone.LevelCap)
             {
                 StartLevel = zone.Level;
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
                     RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, true);
                     ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
+                }
+                for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, true);
+                    //no backref for guests
                 }
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
                 {
@@ -335,6 +340,7 @@ namespace RogueEssence.Data
             List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
             foreach (int skill in final_skills)
                 character.LearnSkill(skill, true);
+            character.Relearnables = new List<bool>();
         }
 
         public IEnumerator<YieldInstruction> RestoreLevel()
@@ -429,6 +435,14 @@ namespace RogueEssence.Data
                 }
             }
 
+            //restore remembered skills
+            for (int ii = 0; ii < charFrom.Relearnables.Count; ii++)
+            {
+                if (ii >= character.Relearnables.Count)
+                    character.Relearnables.Add(false);
+                character.Relearnables[ii] |= charFrom.Relearnables[ii];
+            }
+
             //restoreCharLevel the backref
             character.BackRef = new TempCharBackRef(false, -1);
         }
@@ -438,7 +452,7 @@ namespace RogueEssence.Data
         /// </summary>
         protected void ClearDungeonItems()
         {
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam.EnumerateChars())
             {
                 if (character.EquippedItem.ID > -1)
                 {
@@ -474,6 +488,8 @@ namespace RogueEssence.Data
             using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
             {
                 IFormatter formatter = new BinaryFormatter();
+                if (DiagManager.Instance.UpgradeBinder != null)
+                    formatter.Binder = DiagManager.Instance.UpgradeBinder;
                 GameProgress outsave = (GameProgress)formatter.Deserialize(classStream); //Had to tweak this around a bit, so I could notify the script engine to load the script save data
                 return outsave;
             }
@@ -564,7 +580,7 @@ namespace RogueEssence.Data
             }
 
             //remove equips
-            foreach (Character player in save.ActiveTeam.Players)
+            foreach (Character player in save.ActiveTeam.EnumerateChars())
             {
                 if (player.EquippedItem.ID > -1)
                 {
@@ -674,7 +690,7 @@ namespace RogueEssence.Data
 
             TotalAdventures++;
 
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam.EnumerateChars())
             {
                 character.Dead = false;
                 character.FullRestore();

@@ -173,7 +173,7 @@ namespace RogueEssence.Dev.Views
 
         public void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedIndex > -1)
+            if (SelectedIndex > -1 && SelectedIndex < collection.Count)
                 collection.RemoveAt(SelectedIndex);
         }
 
@@ -272,7 +272,7 @@ namespace RogueEssence.Dev.Views
             int ii = 0;
             while (true)
             {
-                if (ii > p1.Length || ii > p2.Length)
+                if (ii >= p1.Length || ii >= p2.Length)
                     return ii - 1;
                 if (p1[ii] != p2[ii])
                     return ii;

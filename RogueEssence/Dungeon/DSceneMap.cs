@@ -339,7 +339,7 @@ namespace RogueEssence.Dungeon
                     ((ExplorerTeam)memberTeam).AddToInv(item.MakeInvItem());
                     msg = Text.FormatKey("MSG_PICKUP_ITEM", character.Name, item.GetDungeonName());
                 }
-                bool teamCharacter = ActiveTeam.Players.Contains(character);
+                bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
                 LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE, item.TileLoc, character, false));
             }
         }
@@ -354,7 +354,7 @@ namespace RogueEssence.Dungeon
 
             InvItem item = mapItem.MakeInvItem();
 
-            bool teamCharacter = ActiveTeam.Players.Contains(character);
+            bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
             GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
             if (character.EquippedItem.ID > -1)
             {
@@ -410,7 +410,7 @@ namespace RogueEssence.Dungeon
                     character.DequipItem();
                     ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
 
-                    bool teamCharacter = ActiveTeam.Players.Contains(character);
+                    bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
                     GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
 
                     LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.Name, item.GetDungeonName(), invItem.GetName()));
@@ -467,7 +467,7 @@ namespace RogueEssence.Dungeon
             if (character == FocusedCharacter && !character.AttackOnly)
             {
                 Loc frontLoc = FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc();
-                foreach(Character member in ActiveTeam.Players)
+                foreach(Character member in ActiveTeam.EnumerateChars())
                 {
                     if (member.CharLoc == frontLoc && !member.Dead)
                     {
@@ -680,7 +680,7 @@ namespace RogueEssence.Dungeon
                     LogMsg(Text.FormatKey("MSG_EXP_GAIN_MEMBER", player.BaseName, totalExp), true, false);
                 }
                 if (levelDiff != 0)
-                    LevelGains.Add(new CharIndex(-1, ii));
+                    LevelGains.Add(new CharIndex(Faction.Player, 0, false, ii));
             }
 
             GainedEXP.Clear();
@@ -691,7 +691,8 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < LevelGains.Count; ii++)
             {
                 CharIndex index = LevelGains[ii];
-                Team levelTeam = (index.Team > -1) ? ZoneManager.Instance.CurrentMap.MapTeams[index.Team] : ActiveTeam;
+
+                Team levelTeam = ZoneManager.Instance.CurrentMap.GetTeam(index.Faction, index.Team);
                 Character player = levelTeam.Players[index.Char];
                 int growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);
@@ -766,6 +767,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> CheckLevelSkills(Character player, int oldLevel)
         {
+            if (!ActiveTeam.Players.Contains(player))
+                yield break;
+            
             BaseMonsterForm entry = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
             for (int ii = oldLevel + 1; ii <= player.Level; ii++)
             {
@@ -910,7 +914,7 @@ namespace RogueEssence.Dungeon
             }
 
             ActiveTeam.AddToSortedAssembly(player);
-            RemoveChar(new CharIndex(-1, index));
+            RemoveChar(new CharIndex(Faction.Player, 0, false, index));
 
             if (DataManager.Instance.CurrentReplay != null)
                 LogMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.Name));
@@ -936,7 +940,7 @@ namespace RogueEssence.Dungeon
             }
 
             ActiveTeam.AddToSortedAssembly(player);
-            RemoveChar(new CharIndex(-1, index));
+            RemoveChar(new CharIndex(Faction.Player, 0, false, index));
         }
 
         public IEnumerator<YieldInstruction> DropItem(InvItem item, Loc loc)

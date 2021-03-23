@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int choice = CurrentPage * SpacesPerPage + CurrentChoice - 1;
+            int choice = CurrentChoiceTotal - 1;
             if (choice > -1)
             {
                 summaryMenu.Visible = true;

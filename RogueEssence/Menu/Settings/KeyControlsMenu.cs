@@ -180,7 +180,7 @@ namespace RogueEssence.Menu
             {
                 dirKeys[index] = key;
                 refresh();
-            }), true);
+            }, () => { refresh(); }), true);
 
         }
 
@@ -192,7 +192,7 @@ namespace RogueEssence.Menu
             {
                 actionKeys[index] = key;
                 refresh();
-            }), true);
+            }, () => { refresh(); }), true);
 
         }
 

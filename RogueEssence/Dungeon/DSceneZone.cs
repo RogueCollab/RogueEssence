@@ -28,10 +28,18 @@ namespace RogueEssence.Dungeon
 
         public override void Exit()
         {
+            ResetAnims();
+        }
+
+        public IEnumerator<YieldInstruction> ExitFloor()
+        {
             if (ZoneManager.Instance.CurrentMap != null)
             {
+                //Notify script engine
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnExit());
+
                 //remove statuses
-                foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.Players)
+                foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.EnumerateChars())
                     character.OnRemove();
 
                 ZoneManager.Instance.CurrentMap.ActiveTeam = null;
@@ -44,11 +52,9 @@ namespace RogueEssence.Dungeon
                     if (data.CarryOver)
                         ZoneManager.Instance.CurrentZone.CarryOver.Add(status);
                 }
-                ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
-                ResetAnims();
 
-                //Notify script engine
-                LuaEngine.Instance.OnDungeonFloorEnd();
+                ZoneManager.Instance.CurrentZone.SetCurrentMap(SegLoc.Invalid);
+
             }
         }
 
@@ -67,11 +73,8 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public IEnumerator<YieldInstruction> PrepareFloor()
+        public IEnumerator<YieldInstruction> InitFloor()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
-
             //start emitters for existing map status
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 mapStatus.StartEmitter(Anims);
@@ -81,17 +84,20 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
 
             //Notify script engine
-             LuaEngine.Instance.OnDungeonFloorPrepare();
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
         }
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
+
             ZoneManager.Instance.CurrentMap.Begun = true;
             //process map-start events (dialogue, map condition announcement, etc)
             foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
 
-            foreach (Character character in ActiveTeam.Players)
+            foreach (Character character in ActiveTeam.EnumerateChars())
                 yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
 
             //process player happenings
@@ -118,8 +124,7 @@ namespace RogueEssence.Dungeon
             foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
 
-            //Notify script engine
-            LuaEngine.Instance.OnDungeonFloorBegin();
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
         }
 
 
@@ -182,11 +187,13 @@ namespace RogueEssence.Dungeon
             {
                 for (int jj = ZoneManager.Instance.CurrentMap.MapTeams[ii].Players.Count - 1; jj >= 0; jj--)
                     yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.MapTeams[ii].Players[jj].DieSilent());
+                for (int jj = ZoneManager.Instance.CurrentMap.MapTeams[ii].Guests.Count - 1; jj >= 0; jj--)
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.MapTeams[ii].Guests[jj].DieSilent());
             }
 
 
             //heal players
-            foreach (Character character in ActiveTeam.IterateByRank())
+            foreach (Character character in ActiveTeam.IterateMainByRank())
             {
                 if (character.Dead)
                 {
@@ -204,7 +211,7 @@ namespace RogueEssence.Dungeon
             }
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex = 0;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.EnemyFaction = false;
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction = Faction.Player;
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.SkipAll = false;
             RegenerateTurnMap();
@@ -470,33 +477,51 @@ namespace RogueEssence.Dungeon
         //anyone can be added to or removed from the entity list at any time in a turn
         //when dealing with death disposals, it happens in a turn transition
         //when dealing with recruitment or summoning, it happens in mid-turn
-        public void AddTeam(Team team)
+        public void AddTeam(Faction faction, Team team)
         {
-            ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+            if (faction == Faction.Player)
+                throw new Exception("Can't add player team!");
 
-            int teamIndex = ZoneManager.Instance.CurrentMap.MapTeams.Count - 1;
+            switch (faction)
+            {
+                case Faction.Foe:
+                    ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+                    break;
+                case Faction.Friend:
+                    ZoneManager.Instance.CurrentMap.AllyTeams.Add(team);
+                    break;
+            }
         }
-        public void RemoveTeam(int teamIndex)
+        public void RemoveTeam(Faction faction, int teamIndex)
         {
             CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
             //note: this cannot be called when it is the team's turn
-            if (turnChar.Team == teamIndex)
-                throw new Exception();
+            if (turnChar.Faction == faction && turnChar.Team == teamIndex)
+                throw new Exception("Can't remove a team whose turn it currently is!");
+            if (faction == Faction.Player)
+                throw new Exception("Can't remove player team!");
 
-            ZoneManager.Instance.CurrentMap.MapTeams.RemoveAt(teamIndex);
+            switch (faction)
+            {
+                case Faction.Foe:
+                    ZoneManager.Instance.CurrentMap.MapTeams.RemoveAt(teamIndex);
+                    break;
+                case Faction.Friend:
+                    ZoneManager.Instance.CurrentMap.AllyTeams.RemoveAt(teamIndex);
+                    break;
+            }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateTeamRemoval(teamIndex);
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateTeamRemoval(faction, teamIndex);
         }
 
-        public void AddCharToTeam(int teamIndex, Character character)
+        public void AddCharToTeam(Faction faction, int teamIndex, bool guest, Character character)
         {
-            Team team = null;
-            if (teamIndex == -1)
-                team = ZoneManager.Instance.CurrentMap.ActiveTeam;
-            else
-                team = ZoneManager.Instance.CurrentMap.MapTeams[teamIndex];
+            Team team = ZoneManager.Instance.CurrentMap.GetTeam(faction, teamIndex);
 
-            team.Players.Add(character);
+            if (guest)
+                team.Guests.Add(character);
+            else
+                team.Players.Add(character);
 
             OnCharAdd(character);
         }
@@ -519,29 +544,33 @@ namespace RogueEssence.Dungeon
             if (turnChar == charIndex)
                 throw new Exception("Attempted to delete a character on their turn.");
 
-            Team team = null;
-            if (charIndex.Team == -1)
-                team = ZoneManager.Instance.CurrentMap.ActiveTeam;
-            else
-                team = ZoneManager.Instance.CurrentMap.MapTeams[charIndex.Team];
+            Team team = ZoneManager.Instance.CurrentMap.GetTeam(charIndex.Faction, charIndex.Team);
 
-            Character character = team.Players[charIndex.Char];
+            List<Character> playerList = (charIndex.Guest) ? team.Guests : team.Players;
+            Character character = playerList[charIndex.Char];
 
             character.OnRemove();
             team.Players.RemoveAt(charIndex.Char);
 
             //update leader
-            if (team is ExplorerTeam && charIndex.Char < team.GetLeaderIndex())
-                ((ExplorerTeam)team).LeaderIndex--;
+            if (!charIndex.Guest)
+            {
+                if (charIndex.Char < team.LeaderIndex)
+                    team.LeaderIndex--;
+                if (team.LeaderIndex >= playerList.Count)
+                    team.LeaderIndex = playerList.Count - 1;
+                if (team.LeaderIndex < 0)
+                    team.LeaderIndex = 0;
+            }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex.Team, charIndex.Char);
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex.Faction, charIndex.Team, charIndex.Char);
 
-            if (charIndex.Team == -1 && focusedPlayerIndex > charIndex.Char)
+            if (charIndex.Faction == Faction.Player && focusedPlayerIndex > charIndex.Char)
                 focusedPlayerIndex--;
 
             //if the team is all empty (not all dead), definitely remove them
-            if (team.Players.Count == 0 && charIndex.Team > -1)
-                RemoveTeam(charIndex.Team);
+            if (team.Players.Count == 0 && team.Guests.Count == 0 && charIndex.Faction != Faction.Player)
+                RemoveTeam(charIndex.Faction, charIndex.Team);
         }
 
         public bool CanUseTeamMode()
@@ -582,6 +611,16 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        private bool canSwitchToChar(int charIndex)
+        {
+            Character character = ActiveTeam.Players[charIndex];
+            if (character.Dead)
+                return false;
+            if (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
+                return false;
+            return true;
+        }
+
         public IEnumerator<YieldInstruction> MakeLeader(int charIndex, ActionResult result)
         {
             if (CurrentCharacter != ActiveTeam.Leader)
@@ -603,20 +642,18 @@ namespace RogueEssence.Dungeon
             }
             else
             {
-                Character character = ActiveTeam.Players[charIndex];
-                if (character.Dead)
-                    GameManager.Instance.SE("Menu/Cancel");
-                else if (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
+                if (!canSwitchToChar(charIndex))
                     GameManager.Instance.SE("Menu/Cancel");
                 else
                 {
                     result.Success = ActionResult.ResultType.Success;
 
                     //change the leader index
+                    int oldLeader = ActiveTeam.LeaderIndex;
                     ActiveTeam.LeaderIndex = charIndex;
 
                     //re-order map order as well
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(-1, ActiveTeam.LeaderIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, charIndex);
 
                     focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
 
@@ -631,6 +668,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> SpecialIntro(Character chara)
         {
+            if (chara.Dead)
+                yield break;
+
             SkinData skin = DataManager.Instance.GetSkin(chara.Appearance.Skin);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(chara, chara, skin.LeaderFX));
         }
@@ -649,16 +689,18 @@ namespace RogueEssence.Dungeon
                 ActiveTeam.Players.RemoveAt(charIndex);
                 ActiveTeam.Players.Insert(charIndex+1, character);
 
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustSlotSwap(Faction.Player, 0, false, charIndex, charIndex+1);
+
                 //update the leader indices
                 if (ActiveTeam.LeaderIndex == charIndex)
                 {
                     ActiveTeam.LeaderIndex++;
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(-1, ActiveTeam.LeaderIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex, ActiveTeam.LeaderIndex);
                 }
                 else if (ActiveTeam.LeaderIndex == charIndex + 1)
                 {
                     ActiveTeam.LeaderIndex--;
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(-1, ActiveTeam.LeaderIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex + 1, ActiveTeam.LeaderIndex);
                 }
 
 
@@ -666,74 +708,94 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        private int getLiveIndex(List<Character> playerList)
+        {
+            for (int ii = 0; ii < playerList.Count; ii++)
+            {
+                if (!playerList[ii].Dead)
+                    return ii;
+            }
+            return -1;
+        }
+
+        private void genericReorderDeadPlayerList(Faction faction, int teamIndex)
+        {
+            Team team = ZoneManager.Instance.CurrentMap.GetTeam(faction, teamIndex);
+
+            int liveIndex = getLiveIndex(team.Players);
+
+            if (liveIndex != -1 && team.Leader.Dead)
+            {
+                //switch leader to this
+                int oldLeader = team.LeaderIndex;
+                team.LeaderIndex = liveIndex;
+
+                //re-order map order as well
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(faction, teamIndex, false, oldLeader, liveIndex);
+            }
+        }
+
         public void ReorderDeadLeaders()
         {
             {
-                int liveIndex = -1;
-                for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.ActiveTeam.Players.Count; ii++)
-                {
-                    if (!ZoneManager.Instance.CurrentMap.ActiveTeam.Players[ii].Dead)
-                    {
-                        liveIndex = ii;
-                        break;
-                    }
-                }
+                Team team = ZoneManager.Instance.CurrentMap.ActiveTeam;
+                int liveIndex = getLiveIndex(team.Players);
 
-                if (ZoneManager.Instance.CurrentMap.ActiveTeam.Leader.Dead && liveIndex != -1)
+                if (liveIndex != -1 && team.Leader.Dead)
                 {
                     //switch leader to this
-                    ActiveTeam.LeaderIndex = liveIndex;
+                    int oldLeader = team.LeaderIndex;
+                    team.LeaderIndex = liveIndex;
 
                     //re-order map order as well
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustPromotion(-1, liveIndex);
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, liveIndex);
 
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ZoneManager.Instance.CurrentMap.ActiveTeam.Leader.BaseName));
+                    LogMsg(Text.FormatKey("MSG_LEADER_SWAP", team.Leader.BaseName));
                 }
             }
+
+            for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.AllyTeams.Count; jj++)
+                genericReorderDeadPlayerList(Faction.Friend, jj);
 
             for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.MapTeams.Count; jj++)
-            {
-                Team team = ZoneManager.Instance.CurrentMap.MapTeams[jj];
-                int liveIndex = -1;
-                for (int ii = 0; ii < team.Players.Count; ii++)
-                {
-                    if (!team.Players[ii].Dead)
-                    {
-                        liveIndex = ii;
-                        break;
-                    }
-                }
-                //NOTE: THE ASSUMPTION IS THAT ALL OTHER TEAMS HAVE LEADERS AT INDEX 0
-                if (liveIndex > 0)
-                {
-                    for (int ii = 0; ii < liveIndex; ii++)
-                    {
-                        //move this character to the end of the team
-                        Character character = team.Players[0];
-                        team.Players.RemoveAt(0);
-                        team.Players.Add(character);
-
-                        //re-order map order as well
-                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustDemotion(jj, team.Players.Count - 1);
-                    }
-                }
-            }
+                genericReorderDeadPlayerList(Faction.Foe, jj);
         }
 
         public void RemoveDeadTeams()
         {
-            for (int ii = ZoneManager.Instance.CurrentMap.MapTeams.Count - 1; ii >= 0; ii--)
+            for (int ii = ZoneManager.Instance.CurrentMap.AllyTeams.Count - 1; ii >= 0; ii--)
             {
                 bool allDead = true;
-                foreach (Character character in ZoneManager.Instance.CurrentMap.MapTeams[ii].Players)
+                Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
+                foreach (Character character in team.EnumerateChars())
                 {
                     if (!character.Dead)
                         allDead = false;
                 }
                 if (allDead)
                 {
-                    for (int jj = ZoneManager.Instance.CurrentMap.MapTeams[ii].Players.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(ii, jj));
+                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
+                        RemoveChar(new CharIndex(Faction.Friend, ii, true, jj));
+                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
+                        RemoveChar(new CharIndex(Faction.Friend, ii, false, jj));
+                }
+            }
+
+            for (int ii = ZoneManager.Instance.CurrentMap.MapTeams.Count - 1; ii >= 0; ii--)
+            {
+                bool allDead = true;
+                Team team = ZoneManager.Instance.CurrentMap.MapTeams[ii];
+                foreach (Character character in team.EnumerateChars())
+                {
+                    if (!character.Dead)
+                        allDead = false;
+                }
+                if (allDead)
+                {
+                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
+                        RemoveChar(new CharIndex(Faction.Foe, ii, true, jj));
+                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
+                        RemoveChar(new CharIndex(Faction.Foe, ii, false, jj));
                 }
             }
         }
@@ -780,10 +842,11 @@ namespace RogueEssence.Dungeon
 
                     while (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex >= ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Count)
                     {
-                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.EnemyFaction = !ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.EnemyFaction;
+                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction = (Faction)(((int)ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction + 1) % 3);
                         ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex = 0;
 
-                        if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.EnemyFaction == false)
+                        //if we looped back to the player faction, it means we must move on to the next turn tier
+                        if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction == Faction.Player)
                         {
                             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier++;
 
@@ -836,13 +899,24 @@ namespace RogueEssence.Dungeon
         {
             //beginning of a faction's turn; create new turn map
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Clear();
-            if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.EnemyFaction)
+            switch (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction)
             {
-                for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.LoadTeamTurnMap(ii, ZoneManager.Instance.CurrentMap.MapTeams[ii]);
+                case Faction.Foe:
+                    {
+                        for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
+                            ZoneManager.Instance.CurrentMap.CurrentTurnMap.LoadTeamTurnMap(Faction.Foe, ii, ZoneManager.Instance.CurrentMap.MapTeams[ii]);
+                    }
+                    break;
+                case Faction.Friend:
+                    {
+                        for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
+                            ZoneManager.Instance.CurrentMap.CurrentTurnMap.LoadTeamTurnMap(Faction.Friend, ii, ZoneManager.Instance.CurrentMap.AllyTeams[ii]);
+                    }
+                    break;
+                default:
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.LoadTeamTurnMap(Faction.Player, 0, ZoneManager.Instance.CurrentMap.ActiveTeam);
+                    break;
             }
-            else
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.LoadTeamTurnMap(-1, ZoneManager.Instance.CurrentMap.ActiveTeam);
         }
 
         private void OrganizeAIMovement(int depth)

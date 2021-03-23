@@ -36,5 +36,32 @@ namespace RogueEssence.Script
         {
             return DataManager.Instance.Save.Outcome;
         }
+        /// <summary>
+        /// Returns the floor number of the current dungeon
+        /// </summary>
+        /// <returns></returns>
+        public int DungeonCurrentFloor()
+        {
+            return ZoneManager.Instance.CurrentMapID.ID;
+        }
+
+        /// <summary>
+        /// Returns the internal name for the current dungeon
+        /// </summary>
+        /// <returns></returns>
+        public string DungeonAssetName()
+        {
+            //return ZoneManager.Instance.CurrentZone.AssetName;
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns the localized name of the current dungeon.
+        /// </summary>
+        /// <returns></returns>
+        public string DungeonLocaleName()
+        {
+            return ZoneManager.Instance.CurrentZone.Name.ToLocal();
+        }
     }
 }

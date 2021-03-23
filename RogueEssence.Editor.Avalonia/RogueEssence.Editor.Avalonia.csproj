@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
@@ -40,6 +41,9 @@
     </Compile>
     <Compile Update="DataEditor\DataEditForm.axaml.cs">
       <DependentUpon>DataEditForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Content\TilesetEditForm.axaml.cs">
+      <DependentUpon>TilesetEditForm.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Content\AnimEditForm.axaml.cs">
       <DependentUpon>AnimEditForm.axaml</DependentUpon>

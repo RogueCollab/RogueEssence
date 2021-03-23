@@ -10,6 +10,22 @@ namespace RogueEssence.LevelGen
         //{
         //    return ((MapGenContext)GenMap(seed)).Map;
         //}
+
+
+        public override string ToString()
+        {
+            string startInfo = "[EMPTY]";
+            foreach (GenStep<MapGenContext> step in GenSteps)
+            {
+                var startStep = step as InitGridPlanStep<MapGenContext>;
+                if (startStep != null)
+                {
+                    startInfo = string.Format("Cells:{0}x{1} CellSize:{2}x{3}", startStep.CellX, startStep.CellY, startStep.CellWidth, startStep.CellHeight);
+                    break;
+                }
+            }
+            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+        }
     }
 
     [Serializable]
@@ -19,6 +35,21 @@ namespace RogueEssence.LevelGen
         //{
         //    return ((MapGenContext)GenMap(seed)).Map;
         //}
+
+        public override string ToString()
+        {
+            string startInfo = "[EMPTY]";
+            foreach (GenStep<ListMapGenContext> step in GenSteps)
+            {
+                var startStep = step as InitFloorPlanStep<ListMapGenContext>;
+                if (startStep != null)
+                {
+                    startInfo = string.Format("Size:{0}x{1}", startStep.Width, startStep.Height);
+                    break;
+                }
+            }
+            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+        }
     }
 
     [Serializable]
@@ -28,6 +59,21 @@ namespace RogueEssence.LevelGen
         //{
         //    return ((MapGenContext)GenMap(seed)).Map;
         //}
+
+        public override string ToString()
+        {
+            string startInfo = "[EMPTY]";
+            foreach (GenStep<StairsMapGenContext> step in GenSteps)
+            {
+                var startStep = step as InitTilesStep<StairsMapGenContext>;
+                if (startStep != null)
+                {
+                    startInfo = string.Format("Size:{0}x{1}", startStep.Width, startStep.Height);
+                    break;
+                }
+            }
+            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+        }
     }
 
     [Serializable]
@@ -37,6 +83,21 @@ namespace RogueEssence.LevelGen
         //{
         //    return ((MapGenContext)GenMap(seed)).Map;
         //}
+
+        public override string ToString()
+        {
+            string startInfo = "[EMPTY]";
+            foreach (GenStep<MapLoadContext> step in GenSteps)
+            {
+                var startStep = step as MappedRoomStep<MapLoadContext>;
+                if (startStep != null)
+                {
+                    startInfo = string.Format("Map:{0}", startStep.MapID);
+                    break;
+                }
+            }
+            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+        }
     }
 
     [Serializable]

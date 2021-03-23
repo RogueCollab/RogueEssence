@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int totalChoice = CurrentPage * SpacesPerPage + CurrentChoice + 1;
+            int totalChoice = CurrentChoiceTotal + 1;
             if (DataManager.Instance.Save.Dex[totalChoice] > 0)
                 portrait.Speaker = new MonsterID(totalChoice, 0, -1, Gender.Unknown);
             else

@@ -59,10 +59,14 @@ namespace RogueEssence.Dev.ViewModels
             editForm.Show();
         }
 
-        //public void btnEditTiles_Click()
-        //{
-
-        //}
+        public void btnEditTiles_Click()
+        {
+            TilesetEditViewModel mv = new TilesetEditViewModel();
+            Views.TilesetEditForm editForm = new Views.TilesetEditForm();
+            mv.LoadDataEntries(editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
 
         public void btnEditItems_Click()
         {

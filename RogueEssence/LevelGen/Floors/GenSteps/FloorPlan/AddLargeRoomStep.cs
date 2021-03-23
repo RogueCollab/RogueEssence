@@ -149,7 +149,7 @@ namespace RogueEssence.LevelGen
 
             List<List<LocRay4>> resultList = new List<List<LocRay4>>();
 
-            Graph.GetAdjacents getAdj = (int nodeIndex) =>
+            Graph.GetAdjacents<int> getAdj = (int nodeIndex) =>
             {
                 List<int> returnList = new List<int>();
 
@@ -188,8 +188,7 @@ namespace RogueEssence.LevelGen
                 Loc startLoc = raysOut[ii].Traverse(1);
                 List<LocRay4> set = new List<LocRay4>();
 
-                Graph.TraverseBreadthFirst(floorPlan.GridHeight * floorPlan.GridWidth,
-                    startLoc.Y * floorPlan.GridWidth + startLoc.X,
+                Graph.TraverseBreadthFirst(startLoc.Y * floorPlan.GridWidth + startLoc.X,
                     (int nodeIndex, int distance) =>
                     {
                         Loc fillLoc = new Loc(nodeIndex % floorPlan.GridWidth, nodeIndex / floorPlan.GridWidth);

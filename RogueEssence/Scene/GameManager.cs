@@ -52,6 +52,7 @@ namespace RogueEssence
         public bool Paused;
         public bool AdvanceFrame;
         public bool ShowDebug;
+        public string DebugUI;
 
         public bool FrameProcessed;
 
@@ -79,6 +80,7 @@ namespace RogueEssence
         public GameManager()
         {
             fadedTitle = "";
+            DebugUI = "";
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
@@ -356,10 +358,14 @@ namespace RogueEssence
             LuaEngine.Instance.ReInit();
         }
 
-        private void exitMap(BaseScene nextScene)
+        private IEnumerator<YieldInstruction> exitMap(BaseScene nextScene)
         {
-            CurrentScene.Exit();
+            if (CurrentScene == DungeonScene.Instance)
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ExitFloor());
+            else if (CurrentScene == GroundScene.Instance)
+                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.ExitGround());
 
+            CurrentScene.Exit();
 
             //Notify Script engine; swap out old scene
             if (nextScene != DungeonScene.Instance && CurrentScene == DungeonScene.Instance)
@@ -376,7 +382,7 @@ namespace RogueEssence
             if (ZoneManager.Instance.CurrentZoneID > -1)
                 destLoc = new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID);
 
-            exitMap(destScene);
+            yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
 
             ZoneManager.Instance.MoveToDevZone(newGround, name);
 
@@ -400,16 +406,22 @@ namespace RogueEssence
             bool newGround = (destId.StructID.Segment <= -1);
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
 
-            exitMap(destScene);
+            yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
 
             //switch location
-            if (destId.ID == ZoneManager.Instance.CurrentZoneID && !forceNewZone)
+            bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
+            bool sameSegment = sameZone && destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment;
+            if (sameZone && !forceNewZone)
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
             else
             {
                 ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
+            
+            if (!sameSegment || forceNewZone)
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment());
+
 
             //Transparency mode
             MenuBase.Transparent = !newGround;
@@ -438,7 +450,7 @@ namespace RogueEssence
                     BGM(ZoneManager.Instance.CurrentMap.Music, true);
 
                 DungeonScene.Instance.EnterFloor(destId.EntryPoint);
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.PrepareFloor());
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
                 if (IsFaded())
                 {
@@ -467,7 +479,7 @@ namespace RogueEssence
         /// <param name="entrypoint"></param>
         public IEnumerator<YieldInstruction> MoveToGround(string mapname, string entrypoint, bool preserveMusic)
         {
-            exitMap(GroundScene.Instance);
+            yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
 
             ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
             if (ZoneManager.Instance.CurrentGround == null)
@@ -537,6 +549,7 @@ namespace RogueEssence
             DataManager.Instance.Save.NextDest = nextZone;
             if (DataManager.Instance.RecordingReplay)
                 DataManager.Instance.LogState();
+
             SceneOutcome = MoveToZone(nextZone);
             yield break;
         }
@@ -716,9 +729,7 @@ namespace RogueEssence
             if (DataManager.Instance.Save == null)
                 newGamePlus(seed);
             else
-            {
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
-            }
 
             DataManager.Instance.Save.NextDest = dest;
             DataManager.Instance.Save.RestartLogs(MathUtils.Rand.NextUInt64());
@@ -728,24 +739,25 @@ namespace RogueEssence
 
         private void newGamePlus(ulong seed)
         {
+            try
+            {
+                DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+                DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+                LuaEngine.Instance.OnDebugLoad();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid debug team!");
+                return;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Money = 1000;
-            DataManager.Instance.Save.ActiveTeam.Bank = 1000000;
-            for(int ii = 0; ii < DataManager.Instance.StartChars.Count && ii < 4; ii++)
-                DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[ii], 0, 0, Gender.Unknown), DataManager.Instance.MaxLevel / 2, -1, 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[0], 0, 0, Gender.Unknown), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
-
-            DataManager.Instance.Save.ActiveTeam.Leader.IsFounder = true;
-            for (int ii = 1; ii < 100 && ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
-            {
-                DataManager.Instance.Save.ActiveTeam.Assembly.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(ii, 0, 0, Gender.Unknown), DataManager.Instance.MaxLevel / 2, -1, 0));
-            }
-
-            for (int ii = 0; ii < DataManager.Instance.Save.DungeonUnlocks.Length; ii++)
-                DataManager.Instance.Save.DungeonUnlocks[ii] = GameProgress.UnlockState.Discovered;
         }
 
         public void UpdateMeta()
@@ -791,9 +803,9 @@ namespace RogueEssence
                 {
                     MenuManager.Instance.ClearMenus();
                     if (MetaInputManager[FrameInput.InputType.ShowDebug])
-                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 1234);
+                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 0);
                     else
-                        SceneOutcome = DebugWarp(new ZoneLoc(1, new SegLoc(-1, 11), 0), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.GroundZone, new SegLoc(-1, 0), 0), 0);
                 }
             }
 
@@ -1003,6 +1015,12 @@ namespace RogueEssence
             GraphicsManager.SysFont.DrawText(spriteBatch, 2, 42, Versioning.GetVersion().ToString(), null, DirV.Up, DirH.Left, Color.White);
             if (DataManager.Instance.CurrentReplay != null)
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
+            if (DebugUI != null)
+            {
+                string[] lines = DebugUI.Split('\n');
+                for(int ii = 0; ii < lines.Length; ii++)
+                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - 2 + (ii + 1 - lines.Length) * 10, lines[ii], null, DirV.Down, DirH.Left, Color.White);
+            }
         }
 
         private void OnError(string msg)

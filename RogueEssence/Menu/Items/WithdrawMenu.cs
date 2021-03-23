@@ -58,7 +58,7 @@ namespace RogueEssence.Menu
 
         private void choose(int choice)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
             List<int> choices = new List<int>();
             choices.Add(choice);
             MenuManager.Instance.AddMenu(new WithdrawChosenMenu(choices, startIndex, continueOnChoose, storageChoice), true);
@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoseMultiIndex(List<int> slots)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
             List<int> indices = new List<int>();
             foreach (int slot in slots)
                 indices.Add(availableItems[slot]);
@@ -75,7 +75,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int totalChoice = CurrentPage * SpacesPerPage + CurrentChoice;
+            int totalChoice = CurrentChoiceTotal;
             int index = availableItems[totalChoice];
             if (index < DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
                 summaryMenu.SetItem(new InvItem(index, false, 1));

@@ -11,17 +11,25 @@
     <Design.DataContext>
         <vm:DataListFormViewModel/>
     </Design.DataContext>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="34"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <views:SearchListBox DataContext="{Binding SearchList}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
-    <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Add</Button>
-    <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Delete</Button>
-  </Grid>
+
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}"/>
+      </MenuItem>
+    </Menu>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="34"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <views:SearchListBox DataContext="{Binding SearchList}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
+      <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Add</Button>
+      <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Delete</Button>
+    </Grid>
+  </DockPanel>
 </Window>

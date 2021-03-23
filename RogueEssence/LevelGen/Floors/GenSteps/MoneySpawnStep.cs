@@ -17,5 +17,10 @@ namespace RogueEssence.LevelGen
         {
             map.MoneyAmount = (MoneySpawnRange)MoneyRange.CopyState();
         }
+
+        public override string ToString()
+        {
+            return String.Format("{0}: Amt:{1}", this.GetType().Name, MoneyRange.ToString());
+        }
     }
 }

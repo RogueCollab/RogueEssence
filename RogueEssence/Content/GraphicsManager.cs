@@ -85,8 +85,8 @@ namespace RogueEssence.Content
             }
         }
 
-        public const string BASE_PATH = PathMod.ASSET_PATH + "Base/";
-        public const string FONT_PATTERN = PathMod.ASSET_PATH + "Font/{0}.font";
+        public static string BASE_PATH { get => PathMod.ASSET_PATH + "Base/"; }
+        public static string FONT_PATTERN { get => PathMod.ASSET_PATH + "Font/{0}.font"; }
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
@@ -193,7 +193,7 @@ namespace RogueEssence.Content
         private static LRUCache<string, DirSheet> iconCache;
         private static LRUCache<string, DirSheet> itemCache;
         private static LRUCache<string, DirSheet> objectCache;
-        private static LRUCache<TileFrame, BaseSheet> tileCache;
+        private static LRUCache<TileAddr, BaseSheet> tileCache;
         private static LRUCache<string, DirSheet> bgCache;
 
         public static FontSheet TextFont { get; private set; }
@@ -253,82 +253,80 @@ namespace RogueEssence.Content
         {
             string path = BASE_PATH + "GFXParams.xml";
             //try to load from file
-            if (File.Exists(path))
+
+            try
             {
-                try
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(path);
+
+                XmlNode tileSize = xmldoc.DocumentElement.SelectSingleNode("TileSize");
+                DungeonTexSize = Int32.Parse(tileSize.InnerText) / TEX_SIZE;
+
+                XmlNode portraitSize = xmldoc.DocumentElement.SelectSingleNode("PortraitSize");
+                PortraitSize = Int32.Parse(portraitSize.InnerText);
+
+                XmlNode screenWidth = xmldoc.DocumentElement.SelectSingleNode("ScreenWidth");
+                ScreenWidth = Int32.Parse(screenWidth.InnerText);
+
+                XmlNode screenHeight = xmldoc.DocumentElement.SelectSingleNode("ScreenHeight");
+                ScreenHeight = Int32.Parse(screenHeight.InnerText);
+
+                XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
+                MoneySprite = moneySprite.InnerText;
+
+                Emotions = new List<string>();
+                XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
+                foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
+                    Emotions.Add(emotion.InnerText);
+
+                XmlNode sosEmotion = xmldoc.DocumentElement.SelectSingleNode("SOSEmotion");
+                SOSEmotion = Int32.Parse(sosEmotion.InnerText);
+
+                XmlNode aokEmotion = xmldoc.DocumentElement.SelectSingleNode("AOKEmotion");
+                AOKEmotion = Int32.Parse(aokEmotion.InnerText);
+
+                Actions = new List<CharFrameType>();
+                List<List<string>> fallbacks = new List<List<string>>();
+                XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
+                foreach (XmlNode action in actions.SelectNodes("Action"))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    XmlNode tileSize = xmldoc.DocumentElement.SelectSingleNode("TileSize");
-                    DungeonTexSize = Int32.Parse(tileSize.InnerText) / TEX_SIZE;
-
-                    XmlNode portraitSize = xmldoc.DocumentElement.SelectSingleNode("PortraitSize");
-                    PortraitSize = Int32.Parse(portraitSize.InnerText);
-
-                    XmlNode screenWidth = xmldoc.DocumentElement.SelectSingleNode("ScreenWidth");
-                    ScreenWidth = Int32.Parse(screenWidth.InnerText);
-
-                    XmlNode screenHeight = xmldoc.DocumentElement.SelectSingleNode("ScreenHeight");
-                    ScreenHeight = Int32.Parse(screenHeight.InnerText);
-
-                    XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
-                    MoneySprite = moneySprite.InnerText;
-
-                    Emotions = new List<string>();
-                    XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
-                    foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
-                        Emotions.Add(emotion.InnerText);
-
-                    XmlNode sosEmotion = xmldoc.DocumentElement.SelectSingleNode("SOSEmotion");
-                    SOSEmotion = Int32.Parse(sosEmotion.InnerText);
-
-                    XmlNode aokEmotion = xmldoc.DocumentElement.SelectSingleNode("AOKEmotion");
-                    AOKEmotion = Int32.Parse(aokEmotion.InnerText);
-
-                    Actions = new List<CharFrameType>();
-                    List<List<string>> fallbacks = new List<List<string>>();
-                    XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
-                    foreach (XmlNode action in actions.SelectNodes("Action"))
-                    {
-                        XmlNode actionName = action.SelectSingleNode("Name");
-                        XmlNode actionDash = action.SelectSingleNode("Dash");
-                        Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
-                        List<string> actionFallbacks = new List<string>();
-                        foreach (XmlNode fallback in action.SelectNodes("Fallback"))
-                            actionFallbacks.Add(fallback.InnerText);
-                        fallbacks.Add(actionFallbacks);
-                    }
-                    for (int ii = 0; ii < fallbacks.Count; ii++)
-                    {
-                        foreach (string fallback in fallbacks[ii])
-                        {
-                            int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
-                            Actions[ii].Fallbacks.Add(fallbackIndex);
-                        }
-                    }
-
-                    XmlNode hurtAction = xmldoc.DocumentElement.SelectSingleNode("HurtAction");
-                    HurtAction = Int32.Parse(hurtAction.InnerText);
-
-                    XmlNode walkAction = xmldoc.DocumentElement.SelectSingleNode("WalkAction");
-                    WalkAction = Int32.Parse(walkAction.InnerText);
-
-                    XmlNode idleAction = xmldoc.DocumentElement.SelectSingleNode("IdleAction");
-                    IdleAction = Int32.Parse(idleAction.InnerText);
-
-                    XmlNode sleepAction = xmldoc.DocumentElement.SelectSingleNode("SleepAction");
-                    SleepAction = Int32.Parse(sleepAction.InnerText);
-
-                    XmlNode chargeAction = xmldoc.DocumentElement.SelectSingleNode("ChargeAction");
-                    ChargeAction = Int32.Parse(chargeAction.InnerText);
-
-                    return;
+                    XmlNode actionName = action.SelectSingleNode("Name");
+                    XmlNode actionDash = action.SelectSingleNode("Dash");
+                    Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
+                    List<string> actionFallbacks = new List<string>();
+                    foreach (XmlNode fallback in action.SelectNodes("Fallback"))
+                        actionFallbacks.Add(fallback.InnerText);
+                    fallbacks.Add(actionFallbacks);
                 }
-                catch (Exception ex)
+                for (int ii = 0; ii < fallbacks.Count; ii++)
                 {
-                    DiagManager.Instance.LogError(ex);
+                    foreach (string fallback in fallbacks[ii])
+                    {
+                        int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                        Actions[ii].Fallbacks.Add(fallbackIndex);
+                    }
                 }
+
+                XmlNode hurtAction = xmldoc.DocumentElement.SelectSingleNode("HurtAction");
+                HurtAction = Int32.Parse(hurtAction.InnerText);
+
+                XmlNode walkAction = xmldoc.DocumentElement.SelectSingleNode("WalkAction");
+                WalkAction = Int32.Parse(walkAction.InnerText);
+
+                XmlNode idleAction = xmldoc.DocumentElement.SelectSingleNode("IdleAction");
+                IdleAction = Int32.Parse(idleAction.InnerText);
+
+                XmlNode sleepAction = xmldoc.DocumentElement.SelectSingleNode("SleepAction");
+                SleepAction = Int32.Parse(sleepAction.InnerText);
+
+                XmlNode chargeAction = xmldoc.DocumentElement.SelectSingleNode("ChargeAction");
+                ChargeAction = Int32.Parse(chargeAction.InnerText);
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
             }
         }
 
@@ -423,7 +421,7 @@ namespace RogueEssence.Content
             iconCache.OnItemRemoved = DisposeCachedObject;
             itemCache = new LRUCache<string, DirSheet>(ITEM_CACHE_SIZE);
             itemCache.OnItemRemoved = DisposeCachedObject;
-            tileCache = new LRUCache<TileFrame, BaseSheet>(TILE_CACHE_SIZE_PIXELS);
+            tileCache = new LRUCache<TileAddr, BaseSheet>(TILE_CACHE_SIZE_PIXELS);
             tileCache.ItemCount = CountPixels;
             tileCache.OnItemRemoved = DisposeCachedObject;
             bgCache = new LRUCache<string, DirSheet>(BG_CACHE_SIZE);
@@ -473,6 +471,7 @@ namespace RogueEssence.Content
             MenuBG.Dispose();
 
             tileCache.Clear();
+            //no need to clear tileIndexCache; it should happen automatically with all OnRemoves
             objectCache.Clear();
             bgCache.Clear();
             itemCache.Clear();
@@ -500,13 +499,13 @@ namespace RogueEssence.Content
         }
 
         /// <summary>
-        /// Bakes all assets from the "Work files" directory specified in the flags.
+        /// Bakes all assets from the "Raw Asset" directory specified in the flags.
         /// </summary>
         /// <param name="conversionFlags">Chooses which asset type to bake</param>
         public static void RunConversions(AssetType conversionFlags)
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
-                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH+"Font/", FONT_PATTERN);
+                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH + "Font/", FONT_PATTERN);
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
                 Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", PathMod.HardMod(CHARA_PATTERN));
@@ -523,7 +522,10 @@ namespace RogueEssence.Content
             if ((conversionFlags & AssetType.Item) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
             if ((conversionFlags & AssetType.VFX) != AssetType.None)
-                Dev.ImportHelper.ImportAllVFX(PathMod.DEV_PATH+"Attacks/", PathMod.HardMod(PARTICLE_PATTERN), PathMod.HardMod(BEAM_PATTERN));
+            {
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Attacks/Particle", PathMod.HardMod(PARTICLE_PATTERN));
+                Dev.ImportHelper.ImportAllBeams(PathMod.DEV_PATH + "Attacks/Beam", PathMod.HardMod(BEAM_PATTERN));
+            }
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
             if ((conversionFlags & AssetType.Object) != AssetType.None)
@@ -626,6 +628,7 @@ namespace RogueEssence.Content
             {
                 TileIndex = LoadTileIndices(CONTENT_PATH + "Tile/");
                 tileCache.Clear();
+                //no need to clear tileIndexCache; it should happen automatically with all OnRemoves
                 DiagManager.Instance.LogInfo("Tilesets Reloaded.");
             }
 
@@ -883,12 +886,12 @@ namespace RogueEssence.Content
 
         public static DirSheet GetIcon(string num)
         {
-            return getDirSheetCache(num.ToString(), ICON_PATTERN, iconCache);
+            return getDirSheetCache(num, ICON_PATTERN, iconCache);
         }
 
         public static DirSheet GetItem(string num)
         {
-            return getDirSheetCache(num.ToString(), ITEM_PATTERN, itemCache);
+            return getDirSheetCache(num, ITEM_PATTERN, itemCache);
         }
 
         public static DirSheet GetBackground(string num)
@@ -955,11 +958,12 @@ namespace RogueEssence.Content
 
         public static BaseSheet GetTile(TileFrame tileTex)
         {
-            BaseSheet sheet;
-            if (tileCache.TryGetValue(tileTex, out sheet))
-                return sheet;
-
             long tilePos = TileIndex.GetPosition(tileTex.Sheet, tileTex.TexLoc);
+            TileAddr addr = new TileAddr(tilePos, tileTex.Sheet);
+
+            BaseSheet sheet;
+            if (tileCache.TryGetValue(addr, out sheet))
+                return sheet;
 
             if (tilePos > 0)
             {
@@ -973,7 +977,7 @@ namespace RogueEssence.Content
                             reader.BaseStream.Seek(tilePos, SeekOrigin.Begin);
 
                             sheet = BaseSheet.Load(reader);
-                            tileCache.Add(tileTex, sheet);
+                            tileCache.Add(addr, sheet);
                             return sheet;
                         }
                     }
@@ -985,7 +989,7 @@ namespace RogueEssence.Content
             }
 
             BaseSheet newSheet = BaseSheet.LoadError();
-            tileCache.Add(tileTex, newSheet);
+            tileCache.Add(addr, newSheet);
             return newSheet;
         }
 

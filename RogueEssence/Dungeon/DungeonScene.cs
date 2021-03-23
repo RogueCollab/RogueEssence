@@ -192,28 +192,14 @@ namespace RogueEssence.Dungeon
             {
                 //For Test
                 DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
-                LogMsg("TESTING...");
-                string baseStr = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG!?";
-                string resultStr = "";
-                for (int ii = 0; ii < baseStr.Length; ii++)
-                {
-                    if (baseStr[ii] != ' ')
-                    {
-                        int en = (int)baseStr[ii];
-                        int un = en + 0xE000;
-                        resultStr = resultStr + (char)un;
-                    }
-                    else
-                        resultStr += ' ';
-                }
-                LogMsg(resultStr);
-                BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
-                ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
-                ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
-                ActiveTeam.Leader.DefBonus = form.GetMaxStatBonus(Stat.Defense);
-                ActiveTeam.Leader.MAtkBonus = form.GetMaxStatBonus(Stat.MAtk);
-                ActiveTeam.Leader.MDefBonus = form.GetMaxStatBonus(Stat.MDef);
-                ActiveTeam.Leader.SpeedBonus = form.GetMaxStatBonus(Stat.Speed);
+                LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote]));
+                //BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
+                //ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
+                //ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
+                //ActiveTeam.Leader.DefBonus = form.GetMaxStatBonus(Stat.Defense);
+                //ActiveTeam.Leader.MAtkBonus = form.GetMaxStatBonus(Stat.MAtk);
+                //ActiveTeam.Leader.MDefBonus = form.GetMaxStatBonus(Stat.MDef);
+                //ActiveTeam.Leader.SpeedBonus = form.GetMaxStatBonus(Stat.Speed);
             }
 
             if (input.Direction != Dir8.None && input.Direction != input.PrevDirection && input[FrameInput.InputType.Ctrl])
@@ -420,7 +406,7 @@ namespace RogueEssence.Dungeon
                     GameManager.Instance.SE("Menu/Skip");
 
                     CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                    if (turnChar.Team == -1)
+                    if (turnChar.Faction == Faction.Player)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
                 }
                 else if (input.JustPressed(FrameInput.InputType.ItemMenu))
@@ -534,7 +520,7 @@ namespace RogueEssence.Dungeon
                             GameAction.ActionType cmdType = GameAction.ActionType.None;
                             if (input.Direction.IsDiagonal())
                                 cmdType = GameAction.ActionType.Dir;
-                            else if (FrameTick.FromFrames(input.InputTime) >= FrameTick.FromFrames(2) || input.Direction == Dir8.None)
+                            else if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(2) || input.Direction == Dir8.None)
                                 cmdType = GameAction.ActionType.Dir;
 
                             if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(moveRun ? 1 : 5))
@@ -586,7 +572,7 @@ namespace RogueEssence.Dungeon
                                     cmdType = GameAction.ActionType.Move;
                             }
 
-                            if (turn)
+                            if (turn && cmdType == GameAction.ActionType.Move)
                                 cmdType = GameAction.ActionType.Dir;
 
                             if (!diagonal || input.Direction.IsDiagonal())
@@ -635,9 +621,25 @@ namespace RogueEssence.Dungeon
                         else if (input.JustPressed(FrameInput.InputType.LeaderSwap4))
                             action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, 3, 0);
                         else if (input.JustPressed(FrameInput.InputType.LeaderSwapBack))
-                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (ActiveTeam.LeaderIndex + ActiveTeam.Players.Count - 1) % ActiveTeam.Players.Count, 0);
+                        {
+                            int newSlot = ActiveTeam.LeaderIndex;
+                            do
+                            {
+                                newSlot = (newSlot + ActiveTeam.Players.Count - 1) % ActiveTeam.Players.Count;
+                            }
+                            while (!canSwitchToChar(newSlot));
+                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                        }
                         else if (input.JustPressed(FrameInput.InputType.LeaderSwapForth))
-                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, (ActiveTeam.LeaderIndex + 1) % ActiveTeam.Players.Count, 0);
+                        {
+                            int newSlot = ActiveTeam.LeaderIndex;
+                            do
+                            {
+                                newSlot = (newSlot + 1) % ActiveTeam.Players.Count;
+                            }
+                            while (!canSwitchToChar(newSlot));
+                            action = new GameAction(GameAction.ActionType.SetLeader, Dir8.None, newSlot, 0);
+                        }
                     }
                 }
 
@@ -1014,13 +1016,34 @@ namespace RogueEssence.Dungeon
                         }
                     }
 
-                    for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
+                    foreach (Team team in ZoneManager.Instance.CurrentMap.AllyTeams)
                     {
-                        if (!ActiveTeam.Players[ii].Dead)
+                        foreach (Character character in team.EnumerateChars())
                         {
-                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(ActiveTeam.Players[ii].CharLoc.X, ActiveTeam.Players[ii].CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                3, (ii == ActiveTeam.LeaderIndex) ? ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1) : 0,
-                                (ii == ActiveTeam.LeaderIndex) ? Color.White : Color.Yellow);
+                            if (!character.Dead)
+                            {
+                                bool seen = false;
+                                foreach (Character player in ActiveTeam.Players)
+                                {
+                                    if (!player.Dead && player.CanSeeCharacter(character))
+                                    {
+                                        seen = true;
+                                        break;
+                                    }
+                                }
+                                if (seen || SeeAll)
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Green);
+                            }
+                        }
+                    }
+
+                    foreach(Character player in ActiveTeam.EnumerateChars())
+                    {
+                        if (!player.Dead)
+                        {
+                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
+                                3, (player == ActiveTeam.Leader) ? ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1) : 0,
+                                (player == ActiveTeam.Leader) ? Color.White : Color.Yellow);
                         }
                     }
 
@@ -1174,15 +1197,30 @@ namespace RogueEssence.Dungeon
             //draw example texture
             if (DebugAsset != GraphicsManager.AssetType.None)
             {
+                DirSheet dirSheet = null;
                 switch (DebugAsset)
                 {
                     case GraphicsManager.AssetType.VFX:
-                        DirSheet dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
-                        dirSheet.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / scale / 2 - dirSheet.TileWidth / 2, GraphicsManager.ScreenHeight / scale / 2 - dirSheet.TileHeight / 2),
-                            (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % (ulong)dirSheet.TotalFrames),
-                            FocusedCharacter.CharDir, Color.White);
-
+                        dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
                         break;
+                    case GraphicsManager.AssetType.Icon:
+                        dirSheet = GraphicsManager.GetIcon(DebugAnim);
+                        break;
+                    case GraphicsManager.AssetType.BG:
+                        dirSheet = GraphicsManager.GetBackground(DebugAnim);
+                        break;
+                    case GraphicsManager.AssetType.Object:
+                        dirSheet = GraphicsManager.GetObject(DebugAnim);
+                        break;
+                    case GraphicsManager.AssetType.Item:
+                        dirSheet = GraphicsManager.GetItem(DebugAnim);
+                        break;
+                }
+                if (dirSheet != null)
+                {
+                    dirSheet.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / scale / 2 - dirSheet.TileWidth / 2, GraphicsManager.ScreenHeight / scale / 2 - dirSheet.TileHeight / 2),
+                        (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % (ulong)dirSheet.TotalFrames),
+                        FocusedCharacter.CharDir, Color.White);
                 }
             }
         }

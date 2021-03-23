@@ -69,7 +69,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoseMultiIndex(List<int> slots)
         {
-            int startIndex = CurrentPage * SpacesPerPage + CurrentChoice;
+            int startIndex = CurrentChoiceTotal;
 
             List<int> indices = new List<int>();
             foreach (int slot in slots)
@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            InvItem item = new InvItem(AllowedGoods[CurrentPage * SpacesPerPage + CurrentChoice]);
+            InvItem item = new InvItem(AllowedGoods[CurrentChoiceTotal]);
             summaryMenu.SetItem(item);
             base.ChoiceChanged();
         }

@@ -12,13 +12,19 @@ namespace RogueEssence
 
         public Type FullType => fullType;
 
-        private readonly string assembly;
-        private readonly string type;
+        private string assembly;
+        private string type;
 
+        public FlagType()
+        {
+            fullType = typeof(object);
+            assembly = fullType.FullName;
+            this.type = fullType.FullName;
+        }
         public FlagType(Type type)
         {
             fullType = type;
-            assembly = type.Assembly.FullName;
+            this.assembly = type.Assembly.FullName;
             this.type = type.FullName;
         }
 
@@ -28,14 +34,16 @@ namespace RogueEssence
         {
             if (type != null)
             {
-                fullType = System.Type.GetType(String.Format("{0}, {1}", type, assembly));
+                fullType = Type.GetType(String.Format("{0}, {1}", type, assembly));
                 if (fullType == null)
                 {
-                    throw new Exception();
-                    //string newType = typeof(int).FullName;
-                    //string newAssembly = typeof(int).Assembly.FullName;
-                    ////then the type moved to a new namespace
-                    //typeToDeserialize = Type.GetType(String.Format("{0}, {1}", newType, newAssembly));
+                    fullType = DiagManager.Instance.UpgradeBinder?.BindToType(assembly, type);
+
+                    if (fullType == null)
+                        throw new TypeInitializationException(type, null);
+
+                    assembly = fullType.Assembly.FullName;
+                    type = fullType.FullName;
                 }
             }
         }

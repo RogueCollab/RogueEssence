@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using NLua;
 using RogueEssence.Data;
 
 namespace RogueEssence.Dungeon
@@ -74,6 +77,11 @@ namespace RogueEssence.Dungeon
         public bool IsFounder;
         public bool IsFavorite;
 
+        public string ScriptVars;
+        [NonSerialized]
+        public LuaTable LuaDataTable;
+
+
         public CharData()
         {
             Nickname = "";
@@ -93,6 +101,7 @@ namespace RogueEssence.Dungeon
             DefeatAt = "";
             //DefeatedDungeon = -1;
             //DefeatedFloor = new StructMap(-1,-1);
+            LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
         }
 
         public CharData(CharData other)
@@ -128,6 +137,9 @@ namespace RogueEssence.Dungeon
             IsFounder = other.IsFounder;
             IsFavorite = other.IsFavorite;
             Discriminator = other.Discriminator;
+
+            //TODO: deep copy?
+            LuaDataTable = other.LuaDataTable;
         }
 
 
@@ -163,5 +175,30 @@ namespace RogueEssence.Dungeon
                 BaseIntrinsics.Add(newForm.Intrinsic3);
         }
 
+        public void SaveLua()
+        {
+            string serialized = Script.LuaEngine.Instance.SerializeLuaTable(LuaDataTable);
+            if (serialized != null)
+                ScriptVars = serialized;
+            else
+                DiagManager.Instance.LogInfo("CharData.OnSerializing(): Couldn't serialize lua data table!!");
+        }
+
+        public void LoadLua()
+        {
+            if (ScriptVars == null)
+            {
+                LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+                return;
+            }
+
+            LuaDataTable = Script.LuaEngine.Instance.DeserializedLuaTable(ScriptVars);
+            if (LuaDataTable == null)
+            {
+                //Make sure thers is at least a table in the data table when done deserializing.
+                DiagManager.Instance.LogInfo(String.Format("CharData.OnDeserialized(): Couldn't deserialize LuaDataTable string '{0}'!", ScriptVars));
+                LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            }
+        }
     }
 }

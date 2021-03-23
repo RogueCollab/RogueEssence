@@ -132,8 +132,6 @@ namespace RogueEssence.Ground
         {
             if (ScriptEvents.ContainsKey(ev))
                 yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(this));
-            else
-                yield break;
         }
 
         /// <summary>
@@ -143,7 +141,8 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> OnInit()
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
-            Script.LuaEngine.Instance.RunMapScript(AssetName);
+            if (AssetName != "")
+                LuaEngine.Instance.RunMapScript(AssetName);
 
             //Reload the map events
             foreach (var ev in ScriptEvents)
@@ -177,7 +176,7 @@ namespace RogueEssence.Ground
         /// Called by the GroundScene when the map is in "Begin" stage.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> OnBegin()
+        public IEnumerator<YieldInstruction> OnEnter()
         {
             //Ensure the AI is enabled
             GroundAI.GlobalAIEnabled = true;
@@ -187,7 +186,15 @@ namespace RogueEssence.Ground
 
             //Notify script engine
             LuaEngine.Instance.OnGroundMapEnter(AssetName, this);
-            yield break;
+        }
+
+        public IEnumerator<YieldInstruction> OnExit()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.Exit));
+
+            //Notify script engine
+            LuaEngine.Instance.OnGroundMapExit(AssetName, this);
         }
 
         /// <summary>
@@ -352,12 +359,11 @@ namespace RogueEssence.Ground
         /// <returns>Forund object, or null</returns>
         public GroundObject GetObj(string instancename)
         {
-            GroundObject found = null;
-            if ((found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; })) == null)
-            {
-                //Maybe warn or something??
-            }
-            return found;
+            GroundObject found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; });
+            if (found != null)
+                return found;
+
+            return null;
         }
 
 
@@ -401,6 +407,20 @@ namespace RogueEssence.Ground
         {
             if (Entities[0].Markers.Contains(mark))
                 Entities[0].Markers.Remove(mark);
+        }
+
+
+        /// <summary>
+        /// Finds a named marker in the marker table for this map.
+        /// </summary>
+        /// <param name="name">Name of the marker</param>
+        /// <returns>The found marker, or null if not found.</returns>
+        public GroundMarker GetMarker(string name)
+        {
+            int index = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
+            if (index > -1)
+                return Entities[0].Markers[index];
+            return null;
         }
 
 
@@ -709,19 +729,6 @@ namespace RogueEssence.Ground
 
         }
 
-
-        /// <summary>
-        /// Finds a named marker in the marker table for this map.
-        /// </summary>
-        /// <param name="name">Name of the marker</param>
-        /// <returns>The found marker, or null if not found.</returns>
-        private GroundMarker FindMarker(string name)
-        {
-            int index = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
-            if (index > -1)
-                return Entities[0].Markers[index];
-            return null;
-        }
         /// <summary>
         /// Returns the position and location of an entry point for the current map by index.
         /// </summary>
@@ -741,7 +748,7 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public LocRay8 GetEntryPoint(string name)
         {
-            GroundMarker mark = FindMarker(name);
+            GroundMarker mark = GetMarker(name);
             if (mark == null)
                 throw new KeyNotFoundException(String.Format("GroundMap.GetMarkerPosition({0}): Couldn't find the specified Marker!", name));
 
@@ -755,7 +762,7 @@ namespace RogueEssence.Ground
         /// <param name="pos"></param>
         public void SetMarkerPosition(string name, Loc pos)
         {
-            GroundMarker mark = FindMarker(name);
+            GroundMarker mark = GetMarker(name);
             if (mark == null)
                 throw new KeyNotFoundException(String.Format("GroundMap.SetMarkerPosition({0},{1}): Couldn't find the specified Marker!", name, pos));
             mark.Position = pos;
@@ -867,6 +874,31 @@ namespace RogueEssence.Ground
                 if (ent != null)
                     ent.LuaEngineReload();
             }
+            LoadLua();
+        }
+
+        public void SaveLua()
+        {
+            foreach (EntityLayer layer in Entities)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundChar v in layer.IterateCharacters())
+                        v.Data.SaveLua();
+                }
+            }
+        }
+
+        public void LoadLua()
+        {
+            foreach (EntityLayer layer in Entities)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundChar v in layer.IterateCharacters())
+                        v.Data.LoadLua();
+                }
+            }
         }
 
         public void RemoveMapScriptEvent(LuaEngine.EMapCallbacks ev)
@@ -909,7 +941,8 @@ namespace RogueEssence.Ground
             if (BlankBG == null)
                 BlankBG = new AutoTile();
 
-                if (ActiveChar != null)
+
+            if (ActiveChar != null)
             {
                 ActiveChar.OnDeserializeMap(this);
                 signCharToMap(ActiveChar);
