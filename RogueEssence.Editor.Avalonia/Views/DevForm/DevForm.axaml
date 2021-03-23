@@ -13,26 +13,11 @@
     </Design.DataContext>
   <Grid>
     <TabControl TabStripPlacement="Top" Margin="2">
-      <TabItem Header="Game" >
-        <views:DevTabGame DataContext="{Binding Game}"/>
-      </TabItem>
       <TabItem Header="Player" >
         <views:DevTabPlayer DataContext="{Binding Player}"/>
       </TabItem>
-      <TabItem Header="Travel" >
-        <views:DevTabTravel DataContext="{Binding Travel}"/>
-      </TabItem>
-      <TabItem Header="Data" >
-        <views:DevTabData DataContext="{Binding Data}"/>
-      </TabItem>
-      <TabItem Header="Sprites" >
-        <views:DevTabSprites DataContext="{Binding Sprites}"/>
-      </TabItem>
-      <TabItem Header="Script" >
-        <views:DevTabScript DataContext="{Binding Script}"/>
-      </TabItem>
-      <TabItem Header="Mods" >
-        <views:DevTabMods DataContext="{Binding Mods}"/>
+      <TabItem Header="Game" >
+        <views:DevTabGame DataContext="{Binding Game}"/>
       </TabItem>
     </TabControl>
   </Grid>

@@ -317,7 +317,7 @@ namespace RogueEssence
         {
             cleanup();
             reInit();
-            MoveToScene(new TitleScene(false));
+            yield return CoroutineManager.Instance.StartCoroutine(DebugWarp(new ZoneLoc(0, new SegLoc()), 0));
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 

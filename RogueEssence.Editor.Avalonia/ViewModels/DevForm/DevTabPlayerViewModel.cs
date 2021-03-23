@@ -132,6 +132,26 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+        public void btnEditSprites_Click()
+        {
+            SpeciesEditViewModel mv = new SpeciesEditViewModel();
+            Views.SpeciesEditForm editForm = new Views.SpeciesEditForm();
+            mv.LoadFormDataEntries(true, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
+
+        public void btnEditPortraits_Click()
+        {
+            SpeciesEditViewModel mv = new SpeciesEditViewModel();
+            Views.SpeciesEditForm editForm = new Views.SpeciesEditForm();
+            mv.LoadFormDataEntries(false, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
+
+
         public void btnRollSkill_Click()
         {
             lock (GameBase.lockObj)

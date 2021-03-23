@@ -719,9 +719,12 @@ namespace RogueEssence.Data
             else
             {
                 GameState state = DataManager.Instance.LoadMainGameState();
-                MainProgress mainSave = state.Save as MainProgress;
-                mainSave.MergeDataTo(mainSave);
-                DataManager.Instance.SetProgress(state.Save);
+                if (state != null)
+                {
+                    MainProgress mainSave = state.Save as MainProgress;
+                    mainSave.MergeDataTo(mainSave);
+                    DataManager.Instance.SetProgress(state.Save);
+                }
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 

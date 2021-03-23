@@ -135,7 +135,7 @@ namespace RogueEssence.Dev.Views
                     for (int ii = 0; ii < monster_names.Length; ii++)
                         devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
                     devViewModel.Player.ChosenMonster = -1;
-                    devViewModel.Player.ChosenMonster = 0;
+                    devViewModel.Player.ChosenMonster = 1;
 
                     devViewModel.Player.ChosenForm = -1;
                     devViewModel.Player.ChosenForm = 0;

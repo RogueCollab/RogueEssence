@@ -23,9 +23,9 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Lv.</TextBlock>
-    <NumericUpDown Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Margin="4" Grid.Row="1" Grid.Column="0"/>
-    <Button Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Editors</TextBlock>
+    <Button Name="btnEditSprites" Margin="4" Command="{Binding btnEditSprites_Click}" Grid.Row="1" Grid.Column="0" >Char Sprites</Button>
+    <Button Name="btnEditPortraits" Margin="4" Command="{Binding btnEditPortraits_Click}" Grid.Row="1" Grid.Column="1" >Portraits</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1">Form</TextBlock>
     <ComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4" Grid.Row="3" Grid.Column="0"/>
