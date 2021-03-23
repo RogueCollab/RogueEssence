@@ -23,7 +23,7 @@ namespace RogueEssence.Examples
 
         public static void AddEditorOps()
         {
-            DeleteData(Path.Combine(Dev.DevGraphicsManager.RESOURCE_PATH, "Extensions"));
+            DeleteData(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"));
         }
 
         public static void AddSystemFX()
@@ -396,14 +396,14 @@ namespace RogueEssence.Examples
                         layout.GenSteps.Add(0, new UnbreakableBorderStep<StairsMapGenContext>(1));
 
                         {
-                            SpecificSpawnStep<StairsMapGenContext, MapGenEntrance> specificSpawn = new SpecificSpawnStep<StairsMapGenContext, MapGenEntrance>();
-                            specificSpawn.Spawns.Add((new MapGenEntrance(Dir8.Down), new Loc(22, 11)));
-                            layout.GenSteps.Add(2, specificSpawn);
+                            List<(MapGenEntrance, Loc)> items = new List<(MapGenEntrance, Loc)>();
+                            items.Add((new MapGenEntrance(Dir8.Down), new Loc(22, 11)));
+                            AddSpecificSpawn(layout, items, new Priority(2));
                         }
                         {
-                            SpecificSpawnStep<StairsMapGenContext, MapGenExit> specificSpawn = new SpecificSpawnStep<StairsMapGenContext, MapGenExit>();
-                            specificSpawn.Spawns.Add((new MapGenExit(new EffectTile(1, true)), new Loc(22, 12)));
-                            layout.GenSteps.Add(2, specificSpawn);
+                            List<(MapGenExit, Loc)> items = new List<(MapGenExit, Loc)>();
+                            items.Add((new MapGenExit(new EffectTile(1, true)), new Loc(22, 12)));
+                            AddSpecificSpawn(layout, items, new Priority(2));
                         }
 
                         MapTextureStep<StairsMapGenContext> texturePostProc = new MapTextureStep<StairsMapGenContext>();
@@ -448,6 +448,23 @@ namespace RogueEssence.Examples
             }
             return zone;
         }
+
+
+        static void AddSpecificSpawn<TGenContext, TSpawnable>(MapGen<TGenContext> layout, List<(TSpawnable item, Loc loc)> items, Priority priority)
+            where TGenContext : class, IPlaceableGenContext<TSpawnable>
+            where TSpawnable : ISpawnable
+        {
+            PresetMultiRand<TSpawnable> picker = new PresetMultiRand<TSpawnable>();
+            List<Loc> spawnLocs = new List<Loc>();
+            for (int ii = 0; ii < items.Count; ii++)
+            {
+                picker.ToSpawn.Add(new PresetPicker<TSpawnable>(items[ii].item));
+                spawnLocs.Add(items[ii].loc);
+            }
+            PickerSpawner<TGenContext, TSpawnable> spawn = new PickerSpawner<TGenContext, TSpawnable>(picker);
+            layout.GenSteps.Add(priority, new SpecificSpawnStep<TGenContext, TSpawnable>(spawn, spawnLocs));
+        }
     }
+
 }
 

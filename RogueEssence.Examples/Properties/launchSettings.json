@@ -2,7 +2,7 @@
   "profiles": {
     "RogueEssence.Examples": {
       "commandName": "Project",
-      "commandLineArgs": "-dev"
+      "commandLineArgs": "-asset ../../../../Asset/ -raw ../../../../RawAsset/ -dev"
     }
   }
 }

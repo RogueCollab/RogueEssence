@@ -36,9 +36,7 @@ namespace RogueEssence.Examples
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
             DiagManager.InitInstance();
-            GraphicsManager.InitParams();
-            Text.Init();
-            Text.SetCultureCode("");
+            //DiagManager.Instance.UpgradeBinder = new UpgradeBinder();
 
 
             try
@@ -58,7 +56,22 @@ namespace RogueEssence.Examples
                 string langArgs = "";
                 for (int ii = 1; ii < args.Length; ii++)
                 {
-                    if (args[ii] == "-dev")
+                    if (args[ii] == "-asset")
+                    {
+                        PathMod.ASSET_PATH = System.IO.Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + args[ii + 1]);
+                        ii++;
+                    }
+                    else if (args[ii] == "-raw")
+                    {
+                        PathMod.DEV_PATH = System.IO.Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + args[ii + 1]);
+                        ii++;
+                    }
+                    else if (args[ii] == "-mod")
+                    {
+                        PathMod.Mod = PathMod.MODS_PATH + args[ii + 1];
+                        ii++;
+                    }
+                    else if (args[ii] == "-dev")
                         DiagManager.Instance.DevMode = true;
                     else if (args[ii] == "-play" && args.Length > ii + 1)
                     {
@@ -162,6 +175,11 @@ namespace RogueEssence.Examples
                     }
                 }
 
+
+                GraphicsManager.InitParams();
+                Text.Init();
+                Text.SetCultureCode("");
+
                 if (convertAssets != GraphicsManager.AssetType.None)
                 {
                     //run conversions
@@ -178,9 +196,10 @@ namespace RogueEssence.Examples
                 {
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
-                    RogueEssence.Dev.DevHelper.Reserialize(reserializeIndices, null);
-                    RogueEssence.Dev.DevHelper.ReserializeData(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT, null);
-                    RogueEssence.Dev.DevHelper.ReserializeData(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT, null);
+                    RogueEssence.Dev.DevHelper.ReserializeBase();
+                    RogueEssence.Dev.DevHelper.Reserialize(reserializeIndices);
+                    RogueEssence.Dev.DevHelper.ReserializeData(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT);
+                    RogueEssence.Dev.DevHelper.ReserializeData(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT);
                     RogueEssence.Dev.DevHelper.RunIndexing(reserializeIndices);
                     return;
                 }
@@ -304,44 +323,44 @@ namespace RogueEssence.Examples
         public static void InitDataEditor()
         {
             DataEditor.Init();
-            DataEditor.AddConverter(new AnimDataEditor());
-            DataEditor.AddConverter(new SoundEditor());
-            DataEditor.AddConverter(new MusicEditor());
-            DataEditor.AddConverter(new EntryDataEditor());
-            DataEditor.AddConverter(new FrameTypeEditor());
+            DataEditor.AddEditor(new AnimDataEditor());
+            DataEditor.AddEditor(new SoundEditor());
+            DataEditor.AddEditor(new MusicEditor());
+            DataEditor.AddEditor(new EntryDataEditor());
+            DataEditor.AddEditor(new FrameTypeEditor());
 
-            DataEditor.AddConverter(new BaseEmitterEditor());
-            DataEditor.AddConverter(new BattleDataEditor());
-            DataEditor.AddConverter(new BattleFXEditor());
-            DataEditor.AddConverter(new CircleSquareEmitterEditor());
-            DataEditor.AddConverter(new CombatActionEditor());
-            DataEditor.AddConverter(new ExplosionDataEditor());
-            DataEditor.AddConverter(new ShootingEmitterEditor());
-            DataEditor.AddConverter(new SkillDataEditor());
-            DataEditor.AddConverter(new ColumnAnimEditor());
-            DataEditor.AddConverter(new StaticAnimEditor());
-            DataEditor.AddConverter(new TypeDictEditor());
-            DataEditor.AddConverter(new SpawnListEditor());
-            DataEditor.AddConverter(new SpawnRangeListEditor());
-            DataEditor.AddConverter(new PriorityListEditor());
-            DataEditor.AddConverter(new PriorityEditor());
-            DataEditor.AddConverter(new SegLocEditor());
-            DataEditor.AddConverter(new LocEditor());
-            DataEditor.AddConverter(new IntRangeEditor());
-            DataEditor.AddConverter(new FlagTypeEditor());
-            DataEditor.AddConverter(new ColorEditor());
-            DataEditor.AddConverter(new TypeEditor());
-            DataEditor.AddConverter(new ArrayEditor());
-            DataEditor.AddConverter(new DictionaryEditor());
-            DataEditor.AddConverter(new ListEditor());
-            DataEditor.AddConverter(new EnumEditor());
-            DataEditor.AddConverter(new StringEditor());
-            DataEditor.AddConverter(new DoubleEditor());
-            DataEditor.AddConverter(new SingleEditor());
-            DataEditor.AddConverter(new BooleanEditor());
-            DataEditor.AddConverter(new IntEditor());
-            DataEditor.AddConverter(new ByteEditor());
-            DataEditor.AddConverter(new ObjectEditor());
+            DataEditor.AddEditor(new BaseEmitterEditor());
+            DataEditor.AddEditor(new BattleDataEditor());
+            DataEditor.AddEditor(new BattleFXEditor());
+            DataEditor.AddEditor(new CircleSquareEmitterEditor());
+            DataEditor.AddEditor(new CombatActionEditor());
+            DataEditor.AddEditor(new ExplosionDataEditor());
+            DataEditor.AddEditor(new ShootingEmitterEditor());
+            DataEditor.AddEditor(new SkillDataEditor());
+            DataEditor.AddEditor(new ColumnAnimEditor());
+            DataEditor.AddEditor(new StaticAnimEditor());
+            DataEditor.AddEditor(new TypeDictEditor());
+            DataEditor.AddEditor(new SpawnListEditor());
+            DataEditor.AddEditor(new SpawnRangeListEditor());
+            DataEditor.AddEditor(new PriorityListEditor());
+            DataEditor.AddEditor(new PriorityEditor());
+            DataEditor.AddEditor(new SegLocEditor());
+            DataEditor.AddEditor(new LocEditor());
+            DataEditor.AddEditor(new IntRangeEditor());
+            DataEditor.AddEditor(new FlagTypeEditor());
+            DataEditor.AddEditor(new ColorEditor());
+            DataEditor.AddEditor(new TypeEditor());
+            DataEditor.AddEditor(new ArrayEditor());
+            DataEditor.AddEditor(new DictionaryEditor());
+            DataEditor.AddEditor(new ListEditor());
+            DataEditor.AddEditor(new EnumEditor());
+            DataEditor.AddEditor(new StringEditor());
+            DataEditor.AddEditor(new DoubleEditor());
+            DataEditor.AddEditor(new SingleEditor());
+            DataEditor.AddEditor(new BooleanEditor());
+            DataEditor.AddEditor(new IntEditor());
+            DataEditor.AddEditor(new ByteEditor());
+            DataEditor.AddEditor(new ObjectEditor());
         }
     }
 
