@@ -23,6 +23,8 @@ namespace RogueEssence.LevelGen
         public int Height { get { return Map.Height; } }
 
 
+        public List<SingleCharEvent> PrepareEvents { get { return Map.PrepareEvents; } }
+        public List<SingleCharEvent> StartEvents { get { return Map.StartEvents; } }
         public List<SingleCharEvent> CheckEvents { get { return Map.CheckEvents; } }
 
         public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
