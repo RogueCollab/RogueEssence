@@ -66,8 +66,8 @@ namespace RogueEssence.Data
         public const string REPLAY_PATH = "REPLAY/";
         public const string RESCUE_IN_PATH = "RESCUE/INBOX/";
         public const string RESCUE_OUT_PATH = "RESCUE/OUTBOX/";
-        public const string SOS_PATH = "SOS/";
-        public const string AOK_PATH = "AOK/";
+        public const string SOS_FOLDER = "SOS/";
+        public const string AOK_FOLDER = "AOK/";
 
         public const string ROGUE_PATH = SAVE_PATH + "ROGUE/";
 
@@ -148,24 +148,24 @@ namespace RogueEssence.Data
 
         public DataManager()
         {
-            if (!Directory.Exists(SAVE_PATH))
-                Directory.CreateDirectory(SAVE_PATH);
-            if (!Directory.Exists(ROGUE_PATH))
-                Directory.CreateDirectory(ROGUE_PATH);
-            if (!Directory.Exists(REPLAY_PATH))
-                Directory.CreateDirectory(REPLAY_PATH);
+            if (!Directory.Exists(PathMod.ModSavePath(SAVE_PATH)))
+                Directory.CreateDirectory(PathMod.ModSavePath(SAVE_PATH));
+            if (!Directory.Exists(PathMod.NoMod(ROGUE_PATH)))
+                Directory.CreateDirectory(PathMod.NoMod(ROGUE_PATH));
+            if (!Directory.Exists(PathMod.ModSavePath(REPLAY_PATH)))
+                Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
 
-            if (!Directory.Exists(RESCUE_IN_PATH + SOS_PATH))
-                Directory.CreateDirectory(RESCUE_IN_PATH + SOS_PATH);
+            if (!Directory.Exists(PathMod.NoMod(RESCUE_IN_PATH + SOS_FOLDER)))
+                Directory.CreateDirectory(PathMod.NoMod(RESCUE_IN_PATH + SOS_FOLDER));
 
-            if (!Directory.Exists(RESCUE_IN_PATH + AOK_PATH))
-                Directory.CreateDirectory(RESCUE_IN_PATH + AOK_PATH);
+            if (!Directory.Exists(PathMod.NoMod(RESCUE_IN_PATH + AOK_FOLDER)))
+                Directory.CreateDirectory(PathMod.NoMod(RESCUE_IN_PATH + AOK_FOLDER));
 
-            if (!Directory.Exists(RESCUE_OUT_PATH + SOS_PATH))
-                Directory.CreateDirectory(RESCUE_OUT_PATH + SOS_PATH);
+            if (!Directory.Exists(PathMod.NoMod(RESCUE_OUT_PATH + SOS_FOLDER)))
+                Directory.CreateDirectory(PathMod.NoMod(RESCUE_OUT_PATH + SOS_FOLDER));
 
-            if (!Directory.Exists(RESCUE_OUT_PATH + AOK_PATH))
-                Directory.CreateDirectory(RESCUE_OUT_PATH + AOK_PATH);
+            if (!Directory.Exists(PathMod.NoMod(RESCUE_OUT_PATH + AOK_FOLDER)))
+                Directory.CreateDirectory(PathMod.NoMod(RESCUE_OUT_PATH + AOK_FOLDER));
 
 
             MsgLog = new List<string>();

@@ -640,8 +640,8 @@ namespace RogueEssence.Data
                 string dateRescued = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
                 ReplayData replay = DataManager.Instance.LoadReplay(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile), false);
                 AOKMail aok = new AOKMail(sos, DataManager.Instance.Save, dateRescued, replay);
-                GeneratedAOK = DataManager.SaveRescueMail(DataManager.RESCUE_OUT_PATH + DataManager.AOK_PATH, aok, false);
-                string deletePath = DataManager.FindRescueMail(DataManager.RESCUE_IN_PATH + DataManager.SOS_PATH, sos, sos.Extension);
+                GeneratedAOK = DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), aok, false);
+                string deletePath = DataManager.FindRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sos, sos.Extension);
                 if (deletePath != null)
                     File.Delete(deletePath);
 
@@ -809,7 +809,7 @@ namespace RogueEssence.Data
             Stakes = stakes;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION, zoneID, true, Seeded);
+                DataManager.Instance.BeginPlay(PathMod.NoMod(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
 
             yield break;
         }

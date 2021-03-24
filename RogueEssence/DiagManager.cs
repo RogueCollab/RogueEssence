@@ -19,7 +19,7 @@ namespace RogueEssence
         }
         public static DiagManager Instance { get { return instance; } }
 
-        public const string LOG_PATH = "LOG/";
+        public static string LOG_PATH { get => PathMod.ExePath + "LOG/"; }
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
 
@@ -247,7 +247,7 @@ namespace RogueEssence
             {
                 Settings settings = new Settings();
 
-                string path = "Config.xml";
+                string path = PathMod.NoMod("Config.xml");
                 if (File.Exists(path))
                 {
                     XmlDocument xmldoc = new XmlDocument();
@@ -264,7 +264,7 @@ namespace RogueEssence
 
                 }
 
-                path = "Keyboard.xml";
+                path = PathMod.NoMod("Keyboard.xml");
                 if (File.Exists(path))
                 {
                     XmlDocument xmldoc = new XmlDocument();
@@ -289,7 +289,7 @@ namespace RogueEssence
                     }
                 }
 
-                path = "Gamepad.xml";
+                path = PathMod.NoMod("Gamepad.xml");
                 if (File.Exists(path))
                 {
                     XmlDocument xmldoc = new XmlDocument();
@@ -306,7 +306,7 @@ namespace RogueEssence
                     }
                 }
 
-                path = "Contacts.xml";
+                path = PathMod.NoMod("Contacts.xml");
                 if (File.Exists(path))
                 {
                     XmlDocument xmldoc = new XmlDocument();
@@ -372,7 +372,7 @@ namespace RogueEssence
                 appendConfigNode(xmldoc, docNode, "Border", settings.Border.ToString());
                 appendConfigNode(xmldoc, docNode, "Language", settings.Language.ToString());
 
-                xmldoc.Save("Config.xml");
+                xmldoc.Save(PathMod.NoMod("Config.xml"));
             }
 
             {
@@ -396,7 +396,7 @@ namespace RogueEssence
                 }
                 docNode.AppendChild(actionKeys);
 
-                xmldoc.Save("Keyboard.xml");
+                xmldoc.Save(PathMod.NoMod("Keyboard.xml"));
             }
 
             {
@@ -415,7 +415,7 @@ namespace RogueEssence
                 }
                 docNode.AppendChild(actionButtons);
 
-                xmldoc.Save("Gamepad.xml");
+                xmldoc.Save(PathMod.NoMod("Gamepad.xml"));
             }
 
             {
@@ -460,7 +460,7 @@ namespace RogueEssence
                 docNode.AppendChild(peers);
 
 
-                xmldoc.Save("Contacts.xml");
+                xmldoc.Save(PathMod.NoMod("Contacts.xml"));
             }
         }
 
