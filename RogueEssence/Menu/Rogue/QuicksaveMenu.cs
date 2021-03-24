@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
 
         public QuicksaveMenu()
         {
-            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(DataManager.ROGUE_PATH, DataManager.QUICKSAVE_EXTENSION);
+            List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.NoMod(DataManager.ROGUE_PATH), DataManager.QUICKSAVE_EXTENSION);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             foreach (RecordHeaderData record in records)
