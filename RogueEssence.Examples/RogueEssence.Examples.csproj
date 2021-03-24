@@ -8,6 +8,7 @@
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
     <Configuration>Release</Configuration>
     <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <PublishTrimmed>false</PublishTrimmed>
     <PublishDir>..\publish\$(RuntimeIdentifier)\$(AssemblyName)</PublishDir>
   </PropertyGroup>

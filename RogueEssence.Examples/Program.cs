@@ -35,6 +35,9 @@ namespace RogueEssence.Examples
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.SerializationGuard.AllowFileWrites", true);
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            string[] args = System.Environment.GetCommandLineArgs();
+            PathMod.InitExePath(System.IO.Path.GetDirectoryName(args[0]));
             DiagManager.InitInstance();
             //DiagManager.Instance.UpgradeBinder = new UpgradeBinder();
 
@@ -47,7 +50,6 @@ namespace RogueEssence.Examples
                 DiagManager.Instance.LogInfo(Versioning.GetDotNetInfo());
                 DiagManager.Instance.LogInfo("=========================================");
 
-                string[] args = System.Environment.GetCommandLineArgs();
                 bool logInput = true;
                 GraphicsManager.AssetType convertAssets = GraphicsManager.AssetType.None;
                 DataManager.DataType convertIndices = DataManager.DataType.None;
@@ -58,17 +60,17 @@ namespace RogueEssence.Examples
                 {
                     if (args[ii] == "-asset")
                     {
-                        PathMod.ASSET_PATH = System.IO.Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + args[ii + 1]);
+                        PathMod.ASSET_PATH = System.IO.Path.GetFullPath(PathMod.ExePath + args[ii + 1]);
                         ii++;
                     }
                     else if (args[ii] == "-raw")
                     {
-                        PathMod.DEV_PATH = System.IO.Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + args[ii + 1]);
+                        PathMod.DEV_PATH = System.IO.Path.GetFullPath(PathMod.ExePath + args[ii + 1]);
                         ii++;
                     }
                     else if (args[ii] == "-mod")
                     {
-                        PathMod.Mod = PathMod.MODS_PATH + args[ii + 1];
+                        PathMod.Mod = PathMod.MODS_FOLDER + args[ii + 1];
                         ii++;
                     }
                     else if (args[ii] == "-dev")
