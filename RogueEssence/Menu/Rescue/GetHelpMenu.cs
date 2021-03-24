@@ -136,7 +136,7 @@ namespace RogueEssence.Menu
                     if (getHelp.CurrentState == ExchangeRescueState.AOKTrading || getHelp.CurrentState == ExchangeRescueState.Completed)
                     {
                         //save the AOK file
-                        DataManager.SaveRescueMail(DataManager.RESCUE_IN_PATH + DataManager.AOK_PATH, getHelp.OfferedMail, false);
+                        DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.AOK_FOLDER), getHelp.OfferedMail, false);
                         if (getHelp.OfferedMail.OfferedItem.Value > -1)
                         {
                             //deduct your reward and save it to the base file

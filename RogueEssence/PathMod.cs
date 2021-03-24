@@ -11,32 +11,49 @@ namespace RogueEssence
 {
     public static class PathMod
     {
-        public static string ASSET_PATH = AppContext.BaseDirectory;
-        public static string DEV_PATH = AppContext.BaseDirectory + "RawAsset/";
+        public static string ExePath { get; private set; }
+        public static string ASSET_PATH;
+        public static string DEV_PATH;
         public static string RESOURCE_PATH { get => ASSET_PATH + "Editor/"; }
 
-        public static string MODS_PATH = AppContext.BaseDirectory + "MODS/";
+        public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
 
+        public static string MODS_FOLDER = "MODS/";
+
+        /// <summary>
+        /// Filename of mod relative to executable
+        /// </summary>
         public static string Mod = "";
 
-        //TODO: get the absolute path from the executable for all path usage in this library
-        //https://stackoverflow.com/questions/1658518/getting-the-absolute-path-of-the-executable-using-c
-        //https://stackoverflow.com/questions/6041332/best-way-to-get-application-folder-path
+        public static void InitExePath(string path)
+        {
+            ExePath = path + "/";
+            ASSET_PATH = ExePath;
+            DEV_PATH = ExePath + "RawAsset/";
+        }
 
         public static string ModSavePath(string baseFolder)
         {
-            return Path.Join(baseFolder, Mod);
+            return Path.Join(ExePath, baseFolder, Mod);
         }
         public static string ModSavePath(string baseFolder, string basePath)
         {
-            return Path.Join(baseFolder, Mod, basePath);
+            return Path.Join(ExePath, baseFolder, Mod, basePath);
         }
         public static string HardMod(string basePath)
         {
-            if (Mod == "")
+            return hardMod(Mod, basePath);
+        }
+        public static string NoMod(string basePath)
+        {
+            return hardMod("", basePath);
+        }
+        private static string hardMod(string mod, string basePath)
+        {
+            if (mod == "")
                 return Path.Join(ASSET_PATH, basePath);
             else
-                return Path.Join(Mod, basePath);
+                return Path.Join(ExePath, mod, basePath);
         }
 
         public static IEnumerable<string> FallbackPaths(string basePath)
@@ -44,12 +61,12 @@ namespace RogueEssence
             string mod = Mod;
             while (mod != "")
             {
-                string fullPath = Path.Join(mod, basePath);
+                string fullPath = hardMod(mod, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
                 mod = GetModParentPath(mod);
             }
-            yield return Path.Join(ASSET_PATH, basePath);
+            yield return hardMod(mod, basePath);
         }
 
         public static string ModPath(string basePath)
@@ -57,12 +74,12 @@ namespace RogueEssence
             string mod = Mod;
             while (mod != "")
             {
-                string fullPath = Path.Join(mod, basePath);
+                string fullPath = hardMod(mod, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
                 mod = GetModParentPath(mod);
             }
-            return Path.Join(ASSET_PATH, basePath);
+            return hardMod(mod, basePath);
         }
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
@@ -70,12 +87,12 @@ namespace RogueEssence
             string mod = Mod;
             while (mod != "")
             {
-                string fullPath = Path.Join(mod, baseFolder);
+                string fullPath = hardMod(mod, baseFolder);
                 if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
                 mod = GetModParentPath(mod);
             }
-            files.Add(Directory.GetFiles(Path.Join(ASSET_PATH, baseFolder), search));
+            files.Add(Directory.GetFiles(hardMod(mod, baseFolder), search));
 
             Dictionary<string, string> file_mappings = new Dictionary<string, string>();
             for (int ii = files.Count-1; ii >= 0; ii--)

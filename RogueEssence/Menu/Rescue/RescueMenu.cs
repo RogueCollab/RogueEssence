@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
         private void awaitRescue()
         {
             //check for an AOK file from file rescue
-            string aokPath = DataManager.FindRescueMail(DataManager.RESCUE_IN_PATH + DataManager.AOK_PATH, DataManager.Instance.Save.Rescue.SOS, DataManager.AOK_EXTENSION);
+            string aokPath = DataManager.FindRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.AOK_FOLDER), DataManager.Instance.Save.Rescue.SOS, DataManager.AOK_EXTENSION);
             if (aokPath != null)
             {
                 AOKMail aok = (AOKMail)DataManager.LoadRescueMail(aokPath);
@@ -58,8 +58,8 @@ namespace RogueEssence.Menu
             else
             {
                 //if there's no AOK, generate the SOS mail from the save data
-                if (!File.Exists(DataManager.RESCUE_OUT_PATH + DataManager.SOS_PATH + DataManager.Instance.Save.UUID + DataManager.SOS_EXTENSION))
-                    DataManager.SaveRescueMail(DataManager.RESCUE_OUT_PATH + DataManager.SOS_PATH, DataManager.Instance.Save.Rescue.SOS, true);
+                if (!File.Exists(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.SOS_FOLDER + DataManager.Instance.Save.UUID + DataManager.SOS_EXTENSION)))
+                    DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.SOS_FOLDER), DataManager.Instance.Save.Rescue.SOS, true);
 
 
                 List<DialogueChoice> choices = new List<DialogueChoice>();
@@ -236,8 +236,8 @@ namespace RogueEssence.Menu
             if (File.Exists(testingPath))
                 File.Delete(testingPath);
 
-            if (File.Exists(DataManager.RESCUE_OUT_PATH + DataManager.SOS_PATH + state.Save.UUID + DataManager.SOS_EXTENSION))
-                File.Delete(DataManager.RESCUE_OUT_PATH + DataManager.SOS_PATH + state.Save.UUID + DataManager.SOS_EXTENSION);
+            if (File.Exists(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.SOS_FOLDER + state.Save.UUID + DataManager.SOS_EXTENSION)))
+                File.Delete(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.SOS_FOLDER + state.Save.UUID + DataManager.SOS_EXTENSION));
 
 
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(MenuManager.Instance.ClearMenus, Text.FormatKey("DLG_AWAIT_RESCUE_RESUME")), true);

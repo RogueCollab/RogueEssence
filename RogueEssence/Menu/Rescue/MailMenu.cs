@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
             this.sosMode = sosMode;
             this.action = action;
 
-            string parentPath = sosMode ? DataManager.RESCUE_IN_PATH + DataManager.SOS_PATH : DataManager.RESCUE_OUT_PATH + DataManager.AOK_PATH;
+            string parentPath = sosMode ? PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER) : PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER);
             files = Directory.GetFiles(parentPath, "*" + (sosMode ? DataManager.SOS_EXTENSION : DataManager.AOK_EXTENSION));
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < files.Length; ii++)
@@ -56,7 +56,7 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.RemoveMenu();
 
-            string parentPath = sosMode ? DataManager.RESCUE_IN_PATH + DataManager.SOS_PATH : DataManager.RESCUE_OUT_PATH + DataManager.AOK_PATH;
+            string parentPath = sosMode ? PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER) : PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER);
             files = Directory.GetFiles(parentPath, "*" + (sosMode ? DataManager.SOS_EXTENSION : DataManager.AOK_EXTENSION));
 
             if (files.Length > 0)

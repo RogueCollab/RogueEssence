@@ -50,7 +50,7 @@ namespace RogueEssence.Dev.ViewModels
             ModsNodeViewModel baseNode = new ModsNodeViewModel(null, getModName(""), "");
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             foreach (string modPath in modsPath)
-                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(modPath), modPath));
+                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(modPath), Path.Combine(PathMod.MODS_FOLDER, getModName(modPath))));
             Mods.Add(baseNode);
         }
 
@@ -126,7 +126,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
 
-            ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(chosenNode.FullPath, PathMod.MODS_PATH, newName));
+            ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(chosenNode.FullPath, PathMod.MODS_FOLDER, newName));
             //add all asset folders
             Directory.CreateDirectory(newNode.FullPath);
             //add Strings
@@ -167,6 +167,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (path == "")
                 return "[None]";
+
+            //TODO: allow for multi-tiered mods
             return Path.GetFileName(path);
         }
     }
