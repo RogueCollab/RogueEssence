@@ -12,8 +12,9 @@ namespace RogueEssence.Dev
     [Serializable]
     public abstract class CharSheetOp
     {
+        public abstract int[] Anims { get; }
         public abstract string Name { get; }
-        public abstract void Apply(CharSheet sheet);
+        public abstract void Apply(CharSheet sheet, int anim);
     }
 
 }

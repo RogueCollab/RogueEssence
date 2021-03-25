@@ -60,6 +60,9 @@
     <Compile Update="Views\DevForm\DevTabMods.axaml.cs">
       <DependentUpon>DevTabMods.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\DialogBoxes\AnimChoiceWindow.axaml.cs">
+      <DependentUpon>AnimChoiceWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\DialogBoxes\RenameWindow.axaml.cs">
       <DependentUpon>RenameWindow.axaml</DependentUpon>
     </Compile>
