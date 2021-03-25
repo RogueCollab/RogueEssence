@@ -127,9 +127,23 @@ namespace RogueEssence.Dev.ViewModels
                 return;
             }
 
+            int[] animOptions = op.Anims;
+            int chosenAnim = -1;
+            if (animOptions.Length > 0)
+            {
+                AnimChoiceWindow window = new AnimChoiceWindow();
+                AnimChoiceViewModel viewModel = new AnimChoiceViewModel(animOptions);
+                window.DataContext = viewModel;
+
+                bool animResult = await window.ShowDialog<bool>(parent);
+                if (!animResult)
+                    return;
+                chosenAnim = animOptions[viewModel.ChosenAnim];
+            }
+
             CharSheet sheet = GraphicsManager.GetChara(currentForm);
 
-            op.Apply(sheet);
+            op.Apply(sheet, chosenAnim);
 
             //load data
             Dictionary<MonsterID, byte[]> data = LoadSpeciesData(currentForm.Species);

@@ -5,10 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Class="RogueEssence.Dev.Views.RenameWindow"
-        Title="Name" Width="200" Height="100">
+        x:Class="RogueEssence.Dev.Views.AnimChoiceWindow"
+        Title="Anim" Width="200" Height="100">
   <Design.DataContext>
-    <vm:RenameViewModel/>
+    <vm:AnimChoiceViewModel/>
   </Design.DataContext>
   <Grid Margin="4" >
     <Grid.RowDefinitions>
@@ -19,7 +19,7 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
+    <ComboBox Items="{Binding Anims}" SelectedIndex="{Binding ChosenAnim}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
     <Button Click="btnOK_Click" Margin="4" Grid.Row="1" Grid.Column="0">OK</Button>
     <Button Click="btnCancel_Click" Margin="4" Grid.Row="1" Grid.Column="1">Cancel</Button>
   </Grid>

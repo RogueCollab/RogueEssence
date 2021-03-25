@@ -723,6 +723,11 @@ namespace RogueEssence.Content
 
         }
 
+        public void RemoveUnused()
+        {
+
+        }
+
         public void CollapseOffsets()
         {
             int maxWidth = 0;
@@ -1292,7 +1297,7 @@ namespace RogueEssence.Content
 
         //need a way to determine frame the old fashioned way,
         //however, also need a way to determine frame for an animation playing at the true specified speed
-        public void DrawChar(SpriteBatch spriteBatch, int type, Dir8 dir, Vector2 pos, DetermineFrame frameMethod, Color color)
+        public void DrawChar(SpriteBatch spriteBatch, int type, bool truncateDash, Dir8 dir, Vector2 pos, DetermineFrame frameMethod, Color color)
         {
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
@@ -1300,13 +1305,19 @@ namespace RogueEssence.Content
                 CharAnimSequence seq = group.SeqAtDir(dir);
                 int frameNum = frameMethod(seq.Frames);
                 CharAnimFrame frame = seq.Frames[frameNum];
-                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
-                DrawTile(spriteBatch, pos + AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset).ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                Loc adjustedOffset = frame.Offset;
+                if (truncateDash)
+                {
+                    int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                    adjustedOffset = AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset);
+                }
+
+                DrawTile(spriteBatch, pos + adjustedOffset.ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
             }
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
         }
-        public Loc GetActionPoint(int type, Dir8 dir, ActionPointType pointType, DetermineFrame frameMethod)
+        public Loc GetActionPoint(int type, bool truncateDash, Dir8 dir, ActionPointType pointType, DetermineFrame frameMethod)
         {
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
@@ -1316,7 +1327,7 @@ namespace RogueEssence.Content
                 CharAnimFrame frame = frames[frameNum];
                 int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
                 if (pointType == ActionPointType.Shadow)
-                    return AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].ShadowOffset, frame.ShadowOffset);
+                    return truncateDash ? AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].ShadowOffset, frame.ShadowOffset) : frame.ShadowOffset;
 
                 OffsetData offset = OffsetData[frame.Frame.Y * TotalX + frame.Frame.X];
                 Loc chosenLoc = Loc.Zero;
@@ -1335,20 +1346,25 @@ namespace RogueEssence.Content
                         chosenLoc = frame.Flip ? offset.RightHandFlip : offset.RightHand;
                         break;
                 }
-                return AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].Offset, frame.Offset) + chosenLoc;
+                return (truncateDash ? AdjustOffset(type, group.RushFrame, frameNum, frames[trueRush].Offset, frame.Offset) : frame.Offset) + chosenLoc;
             }
             return Loc.Zero;
         }
 
-        public void DrawCharFrame(SpriteBatch spriteBatch, int type, Dir8 dir, Vector2 pos, int frameNum, Color color)
+        public void DrawCharFrame(SpriteBatch spriteBatch, int type, bool truncateDash , Dir8 dir, Vector2 pos, int frameNum, Color color)
         {
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
                 CharAnimSequence seq = group.SeqAtDir(dir);
                 CharAnimFrame frame = seq.Frames[frameNum];
-                int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
-                DrawTile(spriteBatch, pos + AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset).ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+                Loc adjustedOffset = frame.Offset;
+                if (truncateDash)
+                {
+                    int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                    adjustedOffset = AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset);
+                }
+                DrawTile(spriteBatch, pos + adjustedOffset.ToVector2(), frame.Frame.X, frame.Frame.Y, color, frame.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
             }
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
