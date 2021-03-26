@@ -23,6 +23,8 @@ namespace RogueEssence.Ground
         }
         public static GroundScene Instance { get { return instance; } }
 
+        public int DebugEmote;
+
         public GroundChar FocusedCharacter
         {
             get
@@ -46,6 +48,8 @@ namespace RogueEssence.Ground
 
         private IEnumerator<YieldInstruction> test()
         {
+            DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
+
             //string targetUUID = "";
             //yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ContactInputMenu((uuid) => targetUUID = uuid)));
 
@@ -312,10 +316,35 @@ namespace RogueEssence.Ground
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
-            }
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.CurrentForm);
+                Color frameColor = Color.White;
+                string animName = GraphicsManager.Actions[anim].Name;
+                int resultAnim = charSheet.GetReferencedAnimIndex(anim);
+                if (resultAnim == -1)
+                    frameColor = Color.Gray;
+                else if (resultAnim != anim)
+                {
+                    animName += "->" + GraphicsManager.Actions[resultAnim].Name;
+                    frameColor = Color.Yellow;
+                }
 
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("{0}:{1}:{2:D2}", animName, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
+
+                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm);
+                sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
+                frameColor = Color.White;
+                string emoteName = GraphicsManager.Emotions[DebugEmote].Name;
+                int resultEmote = sheet.GetReferencedEmoteIndex(DebugEmote);
+                if (resultEmote == -1)
+                    frameColor = Color.Gray;
+                else if (resultEmote != DebugEmote)
+                {
+                    emoteName += "->" + GraphicsManager.Emotions[resultEmote].Name;
+                    frameColor = Color.Yellow;
+                }
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
+            }
         }
 
 
