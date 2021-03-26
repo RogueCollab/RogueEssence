@@ -480,7 +480,9 @@ namespace RogueEssence.Content
                 }
                 offsetTex.Dispose();
 
-                return new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
+                CharSheet charSheet = new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
+                charSheet.Collapse(false);
+                return charSheet;
             }
             else if (File.Exists(path + "AnimData.xml"))
             {
@@ -723,13 +725,27 @@ namespace RogueEssence.Content
 
         }
 
-        public void RemoveUnused()
+        /// <summary>
+        /// Collapses duplicate frames together, and removes extra whitespace.
+        /// </summary>
+        /// <param name="ignoreOffsets">If turned on, frames with identical graphics and different offsets are treated as duplicates.</param>
+        public void Collapse(bool ignoreOffsets)
         {
+            int[] usedFrames = new int[OffsetData.Count];
+            foreach (int key in AnimData.Keys)
+            {
+                CharAnimGroup group = AnimData[key];
+                foreach (CharAnimSequence seq in group.Sequences)
+                {
+                    foreach (CharAnimFrame frame in seq.Frames)
+                    {
+                        Loc frameFrom = frame.Frame;
+                        int fromIndex = frameFrom.Y * TotalX + frameFrom.X;
+                        usedFrames[fromIndex] = 1;
+                    }
+                }
+            }
 
-        }
-
-        public void CollapseOffsets()
-        {
             int maxWidth = 0;
             int maxHeight = 0;
 
@@ -739,30 +755,37 @@ namespace RogueEssence.Content
             //get all frames
             for (int kk = 0; kk < OffsetData.Count; kk++)
             {
-                int xx = kk % TotalX;
-                int yy = kk / TotalX;
-                Rectangle tileRect = new Rectangle(xx * TileWidth, yy * TileHeight, TileWidth, TileHeight);
-                Rectangle imgCoveredRect = GetCoveredRect(baseTexture, tileRect);
-                if (imgCoveredRect.Width <= 0)
-                    imgCoveredRect = new Rectangle(TileWidth / 2, TileHeight / 2, 1, 1);
+                if (usedFrames[kk] > 0)
+                {
+                    usedFrames[kk] = frames.Count;
 
-                //first blit, then edit the rect sizes
-                Color[] frameTex = BaseSheet.GetData(baseTexture, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height);
-                //the final tile size must be able to contain this image
-                maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
-                maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
+                    int xx = kk % TotalX;
+                    int yy = kk / TotalX;
+                    Rectangle tileRect = new Rectangle(xx * TileWidth, yy * TileHeight, TileWidth, TileHeight);
+                    Rectangle imgCoveredRect = GetCoveredRect(baseTexture, tileRect);
+                    if (imgCoveredRect.Width <= 0)
+                        imgCoveredRect = new Rectangle(TileWidth / 2, TileHeight / 2, 1, 1);
 
-                OffsetData offsets = OffsetData[kk];
+                    //first blit, then edit the rect sizes
+                    Color[] frameTex = BaseSheet.GetData(baseTexture, xx * TileWidth + imgCoveredRect.X, yy * TileHeight + imgCoveredRect.Y, imgCoveredRect.Width, imgCoveredRect.Height);
+                    //the final tile size must be able to contain this image
+                    maxWidth = Math.Max(maxWidth, imgCoveredRect.Width);
+                    maxHeight = Math.Max(maxHeight, imgCoveredRect.Height);
 
-                //get the farthest that the offsets can cover, relative to the image
-                Rectangle offsetCoveredRect = offsets.GetCoveredRect();
-                Rectangle centeredOffsetRect = centerBounds(offsetCoveredRect);
+                    OffsetData offsets = OffsetData[kk];
 
-                //the final tile size must be able to contain the offsets
-                maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
-                maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
+                    //get the farthest that the offsets can cover, relative to the image
+                    Rectangle offsetCoveredRect = offsets.GetCoveredRect();
+                    Rectangle centeredOffsetRect = centerBounds(offsetCoveredRect);
 
-                frames.Add((frameTex, imgCoveredRect, offsets));
+                    //the final tile size must be able to contain the offsets
+                    maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
+                    maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
+
+                    frames.Add((frameTex, imgCoveredRect, offsets));
+                }
+                else
+                    usedFrames[kk] = -1;
             }
 
             //make frame sizes even
@@ -771,7 +794,7 @@ namespace RogueEssence.Content
 
             CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
             List<(Color[] img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Color[], Rectangle, OffsetData)>();
-            mapDuplicates(frames, finalFrames, frameMap, false);
+            mapDuplicates(frames, finalFrames, frameMap, !ignoreOffsets);
 
             int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
             Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
@@ -797,7 +820,7 @@ namespace RogueEssence.Content
                     foreach (CharAnimFrame frame in seq.Frames)
                     {
                         Loc frameFrom = frame.Frame;
-                        int fromIndex = frameFrom.Y * TotalX + frameFrom.X;
+                        int fromIndex = usedFrames[frameFrom.Y * TotalX + frameFrom.X];
                         CharAnimFrame mapFrame = frameMap[fromIndex];
                         frame.Flip ^= mapFrame.Flip;
                         int finalIndex = mapFrame.Frame.X;
@@ -1393,42 +1416,32 @@ namespace RogueEssence.Content
                 return 0;
         }
 
-        public bool HasOwnAnim(int type)
-        {
-            CharAnimGroup group;
-            if (!AnimData.TryGetValue(type, out group))
-                return false;
-            return group.CopyOf == -1;
-        }
-
-        public bool IsAnimCopied(int type)
-        {
-            foreach (int otherType in AnimData.Keys)
-            {
-                CharAnimGroup group = AnimData[otherType];
-                if (group.CopyOf == type)
-                    return true;
-            }
-            return false;
-        }
-
-        private CharAnimGroup getReferencedAnim(int type)
+        public int GetReferencedAnimIndex(int type)
         {
             int fallbackIndex = -1;
             CharFrameType actionData = GraphicsManager.Actions[type];
-            CharAnimGroup group;
-            while (!AnimData.TryGetValue(type, out group))
+            while (!AnimData.ContainsKey(type))
             {
                 fallbackIndex++;
                 if (fallbackIndex < actionData.Fallbacks.Count)
                     type = actionData.Fallbacks[fallbackIndex];
                 else
-                    return null;
+                    return -1;
             }
 
-            while (group.CopyOf > -1)
-                group = AnimData[group.CopyOf];
-            return group;
+            while (AnimData[type].CopyOf > -1)
+                type = AnimData[type].CopyOf;
+
+            return type;
+        }
+
+        private CharAnimGroup getReferencedAnim(int type)
+        {
+            type = GetReferencedAnimIndex(type);
+            if (type > -1)
+                return AnimData[type];
+            else
+                return null;
         }
 
         public int GetTotalTime(int type, Dir8 dir)

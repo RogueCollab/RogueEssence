@@ -192,7 +192,7 @@ namespace RogueEssence.Dungeon
             {
                 //For Test
                 DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
-                LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote]));
+                LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote].Name));
                 //BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
                 //ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
                 //ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
@@ -1230,9 +1230,6 @@ namespace RogueEssence.Dungeon
             base.DrawDebug(spriteBatch);
             if (FocusedCharacter != null)
             {
-                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.Appearance);
-                sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
-
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.CharLoc.X, FocusedCharacter.CharLoc.Y), null, DirV.Up, DirH.Right, Color.White);
 
@@ -1244,18 +1241,36 @@ namespace RogueEssence.Dungeon
 
                 CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
                 Color frameColor = Color.White;
-                if (charSheet.IsAnimCopied(anim))
-                    frameColor = Color.Yellow;
-                if (!charSheet.HasOwnAnim(anim))
+                string animName = GraphicsManager.Actions[anim].Name;
+                int resultAnim = charSheet.GetReferencedAnimIndex(anim);
+                if (resultAnim == -1)
                     frameColor = Color.Gray;
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("{0}:{1}:{2}", GraphicsManager.Actions[anim].Name, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
+                else if (resultAnim != anim)
+                {
+                    animName += "->" + GraphicsManager.Actions[resultAnim].Name;
+                    frameColor = Color.Yellow;
+                }
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("{0}:{1}:{2:D2}", animName, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
 
+                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm);
+                sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
+                frameColor = Color.White;
+                string emoteName = GraphicsManager.Emotions[DebugEmote].Name;
+                int resultEmote = sheet.GetReferencedEmoteIndex(DebugEmote);
+                if (resultEmote == -1)
+                    frameColor = Color.Gray;
+                else if (resultEmote != DebugEmote)
+                {
+                    emoteName += "->" + GraphicsManager.Emotions[resultEmote].Name;
+                    frameColor = Color.Yellow;
+                }
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
             }
 
             if (ZoneManager.Instance.CurrentMap != null)
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
-            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 102, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 102, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
+            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 112, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
 
             //if (GodMode)
             //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "God Mode", null, DirV.Up, DirH.Right, Color.LightYellow);
