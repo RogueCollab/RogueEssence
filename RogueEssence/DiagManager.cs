@@ -191,7 +191,11 @@ namespace RogueEssence
                 }
 
 
-                Debug.Write(errorMsg);
+#if DEBUG
+                Debug.WriteLine(errorMsg);
+#else
+                Console.WriteLine(errorMsg);
+#endif
 
                 try
                 {

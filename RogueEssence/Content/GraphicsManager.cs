@@ -346,7 +346,8 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(ex, false);
+                throw;
             }
         }
 

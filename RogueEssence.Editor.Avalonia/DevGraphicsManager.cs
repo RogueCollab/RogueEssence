@@ -24,8 +24,15 @@ namespace RogueEssence.Dev
             CharSheetOps = new List<CharSheetOp>();
             foreach (string path in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
-                CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
-                CharSheetOps.Add(newOp);
+                try
+                {
+                    CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
+                    CharSheetOps.Add(newOp);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
             }
 
 
