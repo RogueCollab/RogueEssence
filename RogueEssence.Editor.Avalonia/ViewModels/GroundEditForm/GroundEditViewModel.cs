@@ -163,6 +163,13 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        public void mnuClearLayer_Click()
+        {
+            lock (GameBase.lockObj)
+                DoClearLayer();
+        }
+
+
         public async void mnuImportFromTileset_Click()
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -317,6 +324,21 @@ namespace RogueEssence.Dev.ViewModels
             Textures.TileBrowser.SelectTileset(sheetName);
         }
 
+        private void DoClearLayer()
+        {
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+
+            //set tilesets
+            for (int yy = 0; yy < ZoneManager.Instance.CurrentGround.Height; yy++)
+            {
+                for (int xx = 0; xx < ZoneManager.Instance.CurrentGround.Width; xx++)
+                    ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile();
+            }
+
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+        }
+
         private void DoImportTileset(string sheetName)
         {
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
@@ -324,7 +346,7 @@ namespace RogueEssence.Dev.ViewModels
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
-            ZoneManager.Instance.CurrentGround.ResizeJustified(newSize.X, newSize.Y, Dir8.UpLeft);
+            ZoneManager.Instance.CurrentGround.ResizeJustified(Math.Max(newSize.X, ZoneManager.Instance.CurrentGround.Width), Math.Max(newSize.Y, ZoneManager.Instance.CurrentGround.Height), Dir8.UpLeft);
 
             //set tilesets
             for (int yy = 0; yy < newSize.Y; yy++)
@@ -339,6 +361,51 @@ namespace RogueEssence.Dev.ViewModels
                         tile.Layers.Add(new TileLayer(newFrame));
 
                     ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = tile;
+                }
+            }
+
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+        }
+
+        //TODO: standardize adding of frames
+        private void DoImportTilesetToFrames(string sheetName)
+        {
+            Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
+
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+
+            ZoneManager.Instance.CurrentGround.ResizeJustified(Math.Max(newSize.X, ZoneManager.Instance.CurrentGround.Width), Math.Max(newSize.Y, ZoneManager.Instance.CurrentGround.Height), Dir8.UpLeft);
+
+            //count highest frames
+            int maxFrames = 0;
+            for (int yy = 0; yy < newSize.Y; yy++)
+            {
+                for (int xx = 0; xx < newSize.X; xx++)
+                {
+                    AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy];
+                    if (tile.Layers.Count > 0)
+                        maxFrames = Math.Max(tile.Layers[0].Frames.Count, maxFrames);
+                }
+            }
+
+            //set tilesets
+            for (int yy = 0; yy < newSize.Y; yy++)
+            {
+                for (int xx = 0; xx < newSize.X; xx++)
+                {
+                    AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy];
+                    TileFrame newFrame = new TileFrame(new Loc(xx, yy), sheetName);
+                    //check for emptiness
+                    long tilePos = GraphicsManager.TileIndex.GetPosition(newFrame.Sheet, newFrame.TexLoc);
+                    if (tilePos > 0)
+                    {
+                        if (tile.Layers.Count == 0)
+                            tile.Layers.Add(new TileLayer(60));
+                        while (tile.Layers[0].Frames.Count < maxFrames)
+                            tile.Layers[0].Frames.Add(TileFrame.Empty);
+                        tile.Layers[0].Frames.Add(newFrame);
+                    }
                 }
             }
 
