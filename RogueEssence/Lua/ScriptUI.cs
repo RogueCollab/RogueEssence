@@ -201,7 +201,7 @@ namespace RogueEssence.Script
         /// <param name="emo"></param>
         public void SetSpeakerEmotion(string emo)
         {
-            int emoteIndex = GraphicsManager.Emotions.FindIndex((string element) => element == emo);
+            int emoteIndex = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name == emo);
             m_curspeakerEmo.Emote = emoteIndex;
         }
 

@@ -49,7 +49,7 @@ namespace RogueEssence.Content
 
             Loc drawLoc = GetDrawLoc(offset);
             CharSheet sheet = GraphicsManager.GetChara(Appearance);
-            sheet.DrawCharFrame(spriteBatch, CurrentAnim, Direction, drawLoc.ToVector2(), Frame, Color.White * ((float)Alpha / 255));
+            sheet.DrawCharFrame(spriteBatch, CurrentAnim, true, Direction, drawLoc.ToVector2(), Frame, Color.White * ((float)Alpha / 255));
         }
 
         public override Loc GetDrawLoc(Loc offset)

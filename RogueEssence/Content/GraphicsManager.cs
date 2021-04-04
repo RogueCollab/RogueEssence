@@ -113,7 +113,7 @@ namespace RogueEssence.Content
         public static int ScreenHeight;
         public static string MoneySprite;
         public static int PortraitSize;
-        public static List<string> Emotions;
+        public static List<EmotionType> Emotions;
         public static int SOSEmotion;
         public static int AOKEmotion;
         public static List<CharFrameType> Actions;
@@ -274,10 +274,28 @@ namespace RogueEssence.Content
                 XmlNode moneySprite = xmldoc.DocumentElement.SelectSingleNode("MoneySprite");
                 MoneySprite = moneySprite.InnerText;
 
-                Emotions = new List<string>();
-                XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
-                foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
-                    Emotions.Add(emotion.InnerText);
+                {
+                    Emotions = new List<EmotionType>();
+                    List<List<string>> fallbacks = new List<List<string>>();
+                    XmlNode emotions = xmldoc.DocumentElement.SelectSingleNode("Emotions");
+                    foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
+                    {
+                        XmlNode emotionName = emotion.SelectSingleNode("Name");
+                        Emotions.Add(new EmotionType(emotionName.InnerText));
+                        List<string> emotionFallbacks = new List<string>();
+                        foreach (XmlNode fallback in emotion.SelectNodes("Fallback"))
+                            emotionFallbacks.Add(fallback.InnerText);
+                        fallbacks.Add(emotionFallbacks);
+                    }
+                    for (int ii = 0; ii < fallbacks.Count; ii++)
+                    {
+                        foreach (string fallback in fallbacks[ii])
+                        {
+                            int fallbackIndex = Emotions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                            Emotions[ii].Fallbacks.Add(fallbackIndex);
+                        }
+                    }
+                }
 
                 XmlNode sosEmotion = xmldoc.DocumentElement.SelectSingleNode("SOSEmotion");
                 SOSEmotion = Int32.Parse(sosEmotion.InnerText);
@@ -285,25 +303,27 @@ namespace RogueEssence.Content
                 XmlNode aokEmotion = xmldoc.DocumentElement.SelectSingleNode("AOKEmotion");
                 AOKEmotion = Int32.Parse(aokEmotion.InnerText);
 
-                Actions = new List<CharFrameType>();
-                List<List<string>> fallbacks = new List<List<string>>();
-                XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
-                foreach (XmlNode action in actions.SelectNodes("Action"))
                 {
-                    XmlNode actionName = action.SelectSingleNode("Name");
-                    XmlNode actionDash = action.SelectSingleNode("Dash");
-                    Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
-                    List<string> actionFallbacks = new List<string>();
-                    foreach (XmlNode fallback in action.SelectNodes("Fallback"))
-                        actionFallbacks.Add(fallback.InnerText);
-                    fallbacks.Add(actionFallbacks);
-                }
-                for (int ii = 0; ii < fallbacks.Count; ii++)
-                {
-                    foreach (string fallback in fallbacks[ii])
+                    Actions = new List<CharFrameType>();
+                    List<List<string>> fallbacks = new List<List<string>>();
+                    XmlNode actions = xmldoc.DocumentElement.SelectSingleNode("Actions");
+                    foreach (XmlNode action in actions.SelectNodes("Action"))
                     {
-                        int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
-                        Actions[ii].Fallbacks.Add(fallbackIndex);
+                        XmlNode actionName = action.SelectSingleNode("Name");
+                        XmlNode actionDash = action.SelectSingleNode("Dash");
+                        Actions.Add(new CharFrameType(actionName.InnerText, Boolean.Parse(actionDash.InnerText)));
+                        List<string> actionFallbacks = new List<string>();
+                        foreach (XmlNode fallback in action.SelectNodes("Fallback"))
+                            actionFallbacks.Add(fallback.InnerText);
+                        fallbacks.Add(actionFallbacks);
+                    }
+                    for (int ii = 0; ii < fallbacks.Count; ii++)
+                    {
+                        foreach (string fallback in fallbacks[ii])
+                        {
+                            int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                            Actions[ii].Fallbacks.Add(fallbackIndex);
+                        }
                     }
                 }
 
@@ -326,7 +346,8 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(ex, false);
+                throw;
             }
         }
 
@@ -689,7 +710,7 @@ namespace RogueEssence.Content
             }
         }
 
-        private static CharaIndexNode LoadCharaIndices(string charaDir)
+        public static CharaIndexNode LoadCharaIndices(string charaDir)
         {
             CharaIndexNode fullGuide = null;
             try

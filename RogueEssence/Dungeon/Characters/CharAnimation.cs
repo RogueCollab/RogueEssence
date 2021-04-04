@@ -41,8 +41,8 @@ namespace RogueEssence.Dungeon
         protected FrameTick PrevActionTime;
         protected FrameTick ActionTime;
 
-        private int charFrameType;
-        private CharSheet.DetermineFrame determineFrame;
+        protected int charFrameType { get; private set; }
+        protected CharSheet.DetermineFrame determineFrame { get; private set; }
         protected Dir8 dirOffset;
         protected int opacity;
 
@@ -141,18 +141,18 @@ namespace RogueEssence.Dungeon
 
 
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
         {
             Loc drawLoc = GetDrawLoc(sheet, offset);
             drawLoc.Y -= LocHeight;
             
             //draw sprite at current frame
-            sheet.DrawChar(spriteBatch, charFrameType, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+            sheet.DrawChar(spriteBatch, charFrameType, true, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
         }
-        public Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
+        public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
             Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
-            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
+            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, true, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
         }
 
         private int totalFrameTickFrame(List<CharAnimFrame> frames)
@@ -252,6 +252,20 @@ namespace RogueEssence.Dungeon
             MapLoc = AnimLoc * GraphicsManager.TileSize;
         }
         protected override bool AllowFrameTypeDrawEffects() { return true; }
+
+        public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        {
+            Loc drawLoc = GetDrawLoc(sheet, offset);
+            drawLoc.Y -= LocHeight;
+
+            //draw sprite at current frame
+            sheet.DrawChar(spriteBatch, charFrameType, false, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+        }
+        public override Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
+        {
+            Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
+            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, false, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
+        }
     }
 
     public class CharAnimPose : StaticCharAnimation

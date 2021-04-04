@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {
                     validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).Name.ToLocal() + ": " + dexEntry.Promotions[ii].GetReqString(),
-                        Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET)));
+                        Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET)));
                 }
                 else
                 {
@@ -87,7 +87,7 @@ namespace RogueEssence.Menu
                     if (!hardReq)
                     {
                         validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).Name.ToLocal() + ": " + dexEntry.Promotions[ii].GetReqString(),
-                            Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), Color.Red));
+                            Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET), Color.Red));
                     }
                 }
             }

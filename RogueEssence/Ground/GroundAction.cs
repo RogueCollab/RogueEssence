@@ -69,16 +69,16 @@ namespace RogueEssence.Ground
         }
 
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
         {
             Loc drawLoc = GetDrawLoc(offset, sheet);
             drawLoc.Y -= LocHeight;
             //draw sprite at current frame
-            sheet.DrawChar(spriteBatch, AnimFrameType, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+            sheet.DrawChar(spriteBatch, AnimFrameType, true, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
         }
-        public Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
+        public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
-            return MapLoc + Collider.Size / 2 +  DrawOffset + sheet.GetActionPoint(AnimFrameType, DirExt.AddAngles(CharDir, dirOffset), pointType, FrameMethod);
+            return MapLoc + Collider.Size / 2 +  DrawOffset + sheet.GetActionPoint(AnimFrameType, true, DirExt.AddAngles(CharDir, dirOffset), pointType, FrameMethod);
         }
 
         private int zeroFrame(List<CharAnimFrame> frames)
@@ -122,6 +122,17 @@ namespace RogueEssence.Ground
                 NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, new FrameTick());
         }
 
+        public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        {
+            Loc drawLoc = GetDrawLoc(offset, sheet);
+            drawLoc.Y -= LocHeight;
+            //draw sprite at current frame
+            sheet.DrawChar(spriteBatch, AnimFrameType, false, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+        }
+        public override Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
+        {
+            return MapLoc + Collider.Size / 2 + DrawOffset + sheet.GetActionPoint(AnimFrameType, false, DirExt.AddAngles(CharDir, dirOffset), pointType, FrameMethod);
+        }
     }
 
     [Serializable]

@@ -13,13 +13,14 @@ namespace RogueEssence.Dev
     [Serializable]
     public class CharSheetDummyOp : CharSheetOp
     {
+        public override int[] Anims { get { return new int[0]; } }
         private string name;
         public override string Name { get { return name; } }
         public CharSheetDummyOp(string name)
         {
             this.name = name;
         }
-        public override void Apply(CharSheet sheet) { }
+        public override void Apply(CharSheet sheet, int anim) { }
     }
 
 }

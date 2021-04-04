@@ -6,6 +6,17 @@ using System.IO;
 
 namespace RogueEssence.Content
 {
+    public class EmotionType
+    {
+        public string Name;
+        public List<int> Fallbacks;
+
+        public EmotionType(string name)
+        {
+            Name = name;
+            Fallbacks = new List<int>();
+        }
+    }
 
     public struct PortraitData
     {
@@ -69,7 +80,7 @@ namespace RogueEssence.Content
             List<Texture2D> sheets = new List<Texture2D>();
             for (int ii = 0; ii < GraphicsManager.Emotions.Count; ii++)
             {
-                string emotion = GraphicsManager.Emotions[ii];
+                string emotion = GraphicsManager.Emotions[ii].Name;
                 if (File.Exists(baseDirectory + emotion + ".png"))
                 {
                     bool hasReverse = File.Exists(baseDirectory + emotion + "^.png");
@@ -114,7 +125,7 @@ namespace RogueEssence.Content
         {
             foreach (int emoteIndex in sheet.emoteMap.Keys)
             {
-                string emotion = GraphicsManager.Emotions[emoteIndex];
+                string emotion = GraphicsManager.Emotions[emoteIndex].Name;
 
                 int ii = sheet.emoteMap[emoteIndex].Position;
                 {
@@ -184,12 +195,27 @@ namespace RogueEssence.Content
             }
         }
 
+        public int GetReferencedEmoteIndex(int type)
+        {
+            int fallbackIndex = -1;
+            EmotionType emoteData = GraphicsManager.Emotions[type];
+            while (!emoteMap.ContainsKey(type))
+            {
+                fallbackIndex++;
+                if (fallbackIndex < emoteData.Fallbacks.Count)
+                    type = emoteData.Fallbacks[fallbackIndex];
+                else
+                    return -1;
+            }
+
+            return type;
+        }
+
         //need a way to determine frame the old fashioned way,
         //however, also need a way to determine frame for an animation playing at the true specified speed
         public void DrawPortrait(SpriteBatch spriteBatch, Vector2 pos, EmoteStyle type)
         {
-            if (!emoteMap.ContainsKey(type.Emote))
-                type.Emote = 0;
+            type.Emote = GetReferencedEmoteIndex(type.Emote);
 
             if (emoteMap.ContainsKey(type.Emote))
             {
