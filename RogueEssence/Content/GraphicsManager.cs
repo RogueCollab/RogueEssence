@@ -710,7 +710,7 @@ namespace RogueEssence.Content
             }
         }
 
-        private static CharaIndexNode LoadCharaIndices(string charaDir)
+        public static CharaIndexNode LoadCharaIndices(string charaDir)
         {
             CharaIndexNode fullGuide = null;
             try
