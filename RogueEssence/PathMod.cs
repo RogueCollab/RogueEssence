@@ -46,7 +46,7 @@ namespace RogueEssence
         }
         public static string NoMod(string basePath)
         {
-            return hardMod("", basePath);
+            return Path.Join(ExePath, basePath);
         }
         private static string hardMod(string mod, string basePath)
         {
