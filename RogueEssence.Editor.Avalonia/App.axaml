@@ -11,10 +11,11 @@
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
         <Style Selector="TabItem">
+            <Setter Property="Foreground" Value="Black" />
             <Setter Property="FontSize" Value="12"/>
         </Style>
-      <Style Selector="DataGridRow">
-        <Setter Property="Background" Value="#FFFFFF"/>
-      </Style>
+        <Style Selector="DataGridRow">
+            <Setter Property="Background" Value="#FFFFFF"/>
+        </Style>
     </Application.Styles>
 </Application>
