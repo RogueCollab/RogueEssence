@@ -6,7 +6,9 @@
 <ScreenHeight>240</ScreenHeight>
 <MoneySprite>Money</MoneySprite>
 <Emotions>
-  <Emotion>Normal</Emotion>
+  <Emotion>
+    <Name>Normal</Name>
+  </Emotion>
 </Emotions>
 <SOSEmotion>0</SOSEmotion>
 <AOKEmotion>0</AOKEmotion>

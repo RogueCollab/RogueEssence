@@ -12,7 +12,6 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 using SDL2;
 #endregion
