@@ -346,7 +346,8 @@ namespace RogueEssence.Content
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(ex, false);
+                throw;
             }
         }
 
@@ -709,7 +710,7 @@ namespace RogueEssence.Content
             }
         }
 
-        private static CharaIndexNode LoadCharaIndices(string charaDir)
+        public static CharaIndexNode LoadCharaIndices(string charaDir)
         {
             CharaIndexNode fullGuide = null;
             try

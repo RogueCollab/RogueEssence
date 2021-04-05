@@ -166,6 +166,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void mnuClearLayer_Click()
+        {
+            lock (GameBase.lockObj)
+                DoClearLayer();
+        }
+
 
         public async void mnuImportFromTileset_Click()
         {
@@ -290,6 +296,21 @@ namespace RogueEssence.Dev.ViewModels
             Textures.TileBrowser.SelectTileset(sheetName);
             Terrain.TileBrowser.UpdateTilesList();
             Terrain.TileBrowser.SelectTileset(sheetName);
+        }
+
+        private void DoClearLayer()
+        {
+            DiagManager.Instance.LoadMsg = "Loading Map...";
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+
+            //set tilesets
+            for (int yy = 0; yy < ZoneManager.Instance.CurrentMap.Height; yy++)
+            {
+                for (int xx = 0; xx < ZoneManager.Instance.CurrentMap.Width; xx++)
+                    ZoneManager.Instance.CurrentMap.Tiles[xx][yy].FloorTile = new AutoTile();
+            }
+
+            DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
         }
 
         private void DoImportTileset(string sheetName)

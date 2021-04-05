@@ -162,7 +162,7 @@ namespace RogueEssence
                             catch (Exception ex)
                             {
                                 DiagManager.Instance.LogError(ex);
-                                throw ex;
+                                throw;
                             }
 
                             while (!DiagManager.Instance.DevEditor.LoadComplete)

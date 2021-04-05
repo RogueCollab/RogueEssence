@@ -22,15 +22,28 @@ namespace RogueEssence.Dev
         public static void Init()
         {
             CharSheetOps = new List<CharSheetOp>();
+
+            if (!Directory.Exists(Path.Combine(PathMod.RESOURCE_PATH, "Extensions")))
+                Directory.CreateDirectory(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"));
+            if (!Directory.Exists(Path.Combine(PathMod.RESOURCE_PATH, "UI")))
+                Directory.CreateDirectory(Path.Combine(PathMod.RESOURCE_PATH, "UI"));
+
             foreach (string path in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
-                CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
-                CharSheetOps.Add(newOp);
+                try
+                {
+                    CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
+                    CharSheetOps.Add(newOp);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
             }
 
 
-            IconO = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI/O.png"));
-            IconX = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI/X.png"));
+            IconO = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "O.png"));
+            IconX = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "X.png"));
 
             tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
