@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
             if (!Data.DataManager.Instance.DataIndices[Data.DataManager.DataType.Skill].Entries[effect.Index].Released)
                 return false;
 
-            return entry.TeachSkills.Contains(new Data.LearnableSkill(effect.Index));
+            return entry.CanLearnSkill(effect.Index);
         }
 
         protected override void ChoiceChanged()

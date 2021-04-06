@@ -53,19 +53,10 @@ namespace RogueEssence.Data
 
         public List<LevelUpSkill> LevelSkills;
 
-        public List<LearnableSkill> TeachSkills;
-
-        public List<LearnableSkill> SharedSkills;
-
-        public List<LearnableSkill> SecretSkills;
-
         public BaseMonsterForm()
         {
             FormName = new LocalText();
             LevelSkills = new List<LevelUpSkill>();
-            TeachSkills = new List<LearnableSkill>();
-            SharedSkills = new List<LearnableSkill>();
-            SecretSkills = new List<LearnableSkill>();
 
         }
 
@@ -102,6 +93,7 @@ namespace RogueEssence.Data
         public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
         public abstract int GetExp(int level, int recipientLv);
+        public abstract bool CanLearnSkill(int skill);
 
         public abstract int RollSkin(IRandom rand);
         public abstract int GetPersonalityType(int discriminator);

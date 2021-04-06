@@ -15,6 +15,7 @@ namespace RogueEssence.Data
 
         public LocalText Name { get; set; }
         public bool MenuName;
+        public bool CarryOver;
         public LocalText Desc { get; set; }
 
         public bool Released { get; set; }

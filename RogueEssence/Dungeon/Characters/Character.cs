@@ -327,6 +327,9 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < keys.Count; ii++)
             {
                 StatusEffect status = StatusEffects[keys[ii]];
+                StatusData data = (StatusData)status.GetData();
+                if (data.CarryOver)
+                    continue;
                 StatusEffects.Remove(keys[ii]);
                 //need to remove the backreferences on their targets
                 removeTargetStatusRef(status);
