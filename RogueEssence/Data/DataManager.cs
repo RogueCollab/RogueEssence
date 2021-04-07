@@ -108,7 +108,8 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
-        public List<int> StartChars;
+        public List<MonsterID> StartChars;
+        public string StartName;
         public List<string> StartTeams;
         public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
@@ -298,7 +299,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    StartChars = new List<int>();
+                    StartChars = new List<MonsterID>();
                     StartTeams = new List<string>();
 
                     XmlDocument xmldoc = new XmlDocument();
@@ -306,7 +307,19 @@ namespace RogueEssence.Data
 
                     XmlNode startChars = xmldoc.DocumentElement.SelectSingleNode("StartChars");
                     foreach (XmlNode startChar in startChars.SelectNodes("StartChar"))
-                        StartChars.Add(Int32.Parse(startChar.InnerText));
+                    {
+                        XmlNode startSpecies = startChar.SelectSingleNode("Species");
+                        int species = Int32.Parse(startSpecies.InnerText);
+                        XmlNode startForm = startChar.SelectSingleNode("Form");
+                        int form = Int32.Parse(startForm.InnerText);
+                        XmlNode startSkin = startChar.SelectSingleNode("Skin");
+                        int skin = Int32.Parse(startSkin.InnerText);
+                        XmlNode startGender = startChar.SelectSingleNode("Gender");
+                        Gender gender = (Gender)Enum.Parse(typeof(Gender), startGender.InnerText);
+                        StartChars.Add(new MonsterID(species, form, skin, gender));
+                    }
+                    XmlNode startName = xmldoc.DocumentElement.SelectSingleNode("StartName");
+                    StartName = startName.InnerText;
 
                     XmlNode startTeams = xmldoc.DocumentElement.SelectSingleNode("StartTeams");
                     foreach (XmlNode startTeam in startTeams.SelectNodes("StartTeam"))
@@ -335,8 +348,7 @@ namespace RogueEssence.Data
                     DiagManager.Instance.LogError(ex);
                 }
             }
-            StartChars = new List<int>();
-            StartChars.Add(0);
+            StartChars = new List<MonsterID>();
             StartTeams = new List<string>();
         }
 

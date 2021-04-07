@@ -459,19 +459,19 @@ namespace RogueEssence.Dungeon
         {
             if (ActiveTeam != null)
             {
-                foreach (Character player in ActiveTeam.Players)
+                foreach (Character player in ActiveTeam.EnumerateChars())
                     yield return player;
             }
 
             foreach (Team team in AllyTeams)
             {
-                foreach (Character character in team.Players)
+                foreach (Character character in team.EnumerateChars())
                     yield return character;
             }
 
             foreach (Team team in MapTeams)
             {
-                foreach (Character character in team.Players)
+                foreach (Character character in team.EnumerateChars())
                     yield return character;
             }
         }

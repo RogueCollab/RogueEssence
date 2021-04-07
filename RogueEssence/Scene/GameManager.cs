@@ -727,7 +727,7 @@ namespace RogueEssence
             DataManager.Instance.MsgLog.Clear();
             DataManager.Instance.EndPlay(null, null);
             if (DataManager.Instance.Save == null)
-                newGamePlus(seed);
+                NewGamePlus(seed);
             else
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
 
@@ -737,7 +737,7 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(MoveToZone(DataManager.Instance.Save.NextDest, true));
         }
 
-        private void newGamePlus(ulong seed)
+        public void NewGamePlus(ulong seed)
         {
             try
             {
@@ -756,7 +756,7 @@ namespace RogueEssence
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[0], 0, 0, Gender.Unknown), DataManager.Instance.StartLevel, -1, 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 
