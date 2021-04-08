@@ -65,8 +65,7 @@ namespace RogueEssence.Dungeon
 
         public Dictionary<int, MapStatus> Status;
 
-        public List<SingleCharEvent> PrepareEvents;
-        public List<SingleCharEvent> StartEvents;
+        public ActiveEffect MapEffect;
         public List<SingleCharEvent> CheckEvents;
 
         //if maps are to be separated into their own chunks, these members would be specific to each chunk
@@ -123,9 +122,7 @@ namespace RogueEssence.Dungeon
             Background = new MapBG();
             BlankBG = new AutoTile();
 
-
-            PrepareEvents = new List<SingleCharEvent>();
-            StartEvents = new List<SingleCharEvent>();
+            MapEffect = new ActiveEffect();
             CheckEvents = new List<SingleCharEvent>();
 
             Status = new Dictionary<int, MapStatus>();

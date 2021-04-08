@@ -2,33 +2,44 @@
 using RogueEssence.Dungeon;
 using System.Collections.Generic;
 using RogueElements;
-
+using RogueEssence.Data;
 
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class MapEventsStep<T> : GenStep<T> where T : BaseMapGenContext
+    public class CheckEventStep<T> : GenStep<T> where T : BaseMapGenContext
     {
-
-        public List<SingleCharEvent> PrepareEvents;
-        public List<SingleCharEvent> StartEvents;
         public List<SingleCharEvent> CheckEvents;
 
-        public MapEventsStep()
+        public CheckEventStep()
         {
-            PrepareEvents = new List<SingleCharEvent>();
-            StartEvents = new List<SingleCharEvent>();
             CheckEvents = new List<SingleCharEvent>();
         }
 
         public override void Apply(T map)
         {
-            foreach (SingleCharEvent effect in PrepareEvents)
-                map.Map.PrepareEvents.Add((SingleCharEvent)effect.Clone());
-            foreach (SingleCharEvent effect in StartEvents)
-                map.Map.StartEvents.Add((SingleCharEvent)effect.Clone());
             foreach (SingleCharEvent effect in CheckEvents)
                 map.Map.CheckEvents.Add((SingleCharEvent)effect.Clone());
+        }
+    }
+    [Serializable]
+    public class MapEffectStep<T> : GenStep<T> where T : BaseMapGenContext
+    {
+        public ActiveEffect Effect;
+
+        public MapEffectStep()
+        {
+            Effect = new ActiveEffect();
+        }
+
+        public MapEffectStep(ActiveEffect effect)
+        {
+            Effect = new ActiveEffect();
+        }
+
+        public override void Apply(T map)
+        {
+            map.Map.MapEffect = Effect;
         }
     }
 }

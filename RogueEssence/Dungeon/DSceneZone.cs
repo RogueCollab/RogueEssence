@@ -79,10 +79,6 @@ namespace RogueEssence.Dungeon
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 mapStatus.StartEmitter(Anims);
 
-            //process events before the map fades in
-            foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.PrepareEvents)
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
-
             //Notify script engine
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
         }
@@ -93,9 +89,6 @@ namespace RogueEssence.Dungeon
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
 
             ZoneManager.Instance.CurrentMap.Begun = true;
-            //process map-start events (dialogue, map condition announcement, etc)
-            foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
 
             foreach (Character character in ActiveTeam.EnumerateChars())
                 yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
@@ -109,7 +102,7 @@ namespace RogueEssence.Dungeon
             {
                 //start with universal
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts);
-
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStarts);
 
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 {

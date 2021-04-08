@@ -11,7 +11,6 @@ namespace RogueEssence.Menu
 {
     public class MainStartingMenu : TitledStripMenu
     {
-        public delegate void OnChooseSlot(int slot);
         public SpeakerPortrait Portrait;
         OnChooseSlot chooseAction;
         Action onCancel;

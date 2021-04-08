@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Data;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
@@ -22,11 +23,7 @@ namespace RogueEssence.LevelGen
         public int Width { get { return Map.Width; } }
         public int Height { get { return Map.Height; } }
 
-
-        public List<SingleCharEvent> PrepareEvents { get { return Map.PrepareEvents; } }
-        public List<SingleCharEvent> StartEvents { get { return Map.StartEvents; } }
         public List<SingleCharEvent> CheckEvents { get { return Map.CheckEvents; } }
-
         public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
         public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
         public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
