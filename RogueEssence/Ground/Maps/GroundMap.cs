@@ -463,7 +463,7 @@ namespace RogueEssence.Ground
 
             foreach (GroundChar character in IterateCharacters())
             {
-                character.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TexSize - character.Width, height * TexSize - character.Height, character.MapLoc + texDiff * divSize));
+                character.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TileSize - character.Width, height * TileSize - character.Height, character.MapLoc + texDiff * divSize));
                 character.UpdateFrame();
             }
 

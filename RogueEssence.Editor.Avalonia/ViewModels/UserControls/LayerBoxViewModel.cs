@@ -45,8 +45,10 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
+                int curLayer = chosenLayer;
                 T layer = GetNewLayer();
-                Layers.Add(layer);
+                Layers.Insert(chosenLayer + 1, layer);
+                ChosenLayer = curLayer + 1;
             }
         }
 
@@ -55,7 +57,11 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 if (Layers.Count > 1)
+                {
+                    int curLayer = chosenLayer;
                     Layers.RemoveAt(chosenLayer);
+                    ChosenLayer = Math.Min(curLayer, Layers.Count - 1);
+                }
             }
         }
 

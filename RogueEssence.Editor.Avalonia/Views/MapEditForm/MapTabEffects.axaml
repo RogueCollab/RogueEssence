@@ -16,6 +16,7 @@
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition/>
+      <RowDefinition Height="40"/>
       <RowDefinition/>
     </Grid.RowDefinitions>
     <Grid Grid.Row="0" Grid.Column="0">
@@ -26,8 +27,7 @@
       <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Map Statuses</TextBlock>
       <views:CollectionBox DataContext="{Binding Statuses}" Margin="4" Grid.Row="1"/>
     </Grid>
-    <views:ClassBox DataContext="{Binding MapEffect}" Margin="4,2" Grid.Row="0" Grid.Column="1"/>
-    <Grid Grid.Row="1" Grid.Column="0">
+    <Grid Grid.Row="0" Grid.Column="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="20"/>
         <RowDefinition/>
@@ -35,6 +35,7 @@
       <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Check Events</TextBlock>
       <views:CollectionBox DataContext="{Binding CheckEvents}" Margin="4" Grid.Row="1"/>
     </Grid>
+    <views:ClassBox DataContext="{Binding MapEffect}" Margin="4,2" Grid.Row="1" Grid.Column="0"/>
   </Grid>
 
   
