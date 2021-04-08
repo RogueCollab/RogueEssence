@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Avalonia.VisualTree;
+using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
@@ -22,8 +23,18 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
+        bool doubleclick;
+        public void doubleClickStart(object sender, RoutedEventArgs e)
         {
+            doubleclick = true;
+        }
+
+        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        {
+            if (!doubleclick)
+                return;
+            doubleclick = false;
+
             ViewModels.DictionaryBoxViewModel viewModel = (ViewModels.DictionaryBoxViewModel)DataContext;
             if (viewModel == null)
                 return;

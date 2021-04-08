@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using System;
+using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
@@ -29,8 +30,18 @@ namespace RogueEssence.Dev.Views
             textBox.GetObservable(TextBox.TextProperty).Subscribe(viewModel.txtSearch_TextChanged);
         }
 
-        public void lbxItems_DoubleClick(object sender, RoutedEventArgs e)
+        bool doubleclick;
+        public void doubleClickStart(object sender, RoutedEventArgs e)
         {
+            doubleclick = true;
+        }
+
+        public void lbxItems_DoubleClick(object sender, PointerReleasedEventArgs e)
+        {
+            if (!doubleclick)
+                return;
+            doubleclick = false;
+
             ViewModels.SearchListBoxViewModel viewModel = (ViewModels.SearchListBoxViewModel)DataContext;
             if (viewModel == null)
                 return;

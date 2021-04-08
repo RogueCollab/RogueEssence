@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
+using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
@@ -144,8 +145,18 @@ namespace RogueEssence.Dev.Views
         }
 
 
-        public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
+        bool doubleclick;
+        public void doubleClickStart(object sender, RoutedEventArgs e)
         {
+            doubleclick = true;
+        }
+
+        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        {
+            if (!doubleclick)
+                return;
+            doubleclick = false;
+
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
             int boxIndex = SelectedIndex;
             if (boxIndex > -1)
