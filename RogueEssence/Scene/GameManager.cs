@@ -460,7 +460,6 @@ namespace RogueEssence
                         yield return new WaitForFrames(30);
                         yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(false, ""));
                     }
-                    yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());

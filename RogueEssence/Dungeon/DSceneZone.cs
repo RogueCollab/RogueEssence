@@ -90,9 +90,6 @@ namespace RogueEssence.Dungeon
 
             ZoneManager.Instance.CurrentMap.Begun = true;
 
-            foreach (Character character in ActiveTeam.EnumerateChars())
-                yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
-
             //process player happenings
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.Tactic.Initialize(character);
