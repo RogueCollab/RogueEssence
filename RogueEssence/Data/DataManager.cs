@@ -108,8 +108,7 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
-        public List<MonsterID> StartChars;
-        public string StartName;
+        public List<(MonsterID mon, string name)> StartChars;
         public List<string> StartTeams;
         public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
@@ -299,7 +298,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    StartChars = new List<MonsterID>();
+                    StartChars = new List<(MonsterID, string)>();
                     StartTeams = new List<string>();
 
                     XmlDocument xmldoc = new XmlDocument();
@@ -316,10 +315,12 @@ namespace RogueEssence.Data
                         int skin = Int32.Parse(startSkin.InnerText);
                         XmlNode startGender = startChar.SelectSingleNode("Gender");
                         Gender gender = (Gender)Enum.Parse(typeof(Gender), startGender.InnerText);
-                        StartChars.Add(new MonsterID(species, form, skin, gender));
+
+                        XmlNode startName = startChar.SelectSingleNode("Name");
+                        string name = startName.InnerText;
+
+                        StartChars.Add((new MonsterID(species, form, skin, gender), name));
                     }
-                    XmlNode startName = xmldoc.DocumentElement.SelectSingleNode("StartName");
-                    StartName = startName.InnerText;
 
                     XmlNode startTeams = xmldoc.DocumentElement.SelectSingleNode("StartTeams");
                     foreach (XmlNode startTeam in startTeams.SelectNodes("StartTeam"))
@@ -348,7 +349,7 @@ namespace RogueEssence.Data
                     DiagManager.Instance.LogError(ex);
                 }
             }
-            StartChars = new List<MonsterID>();
+            StartChars = new List<(MonsterID, string)>();
             StartTeams = new List<string>();
         }
 

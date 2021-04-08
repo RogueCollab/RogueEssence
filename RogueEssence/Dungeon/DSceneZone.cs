@@ -102,11 +102,7 @@ namespace RogueEssence.Dungeon
 
             //process player happenings
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
                 character.Tactic.Initialize(character);
-                if (!character.Dead)
-                    yield return CoroutineManager.Instance.StartCoroutine(character.OnMapStart());
-            }
 
             //map starts for map statuses
             EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
@@ -123,6 +119,12 @@ namespace RogueEssence.Dungeon
             };
             foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
+
+            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                if (!character.Dead)
+                    yield return CoroutineManager.Instance.StartCoroutine(character.OnMapStart());
+            }
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
         }

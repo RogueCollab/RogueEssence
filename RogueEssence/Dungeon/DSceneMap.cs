@@ -1053,8 +1053,6 @@ namespace RogueEssence.Dungeon
             foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null, status, msg));
 
-
-            StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
                 if (!character.Dead)

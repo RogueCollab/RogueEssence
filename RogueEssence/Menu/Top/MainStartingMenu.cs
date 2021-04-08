@@ -11,20 +11,24 @@ namespace RogueEssence.Menu
 {
     public class MainStartingMenu : TitledStripMenu
     {
-        public delegate void OnChooseChar(MonsterID chosenID);
+        public delegate void OnChooseSlot(int slot);
         public SpeakerPortrait Portrait;
-        OnChooseChar chooseAction;
+        OnChooseSlot chooseAction;
         Action onCancel;
 
-        public MainStartingMenu(int startIndex, OnChooseChar chooseAction, Action onCancel)
+        public MainStartingMenu(int startIndex, OnChooseSlot chooseAction, Action onCancel)
         {
             this.chooseAction = chooseAction;
             this.onCancel = onCancel;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < DataManager.Instance.StartChars.Count; ii++)
             {
-                MonsterID startChar = DataManager.Instance.StartChars[ii];
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetMonster(startChar.Species).Name.ToLocal(), () => { this.chooseAction(startChar); }));
+                MonsterID startChar = DataManager.Instance.StartChars[ii].mon;
+                string name = DataManager.Instance.GetMonster(startChar.Species).Name.ToLocal();
+                if (DataManager.Instance.StartChars[ii].name != "")
+                    name = DataManager.Instance.StartChars[ii].name;
+                int index = ii;
+                flatChoices.Add(new MenuTextChoice(name, () => { this.chooseAction(index); }));
             }
 
             startIndex = Math.Clamp(startIndex, 0, flatChoices.Count - 1);
@@ -46,7 +50,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Portrait.Speaker = DataManager.Instance.StartChars[CurrentChoice];
+            Portrait.Speaker = DataManager.Instance.StartChars[CurrentChoice].mon;
             base.ChoiceChanged();
         }
 
@@ -65,17 +69,20 @@ namespace RogueEssence.Menu
                 {
                     int startIndex = 0;
                     if (backPhase == 0)
-                        startIndex = DataManager.Instance.StartChars.IndexOf(monId);
-                    MenuManager.Instance.AddMenu(new MainStartingMenu(startIndex, (MonsterID chosenID) =>
+                        startIndex = DataManager.Instance.StartChars.FindIndex(start => start.mon == monId);
+                    MenuManager.Instance.AddMenu(new MainStartingMenu(startIndex, (int index) =>
                     {
-                        StartFlow(chosenID, name, -1);
+                        StartFlow(DataManager.Instance.StartChars[index].mon, DataManager.Instance.StartChars[index].name, -1);
                     }, () => { }), false);
                     return;
                 }
                 else if (backPhase == 0)
                     return;
                 else if (DataManager.Instance.StartChars.Count == 1)
-                    monId = DataManager.Instance.StartChars[0];
+                {
+                    monId = DataManager.Instance.StartChars[0].mon;
+                    name = DataManager.Instance.StartChars[0].name;
+                }
                 else
                 {
                     MenuManager.Instance.ClearMenus();
@@ -121,19 +128,14 @@ namespace RogueEssence.Menu
 
             if (name == "")
             {
-                if (DataManager.Instance.StartName == "")
+                MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
                 {
-                    MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
-                    {
-                        StartFlow(monId, name, -1);
-                    }, () =>
-                    {
-                        StartFlow(monId, "", 1);
-                    }), false);
-                    return;
-                }
-                else
-                    name = DataManager.Instance.StartName;
+                    StartFlow(monId, name, -1);
+                }, () =>
+                {
+                    StartFlow(monId, "", 1);
+                }), false);
+                return;
             }
 
             //begin

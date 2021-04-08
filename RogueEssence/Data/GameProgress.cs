@@ -523,7 +523,7 @@ namespace RogueEssence.Data
                         bool isOriginal = false;
                         for (int jj = 0; jj < DataManager.Instance.StartChars.Count; jj++)
                         {
-                            if (ii == DataManager.Instance.StartChars[jj].Species)
+                            if (ii == DataManager.Instance.StartChars[jj].mon.Species)
                                 isOriginal = true;
                         }
                         if (!isOriginal)
