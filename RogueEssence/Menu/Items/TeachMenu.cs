@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -15,16 +16,18 @@ namespace RogueEssence.Menu
         MenuText[] Skills;
         MenuText[] SkillCharges;
 
-        private int invSlot;
+        private int slot;
+        private bool held;
 
-        public TeachMenu(int invSlot)
+        public TeachMenu(int slot, bool held)
         {
-            this.invSlot = invSlot;
+            this.slot = slot;
+            this.held = held;
 
             List<MenuTextChoice> team = new List<MenuTextChoice>();
-            foreach (Character character in DungeonScene.Instance.ActiveTeam.Players)
+            foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
-                bool canLearn = CanLearnSkill(character, DungeonScene.Instance.FocusedCharacter, invSlot) && !character.Dead;
+                bool canLearn = CanLearnSkill(character, DataManager.Instance.Save.ActiveTeam.Leader, slot, held) && !character.Dead;
                 int teamIndex = team.Count;
                 team.Add(new MenuTextChoice(character.BaseName, () => { choose(teamIndex); }, canLearn, canLearn ? Color.White : Color.Red));
             }
@@ -48,23 +51,26 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_TEACH_TITLE"), team.ToArray(), 0);
         }
 
-        public static bool CanLearnSkill(Character character, Character user, int invSlot)
+        public static bool CanLearnSkill(Character character, Character user, int slot, bool held)
         {
-            Data.BaseMonsterForm entry = Data.DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
+            BaseMonsterForm entry = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
             int itemNum = -1;
-            if (invSlot > BattleContext.EQUIP_ITEM_SLOT)
-                itemNum = DungeonScene.Instance.ActiveTeam.GetInv(invSlot).ID;
-            else if (invSlot == BattleContext.EQUIP_ITEM_SLOT)
-                itemNum = user.EquippedItem.ID;
-            else if (invSlot == BattleContext.FLOOR_ITEM_SLOT)
+            if (slot == BattleContext.FLOOR_ITEM_SLOT)
             {
                 //item on the ground
                 int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(user.CharLoc);
                 MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[mapSlot];
                 itemNum = mapItem.Value;
             }
+            else
+            {
+                if (held)
+                    itemNum = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem.ID;
+                else
+                    itemNum = DataManager.Instance.Save.ActiveTeam.GetInv(slot).ID;
+            }
                 
-            Data.ItemData itemData = Data.DataManager.Instance.GetItem(itemNum);
+            ItemData itemData = DataManager.Instance.GetItem(itemNum);
             ItemIndexState effect = itemData.ItemStates.GetWithDefault<ItemIndexState>();
 
             //check for already knowing the skill
@@ -74,7 +80,7 @@ namespace RogueEssence.Menu
                     return false;
             }
 
-            if (!Data.DataManager.Instance.DataIndices[Data.DataManager.DataType.Skill].Entries[effect.Index].Released)
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[effect.Index].Released)
                 return false;
 
             return entry.CanLearnSkill(effect.Index);
@@ -82,7 +88,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Character character = DungeonScene.Instance.ActiveTeam.Players[CurrentChoice];
+            Character character = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice];
             SummaryTitle.Text = Text.FormatKey("MENU_SKILLS_TITLE", character.BaseName);
             for (int ii = 0; ii < Skills.Length; ii++)
             {
@@ -101,11 +107,23 @@ namespace RogueEssence.Menu
             base.ChoiceChanged();
         }
 
+        private int getItemUseSlot()
+        {
+            if (held)
+                return BattleContext.EQUIP_ITEM_SLOT;
+            else
+                return slot;
+        }
+
         private void choose(int choice)
         {
             MenuManager.Instance.ClearMenus();
             //give the item at the inv slot to the given team slot
-            MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, invSlot, choice));
+
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                MenuManager.Instance.EndAction = GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, slot, held ? 1 : 0));
+            else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, getItemUseSlot(), choice));
         }
 
         public override void Draw(SpriteBatch spriteBatch)

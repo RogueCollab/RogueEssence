@@ -1031,5 +1031,20 @@ namespace RogueEssence
                 timeSinceError = 15;
             }
         }
+
+        public IEnumerator<YieldInstruction> LogSkippableMsg(string msg)
+        {
+            return LogSkippableMsg(msg, DataManager.Instance.Save.ActiveTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(string msg, Team involvedTeam)
+        {
+            if (involvedTeam == DataManager.Instance.Save.ActiveTeam && DataManager.Instance.CurrentReplay == null)
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, msg));
+            else
+            {
+                DungeonScene.Instance.LogMsg(msg);
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
+            }
+        }
     }
 }

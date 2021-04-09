@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
                     case Data.ItemData.UseType.Learn:
                         {
                             //if the character is teaching to himself, need to disable this choice if not compatible
-                            bool canLearn = TeachMenu.CanLearnSkill(DungeonScene.Instance.FocusedCharacter, DungeonScene.Instance.FocusedCharacter, BattleContext.FLOOR_ITEM_SLOT);
+                            bool canLearn = TeachMenu.CanLearnSkill(DungeonScene.Instance.FocusedCharacter, DungeonScene.Instance.FocusedCharacter, BattleContext.FLOOR_ITEM_SLOT, false);
                             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), UseSelfAction, canLearn && !mapItem.Cursed, (canLearn && !mapItem.Cursed) ? Color.White : Color.Red));
                             break;
                         }
