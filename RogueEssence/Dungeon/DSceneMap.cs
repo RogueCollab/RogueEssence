@@ -1026,27 +1026,32 @@ namespace RogueEssence.Dungeon
                 character.RefreshTraits();
 
 
-            EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusAdds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusAdds, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStatusAdds, null);
 
                 //call ALL status's on add for the add status
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
-                    mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusAdds);
+                    mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusAdds, null);
                 }
 
+                int portPriority = 0;
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                {
+                    if (!character.Dead)
+                    {
+                        foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
+                            effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusAdds, character);
+                    }
+                    portPriority++;
+                }
             };
-            foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null, status, msg));
-
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
-                if (!character.Dead)
-                    yield return CoroutineManager.Instance.StartCoroutine(character.OnAddMapStatus(status, msg));
-            }
+            foreach (EventQueueElement<MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar, status, msg));
         }
         
         public IEnumerator<YieldInstruction> RemoveMapStatus(int id, bool msg = true)
@@ -1061,34 +1066,37 @@ namespace RogueEssence.Dungeon
                     character.RefreshTraits();
 
 
-                EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
                 {
                     //start with universal
-                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusRemoves);
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusRemoves, null);
+                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStatusRemoves, null);
 
                     //call ALL status's on add for the remove status, including the removed one
                     {
                         MapStatusData entry = DataManager.Instance.GetMapStatus(statusToRemove.ID);
-                        statusToRemove.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves);
+                        statusToRemove.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves, null);
                     }
                     foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                     {
                         MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
-                        mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves);
+                        mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves, null);
                     }
 
+
+                    int portPriority = 0;
+                    foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                    {
+                        if (!character.Dead)
+                        {
+                            foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
+                                effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusRemoves, character);
+                        }
+                        portPriority++;
+                    }
                 };
-                foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
-                    yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null, statusToRemove, msg));
-
-
-
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-                {
-                    if (!character.Dead)
-                        yield return CoroutineManager.Instance.StartCoroutine(character.OnRemoveMapStatus(statusToRemove, msg));
-                }
-
+                foreach (EventQueueElement<MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
+                    yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar, statusToRemove, msg));
             }
         }
 

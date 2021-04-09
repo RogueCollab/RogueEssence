@@ -1373,7 +1373,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public IEnumerable<PassiveContext> IteratePassives(int defaultPortPriority)
+        public IEnumerable<PassiveContext> IteratePassives(Priority defaultPortPriority)
         {
             bool dungeonMode = GameManager.Instance.CurrentScene == DungeonScene.Instance;
             if (dungeonMode)
@@ -1439,14 +1439,14 @@ namespace RogueEssence.Dungeon
                 while (charQueue.Count > 0)
                 {
                     Character character = charQueue.Dequeue();
-                    foreach (PassiveContext effect in character.IterateProximityPassives(this, CharLoc, totalPriority))
+                    foreach (PassiveContext effect in character.IterateProximityPassives(this, CharLoc, new Priority(defaultPortPriority, totalPriority)))
                         yield return effect;
                     totalPriority++;
                 }
             }
         }
 
-        public IEnumerable<PassiveContext> IterateProximityPassives(Character character, Loc targetLoc, int portPriority)
+        public IEnumerable<PassiveContext> IterateProximityPassives(Character character, Loc targetLoc, Priority portPriority)
         {
             //check all of their entries for proximity ranges; return them only if their ranges are above 0
             //whatever proximity passive class is used, it needs to somehow refer back to the character owning it
@@ -1518,231 +1518,231 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeforeTryAction(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeTryActions);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeTryActions, this);
                 //check the action's effects
-                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.BeforeTryActions);
+                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.BeforeTryActions, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeTryActions);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeTryActions, this);
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents(function))
+            foreach (EventQueueElement<BattleEvent> effect in DungeonScene.IterateEvents(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
         }
 
         public IEnumerator<YieldInstruction> BeforeAction(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeActions);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeActions, this);
                 //check the action's effects
-                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.BeforeActions);
+                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.BeforeActions, this);
 
                     foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeActions);
+                        effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeActions, this);
                 };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents(function))
+            foreach (EventQueueElement<BattleEvent> effect in DungeonScene.IterateEvents(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
         }
 
         public IEnumerator<YieldInstruction> OnAction(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnActions);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnActions, this);
                 //check the action's effects
-                context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.OnActions);
+                context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.OnActions, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnActions);
+                    effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnActions, this);
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
+            foreach (EventQueueElement<BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
         }
 
         public IEnumerator<YieldInstruction> AfterActionTaken(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.AfterActions);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.AfterActions, this);
                 //check the action's effects
-                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.AfterActions);
+                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.AfterActions, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterActions);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterActions, this);
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+            foreach (EventQueueElement<BattleEvent> effect in DungeonScene.IterateEvents(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
         }
 
         public IEnumerator<YieldInstruction> HitTile(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnHitTiles);
-                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.OnHitTiles);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnHitTiles, this);
+                context.Data.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Data.OnHitTiles, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnHitTiles);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnHitTiles, this);
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+            foreach (EventQueueElement<BattleEvent> effect in DungeonScene.IterateEvents(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
         }
 
         public void OnModifyHP(ref int hpChange)
         {
-            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs);
+                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs, this);
             };
-            foreach (Tuple<GameEventOwner, Character, HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, ref hpChange);
+            foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
         }
 
         public void OnRestoreHP(ref int hpChange)
         {
-            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs);
+                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs, this);
             };
-            foreach (Tuple<GameEventOwner, Character, HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, ref hpChange);
+            foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
         }
 
         private void OnSkillsChanged(int[] skillIndices)
         {
-            DungeonScene.EventEnqueueFunction<SkillChangeEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SkillChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SkillChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SkillChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //check statuses
                 foreach (StatusEffect status in StatusEffects.Values)
-                    status.AddEventsToQueue<SkillChangeEvent>(queue, maxPriority, ref nextPriority, ((StatusData)status.GetData()).OnSkillChanges);
+                    status.AddEventsToQueue<SkillChangeEvent>(queue, maxPriority, ref nextPriority, ((StatusData)status.GetData()).OnSkillChanges, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SkillChangeEvent> effect in DungeonScene.IterateEvents<SkillChangeEvent>(function))
-                effect.Item3.Apply(effect.Item1, this, skillIndices);
+            foreach (EventQueueElement<SkillChangeEvent> effect in DungeonScene.IterateEvents<SkillChangeEvent>(function))
+                effect.Event.Apply(effect.Owner, this, skillIndices);
         }
 
         private void OnRefresh()
         {
-            DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnRefresh);
+                    effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnRefresh, this);
             };
-            foreach (Tuple<GameEventOwner, Character, RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, this);
+            foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, this);
         }
 
 
         public IEnumerator<YieldInstruction> OnMapStart()
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStarts);
+                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStarts, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
         }
 
         public IEnumerator<YieldInstruction> OnTurnStart()
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnTurnStarts);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnTurnStarts, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnTurnStarts);
+                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnTurnStarts, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
         }
 
         public IEnumerator<YieldInstruction> OnTurnEnd()
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnTurnEnds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnTurnEnds, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnTurnEnds);
+                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnTurnEnds, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
         }
 
         public IEnumerator<YieldInstruction> OnMapTurnEnd()
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapTurnEnds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapTurnEnds, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapTurnEnds);
+                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapTurnEnds, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
         }
 
         public IEnumerator<YieldInstruction> OnWalk()
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnWalks);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnWalks, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnWalks);
+                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnWalks, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
         }
 
         public IEnumerator<YieldInstruction> OnDeath()
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnDeaths);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnDeaths, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnDeaths);
+                    effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnDeaths, this);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
         }
 
         public IEnumerator<YieldInstruction> BeforeStatusCheck(StatusCheckContext context)
         {
-            DungeonScene.EventEnqueueFunction<StatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, StatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<StatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<StatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeStatusAdds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeStatusAdds, this);
                 //check pending status
-                context.Status.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Status.GetData().BeforeStatusAdds);
+                context.Status.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Status.GetData().BeforeStatusAdds, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeStatusAdds);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeStatusAdds, this);
             };
-            foreach (Tuple<GameEventOwner, Character, StatusGivenEvent> effect in DungeonScene.IterateEvents(function))
+            foreach (EventQueueElement<StatusGivenEvent> effect in DungeonScene.IterateEvents(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel)
                     yield break;
             }
@@ -1750,60 +1750,60 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> OnAddStatus(StatusCheckContext context)
         {
-            DungeonScene.EventEnqueueFunction<StatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, StatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<StatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<StatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnStatusAdds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnStatusAdds, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<StatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnStatusAdds);
+                    effectContext.AddEventsToQueue<StatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnStatusAdds, this);
             };
-            foreach (Tuple<GameEventOwner, Character, StatusGivenEvent> effect in DungeonScene.IterateEvents<StatusGivenEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+            foreach (EventQueueElement<StatusGivenEvent> effect in DungeonScene.IterateEvents<StatusGivenEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
         }
 
         private IEnumerator<YieldInstruction> OnRemoveStatus(StatusCheckContext context)
         {
-            DungeonScene.EventEnqueueFunction<StatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, StatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<StatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<StatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnStatusRemoves);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnStatusRemoves, this);
 
                 //check removed status
-                context.Status.AddEventsToQueue<StatusGivenEvent>(queue, maxPriority, ref nextPriority, context.Status.GetData().OnStatusRemoves);
+                context.Status.AddEventsToQueue<StatusGivenEvent>(queue, maxPriority, ref nextPriority, context.Status.GetData().OnStatusRemoves, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<StatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnStatusRemoves);
+                    effectContext.AddEventsToQueue<StatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnStatusRemoves, this);
             };
-            foreach (Tuple<GameEventOwner, Character, StatusGivenEvent> effect in DungeonScene.IterateEvents<StatusGivenEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+            foreach (EventQueueElement<StatusGivenEvent> effect in DungeonScene.IterateEvents<StatusGivenEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
         }
         
         public IEnumerator<YieldInstruction> OnAddMapStatus(MapStatus status, bool msg)
         {
-            DungeonScene.EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusAdds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusAdds, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusAdds);
+                    effectContext.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusAdds, this);
             };
-            foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in DungeonScene.IterateEvents<MapStatusGivenEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this, status, msg));
+            foreach (EventQueueElement<MapStatusGivenEvent> effect in DungeonScene.IterateEvents<MapStatusGivenEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this, status, msg));
         }
 
         public IEnumerator<YieldInstruction> OnRemoveMapStatus(MapStatus status, bool msg)
         {
-            DungeonScene.EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusRemoves);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusRemoves, this);
 
                 //check removed status
-                status.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, status.GetData().OnMapStatusRemoves);
+                status.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, status.GetData().OnMapStatusRemoves, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusRemoves);
+                    effectContext.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusRemoves, this);
             };
-            foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in DungeonScene.IterateEvents<MapStatusGivenEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, this, status, msg));
+            foreach (EventQueueElement<MapStatusGivenEvent> effect in DungeonScene.IterateEvents<MapStatusGivenEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this, status, msg));
         }
 
 

@@ -6,8 +6,8 @@ namespace RogueEssence.Dungeon
 
     public class GameEventPriority : IComparable<GameEventPriority>
     {
-        public const int USER_PORT_PRIORITY = -2;
-        public const int TARGET_PORT_PRIORITY = -1;
+        public static readonly Priority USER_PORT_PRIORITY = new Priority(-2);
+        public static readonly Priority TARGET_PORT_PRIORITY = new Priority(-1);
 
         public enum EventCause
         {
@@ -22,12 +22,12 @@ namespace RogueEssence.Dungeon
         }
 
         public Priority Priority;//dev specified; lowest first
-        public int PortPriority;//user (-2), target (-1), everyone else (0+)
+        public Priority PortPriority;//user (-2), target (-1), everyone else (0+)
         public EventCause TypeID;//tiebreaker order of enum
         public int ID;//tiebreaker: the ID of the owning passive/battle effect
         public int ListIndex;//last tiebreaker: location in the list
 
-        public GameEventPriority(Priority priority, int portPriority, EventCause typeId, int id, int listIndex)
+        public GameEventPriority(Priority priority, Priority portPriority, EventCause typeId, int id, int listIndex)
         {
             Priority = priority;
             PortPriority = portPriority;

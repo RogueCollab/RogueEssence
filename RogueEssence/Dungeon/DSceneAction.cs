@@ -111,13 +111,14 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> InitActionData(BattleContext context)
         {
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.InitActionData);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.InitActionData, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.InitActionData, null);
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents(function))
+            foreach (EventQueueElement<BattleEvent> effect in IterateEvents(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
         }
@@ -279,12 +280,13 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeforeExplosion(BattleContext context)
         {
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
 
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeExplosions);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeExplosions, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.BeforeExplosions, null);
 
-                context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.BeforeExplosions);
+                context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.BeforeExplosions, null);
 
                 StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
@@ -297,16 +299,16 @@ namespace RogueEssence.Dungeon
                 while (charQueue.Count > 0)
                 {
                     Character character = charQueue.Dequeue();
-                    foreach (PassiveContext effectContext in character.IterateProximityPassives(context.User, context.ExplosionTile, portPriority))
-                        effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, ((ProximityData)effectContext.EventData).BeforeExplosions);
+                    foreach (PassiveContext effectContext in character.IterateProximityPassives(context.User, context.ExplosionTile, new Priority(portPriority)))
+                        effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, ((ProximityData)effectContext.EventData).BeforeExplosions, null);
 
                     portPriority++;
                 }
 
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents<BattleEvent>(function))
+            foreach (EventQueueElement<BattleEvent> effect in IterateEvents<BattleEvent>(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
 
@@ -314,27 +316,28 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeforeHit(BattleContext context)
         {
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeHits);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeHits, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.BeforeHits, null);
 
                 if (context.ActionType != BattleActionType.Trap)
                 {
                     //check the action's effects
-                    context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.BeforeHits);
+                    context.Data.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, context.Data.BeforeHits, null);
 
                     foreach (PassiveContext effectContext in context.User.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeHittings);
+                        effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeHittings, null);
 
                 }
 
                 foreach (PassiveContext effectContext in context.Target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeBeingHits);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeBeingHits, null);
 
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents<BattleEvent>(function))
+            foreach (EventQueueElement<BattleEvent> effect in IterateEvents<BattleEvent>(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
 
@@ -353,27 +356,28 @@ namespace RogueEssence.Dungeon
         {
             int effectiveness = 0;
 
-            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ElementEffectEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ElementEffects, null);
 
                 //go through all statuses' element matchup methods
                 if (attacker != null)
                 {
                     foreach (PassiveContext effectContext in attacker.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.UserElementEffects);
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.UserElementEffects, null);
                 }
                 if (target != null)
                 {
                     foreach (PassiveContext effectContext in target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.TargetElementEffects);
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.TargetElementEffects, null);
                 }
 
-                action.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, action.ElementEffects);
+                action.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, action.ElementEffects, null);
             };
-            foreach (Tuple<GameEventOwner, Character, ElementEffectEvent> effect in IterateEvents<ElementEffectEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, action.Element, element, ref effectiveness);
+            foreach (EventQueueElement<ElementEffectEvent> effect in IterateEvents<ElementEffectEvent>(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, action.Element, element, ref effectiveness);
 
             return effectiveness;
         }
@@ -382,25 +386,26 @@ namespace RogueEssence.Dungeon
         {
             int effectiveness = 0;
 
-            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, ElementEffectEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<ElementEffectEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ElementEffectEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ElementEffects, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ElementEffects, null);
 
                 //go through all statuses' element matchup methods
                 if (attacker != null)
                 {
                     foreach (PassiveContext effectContext in attacker.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.UserElementEffects);
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.UserElementEffects, null);
                 }
                 if (target != null)
                 {
                     foreach (PassiveContext effectContext in target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.TargetElementEffects);
+                        effectContext.AddEventsToQueue<ElementEffectEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.TargetElementEffects, null);
                 }
             };
-            foreach (Tuple<GameEventOwner, Character, ElementEffectEvent> effect in IterateEvents<ElementEffectEvent>(function))
-                effect.Item3.Apply(effect.Item1, effect.Item2, attacking, defending, ref effectiveness);
+            foreach (EventQueueElement<ElementEffectEvent> effect in IterateEvents<ElementEffectEvent>(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, attacking, defending, ref effectiveness);
 
             return effectiveness;
         }
@@ -464,22 +469,22 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(context.Data.Hit(context));
 
 
-            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 if (context.ActionType != BattleActionType.Trap)
                 {
                     foreach (PassiveContext effectContext in context.User.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                        effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterHittings);
+                        effectContext.AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterHittings, null);
 
                 }
 
                 foreach (PassiveContext effectContext in context.Target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterBeingHits);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.AfterBeingHits, null);
 
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in IterateEvents<BattleEvent>(function))
+            foreach (EventQueueElement<BattleEvent> effect in IterateEvents<BattleEvent>(function))
             {
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel) yield break;
             }
         }
@@ -554,7 +559,7 @@ namespace RogueEssence.Dungeon
 
 
 
-        public delegate void EventEnqueueFunction<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, Priority maxPriority, ref Priority nextPriority) where T : GameEvent;
+        public delegate void EventEnqueueFunction<T>(StablePriorityQueue<GameEventPriority, EventQueueElement<T>> queue, Priority maxPriority, ref Priority nextPriority) where T : GameEvent;
         
         /// <summary>
         /// Iterates through all GameEvents gathered by the enqueue function, in order of priority.
@@ -564,14 +569,14 @@ namespace RogueEssence.Dungeon
         /// <typeparam name="T"></typeparam>
         /// <param name="enqueueFunction"></param>
         /// <returns></returns>
-        public static IEnumerable<Tuple<GameEventOwner, Character, T>> IterateEvents<T>(EventEnqueueFunction<T> enqueueFunction) where T : GameEvent
+        public static IEnumerable<EventQueueElement<T>> IterateEvents<T>(EventEnqueueFunction<T> enqueueFunction) where T : GameEvent
         {
             Priority maxPriority = Priority.Invalid;
             while (true)
             {
                 Priority nextPriority = Priority.Invalid;
 
-                StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue = new StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>>();
+                StablePriorityQueue<GameEventPriority, EventQueueElement<T>> queue = new StablePriorityQueue<GameEventPriority, EventQueueElement<T>>();
 
                 enqueueFunction(queue, maxPriority, ref nextPriority);
 
@@ -581,7 +586,7 @@ namespace RogueEssence.Dungeon
                 {
                     while (queue.Count > 0)
                     {
-                        Tuple<GameEventOwner, Character, T> effect = queue.Dequeue();
+                        EventQueueElement<T> effect = queue.Dequeue();
                         yield return effect;
                     }
 
