@@ -453,7 +453,7 @@ namespace RogueEssence.Dungeon
                 prevIndex = 2;
 
             MonsterData newDex = DataManager.Instance.GetMonster(CurrentForm.Species);
-            BaseMonsterForm newForm = dex.Forms[CurrentForm.Form];
+            BaseMonsterForm newForm = newDex.Forms[CurrentForm.Form];
 
             if (prevIndex == 2 && newForm.Intrinsic3 == 0)
                 prevIndex = 0;

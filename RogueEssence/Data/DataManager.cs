@@ -1515,7 +1515,18 @@ namespace RogueEssence.Data
 
             state.Save = GameProgress.LoadMainData(reader);
             if (version < Versioning.GetVersion())
+            {
+                //update unlocks
+                GameProgress.UnlockState[] unlocks = new GameProgress.UnlockState[DataIndices[DataType.Monster].Count];
+                Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
+                state.Save.Dex = unlocks;
+
+                unlocks = new GameProgress.UnlockState[DataIndices[DataType.Zone].Count];
+                Array.Copy(state.Save.DungeonUnlocks, unlocks, Math.Min(unlocks.Length, state.Save.DungeonUnlocks.Length));
+                state.Save.DungeonUnlocks = unlocks;
+
                 ZoneManager.LoadDefaultState(state);
+            }
             else
                 ZoneManager.LoadToState(reader, state);
 
