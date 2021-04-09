@@ -462,11 +462,11 @@ namespace RogueEssence.Dungeon
 
             Intrinsics.Clear();
             if (prevIndex == 0)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(form.Intrinsic1)));
+                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(newForm.Intrinsic1)));
             else if (prevIndex == 1)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(form.Intrinsic2)));
+                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(newForm.Intrinsic2)));
             else if (prevIndex == 2)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(form.Intrinsic3)));
+                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(newForm.Intrinsic3)));
 
             //remove proxy stats
             ProxyAtk = -1;
