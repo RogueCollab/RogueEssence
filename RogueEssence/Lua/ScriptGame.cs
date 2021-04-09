@@ -480,7 +480,7 @@ namespace RogueEssence.Script
                 newData.Form = 0;
             character.Promote(newData);
             character.FullRestore();
-            branch.OnPromote(character, false);
+            branch.OnPromote(character, false, bypass);
             //remove exception item if there is one...
             if (bypass)
                 character.DequipItem();
