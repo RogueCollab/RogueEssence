@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
+using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
@@ -23,8 +24,18 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)
+        bool doubleclick;
+        public void doubleClickStart(object sender, RoutedEventArgs e)
         {
+            doubleclick = true;
+        }
+
+        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        {
+            if (!doubleclick)
+                return;
+            doubleclick = false;
+
             ViewModels.SpawnListBoxViewModel viewModel = (ViewModels.SpawnListBoxViewModel)DataContext;
             if (viewModel == null)
                 return;

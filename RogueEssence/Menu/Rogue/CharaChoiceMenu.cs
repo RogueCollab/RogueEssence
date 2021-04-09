@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
             {
                 if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
                     startChars.Add(ii);
-                else if (DataManager.Instance.StartChars.Contains(ii))
+                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
             }
 
@@ -98,7 +98,7 @@ namespace RogueEssence.Menu
             {
                 MenuManager.Instance.ClearMenus();
                 start(choice, name);
-            }), false);
+            }, () => { }), false);
         }
 
 

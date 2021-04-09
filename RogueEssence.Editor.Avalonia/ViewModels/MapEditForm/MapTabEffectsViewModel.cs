@@ -19,12 +19,11 @@ namespace RogueEssence.Dev.ViewModels
             Statuses = new CollectionBoxViewModel();
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
-            PrepareEvents = new CollectionBoxViewModel();
-            PrepareEvents.OnMemberChanged += PrepareEvents_Changed;
-            PrepareEvents.OnEditItem += Events_EditItem;
-            StartEvents = new CollectionBoxViewModel();
-            StartEvents.OnMemberChanged += StartEvents_Changed;
-            StartEvents.OnEditItem += Events_EditItem;
+
+            MapEffect = new ClassBoxViewModel();
+            MapEffect.OnMemberChanged += MapEffect_Changed;
+            MapEffect.OnEditItem += MapEffect_Edit;
+
             CheckEvents = new CollectionBoxViewModel();
             CheckEvents.OnMemberChanged += CheckEvents_Changed;
             CheckEvents.OnEditItem += Events_EditItem;
@@ -34,11 +33,37 @@ namespace RogueEssence.Dev.ViewModels
 
 
         public CollectionBoxViewModel Statuses { get; set; }
-        public CollectionBoxViewModel PrepareEvents { get; set; }
-        public CollectionBoxViewModel StartEvents { get; set; }
+        public ClassBoxViewModel MapEffect { get; set; }
         public CollectionBoxViewModel CheckEvents { get; set; }
 
 
+        public void MapEffect_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.MapEffect = MapEffect.GetObject<ActiveEffect>();
+        }
+
+        public void MapEffect_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        {
+            DataEditForm frmData = new DataEditForm();
+            frmData.Title = element.ToString();
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, "MapEffect", typeof(ActiveEffect), new object[0] { }, element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapEffect", typeof(ActiveEffect), new object[0] { }, true);
+                op(element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
+        }
 
         public void Statuses_Changed()
         {
@@ -121,16 +146,6 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Show();
         }
 
-        public void PrepareEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.PrepareEvents = PrepareEvents.GetList<List<SingleCharEvent>>();
-        }
-
-        public void StartEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.StartEvents = StartEvents.GetList<List<SingleCharEvent>>();
-        }
-
         public void CheckEvents_Changed()
         {
             ZoneManager.Instance.CurrentMap.CheckEvents = CheckEvents.GetList<List<SingleCharEvent>>();
@@ -142,8 +157,7 @@ namespace RogueEssence.Dev.ViewModels
             foreach (MapStatus state in ZoneManager.Instance.CurrentMap.Status.Values)
                 states.Add(state);
             Statuses.LoadFromList(states);
-            PrepareEvents.LoadFromList(ZoneManager.Instance.CurrentMap.PrepareEvents);
-            StartEvents.LoadFromList(ZoneManager.Instance.CurrentMap.StartEvents);
+            MapEffect.LoadFromSource(ZoneManager.Instance.CurrentMap.MapEffect);
             CheckEvents.LoadFromList(ZoneManager.Instance.CurrentMap.CheckEvents);
 
         }

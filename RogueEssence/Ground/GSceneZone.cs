@@ -136,6 +136,15 @@ namespace RogueEssence.Ground
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessObjectInteract(character));
                         break;
                     }
+                case GameAction.ActionType.UseItem:
+                    {
+                        //[0] = item slot to use (-1 for held item, -2 for the ground item)
+                        //[1] = who to use it on (-1 for the user)
+                        //others: which slot to delete,
+                        //which intrinsic to have, which team member/item to send in, etc.
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1] != 0));
+                        break;
+                    }
                 case GameAction.ActionType.ShiftTeam:
                     {
                         int charIndex = action[0];

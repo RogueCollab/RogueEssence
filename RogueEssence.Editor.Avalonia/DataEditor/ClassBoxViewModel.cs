@@ -13,7 +13,13 @@ namespace RogueEssence.Dev.ViewModels
     public class ClassBoxViewModel : ViewModelBase
     {
         public object Object { get; private set; }
-        public string Name { get; private set; }
+
+        private string name;
+        public string Name
+        {
+            get => name;
+            set => this.SetIfChanged(ref name, value);
+        }
 
         public delegate void EditElementOp(object element);
         public delegate void ElementOp(object element, EditElementOp op);

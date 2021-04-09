@@ -79,10 +79,6 @@ namespace RogueEssence.Dungeon
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 mapStatus.StartEmitter(Anims);
 
-            //process events before the map fades in
-            foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.PrepareEvents)
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
-
             //Notify script engine
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
         }
@@ -93,36 +89,37 @@ namespace RogueEssence.Dungeon
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
 
             ZoneManager.Instance.CurrentMap.Begun = true;
-            //process map-start events (dialogue, map condition announcement, etc)
-            foreach (SingleCharEvent effect in ZoneManager.Instance.CurrentMap.StartEvents)
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, null, FocusedCharacter));
-
-            foreach (Character character in ActiveTeam.EnumerateChars())
-                yield return CoroutineManager.Instance.StartCoroutine(SpecialIntro(character));
 
             //process player happenings
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
                 character.Tactic.Initialize(character);
-                if (!character.Dead)
-                    yield return CoroutineManager.Instance.StartCoroutine(character.OnMapStart());
-            }
 
             //map starts for map statuses
-            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts);
-
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStarts, null);
 
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
-                    mapStatus.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStarts);
+                    mapStatus.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStarts, null);
+                }
+
+                int portPriority = 0;
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                {
+                    if (!character.Dead)
+                    {
+                        foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
+                            effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStarts, character);
+                    }
+                    portPriority++;
                 }
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
+            foreach (EventQueueElement<SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
         }
@@ -958,28 +955,33 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> ProcessMapTurnEnd()
         {
-            //turn ends for all characters
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
-                if (!character.Dead)
-                    yield return CoroutineManager.Instance.StartCoroutine(character.OnMapTurnEnd());
-            }
-
-            //turn ends for map statuses
-            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            //turn ends for all
+            EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapTurnEnds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapTurnEnds, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapTurnEnds, null);
 
 
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
-                    mapStatus.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.OnMapTurnEnds);
+                    mapStatus.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.OnMapTurnEnds, null);
+                }
+
+                int portPriority = 0;
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                {
+                    if (!character.Dead)
+                    {
+                        foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
+                            effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapTurnEnds, character);
+                    }
+                    portPriority++;
                 }
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null));
+            foreach (EventQueueElement<SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
 
 
             ZoneManager.Instance.CurrentMap.MapTurns++;

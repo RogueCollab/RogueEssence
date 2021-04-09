@@ -994,7 +994,7 @@ namespace RogueEssence.Dungeon
 
                     foreach (Team team in ZoneManager.Instance.CurrentMap.MapTeams)
                     {
-                        foreach (Character character in team.Players)
+                        foreach (Character character in team.EnumerateChars())
                         {
                             if (!character.Dead)
                             {

@@ -719,17 +719,11 @@ namespace RogueEssence.Dungeon
 
 
                     GameManager.Instance.Fanfare("Fanfare/LevelUp");
+                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_LEVEL_UP", player.BaseName, player.Level), player.MemberTeam));
                     if (levelTeam == ActiveTeam && DataManager.Instance.CurrentReplay == null)
                     {
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_LEVEL_UP", player.BaseName, player.Level)));
-
                         GameManager.Instance.SE("Menu/Confirm");
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new LevelUpMenu(index.Char, oldLevel, oldHP, oldSpeed, oldAtk, oldDef, oldMAtk, oldMDef)));
-                    }
-                    else
-                    {
-                        LogMsg(Text.FormatKey("DLG_LEVEL_UP", player.Name, player.Level));
-                        yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
                     }
 
                     yield return CoroutineManager.Instance.StartCoroutine(CheckLevelSkills(player, oldLevel));
@@ -751,13 +745,7 @@ namespace RogueEssence.Dungeon
                     player.HP = Math.Min(player.MaxHP, player.HP);
 
                     GameManager.Instance.Fanfare("Fanfare/LevelDown");
-                    if (levelTeam == ActiveTeam && DataManager.Instance.CurrentReplay == null)
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_LEVEL_DOWN", player.BaseName, player.Level)));
-                    else
-                    {
-                        LogMsg(Text.FormatKey("DLG_LEVEL_DOWN", player.Name, player.Level));
-                        yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
-                    }
+                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_LEVEL_DOWN", player.BaseName, player.Level), player.MemberTeam));
                 }
             }
             LevelGains.Clear();
@@ -765,32 +753,48 @@ namespace RogueEssence.Dungeon
 
 
 
+
+        public static List<int> GetLevelSkills(Character player, int oldLevel)
+        {
+            List<int> skills = new List<int>();
+            BaseMonsterForm entry = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
+            int startLevel = 0;
+            int endLevel = 0;
+            if (oldLevel > 0)
+            {
+                startLevel = oldLevel + 1;
+                endLevel = player.Level;
+            }
+            for (int ii = startLevel; ii <= endLevel; ii++)
+            {
+                foreach (int skill in entry.GetSkillsAtLevel(ii, false))
+                    skills.Add(skill);
+            }
+            return skills;
+        }
+
         public IEnumerator<YieldInstruction> CheckLevelSkills(Character player, int oldLevel)
         {
             if (!ActiveTeam.Players.Contains(player))
                 yield break;
-            
-            BaseMonsterForm entry = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
-            for (int ii = oldLevel + 1; ii <= player.Level; ii++)
-            {
-                foreach (int skill in entry.GetSkillsAtLevel(ii, false))
-                {
-                    int learn = -1;
 
-                    if (DataManager.Instance.CurrentReplay != null)
-                        learn = DataManager.Instance.CurrentReplay.ReadUI();
-                    else
-                    {
-                        yield return CoroutineManager.Instance.StartCoroutine(TryLearnSkill(player, skill, (int slot) => { learn = slot; }, () => { }));
-                        DataManager.Instance.LogUIPlay(learn);
-                    }
-                    if (learn > -1)
-                        yield return CoroutineManager.Instance.StartCoroutine(LearnSkillWithFanfare(player, skill, learn));
+            foreach (int skill in GetLevelSkills(player, oldLevel))
+            {
+                int learn = -1;
+
+                if (DataManager.Instance.CurrentReplay != null)
+                    learn = DataManager.Instance.CurrentReplay.ReadUI();
+                else
+                {
+                    yield return CoroutineManager.Instance.StartCoroutine(TryLearnSkill(player, skill, (int slot) => { learn = slot; }, () => { }));
+                    DataManager.Instance.LogUIPlay(learn);
                 }
+                if (learn > -1)
+                    yield return CoroutineManager.Instance.StartCoroutine(LearnSkillWithFanfare(player, skill, learn));
             }
         }
 
-        public IEnumerator<YieldInstruction> LearnSkillWithFanfare(Character player, int skill, int slot)
+        public static IEnumerator<YieldInstruction> LearnSkillWithFanfare(Character player, int skill, int slot)
         {
             GameManager.Instance.SE("Fanfare/LearnSkill");
             string oldSkill = "";
@@ -802,25 +806,15 @@ namespace RogueEssence.Dungeon
             SkillData entry = DataManager.Instance.GetSkill(skill);
             player.ReplaceSkill(skill, slot, (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical));
 
-            if (player.MemberTeam == ActiveTeam && DataManager.Instance.CurrentReplay == null)
-            {
-                if (oldSkill == "")
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("DLG_SKILL_LEARN", player.Name, DataManager.Instance.GetSkill(skill).Name.ToLocal())));
-                else
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("DLG_SKILL_REPLACE", player.Name, DataManager.Instance.GetSkill(skill).Name.ToLocal(), oldSkill)));
-            }
+            if (oldSkill == "")
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_LEARN", player.Name, DataManager.Instance.GetSkill(skill).Name.ToLocal()), player.MemberTeam));
             else
-            {
-                if (oldSkill == "")
-                    LogMsg(Text.FormatKey("DLG_SKILL_LEARN", player.Name, DataManager.Instance.GetSkill(skill).Name.ToLocal()));
-                else
-                    LogMsg(Text.FormatKey("DLG_SKILL_REPLACE", player.Name, DataManager.Instance.GetSkill(skill).Name.ToLocal(), oldSkill));
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
-            }
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_REPLACE", player.Name, DataManager.Instance.GetSkill(skill).Name.ToLocal(), oldSkill), player.MemberTeam));
+
         }
 
         
-        public IEnumerator<YieldInstruction> TryLearnSkill(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        public static IEnumerator<YieldInstruction> TryLearnSkill(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             int totalSkills = 0;
             for (int ii = 0; ii < player.BaseSkills.Count; ii++)
@@ -849,7 +843,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        private QuestionDialog createLearnQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        private static QuestionDialog createLearnQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             return MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SKILL_DELETE", DataManager.Instance.GetSkill(skillIndex).Name.ToLocal()),
                 () =>
@@ -861,7 +855,7 @@ namespace RogueEssence.Dungeon
                 () => { MenuManager.Instance.AddMenu(createRefuseQuestion(player, skillIndex, learnAction, passAction), false); });
         }
 
-        private QuestionDialog createRefuseQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        private static QuestionDialog createRefuseQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             return MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SKILL_STOP_LEARN", DataManager.Instance.GetSkill(skillIndex).Name.ToLocal()),
                 () =>
@@ -916,15 +910,10 @@ namespace RogueEssence.Dungeon
             ActiveTeam.AddToSortedAssembly(player);
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
 
-            if (DataManager.Instance.CurrentReplay != null)
-                LogMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.Name));
-
-
             ZoneManager.Instance.CurrentMap.UpdateExploration(player);
             yield return new WaitForFrames(30);
-            if (DataManager.Instance.CurrentReplay == null)
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TEAM_SENT_HOME", player.Name)));
 
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.Name)));
         }
 
         public void SilentSendHome(int index)
@@ -1037,29 +1026,32 @@ namespace RogueEssence.Dungeon
                 character.RefreshTraits();
 
 
-            EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //start with universal
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusAdds);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusAdds, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStatusAdds, null);
 
                 //call ALL status's on add for the add status
                 foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
-                    mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusAdds);
+                    mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusAdds, null);
                 }
 
+                int portPriority = 0;
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                {
+                    if (!character.Dead)
+                    {
+                        foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
+                            effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusAdds, character);
+                    }
+                    portPriority++;
+                }
             };
-            foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null, status, msg));
-
-
-            StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
-                if (!character.Dead)
-                    yield return CoroutineManager.Instance.StartCoroutine(character.OnAddMapStatus(status, msg));
-            }
+            foreach (EventQueueElement<MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar, status, msg));
         }
         
         public IEnumerator<YieldInstruction> RemoveMapStatus(int id, bool msg = true)
@@ -1074,34 +1066,37 @@ namespace RogueEssence.Dungeon
                     character.RefreshTraits();
 
 
-                EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                EventEnqueueFunction<MapStatusGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<MapStatusGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
                 {
                     //start with universal
-                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusRemoves);
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStatusRemoves, null);
+                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStatusRemoves, null);
 
                     //call ALL status's on add for the remove status, including the removed one
                     {
                         MapStatusData entry = DataManager.Instance.GetMapStatus(statusToRemove.ID);
-                        statusToRemove.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves);
+                        statusToRemove.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves, null);
                     }
                     foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                     {
                         MapStatusData entry = DataManager.Instance.GetMapStatus(mapStatus.ID);
-                        mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves);
+                        mapStatus.AddEventsToQueue<MapStatusGivenEvent>(queue, maxPriority, ref nextPriority, entry.OnMapStatusRemoves, null);
                     }
 
+
+                    int portPriority = 0;
+                    foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                    {
+                        if (!character.Dead)
+                        {
+                            foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
+                                effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStatusRemoves, character);
+                        }
+                        portPriority++;
+                    }
                 };
-                foreach (Tuple<GameEventOwner, Character, MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
-                    yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, null, statusToRemove, msg));
-
-
-
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-                {
-                    if (!character.Dead)
-                        yield return CoroutineManager.Instance.StartCoroutine(character.OnRemoveMapStatus(statusToRemove, msg));
-                }
-
+                foreach (EventQueueElement<MapStatusGivenEvent> effect in IterateEvents<MapStatusGivenEvent>(function))
+                    yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar, statusToRemove, msg));
             }
         }
 

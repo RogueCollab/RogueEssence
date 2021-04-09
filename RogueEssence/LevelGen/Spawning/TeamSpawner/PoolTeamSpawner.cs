@@ -52,7 +52,7 @@ namespace RogueEssence.LevelGen
                 NormalSpawns.Add(other.NormalSpawns.GetSpawn(ii).Copy(), other.NormalSpawns.GetSpawnRate(ii));
             LeaderSpawns = new SpawnList<MobSpawn>();
             for (int ii = 0; ii < other.LeaderSpawns.Count; ii++)
-                LonerSpawns.Add(other.LeaderSpawns.GetSpawn(ii).Copy(), other.LeaderSpawns.GetSpawnRate(ii));
+                LeaderSpawns.Add(other.LeaderSpawns.GetSpawn(ii).Copy(), other.LeaderSpawns.GetSpawnRate(ii));
             LonerSpawns = new SpawnList<MobSpawn>();
             for (int ii = 0; ii < other.LonerSpawns.Count; ii++)
                 LonerSpawns.Add(other.LonerSpawns.GetSpawn(ii).Copy(), other.LonerSpawns.GetSpawnRate(ii));

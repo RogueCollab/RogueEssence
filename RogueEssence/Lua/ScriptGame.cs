@@ -369,6 +369,27 @@ namespace RogueEssence.Script
             return false;
         }
 
+
+        public LuaFunction CheckLevelSkills;
+        public Coroutine _CheckLevelSkills(Character chara, int oldLevel)
+        {
+            return new Coroutine(checkLevelSkills(chara, oldLevel));
+        }
+
+        private IEnumerator<YieldInstruction> checkLevelSkills(Character chara, int oldLevel)
+        {
+            DungeonScene.GetLevelSkills(chara, oldLevel);
+
+            foreach (int skill in DungeonScene.GetLevelSkills(chara, oldLevel))
+            {
+                int learn = -1;
+
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                if (learn > -1)
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
+            }
+        }
+
         public void LearnSkill(Character chara, int skillNum)
         {
             chara.LearnSkill(skillNum, true);
@@ -459,7 +480,7 @@ namespace RogueEssence.Script
                 newData.Form = 0;
             character.Promote(newData);
             character.FullRestore();
-            branch.OnPromote(character, false);
+            branch.OnPromote(character, false, bypass);
             //remove exception item if there is one...
             if (bypass)
                 character.DequipItem();
@@ -757,6 +778,7 @@ namespace RogueEssence.Script
         /// </summary>
         public override void SetupLuaFunctions(LuaEngine state)
         {
+            CheckLevelSkills = state.RunString("return function(_,chara, oldLevel) return coroutine.yield(GAME:_CheckLevelSkills(chara, oldLevel)) end").First() as LuaFunction;
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;

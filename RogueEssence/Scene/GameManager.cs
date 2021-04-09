@@ -460,7 +460,6 @@ namespace RogueEssence
                         yield return new WaitForFrames(30);
                         yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(false, ""));
                     }
-                    yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());
@@ -727,7 +726,7 @@ namespace RogueEssence
             DataManager.Instance.MsgLog.Clear();
             DataManager.Instance.EndPlay(null, null);
             if (DataManager.Instance.Save == null)
-                newGamePlus(seed);
+                NewGamePlus(seed);
             else
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
 
@@ -737,7 +736,7 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(MoveToZone(DataManager.Instance.Save.NextDest, true));
         }
 
-        private void newGamePlus(ulong seed)
+        public void NewGamePlus(ulong seed)
         {
             try
             {
@@ -756,7 +755,7 @@ namespace RogueEssence
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[0], 0, 0, Gender.Unknown), DataManager.Instance.StartLevel, -1, 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 
@@ -1030,6 +1029,21 @@ namespace RogueEssence
             {
                 SE("Menu/Error");
                 timeSinceError = 15;
+            }
+        }
+
+        public IEnumerator<YieldInstruction> LogSkippableMsg(string msg)
+        {
+            return LogSkippableMsg(msg, DataManager.Instance.Save.ActiveTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(string msg, Team involvedTeam)
+        {
+            if (involvedTeam == DataManager.Instance.Save.ActiveTeam && DataManager.Instance.CurrentReplay == null)
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, msg));
+            else
+            {
+                DungeonScene.Instance.LogMsg(msg);
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
             }
         }
     }

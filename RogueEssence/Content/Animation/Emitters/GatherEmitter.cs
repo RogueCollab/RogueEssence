@@ -85,7 +85,8 @@ namespace RogueEssence.Content
                             AnimData animData = Anims[MathUtils.Rand.Next(Anims.Count)];
                             AnimData scaledAnim = new AnimData(animData);
                             DirSheet fxSheet = GraphicsManager.GetAttackSheet(animData.AnimIndex);
-                            scaledAnim.FrameTime = (int)Math.Ceiling((float)TravelTime / scaledAnim.GetTotalFrames(fxSheet.TotalFrames) / Math.Max(1, Cycles));
+                            scaledAnim.FrameTime = (int)Math.Round((float)TravelTime / scaledAnim.GetTotalFrames(fxSheet.TotalFrames) / Math.Max(1, Cycles));
+                            scaledAnim.FrameTime = Math.Max(1, scaledAnim.FrameTime);
                             ParticleAnim anim = new ParticleAnim(scaledAnim, 0, TravelTime);
                             anim.SetupEmitted(startLoc, particleSpeed, Loc.Zero, 0, 0, 0, particleSpeed.ApproximateDir8());
                             scene.Anims[(int)Layer].Add(anim);

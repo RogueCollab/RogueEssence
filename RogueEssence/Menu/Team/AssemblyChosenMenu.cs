@@ -85,7 +85,7 @@ namespace RogueEssence.Menu
 
         private void RenameAction()
         {
-            MenuManager.Instance.AddMenu(new NicknameMenu(baseMenu.ConfirmRename), false);
+            MenuManager.Instance.AddMenu(new NicknameMenu(baseMenu.ConfirmRename, () => { }), false);
         }
 
         private void ReleaseAction()
