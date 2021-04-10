@@ -22,6 +22,7 @@ namespace RogueEssence
 
         public enum LoadPhase
         {
+            Error = -1,
             System = 0,
             Content = 1,
             Ready = 2,
@@ -146,7 +147,7 @@ namespace RogueEssence
             //This is because the following needs to be achieved:
             //Perfect simulation whether the updates were fast or slow
             //And for the game to not frame skip if the updates were too slow (deltatime too high), even if it meant slowing down the game itself.
-            if (!drawTurn)
+            if (!drawTurn && CurrentPhase > LoadPhase.Error)
             {
                 if (!firstUpdate && CurrentPhase > LoadPhase.System)
                 {
@@ -239,21 +240,21 @@ namespace RogueEssence
         {
             GraphicsDevice.Clear(Color.Black);
 
-            if (CurrentPhase > LoadPhase.System)
+            if (CurrentPhase == LoadPhase.Content || CurrentPhase == LoadPhase.Error)
             {
+                float scale = GraphicsManager.WindowZoom;
+                Matrix matrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
+
+                //draw the splash screen
+                float alpha = (float)(SPLASH_FADE_FRAMES - fadeFrames) / SPLASH_FADE_FRAMES;
+                GraphicsManager.Splash.Draw(spriteBatch,
+                    new Vector2((GraphicsManager.ScreenWidth - GraphicsManager.Splash.Width) / 2, (GraphicsManager.ScreenHeight - GraphicsManager.Splash.Height) / 2),
+                    null, Color.White * (alpha * 0.5f));
+
                 if (CurrentPhase == LoadPhase.Content)
                 {
-                    float scale = GraphicsManager.WindowZoom;
-                    Matrix matrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
-                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
-
-                    //draw the splash screen
-                    float alpha = (float)(SPLASH_FADE_FRAMES - fadeFrames) / SPLASH_FADE_FRAMES;
-                    GraphicsManager.Splash.Draw(spriteBatch,
-                        new Vector2((GraphicsManager.ScreenWidth - GraphicsManager.Splash.Width) / 2, (GraphicsManager.ScreenHeight - GraphicsManager.Splash.Height) / 2),
-                        null, Color.White * (alpha * 0.5f));
-
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth/2, 16,
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, 16,
                         Text.FormatKey("GAME_SPLASH"), null, DirV.Up, DirH.None, Color.White * alpha);
 
                     if (DiagManager.Instance.DevMode)
@@ -264,37 +265,42 @@ namespace RogueEssence
                     else if (backgroundLoaded && fadeFrames == 0 && splashFrames / SPLASH_BLINK_FRAMES % 2 == 0)
                     {
                         GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight - 2,
-                                       DiagManager.Instance.LoadMsg, null, DirV.Down, DirH.None);
+                                        DiagManager.Instance.LoadMsg, null, DirV.Down, DirH.None);
                     }
-
-
-                    spriteBatch.End();
                 }
-                else if (CurrentPhase == LoadPhase.Ready && firstUpdate)
+                else
                 {
-                    lock (lockObj)
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, 16,
+                        Text.FormatKey("GAME_ERROR_SPLASH"), null, DirV.Up, DirH.None, Color.White * alpha);
+                }
+
+
+                spriteBatch.End();
+            }
+            else if (CurrentPhase == LoadPhase.Ready && firstUpdate)
+            {
+                lock (lockObj)
+                {
+                    try
                     {
+                        GameManager.Instance.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
                         try
                         {
-                            GameManager.Instance.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds);
-
+                            spriteBatch.End();
                         }
-                        catch (Exception ex)
+                        catch (Exception ex2)
                         {
-                            DiagManager.Instance.LogError(ex);
-                            try
-                            {
-                                spriteBatch.End();
-                            }
-                            catch (Exception ex2)
-                            {
-                                DiagManager.Instance.LogError(ex2);
-                            }
+                            DiagManager.Instance.LogError(ex2);
                         }
                     }
-
-                    DiagManager.Instance.DevEditor.Draw();
                 }
+
+                DiagManager.Instance.DevEditor.Draw();
             }
 
             drawTurn = false;

@@ -57,7 +57,8 @@ namespace RogueEssence
         public bool FrameProcessed;
 
         private int totalErrorCount;
-        private int timeSinceError;
+        private bool thisFrameErrored;
+        private int framesErrored;
         private int longestFrame;
 
         private float fadeAmount;
@@ -934,8 +935,9 @@ namespace RogueEssence
                 }
             }
             SoundManager.SetBGMVolume(musicFadeFraction);
-            if (timeSinceError > 0)
-                timeSinceError--;
+            if (!thisFrameErrored)
+                framesErrored = 0;
+            thisFrameErrored = false;
 
             MenuManager.Instance.ProcessActions(elapsedTime);
 
@@ -1025,11 +1027,13 @@ namespace RogueEssence
         private void OnError(string msg)
         {
             totalErrorCount++;
-            if (timeSinceError == 0)
-            {
+            if (framesErrored == 0)
                 SE("Menu/Error");
-                timeSinceError = 15;
-            }
+            if (!thisFrameErrored)
+                framesErrored++;
+            thisFrameErrored = true;
+            if (framesErrored > 300)
+                GameBase.CurrentPhase = GameBase.LoadPhase.Error;
         }
 
         public IEnumerator<YieldInstruction> LogSkippableMsg(string msg)
