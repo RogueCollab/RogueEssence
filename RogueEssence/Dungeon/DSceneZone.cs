@@ -547,7 +547,7 @@ namespace RogueEssence.Dungeon
             Character character = playerList[charIndex.Char];
 
             character.OnRemove();
-            team.Players.RemoveAt(charIndex.Char);
+            playerList.RemoveAt(charIndex.Char);
 
             //update leader
             if (!charIndex.Guest)
