@@ -1037,13 +1037,25 @@ namespace RogueEssence.Dungeon
                         }
                     }
 
-                    foreach(Character player in ActiveTeam.EnumerateChars())
+
+                    foreach (Character player in ActiveTeam.Guests)
                     {
                         if (!player.Dead)
                         {
                             mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                3, (player == ActiveTeam.Leader) ? ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1) : 0,
-                                (player == ActiveTeam.Leader) ? Color.White : Color.Yellow);
+                                    3, 0, Color.Orange);
+                        }
+                    }
+                    foreach (Character player in ActiveTeam.Players)
+                    {
+                        if (!player.Dead)
+                        {
+                            if (player == ActiveTeam.Leader)
+                                mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
+                                    3, (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1, Color.White);
+                            else
+                                mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
+                                    3, 0, Color.Yellow);
                         }
                     }
 
