@@ -189,6 +189,11 @@ namespace RogueEssence.Script
                 ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
         }
 
+        public void SetCanSwitch(bool canSwitch)
+        {
+            DataManager.Instance.Save.NoSwitching = !canSwitch;
+        }
+
         /// <summary>
         /// Returns the player party count
         /// </summary>

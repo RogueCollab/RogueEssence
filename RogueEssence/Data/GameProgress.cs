@@ -104,6 +104,7 @@ namespace RogueEssence.Data
         public string UUID;
         public ProfilePic[] ProfilePics;
 
+        public bool NoSwitching;
         public RescueState Rescue;
 
         public ZoneLoc NextDest;

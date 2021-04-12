@@ -66,6 +66,17 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        public bool NoSwitch
+        {
+            get { return ZoneManager.Instance.CurrentGround.NoSwitching; }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.NoSwitching = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
         public ClassBoxViewModel BG { get; set; }
         public TileBoxViewModel BlankBG { get; set; }
 

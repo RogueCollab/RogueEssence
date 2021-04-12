@@ -63,7 +63,7 @@ namespace RogueEssence.Ground
 
         public string Music;
         public Map.ScrollEdge EdgeView;
-
+        public bool NoSwitching;
 
         public Loc? ViewCenter;
         public Loc ViewOffset;

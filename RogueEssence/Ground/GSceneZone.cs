@@ -235,6 +235,8 @@ namespace RogueEssence.Ground
         {
             if (charIndex >= DataManager.Instance.Save.ActiveTeam.Players.Count || charIndex == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
                 GameManager.Instance.SE("Menu/Cancel");
+            else if (ZoneManager.Instance.CurrentGround.NoSwitching || DataManager.Instance.Save.NoSwitching)
+                GameManager.Instance.SE("Menu/Cancel");
             else
             {
                 if (!canSwitchToChar(charIndex))
