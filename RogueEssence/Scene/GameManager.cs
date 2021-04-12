@@ -77,7 +77,7 @@ namespace RogueEssence
         public const int FANFARE_FADE_END = 40;
         public const int FANFARE_WAIT_EXTRA = 20;
 
-        
+
         public GameManager()
         {
             fadedTitle = "";
@@ -419,7 +419,7 @@ namespace RogueEssence
                 ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
-            
+
             if (!sameSegment || forceNewZone)
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment());
 
@@ -1019,7 +1019,7 @@ namespace RogueEssence
             if (DebugUI != null)
             {
                 string[] lines = DebugUI.Split('\n');
-                for(int ii = 0; ii < lines.Length; ii++)
+                for (int ii = 0; ii < lines.Length; ii++)
                     GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - 2 + (ii + 1 - lines.Length) * 10, lines[ii], null, DirV.Down, DirH.Left, Color.White);
             }
         }
@@ -1042,8 +1042,20 @@ namespace RogueEssence
         }
         public IEnumerator<YieldInstruction> LogSkippableMsg(string msg, Team involvedTeam)
         {
+            return LogSkippableMsg(MonsterID.Invalid, null, new EmoteStyle(0), msg, involvedTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(MonsterID speaker, string msg, Team involvedTeam)
+        {
+            return LogSkippableMsg(speaker, DataManager.Instance.GetMonster(speaker.Species).Name.ToLocal(), new EmoteStyle(0), msg, involvedTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(MonsterID speaker, string name, EmoteStyle emotion, string msg)
+        {
+            return LogSkippableMsg(speaker, name, emotion, msg, DataManager.Instance.Save.ActiveTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(MonsterID speaker, string name, EmoteStyle emotion, string msg, Team involvedTeam)
+        {
             if (involvedTeam == DataManager.Instance.Save.ActiveTeam && DataManager.Instance.CurrentReplay == null)
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, msg));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(speaker, name, emotion, false, msg));
             else
             {
                 DungeonScene.Instance.LogMsg(msg);

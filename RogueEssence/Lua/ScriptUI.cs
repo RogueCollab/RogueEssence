@@ -64,7 +64,8 @@ namespace RogueEssence.Script
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.SetSign(text);
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetSign(text);
             }
             catch (Exception e)
             {
@@ -79,7 +80,8 @@ namespace RogueEssence.Script
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text }); //!#NOTE : I really don't know why we should pass tables of strings?
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text }); //!#NOTE : I really don't know why we should pass tables of strings?
             }
             catch (Exception e)
             {
@@ -92,7 +94,8 @@ namespace RogueEssence.Script
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, true, expireTime, () => { }));
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, true, expireTime, () => { }));
             }
             catch (Exception e)
             {
@@ -212,6 +215,9 @@ namespace RogueEssence.Script
         /// </summary>
         public Coroutine _WaitDialog()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                return new Coroutine(_DummyWait());
+
             return new Coroutine(m_curdialogue);
         }
 
@@ -240,6 +246,12 @@ namespace RogueEssence.Script
         /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
         public void ChoiceMenuYesNo( string message, bool bdefaultstono = false )
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI() == 0 ? false : true;
+                return;
+            }
+
             try
             {
                 m_choiceresult = null;
@@ -254,16 +266,16 @@ namespace RogueEssence.Script
                                                                       m_curspeakerEmo,
                                                                       message,
                                                                       m_curspeakerSnd,
-                                                                      () => { m_choiceresult = true; },
-                                                                      () => { m_choiceresult = false; },
+                                                                      () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                                                                      () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
                 }
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(message,
                         m_curspeakerSnd,
-                        () => { m_choiceresult = true; },
-                        () => { m_choiceresult = false; });
+                        () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                        () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); });
                 }
             }
             catch (Exception e)
@@ -286,6 +298,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = "";
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new TeamNameMenu(title, desc, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
@@ -299,6 +312,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = false;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new AssemblyMenu(0, () => { m_choiceresult = true; });
             }
             catch (Exception e)
@@ -328,6 +342,7 @@ namespace RogueEssence.Script
                     Int64 price = (Int64)entry["Price"];
                     goodsList.Add(new Tuple<InvItem, int>(item, (int)price));
                 }
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new ShopMenu(goodsList, 0, (List<int> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
@@ -354,6 +369,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SellMenu(0, (List<InvSlot> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
@@ -372,6 +388,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new DepositMenu(0);
             }
             catch (Exception e)
@@ -385,6 +402,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new WithdrawMenu(0, true, onChooseSlot);
             }
             catch (Exception e)
@@ -429,6 +447,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new BankMenu(DataManager.Instance.Save.ActiveTeam.Money, onChooseAmount);
             }
             catch (Exception e)
@@ -489,6 +508,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new TutorTeamMenu(-1,
                     (int teamSlot) => { m_choiceresult = teamSlot; },
                     () => { });
@@ -505,6 +525,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 List<int> forgottenSkills = chara.GetRelearnableSkills();
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
                 (int skillNum) => { m_choiceresult = skillNum; },
@@ -522,6 +543,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SkillReplaceMenu(chara, moveNum,
                         (int slot) => { m_choiceresult = slot; },
                         () => { });
@@ -538,6 +560,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SkillForgetMenu(chara,
                         (int slot) => { m_choiceresult = slot; },
                         () => { });
@@ -554,6 +577,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new PromoteMenu(-1,
                     (int teamSlot) => { m_choiceresult = teamSlot; },
                     () => { });
@@ -799,6 +823,12 @@ namespace RogueEssence.Script
         /// <param name="message">The question to ask the user.</param>
         public void BeginChoiceMenu(string message, LuaTable choicespairs, object defaultchoice, object cancelchoice)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = null;
@@ -819,13 +849,13 @@ namespace RogueEssence.Script
                         choicetext = (string)tbl[1];
                         enabled = (bool)tbl[2];
                     }
-                    object choiceval = dict.Key;
+                    long choiceval = (long)dict.Key;
 
                     if (defaultchoice.Equals(choiceval))
                         mappedDefault = choices.Count;
                     if (cancelchoice.Equals(choiceval))
                         mappedCancel = choices.Count;
-                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; }, enabled));
+                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
 
                 //Make a choice menu, and check if we display a speaker or not
@@ -862,6 +892,9 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public Coroutine _WaitForChoice()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                return new Coroutine(_DummyWait());
+
             if (m_curchoice != null)
                 return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
             else

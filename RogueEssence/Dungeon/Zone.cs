@@ -302,12 +302,12 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneSegmentEnd(/*assetName, this*/);
         }
 
-        public IEnumerator<YieldInstruction> OnAllyInteract(Character chara, Character target)
+        public IEnumerator<YieldInstruction> OnAllyInteract(Character chara, Character target, ActionResult result)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.AllyInteract, chara, target, this));
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.AllyInteract, chara, target, result, this));
 
         }
 

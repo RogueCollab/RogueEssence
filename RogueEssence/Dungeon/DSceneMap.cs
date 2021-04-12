@@ -471,7 +471,7 @@ namespace RogueEssence.Dungeon
                 {
                     if (member.CharLoc == frontLoc && !member.Dead)
                     {
-                        yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnAllyInteract(character, member));
+                        yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnAllyInteract(character, member, result));
                         yield break;
                     }
                 }
