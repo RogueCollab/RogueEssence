@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using RogueElements;
 
 namespace RogueEssence.Content
@@ -13,6 +14,7 @@ namespace RogueEssence.Content
         public SqueezedAreaEmitter()
         {
             Anims = new List<IParticleEmittable>();
+            Layer = DrawLayer.Normal;
         }
         public SqueezedAreaEmitter(params AnimData[] anims) : this()
         {
@@ -40,6 +42,7 @@ namespace RogueEssence.Content
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
             HeightDiff = other.HeightDiff;
+            Layer = other.Layer;
         }
 
         public override BaseEmitter Clone() { return new SqueezedAreaEmitter(this); }
@@ -54,6 +57,8 @@ namespace RogueEssence.Content
         public int SpeedDiff;
         public int StartHeight;
         public int HeightDiff;
+
+        public DrawLayer Layer;
 
         [NonSerialized]
         private FrameTick CurrentBurstTime;
@@ -82,14 +87,13 @@ namespace RogueEssence.Content
                         int heightDiff = (int)((MathUtils.Rand.NextDouble() * 2 - 1) * HeightDiff);
 
                         IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                        scene.Anims[(int)DrawLayer.Normal].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight + heightDiff, HeightSpeed, 0, AnimDir));
+                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight + heightDiff, HeightSpeed, 0, AnimDir));
                     }
                 }
                 CurrentBursts++;
                 if (CurrentBursts >= Bursts)
                     break;
             }
-
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using RogueElements;
 
 namespace RogueEssence.Content
@@ -13,6 +14,7 @@ namespace RogueEssence.Content
         public StaticAreaEmitter()
         {
             Anims = new List<IEmittable>();
+            Layer = DrawLayer.Normal;
         }
         public StaticAreaEmitter(params AnimData[] anims) : this()
         {
@@ -31,6 +33,7 @@ namespace RogueEssence.Content
             Range = other.Range;
             AnimDir = other.AnimDir;
             LocHeight = other.LocHeight;
+            Layer = other.Layer;
         }
 
         public override BaseEmitter Clone() { return new StaticAreaEmitter(this); }
@@ -41,6 +44,7 @@ namespace RogueEssence.Content
         public int BurstTime;
         public int Range;
         public Dir8 AnimDir;
+        public DrawLayer Layer;
 
         [NonSerialized]
         private FrameTick CurrentBurstTime;
@@ -66,7 +70,7 @@ namespace RogueEssence.Content
                     if (Anims.Count > 0)
                     {
                         IEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                        scene.Anims[(int)DrawLayer.Normal].Add(chosenAnim.CreateStatic(Origin + startDelta, LocHeight, Dir));
+                        scene.Anims[(int)Layer].Add(chosenAnim.CreateStatic(Origin + startDelta, LocHeight, Dir));
                     }
                 }
                 CurrentBursts++;
@@ -242,6 +246,7 @@ namespace RogueEssence.Content
         public CircleSquareAreaEmitter()
         {
             Anims = new List<IEmittable>();
+            Layer = DrawLayer.Normal;
         }
         public CircleSquareAreaEmitter(params AnimData[] anims) : this()
         {
@@ -259,6 +264,7 @@ namespace RogueEssence.Content
             Range = other.Range;
             RangeDiff = other.RangeDiff;
             Speed = other.Speed;
+            Layer = other.Layer;
         }
 
         public override BaseEmitter Clone() { return new CircleSquareAreaEmitter(this); }
@@ -266,6 +272,7 @@ namespace RogueEssence.Content
         public List<IEmittable> Anims;
         public double ParticlesPerTile;
         public int RangeDiff;//pixels!
+        public DrawLayer Layer; 
 
         [NonSerialized]
         private int CurrentRadius;
@@ -329,7 +336,7 @@ namespace RogueEssence.Content
                 if (Anims.Count > 0)
                 {
                     IEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                    scene.Anims[(int)DrawLayer.Normal].Add(chosenAnim.CreateStatic(Origin + startDelta, LocHeight, Dir));
+                    scene.Anims[(int)Layer].Add(chosenAnim.CreateStatic(Origin + startDelta, LocHeight, Dir));
                 }
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using RogueElements;
 
 namespace RogueEssence.Content
@@ -13,6 +14,7 @@ namespace RogueEssence.Content
         public FiniteSprinkleEmitter()
         {
             Anims = new List<IParticleEmittable>();
+            Layer = DrawLayer.Normal;
         }
         public FiniteSprinkleEmitter(params AnimData[] anims) : this()
         {
@@ -34,6 +36,7 @@ namespace RogueEssence.Content
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
+            Layer = other.Layer;
         }
 
         public override BaseEmitter Clone() { return new FiniteSprinkleEmitter(this); }
@@ -55,6 +58,8 @@ namespace RogueEssence.Content
         public int HeightSpeed;
         public int SpeedDiff;
         public int StartHeight;
+
+        public DrawLayer Layer;
 
         [NonSerialized]
         private int CurrentRadius;
@@ -96,7 +101,7 @@ namespace RogueEssence.Content
                     if (Anims.Count > 0)
                     {
                         IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                        scene.Anims[(int)DrawLayer.Normal].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, AnimDir));
+                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, AnimDir));
                     }
                 }
             }
@@ -109,6 +114,7 @@ namespace RogueEssence.Content
         public AttachSprinkleEmitter()
         {
             Anims = new List<IParticleEmittable>();
+            Layer = DrawLayer.Normal;
         }
 
         public AttachSprinkleEmitter(AttachSprinkleEmitter other)
@@ -123,6 +129,7 @@ namespace RogueEssence.Content
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
+            Layer = other.Layer;
         }
 
         public override BaseEmitter Clone() { return new AttachSprinkleEmitter(this); }
@@ -135,6 +142,8 @@ namespace RogueEssence.Content
         public int HeightSpeed;
         public int SpeedDiff;
         public int StartHeight;
+
+        public DrawLayer Layer;
 
         [NonSerialized]
         private FrameTick CurrentBurstTime;
@@ -168,12 +177,11 @@ namespace RogueEssence.Content
                         if (Anims.Count > 0)
                         {
                             IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                            scene.Anims[(int)DrawLayer.Normal].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight + LocHeight, HeightSpeed, 0, AnimDir));
+                            scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight + LocHeight, HeightSpeed, 0, AnimDir));
                         }
                     }
                 }
             }
-
         }
     }
 
@@ -185,6 +193,7 @@ namespace RogueEssence.Content
         public CircleSquareSprinkleEmitter()
         {
             Anims = new List<IParticleEmittable>();
+            Layer = DrawLayer.Normal;
         }
         public CircleSquareSprinkleEmitter(AnimData anim, int cycles, int totalTime) : this()
         {
@@ -208,6 +217,7 @@ namespace RogueEssence.Content
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
+            Layer = other.Layer;
         }
 
         public override BaseEmitter Clone() { return new CircleSquareSprinkleEmitter(this); }
@@ -227,6 +237,8 @@ namespace RogueEssence.Content
         /// </summary>
         public int SpeedDiff;
         public int StartHeight;
+
+        public DrawLayer Layer;
 
         [NonSerialized]
         private int CurrentRadius;
@@ -293,11 +305,10 @@ namespace RogueEssence.Content
                     if (Anims.Count > 0)
                     {
                         IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                        scene.Anims[(int)DrawLayer.Normal].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, AnimDir));
+                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, AnimDir));
                     }
                 }
             }
-
         }
     }
 }
