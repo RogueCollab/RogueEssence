@@ -480,6 +480,23 @@ namespace RogueEssence.Content
                 }
                 offsetTex.Dispose();
 
+                // automatically add default animation
+                {
+                    CharAnimGroup anim = new CharAnimGroup();
+                    CharAnimGroup parentGroup = animData[GraphicsManager.IdleAction];
+                    while (parentGroup.CopyOf > -1)
+                        parentGroup = animData[parentGroup.CopyOf];
+                    foreach (CharAnimSequence sequence in parentGroup.Sequences)
+                    {
+                        CharAnimSequence newSequence = new CharAnimSequence();
+                        CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
+                        frame.EndTime = 1;
+                        newSequence.Frames.Add(frame);
+                        anim.Sequences.Add(newSequence);
+                    }
+                    animData[0] = anim;
+                }
+
                 CharSheet charSheet = new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
                 charSheet.Collapse(false);
                 return charSheet;
