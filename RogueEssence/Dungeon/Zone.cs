@@ -38,7 +38,7 @@ namespace RogueEssence.Dungeon
 
         public int MapCount { get { return maps.Count; } }
 
-        private int zoneIndex;
+        public int ID { get; private set; }
         public SegLoc CurrentMapID { get; private set; }
         public Map CurrentMap { get; private set; }
 
@@ -57,7 +57,7 @@ namespace RogueEssence.Dungeon
             DiagManager.Instance.LogInfo("Zone Seed: " + seed);
             rand = new ReRandom(seed);
 
-            this.zoneIndex = zoneIndex;
+            this.ID = zoneIndex;
             Name = new LocalText();
 
             CurrentMapID = SegLoc.Invalid;
@@ -223,7 +223,7 @@ namespace RogueEssence.Dungeon
                 {
                     ReRandom initRand = new ReRandom(structSeed);
                     ZoneGenContext newContext = new ZoneGenContext();
-                    newContext.CurrentZone = zoneIndex;
+                    newContext.CurrentZone = ID;
                     newContext.CurrentSegment = id.Segment;
                     foreach (ZonePostProc zoneStep in Structures[id.Segment].PostProcessingSteps)
                     {
@@ -332,7 +332,7 @@ namespace RogueEssence.Dungeon
         {
             exitMap();
 
-            string assetName = "zone_" + zoneIndex;
+            string assetName = "zone_" + ID;
             DiagManager.Instance.LogInfo(String.Format("Zone.~Zone(): Finalizing {0}..", assetName));
 
             LuaEngine.Instance.CleanZoneScript(assetName);
