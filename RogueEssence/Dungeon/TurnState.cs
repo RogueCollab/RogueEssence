@@ -26,11 +26,11 @@ namespace RogueEssence.Dungeon
 
 
 
-        public void UpdateCharRemoval(Faction faction, int removedTeam, int charIndex)
+        public void UpdateCharRemoval(CharIndex charIndex)
         {
             //The TurnToChar list will always contain only one faction's worth of turns.
             //which faction can be automatically deduced from CurrentOrder.Faction
-            if (faction != CurrentOrder.Faction)
+            if (charIndex.Faction != CurrentOrder.Faction)
                 return;
             //all characters on the team with an index higher than the removed char need to be decremented to reflect their new position
             //the removed character (if they're in this turn map, which may not be true) needs to be removed
@@ -40,11 +40,11 @@ namespace RogueEssence.Dungeon
             for (int ii = TurnToChar.Count - 1; ii >= 0; ii--)
             {
                 CharIndex turnChar = TurnToChar[ii];
-                if (turnChar.Team == removedTeam)
+                if (turnChar.Team == charIndex.Team && turnChar.Guest == charIndex.Guest)
                 {
-                    if (turnChar.Char > charIndex)
+                    if (turnChar.Char > charIndex.Char)
                         TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, turnChar.Char - 1);
-                    else if (turnChar.Char == charIndex)
+                    else if (turnChar.Char == charIndex.Char)
                     {
                         TurnToChar.RemoveAt(ii);
                         removeIndex = ii;

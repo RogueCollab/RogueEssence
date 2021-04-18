@@ -560,7 +560,7 @@ namespace RogueEssence.Dungeon
                     team.LeaderIndex = 0;
             }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex.Faction, charIndex.Team, charIndex.Char);
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex);
 
             if (charIndex.Faction == Faction.Player && focusedPlayerIndex > charIndex.Char)
                 focusedPlayerIndex--;
