@@ -231,6 +231,10 @@ namespace RogueEssence.Script
             int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
             chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, animIndex, loop));
         }
+        public void CharEndAnim(GroundChar chara)
+        {
+            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
+        }
 
         public void CharPoseAnim(GroundChar chara, string anim)
         {
