@@ -216,8 +216,6 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < id.ID; ii++)
                     structRand.NextUInt64();
 
-                ulong mapSeed = structRand.NextUInt64();
-
                 //load the struct context if it isn't present yet
                 if (!structureContexts.ContainsKey(id.Segment))
                 {
@@ -238,15 +236,28 @@ namespace RogueEssence.Dungeon
                 }
                 ZoneGenContext zoneContext = structureContexts[id.Segment];
                 zoneContext.CurrentID = id.ID;
-                zoneContext.Seed = mapSeed;
+                zoneContext.Seed = structRand.NextUInt64();
 
                 //TODO: remove the need for this explicit cast
                 //make a parameterized version of zonestructure and then make zonestructure itself put in basemapgencontext as the parameter
-                Map map = ((BaseMapGenContext)Structures[id.Segment].GetMap(zoneContext)).Map;
+                for (int ii = 0; ii < 5; ii++)
+                {
+                    try
+                    {
+                        IGenContext context = Structures[id.Segment].GetMap(zoneContext);
+                        Map map = ((BaseMapGenContext)context).Map;
 
-                //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...
-                //maps.Add(id, map);
-                return map;
+                        //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...
+                        //maps.Add(id, map);
+                        return map;
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii));
+                        zoneContext.Seed = structRand.NextUInt64();
+                    }
+                }
             }
             return maps[id];
         }
