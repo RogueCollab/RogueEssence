@@ -21,7 +21,7 @@ namespace RogueEssence.Ground
             EntName = name;
             Position = pos;
             Direction = dir;
-            Bounds = new Rect(Position.X, Position.Y, 8, 8); //Static size, so its easier to click on it!
+            Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
             if (pos == null)
                 pos = new Loc(-1,-1);
             if (name == null)
@@ -49,6 +49,13 @@ namespace RogueEssence.Ground
         public override IEnumerable<LuaEngine.EEntLuaEventTypes> ActiveLuaCallbacks()
         {
             return new List<LuaEngine.EEntLuaEventTypes>();
+        }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext cntxt)
+        {
+            Collider.Width = GroundAction.HITBOX_WIDTH;
+            Collider.Height = GroundAction.HITBOX_HEIGHT;
         }
     }
 }

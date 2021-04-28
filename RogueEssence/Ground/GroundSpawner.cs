@@ -61,7 +61,7 @@ namespace RogueEssence.Ground
             EntName = spawnername;
             NPCName = npcname;
             NPCChar = npcchar;
-            Bounds = new Rect(Position.X, Position.Y, 8, 8); //Static size, so its easier to click on it!
+            Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
             ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
@@ -211,6 +211,8 @@ namespace RogueEssence.Ground
         {
             if (ScriptEvents == null)
                 ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            Collider.Width = GroundAction.HITBOX_WIDTH;
+            Collider.Height = GroundAction.HITBOX_HEIGHT;
         }
     }
 }

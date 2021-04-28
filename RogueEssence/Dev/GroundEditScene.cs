@@ -223,21 +223,21 @@ namespace RogueEssence.Dev
                         //Invert the color of selected entities
                         dbg.DrawColor = new Color(entity.DevEntColoring.B, entity.DevEntColoring.G, entity.DevEntColoring.R, entity.DevEntColoring.A);
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(entity.Bounds, 92);
+                        dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 92);
                     }
                     else if (!entity.DevHasGraphics())
                     {
                         //Draw entities with no graphics of their own as a filled box
                         dbg.DrawColor = entity.DevEntColoring;
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(entity.Bounds, 128);
+                        dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 128);
                     }
                     else
                     {
                         //Draw boxes around other entities with graphics using low opacity
                         dbg.DrawColor = new Color(entity.DevEntColoring.R, entity.DevEntColoring.G, entity.DevEntColoring.B, 92);
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawBox(entity.Bounds);
+                        dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
                     }
                     //And don't draw bounds of entities that have a graphics representation
                 }

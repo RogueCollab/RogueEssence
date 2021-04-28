@@ -486,8 +486,8 @@ namespace RogueEssence.Dev.ViewModels
             //foreach (string s in TemplateManager.TemplateTypeNames)
             //    cmbTemplateType.Items.Add(s);
 
-            BoundsX = 8;
-            BoundsY = 8;
+            BoundsX = GroundAction.HITBOX_WIDTH;
+            BoundsY = GroundAction.HITBOX_HEIGHT;
 
             FrameLength = 1;
 
@@ -510,7 +510,7 @@ namespace RogueEssence.Dev.ViewModels
                 SelectedEntity.DevOnEntitySelected();
             }
             else
-                setEntity(new GroundObject(new ObjAnimData(), new Rect(0, 0, 8, 8),
+                setEntity(new GroundObject(new ObjAnimData(), new Rect(0, 0, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT),
                                 GroundEntity.EEntityTriggerTypes.None, "NewObject"));
         }
 
@@ -634,7 +634,7 @@ namespace RogueEssence.Dev.ViewModels
                         }
                     case GroundEntity.EEntTypes.Object:
                         {
-                            placeableEntity = new GroundObject(new ObjAnimData(), new Rect(0, 0, 8, 8),
+                            placeableEntity = new GroundObject(new ObjAnimData(), new Rect(0, 0, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT),
                                 GroundEntity.EEntityTriggerTypes.None, entName);
                             break;
                         }
