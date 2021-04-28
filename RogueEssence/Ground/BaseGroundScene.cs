@@ -87,8 +87,10 @@ namespace RogueEssence.Ground
             Loc viewCenter = focusedLoc;
 
             if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                viewCenter = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(viewCenter.X, ZoneManager.Instance.CurrentGround.GroundWidth - GraphicsManager.ScreenWidth / 2)),
-                    Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(viewCenter.Y, ZoneManager.Instance.CurrentGround.GroundHeight - GraphicsManager.ScreenHeight / 2)));
+                viewCenter = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(viewCenter.X,
+                    ZoneManager.Instance.CurrentGround.GroundWidth - (int)(GraphicsManager.ScreenWidth / scale / 2))),
+                    Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(viewCenter.Y,
+                    ZoneManager.Instance.CurrentGround.GroundHeight - (int)(GraphicsManager.ScreenHeight / scale / 2))));
 
             ViewRect = new Rect((int)(viewCenter.X - GraphicsManager.ScreenWidth / scale / 2), (int)(viewCenter.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));

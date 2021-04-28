@@ -202,6 +202,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             MapName = MapName;
             ChosenScroll = ChosenScroll;
+            NoSwitch = NoSwitch;
             
             BG.LoadFromSource(ZoneManager.Instance.CurrentGround.Background);
             BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);

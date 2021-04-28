@@ -43,8 +43,11 @@ namespace RogueEssence.Content
             x8Far = 3,
         }
 
-        public static int ConvertZoom(this GameZoom zoom, int amount)
+        public static int ConvertZoom(this GameZoom zoom, int amount, bool reverse = false)
         {
+            if (reverse)
+                zoom = (GameZoom)(-(int)zoom);
+
             switch (zoom)
             {
                 case GameZoom.x8Near:

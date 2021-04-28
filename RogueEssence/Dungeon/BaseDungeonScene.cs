@@ -103,8 +103,10 @@ namespace RogueEssence.Dungeon
             Loc viewCenter = focusedLoc;
 
             if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Clamp)
-                viewCenter = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(viewCenter.X, ZoneManager.Instance.CurrentMap.Width * GraphicsManager.TileSize - GraphicsManager.ScreenWidth / 2)),
-                    Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(viewCenter.Y, ZoneManager.Instance.CurrentMap.Height * GraphicsManager.TileSize - GraphicsManager.ScreenHeight / 2)));
+                viewCenter = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(viewCenter.X,
+                    ZoneManager.Instance.CurrentMap.Width * GraphicsManager.TileSize - (int)(GraphicsManager.ScreenWidth / scale / 2))),
+                    Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(viewCenter.Y,
+                    ZoneManager.Instance.CurrentMap.Height * GraphicsManager.TileSize - (int)(GraphicsManager.ScreenHeight / scale / 2))));
 
             ViewRect = new Rect((int)(viewCenter.X - GraphicsManager.ScreenWidth / scale / 2), (int)(viewCenter.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));

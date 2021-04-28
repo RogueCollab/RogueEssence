@@ -88,7 +88,6 @@ namespace RogueEssence.Dev
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             Loc dirLoc = Loc.Zero;
-            bool fast = !input.BaseKeyDown(Keys.LeftShift);
 
             for (int ii = 0; ii < DirKeys.Length; ii++)
             {
@@ -96,7 +95,28 @@ namespace RogueEssence.Dev
                     dirLoc = dirLoc + ((Dir4)ii).GetLoc();
             }
 
-            DiffLoc = dirLoc * (fast ? 8 : 1);
+            bool slow = input.BaseKeyDown(Keys.LeftShift);
+            int speed = 8;
+            if (slow)
+                speed = 1;
+            else
+            {
+                switch (GraphicsManager.Zoom)
+                {
+                    case GraphicsManager.GameZoom.x8Near:
+                        speed = 1;
+                        break;
+                    case GraphicsManager.GameZoom.x4Near:
+                        speed = 2;
+                        break;
+                    case GraphicsManager.GameZoom.x2Near:
+                        speed = 4;
+                        break;
+                }
+            }
+
+            DiffLoc = dirLoc * speed;
+
             yield break;
         }
 
@@ -110,6 +130,17 @@ namespace RogueEssence.Dev
 
                 FocusedLoc += DiffLoc;
                 DiffLoc = new Loc();
+
+                float scale = GraphicsManager.Zoom.GetScale();
+
+                if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Clamp)
+                    FocusedLoc = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(FocusedLoc.X,
+                        ZoneManager.Instance.CurrentMap.Width * GraphicsManager.TileSize - (int)(GraphicsManager.ScreenWidth / scale / 2))),
+                        Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(FocusedLoc.Y,
+                        ZoneManager.Instance.CurrentMap.Height * GraphicsManager.TileSize - (int)(GraphicsManager.ScreenHeight / scale / 2))));
+                else
+                    FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentMap.Width * GraphicsManager.TileSize)),
+                        Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentMap.Height * GraphicsManager.TileSize)));
 
                 base.UpdateCamMod(elapsedTime, ref FocusedLoc);
 

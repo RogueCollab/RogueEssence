@@ -95,7 +95,6 @@ namespace RogueEssence.Dev
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             Loc dirLoc = Loc.Zero;
-            bool fast = !input.BaseKeyDown(Keys.LeftShift);
 
             for (int ii = 0; ii < DirKeys.Length; ii++)
             {
@@ -103,7 +102,27 @@ namespace RogueEssence.Dev
                     dirLoc = dirLoc + ((Dir4)ii).GetLoc();
             }
 
-            DiffLoc = dirLoc * (fast ? 8 : 1);
+            bool slow = input.BaseKeyDown(Keys.LeftShift);
+            int speed = 8;
+            if (slow)
+                speed = 1;
+            else
+            {
+                switch (GraphicsManager.Zoom)
+                {
+                    case GraphicsManager.GameZoom.x8Near:
+                        speed = 1;
+                        break;
+                    case GraphicsManager.GameZoom.x4Near:
+                        speed = 2;
+                        break;
+                    case GraphicsManager.GameZoom.x2Near:
+                        speed = 4;
+                        break;
+                }
+            }
+
+            DiffLoc = dirLoc * speed;
 
             yield break;
         }
@@ -125,10 +144,13 @@ namespace RogueEssence.Dev
                 FocusedLoc += DiffLoc;
                 DiffLoc = new Loc();
 
+                float scale = GraphicsManager.Zoom.GetScale();
 
                 if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                    FocusedLoc = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth - GraphicsManager.ScreenWidth / 2)),
-                        Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight - GraphicsManager.ScreenHeight / 2)));
+                    FocusedLoc = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(FocusedLoc.X,
+                        ZoneManager.Instance.CurrentGround.GroundWidth - (int)(GraphicsManager.ScreenWidth / scale / 2))),
+                        Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(FocusedLoc.Y,
+                        ZoneManager.Instance.CurrentGround.GroundHeight - (int)(GraphicsManager.ScreenHeight / scale / 2))));
                 else
                     FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth)),
                         Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight)));
@@ -247,6 +269,23 @@ namespace RogueEssence.Dev
             base.DrawDev(spriteBatch);
         }
 
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                GroundEntity selectedEntity = null;
+                foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
+                {
+                    if (entity.DevEntitySelected)
+                        selectedEntity = entity;
+                }
+
+                if (selectedEntity != null)
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Obj X:{0:D3} Y:{1:D3}", selectedEntity.MapLoc.X, selectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+            }
+        }
 
         public void EnterGroundEdit(int entryPoint)
         {
