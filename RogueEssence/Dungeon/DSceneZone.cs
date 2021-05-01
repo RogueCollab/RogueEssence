@@ -439,6 +439,7 @@ namespace RogueEssence.Dungeon
                             AITactic tactic = DataManager.Instance.GetAITactic(choice);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
+                            target.Tactic.Initialize(target);
                         }
                         break;
                     }
