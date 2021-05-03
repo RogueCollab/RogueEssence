@@ -92,11 +92,11 @@ namespace RogueEssence.Menu
         {
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid,
-                null, new EmoteStyle(0), Text.FormatKey("DLG_ASSEMBLY_RELEASE_ASK", player.BaseName), true, () =>
+                null, new EmoteStyle(0), Text.FormatKey("DLG_ASSEMBLY_RELEASE_ASK", player.GetDisplayName(true)), true, () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 baseMenu.ReleaseAssembly(teamSlot);
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ASSEMBLY_RELEASE", player.BaseName)), false);
+                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ASSEMBLY_RELEASE", player.GetDisplayName(true))), false);
             }, () => { }, true), false);
         }
 

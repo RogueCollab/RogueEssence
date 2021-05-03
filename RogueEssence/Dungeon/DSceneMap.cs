@@ -220,7 +220,7 @@ namespace RogueEssence.Dungeon
                         }
 
                         if (!wantItem)
-                            LogPickup(new PickupItem(Text.FormatKey("MSG_PASS_ITEM", character.Name, itemName), "", "", character.CharLoc, character, true));
+                            LogPickup(new PickupItem(Text.FormatKey("MSG_PASS_ITEM", character.GetDisplayName(false), itemName), "", "", character.CharLoc, character, true));
                     }
                 }
 
@@ -272,7 +272,7 @@ namespace RogueEssence.Dungeon
 
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_PICKUP_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_PICKUP_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -299,7 +299,7 @@ namespace RogueEssence.Dungeon
             {
                 ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
                 ((ExplorerTeam)memberTeam).Money += item.Value;
-                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.Name, Text.FormatKey("MONEY_AMOUNT", item.Value)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
+                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.GetDisplayName(false), Text.FormatKey("MONEY_AMOUNT", item.Value)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
             }
             else
             {
@@ -328,16 +328,16 @@ namespace RogueEssence.Dungeon
                     if (item.HiddenValue == 0)
                     {
                         ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
-                        msg = Text.FormatKey("MSG_PICKUP_ITEM", character.Name, nameItem.GetDungeonName());
+                        msg = Text.FormatKey("MSG_PICKUP_ITEM", character.GetDisplayName(false), nameItem.GetDungeonName());
                     }
                     else
-                        msg = Text.FormatKey("MSG_PICKUP_SOME_ITEM", character.Name, nameItem.GetDungeonName());
+                        msg = Text.FormatKey("MSG_PICKUP_SOME_ITEM", character.GetDisplayName(false), nameItem.GetDungeonName());
                 }
                 else
                 {
                     ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
                     ((ExplorerTeam)memberTeam).AddToInv(item.MakeInvItem());
-                    msg = Text.FormatKey("MSG_PICKUP_ITEM", character.Name, item.GetDungeonName());
+                    msg = Text.FormatKey("MSG_PICKUP_ITEM", character.GetDisplayName(false), item.GetDungeonName());
                 }
                 bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
                 LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE, item.TileLoc, character, false));
@@ -358,12 +358,12 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
             if (character.EquippedItem.ID > -1)
             {
-                LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.Name, item.GetDisplayName(), character.EquippedItem.GetDisplayName()));
+                LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.GetDisplayName(false), item.GetDisplayName(), character.EquippedItem.GetDisplayName()));
                 //spawn item on floor
                 ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(character.EquippedItem, character.CharLoc));
             }
             else
-                LogMsg(Text.FormatKey("MSG_PICKUP_HOLD_ITEM", character.Name, item.GetDisplayName()));
+                LogMsg(Text.FormatKey("MSG_PICKUP_HOLD_ITEM", character.GetDisplayName(false), item.GetDisplayName()));
 
             character.EquipItem(item);
         }
@@ -373,14 +373,14 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_DROP_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_DROP_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
             if (invSlot == BattleContext.EQUIP_ITEM_SLOT && character.EquippedItem.Cursed && !character.CanRemoveStuck)
             {
                 GameManager.Instance.SE(GraphicsManager.CursedSE);
-                LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", character.Name, character.EquippedItem.GetDisplayName()), false, true);
+                LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", character.GetDisplayName(false), character.EquippedItem.GetDisplayName()), false, true);
                 yield break;
             }
             Loc loc = character.CharLoc;
@@ -413,7 +413,7 @@ namespace RogueEssence.Dungeon
                     bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
                     GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
 
-                    LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.Name, item.GetDungeonName(), invItem.GetDisplayName()));
+                    LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.GetDisplayName(false), item.GetDungeonName(), invItem.GetDisplayName()));
 
                     character.EquipItem(item.MakeInvItem());
                 }
@@ -452,7 +452,7 @@ namespace RogueEssence.Dungeon
                 ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
                 GameManager.Instance.SE(GraphicsManager.PlaceSE);
 
-                LogMsg(Text.FormatKey("MSG_PLACE_ITEM", character.Name, invItem.GetDisplayName()));
+                LogMsg(Text.FormatKey("MSG_PLACE_ITEM", character.GetDisplayName(false), invItem.GetDisplayName()));
 
             }
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
@@ -501,7 +501,7 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_CHECK_TILE", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_CHECK_TILE", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -529,7 +529,7 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_SWAP_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_SWAP_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -540,7 +540,7 @@ namespace RogueEssence.Dungeon
             if (itemChar.EquippedItem.Cursed && !itemChar.CanRemoveStuck)
             {
                 GameManager.Instance.SE(GraphicsManager.CursedSE);
-                LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", itemChar.Name, itemChar.EquippedItem.GetDisplayName()), false, true);
+                LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", itemChar.GetDisplayName(false), itemChar.EquippedItem.GetDisplayName()), false, true);
                 yield break;
             }
 
@@ -560,12 +560,12 @@ namespace RogueEssence.Dungeon
 
                 if (itemChar.EquippedItem.ID > -1)
                 {
-                    LogMsg(Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName()));
+                    LogMsg(Text.FormatKey("MSG_ITEM_SWAP", itemChar.GetDisplayName(false), item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName()));
                     //put item in inv
                     ((ExplorerTeam)memberTeam).AddToInv(new InvItem(itemChar.EquippedItem));
                 }
                 else
-                    LogMsg(Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetDisplayName()));
+                    LogMsg(Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName()));
 
                 itemChar.EquipItem(item);
             }
@@ -578,7 +578,7 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_DEQUIP", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_DEQUIP", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -587,7 +587,7 @@ namespace RogueEssence.Dungeon
             if (itemChar.EquippedItem.Cursed && !itemChar.CanRemoveStuck)
             {
                 GameManager.Instance.SE(GraphicsManager.CursedSE);
-                LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", itemChar.Name, itemChar.EquippedItem.GetDisplayName()), false, true);
+                LogMsg(Text.FormatKey("MSG_DEQUIP_CURSED", itemChar.GetDisplayName(false), itemChar.EquippedItem.GetDisplayName()), false, true);
                 yield break;
             }
 
@@ -597,7 +597,7 @@ namespace RogueEssence.Dungeon
             ((ExplorerTeam)memberTeam).AddToInv(item);
             itemChar.DequipItem();
             GameManager.Instance.SE(GraphicsManager.EquipSE);
-            LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.Name, item.GetDisplayName()));
+            LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.GetDisplayName(false), item.GetDisplayName()));
 
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
             yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character));
@@ -677,7 +677,7 @@ namespace RogueEssence.Dungeon
                 if (totalExp != 0)
                 {
                     MeterChanged(player.CharLoc, totalExp, true);
-                    LogMsg(Text.FormatKey("MSG_EXP_GAIN_MEMBER", player.BaseName, totalExp), true, false);
+                    LogMsg(Text.FormatKey("MSG_EXP_GAIN_MEMBER", player.GetDisplayName(true), totalExp), true, false);
                 }
                 if (levelDiff != 0)
                     LevelGains.Add(new CharIndex(Faction.Player, 0, false, ii));
@@ -719,7 +719,7 @@ namespace RogueEssence.Dungeon
 
 
                     GameManager.Instance.Fanfare("Fanfare/LevelUp");
-                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_LEVEL_UP", player.BaseName, player.Level), player.MemberTeam));
+                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_LEVEL_UP", player.GetDisplayName(true), player.Level), player.MemberTeam));
                     if (levelTeam == ActiveTeam && DataManager.Instance.CurrentReplay == null)
                     {
                         GameManager.Instance.SE("Menu/Confirm");
@@ -745,7 +745,7 @@ namespace RogueEssence.Dungeon
                     player.HP = Math.Min(player.MaxHP, player.HP);
 
                     GameManager.Instance.Fanfare("Fanfare/LevelDown");
-                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_LEVEL_DOWN", player.BaseName, player.Level), player.MemberTeam));
+                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_LEVEL_DOWN", player.GetDisplayName(true), player.Level), player.MemberTeam));
                 }
             }
             LevelGains.Clear();
@@ -807,9 +807,9 @@ namespace RogueEssence.Dungeon
             player.ReplaceSkill(skill, slot, (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical));
 
             if (oldSkill == "")
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_LEARN", player.Name, DataManager.Instance.GetSkill(skill).GetIconName()), player.MemberTeam));
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_LEARN", player.GetDisplayName(false), DataManager.Instance.GetSkill(skill).GetIconName()), player.MemberTeam));
             else
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_REPLACE", player.Name, DataManager.Instance.GetSkill(skill).GetIconName(), oldSkill), player.MemberTeam));
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_REPLACE", player.GetDisplayName(false), DataManager.Instance.GetSkill(skill).GetIconName(), oldSkill), player.MemberTeam));
 
         }
 
@@ -839,7 +839,7 @@ namespace RogueEssence.Dungeon
                 //more research will be needed on how to solve this issue
 
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(() => { MenuManager.Instance.AddMenu(createLearnQuestion(player, skillIndex, learnAction, passAction), false); },
-                    Text.FormatKey("DLG_SKILL_FULL", player.Name, DataManager.Instance.GetSkill(skillIndex).GetIconName())));
+                    Text.FormatKey("DLG_SKILL_FULL", player.GetDisplayName(false), DataManager.Instance.GetSkill(skillIndex).GetIconName())));
             }
         }
 
@@ -861,7 +861,7 @@ namespace RogueEssence.Dungeon
                 () =>
                 {
                     MenuManager.Instance.ClearMenus();
-                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(passAction, Text.FormatKey("DLG_SKILL_NO_LEARN", player.Name, DataManager.Instance.GetSkill(skillIndex).GetIconName())), false);
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(passAction, Text.FormatKey("DLG_SKILL_NO_LEARN", player.GetDisplayName(false), DataManager.Instance.GetSkill(skillIndex).GetIconName())), false);
                 },
                 () => { MenuManager.Instance.AddMenu(createLearnQuestion(player, skillIndex, learnAction, passAction), false); });
         }
@@ -913,7 +913,7 @@ namespace RogueEssence.Dungeon
             ZoneManager.Instance.CurrentMap.UpdateExploration(player);
             yield return new WaitForFrames(30);
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.Name)));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.GetDisplayName(false))));
         }
 
         public void SilentSendHome(int index)
@@ -1104,7 +1104,7 @@ namespace RogueEssence.Dungeon
         {
             if (msg)
             {
-                LogMsg(Text.FormatKey("MSG_WARP", character.Name));
+                LogMsg(Text.FormatKey("MSG_WARP", character.GetDisplayName(false)));
             }
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.WarpFX));
@@ -1147,7 +1147,7 @@ namespace RogueEssence.Dungeon
             if (locs.Count == 0)
             {
                 if (msg)
-                    LogMsg(Text.FormatKey("MSG_WARP_FAIL", character.Name));
+                    LogMsg(Text.FormatKey("MSG_WARP_FAIL", character.GetDisplayName(false)));
             }
             else
             {
@@ -1179,7 +1179,7 @@ namespace RogueEssence.Dungeon
             if (dest == null || dest.Value == character.CharLoc)
             {
                 if (msg)
-                    LogMsg(Text.FormatKey("MSG_WARP_FAIL", character.Name));
+                    LogMsg(Text.FormatKey("MSG_WARP_FAIL", character.GetDisplayName(false)));
             }
             else
                 yield return CoroutineManager.Instance.StartCoroutine(PointWarp(character, dest.Value, msg));
@@ -1305,9 +1305,9 @@ namespace RogueEssence.Dungeon
             //if it's the same place as the player, hop in place
             bool moved = (endLoc != character.CharLoc);
             if (moved)
-                LogMsg(Text.FormatKey("MSG_JUMP", character.Name));
+                LogMsg(Text.FormatKey("MSG_JUMP", character.GetDisplayName(false)));
             else
-                LogMsg(Text.FormatKey("MSG_JUMP_FAIL", character.Name));
+                LogMsg(Text.FormatKey("MSG_JUMP_FAIL", character.GetDisplayName(false)));
 
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.JumpFX));

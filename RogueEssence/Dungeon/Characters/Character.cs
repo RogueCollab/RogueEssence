@@ -33,6 +33,25 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Gets the name of the character, fully colored
+        /// </summary>
+        /// <param name="trueName">If set to true, uses Basename to bypass any alias or fake name.</param>
+        /// <returns></returns>
+        public string GetDisplayName(bool trueName)
+        {
+            string name = trueName ? BaseName : Name;
+
+            Team team = MemberTeam;
+            if (team == DataManager.Instance.Save.ActiveTeam)
+            {
+                if (this == team.Leader)
+                    return String.Format("[color=#009CFF]{0}[color]", name);
+                return String.Format("[color=#FFFF00]{0}[color]", name);
+            }
+            return String.Format("[color=#00FFFF]{0}[color]", name);
+        }
+
         public MonsterID ProxySprite;
         public MonsterID Appearance
         {
@@ -536,22 +555,22 @@ namespace RogueEssence.Dungeon
             if (MemberTeam == DungeonScene.Instance.ActiveTeam)
             {
                 if (Fullness <= 0 && prevFullness > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY", BaseName));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY", GetDisplayName(true)));
                 else if (Fullness <= 10 && prevFullness > 10)
                 {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_CRITICAL", BaseName));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_CRITICAL", GetDisplayName(true)));
                     GameManager.Instance.SE(GraphicsManager.HungerSE);
                 }
                 else if (Fullness <= 20 && prevFullness > 20)
                 {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_LOW", BaseName));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_LOW", GetDisplayName(true)));
                     GameManager.Instance.SE(GraphicsManager.HungerSE);
                 }
             }
             else
             {
                 if (Fullness <= 0 && prevFullness > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY_FOE", Name));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY_FOE", GetDisplayName(false)));
             }
 
             if (Fullness <= 0)
@@ -603,7 +622,7 @@ namespace RogueEssence.Dungeon
                 Loc? earshot = null;
                 if (!anim)
                     earshot = CharLoc;
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HP_RESTORE", Name, hp), true, false, this, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HP_RESTORE", GetDisplayName(false), hp), true, false, this, null);
 
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10, CharLoc));
             }
@@ -619,7 +638,7 @@ namespace RogueEssence.Dungeon
                 earshot = CharLoc;
             if (takeHP == 0)
             {
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ZERO", Name), false, false, this, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ZERO", GetDisplayName(false)), false, false, this, null);
                 if (anim)
                     GameManager.Instance.SE(GraphicsManager.NullDmgSE);
                 yield break;
@@ -628,18 +647,18 @@ namespace RogueEssence.Dungeon
             HP -= takeHP;
 
             if (hp < 0)
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_INFINITY", Name), false, false, this, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_INFINITY", GetDisplayName(false)), false, false, this, null);
             else
             {
                 DungeonScene.Instance.MeterChanged(CharLoc, -takeHP, false);
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE", Name, takeHP), true, false, this, null);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE", GetDisplayName(false), takeHP), true, false, this, null);
             }
 
             int endureHP = endure ? 1 : 0;
             if (HP < endureHP)
             {
                 if (endure)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ENDURE", Name), false, false, this, null);
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_ENDURE", GetDisplayName(false)), false, false, this, null);
                 HP = endureHP;
             }
 
@@ -701,7 +720,7 @@ namespace RogueEssence.Dungeon
                 defeatAnim.MajorAnim = true;
                 defeatAnim.AnimTime = animTime;
                 yield return CoroutineManager.Instance.StartCoroutine(this.StartAnim(defeatAnim));
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT", BaseName));
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT", GetDisplayName(true)));
             }
             else
             {
@@ -711,7 +730,7 @@ namespace RogueEssence.Dungeon
                 defeatAnim.MajorAnim = true;
                 defeatAnim.AnimTime = animTime;
                 yield return CoroutineManager.Instance.StartCoroutine(this.StartAnim(defeatAnim));
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT_FOE", BaseName));
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT_FOE", GetDisplayName(true)));
 
             }
 
@@ -789,7 +808,7 @@ namespace RogueEssence.Dungeon
             }
 
             if (declare)
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_RESTORE", Name));
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_RESTORE", GetDisplayName(false)));
 
             if (effect)
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.RestoreChargeFX));
@@ -806,7 +825,7 @@ namespace RogueEssence.Dungeon
             if (ChargeSaver)
             {
                 if (declare)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ZERO", Name));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ZERO", GetDisplayName(false)));
                 yield break;
             }
 
@@ -817,7 +836,7 @@ namespace RogueEssence.Dungeon
                 if (Skills[skillSlot].Element.Charges == 0)
                 {
                     if (declare)
-                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_NO_MORE", Name, DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).GetIconName()));
+                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_NO_MORE", GetDisplayName(false), DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).GetIconName()));
                     yield break;
                 }
                 SetSkillCharges(skillSlot, Math.Max(Skills[skillSlot].Element.Charges - charges, 0));
@@ -838,7 +857,7 @@ namespace RogueEssence.Dungeon
                 if (deductSlots.Count == 0)
                 {
                     if (declare)
-                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ALL_NO_MORE", Name));
+                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ALL_NO_MORE", GetDisplayName(false)));
                     yield break;
                 }
             }
@@ -851,7 +870,7 @@ namespace RogueEssence.Dungeon
             {
                 if (skillSlot == -1)
                 {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ALL", Name, charges));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ALL", GetDisplayName(false), charges));
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30, CharLoc));
 
                     for (int ii = deductSlots.Count-1; ii >= 0; ii--)
@@ -869,10 +888,10 @@ namespace RogueEssence.Dungeon
                             for (int ii = 0; ii < deductSlots.Count; ii++)
                                 skillList[ii] = DataManager.Instance.GetSkill(Skills[deductSlots[ii]].Element.SkillNum).GetIconName();
                             string skills = Text.BuildList(skillList);
-                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO_ALL", Name, skills));
+                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO_ALL", GetDisplayName(false), skills));
                         }
                         else
-                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO", Name, DataManager.Instance.GetSkill(Skills[deductSlots[0]].Element.SkillNum).GetIconName()));
+                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO", GetDisplayName(false), DataManager.Instance.GetSkill(Skills[deductSlots[0]].Element.SkillNum).GetIconName()));
 
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(this, DataManager.Instance.NoChargeFX));
                     }
@@ -882,13 +901,13 @@ namespace RogueEssence.Dungeon
                     if (Skills[skillSlot].Element.Charges == 0)
                     {
                         yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30, CharLoc));
-                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO", Name, DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).GetIconName()));
+                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_ZERO", GetDisplayName(false), DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).GetIconName()));
 
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(this, DataManager.Instance.NoChargeFX));
                     }
                     else
                     {
-                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST", Name, DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).GetIconName(), charges));
+                        DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST", GetDisplayName(false), DataManager.Instance.GetSkill(Skills[skillSlot].Element.SkillNum).GetIconName(), charges));
                         yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30, CharLoc));
                     }
                 }
@@ -1232,9 +1251,9 @@ namespace RogueEssence.Dungeon
                 ElementData type1Data = DataManager.Instance.GetElement(element1);
                 ElementData type2Data = DataManager.Instance.GetElement(element2);
                 if (element1 != 00 && element2 != 00)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE_DUAL", Name, type1Data.GetIconName(), type2Data.GetIconName()));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE_DUAL", GetDisplayName(false), type1Data.GetIconName(), type2Data.GetIconName()));
                 else if (element1 != 00)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE", Name, type1Data.GetIconName()));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE", GetDisplayName(false), type1Data.GetIconName()));
             }
             if (vfx)
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.ElementFX));
@@ -1246,16 +1265,16 @@ namespace RogueEssence.Dungeon
         {
             if (intrinsic == Intrinsics[slot].Element.ID)
             {
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_NONE", Name));
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_NONE", GetDisplayName(false)));
                 yield break;
             }
 
             if (msg)
             {
                 if (intrinsic > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_GAIN", Name, DataManager.Instance.GetIntrinsic(intrinsic).GetColoredName()));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_GAIN", GetDisplayName(false), DataManager.Instance.GetIntrinsic(intrinsic).GetColoredName()));
                 else
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_LOST", Name, DataManager.Instance.GetIntrinsic(Intrinsics[slot].Element.ID).GetColoredName()));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_LOST", GetDisplayName(false), DataManager.Instance.GetIntrinsic(Intrinsics[slot].Element.ID).GetColoredName()));
             }
             if (vfx)
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.ElementFX));
@@ -1273,15 +1292,15 @@ namespace RogueEssence.Dungeon
             if (item.Cursed && !CanRemoveStuck)
             {
                 GameManager.Instance.SE(GraphicsManager.CursedSE);
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_CURSED", item.GetDisplayName(), Name));
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_CURSED", item.GetDisplayName(), GetDisplayName(false)));
             }
             else if (entry.Cursed)
             {
                 GameManager.Instance.SE(GraphicsManager.CursedSE);
                 if (!CanRemoveStuck)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE", item.GetDisplayName(), Name));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE", item.GetDisplayName(), GetDisplayName(false)));
                 else
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE_AVOID", item.GetDisplayName(), Name));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE_AVOID", item.GetDisplayName(), GetDisplayName(false)));
                 item.Cursed = true;
             }
             RefreshTraits();

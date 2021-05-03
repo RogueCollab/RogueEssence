@@ -34,7 +34,7 @@ namespace RogueEssence.Menu
 
         public void SetMember(Character character)
         {
-            FullName.SetText(character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm));
+            FullName.SetText(character.GetDisplayName(true) + " / " + CharData.GetFullFormName(character.BaseForm));
             Level.SetText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level));
             HP.SetText(Text.FormatKey("MENU_TEAM_HP", character.HP, character.MaxHP));
             Fullness.SetText(Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness));

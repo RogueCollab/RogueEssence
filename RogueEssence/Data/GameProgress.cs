@@ -212,7 +212,7 @@ namespace RogueEssence.Data
                 int sendHomeIndex = ActiveTeam.Players.Count - 1;
                 if (sendHomeIndex == ActiveTeam.LeaderIndex)
                     sendHomeIndex--;
-                teamRestrictions.Add(ActiveTeam.Players[sendHomeIndex].BaseName);
+                teamRestrictions.Add(ActiveTeam.Players[sendHomeIndex].GetDisplayName(true));
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                     GroundScene.Instance.SilentSendHome(sendHomeIndex);
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)

@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
             {
                 bool canLearn = CanLearnSkill(character, DataManager.Instance.Save.ActiveTeam.Leader, slot, held) && !character.Dead;
                 int teamIndex = team.Count;
-                team.Add(new MenuTextChoice(character.BaseName, () => { choose(teamIndex); }, canLearn, canLearn ? Color.White : Color.Red));
+                team.Add(new MenuTextChoice(character.GetDisplayName(true), () => { choose(teamIndex); }, canLearn, canLearn ? Color.White : Color.Red));
             }
 
             Loc summaryStart = new Loc(16, 16 + team.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset);
@@ -89,7 +89,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Character character = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice];
-            SummaryTitle.SetText(Text.FormatKey("MENU_SKILLS_TITLE", character.BaseName));
+            SummaryTitle.SetText(Text.FormatKey("MENU_SKILLS_TITLE", character.GetDisplayName(true)));
             for (int ii = 0; ii < Skills.Length; ii++)
             {
                 if (character.BaseSkills[ii].SkillNum > -1)

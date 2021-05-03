@@ -32,7 +32,7 @@ namespace RogueEssence.Dungeon
             if (context.SkillUsedUp > -1 && !context.User.Dead)
             {
                 SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
-                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.Name, entry.GetIconName()));
+                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
             }
@@ -50,13 +50,13 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
             Character target = teamSlot == -1 ? character : character.MemberTeam.Players[teamSlot];
             if (target.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", target.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", target.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -84,7 +84,7 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 

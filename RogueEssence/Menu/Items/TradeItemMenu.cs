@@ -69,7 +69,7 @@ namespace RogueEssence.Menu
             theirInfo = new OfferItemsMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
 
             yourTitle = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.Start.Y - LINE_SPACE - GraphicsManager.MenuBG.TileHeight * 2), new Loc(Bounds.End.X, Bounds.Start.Y)));
-            MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.Name,
+            MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetDisplayName(),
                 new Loc((yourTitle.Bounds.X + yourTitle.Bounds.End.X) / 2, yourTitle.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourText.Color = TextTan;
             yourTitle.Elements.Add(yourText);

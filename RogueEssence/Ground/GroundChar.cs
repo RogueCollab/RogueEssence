@@ -335,15 +335,26 @@ namespace RogueEssence.Ground
         }
 
         /// <summary>
-        /// Returns the localized nickname if there's one, or the specie name.
+        /// Returns the localized nickname if there's one, or the specie name, fully colored.
         /// </summary>
         /// <returns></returns>
         public string GetDisplayName()
         {
+            string name = Nickname;
             if (String.IsNullOrEmpty(Nickname))
-                return DataManager.Instance.GetMonster(CurrentForm.Species).Name.ToLocal();
-            else
-                return Nickname;
+                name = DataManager.Instance.GetMonster(CurrentForm.Species).Name.ToLocal();
+
+            if (Data is Character)
+            {
+                Team team = ((Character)Data).MemberTeam;
+                if (team == DataManager.Instance.Save.ActiveTeam)
+                {
+                    if (Data == team.Leader)
+                        return String.Format("[color=#009CFF]{0}[color]", name);
+                    return String.Format("[color=#FFFF00]{0}[color]", name);
+                }
+            }
+            return String.Format("[color=#00FFFF]{0}[color]", name);
         }
 
         public override EEntTypes GetEntityType()

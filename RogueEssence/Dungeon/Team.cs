@@ -266,6 +266,14 @@ namespace RogueEssence.Dungeon
                 return Players[0].BaseName;
         }
 
+        public string GetDisplayName()
+        {
+            string name = Players[0].BaseName;
+            if (Name != "")
+                name = Name;
+            return String.Format("[color=#FFA5FF]{0}[color]", name);
+        }
+
 
         public List<InvItem> TakeItems(List<int> indices, bool remove = true)
         {

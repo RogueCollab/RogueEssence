@@ -77,7 +77,7 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> BeginGround()
         {
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetColoredName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
             //psy's note: might as well help encapsulate map stuff
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnEnter());
         }
@@ -254,7 +254,7 @@ namespace RogueEssence.Ground
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
 
                     if (!silent)
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_LEADER_SWAP", DataManager.Instance.Save.ActiveTeam.Leader.BaseName)));
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_LEADER_SWAP", DataManager.Instance.Save.ActiveTeam.Leader.GetDisplayName(true))));
                 }
             }
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));

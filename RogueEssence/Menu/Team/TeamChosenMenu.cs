@@ -110,7 +110,7 @@ namespace RogueEssence.Menu
         private void SendHomeAction()
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
-            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SEND_HOME_ASK", player.Name), () =>
+            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SEND_HOME_ASK", player.GetDisplayName(true)), () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 List<IInteractable> save = MenuManager.Instance.SaveMenuState();

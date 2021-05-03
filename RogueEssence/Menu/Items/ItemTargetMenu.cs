@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             {
                 int teamIndex = team.Count;
                 bool validTarget = !character.Dead || !useItem;
-                team.Add(new MenuTextChoice(character.BaseName, () => { choose(teamIndex); }, validTarget, !validTarget ? Color.Red : Color.White));
+                team.Add(new MenuTextChoice(character.GetDisplayName(true), () => { choose(teamIndex); }, validTarget, !validTarget ? Color.Red : Color.White));
             }
 
             summaryMenu = new SummaryMenu(new Rect(new Loc(16, 16 + team.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset),

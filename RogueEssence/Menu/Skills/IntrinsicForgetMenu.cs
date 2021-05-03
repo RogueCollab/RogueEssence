@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
                 summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE, false);
             summaryMenu.Elements.Add(Description);
 
-            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_TITLE", player.BaseName), intrinsics.ToArray(), 0);
+            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_TITLE", player.GetDisplayName(true)), intrinsics.ToArray(), 0);
         }
 
         protected override void MenuPressed()

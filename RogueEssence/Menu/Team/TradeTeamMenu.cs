@@ -35,7 +35,7 @@ namespace RogueEssence.Menu
                 int index = ii;
                 Character character = DataManager.Instance.Save.ActiveTeam.Assembly[index];
                 bool tradeable = !character.IsFounder && !character.IsFavorite;
-                MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), tradeable ? Color.White : Color.Red);
+                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), tradeable ? Color.White : Color.Red);
                 MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
                     DirV.Up, DirH.Right, tradeable ? Color.White : Color.Red);
                 flatChoices.Add(new MenuElementChoice(() => { choose(index); }, tradeable, memberName, memberLv));
@@ -50,7 +50,7 @@ namespace RogueEssence.Menu
             theirInfo = new OfferFeaturesMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
 
             yourTitle = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.Start.Y - LINE_SPACE - GraphicsManager.MenuBG.TileHeight * 2), new Loc(Bounds.End.X, Bounds.Start.Y)));
-            MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.Name,
+            MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetDisplayName(),
                 new Loc((yourTitle.Bounds.X + yourTitle.Bounds.End.X) / 2, yourTitle.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourText.Color = TextTan;
             yourTitle.Elements.Add(yourText);

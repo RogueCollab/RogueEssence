@@ -24,7 +24,7 @@ namespace RogueEssence.Dungeon
                 if (String.IsNullOrEmpty(Nickname))
                     name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
                 
-                return String.Format("[color=#FFFF00]{0}[color]", name);
+                return name;
             }
         }
 
@@ -43,7 +43,7 @@ namespace RogueEssence.Dungeon
                 if (name[name.Length - 1] != genderChar)
                     name += genderChar;
             }
-            return String.Format("[color=#FFFF00]{0}[color]", name);
+            return name;
         }
 
 

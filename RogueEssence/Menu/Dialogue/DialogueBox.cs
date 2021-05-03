@@ -184,9 +184,10 @@ namespace RogueEssence.Menu
                 Text.CurrentCharIndex = 0;
             else
             {
-                msg = String.Format("[color=#00FFFF]{0}[color]: {1}", speakerName, msg);
+                msg = String.Format("{0}: {1}", speakerName, msg);
                 Text.CurrentCharIndex = speakerName.Length + 2;
             }
+            int startLag = 0;
 
             List<IntRange> ranges = new List<IntRange>();
             int lag = 0;
@@ -217,10 +218,15 @@ namespace RogueEssence.Menu
                 }
 
                 lag += match.Length;
+
+                if (match.Index + match.Length <= Text.CurrentCharIndex)
+                    startLag += match.Length;
             }
 
             for (int ii = ranges.Count - 1; ii >= 0; ii--)
                 msg = msg.Remove(ranges[ii].Min, ranges[ii].Length);
+
+            Text.CurrentCharIndex -= startLag;
 
             Text.SetText(msg);
         }

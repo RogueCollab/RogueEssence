@@ -86,7 +86,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> BeginFloor()
         {
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetColoredName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetColoredName()), true, false);
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentMap.GetColoredName()), true, false);
 
             ZoneManager.Instance.CurrentMap.Begun = true;
 
@@ -327,7 +327,7 @@ namespace RogueEssence.Dungeon
                         //if it's a team character and it's team mode, wait a little while
                         if (DataManager.Instance.Save.TeamMode && character.MemberTeam == ActiveTeam)
                         {
-                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_SKIP_TURN", character.BaseName), false, true);
+                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_SKIP_TURN", character.GetDisplayName(false)), false, true);
                             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
                         }
                         else if (character == FocusedCharacter)//add just one little wait to slow down the turn-passing when no enemies are in view
@@ -635,7 +635,7 @@ namespace RogueEssence.Dungeon
             else if (ZoneManager.Instance.CurrentMap.NoSwitching || DataManager.Instance.Save.NoSwitching)
             {
                 GameManager.Instance.SE("Menu/Cancel");
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CANT_SWAP_LEADER", CurrentCharacter.BaseName), false, true);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CANT_SWAP_LEADER", CurrentCharacter.GetDisplayName(true)), false, true);
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
             }
             else
@@ -655,7 +655,7 @@ namespace RogueEssence.Dungeon
 
                     focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
 
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.BaseName));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.GetDisplayName(true)));
 
                     GameManager.Instance.SE(GraphicsManager.LeaderSE);
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
@@ -748,7 +748,7 @@ namespace RogueEssence.Dungeon
                     //re-order map order as well
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, liveIndex);
 
-                    LogMsg(Text.FormatKey("MSG_LEADER_SWAP", team.Leader.BaseName));
+                    LogMsg(Text.FormatKey("MSG_LEADER_SWAP", team.Leader.GetDisplayName(true)));
                 }
             }
 

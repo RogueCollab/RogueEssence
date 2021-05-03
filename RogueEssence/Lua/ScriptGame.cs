@@ -342,7 +342,7 @@ namespace RogueEssence.Script
 
         public string GetTeamName()
         {
-            return DataManager.Instance.Save.ActiveTeam.Name;
+            return DataManager.Instance.Save.ActiveTeam.GetDisplayName();
         }
 
         /// <summary>

@@ -48,7 +48,7 @@ namespace RogueEssence.Menu
                 if (checkSkin)
                     disabled |= DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead;
 
-                MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), disabled ? Color.Red : Color.White);
+                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), disabled ? Color.Red : Color.White);
                 MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, disabled ? Color.Red : Color.White);
                 team.Add(new MenuElementChoice(() => { choose(teamIndex); }, !disabled, memberName, memberLv));
             }
@@ -91,7 +91,7 @@ namespace RogueEssence.Menu
             else
             {
                 Character player = DataManager.Instance.Save.ActiveTeam.Players[choice];
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SEND_HOME_ASK", player.Name), () =>
+                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SEND_HOME_ASK", player.GetDisplayName(true)), () =>
                 {
                     MenuManager.Instance.ClearMenus();
                     //send home
