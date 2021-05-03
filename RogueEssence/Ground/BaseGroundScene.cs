@@ -397,9 +397,9 @@ namespace RogueEssence.Ground
                     break;
             }
 
-            if (msg == "\n")
+            if (msg == Text.DIVIDER_STR)
             {
-                if (DataManager.Instance.MsgLog.Count == 0 || DataManager.Instance.MsgLog[DataManager.Instance.MsgLog.Count - 1] == "\n")
+                if (DataManager.Instance.MsgLog.Count == 0 || DataManager.Instance.MsgLog[DataManager.Instance.MsgLog.Count - 1] == Text.DIVIDER_STR)
                     return;
             }
             else if (String.IsNullOrWhiteSpace(msg))

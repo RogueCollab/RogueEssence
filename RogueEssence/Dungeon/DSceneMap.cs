@@ -129,6 +129,7 @@ namespace RogueEssence.Dungeon
         {
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
 
+            LogMsg(Text.DIVIDER_STR);
 
             //check for mobility violation at the end of anyone's turn
             //TODO: only do this when someone has changed location, or when someone has changed mobility
@@ -148,6 +149,8 @@ namespace RogueEssence.Dungeon
 
             //check for EXP gain again
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
+
+            LogMsg(Text.DIVIDER_STR);
 
             //continue the walk phase
             if (advanceTurn)

@@ -41,7 +41,8 @@ namespace RogueEssence.Dungeon
         public int SkillUsedUp;//the skill whose last charge was used up
         public AbortStatus TurnCancel;
 
-        public string actionMsg;
+        private bool actionSilent;
+        private string actionMsg;
 
         public bool Hit;
         public int RangeMod;
@@ -89,10 +90,22 @@ namespace RogueEssence.Dungeon
             Item = new InvItem(other.Item);
             SkillUsedUp = other.SkillUsedUp;
             actionMsg = other.actionMsg;
+            actionSilent = other.actionSilent;
             Hit = other.Hit;
             RangeMod = other.RangeMod;
         }
 
+        public void SetActionMsg(string msg, bool silent = false)
+        {
+            actionMsg = msg;
+            actionSilent = silent;
+        }
+
+        public void PrintActionMsg()
+        {
+            if (!String.IsNullOrEmpty(actionMsg))
+                DungeonScene.Instance.LogMsg(actionMsg, actionSilent, false);
+        }
 
         public int GetContextStateInt<T>(bool global, int defaultVal) where T : ContextIntState
         {

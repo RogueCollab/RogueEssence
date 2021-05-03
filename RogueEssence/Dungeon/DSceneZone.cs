@@ -122,6 +122,8 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
+
+            LogMsg(Text.DIVIDER_STR);
         }
 
 

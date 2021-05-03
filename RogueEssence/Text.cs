@@ -23,6 +23,7 @@ namespace RogueEssence
     }
     public static class Text
     {
+        public const string DIVIDER_STR = "\n";
         public static List<Dictionary<string, string>> Strings;
         public static List<Dictionary<string, string>> StringsEx;
         public static CultureInfo Culture;

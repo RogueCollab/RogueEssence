@@ -39,7 +39,7 @@ namespace RogueEssence.Menu
 
         public void LogAdded(string msg)
         {
-            if (msg == "\n")
+            if (msg == Text.DIVIDER_STR)
                 LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, msg);
             else
             {
@@ -55,7 +55,7 @@ namespace RogueEssence.Menu
         public static void LogAdded(List<MenuText> entries, List<MenuDivider> dividers, int startVert, int sideBuffer, string msgLine)
         {
             //methodize this for message log
-            if (msgLine == "\n")
+            if (msgLine == Text.DIVIDER_STR)
             {
                 if (entries.Count > 0)
                     dividers[dividers.Count - 1] = new MenuDivider(new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 11),

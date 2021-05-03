@@ -1594,6 +1594,7 @@ namespace RogueEssence.Dungeon
                 LogMsg(msg, silent, logSilent);
         }
 
+        private bool queuedDivider;
 
         public void LogMsg(string msg, bool silent, bool logSilent)
         {
@@ -1618,9 +1619,9 @@ namespace RogueEssence.Dungeon
                     break;
             }
 
-            if (msg == "\n")
+            if (msg == Text.DIVIDER_STR)
             {
-                if (DataManager.Instance.MsgLog.Count == 0 || DataManager.Instance.MsgLog[DataManager.Instance.MsgLog.Count - 1] == "\n")
+                if (DataManager.Instance.MsgLog.Count == 0 || DataManager.Instance.MsgLog[DataManager.Instance.MsgLog.Count - 1] == Text.DIVIDER_STR)
                     return;
             }
             else if (String.IsNullOrWhiteSpace(msg))
@@ -1629,7 +1630,17 @@ namespace RogueEssence.Dungeon
             if (!logSilent)
                 DataManager.Instance.MsgLog.Add(msg);
             if (!silent)
-                LiveBattleLog.LogAdded(msg);
+            {
+                if (msg == Text.DIVIDER_STR)
+                    queuedDivider = true;
+                else
+                {
+                    if (queuedDivider)
+                        LiveBattleLog.LogAdded(Text.DIVIDER_STR);
+                    LiveBattleLog.LogAdded(msg);
+                    queuedDivider = false;
+                }
+            }
         }
 
     }

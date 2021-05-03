@@ -133,8 +133,7 @@ namespace RogueEssence.Dungeon
             }
             yield return new WaitUntil(AnimationsOver);
 
-            if (!String.IsNullOrEmpty(context.actionMsg))
-                LogMsg(context.actionMsg);
+            context.PrintActionMsg();
 
             yield break;
         }
@@ -173,8 +172,7 @@ namespace RogueEssence.Dungeon
 
             yield return new WaitUntil(AnimationsOver);
 
-            if (!String.IsNullOrEmpty(context.actionMsg))
-                LogMsg(context.actionMsg);
+            context.PrintActionMsg();
 
             yield break;
         }
