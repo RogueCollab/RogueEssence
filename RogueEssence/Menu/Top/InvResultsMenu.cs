@@ -30,12 +30,12 @@ namespace RogueEssence.Menu
             {
                 Character activeChar = ending.ActiveTeam.Players[ii];
                 if (activeChar.EquippedItem.ID > -1)
-                    flatChoices.Add(activeChar.EquippedItem.GetName());
+                    flatChoices.Add(activeChar.EquippedItem.GetDisplayName());
             }
             for (int ii = 0; ii < ending.ActiveTeam.GetInvCount(); ii++)
             {
                 int index = ii;
-                flatChoices.Add(ending.ActiveTeam.GetInv(index).GetName());
+                flatChoices.Add(ending.ActiveTeam.GetInv(index).GetDisplayName());
             }
             for (int jj = 0; jj < 2; jj++)
             {

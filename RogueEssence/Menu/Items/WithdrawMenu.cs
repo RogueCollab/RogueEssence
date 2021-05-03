@@ -31,7 +31,7 @@ namespace RogueEssence.Menu
                 {
                     availableItems.Add(index);
                     Data.ItemData entry = Data.DataManager.Instance.GetItem(ii);
-                    MenuText menuText = new MenuText((entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + DataManager.Instance.GetItem(ii).Name.ToLocal(), new Loc(2, 1));
+                    MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                     MenuText menuCount = new MenuText("(" + DataManager.Instance.Save.ActiveTeam.Storage[ii] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                     flatChoices.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCount));
                 }
@@ -40,7 +40,7 @@ namespace RogueEssence.Menu
             {
                 int index = ii + DataManager.Instance.DataIndices[DataManager.DataType.Item].Count;
                 availableItems.Add(index);
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetName(), () => { choose(index); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetDisplayName(), () => { choose(index); }));
             }
 
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);

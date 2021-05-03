@@ -14,7 +14,7 @@ namespace RogueEssence.Dungeon
             return GameEventPriority.EventCause.MapState;
         }
         public override PassiveData GetData() { return DataManager.Instance.GetMapStatus(ID); }
-        public override string GetName() { return DataManager.Instance.GetMapStatus(ID).Name.ToLocal(); }
+        public override string GetDisplayName() { return DataManager.Instance.GetMapStatus(ID).Name.ToLocal(); }
 
         public StateCollection<MapStatusState> StatusStates;
 

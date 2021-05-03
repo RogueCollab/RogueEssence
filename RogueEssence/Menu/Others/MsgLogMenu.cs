@@ -53,7 +53,7 @@ namespace RogueEssence.Menu
                 if (entry == "\n")
                     coveredLines.Add(new string[1] { entry });
                 else
-                    coveredLines.Add(GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
+                    coveredLines.Add(MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
             }
 
             if (coveredLines.Count > 0)
@@ -105,7 +105,7 @@ namespace RogueEssence.Menu
             {
                 if (entry != "\n")
                 {
-                    string[] lines = GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+                    string[] lines = MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                     total_lines += lines.Length;
                     if (total_lines > MAX_LINES)
                         return true;
@@ -160,7 +160,7 @@ namespace RogueEssence.Menu
                                 }
                                 else
                                 {
-                                    string[] lines = GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+                                    string[] lines = MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                                     coveredLines.Add(lines);
                                     lineEndIndex = Math.Min(delta - addedLines, lines.Length) - 1;
                                     addedLines += Math.Min(delta - addedLines, lines.Length);
@@ -214,7 +214,7 @@ namespace RogueEssence.Menu
                                 if (entry == "\n")
                                     coveredLines.Insert(addedEntries, new string[1] { entry });
                                 else
-                                    coveredLines.Insert(addedEntries, GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
+                                    coveredLines.Insert(addedEntries, MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
                                 addedEntries++;
                             }
                             int msgsBack = 0;

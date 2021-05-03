@@ -43,7 +43,8 @@ namespace RogueEssence.Menu
                 LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, msg);
             else
             {
-                string[] lines = GraphicsManager.TextFont.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+
+                string[] lines = MenuText.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                 foreach (string line in lines)
                     LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, line);
                 timeSinceUpdate = new FrameTick();

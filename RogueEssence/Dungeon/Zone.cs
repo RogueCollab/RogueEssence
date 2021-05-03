@@ -76,6 +76,11 @@ namespace RogueEssence.Dungeon
             ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
         }
 
+        public string GetDisplayName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
+        }
+
         public void LoadScriptEvents(Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents)
         {
             ScriptEvents = scriptEvents;

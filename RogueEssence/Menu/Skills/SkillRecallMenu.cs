@@ -30,7 +30,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < forgottenSkills.Length; ii++)
             {
                 Data.SkillData skillEntry = Data.DataManager.Instance.GetSkill(forgottenSkills[ii]);
-                string newSkillString = skillEntry.Name.ToLocal();
+                string newSkillString = skillEntry.GetColoredName();
                 int maxCharges = skillEntry.BaseCharges + player.ChargeBoost;
                 string newSkillCharges = maxCharges + "/" + maxCharges;
                 int index = ii;

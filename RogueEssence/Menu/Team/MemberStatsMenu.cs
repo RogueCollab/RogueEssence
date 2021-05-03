@@ -71,9 +71,9 @@ namespace RogueEssence.Menu
             ElementData element1 = DataManager.Instance.GetElement(player.Element1);
             ElementData element2 = DataManager.Instance.GetElement(player.Element2);
 
-            string typeString = String.Format("{0}\u2060{1}", element1.Symbol, element1.Name.ToLocal());
+            string typeString = element1.GetIconName();
             if (player.Element2 != 00)
-                typeString += "/" + String.Format("{0}\u2060{1}", element2.Symbol, element2.Name.ToLocal());
+                typeString += "/" + element2.GetIconName();
             BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
             bool origElements = (player.Element1 == monsterForm.Element1);
             origElements &= (player.Element2 == monsterForm.Element2);
@@ -124,7 +124,7 @@ namespace RogueEssence.Menu
 
             ItemDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 12), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
 
-            Item = new MenuText(player.EquippedItem.ID > -1 ? Text.FormatKey("MENU_HELD_ITEM", player.EquippedItem.GetName()) : Text.FormatKey("MENU_HELD_NO_ITEM"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET));
+            Item = new MenuText(player.EquippedItem.ID > -1 ? Text.FormatKey("MENU_HELD_ITEM", player.EquippedItem.GetDisplayName()) : Text.FormatKey("MENU_HELD_NO_ITEM"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET));
 
         }
 

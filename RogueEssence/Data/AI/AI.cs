@@ -90,6 +90,10 @@ namespace RogueEssence.Data
             return new GameAction(GameAction.ActionType.Wait, Dir8.None);
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }
 

@@ -631,7 +631,7 @@ namespace RogueEssence.Data
             string recordFile = null;
             if (result == ResultType.Rescue)
             {
-                Location = ZoneManager.Instance.CurrentZone.Name.ToLocal();
+                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
                 DataManager.Instance.MsgLog.Clear();
                 //end the game with a recorded ending
@@ -654,9 +654,9 @@ namespace RogueEssence.Data
             else if (result != ResultType.Cleared)
             {
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                    Location = ZoneManager.Instance.CurrentGround.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentGround.GetColoredName();
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    Location = ZoneManager.Instance.CurrentMap.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentMap.GetColoredName();
 
                 DataManager.Instance.MsgLog.Clear();
                 //end the game with a recorded ending
@@ -676,7 +676,7 @@ namespace RogueEssence.Data
                 int completedZone = ZoneManager.Instance.CurrentZoneID;
                 DungeonUnlocks[completedZone] = UnlockState.Completed;
 
-                Location = ZoneManager.Instance.CurrentZone.Name.ToLocal();
+                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
                 DataManager.Instance.MsgLog.Clear();
                 //end the game with a recorded ending
@@ -819,9 +819,9 @@ namespace RogueEssence.Data
             if (result != ResultType.Cleared)
             {
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                    Location = ZoneManager.Instance.CurrentGround.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentGround.GetColoredName();
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    Location = ZoneManager.Instance.CurrentMap.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentMap.GetColoredName();
 
                 Outcome = result;
 
@@ -882,7 +882,7 @@ namespace RogueEssence.Data
 
                 //  if there isn't a next area, end the play, display the plaque, return to title screen
                 //GameManager.Instance.Fanfare("Fanfare/MissionClear");
-                Location = ZoneManager.Instance.CurrentZone.Name.ToLocal();
+                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
                 Outcome = result;
 

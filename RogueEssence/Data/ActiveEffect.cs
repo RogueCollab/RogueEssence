@@ -15,7 +15,7 @@ namespace RogueEssence.Data
 
         public override int GetID() { return -1; }
 
-        public override string GetName()
+        public override string GetDisplayName()
         {
             return null;
         }

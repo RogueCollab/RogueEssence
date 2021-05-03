@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
         public void SetChoice(int choice)
         {
             CurrentChoice = choice;
-            Setting.Text = TotalChoices[CurrentChoice];
+            Setting.SetText(TotalChoices[CurrentChoice]);
             Setting.Color = (CurrentChoice == SavedChoice) ? NormalColor : ChangedColor;
         }
 

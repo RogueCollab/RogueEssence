@@ -84,10 +84,18 @@ namespace RogueEssence.Dungeon
             else
             {
                 Data.ItemData entry = Data.DataManager.Instance.GetItem(Value);
+
+                string prefix = "";
+                if (entry.Icon > -1)
+                    prefix += ((char)(entry.Icon + 0xE0A0)).ToString();
+                if (Cursed)
+                    prefix += "\uE10B";
+
+                string nameStr = entry.Name.ToLocal();
                 if (entry.MaxStack > 1)
-                    return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
-                else
-                    return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal();
+                    nameStr += " (" + HiddenValue + ")";
+
+                return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
             }
         }
 

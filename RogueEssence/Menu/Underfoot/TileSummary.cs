@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
         public void SetTile(int index)
         {
             Data.TileData entry = Data.DataManager.Instance.GetTile(index);
-            Description.Text = entry.Desc.ToLocal();
+            Description.SetText(entry.Desc.ToLocal());
         }
     }
 }

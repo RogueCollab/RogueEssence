@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < startChars.Count; ii++)
             {
                 int startChar = startChars[ii];
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar].Name.ToLocal(), () => { choose(startChar); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar].GetColoredName(), () => { choose(startChar); }));
             }
             List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
             
@@ -152,11 +152,11 @@ namespace RogueEssence.Menu
                     else
                     {
                         if (intrinsic == 0)
-                            intrinsicString = DataManager.Instance.GetIntrinsic(monsterData.Forms[intrinsicFormIndex].Intrinsic1).Name.ToLocal();
+                            intrinsicString = DataManager.Instance.GetIntrinsic(monsterData.Forms[intrinsicFormIndex].Intrinsic1).GetColoredName();
                         else if (intrinsic == 1)
-                            intrinsicString = DataManager.Instance.GetIntrinsic(monsterData.Forms[intrinsicFormIndex].Intrinsic2).Name.ToLocal();
+                            intrinsicString = DataManager.Instance.GetIntrinsic(monsterData.Forms[intrinsicFormIndex].Intrinsic2).GetColoredName();
                         else
-                            intrinsicString = DataManager.Instance.GetIntrinsic(monsterData.Forms[intrinsicFormIndex].Intrinsic3).Name.ToLocal();
+                            intrinsicString = DataManager.Instance.GetIntrinsic(monsterData.Forms[intrinsicFormIndex].Intrinsic3).GetColoredName();
                     }
                 }
                 infoMenu.SetDetails(formString, SkinSetting, gender, intrinsicString);

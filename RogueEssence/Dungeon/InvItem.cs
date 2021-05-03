@@ -42,22 +42,36 @@ namespace RogueEssence.Dungeon
         }
         public ISpawnable Copy() { return new InvItem(this); }
 
-        public override string GetName()
+        public override string GetDisplayName()
         {
-            ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = DataManager.Instance.GetItem(ID);
+
+            string prefix = "";
+            if (entry.Icon > -1)
+                prefix += ((char)(entry.Icon + 0xE0A0)).ToString();
+            if (Cursed)
+                prefix += "\uE10B";
+
+            string nameStr = entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
-            else
-                return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal();
+                nameStr += " (" + HiddenValue + ")";
+
+            return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
         }
 
         public override string ToString()
         {
-            ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = DataManager.Instance.GetItem(ID);
+
+            string nameStr = "";
+            if (Cursed)
+                nameStr += "[X]";
+
+            nameStr += entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                return (Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
-            else
-                return (Cursed ? "[X]" : "") + entry.Name.ToLocal();
+                nameStr += " (" + HiddenValue + ")";
+
+            return nameStr;
         }
 
         public int GetSellValue()

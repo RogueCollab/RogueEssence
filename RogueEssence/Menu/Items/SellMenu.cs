@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (activeChar.EquippedItem.ID > -1)
                 {
-                    MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), new Loc(2, 1));
+                    MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), new Loc(2, 1));
                     MenuText itemPrice = new MenuText(activeChar.EquippedItem.GetSellValue().ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
                     flatChoices.Add(new MenuElementChoice(() => { choose(new InvSlot(true, index)); }, true, itemText, itemPrice));
                 }
@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
             {
                 int index = ii;
 
-                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), new Loc(2, 1));
+                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), new Loc(2, 1));
                 MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetSellValue().ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
                 flatChoices.Add(new MenuElementChoice(() => { choose(new InvSlot(false, index)); }, true, itemText, itemPrice));
             }

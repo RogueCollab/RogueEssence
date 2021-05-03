@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
             {
                 if (player.BaseIntrinsics[ii] > -1)
-                    intrinsics.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[ii]).Name.ToLocal(), () => { choose(ii); }));
+                    intrinsics.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[ii]).GetColoredName(), () => { choose(ii); }));
             }
             
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16,
@@ -61,7 +61,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[CurrentChoice]);
-            Description.Text = entry.Desc.ToLocal();
+            Description.SetText(entry.Desc.ToLocal());
 
             base.ChoiceChanged();
         }

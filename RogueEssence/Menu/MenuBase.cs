@@ -12,17 +12,17 @@ namespace RogueEssence.Menu
         public const int LINE_SPACE = 12;
 
         //system colors:
-        //White
-        //Yellow
-        //Red
-        //Cyan
-        //Lime
-        public static readonly Color TextBlue = new Color(132, 132, 255);
-        public static readonly Color TextIndigo = new Color(0, 156, 255);
-        public static readonly Color TextPink = new Color(255, 165, 255);
-        public static readonly Color TextPale = new Color(255,206,206);
-        public static readonly Color TextTan = new Color(255, 198, 99);
-        
+        //White #FFFFFF
+        //Yellow #FFFF00
+        //Red #FF0000
+        //Cyan #00FFFF
+        //Lime #00FF00
+        public static readonly Color TextBlue = new Color(132, 132, 255); // #8484FF
+        public static readonly Color TextIndigo = new Color(0, 156, 255); // #009CFF
+        public static readonly Color TextPink = new Color(255, 165, 255); // #FFA5FF
+        public static readonly Color TextPale = new Color(255,206,206); // #FFCEFF
+        public static readonly Color TextTan = new Color(255, 198, 99); // #FFC663
+
         public Rect Bounds;
 
         public bool Visible { get; set; }

@@ -32,9 +32,9 @@ namespace RogueEssence.Menu
                 Visible = false;
             else
             {
-                DungeonName.Text = zoneEntry.Name.ToLocal();
+                DungeonName.SetText(zoneEntry.GetColoredName());
                 DungeonName.Color = isComplete ? Color.White : Color.Cyan;
-                Floors.Text = Text.FormatKey("MENU_DUNGEON_FLOORS", (isComplete && zoneEntry.CountedFloors > 0) ? zoneEntry.CountedFloors.ToString() : "??");
+                Floors.SetText(Text.FormatKey("MENU_DUNGEON_FLOORS", (isComplete && zoneEntry.CountedFloors > 0) ? zoneEntry.CountedFloors.ToString() : "??"));
 
                 while (Elements.Count > 3)
                     Elements.RemoveAt(3);

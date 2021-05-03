@@ -25,7 +25,7 @@ namespace RogueEssence.Dungeon
             return GameEventPriority.EventCause.Status;
         }
         public override PassiveData GetData() { return DataManager.Instance.GetStatus(ID); }
-        public override string GetName() { return DataManager.Instance.GetStatus(ID).Name.ToLocal(); }
+        public override string GetDisplayName() { return DataManager.Instance.GetStatus(ID).GetColoredName(); }
         //handles stuff like stacking, sealing, movement speed, etc.
         public StateCollection<StatusState> StatusStates;
 

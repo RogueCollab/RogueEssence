@@ -31,7 +31,7 @@ namespace RogueEssence.Menu
                 if (skill.SkillNum > -1)
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    string skillString = data.Name.ToLocal();
+                    string skillString = data.GetColoredName();
                     string skillCharges = skill.Charges + "/" + (data.BaseCharges + player.ChargeBoost);
                     int index = ii;
                     MenuText menuText = new MenuText(skillString, new Loc(2, 1));

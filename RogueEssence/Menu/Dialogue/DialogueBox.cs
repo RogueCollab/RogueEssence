@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using System.Text.RegularExpressions;
 
 namespace RogueEssence.Menu
 {
@@ -31,45 +32,29 @@ namespace RogueEssence.Menu
 
         //optional speaker box
         private SpeakerPortrait speakerPic;
+        //the speakername, alone
+        private string speakerName;
+        //message with pauses, without speaker name
+        private string message;
 
         public bool IsCheckpoint { get { return false; } }
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
 
-        public DialogueBox(string message, bool sound)
+        public DialogueBox(string msg, bool sound)
         {
             Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + PER_LINE_SPACE * MAX_LINES)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
-            Sound = sound;
-
-            //message will contain pauses, which get parsed here.
-            //and colors, which will get parsed by the text renderer
 
             Pauses = new List<TextPause>();
-            int startIndex = 0;
-            int tabIndex = message.IndexOf("[pause=", startIndex, StringComparison.OrdinalIgnoreCase);
-            while (tabIndex > -1)
-            {
-                int endIndex = message.IndexOf("]", tabIndex);
-                if (endIndex == -1)
-                    break;
-                int param;
-                if (Int32.TryParse(message.Substring(tabIndex + "[pause=".Length, endIndex - (tabIndex + "[pause=".Length)), out param))
-                {
-                    TextPause pause = new TextPause();
-                    pause.LetterIndex = tabIndex;
-                    pause.Time = param;
-                    message = message.Remove(tabIndex, endIndex - tabIndex + "]".Length);
-                    Pauses.Add(pause);
+            speakerName = "";
 
-                    tabIndex = message.IndexOf("[pause=", startIndex, StringComparison.OrdinalIgnoreCase);
-                }
-                else
-                    break;
-            }
-            string newMessage = message;
+            Sound = sound;
+            message = msg;
 
-            Text = new DialogueText(newMessage, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth*2, GraphicsManager.MenuBG.TileHeight),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, TEXT_SPACE, false, true);
+            Text = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth*2, GraphicsManager.MenuBG.TileHeight),
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, TEXT_SPACE, false, 0);
+
+            updateMessage();
         }
 
         public void ProcessActions(FrameTick elapsedTime)
@@ -166,19 +151,78 @@ namespace RogueEssence.Menu
                 Loc loc = new Loc(DialogueBox.SIDE_BUFFER, Bounds.Y - 56);
                 speakerPic = new SpeakerPortrait(speaker, emotion, loc, true);
             }
+            else
+                speakerPic = null;
         }
 
-        public void SetSpeaker(MonsterID speaker, string speakerName, EmoteStyle emotion)
+        public void SetSpeaker(MonsterID speaker, string name, EmoteStyle emotion)
         {
             SetPortrait(speaker, emotion);
 
-            if (!String.IsNullOrEmpty(speakerName))
+            if (!String.IsNullOrEmpty(name))
+                speakerName = name;
+            else
+                speakerName = "";
+            updateMessage();
+        }
+
+        public void SetMessage(string msg, bool sound)
+        {
+            message = msg;
+            Sound = sound;
+            updateMessage();
+        }
+
+        private void updateMessage()
+        {
+            //message will contain pauses, which get parsed here.
+            //and colors, which will get parsed by the text renderer
+            Pauses.Clear();
+
+            string msg = message;
+            if (speakerName == "")
+                Text.CurrentCharIndex = 0;
+            else
             {
-                Text.Text = speakerName + ": " + Text.Text;
-                Text.CurrentCharIndex += speakerName.Length + 2;
-                foreach(TextPause pause in Pauses)
-                    pause.LetterIndex += speakerName.Length + 2;
+                msg = String.Format("[color=#00FFFF]{0}[color]: {1}", speakerName, msg);
+                Text.CurrentCharIndex = speakerName.Length + 2;
             }
+
+            List<IntRange> ranges = new List<IntRange>();
+            int lag = 0;
+            MatchCollection matches = RogueEssence.Text.MsgTags.Matches(msg);
+            foreach (Match match in matches)
+            {
+                foreach (string key in match.Groups.Keys)
+                {
+                    if (!match.Groups[key].Success)
+                        continue;
+                    switch (key)
+                    {
+                        case "pause":
+                            {
+                                TextPause pause = new TextPause();
+                                pause.LetterIndex = match.Index - lag;
+                                int param;
+                                if (Int32.TryParse(match.Groups["pauseval"].Value, out param))
+                                    pause.Time = param;
+                                Pauses.Add(pause);
+                                ranges.Add(new IntRange(match.Index, match.Index + match.Length));
+                            }
+                            break;
+                        case "colorstart":
+                        case "colorend":
+                            break;
+                    }
+                }
+
+                lag += match.Length;
+            }
+
+            for (int ii = ranges.Count - 1; ii >= 0; ii--)
+                msg = msg.Remove(ranges[ii].Min, ranges[ii].Length);
+
+            Text.SetText(msg);
         }
     }
 

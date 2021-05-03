@@ -40,5 +40,9 @@ namespace RogueEssence.Data
             return EXPTable[toLevel - 1] - EXPTable[fromLevel - 1];
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }

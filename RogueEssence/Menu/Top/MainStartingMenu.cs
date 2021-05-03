@@ -23,7 +23,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.StartChars.Count; ii++)
             {
                 MonsterID startChar = DataManager.Instance.StartChars[ii].mon;
-                string name = DataManager.Instance.GetMonster(startChar.Species).Name.ToLocal();
+                string name = DataManager.Instance.GetMonster(startChar.Species).GetColoredName();
                 if (DataManager.Instance.StartChars[ii].name != "")
                     name = DataManager.Instance.StartChars[ii].name;
                 int index = ii;

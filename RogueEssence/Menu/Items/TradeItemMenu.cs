@@ -51,7 +51,7 @@ namespace RogueEssence.Menu
                         AllowedGoods.Add(index);
                         int slot = flatChoices.Count;
 
-                        MenuText menuText = new MenuText((itemEntry.Icon > -1 ? ((char)(itemEntry.Icon + 0xE0A0)).ToString() : "") + DataManager.Instance.GetItem(ii).Name.ToLocal(), new Loc(2, 1));
+                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                         MenuText menuCount = new MenuText("(" + itemPresence[index] + ")", new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                     }
@@ -98,7 +98,7 @@ namespace RogueEssence.Menu
             theirStatus.Color = TextTan;
             theirSummary.Elements.Add(theirStatus);
 
-            theirText.Text = NetworkManager.Instance.Activity.TargetInfo.Data.TeamName;
+            theirText.SetText(NetworkManager.Instance.Activity.TargetInfo.Data.TeamName);
 
             CurrentState = ExchangeState.Selecting;
         }
@@ -191,8 +191,8 @@ namespace RogueEssence.Menu
                 theirInfo.SetCurrentItems(tradeTeam.OfferedItems);
 
             //set status
-            yourStatus.Text = CurrentState.ToLocal("msg");
-            theirStatus.Text = tradeTeam.CurrentState.ToLocal("msg");
+            yourStatus.SetText(CurrentState.ToLocal("msg"));
+            theirStatus.SetText(tradeTeam.CurrentState.ToLocal("msg"));
         }
     }
 }

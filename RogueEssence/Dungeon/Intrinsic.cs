@@ -11,7 +11,7 @@ namespace RogueEssence.Dungeon
             return GameEventPriority.EventCause.Intrinsic;
         }
         public override PassiveData GetData() { return DataManager.Instance.GetIntrinsic(ID); }
-        public override string GetName() { return DataManager.Instance.GetIntrinsic(ID).Name.ToLocal(); }
+        public override string GetDisplayName() { return DataManager.Instance.GetIntrinsic(ID).GetColoredName(); }
 
         public Intrinsic() : base()
         { }

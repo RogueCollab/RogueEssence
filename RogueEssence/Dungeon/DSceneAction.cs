@@ -32,7 +32,7 @@ namespace RogueEssence.Dungeon
             if (context.SkillUsedUp > -1 && !context.User.Dead)
             {
                 SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
-                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.Name, entry.Name.ToLocal()));
+                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.Name, entry.GetIconName()));
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
             }

@@ -43,9 +43,9 @@ namespace RogueEssence.Menu
         {
             int itemIndex = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.ID;
             if (itemIndex > -1)
-                Text.Text = RogueEssence.Text.FormatKey("MENU_HELD_ITEM", DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.GetName());
+                Text.SetText(RogueEssence.Text.FormatKey("MENU_HELD_ITEM", DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.GetDisplayName()));
             else
-                Text.Text = RogueEssence.Text.FormatKey("MENU_HELD_NO_ITEM");
+                Text.SetText(RogueEssence.Text.FormatKey("MENU_HELD_NO_ITEM"));
             base.ChoiceChanged();
         }
 

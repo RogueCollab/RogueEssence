@@ -34,7 +34,7 @@ namespace RogueEssence.Menu
                     if (skill.SkillNum > -1)
                     {
                         SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                        string skillString = (skill.Enabled ? "\uE10A " : "") + data.Name.ToLocal();
+                        string skillString = (skill.Enabled ? "\uE10A " : "") + data.GetColoredName();
                         string skillCharges = skill.Charges + "/" + (data.BaseCharges + DataManager.Instance.Save.ActiveTeam.Players[ii].ChargeBoost);
                         bool disabled = (skill.Sealed || skill.Charges <= 0);
                         int index = jj;
@@ -81,7 +81,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             defaultChoice = CurrentChoice;
-            Title.Text = Text.FormatKey("MENU_SKILLS_TITLE", DataManager.Instance.Save.ActiveTeam.Players[CurrentPage].BaseName);
+            Title.SetText(Text.FormatKey("MENU_SKILLS_TITLE", DataManager.Instance.Save.ActiveTeam.Players[CurrentPage].BaseName));
             summaryMenu.SetSkill(DataManager.Instance.Save.ActiveTeam.Players[CurrentPage].Skills[CurrentChoice].Element.SkillNum);
 
             base.ChoiceChanged();

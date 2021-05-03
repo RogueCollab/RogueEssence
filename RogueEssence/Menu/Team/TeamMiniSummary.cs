@@ -34,10 +34,10 @@ namespace RogueEssence.Menu
 
         public void SetMember(Character character)
         {
-            FullName.Text = character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm);
-            Level.Text = Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level);
-            HP.Text = Text.FormatKey("MENU_TEAM_HP", character.HP, character.MaxHP);
-            Fullness.Text = Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness);
+            FullName.SetText(character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm));
+            Level.SetText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level));
+            HP.SetText(Text.FormatKey("MENU_TEAM_HP", character.HP, character.MaxHP));
+            Fullness.SetText(Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness));
 
             int expToNext = 0;
             if (character.Level < DataManager.Instance.MaxLevel)
@@ -46,8 +46,8 @@ namespace RogueEssence.Menu
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);
                 expToNext = growthData.GetExpToNext(character.Level);
             }
-            EXP.Text = Text.FormatKey("MENU_TEAM_EXP", character.EXP, expToNext);
-            Intrinsics.Text = Text.FormatKey("MENU_TEAM_INTRINSIC", (character.Intrinsics[0].Element.ID > -1 ? DataManager.Instance.GetIntrinsic(character.Intrinsics[0].Element.ID).Name.ToLocal() : DataManager.Instance.GetIntrinsic(0).Name.ToLocal()));
+            EXP.SetText(Text.FormatKey("MENU_TEAM_EXP", character.EXP, expToNext));
+            Intrinsics.SetText(Text.FormatKey("MENU_TEAM_INTRINSIC", (character.Intrinsics[0].Element.ID > -1 ? DataManager.Instance.GetIntrinsic(character.Intrinsics[0].Element.ID).GetColoredName() : DataManager.Instance.GetIntrinsic(0).GetColoredName())));
         }
     }
 }

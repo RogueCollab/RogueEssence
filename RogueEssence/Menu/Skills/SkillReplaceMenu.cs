@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
                 if (skill.SkillNum > -1)
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    string skillString = data.Name.ToLocal();
+                    string skillString = data.GetColoredName();
                     string skillCharges = skill.Charges + "/" + (data.BaseCharges + player.ChargeBoost);
                     int index = ii;
                     MenuText menuText = new MenuText(skillString, new Loc(2, 1));
@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
                     char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges, div));
                 }
             }
-            string newSkillString = DataManager.Instance.GetSkill(skillNum).Name.ToLocal();
+            string newSkillString = DataManager.Instance.GetSkill(skillNum).GetColoredName();
             int maxCharges = DataManager.Instance.GetSkill(skillNum).BaseCharges + player.ChargeBoost;
             string newSkillCharges = maxCharges + "/" + maxCharges;
             MenuText newMenuText = new MenuText(newSkillString, new Loc(2, 1));

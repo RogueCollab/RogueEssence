@@ -33,5 +33,9 @@ namespace RogueEssence.Data
             FameToNext = fameToNext;
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFA5FF]{0}[color]", Name.ToLocal());
+        }
     }
 }

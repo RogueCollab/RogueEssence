@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
             theirSummary.Elements.Add(theirStatus);
 
             ActivityTradeTeam tradeTeam = NetworkManager.Instance.Activity as ActivityTradeTeam;
-            theirText.Text = tradeTeam.TargetInfo.Data.TeamName;
+            theirText.SetText(tradeTeam.TargetInfo.Data.TeamName);
 
             CurrentState = ExchangeState.Selecting;
         }
@@ -163,8 +163,8 @@ namespace RogueEssence.Menu
                 theirInfo.SetCurrentChar(tradeTeam.OfferedChar);
 
             //set status
-            yourStatus.Text = CurrentState.ToLocal("msg");
-            theirStatus.Text = tradeTeam.CurrentState.ToLocal("msg");
+            yourStatus.SetText(CurrentState.ToLocal("msg"));
+            theirStatus.SetText(tradeTeam.CurrentState.ToLocal("msg"));
         }
     }
 }

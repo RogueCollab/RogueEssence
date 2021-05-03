@@ -54,7 +54,10 @@ namespace RogueEssence.Ground
         public string AssetName { get; set; }
 
         public LocalText Name { get; set; }
-        public string GetSingleLineName() { return Name.ToLocal().Replace('\n', ' '); }
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal().Replace('\n', ' '));
+        }
 
         public bool Released { get; set; }
         public string Comment { get; set; }

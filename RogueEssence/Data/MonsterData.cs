@@ -57,7 +57,12 @@ namespace RogueEssence.Data
             Promotions = new List<PromoteBranch>();
             Forms = new List<BaseMonsterForm>();
         }
-        
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
     }
 
 

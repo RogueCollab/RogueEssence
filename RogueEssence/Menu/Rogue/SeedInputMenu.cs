@@ -21,7 +21,7 @@ namespace RogueEssence.Menu
             Initialize(RogueEssence.Text.FormatKey("INPUT_SEED_TITLE"), RogueEssence.Text.FormatKey("INPUT_CAN_PASTE"), 296);
 
             if (seed.HasValue)
-                Text.Text = seed.Value.ToString("X");
+                Text.SetText(seed.Value.ToString("X"));
         }
 
         protected override void Confirmed()
@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
                 ulong seed;
                 if (UInt64.TryParse(SDL.SDL_GetClipboardText(), NumberStyles.HexNumber, null, out seed))
                 {
-                    Text.Text = seed.ToString("X");
+                    Text.SetText(seed.ToString("X"));
                     UpdatePickerPos();
                     GameManager.Instance.SE("Menu/Sort");
                 }
@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
             {
                 //backspace will erase (if there's something there)
                 if (Text.Text != "")
-                    Text.Text = Text.Text.Substring(0, Text.Text.Length - 1);
+                    Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1));
                 GameManager.Instance.SE("Menu/Cancel");
                 UpdatePickerPos();
             }

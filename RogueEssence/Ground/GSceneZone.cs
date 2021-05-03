@@ -76,8 +76,8 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> BeginGround()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetSingleLineName()));
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetColoredName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
             //psy's note: might as well help encapsulate map stuff
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnEnter());
         }

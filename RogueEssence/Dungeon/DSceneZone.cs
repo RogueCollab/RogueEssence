@@ -85,8 +85,8 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetColoredName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetColoredName()), true, false);
 
             ZoneManager.Instance.CurrentMap.Begun = true;
 

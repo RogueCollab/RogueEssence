@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
                     {
                         if (jj == character.Tactic.ID)
                             tacticIndex = jj;
-                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Name.ToLocal());
+                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].GetColoredName());
                     }
                 }
                 releasedTactics = choices.Count;
@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
             for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
             {
                 if (DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Released)
-                    allChoices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Name.ToLocal());
+                    allChoices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].GetColoredName());
             }
 
             int groupTactic = totalChoices[1].CurrentChoice;

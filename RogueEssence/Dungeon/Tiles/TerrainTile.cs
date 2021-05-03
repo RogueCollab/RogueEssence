@@ -15,11 +15,8 @@ namespace RogueEssence.Dungeon
 
         public override int GetID() { return ID; }
 
-        public TerrainData GetData()
-        {
-            return DataManager.Instance.GetTerrain(ID);
-        }
-        public override string GetName() { return GetData().Name.ToLocal(); }
+        public TerrainData GetData() { return DataManager.Instance.GetTerrain(ID); }
+        public override string GetDisplayName() { return GetData().GetColoredName(); }
 
         public int ID;
         public AutoTile TileTex;

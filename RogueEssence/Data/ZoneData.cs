@@ -81,6 +81,11 @@ namespace RogueEssence.Data
             ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
+        }
+
         public void AddZoneScriptEvent(int idx, LuaEngine.EZoneCallbacks ev)
         {
             string assetName = "zone_" + idx;
@@ -154,6 +159,12 @@ namespace RogueEssence.Data
             Rescues = rescues;
             CountedFloors = countedFloors;
             Rogue = rogue;
+        }
+
+
+        public override string GetColoredName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
     }
 

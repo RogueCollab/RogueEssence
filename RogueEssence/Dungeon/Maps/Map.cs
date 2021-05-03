@@ -42,7 +42,13 @@ namespace RogueEssence.Dungeon
         }
 
         public LocalText Name { get; set; }
-        public string GetSingleLineName() { return Name.ToLocal().Replace('\n', ' '); }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal().Replace('\n', ' '));
+        }
+
         public bool Released { get; set; }
         public string Comment { get; set; }
 
@@ -691,6 +697,8 @@ namespace RogueEssence.Dungeon
             //TODO: v0.5: remove this
             if (ScriptEvents == null)
                 ScriptEvents = new Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent>();
+            if (MapEffect == null)
+                MapEffect = new ActiveEffect();
             if (AllyTeams == null)
                 AllyTeams = new List<Team>();
         }

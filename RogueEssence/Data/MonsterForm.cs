@@ -153,6 +153,12 @@ namespace RogueEssence.Data
         {
             FormTexts = new List<LocalText>();
         }
+        
+
+        public override string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
     }
 
 

@@ -40,5 +40,11 @@ namespace RogueEssence.Data
 
             StatusStates = new StateCollection<MapStatusState>();
         }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FFFF]{0}[color]", Name.ToLocal());
+        }
     }
 }

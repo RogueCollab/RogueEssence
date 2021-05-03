@@ -45,9 +45,9 @@ namespace RogueEssence.Menu
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
                 Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
 
-            string speciesName = dexEntry.Name.ToLocal();
+            string speciesName = dexEntry.GetColoredName();
             if (player.BaseForm.Skin > 0)
-                speciesName += " (" + DataManager.Instance.GetSkin(player.BaseForm.Skin).Name.ToLocal() + ")";
+                speciesName += " (" + DataManager.Instance.GetSkin(player.BaseForm.Skin).GetColoredName() + ")";
             if (player.BaseForm.Gender != Gender.Genderless)
                 speciesName += (player.BaseForm.Gender == Gender.Male) ? " (\u2642)" : " (\u2640)";
             else
@@ -70,7 +70,7 @@ namespace RogueEssence.Menu
                     continue;
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {
-                    validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).Name.ToLocal() + ": " + dexEntry.Promotions[ii].GetReqString(),
+                    validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(),
                         Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET)));
                 }
                 else
@@ -86,7 +86,7 @@ namespace RogueEssence.Menu
                     }
                     if (!hardReq)
                     {
-                        validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).Name.ToLocal() + ": " + dexEntry.Promotions[ii].GetReqString(),
+                        validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(),
                             Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET), Color.Red));
                     }
                 }

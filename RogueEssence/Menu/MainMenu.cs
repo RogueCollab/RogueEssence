@@ -71,9 +71,8 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), Math.Min(Math.Max(0, defaultChoice), choices.Count - 1));
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 32), new Loc(GraphicsManager.ScreenWidth - 16, 32 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? ZoneManager.Instance.CurrentMap.GetSingleLineName() : ZoneManager.Instance.CurrentGround.GetSingleLineName(),
+            MenuText title = new MenuText((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? ZoneManager.Instance.CurrentMap.GetColoredName() : ZoneManager.Instance.CurrentGround.GetColoredName(),
                 new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
-            title.Color = TextTan;
             titleMenu.Elements.Add(title);
 
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16, 32 + choices.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2),
@@ -83,13 +82,13 @@ namespace RogueEssence.Menu
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                string weather = DataManager.Instance.GetMapStatus(0).Name.ToLocal();
+                string weather = DataManager.Instance.GetMapStatus(0).GetColoredName();
                 foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     if (status.StatusStates.Contains<MapWeatherState>())
                     {
                         MapStatusData entry = (MapStatusData)status.GetData();
-                        weather = entry.Name.ToLocal();
+                        weather = entry.GetColoredName();
                         break;
                     }
                 }

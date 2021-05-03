@@ -26,17 +26,17 @@ namespace RogueEssence.Menu
         public void SetItem(InvItem item)
         {
             Data.ItemData entry = Data.DataManager.Instance.GetItem(item.ID);
-            Description.Text = entry.Desc.ToLocal();
-            SalePrice.Text = Text.FormatKey("MENU_ITEM_VALUE", Text.FormatKey("MONEY_AMOUNT", item.GetSellValue()));
+            Description.SetText(entry.Desc.ToLocal());
+            SalePrice.SetText(Text.FormatKey("MENU_ITEM_VALUE", Text.FormatKey("MONEY_AMOUNT", item.GetSellValue())));
             if (entry.Rarity > 0)
             {
                 string rarityStr = "";
                 for (int ii = 0; ii < entry.Rarity; ii++)
                     rarityStr += "\uE10C";
-                Rarity.Text = Text.FormatKey("MENU_ITEM_RARITY", rarityStr);
+                Rarity.SetText(Text.FormatKey("MENU_ITEM_RARITY", rarityStr));
             }
             else
-                Rarity.Text = "";
+                Rarity.SetText("");
         }
     }
 }

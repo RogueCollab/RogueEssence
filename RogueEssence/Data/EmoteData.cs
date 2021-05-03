@@ -34,5 +34,10 @@ namespace RogueEssence.Data
             Anim = anim;
             LocHeight = locHeight;
         }
+
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }

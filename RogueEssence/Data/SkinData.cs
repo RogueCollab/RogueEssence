@@ -36,5 +36,10 @@ namespace RogueEssence.Data
             Symbol = symbol;
             LeaderFX  = new BattleFX();
         }
+
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }

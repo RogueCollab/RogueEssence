@@ -15,6 +15,7 @@
         LocalText Name { get; set; }
         bool Released { get; }
         string Comment { get; set; }
+        string GetColoredName();
 
         EntrySummary GenerateEntrySummary();
     }

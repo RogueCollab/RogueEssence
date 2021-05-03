@@ -48,5 +48,11 @@ namespace RogueEssence.Data
             LandedOnTiles = new PriorityList<SingleCharEvent>();
             InteractWithTiles = new PriorityList<SingleCharEvent>();
         }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
     }
 }

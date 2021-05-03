@@ -85,6 +85,21 @@ namespace RogueEssence.Data
             UseEvent = new BattleData();
             ThrowAnim = new Content.AnimData();
         }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+        }
+
+        public string GetIconName()
+        {
+            string prefix = "";
+            if (Icon > -1)
+                prefix += ((char)(Icon + 0xE0A0)).ToString();
+
+            return String.Format("{0}{1}", prefix, GetColoredName());
+        }
     }
 
 
@@ -103,5 +118,11 @@ namespace RogueEssence.Data
         {
             UsageType = useType;
         }
+
+        public override string GetColoredName()
+        {
+            return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+        }
+
     }
 }

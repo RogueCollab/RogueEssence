@@ -150,9 +150,9 @@ namespace RogueEssence.Script
         /// <param name="form"></param>
         /// <param name="skin"></param>
         /// <param name="gender"></param>
-        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender = Gender.Male)
+        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender)
         {
-            m_curspeakerID = new MonsterID(specie, form, skin, gender) ;
+            m_curspeakerID = new MonsterID(specie, form, skin, gender);
             m_curspeakerName = name;
             m_curspeakerEmo.Emote = 0;
             m_curspeakerSnd = keysound;
@@ -664,7 +664,7 @@ namespace RogueEssence.Script
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { m_choiceresult = true; });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { m_choiceresult = false; });
-                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.Name.ToLocal()), dungeonid, false, choices, 0, 1);
+                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.GetColoredName()), dungeonid, false, choices, 0, 1);
             }
             catch (Exception e)
             {

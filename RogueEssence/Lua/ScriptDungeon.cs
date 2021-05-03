@@ -59,7 +59,7 @@ namespace RogueEssence.Script
         /// Returns the localized name of the current dungeon.
         /// </summary>
         /// <returns></returns>
-        public string DungeonLocaleName()
+        public string DungeonDisplayName()
         {
             return ZoneManager.Instance.CurrentZone.Name.ToLocal();
         }

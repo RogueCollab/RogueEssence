@@ -30,5 +30,15 @@ namespace RogueEssence.Data
             Comment = "";
             Symbol = symbol;
         }
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFFFFF]{0}[color]", Name.ToLocal());
+        }
+
+        public string GetIconName()
+        {
+            return String.Format("{0}\u2060{1}", Symbol, GetColoredName());
+        }
     }
 }

@@ -36,14 +36,14 @@ namespace RogueEssence.Menu
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 int index = ii;
                 if (activeChar.EquippedItem.ID > -1)
-                    flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), () => { choose(-index - 1); }, enableHeld, !enableHeld ? Color.Red : Color.White));
+                    flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), () => { choose(-index - 1); }, enableHeld, !enableHeld ? Color.Red : Color.White));
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 int index = ii;
                 ItemData entry = DataManager.Instance.GetItem(DataManager.Instance.Save.ActiveTeam.GetInv(index).ID);
                 bool enable = !entry.CannotDrop || enableBound;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), () => { choose(index); }, enable, !enable ? Color.Red : Color.White));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), () => { choose(index); }, enable, !enable ? Color.Red : Color.White));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);

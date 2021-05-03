@@ -177,22 +177,22 @@ namespace RogueEssence.Menu
             switch (CurrentState)
             {
                 case ExchangeRescueState.Communicating:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_COMMUNICATING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_COMMUNICATING"));
                     break;
                 case ExchangeRescueState.SOSReady:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_SOS_CONFIRMING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_SOS_CONFIRMING"));
                     break;
                 case ExchangeRescueState.SOSTrading:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_SOS_SENDING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_SOS_SENDING"));
                     break;
                 case ExchangeRescueState.AOKReady:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_AOK_CONFIRMING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_AOK_CONFIRMING"));
                     break;
                 case ExchangeRescueState.AOKTrading:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_AOK_RECEIVING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_AOK_RECEIVING"));
                     break;
                 case ExchangeRescueState.Completed:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_WAITING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_WAITING"));
                     break;
             }
         }

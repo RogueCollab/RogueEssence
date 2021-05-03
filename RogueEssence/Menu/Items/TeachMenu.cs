@@ -89,19 +89,19 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Character character = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice];
-            SummaryTitle.Text = Text.FormatKey("MENU_SKILLS_TITLE", character.BaseName);
+            SummaryTitle.SetText(Text.FormatKey("MENU_SKILLS_TITLE", character.BaseName));
             for (int ii = 0; ii < Skills.Length; ii++)
             {
                 if (character.BaseSkills[ii].SkillNum > -1)
                 {
                     SkillData data = DataManager.Instance.GetSkill(character.BaseSkills[ii].SkillNum);
-                    Skills[ii].Text = data.Name.ToLocal();
-                    SkillCharges[ii].Text = character.BaseSkills[ii].Charges + "/" + (data.BaseCharges + character.ChargeBoost);
+                    Skills[ii].SetText(data.GetColoredName());
+                    SkillCharges[ii].SetText(character.BaseSkills[ii].Charges + "/" + (data.BaseCharges + character.ChargeBoost));
                 }
                 else
                 {
-                    Skills[ii].Text = "";
-                    SkillCharges[ii].Text = "";
+                    Skills[ii].SetText("");
+                    SkillCharges[ii].SetText("");
                 }
             }
             base.ChoiceChanged();

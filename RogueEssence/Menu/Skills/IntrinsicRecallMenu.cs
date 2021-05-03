@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < intrinsicChoices.Length; ii++)
             {
                 int index = ii;
-                flatChoices.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[index]).Name.ToLocal(), () => { choose(index); }));
+                flatChoices.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[index]).GetColoredName(), () => { choose(index); }));
             }
             List<MenuChoice[]> intrinsics = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
             
@@ -68,7 +68,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[CurrentChoiceTotal]);
-            Description.Text = entry.Desc.ToLocal();
+            Description.SetText(entry.Desc.ToLocal());
 
             base.ChoiceChanged();
         }

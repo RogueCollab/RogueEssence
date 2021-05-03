@@ -10,7 +10,7 @@ namespace RogueEssence.Dungeon
         public abstract GameEventPriority.EventCause GetEventCause();
 
         public abstract int GetID();
-        public abstract string GetName();
+        public abstract string GetDisplayName();
 
         public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, EventQueueElement<T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList, Character targetChar) where T : GameEvent
         {

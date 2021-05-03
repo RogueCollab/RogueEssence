@@ -24,5 +24,10 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Comment = "";
         }
+
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }

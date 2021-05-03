@@ -62,21 +62,21 @@ namespace RogueEssence.Menu
             if (!String.IsNullOrWhiteSpace(skillName))
             {
                 Color color = (skillSealed || charges == 0) ? Color.Red : Color.White;
-                skillText.Text = DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1)) + ": " + skillName;
+                skillText.SetText(DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1)) + ": " + skillName);
                 skillText.Color = color;
-                skillCharges.Text = charges + "/" + max;
+                skillCharges.SetText(charges + "/" + max);
                 skillCharges.Color = color;
                 ElementData elementData = DataManager.Instance.GetElement(element);
-                skillElement.Text = String.Format("{0}\u2060{1}", elementData.Symbol, elementData.Name.ToLocal());
+                skillElement.SetText(elementData.GetIconName());
                 skillElement.Color = color;
             }
             else
             {
-                skillText.Text = DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1));
+                skillText.SetText(DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1)));
                 skillText.Color = Color.Gray;
-                skillCharges.Text = "";
+                skillCharges.SetText("");
                 skillCharges.Color = Color.Gray;
-                skillElement.Text = "";
+                skillElement.SetText("");
                 skillElement.Color = Color.Gray;
             }
         }

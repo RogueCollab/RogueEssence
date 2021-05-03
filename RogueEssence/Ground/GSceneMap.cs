@@ -84,7 +84,7 @@ namespace RogueEssence.Ground
                 memberTeam.RemoveFromInv(invSlot);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetName())));
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetDisplayName())));
         }
 
         public IEnumerator<YieldInstruction> ProcessObjectInteract(GroundChar character)
@@ -142,12 +142,12 @@ namespace RogueEssence.Ground
 
             if (itemChar.EquippedItem.ID > -1)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetName(), itemChar.EquippedItem.GetName())));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName())));
                 //put item in inv
                 memberTeam.AddToInv(new InvItem(itemChar.EquippedItem));
             }
             else
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetName())));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetDisplayName())));
 
 
             itemChar.EquipItem(item);
@@ -164,7 +164,7 @@ namespace RogueEssence.Ground
             memberTeam.AddToInv(item);
             itemChar.DequipItem();
             GameManager.Instance.SE(GraphicsManager.EquipSE);
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.Name, item.GetName())));
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.Name, item.GetDisplayName())));
 
         }
 

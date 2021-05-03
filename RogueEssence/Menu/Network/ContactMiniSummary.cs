@@ -41,10 +41,10 @@ namespace RogueEssence.Menu
 
         public void SetContact(string name, string stats, string lastSeen, string id, ProfilePic[] portraits)
         {
-            Name.Text = name;
-            Stats.Text = stats;
-            LastSeen.Text = lastSeen;
-            ID.Text = id;
+            Name.SetText(name);
+            Stats.SetText(stats);
+            LastSeen.SetText(lastSeen);
+            ID.SetText(id);
             Portraits = new SpeakerPortrait[portraits.Length];
             for (int ii = 0; ii < portraits.Length; ii++)
                 Portraits[ii] = new SpeakerPortrait(portraits[ii].ID, new EmoteStyle(portraits[ii].Emote, true),

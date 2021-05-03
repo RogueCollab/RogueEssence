@@ -45,6 +45,11 @@ namespace RogueEssence.Data
             Comment = comment;
         }
 
+        public virtual string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
+
         public string GetLocalString(bool verbose)
         {
             string result = Name.ToLocal();
