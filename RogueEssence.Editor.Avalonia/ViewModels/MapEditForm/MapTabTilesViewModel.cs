@@ -136,20 +136,22 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc tileCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
             switch (TileMode)
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse])
+                        if (input[FrameInput.InputType.LeftMouse] && inWindow)
                             paintTile(tileCoords, getBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
+                        else if (input[FrameInput.InputType.RightMouse] && inWindow)
                             paintTile(tileCoords, new EffectTile());
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                         {
                             DungeonEditScene.Instance.TileInProgress = getBrushAnim();
                             DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
@@ -161,7 +163,7 @@ namespace RogueEssence.Dev.ViewModels
                             rectTile(DungeonEditScene.Instance.RectPreview(), getBrush());
                             DungeonEditScene.Instance.TileInProgress = null;
                         }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
                         {
                             DungeonEditScene.Instance.TileInProgress = new ObjAnimData();
                             DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
@@ -177,9 +179,9 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                        if (input.JustReleased(FrameInput.InputType.LeftMouse) && inWindow)
                             fillTile(tileCoords, getBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
+                        else if (input.JustReleased(FrameInput.InputType.RightMouse) && inWindow)
                             fillTile(tileCoords, new EffectTile());
                     }
                     break;

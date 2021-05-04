@@ -103,6 +103,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
 
             bool snapGrid = input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl) || input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
@@ -114,7 +116,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                             PlaceEntity(groundCoords);
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
                             RemoveEntityAt(groundCoords);
@@ -122,7 +124,7 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                         {
                             SelectEntityAt(groundCoords);
                             if (SelectedEntity != null)

@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.ViewModels
@@ -41,21 +42,23 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc tileCoords = GroundEditScene.Instance.ScreenCoordsToBlockCoords(input.MouseLoc);
             switch (BlockMode)
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse])
+                        if (input[FrameInput.InputType.LeftMouse] && inWindow)
                             paintBlockTile(tileCoords, true);
-                        else if (input[FrameInput.InputType.RightMouse])
+                        else if (input[FrameInput.InputType.RightMouse] && inWindow)
                             paintBlockTile(tileCoords, false);
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
                         Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                         {
                             GroundEditScene.Instance.BlockInProgress = true;
                             GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
@@ -67,7 +70,7 @@ namespace RogueEssence.Dev.ViewModels
                             rectBlockTile(GroundEditScene.Instance.BlockRectPreview(), true);
                             GroundEditScene.Instance.BlockInProgress = null;
                         }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
                         {
                             GroundEditScene.Instance.BlockInProgress = false;
                             GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
@@ -83,9 +86,9 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                        if (input.JustReleased(FrameInput.InputType.LeftMouse) && inWindow)
                             fillBlockTile(tileCoords, true);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
+                        else if (input.JustReleased(FrameInput.InputType.RightMouse) && inWindow)
                             fillBlockTile(tileCoords, false);
                     }
                     break;

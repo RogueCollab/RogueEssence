@@ -45,21 +45,23 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc tileCoords = GroundEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
             switch (TexMode)
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse])
+                        if (input[FrameInput.InputType.LeftMouse] && inWindow)
                             paintTile(tileCoords, getBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
+                        else if (input[FrameInput.InputType.RightMouse] && inWindow)
                             paintTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
                         Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                         {
                             GroundEditScene.Instance.AutoTileInProgress = getBrush().GetSanitizedTile();
                             GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
@@ -71,7 +73,7 @@ namespace RogueEssence.Dev.ViewModels
                             rectTile(GroundEditScene.Instance.TileRectPreview(), getBrush());
                             GroundEditScene.Instance.AutoTileInProgress = null;
                         }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
                         {
                             GroundEditScene.Instance.AutoTileInProgress = new AutoTile(new TileLayer());
                             GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
@@ -87,9 +89,9 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                        if (input.JustReleased(FrameInput.InputType.LeftMouse) && inWindow)
                             fillTile(tileCoords, getBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
+                        else if (input.JustReleased(FrameInput.InputType.RightMouse) && inWindow)
                             fillTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
                     }
                     break;

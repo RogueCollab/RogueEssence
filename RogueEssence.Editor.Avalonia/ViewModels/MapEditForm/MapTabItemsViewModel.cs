@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System.Collections.Generic;
@@ -105,21 +106,23 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
             switch (EntMode)
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                             PlaceEntity(mapCoords);
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
                             RemoveEntityAt(mapCoords);
                         break;
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
                             SelectEntityAt(mapCoords);
                         else if (input[FrameInput.InputType.LeftMouse])
                             MoveEntity(mapCoords);
