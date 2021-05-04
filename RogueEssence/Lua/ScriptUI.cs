@@ -49,8 +49,11 @@ namespace RogueEssence.Script
         public LuaFunction WaitDialog;
         public LuaFunction WaitShowDialogue;
         public LuaFunction WaitShowVoiceOver;
+        public LuaFunction WaitInput;
         public LuaFunction WaitShowTitle;
         public LuaFunction WaitHideTitle;
+        public LuaFunction WaitShowBG;
+        public LuaFunction WaitHideBG;
 
         //================================================================
         // Dialogue
@@ -103,6 +106,19 @@ namespace RogueEssence.Script
             }
         }
 
+        public void TextWaitMenu(bool anyInput)
+        {
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(anyInput);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextWaitMenu({0}): Encountered exception:\n{1}", anyInput, e.Message));
+            }
+        }
+
 
         public void TextShowTitle(string text, int time)
         {
@@ -126,6 +142,33 @@ namespace RogueEssence.Script
             catch (Exception e)
             {
                 DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextDialogue({0}): Encountered exception:\n{1}", time, e.Message));
+            }
+        }
+
+
+
+        public void ShowBG(string bg, int frameTime, int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception:\n{2}", bg, frameTime, time, e.Message));
+            }
+        }
+
+
+        public void FadeBG(int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(false, new BGAnimData(), time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowBG({0}): Encountered exception:\n{1}", time, e.Message));
             }
         }
 
@@ -952,6 +995,12 @@ namespace RogueEssence.Script
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowVoiceOver").First() as LuaFunction;
 
+            WaitInput = state.RunString(@"
+            return function(_, any)
+                UI:TextWaitMenu(any)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitInput").First() as LuaFunction;
+
             WaitShowTitle = state.RunString(@"
             return function(_, text, time)
                 UI:TextShowTitle(text, time)
@@ -963,6 +1012,18 @@ namespace RogueEssence.Script
                 UI:TextFadeTitle(time)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitHideTitle").First() as LuaFunction;
+
+            WaitShowBG = state.RunString(@"
+            return function(_, text, frameTime, time)
+                UI:ShowBG(text, frameTime, time)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitShowBG").First() as LuaFunction;
+
+            WaitHideBG = state.RunString(@"
+            return function(_, time)
+                UI:FadeBG(time)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitHideBG").First() as LuaFunction;
         }
     }
 }

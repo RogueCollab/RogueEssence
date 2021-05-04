@@ -63,8 +63,12 @@ namespace RogueEssence
 
         private float fadeAmount;
         private bool fadeWhite;
+        
         private float titleFadeAmount;
         private string fadedTitle;
+
+        private float bgFadeAmount;
+        private BGAnimData fadedBG;
 
         public string Song;
         public string NextSong;
@@ -81,6 +85,7 @@ namespace RogueEssence
         public GameManager()
         {
             fadedTitle = "";
+            fadedBG = new BGAnimData();
             DebugUI = "";
 
             MetaInputManager = new InputManager();
@@ -222,6 +227,28 @@ namespace RogueEssence
             }
             if (!fadeIn)
                 fadedTitle = "";
+        }
+
+
+        public IEnumerator<YieldInstruction> FadeBG(bool fadeIn, BGAnimData bg, int totalTime = 20)
+        {
+            if (fadeIn)
+                fadedBG = bg;
+            int fadeTime = 10 + ModifyBattleSpeed(totalTime);
+            long currentFadeTime = fadeTime;
+            while (currentFadeTime > 0)
+            {
+                currentFadeTime--;
+                float amount = 0f;
+                if (fadeIn)
+                    amount = ((float)currentFadeTime / (float)fadeTime);
+                else
+                    amount = ((float)(fadeTime - currentFadeTime) / (float)fadeTime);
+                bgFadeAmount = 1f - amount;
+                yield return new WaitForFrames(1);
+            }
+            if (!fadeIn)
+                fadedBG = new BGAnimData();
         }
 
         public int ModifyBattleSpeed(int waitTime, Loc origin)
@@ -980,6 +1007,12 @@ namespace RogueEssence
                 if (titleFadeAmount > 0)
                     GraphicsManager.DungeonFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 2,
                         fadedTitle, null, DirV.None, DirH.None, Color.White * titleFadeAmount);
+                if (bgFadeAmount > 0 && fadedBG.AnimIndex != "")
+                {
+                    DirSheet bg = GraphicsManager.GetBackground(fadedBG.AnimIndex);
+                    bg.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - bg.TileWidth / 2, GraphicsManager.ScreenHeight / 2 - bg.TileHeight / 2),
+                        fadedBG.GetCurrentFrame(GraphicsManager.TotalFrameTick, bg.TotalFrames), Dir8.Down, Color.White * ((float)fadedBG.Alpha / 255) * bgFadeAmount);
+                }
             }
 
             MenuManager.Instance.DrawMenus(spriteBatch);
