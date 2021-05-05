@@ -1265,7 +1265,8 @@ namespace RogueEssence.Dungeon
         {
             if (intrinsic == Intrinsics[slot].Element.ID)
             {
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_NONE", GetDisplayName(false)));
+                if (msg)
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_NONE", GetDisplayName(false)));
                 yield break;
             }
 
