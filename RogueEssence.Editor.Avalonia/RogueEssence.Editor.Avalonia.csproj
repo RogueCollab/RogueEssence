@@ -16,6 +16,9 @@
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="DataEditor\RangeDictBox.axaml.cs">
+      <DependentUpon>RangeDictBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DataEditor\TileEditForm.axaml.cs">
       <DependentUpon>TileEditForm.axaml</DependentUpon>
     </Compile>

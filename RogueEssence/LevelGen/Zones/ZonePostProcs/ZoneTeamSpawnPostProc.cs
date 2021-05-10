@@ -71,5 +71,15 @@ namespace RogueEssence.LevelGen
 
             queue.Enqueue(Priority, spawnStep);
         }
+
+        public override string ToString()
+        {
+            int totalCount = 0;
+            totalCount += NormalSpawns.Count;
+            totalCount += LonerSpawns.Count;
+            totalCount += LeaderSpawns.Count;
+            totalCount += SupportSpawns.Count;
+            return string.Format("{0}[{1}] Spec:{2}", this.GetType().Name, totalCount.ToString(), this.SpecificSpawns.Count.ToString());
+        }
     }
 }

@@ -30,6 +30,11 @@ namespace RogueEssence.LevelGen
         }
 
         public ISpawnable Copy() { return new MapGenEntrance(this); }
+
+        public override string ToString()
+        {
+            return String.Format("{0} Dir:{1}", Loc.ToString(), Dir.ToString());
+        }
     }
 
     [Serializable]
@@ -57,5 +62,10 @@ namespace RogueEssence.LevelGen
             Tile = (EffectTile)other.Tile.Copy();
         }
         public ISpawnable Copy() { return new MapGenExit(this); }
+
+        public override string ToString()
+        {
+            return String.Format("{0} Tile:{1}", Loc.ToString(), Tile.ToString());
+        }
     }
 }

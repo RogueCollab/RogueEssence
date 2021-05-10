@@ -17,6 +17,11 @@ namespace RogueEssence.LevelGen
             Spawns = new SpawnRangeList<T>();
             SpawnRates = new RangeDict<int>();
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]", this.GetType().Name, this.Spawns.Count.ToString());
+        }
     }
 
 
@@ -61,6 +66,11 @@ namespace RogueEssence.LevelGen
             ItemSpawnStep<BaseMapGenContext> spawnStep = new ItemSpawnStep<BaseMapGenContext>();
             spawnStep.Spawns = spawns;
             queue.Enqueue(Priority, spawnStep);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]", this.GetType().Name, this.Spawns.Count.ToString());
         }
     }
 }

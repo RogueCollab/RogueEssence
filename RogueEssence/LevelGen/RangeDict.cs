@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using RogueElements;
@@ -6,7 +7,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class RangeDict<T>
+    public class RangeDict<T> : IRangeDict<T>, IRangeDict
     {
         //TODO: make this use a binary tree for O(log(n)) access time
 
@@ -17,10 +18,20 @@ namespace RogueEssence.LevelGen
             nodes = new List<RangeNode>();
         }
 
+        public void Clear()
+        {
+            nodes.Clear();
+        }
+
         public void SetRange(T item, IntRange range)
         {
             EraseRange(range);
             nodes.Add(new RangeNode(item, range));
+        }
+
+        void IRangeDict.SetRange(object item, IntRange range)
+        {
+            SetRange((T)item, range);
         }
 
         public void EraseRange(IntRange range)
@@ -51,6 +62,11 @@ namespace RogueEssence.LevelGen
             throw new KeyNotFoundException();
         }
 
+        object IRangeDict.GetItem(int index)
+        {
+            return GetItem(index);
+        }
+
         public bool TryGetItem(int index, out T item)
         {
             foreach (RangeNode node in nodes)
@@ -63,6 +79,12 @@ namespace RogueEssence.LevelGen
             }
             item = default(T);
             return false;
+        }
+
+        public IEnumerable<IntRange> EnumerateRanges()
+        {
+            foreach (RangeNode node in nodes)
+                yield return node.Range;
         }
 
         public T this[int index]
@@ -92,5 +114,31 @@ namespace RogueEssence.LevelGen
                 this.Range = range;
             }
         }
+    }
+
+
+
+    public interface IRangeDict<T> 
+    {
+        void Clear();
+
+        void SetRange(T item, IntRange range);
+        void EraseRange(IntRange range);
+        T GetItem(int index);
+        bool ContainsItem(int index);
+
+        IEnumerable<IntRange> EnumerateRanges();
+    }
+
+    public interface IRangeDict
+    {
+        void Clear();
+
+        void SetRange(object item, IntRange range);
+        void EraseRange(IntRange range);
+        object GetItem(int index);
+        bool ContainsItem(int index);
+
+        IEnumerable<IntRange> EnumerateRanges();
     }
 }

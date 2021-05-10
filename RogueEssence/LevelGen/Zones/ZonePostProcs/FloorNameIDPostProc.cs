@@ -31,5 +31,10 @@ namespace RogueEssence.LevelGen
         {
             queue.Enqueue(Priority, new MapNameIDStep<BaseMapGenContext>(zoneContext.CurrentID, LocalText.FormatLocalText(Name, (zoneContext.CurrentID + 1).ToString())));
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: \"{1}\"", this.GetType().Name, this.Name.DefaultText);
+        }
     }
 }

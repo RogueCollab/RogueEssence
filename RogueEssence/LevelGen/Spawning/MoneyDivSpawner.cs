@@ -41,5 +41,10 @@ namespace RogueEssence.LevelGen
             }
             return results;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: Div:{1}", this.GetType().Name, this.DivAmount.ToString());
+        }
     }
 }
