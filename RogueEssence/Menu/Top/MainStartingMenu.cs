@@ -71,7 +71,10 @@ namespace RogueEssence.Menu
                         startIndex = DataManager.Instance.StartChars.FindIndex(start => start.mon == monId);
                     MenuManager.Instance.AddMenu(new MainStartingMenu(startIndex, (int index) =>
                     {
-                        StartFlow(DataManager.Instance.StartChars[index].mon, DataManager.Instance.StartChars[index].name, -1);
+                        string newName = null;
+                        if (DataManager.Instance.StartChars[index].name != "")
+                            newName = DataManager.Instance.StartChars[index].name;
+                        StartFlow(DataManager.Instance.StartChars[index].mon, newName, -1);
                     }, () => { }), false);
                     return;
                 }
@@ -80,7 +83,8 @@ namespace RogueEssence.Menu
                 else if (DataManager.Instance.StartChars.Count == 1)
                 {
                     monId = DataManager.Instance.StartChars[0].mon;
-                    name = DataManager.Instance.StartChars[0].name;
+                    if (DataManager.Instance.StartChars[0].name != "")
+                        name = DataManager.Instance.StartChars[0].name;
                 }
                 else
                 {
@@ -125,14 +129,14 @@ namespace RogueEssence.Menu
                     monId.Gender = genders[0];
             }
 
-            if (name == "")
+            if (name == null)
             {
                 MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
                 {
                     StartFlow(monId, name, -1);
                 }, () =>
                 {
-                    StartFlow(monId, "", 1);
+                    StartFlow(monId, null, 1);
                 }), false);
                 return;
             }

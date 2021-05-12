@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), "", -1); }));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
 
 
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)) || DataManager.Instance.Save != null || RecordHeaderData.LoadHighScores().Count > 0)
