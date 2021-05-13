@@ -162,21 +162,19 @@ namespace RogueEssence.Dev.Views
             if (boxIndex > -1)
             {
                 Priority priority = collection[boxIndex].Priority;
-                int index = getPriorityIndex(boxIndex);
                 object element = collection[boxIndex].Value;
-                OnEditItem(priority, index, element, editItem);
+                OnEditItem(priority, boxIndex, element, editItem);
             }
         }
 
         public void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            int boxIndex = SelectedIndex;
             Priority priority = new Priority(0);
             int index = 0;
-            if (boxIndex >= 0)
+            if (SelectedIndex >= 0)
             {
-                priority = collection[boxIndex].Priority;
-                index = getPriorityIndex(boxIndex);
+                priority = collection[SelectedIndex].Priority;
+                index = SelectedIndex + 1;
             }
             object element = null;
             OnEditItem(priority, index, element, insertItem);
@@ -263,10 +261,8 @@ namespace RogueEssence.Dev.Views
         {
             if (SelectedIndex > -1)
             {
-                int boxIndex = SelectedIndex;
-                Priority priority = collection[boxIndex].Priority;
-                int index = getPriorityIndex(boxIndex);
-                OnEditPriority(priority, index, changePriority);
+                Priority priority = collection[SelectedIndex].Priority;
+                OnEditPriority(priority, SelectedIndex, changePriority);
             }
         }
 

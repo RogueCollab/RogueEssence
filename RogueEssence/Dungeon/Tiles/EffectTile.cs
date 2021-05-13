@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -33,6 +34,7 @@ namespace RogueEssence.Dungeon
         public bool Danger;
         public TileOwner Owner;
 
+        [DataType(0, DataManager.DataType.Tile, true)]
         public int ID;
 
         public StateCollection<TileState> TileStates;
