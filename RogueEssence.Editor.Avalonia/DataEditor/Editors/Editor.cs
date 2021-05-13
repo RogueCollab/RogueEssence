@@ -474,7 +474,7 @@ namespace RogueEssence.Dev
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                         };
 
-                        chosenParent.ContextMenu = copyPasteStrip;
+                        control.ContextMenu = copyPasteStrip;
                     }
                     chosenParent.Background = Avalonia.Media.Brushes.Transparent;
                     DataEditor.LoadWindowControls(chosenParent, name, children[selection], attributes, member);
