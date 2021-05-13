@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueEssence.Content;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -16,6 +17,8 @@ namespace RogueEssence.Dungeon
         public override PassiveData GetData() { return DataManager.Instance.GetMapStatus(ID); }
         public override string GetDisplayName() { return DataManager.Instance.GetMapStatus(ID).Name.ToLocal(); }
 
+        [DataType(0, DataManager.DataType.MapStatus, false)]
+        public override int ID { get; set; }
         public StateCollection<MapStatusState> StatusStates;
 
         public SwitchOffEmitter Emitter;

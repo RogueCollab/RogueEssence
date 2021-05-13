@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -26,6 +27,9 @@ namespace RogueEssence.Dungeon
         }
         public override PassiveData GetData() { return DataManager.Instance.GetStatus(ID); }
         public override string GetDisplayName() { return DataManager.Instance.GetStatus(ID).GetColoredName(); }
+
+        [DataType(0, DataManager.DataType.Status, false)]
+        public override int ID { get; set; }
         //handles stuff like stacking, sealing, movement speed, etc.
         public StateCollection<StatusState> StatusStates;
 

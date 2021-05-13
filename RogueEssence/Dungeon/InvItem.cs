@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Data;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,6 +14,8 @@ namespace RogueEssence.Dungeon
         }
         public override PassiveData GetData() { return DataManager.Instance.GetItem(ID); }
 
+        [DataType(0, DataManager.DataType.Item, false)]
+        public override int ID { get; set; }
         public bool Cursed;
         public int HiddenValue;
 

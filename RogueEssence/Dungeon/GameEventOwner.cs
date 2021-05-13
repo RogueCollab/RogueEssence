@@ -51,7 +51,7 @@ namespace RogueEssence.Dungeon
     {
         public override int GetID() { return ID; }
         public abstract PassiveData GetData();
-        public int ID;
+        public abstract int ID { get; set; }
 
         public PassiveActive()
         {
