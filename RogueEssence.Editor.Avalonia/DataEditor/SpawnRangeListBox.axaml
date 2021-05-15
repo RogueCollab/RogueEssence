@@ -32,9 +32,9 @@
     <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="4" MinHeight="50">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Start"
-                      Binding="{Binding Start}" />
+                      Binding="{Binding DisplayStart}" />
         <DataGridTextColumn Header="End"
-                      Binding="{Binding End}" />
+                      Binding="{Binding DisplayEnd}" />
         <DataGridTextColumn Header="Weight"
                       Binding="{Binding Weight}" />
         <DataGridTextColumn Header="Value"
@@ -48,7 +48,7 @@
     <Slider IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentWeight}" TickFrequency="20" Minimum="1" Maximum="255" Margin="4" Grid.Row="2" Grid.ColumnSpan="4"/>
     <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="2" Grid.Column="4">Weight</TextBlock>
     <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="3" Grid.Column="0">Start:</TextBlock>
-    <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" Minimum="1" Maximum="{Binding CurrentEnd}" Margin="4" Grid.Row="3" Grid.Column="1"/>
+    <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" Maximum="{Binding CurrentEnd}" Margin="4" Grid.Row="3" Grid.Column="1"/>
     <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="3" Grid.Column="2">End:</TextBlock>
     <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentEnd}" Minimum="{Binding CurrentStart}" Margin="4" Grid.Row="3" Grid.Column="3"/>
   </Grid>

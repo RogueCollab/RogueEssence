@@ -23,6 +23,20 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            int addMin = 0;
+            int addMax = 0;
+            if (rangeAtt != null)
+            {
+                if (rangeAtt.Index1)
+                {
+                    addMin += 1;
+                    addMax += 1;
+                }
+                if (rangeAtt.Inclusive)
+                    addMax -= 1;
+            }
+
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
 
             TextBlock lblX = new TextBlock();
@@ -36,7 +50,7 @@ namespace RogueEssence.Dev
             nudValueX.Margin = new Thickness(4, 0, 0, 0);
             nudValueX.Minimum = Int32.MinValue;
             nudValueX.Maximum = Int32.MaxValue;
-            nudValueX.Value = (member == null) ? 0 : ((IntRange)member).Min;
+            nudValueX.Value = ((member == null) ? 0 : ((IntRange)member).Min) + addMin;
             innerPanel.Children.Add(nudValueX);
             nudValueX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -52,7 +66,7 @@ namespace RogueEssence.Dev
             nudValueY.Margin = new Thickness(4, 0, 0, 0);
             nudValueY.Minimum = Int32.MinValue;
             nudValueY.Maximum = Int32.MaxValue;
-            nudValueY.Value = (member == null) ? 0 : ((IntRange)member).Max;
+            nudValueY.Value = ((member == null) ? 0 : ((IntRange)member).Max) + addMax;
             innerPanel.Children.Add(nudValueY);
             nudValueY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 
@@ -62,6 +76,20 @@ namespace RogueEssence.Dev
 
         public override IntRange SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            int addMin = 0;
+            int addMax = 0;
+            if (rangeAtt != null)
+            {
+                if (rangeAtt.Index1)
+                {
+                    addMin += 1;
+                    addMax += 1;
+                }
+                if (rangeAtt.Inclusive)
+                    addMax -= 1;
+            }
+
             int controlIndex = 0;
             controlIndex++;
             Avalonia.Controls.Grid innerControl = (Avalonia.Controls.Grid)control.Children[controlIndex];
@@ -72,7 +100,7 @@ namespace RogueEssence.Dev
             innerControlIndex++;
             innerControlIndex++;
             NumericUpDown nudValueY = (NumericUpDown)innerControl.Children[innerControlIndex];
-            return new IntRange((int)nudValueX.Value, (int)nudValueY.Value);
+            return new IntRange((int)nudValueX.Value - addMin, (int)nudValueY.Value - addMax);
         }
     }
 }

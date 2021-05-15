@@ -21,9 +21,16 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+
             SpawnRangeListBox lbxValue = new SpawnRangeListBox();
             lbxValue.MaxHeight = 260;
             SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel();
+            if (rangeAtt != null)
+            {
+                mv.Index1 = rangeAtt.Index1;
+                mv.Inclusive = rangeAtt.Inclusive;
+            }
             lbxValue.DataContext = mv;
 
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);

@@ -25,9 +25,9 @@
     <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Start"
-                      Binding="{Binding Start}" />
+                      Binding="{Binding DisplayStart}" />
         <DataGridTextColumn Header="End"
-                      Binding="{Binding End}" />
+                      Binding="{Binding DisplayEnd}" />
         <DataGridTextColumn Header="Value"
                             Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
       </DataGrid.Columns>

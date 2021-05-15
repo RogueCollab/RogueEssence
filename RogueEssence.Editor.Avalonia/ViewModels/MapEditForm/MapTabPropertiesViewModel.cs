@@ -223,7 +223,7 @@ namespace RogueEssence.Dev.ViewModels
             else
                 frmKey.Title = element.ToString();
 
-            DataEditor.LoadClassControls(frmKey.ControlPanel, "(TextureMap) <New Key>", typeof(int), new object[0] { }, null, true);
+            DataEditor.LoadClassControls(frmKey.ControlPanel, "(TextureMap) <New Key>", typeof(int), new object[0] { }, key, true);
 
             frmKey.SelectedOKEvent += () =>
             {

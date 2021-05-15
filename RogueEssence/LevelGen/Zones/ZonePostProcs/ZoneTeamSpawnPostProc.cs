@@ -15,17 +15,23 @@ namespace RogueEssence.LevelGen
         public Priority Priority;
 
         [SubGroup]
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<MobSpawn> NormalSpawns;
         [SubGroup]
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<MobSpawn> LonerSpawns;
         [SubGroup]
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<MobSpawn> LeaderSpawns;
         [SubGroup]
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<MobSpawn> SupportSpawns;
         [SubGroup]
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<int> TeamSizes;
 
         [SubGroup]
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<SpecificTeamSpawner> SpecificSpawns;
 
         //range list for weights

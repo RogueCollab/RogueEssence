@@ -24,9 +24,16 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+
             RangeDictBox lbxValue = new RangeDictBox();
             lbxValue.MaxHeight = 180;
             RangeDictBoxViewModel mv = new RangeDictBoxViewModel(control.GetOwningForm());
+            if (rangeAtt != null)
+            {
+                mv.Index1 = rangeAtt.Index1;
+                mv.Inclusive = rangeAtt.Inclusive;
+            }
             lbxValue.DataContext = mv;
 
             Type keyType = typeof(IntRange);
@@ -67,11 +74,15 @@ namespace RogueEssence.Dev
                 else
                     frmKey.Title = name + "/" + element.ToString();
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, "(RangeDict) " + name + "<New Range>", keyType, new object[0] { }, null, true);
+                List<object> attrList = new List<object>();
+                if (rangeAtt != null)
+                    attrList.Add(rangeAtt);
+
+                DataEditor.LoadClassControls(frmKey.ControlPanel, "(RangeDict) " + name + "<New Range>", keyType, attrList.ToArray(), key, true);
 
                 frmKey.SelectedOKEvent += () =>
                 {
-                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, name, keyType, new object[0] { }, true);
+                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, name, keyType, attrList.ToArray(), true);
                     op(key, element);
                     frmKey.Close();
                 };

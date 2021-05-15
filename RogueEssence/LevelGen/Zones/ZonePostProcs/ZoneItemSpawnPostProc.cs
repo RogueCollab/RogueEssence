@@ -9,7 +9,9 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class CategorySpawn<T>
     {
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<T> Spawns;
+        [RangeBorder(0, true, true)]
         public RangeDict<int> SpawnRates;
 
         public CategorySpawn()

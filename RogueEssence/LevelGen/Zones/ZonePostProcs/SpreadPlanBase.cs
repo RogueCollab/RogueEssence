@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
     [Serializable]
     public abstract class SpreadPlanBase
     {
+        [RangeBorder(0, true, true)]
         public IntRange FloorRange;
 
         public SpreadPlanBase(IntRange floorRange)

@@ -66,7 +66,7 @@ namespace RogueEssence.Dev
                 else
                     frmKey.Title = name + "/" + element.ToString();
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
+                DataEditor.LoadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, key, true);
 
                 frmKey.SelectedOKEvent += () =>
                 {

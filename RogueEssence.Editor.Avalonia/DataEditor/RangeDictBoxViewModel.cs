@@ -19,22 +19,47 @@ namespace RogueEssence.Dev.ViewModels
         public int Start
         {
             get { return start; }
-            set { this.SetIfChanged(ref start, value); }
+            set
+            {
+                start = value;
+                DisplayStart = DisplayStart;
+            }
         }
         private int end;
         public int End
         {
             get { return end; }
-            set { this.SetIfChanged(ref end, value); }
+            set
+            {
+                end = value;
+                DisplayEnd = DisplayEnd;
+            }
         }
+
+        public int DisplayStart
+        {
+            get { return start + addMin; }
+            set { this.RaisePropertyChanged(); }
+        }
+        public int DisplayEnd
+        {
+            get { return end + addMax; }
+            set { this.RaisePropertyChanged(); }
+        }
+
         private object value;
         public object Value
         {
             get { return value; }
         }
 
-        public RangeDictElement(int start, int end, object value)
+        private int addMin;
+        private int addMax;
+
+        public RangeDictElement(int addMin, int addMax, int start, int end, object value)
         {
+            this.addMin = addMin;
+            this.addMax = addMax;
             this.start = start;
             this.end = end;
             this.value = value;
@@ -50,6 +75,25 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return selectedIndex; }
             set { this.SetIfChanged(ref selectedIndex, value); }
+        }
+
+
+        public bool Index1;
+        public bool Inclusive;
+
+        public int AddMin
+        {
+            get { return Index1 ? 1 : 0; }
+        }
+        public int AddMax
+        {
+            get
+            {
+                int result = Index1 ? 1 : 0;
+                if (Inclusive)
+                    result -= 1;
+                return result;
+            }
         }
 
         public delegate void EditElementOp(IntRange key, object element);
@@ -89,7 +133,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (ii == Collection.Count || obj.Min < Collection[ii].Start)
                     {
-                        Collection.Insert(ii, new RangeDictElement(obj.Min, obj.Max, source.GetItem(obj.Min)));
+                        Collection.Insert(ii, new RangeDictElement(AddMin, AddMax, obj.Min, obj.Max, source.GetItem(obj.Min)));
                         break;
                     }
                 }
@@ -101,7 +145,7 @@ namespace RogueEssence.Dev.ViewModels
         private void editItem(IntRange key, object element)
         {
             int index = getIndexFromKey(key);
-            Collection[index] = new RangeDictElement(Collection[index].Start, Collection[index].End, element);
+            Collection[index] = new RangeDictElement(AddMin, AddMax, Collection[index].Start, Collection[index].End, element);
             OnMemberChanged?.Invoke();
         }
 
@@ -117,7 +161,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ii == Collection.Count || key.Min < Collection[ii].Start)
                 {
-                    Collection.Insert(ii, new RangeDictElement(key.Min, key.Max, element));
+                    Collection.Insert(ii, new RangeDictElement(AddMin, AddMax, key.Min, key.Max, element));
                     break;
                 }
             }
@@ -132,13 +176,13 @@ namespace RogueEssence.Dev.ViewModels
                     Collection.RemoveAt(ii);
                 else if (Collection[ii].Start < range.Min && range.Max < Collection[ii].End)
                 {
-                    Collection[ii] = new RangeDictElement(Collection[ii].Start, range.Min, Collection[ii].Value);
-                    Collection.Add(new RangeDictElement(range.Max, Collection[ii].End, Collection[ii].Value));
+                    Collection[ii] = new RangeDictElement(AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
+                    Collection.Add(new RangeDictElement(AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value));
                 }
-                else if (range.Min < Collection[ii].Start && range.Max < Collection[ii].End)
-                    Collection[ii] = new RangeDictElement(range.Max, Collection[ii].End, Collection[ii].Value);
+                else if (range.Min <= Collection[ii].Start && range.Max < Collection[ii].End)
+                    Collection[ii] = new RangeDictElement(AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value);
                 else if (Collection[ii].Start < range.Min && Collection[ii].End <= range.Max)
-                    Collection[ii] = new RangeDictElement(Collection[ii].Start, range.Min, Collection[ii].Value);
+                    Collection[ii] = new RangeDictElement(AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
             }
         }
 
@@ -168,7 +212,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnAdd_Click()
         {
-            IntRange newKey = new IntRange();
+            IntRange newKey = new IntRange(0);
             object element = null;
             OnEditKey?.Invoke(newKey, element, insertKey);
         }
