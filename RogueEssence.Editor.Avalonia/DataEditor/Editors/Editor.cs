@@ -174,6 +174,12 @@ namespace RogueEssence.Dev
             return DataEditor.SaveClassControls(control, name, type, attributes, isWindow);
         }
 
+
+        public virtual string GetString(T obj, Type type, object[] attributes)
+        {
+            return obj == null ? "NULL" : obj.ToString();
+        }
+
         void IEditor.LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             //if you want a class that is by default isolated to a classbox but has a custom UI when opened on its own/overridden to render,
@@ -217,7 +223,7 @@ namespace RogueEssence.Dev
                 }
                 //else
                 //    txtValue.Size = new Size(0, 20);
-                ClassBoxViewModel mv = new ClassBoxViewModel();
+                ClassBoxViewModel mv = new ClassBoxViewModel(DataEditor.GetStringConv(type, ReflectionExt.GetPassableAttributes(0, attributes)));
                 mv.LoadFromSource(member);
                 cbxValue.DataContext = mv;
                 control.Children.Add(cbxValue);
@@ -577,6 +583,11 @@ namespace RogueEssence.Dev
         object IEditor.SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             return SaveMemberControl((T)obj, control, name, type, attributes, isWindow);
+        }
+
+        string IEditor.GetString(object obj, Type type, object[] attributes)
+        {
+            return GetString((T)obj, type, attributes);
         }
     }
 }

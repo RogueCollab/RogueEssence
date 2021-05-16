@@ -12,7 +12,6 @@
   <UserControl.Resources>
     <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
     <converters:PercentConverter x:Key="PercentConverter"/>
-    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -33,7 +32,7 @@
         <DataGridTextColumn Header="Chance"
                       Binding="{Binding Path=Chance, Converter={StaticResource PercentConverter}, Mode=OneWay}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
+                            Binding="{Binding Path=DisplayValue}" />
       </DataGrid.Columns>
     </DataGrid>
     <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>

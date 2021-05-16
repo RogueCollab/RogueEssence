@@ -22,13 +22,13 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
+
             CollectionBox lbxValue = new CollectionBox();
             lbxValue.MaxHeight = 180;
-            CollectionBoxViewModel mv = new CollectionBoxViewModel();
+            CollectionBoxViewModel mv = new CollectionBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
-            //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {

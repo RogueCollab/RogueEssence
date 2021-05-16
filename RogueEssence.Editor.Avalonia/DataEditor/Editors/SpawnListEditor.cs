@@ -21,15 +21,14 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
+
             SpawnListBox lbxValue = new SpawnListBox();
             lbxValue.MaxHeight = 220;
-            SpawnListBoxViewModel mv = new SpawnListBoxViewModel();
+            SpawnListBoxViewModel mv = new SpawnListBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
-            //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
-
             mv.OnEditItem += (int index, object element, SpawnListBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();

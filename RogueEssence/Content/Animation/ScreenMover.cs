@@ -9,6 +9,7 @@ namespace RogueEssence.Content
         public bool Finished { get { return (ShakeTime.ToFrames() >= MaxShakeTime); } }
 
         public int MinShake;
+        [Dev.SharedRow]
         public int MaxShake;
         public int MaxShakeTime;
 

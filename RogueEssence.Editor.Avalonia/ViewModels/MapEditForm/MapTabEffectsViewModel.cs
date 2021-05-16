@@ -16,15 +16,15 @@ namespace RogueEssence.Dev.ViewModels
     {
         public MapTabEffectsViewModel()
         {
-            Statuses = new CollectionBoxViewModel();
+            Statuses = new CollectionBoxViewModel(DataEditor.GetStringConv(typeof(MapStatus), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
 
-            MapEffect = new ClassBoxViewModel();
+            MapEffect = new ClassBoxViewModel(DataEditor.GetStringConv(typeof(ActiveEffect), new object[0]));
             MapEffect.OnMemberChanged += MapEffect_Changed;
             MapEffect.OnEditItem += MapEffect_Edit;
 
-            CheckEvents = new CollectionBoxViewModel();
+            CheckEvents = new CollectionBoxViewModel(DataEditor.GetStringConv(typeof(SingleCharEvent), new object[0]));
             CheckEvents.OnMemberChanged += CheckEvents_Changed;
             CheckEvents.OnEditItem += Events_EditItem;
 

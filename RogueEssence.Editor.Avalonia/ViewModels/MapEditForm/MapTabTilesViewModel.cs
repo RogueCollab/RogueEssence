@@ -26,7 +26,7 @@ namespace RogueEssence.Dev.ViewModels
                 Owners.Add(((EffectTile.TileOwner)ii).ToString());
 
 
-            TileStates = new CollectionBoxViewModel();
+            TileStates = new CollectionBoxViewModel(DataEditor.GetStringConv(typeof(TileState), new object[0]));
             TileStates.OnEditItem += TileStates_EditItem;
         }
 

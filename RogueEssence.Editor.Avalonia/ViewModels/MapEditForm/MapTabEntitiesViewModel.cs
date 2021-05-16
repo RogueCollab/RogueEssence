@@ -67,7 +67,7 @@ namespace RogueEssence.Dev.ViewModels
 
             speciesChanged();
 
-            Statuses = new CollectionBoxViewModel();
+            Statuses = new CollectionBoxViewModel(DataEditor.GetStringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
         }

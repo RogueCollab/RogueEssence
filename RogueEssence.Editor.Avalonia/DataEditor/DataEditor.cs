@@ -16,12 +16,12 @@ using Avalonia.Interactivity;
 using Avalonia;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
+using Avalonia.Data.Converters;
 
 namespace RogueEssence.Dev
 {
     public static class DataEditor
     {
-        private static List<IClassConverter> converters;
         private static List<IEditor> editors;
 
         public static object clipboardObj;
@@ -29,7 +29,6 @@ namespace RogueEssence.Dev
         public static void Init()
         {
             clipboardObj = new object();
-            converters = new List<IClassConverter>();
             editors = new List<IEditor>();
         }
 
@@ -52,45 +51,9 @@ namespace RogueEssence.Dev
             editors.Add(editor);
         }
 
-        public static void AddConverter(IClassConverter converter)
-        {
-            //maintain inheritance order
-            for (int ii = 0; ii < converters.Count; ii++)
-            {
-                if (converter.GetConvertingType().IsSubclassOf(editors[ii].GetConvertingType()))
-                {
-                    converters.Insert(ii, converter);
-                    return;
-                }
-            }
-            converters.Add(converter);
-        }
-
-
         public static void LoadDataControls(object obj, StackPanel control)
         {
             LoadClassControls(control, obj.ToString(), obj.GetType(), new object[0], obj, true);
-        }
-
-        public static string GetClassEntryString(object obj)
-        {
-            if (obj == null)
-                return "NULL";
-
-            Type objType = obj.GetType();
-
-            foreach (IClassConverter converter in converters)
-            {
-                Type editType = converter.GetConvertingType();
-                if (editType.IsAssignableFrom(objType))
-                    return converter.GetClassString(obj);
-            }
-
-            string toStr = obj.ToString();
-            if (toStr != obj.GetType().Name)
-                return toStr;
-
-            return obj.GetType().Name;
         }
 
         private static IEditor findEditor(Type objType, object[] attributes)
@@ -159,25 +122,10 @@ namespace RogueEssence.Dev
             return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
         }
 
-        //TODO: WPF data binding would invalidate this
-
-        public static ReflectionExt.TypeStringConv GetStringRep(Type type, object[] attributes)
+        public static StringConv GetStringConv(Type type, object[] attributes)
         {
-            if (type == typeof(Int32))
-            {
-                DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
-                FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
-                if (dataAtt != null)
-                {
-                    Data.EntryDataIndex nameIndex = Data.DataManager.Instance.DataIndices[dataAtt.DataType];
-                    return (obj) => { return ((int)obj >= 0 & (int)obj < nameIndex.Count) ? nameIndex.Entries[(int)obj].GetLocalString(false) : "---"; };
-                }
-                else if (frameAtt != null)
-                {
-                    return (obj) => { return ((int)obj >= 0 & (int)obj < GraphicsManager.Actions.Count) ? GraphicsManager.Actions[(int)obj].Name : "---"; };
-                }
-            }
-            return (obj) => { return obj == null ? "[NULL]" : obj.ToString(); };
+            IEditor editor = findEditor(type, attributes);
+            return new StringConv(type, editor, attributes);
         }
 
         public static void SetClipboardObj(object obj)

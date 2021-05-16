@@ -9,6 +9,7 @@ using RogueElements;
 using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using System.Collections;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
@@ -21,12 +22,14 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
-            PriorityListBox lbxValue = new PriorityListBox();
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
-            //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
+
+            PriorityListBox lbxValue = new PriorityListBox();
+            PriorityListBoxViewModel mv = new PriorityListBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            lbxValue.DataContext = mv;
+
             //add lambda expression for editing a single element
-            lbxValue.OnEditItem = (Priority priority, int index, object element, PriorityListBox.EditElementOp op) =>
+            mv.OnEditItem = (Priority priority, int index, object element, PriorityListBoxViewModel.EditElementOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 if (element == null)
@@ -50,7 +53,7 @@ namespace RogueEssence.Dev
                 control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
-            lbxValue.OnEditPriority = (Priority priority, int index, PriorityListBox.EditPriorityOp op) =>
+            mv.OnEditPriority = (Priority priority, int index, PriorityListBoxViewModel.EditPriorityOp op) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = name + "/" + "New Priority";
@@ -72,7 +75,7 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            lbxValue.LoadFromList((IPriorityList)member);
+            mv.LoadFromList(member);
             control.Children.Add(lbxValue);
         }
 
@@ -82,7 +85,8 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
             controlIndex++;
             PriorityListBox lbxValue = (PriorityListBox)control.Children[controlIndex];
-            return lbxValue.GetList(type);
+            PriorityListBoxViewModel mv = (PriorityListBoxViewModel)lbxValue.DataContext;
+            return mv.GetList(type);
         }
     }
 }

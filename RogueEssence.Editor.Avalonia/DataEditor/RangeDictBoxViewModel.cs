@@ -36,6 +36,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        //TODO: the separation of display vs. internal value can be offloaded
+        //to the already existing converter system
         public int DisplayStart
         {
             get { return start + addMin; }
@@ -56,8 +58,16 @@ namespace RogueEssence.Dev.ViewModels
         private int addMin;
         private int addMax;
 
-        public RangeDictElement(int addMin, int addMax, int start, int end, object value)
+        public string DisplayValue
         {
+            get { return conv.GetString(value); }
+        }
+
+        private StringConv conv;
+
+        public RangeDictElement(StringConv conv, int addMin, int addMax, int start, int end, object value)
+        {
+            this.conv = conv;
             this.addMin = addMin;
             this.addMax = addMax;
             this.start = start;
@@ -103,10 +113,13 @@ namespace RogueEssence.Dev.ViewModels
         public event ElementOp OnEditItem;
         public event Action OnMemberChanged;
 
+        public StringConv StringConv;
+
         private Window parent;
 
-        public RangeDictBoxViewModel(Window parent)
+        public RangeDictBoxViewModel(Window parent, StringConv conv)
         {
+            StringConv = conv;
             this.parent = parent;
             Collection = new ObservableCollection<RangeDictElement>();
         }
@@ -133,7 +146,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (ii == Collection.Count || obj.Min < Collection[ii].Start)
                     {
-                        Collection.Insert(ii, new RangeDictElement(AddMin, AddMax, obj.Min, obj.Max, source.GetItem(obj.Min)));
+                        Collection.Insert(ii, new RangeDictElement(StringConv, AddMin, AddMax, obj.Min, obj.Max, source.GetItem(obj.Min)));
                         break;
                     }
                 }
@@ -145,7 +158,7 @@ namespace RogueEssence.Dev.ViewModels
         private void editItem(IntRange key, object element)
         {
             int index = getIndexFromKey(key);
-            Collection[index] = new RangeDictElement(AddMin, AddMax, Collection[index].Start, Collection[index].End, element);
+            Collection[index] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[index].Start, Collection[index].End, element);
             OnMemberChanged?.Invoke();
         }
 
@@ -161,7 +174,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ii == Collection.Count || key.Min < Collection[ii].Start)
                 {
-                    Collection.Insert(ii, new RangeDictElement(AddMin, AddMax, key.Min, key.Max, element));
+                    Collection.Insert(ii, new RangeDictElement(StringConv, AddMin, AddMax, key.Min, key.Max, element));
                     break;
                 }
             }
@@ -176,13 +189,13 @@ namespace RogueEssence.Dev.ViewModels
                     Collection.RemoveAt(ii);
                 else if (Collection[ii].Start < range.Min && range.Max < Collection[ii].End)
                 {
-                    Collection[ii] = new RangeDictElement(AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
-                    Collection.Add(new RangeDictElement(AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value));
+                    Collection[ii] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
+                    Collection.Add(new RangeDictElement(StringConv, AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value));
                 }
                 else if (range.Min <= Collection[ii].Start && range.Max < Collection[ii].End)
-                    Collection[ii] = new RangeDictElement(AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value);
+                    Collection[ii] = new RangeDictElement(StringConv, AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value);
                 else if (Collection[ii].Start < range.Min && Collection[ii].End <= range.Max)
-                    Collection[ii] = new RangeDictElement(AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
+                    Collection[ii] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
             }
         }
 

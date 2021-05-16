@@ -11,16 +11,14 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Converters
 {
-    public class DataEntryConverter : IValueConverter
+    public class FrameTypeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is int idx)
             {
-                DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
-                EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataType];
-                if (idx >= 0 && idx < nameIndex.Count)
-                    return nameIndex.Entries[idx].Name.ToLocal();
+                if (idx >= 0 && idx < GraphicsManager.Actions.Count)
+                    return GraphicsManager.Actions[idx].Name;
                 return "---";
             }
             return value;

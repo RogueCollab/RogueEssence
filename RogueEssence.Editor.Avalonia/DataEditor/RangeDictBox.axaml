@@ -10,7 +10,6 @@
     <vm:RangeDictBoxViewModel/>
   </Design.DataContext>
   <UserControl.Resources>
-    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -29,7 +28,7 @@
         <DataGridTextColumn Header="End"
                       Binding="{Binding DisplayEnd}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
+                            Binding="{Binding Path=DisplayValue}" />
       </DataGrid.Columns>
     </DataGrid>
     <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>

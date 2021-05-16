@@ -10,7 +10,6 @@
     <vm:CollectionBoxViewModel/>
   </Design.DataContext>
   <UserControl.Resources>
-    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -26,7 +25,7 @@
     <ListBox Name="lbxItems" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50">
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <TextBlock Text="{Binding Converter={StaticResource ClassEntryConverter}}"/>
+          <TextBlock Text="{Binding Path=DisplayValue}"/>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>

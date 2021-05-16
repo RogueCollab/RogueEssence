@@ -30,6 +30,7 @@ namespace RogueEssence.Dev
             lblX.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblX.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblX);
+            innerPanel.ColumnDefinitions[0].Width = new GridLength(40);
             lblX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
             NumericUpDown nudValueX = new NumericUpDown();
@@ -46,6 +47,7 @@ namespace RogueEssence.Dev
             lblY.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblY.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblY);
+            innerPanel.ColumnDefinitions[2].Width = new GridLength(40);
             lblY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
             NumericUpDown nudValueY = new NumericUpDown();

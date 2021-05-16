@@ -14,48 +14,61 @@ using System.Reactive.Subjects;
 
 namespace RogueEssence.Dev
 {
-    public class LocEditor : Editor<Loc>
+    public class RandRangeEditor : Editor<RandRange>
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Loc member)
+        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, RandRange member)
         {
             LoadLabelControl(control, name);
 
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            int addMin = 0;
+            int addMax = 0;
+            if (rangeAtt != null)
+            {
+                if (rangeAtt.Index1)
+                {
+                    addMin += 1;
+                    addMax += 1;
+                }
+                if (rangeAtt.Inclusive)
+                    addMax -= 1;
+            }
+
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
+            innerPanel.ColumnDefinitions[0].Width = new GridLength(30);
+            innerPanel.ColumnDefinitions[2].Width = new GridLength(30);
 
             TextBlock lblX = new TextBlock();
-            lblX.Text = "X:";
+            lblX.Text = "Min:";
             lblX.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblX.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblX);
-            innerPanel.ColumnDefinitions[0].Width = new GridLength(30);
             lblX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
             NumericUpDown nudValueX = new NumericUpDown();
             nudValueX.Margin = new Thickness(4, 0, 0, 0);
             nudValueX.Minimum = Int32.MinValue;
             nudValueX.Maximum = Int32.MaxValue;
-            nudValueX.Value = member.X;
+            nudValueX.Value = ((member == null) ? 0 : member.Min) + addMin;
             innerPanel.Children.Add(nudValueX);
             nudValueX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
             TextBlock lblY = new TextBlock();
             lblY.Margin = new Thickness(8, 0, 0, 0);
-            lblY.Text = "Y:";
+            lblY.Text = "Max:";
             lblY.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblY.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblY);
-            innerPanel.ColumnDefinitions[2].Width = new GridLength(30);
             lblY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
-
 
             NumericUpDown nudValueY = new NumericUpDown();
             nudValueY.Margin = new Thickness(4, 0, 0, 0);
             nudValueY.Minimum = Int32.MinValue;
             nudValueY.Maximum = Int32.MaxValue;
-            nudValueY.Value = member.Y;
+            nudValueY.Value = ((member == null) ? 0 : Math.Max(member.Min + 1, member.Max)) + addMax;
             innerPanel.Children.Add(nudValueY);
             nudValueY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 
@@ -63,8 +76,22 @@ namespace RogueEssence.Dev
         }
 
 
-        public override Loc SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override RandRange SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            int addMin = 0;
+            int addMax = 0;
+            if (rangeAtt != null)
+            {
+                if (rangeAtt.Index1)
+                {
+                    addMin += 1;
+                    addMax += 1;
+                }
+                if (rangeAtt.Inclusive)
+                    addMax -= 1;
+            }
+
             int controlIndex = 0;
             controlIndex++;
             Avalonia.Controls.Grid innerControl = (Avalonia.Controls.Grid)control.Children[controlIndex];
@@ -75,7 +102,7 @@ namespace RogueEssence.Dev
             innerControlIndex++;
             innerControlIndex++;
             NumericUpDown nudValueY = (NumericUpDown)innerControl.Children[innerControlIndex];
-            return new Loc((int)nudValueX.Value, (int)nudValueY.Value);
+            return new RandRange((int)nudValueX.Value - addMin, (int)nudValueY.Value - addMax);
         }
     }
 }

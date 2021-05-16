@@ -7,12 +7,34 @@ using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
+using Avalonia.Data.Converters;
 
 namespace RogueEssence.Dev.ViewModels
 {
+    public class ListElement : ViewModelBase
+    {
+        private object val;
+        public object Value
+        {
+            get { return val; }
+        }
+        public string DisplayValue
+        {
+            get { return conv.GetString(val); }
+        }
+
+        private StringConv conv;
+
+        public ListElement(StringConv conv, object val)
+        {
+            this.conv = conv;
+            this.val = val;
+        }
+    }
+
     public class CollectionBoxViewModel : ViewModelBase
     {
-        public ObservableCollection<object> Collection { get; }
+        public ObservableCollection<ListElement> Collection { get; }
 
         private int selectedIndex;
         public int SelectedIndex
@@ -21,6 +43,8 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref selectedIndex, value); }
         }
 
+        public StringConv StringConv;
+
 
         public delegate void EditElementOp(int index, object element);
         public delegate void ElementOp(int index, object element, EditElementOp op);
@@ -28,9 +52,10 @@ namespace RogueEssence.Dev.ViewModels
         public event ElementOp OnEditItem;
         public event Action OnMemberChanged;
 
-        public CollectionBoxViewModel()
+        public CollectionBoxViewModel(StringConv conv)
         {
-            Collection = new ObservableCollection<object>();
+            StringConv = conv;
+            Collection = new ObservableCollection<ListElement>();
         }
 
 
@@ -42,8 +67,8 @@ namespace RogueEssence.Dev.ViewModels
         public IList GetList(Type type)
         {
             IList result = (IList)Activator.CreateInstance(type);
-            foreach (object obj in Collection)
-                result.Add(obj);
+            foreach (ListElement obj in Collection)
+                result.Add(obj.Value);
             return result;
         }
 
@@ -51,21 +76,21 @@ namespace RogueEssence.Dev.ViewModels
         {
             Collection.Clear();
             foreach (object obj in source)
-                Collection.Add(obj);
+                Collection.Add(new ListElement(StringConv, obj));
         }
 
 
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
-            Collection[index] = element;
+            Collection[index] = new ListElement(StringConv, element);
             OnMemberChanged?.Invoke();
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
-            Collection.Insert(index, element);
+            Collection.Insert(index, new ListElement(StringConv, element));
             OnMemberChanged?.Invoke();
         }
 
@@ -76,7 +101,7 @@ namespace RogueEssence.Dev.ViewModels
             int index = SelectedIndex;
             if (index > -1)
             {
-                object element = Collection[index];
+                object element = Collection[index].Value;
                 OnEditItem?.Invoke(index, element, editItem);
             }
         }
@@ -102,7 +127,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void Switch(int a, int b)
         {
-            object obj = Collection[a];
+            ListElement obj = Collection[a];
             Collection[a] = Collection[b];
             Collection[b] = obj;
         }

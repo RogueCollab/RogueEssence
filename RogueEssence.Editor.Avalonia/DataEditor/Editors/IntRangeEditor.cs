@@ -38,6 +38,8 @@ namespace RogueEssence.Dev
             }
 
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
+            innerPanel.ColumnDefinitions[0].Width = new GridLength(30);
+            innerPanel.ColumnDefinitions[2].Width = new GridLength(30);
 
             TextBlock lblX = new TextBlock();
             lblX.Text = "Min:";
@@ -50,7 +52,7 @@ namespace RogueEssence.Dev
             nudValueX.Margin = new Thickness(4, 0, 0, 0);
             nudValueX.Minimum = Int32.MinValue;
             nudValueX.Maximum = Int32.MaxValue;
-            nudValueX.Value = ((member == null) ? 0 : ((IntRange)member).Min) + addMin;
+            nudValueX.Value = member.Min + addMin;
             innerPanel.Children.Add(nudValueX);
             nudValueX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -66,7 +68,7 @@ namespace RogueEssence.Dev
             nudValueY.Margin = new Thickness(4, 0, 0, 0);
             nudValueY.Minimum = Int32.MinValue;
             nudValueY.Maximum = Int32.MaxValue;
-            nudValueY.Value = ((member == null) ? 0 : ((IntRange)member).Max) + addMax;
+            nudValueY.Value = member.Max + addMax;
             innerPanel.Children.Add(nudValueY);
             nudValueY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 

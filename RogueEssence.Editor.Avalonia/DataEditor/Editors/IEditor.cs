@@ -22,5 +22,7 @@ namespace RogueEssence.Dev
         object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes);
 
         object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow);
+
+        string GetString(object obj, Type type, object[] attributes);
     }
 }

@@ -21,11 +21,13 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);
+
             RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
 
             SpawnRangeListBox lbxValue = new SpawnRangeListBox();
             lbxValue.MaxHeight = 260;
-            SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel();
+            SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             if (rangeAtt != null)
             {
                 mv.Index1 = rangeAtt.Index1;
@@ -33,8 +35,7 @@ namespace RogueEssence.Dev
             }
             lbxValue.DataContext = mv;
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);
-            //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
+
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, SpawnRangeListBoxViewModel.EditElementOp op) =>
             {

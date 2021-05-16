@@ -59,8 +59,16 @@ namespace RogueEssence.Dev.ViewModels
         private int addMin;
         private int addMax;
 
-        public SpawnRangeListElement(int addMin, int addMax, int start, int end, int weight, object val)
+        public string DisplayValue
         {
+            get { return conv.GetString(val); }
+        }
+
+        private StringConv conv;
+
+        public SpawnRangeListElement(StringConv conv, int addMin, int addMax, int start, int end, int weight, object val)
+        {
+            this.conv = conv;
             this.addMin = addMin;
             this.addMax = addMax;
             this.start = start;
@@ -74,6 +82,8 @@ namespace RogueEssence.Dev.ViewModels
     {
         public delegate void EditElementOp(int index, object element);
         public delegate void ElementOp(int index, object element, EditElementOp op);
+
+        public StringConv StringConv;
 
         public event ElementOp OnEditItem;
 
@@ -95,8 +105,9 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public SpawnRangeListBoxViewModel()
+        public SpawnRangeListBoxViewModel(StringConv conv)
         {
+            StringConv = conv;
             Collection = new ObservableCollection<SpawnRangeListElement>();
         }
 
@@ -176,7 +187,7 @@ namespace RogueEssence.Dev.ViewModels
                 object obj = source.GetSpawn(ii);
                 IntRange range = source.GetSpawnRange(ii);
                 int rate = source.GetSpawnRate(ii);
-                Collection.Add(new SpawnRangeListElement(AddMin, AddMax, range.Min, range.Max, rate, obj));
+                Collection.Add(new SpawnRangeListElement(StringConv, AddMin, AddMax, range.Min, range.Max, rate, obj));
             }
         }
 
@@ -184,13 +195,13 @@ namespace RogueEssence.Dev.ViewModels
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
-            Collection[index] = new SpawnRangeListElement(AddMin, AddMax, Collection[index].Start, Collection[index].End, Collection[index].Weight, element);
+            Collection[index] = new SpawnRangeListElement(StringConv, AddMin, AddMax, Collection[index].Start, Collection[index].End, Collection[index].Weight, element);
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
-            Collection.Insert(index, new SpawnRangeListElement(AddMin, AddMax, 0, 1, 10, element));
+            Collection.Insert(index, new SpawnRangeListElement(StringConv, AddMin, AddMax, 0, 1, 10, element));
         }
 
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)

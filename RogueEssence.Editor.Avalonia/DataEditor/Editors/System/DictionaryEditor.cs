@@ -23,15 +23,14 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
-            DictionaryBox lbxValue = new DictionaryBox();
-            lbxValue.MaxHeight = 180;
-            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm());
-            lbxValue.DataContext = mv;
-
             Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
-            //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
+            DictionaryBox lbxValue = new DictionaryBox();
+            lbxValue.MaxHeight = 180;
+            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm(), DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            lbxValue.DataContext = mv;
+
             //add lambda expression for editing a single element
             mv.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
