@@ -151,12 +151,12 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public abstract class ZoneSegmentBase
     {
-        public bool IsRelevant;
         public abstract int FloorCount { get; }
         public abstract IEnumerable<int> GetFloorIDs();
 
         //for now, post-processing must be handled here
         public List<ZonePostProc> PostProcessingSteps;
+        public bool IsRelevant;
 
         public ZoneSegmentBase()
         {
