@@ -90,7 +90,7 @@ namespace RogueEssence.LevelGen
             int teamSize = TeamSizes.Pick(rand);
 
             bool selectedLeader = false;
-            bool selectedSupport = false;
+            bool selectedNonSupport = false;
 
             //pick first team member
             SpawnList<TeamMemberSpawn> eligibleSpawns = new SpawnList<TeamMemberSpawn>();
@@ -115,11 +115,13 @@ namespace RogueEssence.LevelGen
                     eligibleSpawns.Add(spawn, Spawns.GetSpawnRate(ii));
             }
 
+            if (!eligibleSpawns.CanPick)
+                return chosenSpawns;
             TeamMemberSpawn chosenSpawn = eligibleSpawns.Pick(rand);
             if (chosenSpawn.Role == TeamMemberSpawn.MemberRole.Leader)
                 selectedLeader = true;
-            else if (chosenSpawn.Role == TeamMemberSpawn.MemberRole.Support)
-                selectedSupport = true;
+            if (chosenSpawn.Role != TeamMemberSpawn.MemberRole.Support)
+                selectedNonSupport = true;
 
             chosenSpawns.Add(chosenSpawn.Spawn);
 
@@ -141,18 +143,20 @@ namespace RogueEssence.LevelGen
                             add = !selectedLeader;
                             break;
                         case TeamMemberSpawn.MemberRole.Support:
-                            add = !selectedSupport;
+                            add = selectedNonSupport;
                             break;
                     }
                     if (add)
                         eligibleSpawns.Add(spawn, Spawns.GetSpawnRate(ii));
                 }
 
+                if (!eligibleSpawns.CanPick)
+                    return chosenSpawns;
                 chosenSpawn = eligibleSpawns.Pick(rand);
                 if (chosenSpawn.Role == TeamMemberSpawn.MemberRole.Leader)
                     selectedLeader = true;
-                else if (chosenSpawn.Role == TeamMemberSpawn.MemberRole.Support)
-                    selectedSupport = true;
+                if (chosenSpawn.Role != TeamMemberSpawn.MemberRole.Support)
+                    selectedNonSupport = true;
 
                 chosenSpawns.Add(chosenSpawn.Spawn);
             }

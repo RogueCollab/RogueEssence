@@ -15,5 +15,10 @@ namespace RogueEssence.LevelGen
                 return null;
             return map.TeamSpawns.Pick(map.Rand).Spawn(map);
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}", this.GetType().Name);
+        }
     }
 }

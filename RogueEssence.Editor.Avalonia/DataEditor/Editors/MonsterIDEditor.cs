@@ -33,7 +33,7 @@ namespace RogueEssence.Dev
                 lblSpecies.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 lblSpecies.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
                 innerPanel1.Children.Add(lblSpecies);
-                innerPanel1.ColumnDefinitions[0].Width = new GridLength(50);
+                innerPanel1.ColumnDefinitions[0].Width = new GridLength(46);
                 lblSpecies.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
                 ComboBox cbSpecies = new ComboBox();
@@ -82,7 +82,7 @@ namespace RogueEssence.Dev
                 lblForm.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 lblForm.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
                 innerPanel2.Children.Add(lblForm);
-                innerPanel2.ColumnDefinitions[0].Width = new GridLength(50);
+                innerPanel2.ColumnDefinitions[0].Width = new GridLength(46);
                 lblForm.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
 
@@ -111,7 +111,7 @@ namespace RogueEssence.Dev
                 lblSkin.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 lblSkin.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
                 innerPanel3.Children.Add(lblSkin);
-                innerPanel3.ColumnDefinitions[0].Width = new GridLength(40);
+                innerPanel3.ColumnDefinitions[0].Width = new GridLength(46);
                 lblSkin.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
                 ComboBox cbSkin = new ComboBox();
@@ -144,7 +144,7 @@ namespace RogueEssence.Dev
                 lblGender.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 lblGender.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
                 innerPanel3.Children.Add(lblGender);
-                innerPanel3.ColumnDefinitions[2].Width = new GridLength(40);
+                innerPanel3.ColumnDefinitions[2].Width = new GridLength(46);
                 lblGender.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
                 ComboBox cbGender = new ComboBox();

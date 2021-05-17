@@ -3,9 +3,13 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
-    public interface ITeamStepSpawner<T> where T : IGenContext
+    public interface ITeamStepSpawner<T> : ITeamStepSpawner where T : IGenContext
     {
         Team GetSpawn(T map);
+    }
+
+    public interface ITeamStepSpawner
+    {
 
     }
 }

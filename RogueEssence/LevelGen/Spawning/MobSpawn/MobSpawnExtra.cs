@@ -40,6 +40,17 @@ namespace RogueEssence.LevelGen
                 newChar.StatusEffects.Add(status.ID, status);
             }
         }
+
+        public override string ToString()
+        {
+            if (Statuses.Count != 1)
+                return string.Format("{0}[{1}]", this.GetType().Name, Statuses.Count.ToString());
+            else
+            {
+                EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Status].Entries[Statuses.GetSpawn(0).ID];
+                return string.Format("{0}: {1}", this.GetType().Name, summary.Name.ToLocal());
+            }
+        }
     }
 
 }
