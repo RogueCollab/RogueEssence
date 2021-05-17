@@ -223,7 +223,7 @@ namespace RogueEssence.Dev
                 }
                 //else
                 //    txtValue.Size = new Size(0, 20);
-                ClassBoxViewModel mv = new ClassBoxViewModel(DataEditor.GetStringConv(type, ReflectionExt.GetPassableAttributes(0, attributes)));
+                ClassBoxViewModel mv = new ClassBoxViewModel(new StringConv(type, ReflectionExt.GetPassableAttributes(0, attributes)));
                 mv.LoadFromSource(member);
                 cbxValue.DataContext = mv;
                 control.Children.Add(cbxValue);

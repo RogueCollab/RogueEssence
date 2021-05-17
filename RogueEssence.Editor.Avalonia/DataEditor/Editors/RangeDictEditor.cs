@@ -31,7 +31,7 @@ namespace RogueEssence.Dev
 
             RangeDictBox lbxValue = new RangeDictBox();
             lbxValue.MaxHeight = 180;
-            RangeDictBoxViewModel mv = new RangeDictBoxViewModel(control.GetOwningForm(), DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            RangeDictBoxViewModel mv = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             if (rangeAtt != null)
             {
                 mv.Index1 = rangeAtt.Index1;

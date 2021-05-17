@@ -28,7 +28,7 @@ namespace RogueEssence.Dev
 
             DictionaryBox lbxValue = new DictionaryBox();
             lbxValue.MaxHeight = 180;
-            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm(), DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
             lbxValue.DataContext = mv;
 
             //add lambda expression for editing a single element

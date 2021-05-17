@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
-            BG = new ClassBoxViewModel(DataEditor.GetStringConv(typeof(MapBG), new object[0]));
+            BG = new ClassBoxViewModel(new StringConv(typeof(MapBG), new object[0]));
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
             BlankBG = new TileBoxViewModel();

@@ -12,5 +12,18 @@ namespace RogueEssence.Dev
             Index1 = index1;
             Inclusive = inclusive;
         }
+
+        public void GetAddVals(out int addMin, out int addMax)
+        {
+            addMin = 0;
+            addMax = 0;
+            if (Index1)
+            {
+                addMin += 1;
+                addMax += 1;
+            }
+            if (Inclusive)
+                addMax -= 1;
+        }
     }
 }

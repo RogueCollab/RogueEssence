@@ -14,25 +14,22 @@ namespace RogueEssence.Dev
     public class StringConv
     {
         public Type ObjectType;
-        public IEditor Editor;
         public object[] Attributes;
 
         public StringConv()
         {
             ObjectType = typeof(object);
-            Editor = new ObjectEditor();
             Attributes = new object[0];
         }
-        public StringConv(Type type, IEditor editor, object[] attributes)
+        public StringConv(Type type, object[] attributes)
         {
             ObjectType = type;
-            Editor = editor;
             Attributes = attributes;
         }
 
         public string GetString(object obj)
         {
-            return Editor.GetString(obj, ObjectType, Attributes);
+            return DataEditor.GetString(obj, ObjectType, Attributes);
         }
     }
 }

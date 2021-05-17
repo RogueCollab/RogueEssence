@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
 
             PriorityListBox lbxValue = new PriorityListBox();
-            PriorityListBoxViewModel mv = new PriorityListBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            PriorityListBoxViewModel mv = new PriorityListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
             lbxValue.DataContext = mv;
 
             //add lambda expression for editing a single element

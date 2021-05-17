@@ -14,8 +14,10 @@ namespace RogueEssence.LevelGen
     {
         public Priority Priority;
 
+        [Dev.RangeBorder(0, false, true)]
         public RandRange StartAmount;
 
+        [Dev.RangeBorder(0, false, true)]
         public RandRange AddAmount;
 
 
@@ -52,11 +54,6 @@ namespace RogueEssence.LevelGen
         {
             RandRange amount = new RandRange(chosenStart + chosenAdd * zoneContext.CurrentID);
             queue.Enqueue(Priority, new MoneySpawnStep<BaseMapGenContext>(amount));
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}: ({1}) +({2})", this.GetType().Name, this.AddAmount, this.AddAmount);
         }
     }
 }

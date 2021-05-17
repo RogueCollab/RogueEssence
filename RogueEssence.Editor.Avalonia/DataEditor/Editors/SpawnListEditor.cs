@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
 
             SpawnListBox lbxValue = new SpawnListBox();
             lbxValue.MaxHeight = 220;
-            SpawnListBoxViewModel mv = new SpawnListBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 
             //add lambda expression for editing a single element

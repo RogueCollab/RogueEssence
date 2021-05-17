@@ -26,7 +26,7 @@ namespace RogueEssence.Dev
 
             CollectionBox lbxValue = new CollectionBox();
             lbxValue.MaxHeight = 180;
-            CollectionBoxViewModel mv = new CollectionBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 
             //add lambda expression for editing a single element

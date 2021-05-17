@@ -27,15 +27,7 @@ namespace RogueEssence.Dev
             int addMin = 0;
             int addMax = 0;
             if (rangeAtt != null)
-            {
-                if (rangeAtt.Index1)
-                {
-                    addMin += 1;
-                    addMax += 1;
-                }
-                if (rangeAtt.Inclusive)
-                    addMax -= 1;
-            }
+                rangeAtt.GetAddVals(out addMin, out addMax);
 
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
             innerPanel.ColumnDefinitions[0].Width = new GridLength(30);
@@ -82,15 +74,7 @@ namespace RogueEssence.Dev
             int addMin = 0;
             int addMax = 0;
             if (rangeAtt != null)
-            {
-                if (rangeAtt.Index1)
-                {
-                    addMin += 1;
-                    addMax += 1;
-                }
-                if (rangeAtt.Inclusive)
-                    addMax -= 1;
-            }
+                rangeAtt.GetAddVals(out addMin, out addMax);
 
             int controlIndex = 0;
             controlIndex++;
@@ -103,6 +87,20 @@ namespace RogueEssence.Dev
             innerControlIndex++;
             NumericUpDown nudValueY = (NumericUpDown)innerControl.Children[innerControlIndex];
             return new RandRange((int)nudValueX.Value - addMin, (int)nudValueY.Value - addMax);
+        }
+
+        public override string GetString(RandRange obj, Type type, object[] attributes)
+        {
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            int addMin = 0;
+            int addMax = 0;
+            if (rangeAtt != null)
+                rangeAtt.GetAddVals(out addMin, out addMax);
+
+            if (obj.Min + addMin + 1 >= obj.Max + addMax)
+                return obj.Min.ToString();
+            else
+                return string.Format("{0}-{1}", obj.Min + addMin, obj.Max + addMax);
         }
     }
 }

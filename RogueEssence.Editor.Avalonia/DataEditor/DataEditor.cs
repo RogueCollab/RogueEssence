@@ -122,10 +122,12 @@ namespace RogueEssence.Dev
             return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
         }
 
-        public static StringConv GetStringConv(Type type, object[] attributes)
+        public static string GetString(object obj, Type type, object[] attributes)
         {
-            IEditor editor = findEditor(type, attributes);
-            return new StringConv(type, editor, attributes);
+            if (obj == null)
+                return "NULL";
+            IEditor editor = findEditor(obj.GetType(), attributes);
+            return editor.GetString(obj, type, attributes);
         }
 
         public static void SetClipboardObj(object obj)

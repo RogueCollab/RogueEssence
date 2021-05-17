@@ -27,7 +27,7 @@ namespace RogueEssence.Dev
 
             SpawnRangeListBox lbxValue = new SpawnRangeListBox();
             lbxValue.MaxHeight = 260;
-            SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel(DataEditor.GetStringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             if (rangeAtt != null)
             {
                 mv.Index1 = rangeAtt.Index1;
