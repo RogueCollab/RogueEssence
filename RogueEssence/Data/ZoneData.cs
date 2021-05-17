@@ -50,7 +50,7 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary()
         {
             int totalFloors = 0;
-            foreach (ZoneSegmentBase structure in Structures)
+            foreach (ZoneSegmentBase structure in Segments)
             {
                 if (structure.IsRelevant)
                     totalFloors += structure.FloorCount;
@@ -59,7 +59,7 @@ namespace RogueEssence.Data
         }
 
 
-        public List<ZoneSegmentBase> Structures;
+        public List<ZoneSegmentBase> Segments;
         public List<string> GroundMaps;
 
         private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
@@ -75,7 +75,7 @@ namespace RogueEssence.Data
             BagRestrict = -1;
             BagSize = -1;
 
-            Structures = new List<ZoneSegmentBase>();
+            Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
 
             ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
@@ -116,7 +116,7 @@ namespace RogueEssence.Data
             zone.BagSize = BagSize;
 
             //NOTE: these are not deep copies!
-            zone.Structures = Structures;
+            zone.Segments = Segments;
             zone.GroundMaps = GroundMaps;
             zone.LoadScriptEvents(ScriptEvents);
             return zone;

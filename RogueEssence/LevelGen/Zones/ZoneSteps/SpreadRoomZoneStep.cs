@@ -5,7 +5,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class SpreadRoomPostProc : ZonePostProc
+    public class SpreadRoomZoneStep : ZoneStep
     {
         public SpreadPlanBase SpreadPlan;
         //this is heavily hardcoded
@@ -13,29 +13,29 @@ namespace RogueEssence.LevelGen
         public Priority PriorityGrid;
         public Priority PriorityList;
 
-        public SpreadRoomPostProc()
+        public SpreadRoomZoneStep()
         {
             Spawns = new SpawnList<RoomGenOption>();
         }
-        public SpreadRoomPostProc(Priority priorityGrid, Priority priorityList) : this()
+        public SpreadRoomZoneStep(Priority priorityGrid, Priority priorityList) : this()
         {
             PriorityGrid = priorityGrid;
             PriorityList = priorityList;
         }
 
-        public SpreadRoomPostProc(Priority priorityGrid, Priority priorityList, SpreadPlanBase plan) : this(priorityGrid, priorityList)
+        public SpreadRoomZoneStep(Priority priorityGrid, Priority priorityList, SpreadPlanBase plan) : this(priorityGrid, priorityList)
         {
             SpreadPlan = plan;
         }
 
-        protected SpreadRoomPostProc(SpreadRoomPostProc other, ulong seed) : this()
+        protected SpreadRoomZoneStep(SpreadRoomZoneStep other, ulong seed) : this()
         {
             Spawns = other.Spawns;
             PriorityGrid = other.PriorityGrid;
             PriorityList = other.PriorityList;
             SpreadPlan = other.SpreadPlan.Instantiate(seed);
         }
-        public override ZonePostProc Instantiate(ulong seed) { return new SpreadRoomPostProc(this, seed); }
+        public override ZoneStep Instantiate(ulong seed) { return new SpreadRoomZoneStep(this, seed); }
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {

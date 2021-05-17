@@ -4,28 +4,28 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class FloorNameIDPostProc : ZonePostProc
+    public class FloorNameIDZoneStep : ZoneStep
     {
         public LocalText Name;
         public Priority Priority;
 
-        public FloorNameIDPostProc(Priority priority)
+        public FloorNameIDZoneStep(Priority priority)
         {
             Priority = priority;
             Name = new LocalText();
         }
-        public FloorNameIDPostProc(Priority priority, LocalText name)
+        public FloorNameIDZoneStep(Priority priority, LocalText name)
         {
             Priority = priority;
             Name = new LocalText(name);
         }
-        protected FloorNameIDPostProc(FloorNameIDPostProc other, ulong seed)
+        protected FloorNameIDZoneStep(FloorNameIDZoneStep other, ulong seed)
         {
             Priority = other.Priority;
             Name = other.Name;
         }
 
-        public override ZonePostProc Instantiate(ulong seed) { return new FloorNameIDPostProc(this, seed); }
+        public override ZoneStep Instantiate(ulong seed) { return new FloorNameIDZoneStep(this, seed); }
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {

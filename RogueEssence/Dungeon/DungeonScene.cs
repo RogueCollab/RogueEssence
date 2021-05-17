@@ -230,10 +230,10 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> skipFloor(Loc change)
         {
-            int newStruct = Math.Max(0, Math.Min(ZoneManager.Instance.CurrentMapID.Segment + change.X, ZoneManager.Instance.CurrentZone.Structures.Count));
+            int newStruct = Math.Max(0, Math.Min(ZoneManager.Instance.CurrentMapID.Segment + change.X, ZoneManager.Instance.CurrentZone.Segments.Count));
             if ((newStruct != ZoneManager.Instance.CurrentMapID.Segment || change.X == 0))
             {
-                ZoneSegmentBase structure = ZoneManager.Instance.CurrentZone.Structures[newStruct] as ZoneSegmentBase;
+                ZoneSegmentBase structure = ZoneManager.Instance.CurrentZone.Segments[newStruct] as ZoneSegmentBase;
                 if (structure == null)
                 {
                     GameManager.Instance.SE("Menu/Cancel");

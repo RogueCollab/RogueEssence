@@ -5,29 +5,29 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class SpreadStepPostProc : ZonePostProc
+    public class SpreadStepZoneStep : ZoneStep
     {
         public SpreadPlanBase SpreadPlan;
         public SpawnList<IGenPriority> Spawns;
 
         //spreads an item through the floors
         //ensures that the space in floors between occurrences is kept tame
-        public SpreadStepPostProc()
+        public SpreadStepZoneStep()
         {
             Spawns = new SpawnList<IGenPriority>();
         }
 
-        public SpreadStepPostProc(SpreadPlanBase plan) : this()
+        public SpreadStepZoneStep(SpreadPlanBase plan) : this()
         {
             SpreadPlan = plan;
         }
 
-        protected SpreadStepPostProc(SpreadStepPostProc other, ulong seed) : this()
+        protected SpreadStepZoneStep(SpreadStepZoneStep other, ulong seed) : this()
         {
             Spawns = other.Spawns;
             SpreadPlan = other.SpreadPlan.Instantiate(seed);
         }
-        public override ZonePostProc Instantiate(ulong seed) { return new SpreadStepPostProc(this, seed); }
+        public override ZoneStep Instantiate(ulong seed) { return new SpreadStepZoneStep(this, seed); }
 
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)

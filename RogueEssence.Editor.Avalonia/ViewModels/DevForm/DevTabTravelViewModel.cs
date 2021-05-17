@@ -76,7 +76,7 @@ namespace RogueEssence.Dev.ViewModels
                 int temp = chosenStructure;
                 Structures.Clear();
                 ZoneData zone = DataManager.Instance.GetZone(chosenZone);
-                for (int ii = 0; ii < zone.Structures.Count; ii++)
+                for (int ii = 0; ii < zone.Segments.Count; ii++)
                     Structures.Add(ii.ToString()/* + " - " + zone.Structures[ii].Name.ToLocal()*/);
                 ChosenStructure = Math.Clamp(temp, 0, Structures.Count - 1);
             }
@@ -93,7 +93,7 @@ namespace RogueEssence.Dev.ViewModels
                 floorIDs.Clear();
                 Floors.Clear();
                 ZoneData zone = DataManager.Instance.GetZone(chosenZone);
-                foreach (int ii in zone.Structures[chosenStructure].GetFloorIDs())
+                foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
                 {
                     Floors.Add(ii.ToString()/* + " - " + zone.Structures[cbStructure.SelectedIndex].Floors[ii].Name.ToLocal()*/);
                     floorIDs.Add(ii);

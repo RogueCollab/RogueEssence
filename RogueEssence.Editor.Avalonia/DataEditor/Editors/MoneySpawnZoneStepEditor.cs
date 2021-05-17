@@ -15,9 +15,9 @@ using RogueEssence.LevelGen;
 
 namespace RogueEssence.Dev
 {
-    public class ZoneMoneySpawnPostProcEditor : Editor<ZoneMoneySpawnPostProc>
+    public class MoneySpawnZoneStepEditor : Editor<MoneySpawnZoneStep>
     {
-        public override string GetString(ZoneMoneySpawnPostProc obj, Type type, object[] attributes)
+        public override string GetString(MoneySpawnZoneStep obj, Type type, object[] attributes)
         {
             string startString = getRangeString(obj.StartAmount);
             string addString = getRangeString(obj.AddAmount);

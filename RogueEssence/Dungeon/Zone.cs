@@ -27,7 +27,7 @@ namespace RogueEssence.Dungeon
         //we want to be able to create new maps and save them to a file
         //we want ground and dungeon mode to both be accessible via a structloc, whatever data that structloc may contain
 
-        public List<ZoneSegmentBase> Structures;
+        public List<ZoneSegmentBase> Segments;
 
         public List<string> GroundMaps;
 
@@ -69,7 +69,7 @@ namespace RogueEssence.Dungeon
 
             structureContexts = new Dictionary<int, ZoneGenContext>();
             maps = new Dictionary<SegLoc, Map>();
-            Structures = new List<ZoneSegmentBase>();
+            Segments = new List<ZoneSegmentBase>();
 
             CarryOver = new List<MapStatus>();
 
@@ -228,13 +228,13 @@ namespace RogueEssence.Dungeon
                     ZoneGenContext newContext = new ZoneGenContext();
                     newContext.CurrentZone = ID;
                     newContext.CurrentSegment = id.Segment;
-                    foreach (ZonePostProc zoneStep in Structures[id.Segment].PostProcessingSteps)
+                    foreach (ZoneStep zoneStep in Segments[id.Segment].ZoneSteps)
                     {
-                        //TODO: find a better way to feed ZonePostProcs into full structures.
+                        //TODO: find a better way to feed ZoneSteps into full zone segments.
                         //Is there a way for them to be stateless?
-                        //Additionally, the ZonePostProcs themselves sometimes hold IGenSteps that are copied over to the layouts.
+                        //Additionally, the ZoneSteps themselves sometimes hold IGenSteps that are copied over to the layouts.
                         //Is that really OK? (I would guess yes because there is no chance by design for them to be mutated when generating...)
-                        ZonePostProc newStep = zoneStep.Instantiate(initRand.NextUInt64());
+                        ZoneStep newStep = zoneStep.Instantiate(initRand.NextUInt64());
                         newContext.ZoneSteps.Add(newStep);
                     }
                     structureContexts[id.Segment] = newContext;
@@ -249,7 +249,7 @@ namespace RogueEssence.Dungeon
                 {
                     try
                     {
-                        IGenContext context = Structures[id.Segment].GetMap(zoneContext);
+                        IGenContext context = Segments[id.Segment].GetMap(zoneContext);
                         Map map = ((BaseMapGenContext)context).Map;
 
                         //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...

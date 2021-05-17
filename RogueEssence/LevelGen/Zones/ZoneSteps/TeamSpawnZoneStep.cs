@@ -10,7 +10,7 @@ namespace RogueEssence.LevelGen
     /// Generates the table of items to spawn on all floors
     /// </summary>
     [Serializable]
-    public class ZoneTeamSpawnPostProc : ZonePostProc
+    public class TeamSpawnZoneStep : ZoneStep
     {
         public Priority Priority;
 
@@ -27,21 +27,21 @@ namespace RogueEssence.LevelGen
 
         //range list for weights
 
-        public ZoneTeamSpawnPostProc()
+        public TeamSpawnZoneStep()
         {
             Spawns = new SpawnRangeList<TeamMemberSpawn>();
             TeamSizes = new SpawnRangeList<int>();
             SpecificSpawns = new SpawnRangeList<SpecificTeamSpawner>();
         }
 
-        protected ZoneTeamSpawnPostProc(ZoneTeamSpawnPostProc other, ulong seed) : this()
+        protected TeamSpawnZoneStep(TeamSpawnZoneStep other, ulong seed) : this()
         {
             Spawns = other.Spawns;
             TeamSizes = other.TeamSizes;
             SpecificSpawns = other.SpecificSpawns;
             Priority = other.Priority;
         }
-        public override ZonePostProc Instantiate(ulong seed) { return new ZoneTeamSpawnPostProc(this, seed); }
+        public override ZoneStep Instantiate(ulong seed) { return new TeamSpawnZoneStep(this, seed); }
 
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)

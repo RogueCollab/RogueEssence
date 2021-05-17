@@ -10,7 +10,7 @@ namespace RogueEssence.LevelGen
     /// Generates the table of items to spawn on all floors
     /// </summary>
     [Serializable]
-    public class ZoneMoneySpawnPostProc : ZonePostProc
+    public class MoneySpawnZoneStep : ZoneStep
     {
         public Priority Priority;
 
@@ -26,18 +26,18 @@ namespace RogueEssence.LevelGen
         [NonSerialized]
         private int chosenAdd;
 
-        public ZoneMoneySpawnPostProc()
+        public MoneySpawnZoneStep()
         {
         }
 
-        public ZoneMoneySpawnPostProc(Priority priority, RandRange start, RandRange add)
+        public MoneySpawnZoneStep(Priority priority, RandRange start, RandRange add)
         {
             Priority = priority;
             StartAmount = start;
             AddAmount = add;
         }
 
-        protected ZoneMoneySpawnPostProc(ZoneMoneySpawnPostProc other, ulong seed) : this()
+        protected MoneySpawnZoneStep(MoneySpawnZoneStep other, ulong seed) : this()
         {
             StartAmount = other.StartAmount;
             AddAmount = other.AddAmount;
@@ -47,7 +47,7 @@ namespace RogueEssence.LevelGen
             chosenStart = StartAmount.Pick(rand);
             chosenAdd = AddAmount.Pick(rand);
         }
-        public override ZonePostProc Instantiate(ulong seed) { return new ZoneMoneySpawnPostProc(this, seed); }
+        public override ZoneStep Instantiate(ulong seed) { return new MoneySpawnZoneStep(this, seed); }
 
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)

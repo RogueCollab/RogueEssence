@@ -31,24 +31,24 @@ namespace RogueEssence.LevelGen
     /// Generates the table of items to spawn on all floors
     /// </summary>
     [Serializable]
-    public class ZoneItemSpawnPostProc : ZonePostProc
+    public class ItemSpawnZoneStep : ZoneStep
     {
         public Priority Priority;
 
         [Dev.SubGroup]
         public Dictionary<string, CategorySpawn<InvItem>> Spawns;
 
-        public ZoneItemSpawnPostProc()
+        public ItemSpawnZoneStep()
         {
             Spawns = new Dictionary<string, CategorySpawn<InvItem>>();
         }
 
-        protected ZoneItemSpawnPostProc(ZoneItemSpawnPostProc other, ulong seed) : this()
+        protected ItemSpawnZoneStep(ItemSpawnZoneStep other, ulong seed) : this()
         {
             Spawns = other.Spawns;
             Priority = other.Priority;
         }
-        public override ZonePostProc Instantiate(ulong seed) { return new ZoneItemSpawnPostProc(this, seed); }
+        public override ZoneStep Instantiate(ulong seed) { return new ItemSpawnZoneStep(this, seed); }
 
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
