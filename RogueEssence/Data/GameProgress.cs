@@ -709,20 +709,20 @@ namespace RogueEssence.Data
             //merge back the team if the dungeon was level-limited
             yield return CoroutineManager.Instance.StartCoroutine(RestoreLevel());
 
+            GameState state = DataManager.Instance.LoadMainGameState();
+            MainProgress mainSave = state?.Save as MainProgress;
+
             //save the result to the main file
             if (Stakes != DungeonStakes.None)
             {
-                GameState state = DataManager.Instance.LoadMainGameState();
-                MainProgress mainSave = state.Save as MainProgress;
-                mainSave.MergeDataTo(this);
+                if (mainSave != null)
+                    mainSave.MergeDataTo(this);
                 DataManager.Instance.SaveMainGameState();
             }
             else
             {
-                GameState state = DataManager.Instance.LoadMainGameState();
-                MainProgress mainSave = state.Save as MainProgress;
-                mainSave.MergeDataTo(mainSave);
-                DataManager.Instance.SetProgress(state.Save);
+                if (mainSave != null)
+                    DataManager.Instance.SetProgress(mainSave);
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 

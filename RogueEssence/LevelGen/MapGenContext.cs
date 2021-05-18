@@ -8,7 +8,7 @@ using RogueEssence.Dungeon;
 namespace RogueEssence.LevelGen
 {
     public abstract class BaseMapGenContext : IPostProcGenContext, IUnbreakableGenContext, IMobSpawnMap,
-        ISpawningGenContext<InvItem>, ISpawningGenContext<MoneySpawn>,
+        ISpawningGenContext<InvItem>, ISpawningGenContext<MoneySpawn>, ISpawningGenContext<EffectTile>,
         IPlaceableGenContext<InvItem>, IPlaceableGenContext<MoneySpawn>, IPlaceableGenContext<MapItem>, IPlaceableGenContext<EffectTile>,
         IGroupPlaceableGenContext<Team>
     {
@@ -28,6 +28,8 @@ namespace RogueEssence.LevelGen
         public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
         public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
 
+        public SpawnList<EffectTile> TileSpawns { get; set; }
+        IRandPicker<EffectTile> ISpawningGenContext<EffectTile>.Spawner { get { return TileSpawns; } }
         public MoneySpawnRange MoneyAmount { get { return Map.MoneyAmount; } set { Map.MoneyAmount = value; } }
         IRandPicker<MoneySpawn> ISpawningGenContext<MoneySpawn>.Spawner { get { return Map.MoneyAmount; } }
         public CategorySpawnChooser<InvItem> ItemSpawns { get { return Map.ItemSpawns; } }
@@ -70,6 +72,7 @@ namespace RogueEssence.LevelGen
         public BaseMapGenContext()
         {
             Map = new Map();
+            TileSpawns = new SpawnList<EffectTile>();
         }
 
         public void InitSeed(ulong seed)
