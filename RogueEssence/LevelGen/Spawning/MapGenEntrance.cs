@@ -7,6 +7,7 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MapGenEntrance : IEntrance
     {
+        [Dev.NonEdited]
         public Loc Loc { get; set; }
         public Dir8 Dir { get; set; }
 
@@ -33,14 +34,17 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0} Dir:{1}", Loc.ToString(), Dir.ToString());
+            return String.Format("Entrance: {0}", Dir.ToString());
         }
     }
 
     [Serializable]
     public class MapGenExit : IExit
     {
+        [Dev.NonEdited]
         public Loc Loc { get; set; }
+        
+        [Dev.SubGroup]
         public EffectTile Tile { get; set; }
 
         public MapGenExit() { Tile = new EffectTile(); }
@@ -65,7 +69,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0} Tile:{1}", Loc.ToString(), Tile.ToString());
+            return String.Format("Exit: {0}", Tile.ToString());
         }
     }
 }

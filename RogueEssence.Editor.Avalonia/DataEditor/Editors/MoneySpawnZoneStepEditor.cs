@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
             string addString = getRangeString(obj.AddAmount);
             //TODO: make this function pull directly from the RandRangeEditor's GetString to create this string.
             //will need to pass attributes of the member
-            return string.Format("{0}: Base:{1} Add:{2}", type.Name, startString, addString);
+            return string.Format("{0}: Base:{1} Add:{2}", obj.GetType().Name, startString, addString);
         }
 
         private string getRangeString(RandRange obj)

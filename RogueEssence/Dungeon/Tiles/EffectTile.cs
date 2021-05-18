@@ -29,18 +29,19 @@ namespace RogueEssence.Dungeon
         public override string GetDisplayName() { return GetData().GetColoredName(); }
 
 
+        [DataType(0, DataManager.DataType.Tile, true)]
+        public int ID;
+
         public bool Exposed { get { return true; } }
         public bool Revealed;
         public bool Danger;
         public TileOwner Owner;
 
-        [DataType(0, DataManager.DataType.Tile, true)]
-        public int ID;
-
         public StateCollection<TileState> TileStates;
 
         //[NonSerialized]
         //redundant, but no need to remove from serialization...
+        [Dev.NonEdited]
         public Loc TileLoc { get; private set; }
         public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
         public int LocHeight { get { return 0; } }
