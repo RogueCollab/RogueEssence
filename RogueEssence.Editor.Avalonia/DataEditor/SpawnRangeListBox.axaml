@@ -17,14 +17,14 @@
     <Grid.RowDefinitions>
       <RowDefinition/>
       <RowDefinition/>
-      <RowDefinition Height="40"/>
+      <RowDefinition Height="36"/>
       <RowDefinition Height="44"/>
-      <RowDefinition Height="40"/>
+      <RowDefinition Height="36"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="36"/>
       <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
+      <ColumnDefinition Width="36"/>
       <ColumnDefinition/>
       <ColumnDefinition Width="40"/>
     </Grid.ColumnDefinitions>

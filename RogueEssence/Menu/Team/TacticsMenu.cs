@@ -24,7 +24,8 @@ namespace RogueEssence.Menu
                 int tacticIndex = -1;
                 for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
                 {
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Released)
+                    AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                    if (summary.Assignable)
                     {
                         if (jj == character.Tactic.ID)
                             tacticIndex = jj;
