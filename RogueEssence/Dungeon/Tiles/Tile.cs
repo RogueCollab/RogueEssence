@@ -9,6 +9,7 @@ namespace RogueEssence.Dungeon
     public class Tile : ITile
     {
         //ground, water, lava that can be changed
+        [Dev.SubGroup]
         public TerrainTile Data;
         //traps, wonder tiles, stairs, etc. that can be removed
         public EffectTile Effect;

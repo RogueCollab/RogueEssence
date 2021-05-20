@@ -35,7 +35,7 @@ namespace RogueEssence.Dev.Views
                 return;
             doubleclick = false;
 
-            ViewModels.DictionaryBoxViewModel viewModel = (ViewModels.DictionaryBoxViewModel)DataContext;
+            ViewModels.RangeDictBoxViewModel viewModel = (ViewModels.RangeDictBoxViewModel)DataContext;
             if (viewModel == null)
                 return;
             viewModel.lbxCollection_DoubleClick(sender, e);

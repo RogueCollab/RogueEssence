@@ -13,11 +13,31 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class ListElement : ViewModelBase
     {
+        private int key;
+        public int Key
+        {
+            get { return key; }
+            set
+            {
+                key = value;
+                DisplayKey = DisplayKey;
+            }
+        }
+
+        public int DisplayKey
+        {
+            get { return key + addIndex; }
+            set { this.RaisePropertyChanged(); }
+        }
+
         private object val;
         public object Value
         {
             get { return val; }
         }
+
+        private int addIndex;
+
         public string DisplayValue
         {
             get { return conv.GetString(val); }
@@ -25,8 +45,10 @@ namespace RogueEssence.Dev.ViewModels
 
         private StringConv conv;
 
-        public ListElement(StringConv conv, object val)
+        public ListElement(StringConv conv, int addIndex, int key, object val)
         {
+            this.addIndex = addIndex;
+            this.key = key;
             this.conv = conv;
             this.val = val;
         }
@@ -52,6 +74,9 @@ namespace RogueEssence.Dev.ViewModels
         public event ElementOp OnEditItem;
         public event Action OnMemberChanged;
 
+        public bool Index1;
+        public int AddIndex { get { return Index1 ? 1 : 0; } }
+
         public CollectionBoxViewModel(StringConv conv)
         {
             StringConv = conv;
@@ -76,21 +101,21 @@ namespace RogueEssence.Dev.ViewModels
         {
             Collection.Clear();
             foreach (object obj in source)
-                Collection.Add(new ListElement(StringConv, obj));
+                Collection.Add(new ListElement(StringConv, AddIndex, Collection.Count, obj));
         }
 
 
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
-            Collection[index] = new ListElement(StringConv, element);
+            Collection[index] = new ListElement(StringConv, AddIndex, index, element);
             OnMemberChanged?.Invoke();
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
-            Collection.Insert(index, new ListElement(StringConv, element));
+            Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
             OnMemberChanged?.Invoke();
         }
 
@@ -120,7 +145,10 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
+                int index = SelectedIndex;
                 Collection.RemoveAt(SelectedIndex);
+                for (int ii = index; ii < Collection.Count; ii++)
+                    Collection[ii].Key = ii;
                 OnMemberChanged?.Invoke();
             }
         }
@@ -130,6 +158,9 @@ namespace RogueEssence.Dev.ViewModels
             ListElement obj = Collection[a];
             Collection[a] = Collection[b];
             Collection[b] = obj;
+
+            Collection[a].Key = a;
+            Collection[b].Key = b;
         }
 
         private void btnUp_Click()

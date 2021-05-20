@@ -34,6 +34,8 @@ namespace RogueEssence.Dungeon
 
         public bool Exposed { get { return true; } }
         public bool Revealed;
+
+        [Dev.Multiline(0)]
         public bool Danger;
         public TileOwner Owner;
 

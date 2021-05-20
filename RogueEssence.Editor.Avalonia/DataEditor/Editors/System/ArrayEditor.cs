@@ -24,13 +24,31 @@ namespace RogueEssence.Dev
         {
             LoadLabelControl(control, name);
 
+            RankedListAttribute rangeAtt = ReflectionExt.FindAttribute<RankedListAttribute>(attributes);
+
+            if (rangeAtt != null)
+            {
+                RankedCollectionBox lbxValue = new RankedCollectionBox();
+                lbxValue.MaxHeight = 180;
+                lbxValue.DataContext = createViewModel(control, name, type, attributes, member, rangeAtt.Index1);
+                control.Children.Add(lbxValue);
+            }
+            else
+            {
+                CollectionBox lbxValue = new CollectionBox();
+                lbxValue.MaxHeight = 180;
+                lbxValue.DataContext = createViewModel(control, name, type, attributes, member, false);
+                control.Children.Add(lbxValue);
+            }
+
+        }
+
+        private CollectionBoxViewModel createViewModel(StackPanel control, string name, Type type, object[] attributes, Array member, bool index1)
+        {
             Type elementType = type.GetElementType();
 
-            CollectionBox lbxValue = new CollectionBox();
-            lbxValue.MaxHeight = 180;
             CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
-            lbxValue.DataContext = mv;
-
+            mv.Index1 = index1;
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
@@ -62,9 +80,8 @@ namespace RogueEssence.Dev
                 objList.Add(member.GetValue(ii));
 
             mv.LoadFromList(objList);
-            control.Children.Add(lbxValue);
+            return mv;
         }
-
 
         public override Array SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
@@ -73,7 +90,7 @@ namespace RogueEssence.Dev
             //if (type.GetElementType().IsArray)
 
             controlIndex++;
-            CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
+            IControl lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             List<object> objList = (List<object>)mv.GetList(typeof(List<object>));
 

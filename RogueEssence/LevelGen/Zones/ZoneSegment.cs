@@ -12,6 +12,7 @@ namespace RogueEssence.LevelGen
         // LayeredSegment<T> where T : IFloorGen
         //Implementations in this project can use IProjectSegmentBase where the LayeredSegment uses IProjectFloorGen as a base
         //IProjectFloorGen will be implemented via a ProjectFloorGen that is like FloorGen but has the constraint of BaseMapGenContext
+        [Dev.RankedList(0, true)]
         public List<IFloorGen> Floors;
 
         public override int FloorCount { get { return Floors.Count; } }
