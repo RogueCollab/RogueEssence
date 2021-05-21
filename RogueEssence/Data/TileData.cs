@@ -9,6 +9,11 @@ namespace RogueEssence.Data
     [Serializable]
     public class TileData : IDescribedData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
+
         public enum TriggerType
         {
             None,

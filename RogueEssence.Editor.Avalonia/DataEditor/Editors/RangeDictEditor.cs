@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IRangeDict member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IRangeDict member)
         {
             LoadLabelControl(control, name);
 
@@ -42,17 +42,15 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             mv.OnEditItem += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = name + "/" + "New " + elementType.Name;
-                else
-                    frmData.Title = name + "/" + element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
                     op(key, element);
                     frmData.Close();
                 };
@@ -67,21 +65,19 @@ namespace RogueEssence.Dev
 
             mv.OnEditKey += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "<Range>";
                 DataEditForm frmKey = new DataEditForm();
-                if (element == null)
-                    frmKey.Title = name + "/" + "New Range:" + keyType.Name;
-                else
-                    frmKey.Title = name + "/" + element.ToString();
 
                 List<object> attrList = new List<object>();
                 if (rangeAtt != null)
                     attrList.Add(rangeAtt);
+                frmKey.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, attrList.ToArray());
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, "(RangeDict) " + name + "<New Range>", keyType, attrList.ToArray(), key, true);
+                DataEditor.LoadClassControls(frmKey.ControlPanel, parent, elementName, keyType, attrList.ToArray(), key, true);
 
                 frmKey.SelectedOKEvent += () =>
                 {
-                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, name, keyType, attrList.ToArray(), true);
+                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true);
                     op(key, element);
                     frmKey.Close();
                 };

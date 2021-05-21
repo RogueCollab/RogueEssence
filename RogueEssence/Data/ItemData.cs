@@ -7,6 +7,10 @@ namespace RogueEssence.Data
     [Serializable]
     public class ItemData : ProximityPassive, IDescribedData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
         public enum UseType
         {
             None,

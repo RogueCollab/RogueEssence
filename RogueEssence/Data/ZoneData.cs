@@ -31,6 +31,10 @@ namespace RogueEssence.Data
     [Serializable]
     public class ZoneData : IEntryData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
 
         public LocalText Name { get; set; }
         public bool Released { get; set; }

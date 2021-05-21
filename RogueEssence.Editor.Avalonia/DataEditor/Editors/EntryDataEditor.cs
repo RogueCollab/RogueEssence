@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(DataTypeAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Int32 member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Int32 member)
         {
             LoadLabelControl(control, name);
 

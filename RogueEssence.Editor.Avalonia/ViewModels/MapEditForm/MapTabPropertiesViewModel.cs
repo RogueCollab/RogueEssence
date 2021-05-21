@@ -154,14 +154,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
+            string elementName = "MapBG";
             DataEditForm frmData = new DataEditForm();
-            frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapBG), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapBG), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapBG), new object[0], true);
                 op(element);
                 frmData.Close();
             };
@@ -217,17 +218,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
+            string elementName = "TextureMap<Key>";
             DataEditForm frmKey = new DataEditForm();
-            if (element == null)
-                frmKey.Title = "New Key";
-            else
-                frmKey.Title = element.ToString();
+            frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(int), new object[0]);
 
-            DataEditor.LoadClassControls(frmKey.ControlPanel, "(TextureMap) <New Key>", typeof(int), new object[0] { }, key, true);
+            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(int), new object[0], key, true);
 
             frmKey.SelectedOKEvent += () =>
             {
-                key = DataEditor.SaveClassControls(frmKey.ControlPanel, "TextureMap", typeof(int), new object[0] { }, true);
+                key = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[0], true);
                 op(key, element);
                 frmKey.Close();
             };
@@ -243,17 +242,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void TextureMap_EditItem(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
+            string elementName = "TextureMap[" + key.ToString() + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New Autotile";
-            else
-                frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(TextureMap) [" + key.ToString() + "]", typeof(AutoTile), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(AutoTile), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "TextureMap", typeof(AutoTile), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true);
                 op(key, element);
                 frmData.Close();
             };

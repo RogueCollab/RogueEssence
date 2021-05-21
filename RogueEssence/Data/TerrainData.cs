@@ -7,6 +7,10 @@ namespace RogueEssence.Data
     [Serializable]
     public class TerrainData : IEntryData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
         public enum Mobility
         {
             Impassable = -1,

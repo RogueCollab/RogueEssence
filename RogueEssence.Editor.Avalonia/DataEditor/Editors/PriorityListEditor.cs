@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IPriorityList member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IPriorityList member)
         {
             LoadLabelControl(control, name);
 
@@ -31,17 +31,15 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             mv.OnEditItem = (Priority priority, int index, object element, PriorityListBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + priority.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = name + "/" + "New " + elementType.Name;
-                else
-                    frmData.Title = name + "/" + element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(priority, index, element);
                     frmData.Close();
                 };
@@ -55,14 +53,15 @@ namespace RogueEssence.Dev
             };
             mv.OnEditPriority = (Priority priority, int index, PriorityListBoxViewModel.EditPriorityOp op) =>
             {
+                string elementName = name + "<Priority>";
                 DataEditForm frmData = new DataEditForm();
-                frmData.Title = name + "/" + "New Priority";
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, priority, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(PriorityList) " + name + "[" + index + "]", typeof(Priority), new object[0] { }, priority, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), priority, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    object priorityObj = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(Priority), ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    object priorityObj = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), true);
                     op(priority, index, (Priority)priorityObj);
                     frmData.Close();
                 };

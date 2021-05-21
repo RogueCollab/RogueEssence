@@ -7,7 +7,7 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }

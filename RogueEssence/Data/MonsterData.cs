@@ -7,10 +7,9 @@ namespace RogueEssence.Data
     [Serializable]
     public class MonsterData : IEntryData
     {
-
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }

@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
 
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, ITypeDict member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ITypeDict member)
         {
             LoadLabelControl(control, name);
 
@@ -32,18 +32,16 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = "New " + elementType.Name;
-                else
-                    frmData.Title = element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(TypeDict) [" + index + "]", elementType, new object[0] { }, element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, "TypeDict", elementType, new object[0] { }, true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
 
                     bool itemExists = false;
 

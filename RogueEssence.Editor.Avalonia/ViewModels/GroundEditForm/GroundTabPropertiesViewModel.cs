@@ -101,14 +101,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
+            string elementName = "MapBG";
             DataEditForm frmData = new DataEditForm();
-            frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, typeof(MapBG), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, elementName, typeof(MapBG), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapBG), new object[0], true);
                 op(element);
                 frmData.Close();
             };

@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IDictionary member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IDictionary member)
         {
             LoadLabelControl(control, name);
 
@@ -34,17 +34,15 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             mv.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = name + "/" + "New " + elementType.Name;
-                else
-                    frmData.Title = name + "/" + element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(key, element);
                     frmData.Close();
                 };
@@ -59,27 +57,25 @@ namespace RogueEssence.Dev
 
             mv.OnEditKey += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
-                DataEditForm frmKey = new DataEditForm();
-                if (element == null)
-                    frmKey.Title = name + "/" + "New Key:" + keyType.Name;
-                else
-                    frmKey.Title = name + "/" + element.ToString();
+                string elementName = name + "<Key>";
+                DataEditForm frmData = new DataEditForm();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, key, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true);
 
-                frmKey.SelectedOKEvent += () =>
+                frmData.SelectedOKEvent += () =>
                 {
-                    key = DataEditor.SaveClassControls(frmKey.ControlPanel, name, keyType, new object[0] { }, true);
+                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true);
                     op(key, element);
-                    frmKey.Close();
+                    frmData.Close();
                 };
-                frmKey.SelectedCancelEvent += () =>
+                frmData.SelectedCancelEvent += () =>
                 {
-                    frmKey.Close();
+                    frmData.Close();
                 };
 
-                control.GetOwningForm().RegisterChild(frmKey);
-                frmKey.Show();
+                control.GetOwningForm().RegisterChild(frmData);
+                frmData.Show();
             };
 
             mv.LoadFromDict(member);

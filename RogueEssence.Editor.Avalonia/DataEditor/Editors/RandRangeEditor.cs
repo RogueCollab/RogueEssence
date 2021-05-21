@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, RandRange member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, RandRange member)
         {
             LoadLabelControl(control, name);
 
@@ -44,7 +44,7 @@ namespace RogueEssence.Dev
             nudValueX.Margin = new Thickness(4, 0, 0, 0);
             nudValueX.Minimum = Int32.MinValue;
             nudValueX.Maximum = Int32.MaxValue;
-            nudValueX.Value = ((member == null) ? 0 : member.Min) + addMin;
+            nudValueX.Value = member.Min + addMin;
             innerPanel.Children.Add(nudValueX);
             nudValueX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -60,7 +60,7 @@ namespace RogueEssence.Dev
             nudValueY.Margin = new Thickness(4, 0, 0, 0);
             nudValueY.Minimum = Int32.MinValue;
             nudValueY.Maximum = Int32.MaxValue;
-            nudValueY.Value = ((member == null) ? 0 : Math.Max(member.Min + 1, member.Max)) + addMax;
+            nudValueY.Value = Math.Max(member.Min + 1, member.Max) + addMax;
             innerPanel.Children.Add(nudValueY);
             nudValueY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 

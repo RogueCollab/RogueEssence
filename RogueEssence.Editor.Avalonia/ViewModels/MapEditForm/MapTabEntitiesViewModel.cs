@@ -421,18 +421,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
+            string elementName = "Statuses[" + index + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New Status";
-            else
-                frmData.Title = element.ToString();
-
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(Statuses) [" + index + "]", typeof(StatusEffect), new object[0] { }, element, true);
+            frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Statuses", typeof(StatusEffect), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true);
 
                 bool itemExists = false;
 

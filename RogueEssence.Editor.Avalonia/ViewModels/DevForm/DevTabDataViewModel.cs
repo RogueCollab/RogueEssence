@@ -106,7 +106,7 @@ namespace RogueEssence.Dev.ViewModels
                             IEntryData data = entryOp(entryNum);
 
                             Views.DataEditForm editor = new Views.DataEditForm();
-                            editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                            editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                             DataEditor.LoadDataControls(data, editor.ControlPanel);
                             editor.SelectedOKEvent += () =>
                             {
@@ -142,7 +142,7 @@ namespace RogueEssence.Dev.ViewModels
                         IEntryData data = createOp();
 
                         Views.DataEditForm editor = new Views.DataEditForm();
-                        editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += () =>
                         {
