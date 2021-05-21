@@ -13,6 +13,8 @@ namespace RogueEssence.Content
         public MoveToEmitter()
         {
             Anim = new AnimData();
+            ResultAnim = new EmptyFiniteEmitter();
+            ResultLayer = DrawLayer.Normal;
         }
         public MoveToEmitter(MoveToEmitter other)
         {
@@ -24,6 +26,8 @@ namespace RogueEssence.Content
             LingerStart = other.LingerStart;
             MoveTime = other.MoveTime;
             LingerEnd = other.LingerEnd;
+            ResultAnim = other.ResultAnim.CloneIEmittable();
+            ResultLayer = other.ResultLayer;
         }
 
         public override BaseEmitter Clone() { return new MoveToEmitter(this); }
@@ -38,12 +42,15 @@ namespace RogueEssence.Content
         public int MoveTime;
 
 
+        public IEmittable ResultAnim;
+        public DrawLayer ResultLayer;
+
+
         public override void Update(BaseScene scene, FrameTick elapsedTime)
         {
             if (Anim.AnimIndex != "")
-                scene.Anims[(int)DrawLayer.Normal].Add(new MoveToAnim(Anim, MoveTime, Origin + OffsetStart, Origin + OffsetEnd, LocHeight + HeightStart, LocHeight + HeightEnd, LingerStart, LingerEnd, Dir));
+                scene.Anims[(int)DrawLayer.Normal].Add(new MoveToAnim(Anim, ResultAnim.CloneIEmittable(), ResultLayer, MoveTime, Origin + OffsetStart, Origin + OffsetEnd, LocHeight + HeightStart, LocHeight + HeightEnd, LingerStart, LingerEnd, Dir));
             finished = true;
         }
-        
     }
 }

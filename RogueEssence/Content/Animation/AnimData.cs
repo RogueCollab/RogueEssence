@@ -104,6 +104,8 @@ namespace RogueEssence.Content
 
         public override string ToString()
         {
+            if (AnimIndex == "")
+                return "---";
             return AnimIndex;
         }
     }

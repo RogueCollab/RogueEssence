@@ -2290,7 +2290,6 @@ namespace RogueEssence.Dungeon
 
             //restore idle position and direction
             currentCharAction = new EmptyCharAction(new CharAnimIdle(serializationLoc, serializationDir));
-            
         }
     }
 }
