@@ -32,7 +32,6 @@ namespace RogueEssence.Content
             //LagRange = other.LagRange;
             Range = other.Range;
             Speed = other.Speed;
-            AnimDir = other.AnimDir;
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
@@ -54,7 +53,6 @@ namespace RogueEssence.Content
         public int Speed;
 
         public int TotalParticles;
-        public Dir8 AnimDir;
         public int HeightSpeed;
         public int SpeedDiff;
         public int StartHeight;
@@ -101,7 +99,7 @@ namespace RogueEssence.Content
                     if (Anims.Count > 0)
                     {
                         IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, AnimDir));
+                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, Dir));
                     }
                 }
             }
@@ -125,7 +123,6 @@ namespace RogueEssence.Content
             ParticlesPerBurst = other.ParticlesPerBurst;
             BurstTime = other.BurstTime;
             Range = other.Range;
-            AnimDir = other.AnimDir;
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
@@ -138,7 +135,6 @@ namespace RogueEssence.Content
         public int Range;//pixels!
         public int ParticlesPerBurst;
         public int BurstTime;
-        public Dir8 AnimDir;
         public int HeightSpeed;
         public int SpeedDiff;
         public int StartHeight;
@@ -177,7 +173,7 @@ namespace RogueEssence.Content
                         if (Anims.Count > 0)
                         {
                             IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                            scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight + LocHeight, HeightSpeed, 0, AnimDir));
+                            scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight + LocHeight, HeightSpeed, 0, Dir));
                         }
                     }
                 }
@@ -213,7 +209,6 @@ namespace RogueEssence.Content
                 Anims.Add((IParticleEmittable)anim.CloneIEmittable());
             ParticlesPerTile = other.ParticlesPerTile;
             //LagRange = other.LagRange;
-            AnimDir = other.AnimDir;
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
             StartHeight = other.StartHeight;
@@ -225,8 +220,6 @@ namespace RogueEssence.Content
         public List<IParticleEmittable> Anims;
         public double ParticlesPerTile;
         
-        public Dir8 AnimDir;
-
         /// <summary>
         /// Pixels Per Second
         /// </summary>
@@ -305,7 +298,7 @@ namespace RogueEssence.Content
                     if (Anims.Count > 0)
                     {
                         IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];
-                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, AnimDir));
+                        scene.Anims[(int)Layer].Add(chosenAnim.CreateParticle(Origin + startDelta, randDiff, Loc.Zero, StartHeight, HeightSpeed, 0, Dir));
                     }
                 }
             }

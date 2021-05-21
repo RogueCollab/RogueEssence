@@ -685,7 +685,7 @@ namespace RogueEssence.Dungeon
                 return;
             //draw the anim associated with this attack (aka, the projectile itself)
             Loc start = GetDrawLoc(offset);
-            sheet.DrawDir(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, sheet.TotalFrames), DirExt.AddAngles(Dir, Anim.AnimDir));
+            sheet.DrawDir(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, sheet.TotalFrames), Anim.GetDrawDir(Dir));
         }
 
         public override Loc GetDrawLoc(Loc offset)
@@ -829,7 +829,7 @@ namespace RogueEssence.Dungeon
                 return;
             //draw the beam
             Loc start = MapLoc - offset + new Loc(GraphicsManager.TileSize / 2);
-            GraphicsManager.GetBeam(Anim.AnimIndex).DrawBeam(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, GraphicsManager.GetBeam(Anim.AnimIndex).TotalFrames), DirExt.AddAngles(Dir, Anim.AnimDir), GraphicsManager.TileSize, DistanceTraveled - GraphicsManager.TileSize / 2, Color.White * ((float)Anim.Alpha / 255));
+            GraphicsManager.GetBeam(Anim.AnimIndex).DrawBeam(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, GraphicsManager.GetBeam(Anim.AnimIndex).TotalFrames), Anim.GetDrawDir(Dir), GraphicsManager.TileSize, DistanceTraveled - GraphicsManager.TileSize / 2, Color.White * ((float)Anim.Alpha / 255));
         }
 
         public override Loc GetDrawLoc(Loc offset)
@@ -934,7 +934,7 @@ namespace RogueEssence.Dungeon
                 return;
             //draw the anim associated with this attack (aka, the arcing projectile itself)
             Loc start = GetDrawLoc(offset);
-            sheet.DrawDir(spriteBatch, new Vector2(start.X, start.Y - LocHeight), Anim.GetCurrentFrame(time, sheet.TotalFrames), DirExt.AddAngles(User.CharDir, Anim.AnimDir));
+            sheet.DrawDir(spriteBatch, new Vector2(start.X, start.Y - LocHeight), Anim.GetCurrentFrame(time, sheet.TotalFrames), Anim.GetDrawDir(User.CharDir));
         }
 
         public override Loc GetDrawLoc(Loc offset)
@@ -1081,7 +1081,7 @@ namespace RogueEssence.Dungeon
                 return;
             //draw the anim associated with this attack
             Loc start = GetDrawLoc(offset) + Dir.GetLoc() * AnimOffset;
-            GraphicsManager.GetAttackSheet(Anim.AnimIndex).DrawDir(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), DirExt.AddAngles(Dir, Anim.AnimDir));
+            GraphicsManager.GetAttackSheet(Anim.AnimIndex).DrawDir(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), Anim.GetDrawDir(Dir));
         }
 
         public override Loc GetDrawLoc(Loc offset)

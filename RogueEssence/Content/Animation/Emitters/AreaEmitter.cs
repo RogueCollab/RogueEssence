@@ -31,7 +31,6 @@ namespace RogueEssence.Content
             ParticlesPerBurst = other.ParticlesPerBurst;
             BurstTime = other.BurstTime;
             Range = other.Range;
-            AnimDir = other.AnimDir;
             LocHeight = other.LocHeight;
             Layer = other.Layer;
         }
@@ -43,7 +42,6 @@ namespace RogueEssence.Content
         public int ParticlesPerBurst;
         public int BurstTime;
         public int Range;
-        public Dir8 AnimDir;
         public DrawLayer Layer;
 
         [NonSerialized]

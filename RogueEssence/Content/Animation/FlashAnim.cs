@@ -82,7 +82,7 @@ namespace RogueEssence.Content
                 for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
                 {
                     for (int y = diff.Y % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
-                        sheet.DrawDir(spriteBatch, new Vector2(x, y), Anim.GetCurrentFrame(Time, sheet.TotalFrames), Anim.AnimDir, color);
+                        sheet.DrawDir(spriteBatch, new Vector2(x, y), Anim.GetCurrentFrame(Time, sheet.TotalFrames), Anim.GetDrawDir(Dir8.None), color);
                 }
             }
         }

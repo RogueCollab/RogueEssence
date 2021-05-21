@@ -125,7 +125,7 @@ namespace RogueEssence.Dungeon
             if (entry.Anim.AnimIndex != "")
             {
                 DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.AnimDir, Color.White * ((Owner == TileOwner.Player) ? 0.70f : 1f));
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.GetDrawDir(Dir8.None), Color.White * ((Owner == TileOwner.Player) ? 0.70f : 1f));
             }
         }
         

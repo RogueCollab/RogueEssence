@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueElements;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Content
 {

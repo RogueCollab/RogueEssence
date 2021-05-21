@@ -42,7 +42,7 @@ namespace RogueEssence.Content
         public BeamAnimData(string animIndex, int frameTime, int startFrame, int endFrame)
             : this(animIndex, frameTime, startFrame, endFrame, 255) { }
         public BeamAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
-            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.None) { }
         public BeamAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public BeamAnimData(BeamAnimData other)
@@ -69,7 +69,7 @@ namespace RogueEssence.Content
         public BGAnimData(string animIndex, int frameTime, int startFrame, int endFrame)
             : this(animIndex, frameTime, startFrame, endFrame, 255) { }
         public BGAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
-            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.None) { }
         public BGAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public BGAnimData(BGAnimData other)
@@ -96,7 +96,7 @@ namespace RogueEssence.Content
         public AnimData(string animIndex, int frameTime, int startFrame, int endFrame)
             : this(animIndex, frameTime, startFrame, endFrame, 255) { }
         public AnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
-            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.None) { }
         public AnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public AnimData(AnimData other)
@@ -132,7 +132,7 @@ namespace RogueEssence.Content
         public AnimDataBase(string animIndex, int frameTime, int startFrame, int endFrame)
             : this(animIndex, frameTime, startFrame, endFrame, 255) { }
         public AnimDataBase(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
-            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.None) { }
         public AnimDataBase(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
         {
             AnimIndex = animIndex;
@@ -180,6 +180,15 @@ namespace RogueEssence.Content
                 return frameStart;
 
             return (int)(FrameTick.TickToFrames(time) / (ulong)FrameTime % (ulong)actualTotal) + frameStart;
+        }
+
+        public Dir8 GetDrawDir(Dir8 inputDir)
+        {
+            if (AnimDir != Dir8.None)
+                return AnimDir;
+            if (inputDir != Dir8.None)
+                return inputDir;
+            return Dir8.Down;
         }
 
         public override string ToString()

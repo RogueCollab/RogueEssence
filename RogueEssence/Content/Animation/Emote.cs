@@ -40,7 +40,7 @@ namespace RogueEssence.Content
             Loc drawLoc = GetDrawLoc(offset);
 
             DirSheet sheet = GraphicsManager.GetAttackSheet(Anim.AnimIndex);
-            sheet.DrawDir(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y - LocHeight), Anim.GetCurrentFrame(ActionTime, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), DirExt.AddAngles(Direction, Anim.AnimDir), Color.White * ((float)Anim.Alpha / 255));
+            sheet.DrawDir(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y - LocHeight), Anim.GetCurrentFrame(ActionTime, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), Anim.GetDrawDir(Direction), Color.White * ((float)Anim.Alpha / 255));
 
         }
 
