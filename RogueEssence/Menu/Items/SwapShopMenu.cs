@@ -109,8 +109,9 @@ namespace RogueEssence.Menu
             if (!itemPresence[index])
             {
                 itemPresence[index] = true;
-                ItemData entry = DataManager.Instance.GetItem(index);
-                if (entry.ItemStates.Contains<MaterialState>())
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+
+                if (itemEntry.ContainsState<MaterialState>())
                 {
                     presenceCount++;
                     tradePresence[index] = true;

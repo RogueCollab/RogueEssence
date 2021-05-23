@@ -114,14 +114,10 @@ namespace RogueEssence.Dev.ViewModels
                                 {
                                     object obj = data;
                                     DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                                    data = (IEntryData)obj;
-                                    DataManager.SaveData(entryNum, dataType.ToString(), data);
-                                    DataManager.Instance.ClearCache(dataType);
-                                    EntrySummary entrySummary = data.GenerateEntrySummary();
-                                    DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
-                                    DataManager.Instance.SaveIndex(dataType);
-                                    DiagManager.Instance.DevEditor.ReloadData(dataType);
-                                    choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
+                                    DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+
+                                    string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                    choices.ModifyEntry(entryNum, newName);
                                     editor.Close();
                                 }
                             };
@@ -151,14 +147,10 @@ namespace RogueEssence.Dev.ViewModels
                                 object obj = data;
                                 DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
                                 data = (IEntryData)obj;
-                                DataManager.SaveData(entryNum, dataType.ToString(), data);
-                                DataManager.Instance.ClearCache(dataType);
-                                EntrySummary entrySummary = data.GenerateEntrySummary();
-                                DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
-                                DataManager.Instance.SaveIndex(dataType);
-                                DiagManager.Instance.DevEditor.ReloadData(dataType);
-                                entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                                choices.AddEntry(entrySummary.GetLocalString(true));
+                                DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+
+                                string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                choices.AddEntry(newName);
                                 editor.Close();
                             }
                         };
@@ -176,7 +168,9 @@ namespace RogueEssence.Dev.ViewModels
                     lock (GameBase.lockObj)
                     {
                         DevHelper.RunIndexing(dataType);
+                        DevHelper.RunExtraIndexing(dataType);
                         DataManager.Instance.LoadIndex(dataType);
+                        DataManager.Instance.LoadUniversalData();
                         DataManager.Instance.ClearCache(dataType);
                         DiagManager.Instance.DevEditor.ReloadData(dataType);
                         string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);

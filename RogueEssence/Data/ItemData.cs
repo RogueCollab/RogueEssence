@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dev;
 using RogueEssence.Dungeon;
+using System.Collections.Generic;
 
 namespace RogueEssence.Data
 {
@@ -36,7 +37,13 @@ namespace RogueEssence.Data
         public bool Released { get; set; }
         public string Comment { get; set; }
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public EntrySummary GenerateEntrySummary()
+        {
+            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, UsageType);
+            foreach (ItemState state in ItemStates)
+                summary.States.Add(new FlagType(state.GetType()));
+            return summary;
+        }
 
         [Dev.NumberRange(0, -1, Int32.MaxValue)]
         public int Price;
@@ -110,17 +117,18 @@ namespace RogueEssence.Data
     [Serializable]
     public class ItemEntrySummary : EntrySummary
     {
-        //TODO: implement this so that swap menus don't have to load an item to see if it's a treasure item
         public ItemData.UseType UsageType;
+        public List<FlagType> States;
 
         public ItemEntrySummary() : base()
         {
-
+            States = new List<FlagType>();
         }
 
         public ItemEntrySummary(LocalText name, bool released, string comment, ItemData.UseType useType) : base(name, released, comment)
         {
             UsageType = useType;
+            States = new List<FlagType>();
         }
 
         public override string GetColoredName()
@@ -128,5 +136,19 @@ namespace RogueEssence.Data
             return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
         }
 
+        public bool ContainsState<T>() where T : ItemState
+        {
+            return ContainsState(typeof(T));
+        }
+
+        public bool ContainsState(Type type)
+        {
+            foreach (FlagType testType in States)
+            {
+                if (testType.FullType == type)
+                    return true;
+            }
+            return false;
+        }
     }
 }

@@ -54,6 +54,7 @@ namespace RogueEssence.Data
         public static DataManager Instance { get { return instance; } }
 
         public const string DATA_PATH = "Data/";
+        public const string MISC_PATH = DATA_PATH + "Misc/";
         public const string MAP_PATH = DATA_PATH + "Map/";
         public const string GROUND_PATH = DATA_PATH + "Ground/";
         public const string DATA_EXT = ".bin";
@@ -110,13 +111,13 @@ namespace RogueEssence.Data
 
         public List<(MonsterID mon, string name)> StartChars;
         public List<string> StartTeams;
-        public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
         public int StartPersonality;
         public int GroundZone;
         public ZoneLoc StartMap;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
+        public TypeDict<BaseData> UniversalData;
 
         public BattleFX HealFX;
         public BattleFX RestoreChargeFX;
@@ -188,6 +189,7 @@ namespace RogueEssence.Data
             skinCache = new Dictionary<int, SkinData>();
 
             DataIndices = new Dictionary<DataType, EntryDataIndex>();
+            UniversalData = new TypeDict<BaseData>();
         }
 
         public void InitData()
@@ -207,8 +209,8 @@ namespace RogueEssence.Data
 
 
             UniversalEvent = (ActiveEffect)LoadData(PathMod.ModPath(DATA_PATH + "Universal.bin"), null);
+            UniversalData = (TypeDict<BaseData>)LoadData(PathMod.ModPath(MISC_PATH + "Index.bin"), null);
             LoadStartParams();
-            LoadRarity();
 
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -227,6 +229,7 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.AI, aiCache);
             LoadIndexFull(DataType.Rank, rankCache);
             LoadIndexFull(DataType.Skin, skinCache);
+            LoadUniversalData();
         }
 
 
@@ -250,42 +253,18 @@ namespace RogueEssence.Data
         }
 
 
-        private void LoadRarity()
+        public void LoadUniversalData()
         {
-            RarityMap = new Dictionary<(int, int), List<int>>();
-
-            string path = PathMod.ModPath(DATA_PATH + "Rarity.xml");
-            //try to load from file
-            if (File.Exists(path))
+            foreach (BaseData baseData in UniversalData)
             {
                 try
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    foreach (XmlNode speciesNode in xmldoc.DocumentElement.SelectNodes("Species"))
-                    {
-                        int species = Int32.Parse(speciesNode.Attributes.GetNamedItem("name").Value);
-                        foreach (XmlNode rarityNode in speciesNode.SelectNodes("Rarity"))
-                        {
-                            int rarity = Int32.Parse(rarityNode.Attributes.GetNamedItem("name").Value);
-
-                            foreach (XmlNode itemNode in rarityNode.SelectNodes("Item"))
-                            {
-                                int item = Int32.Parse(itemNode.InnerText);
-
-                                if (!RarityMap.ContainsKey((species, rarity)))
-                                    RarityMap[(species, rarity)] = new List<int>();
-
-                                RarityMap[(species, rarity)].Add(item);
-                            }
-                        }
-                    }
-
+                    BaseData data = (BaseData)DataManager.LoadData(PathMod.ModPath(MISC_PATH + baseData.FileName + ".bin"));
+                    UniversalData.Set(data);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    DiagManager.Instance.LogError(ex);
+                    //leave as is
                 }
             }
         }
@@ -411,6 +390,28 @@ namespace RogueEssence.Data
             }
         }
 
+        public void ContentChanged(DataType dataType, int entryNum, IEntryData data)
+        {
+            SaveData(entryNum, dataType.ToString(), data);
+            ClearCache(dataType);
+            EntrySummary entrySummary = data.GenerateEntrySummary();
+            if (entryNum < DataIndices[dataType].Entries.Count)
+                DataIndices[dataType].Entries[entryNum] = entrySummary;
+            else
+                DataIndices[dataType].Entries.Add(entrySummary);
+            SaveIndex(dataType);
+
+            foreach (BaseData baseData in UniversalData)
+            {
+                if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
+                {
+                    baseData.ContentChanged(entryNum);
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + ".bin"), baseData);
+                }
+            }
+
+            DiagManager.Instance.DevEditor.ReloadData(dataType);
+        }
 
         public static IEntryData LoadData(int indexNum, string subPath)
         {

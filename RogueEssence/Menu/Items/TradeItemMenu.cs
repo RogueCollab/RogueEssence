@@ -45,8 +45,8 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (itemPresence[index] > 0)
                 {
-                    ItemData itemEntry = DataManager.Instance.GetItem(index);
-                    if (itemEntry.ItemStates.Contains<MaterialState>())
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                    if (itemEntry.ContainsState<MaterialState>())
                     {
                         AllowedGoods.Add(index);
                         int slot = flatChoices.Count;
