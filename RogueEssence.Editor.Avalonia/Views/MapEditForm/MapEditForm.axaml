@@ -25,6 +25,7 @@
         <MenuItem Header="_Open" Command="{Binding mnuOpen_Click}"/>
         <MenuItem Header="_Save" Command="{Binding mnuSave_Click}"/>
         <MenuItem Header="_Save As" Command="{Binding mnuSaveAs_Click}"/>
+        <MenuItem Header="_Save and Test" Command="{Binding mnuTest_Click}"/>
       </MenuItem>
       <MenuItem Header="_Edit">
         <MenuItem Header="Resize Map" Command="{Binding mnuReSize_Click}"/>

@@ -52,11 +52,19 @@ namespace RogueEssence.Dev.Views
             Active = true;
         }
 
+        private bool silentClose;
+        public void SilentClose()
+        {
+            silentClose = true;
+            Close();
+        }
+
         public void Window_Closed(object sender, EventArgs e)
         {
             Active = false;
             CloseChildren();
-            GameManager.Instance.SceneOutcome = exitMapEdit();
+            if (!silentClose)
+                GameManager.Instance.SceneOutcome = exitMapEdit();
         }
 
 

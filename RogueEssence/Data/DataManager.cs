@@ -113,7 +113,6 @@ namespace RogueEssence.Data
         public List<string> StartTeams;
         public int StartLevel;
         public int StartPersonality;
-        public int GroundZone;
         public ZoneLoc StartMap;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
@@ -259,7 +258,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    BaseData data = (BaseData)DataManager.LoadData(PathMod.ModPath(MISC_PATH + baseData.FileName + ".bin"));
+                    BaseData data = (BaseData)DataManager.LoadData(PathMod.ModPath(MISC_PATH + baseData.FileName + DATA_EXT));
                     UniversalData.Set(data);
                 }
                 catch
@@ -313,9 +312,6 @@ namespace RogueEssence.Data
 
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
                     StartPersonality = Int32.Parse(startPersonality.InnerText);
-
-                    XmlNode groundZone = xmldoc.DocumentElement.SelectSingleNode("GroundZone");
-                    GroundZone = Int32.Parse(groundZone.InnerText);
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(Int32.Parse(startMap.SelectSingleNode("Zone").InnerText),
@@ -406,7 +402,7 @@ namespace RogueEssence.Data
                 if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
                 {
                     baseData.ContentChanged(entryNum);
-                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + ".bin"), baseData);
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
                 }
             }
 

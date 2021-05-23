@@ -144,6 +144,21 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void mnuTest_Click()
+        {
+            mnuSave_Click();
+            GameManager.Instance.SceneOutcome = exitAndTest();
+        }
+
+        private IEnumerator<YieldInstruction> exitAndTest()
+        {
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.SilentClose();
+            form.MapEditForm = null;
+
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64()));
+        }
+
         public async void mnuImportFromPng_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.MAP_PATH);

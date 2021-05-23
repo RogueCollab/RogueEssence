@@ -166,12 +166,23 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.GroundZone);
                     devViewModel.Travel.Grounds.Clear();
-                    for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
-                        devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
+                    foreach (string dir in PathMod.GetModFiles(DataManager.GROUND_PATH, "*" + DataManager.GROUND_EXT))
+                    {
+                        string file = Path.GetFileNameWithoutExtension(dir);
+                        devViewModel.Travel.Grounds.Add(file);
+                    }
                     devViewModel.Travel.ChosenGround = -1;
-                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
+                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("GroundChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
+
+                    devViewModel.Travel.Maps.Clear();
+                    foreach (string dir in PathMod.GetModFiles(DataManager.MAP_PATH, "*" + DataManager.MAP_EXT))
+                    {
+                        string file = Path.GetFileNameWithoutExtension(dir);
+                        devViewModel.Travel.Maps.Add(file);
+                    }
+                    devViewModel.Travel.ChosenMap = -1;
+                    devViewModel.Travel.ChosenMap = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Maps.Count - 1);
 
                     string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
                     devViewModel.Travel.Zones.Clear();

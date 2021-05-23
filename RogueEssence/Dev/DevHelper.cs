@@ -70,7 +70,7 @@ namespace RogueEssence.Dev
                 if ((baseData.TriggerType & conversionFlags) != DataManager.DataType.None)
                 {
                     baseData.ReIndex();
-                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + ".bin"), baseData);
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
                 }
             }
         }

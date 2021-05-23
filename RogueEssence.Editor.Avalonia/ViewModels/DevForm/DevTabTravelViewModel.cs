@@ -15,6 +15,7 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabTravelViewModel()
         {
             Grounds = new ObservableCollection<string>();
+            Maps = new ObservableCollection<string>();
             Zones = new ObservableCollection<string>();
             Structures = new ObservableCollection<string>();
             Floors = new ObservableCollection<string>();
@@ -30,6 +31,16 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return chosenGround; }
             set { this.SetIfChanged(ref chosenGround, value); }
+        }
+
+
+        public ObservableCollection<string> Maps { get; }
+
+        private int chosenMap;
+        public int ChosenMap
+        {
+            get { return chosenMap; }
+            set { this.SetIfChanged(ref chosenMap, value); }
         }
 
 
@@ -102,13 +113,24 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void btnEnterGround_Click()
+        {
+            lock (GameBase.lockObj)
+            {
+                DevForm.SetConfig("GroundChoice", chosenGround);
+                MenuManager.Instance.ClearMenus();
+                GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(Grounds[chosenGround], true, RogueElements.MathUtils.Rand.NextUInt64());
+            }
+        }
+
+
         public void btnEnterMap_Click()
         {
             lock (GameBase.lockObj)
             {
-                DevForm.SetConfig("MapChoice", chosenGround);
+                DevForm.SetConfig("MapChoice", chosenMap);
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(1, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
+                GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(Maps[chosenMap], false, RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 
