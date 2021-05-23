@@ -7,6 +7,7 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Dev.Views;
+using RogueEssence.LevelGen;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -15,32 +16,10 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabTravelViewModel()
         {
             Grounds = new ObservableCollection<string>();
-            Maps = new ObservableCollection<string>();
             Zones = new ObservableCollection<string>();
             Structures = new ObservableCollection<string>();
             Floors = new ObservableCollection<string>();
             floorIDs = new List<int>();
-        }
-
-        private List<int> floorIDs;
-
-        public ObservableCollection<string> Grounds { get; }
-
-        private int chosenGround;
-        public int ChosenGround
-        {
-            get { return chosenGround; }
-            set { this.SetIfChanged(ref chosenGround, value); }
-        }
-
-
-        public ObservableCollection<string> Maps { get; }
-
-        private int chosenMap;
-        public int ChosenMap
-        {
-            get { return chosenMap; }
-            set { this.SetIfChanged(ref chosenMap, value); }
         }
 
 
@@ -57,7 +36,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public ObservableCollection<string> Structures { get; }
+        private ObservableCollection<string> structures;
+        public ObservableCollection<string> Structures
+        {
+            get { return structures; }
+            set { this.SetIfChanged(ref structures, value); }
+        }
 
         private int chosenStructure;
         public int ChosenStructure
@@ -68,7 +52,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public ObservableCollection<string> Floors { get; }
+        private ObservableCollection<string> floors;
+        public ObservableCollection<string> Floors
+        {
+            get { return floors; }
+            set { this.SetIfChanged(ref floors, value); }
+        }
 
         private int chosenFloor;
         public int ChosenFloor
@@ -77,6 +66,25 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref chosenFloor, value); }
         }
 
+        private List<int> floorIDs;
+
+
+        private ObservableCollection<string> grounds;
+        public ObservableCollection<string> Grounds
+        {
+            get { return grounds; }
+            set { this.SetIfChanged(ref grounds, value); }
+        }
+
+        private int chosenGround;
+        public int ChosenGround
+        {
+            get { return chosenGround; }
+            set { this.SetIfChanged(ref chosenGround, value); }
+        }
+
+
+
         private void ZoneChanged()
         {
             if (chosenZone == -1)
@@ -84,13 +92,33 @@ namespace RogueEssence.Dev.ViewModels
 
             lock (GameBase.lockObj)
             {
-                int temp = chosenStructure;
-                Structures.Clear();
+                int tempStructure = chosenStructure;
+                int tempGround = chosenGround;
+
                 ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+                ObservableCollection<string> newStructures = new ObservableCollection<string>();
                 for (int ii = 0; ii < zone.Segments.Count; ii++)
-                    Structures.Add(ii.ToString()/* + " - " + zone.Structures[ii].Name.ToLocal()*/);
-                ChosenStructure = Math.Clamp(temp, 0, Structures.Count - 1);
+                    newStructures.Add(getSegmentString(zone.Segments[ii]));
+                Structures = newStructures;
+                ChosenStructure = Math.Min(Math.Max(tempStructure, 0), Structures.Count - 1);
+
+                ObservableCollection<string> newGrounds = new ObservableCollection<string>();
+                for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
+                    newGrounds.Add(zone.GroundMaps[ii]);
+                Grounds = newGrounds;
+                ChosenGround = Math.Min(Math.Max(tempGround, 0), Grounds.Count - 1);
             }
+        }
+
+        private string getSegmentString(ZoneSegmentBase segment)
+        {
+            foreach (ZoneStep step in segment.ZoneSteps)
+            {
+                var startStep = step as FloorNameIDZoneStep;
+                if (startStep != null)
+                    return LocalText.FormatLocalText(startStep.Name, "[X]").ToLocal().Replace('\n', ' ');
+            }
+            return String.Format("[{0}] {1}F", segment.GetType().Name, "[X]");
         }
 
         private void StructureChanged()
@@ -102,15 +130,29 @@ namespace RogueEssence.Dev.ViewModels
 
                 int temp = chosenFloor;
                 floorIDs.Clear();
-                Floors.Clear();
+                
                 ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+                ObservableCollection<string> newFloors = new ObservableCollection<string>();
                 foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
                 {
-                    Floors.Add(ii.ToString()/* + " - " + zone.Structures[cbStructure.SelectedIndex].Floors[ii].Name.ToLocal()*/);
+                    newFloors.Add(getFloorString(zone.Segments[chosenStructure], ii));
                     floorIDs.Add(ii);
                 }
-                ChosenFloor = Math.Clamp(temp, 0, Floors.Count - 1);
+                Floors = newFloors;
+                ChosenFloor = Math.Min(Math.Max(temp, 0), Floors.Count - 1);
             }
+        }
+
+
+        private string getFloorString(ZoneSegmentBase segment, int floorID)
+        {
+            foreach (ZoneStep step in segment.ZoneSteps)
+            {
+                var startStep = step as FloorNameIDZoneStep;
+                if (startStep != null)
+                    return LocalText.FormatLocalText(startStep.Name, (floorID + 1).ToString()).ToLocal().Replace('\n', ' ');
+            }
+            return String.Format("[{0}] {1}F", segment.GetType().Name, (floorID + 1).ToString());
         }
 
         public void btnEnterGround_Click()
@@ -119,18 +161,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig("GroundChoice", chosenGround);
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(Grounds[chosenGround], true, RogueElements.MathUtils.Rand.NextUInt64());
-            }
-        }
-
-
-        public void btnEnterMap_Click()
-        {
-            lock (GameBase.lockObj)
-            {
-                DevForm.SetConfig("MapChoice", chosenMap);
-                MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(Maps[chosenMap], false, RogueElements.MathUtils.Rand.NextUInt64());
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 

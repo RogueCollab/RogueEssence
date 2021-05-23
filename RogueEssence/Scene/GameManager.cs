@@ -442,7 +442,7 @@ namespace RogueEssence
         public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone = false, bool preserveMusic = false)
         {
             //if we're in a test map, return to editor
-            if (ZoneManager.Instance.CurrentZoneID < 0)
+            if (ZoneManager.Instance.CurrentZoneID < 0 && ZoneManager.Instance.CurrentZone != null)
             {
                 yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
                 yield break;
@@ -528,7 +528,7 @@ namespace RogueEssence
         public IEnumerator<YieldInstruction> MoveToGround(string mapname, string entrypoint, bool preserveMusic)
         {
             //if we're in a test map, return to editor
-            if (ZoneManager.Instance.CurrentZoneID < 0)
+            if (ZoneManager.Instance.CurrentZoneID < 0 && ZoneManager.Instance.CurrentZone != null)
             {
                 yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
                 yield break;
@@ -611,7 +611,7 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result)
         {
-            if (ZoneManager.Instance.CurrentZoneID < 0)
+            if (ZoneManager.Instance.CurrentZoneID < 0 && ZoneManager.Instance.CurrentZone != null)
             {
                 yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
                 yield break;

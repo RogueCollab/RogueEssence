@@ -166,24 +166,6 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    devViewModel.Travel.Grounds.Clear();
-                    foreach (string dir in PathMod.GetModFiles(DataManager.GROUND_PATH, "*" + DataManager.GROUND_EXT))
-                    {
-                        string file = Path.GetFileNameWithoutExtension(dir);
-                        devViewModel.Travel.Grounds.Add(file);
-                    }
-                    devViewModel.Travel.ChosenGround = -1;
-                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("GroundChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
-
-                    devViewModel.Travel.Maps.Clear();
-                    foreach (string dir in PathMod.GetModFiles(DataManager.MAP_PATH, "*" + DataManager.MAP_EXT))
-                    {
-                        string file = Path.GetFileNameWithoutExtension(dir);
-                        devViewModel.Travel.Maps.Add(file);
-                    }
-                    devViewModel.Travel.ChosenMap = -1;
-                    devViewModel.Travel.ChosenMap = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Maps.Count - 1);
-
                     string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
                     devViewModel.Travel.Zones.Clear();
                     for (int ii = 0; ii < dungeon_names.Length; ii++)
@@ -196,6 +178,9 @@ namespace RogueEssence.Dev.Views
 
                     devViewModel.Travel.ChosenFloor = -1;
                     devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
+
+                    devViewModel.Travel.ChosenGround = -1;
+                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("GroundChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
                 }
 
                 if (dataType == DataManager.DataType.All)
