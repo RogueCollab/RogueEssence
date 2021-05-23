@@ -13,6 +13,9 @@ namespace RogueEssence.LevelGen
     }
 
 
+    /// <summary>
+    /// Spawns the mob with a status problem.
+    /// </summary>
     [Serializable]
     public class MobSpawnStatus : MobSpawnExtra
     {
