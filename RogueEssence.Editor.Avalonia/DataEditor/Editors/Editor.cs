@@ -242,6 +242,37 @@ namespace RogueEssence.Dev
                     control.GetOwningForm().RegisterChild(frmData);
                     frmData.Show();
                 };
+
+                {
+                    ContextMenu copyPasteStrip = new ContextMenu();
+
+                    MenuItem copyToolStripMenuItem = new MenuItem();
+                    MenuItem pasteToolStripMenuItem = new MenuItem();
+
+                    Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+                    list.AddRange(new MenuItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+
+                    copyToolStripMenuItem.Header = "Copy " + type.Name;
+                    pasteToolStripMenuItem.Header = "Paste " + type.Name;
+
+                    copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
+                    {
+                        DataEditor.SetClipboardObj(mv.Object);
+                    };
+                    pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+                    {
+                        Type type1 = DataEditor.clipboardObj.GetType();
+                        Type type2 = type;
+                        if (type2.IsAssignableFrom(type1))
+                            mv.LoadFromSource(DataEditor.clipboardObj);
+                        else
+                            await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    };
+
+                    control.ContextMenu = copyPasteStrip;
+                }
             }
             else
             {
@@ -333,7 +364,7 @@ namespace RogueEssence.Dev
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                         };
 
-                        controlParent.ContextMenu = copyPasteStrip;
+                        control.ContextMenu = copyPasteStrip;
                     }
                     controlParent.Background = Avalonia.Media.Brushes.Transparent;
                     DataEditor.LoadWindowControls(controlParent, parent, name, children[0], attributes, member);

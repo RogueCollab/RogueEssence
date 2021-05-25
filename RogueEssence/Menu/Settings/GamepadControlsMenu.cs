@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_CONTROLS_CONFIRM"), confirm));
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 
-            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_KEYBOARD_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_GAMEPAD_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
         }
 
 
