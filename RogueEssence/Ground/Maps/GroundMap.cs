@@ -236,6 +236,9 @@ namespace RogueEssence.Ground
             }
 
             this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
+
+            AddMapScriptEvent(LuaEngine.EMapCallbacks.Init);
+            AddMapScriptEvent(LuaEngine.EMapCallbacks.Enter);
         }
 
 
@@ -739,6 +742,8 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public LocRay8 GetEntryPoint(int index)
         {
+            if (index >= Entities[0].Markers.Count)
+                return new LocRay8(Loc.Zero, Dir8.Down);
             GroundMarker mark = Entities[0].Markers[index];
             return new LocRay8(mark.Position, mark.Direction);
         }

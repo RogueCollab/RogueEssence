@@ -64,6 +64,7 @@ namespace RogueEssence.Data
 
 
         public List<ZoneSegmentBase> Segments;
+        [Dev.DataFolder(1, "Ground/")]
         public List<string> GroundMaps;
 
         private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;

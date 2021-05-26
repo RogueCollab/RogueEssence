@@ -98,13 +98,13 @@ namespace RogueEssence.Dev.ViewModels
                 ZoneData zone = DataManager.Instance.GetZone(chosenZone);
                 ObservableCollection<string> newStructures = new ObservableCollection<string>();
                 for (int ii = 0; ii < zone.Segments.Count; ii++)
-                    newStructures.Add(getSegmentString(zone.Segments[ii]));
+                    newStructures.Add(ii.ToString("D2") + ": " + getSegmentString(zone.Segments[ii]));
                 Structures = newStructures;
                 ChosenStructure = Math.Min(Math.Max(tempStructure, 0), Structures.Count - 1);
 
                 ObservableCollection<string> newGrounds = new ObservableCollection<string>();
                 for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
-                    newGrounds.Add(zone.GroundMaps[ii]);
+                    newGrounds.Add(ii.ToString("D2") + ": " + zone.GroundMaps[ii]);
                 Grounds = newGrounds;
                 ChosenGround = Math.Min(Math.Max(tempGround, 0), Grounds.Count - 1);
             }
@@ -135,7 +135,7 @@ namespace RogueEssence.Dev.ViewModels
                 ObservableCollection<string> newFloors = new ObservableCollection<string>();
                 foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
                 {
-                    newFloors.Add(getFloorString(zone.Segments[chosenStructure], ii));
+                    newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
                     floorIDs.Add(ii);
                 }
                 Floors = newFloors;

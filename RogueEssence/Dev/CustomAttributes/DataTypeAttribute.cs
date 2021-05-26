@@ -14,4 +14,15 @@ namespace RogueEssence.Dev
             IncludeInvalid = includeInvalid;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class DataFolderAttribute : PassableAttribute
+    {
+        public readonly string FolderPath;
+
+        public DataFolderAttribute(int flags, string folder) : base(flags)
+        {
+            FolderPath = folder;
+        }
+    }
 }

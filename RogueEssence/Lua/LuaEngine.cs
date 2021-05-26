@@ -1248,14 +1248,19 @@ namespace RogueEssence.Script
                         foreach (EMapCallbacks fn in EnumerateCallbackTypes())
                         {
                             string callbackname = MakeMapScriptCallbackName(mapassetname, fn);
-                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}(map, time)\n", callbackname);
+                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}(map)\n", callbackname);
                             if (fn == EMapCallbacks.Init)
                             {
                                 //Add the map string loader
                                 fstream.WriteLine(
                                 "  --This will fill the localized strings table automatically based on the locale the game is \n" +
                                 "  -- currently in. You can use the MapStrings table after this line!\n" +
-                                "  MapStrings = AutoLoadLocalizedStrings()");
+                                "  MapStrings = COMMON.AutoLoadLocalizedStrings()");
+                            }
+                            else if (fn == EMapCallbacks.Enter)
+                            {
+                                fstream.WriteLine(
+                                "  GAME:FadeIn(20)");
                             }
                             fstream.WriteLine("\nend\n");
                         }

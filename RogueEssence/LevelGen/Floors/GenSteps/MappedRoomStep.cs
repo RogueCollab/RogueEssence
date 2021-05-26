@@ -7,6 +7,7 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MappedRoomStep<T> : GenStep<T> where T : MapLoadContext
     {
+        [Dev.DataFolder(0, "Map/")]
         public string MapID;
 
         public MappedRoomStep() { }
