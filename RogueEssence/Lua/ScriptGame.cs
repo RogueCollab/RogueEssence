@@ -142,6 +142,9 @@ namespace RogueEssence.Script
         }
 
 
+        /// <summary>
+        /// Centers the camera on a position.
+        /// </summary>
         public LuaFunction MoveCamera;
         public Coroutine _MoveCamera(int x, int y, int duration, bool toPlayer = false)
         {
