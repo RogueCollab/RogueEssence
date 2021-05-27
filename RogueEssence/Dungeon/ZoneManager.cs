@@ -114,7 +114,17 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentZone.DevNewMap();
             }
         }
-
+        public bool InDevZone
+        {
+            get
+            {
+                if (CurrentZoneID > -1)
+                    return false;
+                if (CurrentZone == null)
+                    return false;
+                return CurrentZone.CurrentMapID.ID == 0;
+            }
+        }
 
         public void LuaEngineReload()
         {

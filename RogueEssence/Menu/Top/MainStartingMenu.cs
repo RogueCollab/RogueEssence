@@ -114,9 +114,7 @@ namespace RogueEssence.Menu
                         StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Female), name, -1);
                     }));
                     choices.Add(new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () =>
-                    {
-                        StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Unknown), name, 0);
-                    }));
+                    { }));
                     MenuManager.Instance.AddMenu(MenuManager.Instance.CreateMultiQuestion(Text.FormatKey("DLG_ASK_GENDER"), false, choices, startIndex, choices.Count - 1), false);
                     return;
                 }

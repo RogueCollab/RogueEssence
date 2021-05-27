@@ -164,7 +164,7 @@ namespace RogueEssence.Dungeon
             CurrentMap.CreateNew(10, 10);
             CurrentMap.EntryPoints.Add(new LocRay8(new Loc(CurrentMap.Width / 2, CurrentMap.Height / 2), Dir8.Down));
 
-            CurrentMapID = new SegLoc(0, -1);
+            CurrentMapID = new SegLoc(0, 0);
         }
 
 
@@ -177,7 +177,7 @@ namespace RogueEssence.Dungeon
             exitMap();
 
             CurrentMap = DataManager.Instance.GetMap(mapname);
-            CurrentMapID = new SegLoc(0, -1);
+            CurrentMapID = new SegLoc(0, 0);
         }
 
 
@@ -190,7 +190,7 @@ namespace RogueEssence.Dungeon
             exitMap();
 
             CurrentGround = DataManager.Instance.GetGround(mapname);
-            CurrentMapID = new SegLoc(-1, -1);
+            CurrentMapID = new SegLoc(-1, 0);
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace RogueEssence.Dungeon
 
             CurrentGround = new GroundMap();
             CurrentGround.CreateNew(16, 16, Content.GraphicsManager.DungeonTexSize);
-            CurrentMapID = new SegLoc(-1, -1);
+            CurrentMapID = new SegLoc(-1, 0);
         }
 
 
