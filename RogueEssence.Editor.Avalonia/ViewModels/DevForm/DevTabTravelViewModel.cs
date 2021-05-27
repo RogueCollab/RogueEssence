@@ -159,6 +159,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
+                DevForm.SetConfig("ZoneChoice", chosenZone);
                 DevForm.SetConfig("GroundChoice", chosenGround);
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
