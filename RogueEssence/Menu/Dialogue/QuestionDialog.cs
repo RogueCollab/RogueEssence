@@ -44,6 +44,8 @@ namespace RogueEssence.Menu
         private Action[] results;
         private int cancelChoice;
 
+        public const int QUESTION_SPACE = 8;
+
         public DialogueChoiceMenu(DialogueChoice[] choices, int defaultChoice, int cancelChoice, int startY)
         {
             MenuTextChoice[] menu_choices = new MenuTextChoice[choices.Length];

@@ -10,8 +10,6 @@ namespace RogueEssence.Menu
 {
     public class DialogueText : IMenuElement
     {
-        private static Regex tags = new Regex("(?<colorstart>\\[color=#(?<colorval>[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f])\\])|(?<colorend>\\[color\\])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         public int LineSpace;
         public string Text { get; private set; }
         public Loc Start;

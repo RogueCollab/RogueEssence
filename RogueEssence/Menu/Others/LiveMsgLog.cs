@@ -10,6 +10,7 @@ namespace RogueEssence.Menu
         public const int START_VERT = 6;
         private const int MAX_LINES = 3;
         public const int SIDE_BUFFER = 8;
+        public const int VERT_PAD = 2;
         const int LOG_VISIBLE_TIME = 180;
 
         private List<MenuText> entries;
@@ -21,7 +22,7 @@ namespace RogueEssence.Menu
         {
             entries = new List<MenuText>();
             dividers = new List<MenuDivider>();
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + VERT_SPACE * MAX_LINES)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + VERT_SPACE * MAX_LINES + VERT_PAD)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
             timeSinceUpdate = new FrameTick();
             Visible = false;
         }
@@ -58,7 +59,7 @@ namespace RogueEssence.Menu
             if (msgLine == Text.DIVIDER_STR)
             {
                 if (entries.Count > 0)
-                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 11),
+                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 12),
                                GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - sideBuffer * 2);
             }
             else

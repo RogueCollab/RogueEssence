@@ -14,9 +14,11 @@ namespace RogueEssence.Menu
         protected const int CURSOR_FLASH_TIME = 24;
         public const int TEXT_TIME = 1;
         public const int SIDE_BUFFER = 8;
-        public const int TEXT_SPACE = 16;
-        public const int PER_LINE_SPACE = 18;
-        public const int MAX_LINES = 2;
+        public const int TEXT_SPACE = 16;//14
+        public const int VERT_PAD = 2;//1
+        public const int VERT_OFFSET = -2;//-3
+        public const int HORIZ_PAD = 4;
+        public const int MAX_LINES = 2;//3
 
         public bool Skippable;
         public List<TextPause> Pauses;
@@ -43,7 +45,7 @@ namespace RogueEssence.Menu
 
         public DialogueBox(string msg, bool sound)
         {
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + PER_LINE_SPACE * MAX_LINES)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_SPACE * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
 
             Pauses = new List<TextPause>();
             speakerName = "";
@@ -51,8 +53,8 @@ namespace RogueEssence.Menu
             Sound = sound;
             message = msg;
 
-            Text = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth*2, GraphicsManager.MenuBG.TileHeight),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, TEXT_SPACE, false, 0);
+            Text = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET),
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2 - Bounds.X, TEXT_SPACE, false, 0);
 
             updateMessage();
         }
