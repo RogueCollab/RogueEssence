@@ -141,7 +141,7 @@ namespace RogueEssence.Menu
 
         private void attemptCancel()
         {
-            QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_ONLINE_TRADE_END_ASK"), () =>
+            DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_ONLINE_TRADE_END_ASK"), () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 NetworkManager.Instance.Disconnect();

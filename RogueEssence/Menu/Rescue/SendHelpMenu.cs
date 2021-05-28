@@ -78,7 +78,7 @@ namespace RogueEssence.Menu
                             CurrentState = ExchangeRescueState.SOSReady;
                             sendHelp.SetReady(CurrentState);
 
-                            QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_RESCUE_RECEIVE_SOS_ASK", sendHelp.TargetInfo.Data.TeamName), () =>
+                            DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_RESCUE_RECEIVE_SOS_ASK", sendHelp.TargetInfo.Data.TeamName), () =>
                             {
                                 CurrentState = ExchangeRescueState.SOSTrading;
                                 sendHelp.SetReady(CurrentState);
@@ -129,7 +129,7 @@ namespace RogueEssence.Menu
                     {
                         //ready to receive SOS
                         string baseAskString = (aok.OfferedItem.Value > -1) ? "DLG_RESCUE_SEND_AOK_ASK_REWARD" : "DLG_RESCUE_SEND_AOK_ASK";
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, sendHelp.TargetInfo.Data.TeamName), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, sendHelp.TargetInfo.Data.TeamName), () =>
                         {
                             CurrentState = ExchangeRescueState.AOKTrading;
                             sendHelp.SetReady(CurrentState);

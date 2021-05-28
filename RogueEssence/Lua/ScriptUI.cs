@@ -84,7 +84,7 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text }); //!#NOTE : I really don't know why we should pass tables of strings?
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text });
             }
             catch (Exception e)
             {

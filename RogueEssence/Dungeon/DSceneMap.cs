@@ -846,7 +846,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        private static QuestionDialog createLearnQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        private static DialogueBox createLearnQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             return MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SKILL_DELETE", DataManager.Instance.GetSkill(skillIndex).GetIconName()),
                 () =>
@@ -858,7 +858,7 @@ namespace RogueEssence.Dungeon
                 () => { MenuManager.Instance.AddMenu(createRefuseQuestion(player, skillIndex, learnAction, passAction), false); });
         }
 
-        private static QuestionDialog createRefuseQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        private static DialogueBox createRefuseQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             return MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SKILL_STOP_LEARN", DataManager.Instance.GetSkill(skillIndex).GetIconName()),
                 () =>

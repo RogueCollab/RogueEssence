@@ -93,7 +93,7 @@ namespace RogueEssence.Menu
                 {
                     if (tradeItem.CurrentState == ExchangeState.Ready)
                     {
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRADE_ITEM_ASK"), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRADE_ITEM_ASK"), () =>
                         {
                             baseMenu.CurrentState = ExchangeState.Exchange;
                             tradeItem.SetReady(baseMenu.CurrentState);

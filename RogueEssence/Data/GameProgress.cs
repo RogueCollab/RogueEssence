@@ -928,7 +928,7 @@ namespace RogueEssence.Data
                 if (state != null && Stakes != DungeonStakes.None && !Seeded)
                 {
                     bool allowTransfer = false;
-                    QuestionDialog question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),
+                    DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),
                         () => { allowTransfer = true; }, () => { });
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
 

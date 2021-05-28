@@ -4,6 +4,7 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Dungeon;
+using System.Text.RegularExpressions;
 
 namespace RogueEssence.Menu
 {
@@ -188,11 +189,17 @@ namespace RogueEssence.Menu
         {
             if (msgs.Length > 0)
             {
+                List<string> sep_msgs = new List<string>();
+                for (int ii = 0; ii < msgs.Length; ii++)
+                {
+                    string[] break_str = Regex.Split(msgs[ii], "\\[br\\]", RegexOptions.IgnoreCase);
+                    sep_msgs.AddRange(break_str);
+                }
                 DialogueBox box = null;
-                for (int ii = msgs.Length - 1; ii >= 0; ii--)
+                for (int ii = sep_msgs.Count - 1; ii >= 0; ii--)
                 {
                     DialogueBox prevBox = box;
-                    box = CreateBox(speaker, speakerName, emotion, sound, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); }, waitTime, msgs[ii]);
+                    box = CreateBox(speaker, speakerName, emotion, sound, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); }, waitTime, sep_msgs[ii]);
                 }
                 return box;
             }
@@ -211,47 +218,67 @@ namespace RogueEssence.Menu
             return box;
         }
 
-        public QuestionDialog CreateQuestion(string message, Action yes, Action no)
+        public DialogueBox CreateQuestion(string message, Action yes, Action no)
         {
             return CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message, true, yes, no, false);
         }
-        public QuestionDialog CreateQuestion(string message, bool sound, Action yes, Action no)
+        public DialogueBox CreateQuestion(string message, bool sound, Action yes, Action no)
         {
             return CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message, sound, yes, no, false);
         }
-        public QuestionDialog CreateQuestion(string message, bool sound, Action yes, Action no, bool defaultNo)
+        public DialogueBox CreateQuestion(string message, bool sound, Action yes, Action no, bool defaultNo)
         {
             return CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message, sound, yes, no, defaultNo);
         }
 
-        public QuestionDialog CreateQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion,
+        public DialogueBox CreateQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion,
             string msg, bool sound, Action yes, Action no, bool defaultNo)
         {
+            string[] break_str = Regex.Split(msg, "\\[br\\]", RegexOptions.IgnoreCase);
+
             DialogueChoice[] choices = new DialogueChoice[2];
             choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), yes);
             choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), no);
 
-            QuestionDialog box = new QuestionDialog(msg, sound, choices, defaultNo ? 1 : 0, 1);
+            DialogueBox box = new QuestionDialog(break_str[break_str.Length-1], sound, choices, defaultNo ? 1 : 0, 1);
             box.SetSpeaker(speaker, speakerName, emotion);
-            return box;
+
+            if (break_str.Length > 1)
+            {
+                string[] pre_str = new string[break_str.Length - 1];
+                Array.Copy(break_str, pre_str, pre_str.Length);
+                return CreateDialogue(speaker, speakerName, emotion, sound, () => { AddMenu(box, false); }, -1, pre_str);
+            }
+            else
+                return box;
         }
 
-        public QuestionDialog CreateMultiQuestion(string message, bool sound, List<DialogueChoice> choices, int defaultChoice, int cancelChoice)
+        public DialogueBox CreateMultiQuestion(string message, bool sound, List<DialogueChoice> choices, int defaultChoice, int cancelChoice)
         {
             return CreateMultiQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message, sound, choices.ToArray(), defaultChoice, cancelChoice);
         }
 
-        public QuestionDialog CreateMultiQuestion(string message, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
+        public DialogueBox CreateMultiQuestion(string message, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
         {
             return CreateMultiQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message, sound, choices, defaultChoice, cancelChoice);
         }
 
-        public QuestionDialog CreateMultiQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion,
+        public DialogueBox CreateMultiQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion,
             string msg, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
         {
-            QuestionDialog box = new QuestionDialog(msg, sound, choices, defaultChoice, cancelChoice);
+            string[] break_str = Regex.Split(msg, "\\[br\\]", RegexOptions.IgnoreCase);
+
+            DialogueBox box = new QuestionDialog(break_str[break_str.Length - 1], sound, choices, defaultChoice, cancelChoice);
             box.SetSpeaker(speaker, speakerName, emotion);
-            return box;
+
+            if (break_str.Length > 1)
+            {
+                string[] pre_str = new string[break_str.Length - 1];
+                Array.Copy(break_str, pre_str, pre_str.Length);
+                return CreateDialogue(speaker, speakerName, emotion, sound, () => { AddMenu(box, false); }, -1, pre_str);
+            }
+            else
+                return box;
         }
 
         private IEnumerator<YieldInstruction> processInternalCoroutine()
