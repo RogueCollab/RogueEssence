@@ -359,7 +359,7 @@ namespace RogueEssence
             PathMod.Mod = modPath;
             reInit();
             TitleScene.TitleMenuSaveState = null;
-            MoveToScene(new TitleScene(true));
+            MoveToScene(new TitleScene(false));
             //clean up and reload all caches
             GraphicsManager.ReloadStatic();
             DataManager.Instance.InitData();

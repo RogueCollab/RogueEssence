@@ -4,11 +4,15 @@ using RogueEssence.Data;
 using System.IO;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
+using RogueEssence.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
     public class TopMenu : SingleStripMenu
     {
+        SummaryMenu titleMenu;
+
         public TopMenu()
         {
             bool inMod = PathMod.Mod != "";
@@ -48,6 +52,10 @@ namespace RogueEssence.Menu
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
+            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            MenuText title = new MenuText(Path.GetFileName(PathMod.Mod), new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            titleMenu.Elements.Add(title);
+
         }
 
         protected override void MenuPressed()
@@ -58,6 +66,17 @@ namespace RogueEssence.Menu
         protected override void Canceled()
         {
 
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            //draw other windows
+            if (PathMod.Mod != "")
+                titleMenu.Draw(spriteBatch);
         }
 
         private void exitMod()
