@@ -140,7 +140,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void AssociateAutotiles_SelectedIndexChanged()
         {
-            if (AssociateAutotiles.InternalIndex == 0)
+            if (AssociateAutotiles.InternalIndex <= 0)
             {
                 AssociatePreview = TileFrame.Empty;
                 return;

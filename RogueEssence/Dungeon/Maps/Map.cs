@@ -383,6 +383,9 @@ namespace RogueEssence.Dungeon
 
         public void CalculateAutotiles(Loc rectStart, Loc rectSize)
         {
+            //does not calculate floor tiles.
+            //in all known use cases, there is no need to autotile floor tiles.
+            //if a use case is brought up that does, this can be changed.
             HashSet<int> blocktilesets = new HashSet<int>();
             for (int ii = rectStart.X; ii < rectStart.X + rectSize.X; ii++)
             {

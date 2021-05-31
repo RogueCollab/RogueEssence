@@ -2,6 +2,7 @@
 using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -49,82 +50,51 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse] && inWindow)
-                            paintBlockTile(tileCoords, true);
-                        else if (input[FrameInput.InputType.RightMouse] && inWindow)
-                            paintBlockTile(tileCoords, false);
+                        CanvasStroke<bool>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new DrawStroke<bool>(tileCoords, true),
+                            () => new DrawStroke<bool>(tileCoords, false),
+                            paintStroke, ref GroundEditScene.Instance.BlockInProgress);
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
-                        Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
-                        {
-                            GroundEditScene.Instance.BlockInProgress = true;
-                            GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.LeftMouse])
-                            GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                        {
-                            rectBlockTile(GroundEditScene.Instance.BlockRectPreview(), true);
-                            GroundEditScene.Instance.BlockInProgress = null;
-                        }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
-                        {
-                            GroundEditScene.Instance.BlockInProgress = false;
-                            GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.RightMouse])
-                            GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                        {
-                            rectBlockTile(GroundEditScene.Instance.BlockRectPreview(), false);
-                            GroundEditScene.Instance.BlockInProgress = null;
-                        }
+                        CanvasStroke<bool>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new RectStroke<bool>(tileCoords, true),
+                            () => new RectStroke<bool>(tileCoords, false),
+                            paintStroke, ref GroundEditScene.Instance.BlockInProgress);
                     }
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse) && inWindow)
-                            fillBlockTile(tileCoords, true);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse) && inWindow)
-                            fillBlockTile(tileCoords, false);
+                        CanvasStroke<bool>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new FillStroke<bool>(tileCoords, true),
+                            () => new FillStroke<bool>(tileCoords, false),
+                            fillStroke, ref GroundEditScene.Instance.BlockInProgress);
                     }
                     break;
             }
         }
 
 
-        private void paintBlockTile(Loc loc, bool block)
+        private void paintStroke(CanvasStroke<bool> stroke)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
-                return;
-
-            ZoneManager.Instance.CurrentGround.SetObstacle(loc.X, loc.Y, block ? 1u : 0u);
-        }
-
-        private void rectBlockTile(Rect rect, bool block)
-        {
-            for (int xx = rect.X; xx < rect.End.X; xx++)
+            foreach (Loc loc in stroke.GetLocs())
             {
-                for (int yy = rect.Y; yy < rect.End.Y; yy++)
-                {
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, new Loc(xx, yy)))
-                        continue;
+                if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
+                    continue;
 
-                    ZoneManager.Instance.CurrentGround.SetObstacle(xx, yy, block ? 1u : 0u);
-                }
+                ZoneManager.Instance.CurrentGround.SetObstacle(loc.X, loc.Y, stroke.GetBrush(loc) ? 1u : 0u);
             }
         }
 
-        private void fillBlockTile(Loc loc, bool block)
+        private void fillStroke(CanvasStroke<bool> stroke)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, stroke.CoveredRect.Start))
                 return;
 
-            uint tile = ZoneManager.Instance.CurrentGround.GetObstacle(loc.X, loc.Y);
+            uint tile = ZoneManager.Instance.CurrentGround.GetObstacle(stroke.CoveredRect.Start.X, stroke.CoveredRect.Start.Y);
 
+            bool blocked = stroke.GetBrush(stroke.CoveredRect.Start);
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight),
                     (Loc testLoc) =>
                     {
@@ -136,9 +106,9 @@ namespace RogueEssence.Dev.ViewModels
                     },
                     (Loc testLoc) =>
                     {
-                        ZoneManager.Instance.CurrentGround.SetObstacle(testLoc.X, testLoc.Y, block ? 1u : 0u);
+                        ZoneManager.Instance.CurrentGround.SetObstacle(testLoc.X, testLoc.Y, blocked ? 1u : 0u);
                     },
-                loc);
+                stroke.CoveredRect.Start);
         }
     }
 }

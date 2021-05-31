@@ -29,40 +29,10 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public AutoTile AutoTileInProgress;
-        public bool? BlockInProgress;
-        public Rect RectInProgress;
+        public CanvasStroke<AutoTile> AutoTileInProgress;
+        public CanvasStroke<bool> BlockInProgress;
         public bool ShowWalls;
 
-        public Rect TileRectPreview()
-        {
-            return RectPreview(ZoneManager.Instance.CurrentGround.TileSize);
-        }
-        public Rect BlockRectPreview()
-        {
-            return RectPreview(GraphicsManager.TEX_SIZE);
-        }
-        public Rect RectPreview(int size)
-        {
-            Rect resultRect = new Rect(RectInProgress.Start / size, RectInProgress.Size / size);
-            if (resultRect.Size.X <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X + resultRect.Size.X, resultRect.Start.Y);
-                resultRect.Size = new Loc(-resultRect.Size.X + 1, resultRect.Size.Y);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X + 1, resultRect.Size.Y);
-
-            if (resultRect.Size.Y <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X, resultRect.Start.Y + resultRect.Size.Y);
-                resultRect.Size = new Loc(resultRect.Size.X, -resultRect.Size.Y + 1);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X, resultRect.Size.Y + 1);
-
-            return resultRect;
-        }
 
         public override void UpdateMeta()
         {
@@ -179,13 +149,15 @@ namespace RogueEssence.Dev
                     {
                         for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                         {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)) &&
-                                Collision.InBounds(TileRectPreview(), new Loc(ii, jj)))
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, testLoc) &&
+                                AutoTileInProgress.IncludesLoc(testLoc))
                             {
-                                if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
+                                AutoTile brush = AutoTileInProgress.GetBrush(testLoc);
+                                if (brush.IsEmpty())
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.X, jj * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize, ZoneManager.Instance.CurrentGround.TileSize), null, Color.Black);
                                 else
-                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
+                                    brush.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
                             }
                         }
                     }
@@ -199,11 +171,12 @@ namespace RogueEssence.Dev
                     {
                         for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
                         {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, testLoc))
                             {
                                 bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
-                                if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
-                                    blocked = BlockInProgress.Value;
+                                if (BlockInProgress != null && BlockInProgress.IncludesLoc(testLoc))
+                                    blocked = BlockInProgress.GetBrush(testLoc);
 
                                 if (blocked)
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.6f);

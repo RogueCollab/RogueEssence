@@ -29,34 +29,11 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public AutoTile AutoTileInProgress;
-        public TerrainTile TerrainInProgress;
-        public ObjAnimData TileInProgress;
-        public Rect RectInProgress;
+        public CanvasStroke<AutoTile> AutoTileInProgress;
+        public CanvasStroke<TerrainTile> TerrainInProgress;
+        public CanvasStroke<EffectTile> TileInProgress;
         public bool ShowTerrain;
         public bool ShowEntrances;
-
-        public Rect RectPreview()
-        {
-            Rect resultRect = new Rect(RectInProgress.Start, RectInProgress.Size);
-            if (resultRect.Size.X <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X + resultRect.Size.X, resultRect.Start.Y);
-                resultRect.Size = new Loc(-resultRect.Size.X + 1, resultRect.Size.Y);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X + 1, resultRect.Size.Y);
-
-            if (resultRect.Size.Y <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X, resultRect.Start.Y + resultRect.Size.Y);
-                resultRect.Size = new Loc(resultRect.Size.X, -resultRect.Size.Y + 1);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X, resultRect.Size.Y + 1);
-
-            return resultRect;
-        }
 
         public override void UpdateMeta()
         {
@@ -170,13 +147,15 @@ namespace RogueEssence.Dev
                 {
                     for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)) &&
-                            Collision.InBounds(RectPreview(), new Loc(ii, jj)))
+                        Loc testLoc = new Loc(ii, jj);
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc) &&
+                            AutoTileInProgress.IncludesLoc(testLoc))
                         {
-                            if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
+                            AutoTile brush = AutoTileInProgress.GetBrush(testLoc);
+                            if (brush.IsEmpty())
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
                             else
-                                AutoTileInProgress.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
+                                brush.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
                         }
                     }
                 }
@@ -190,20 +169,19 @@ namespace RogueEssence.Dev
                 {
                     for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
+                        Loc testLoc = new Loc(ii, jj);
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
                         {
                             TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Data;
-                            if (Collision.InBounds(RectPreview(), new Loc(ii, jj)))
+                            if (TerrainInProgress != null && TerrainInProgress.IncludesLoc(testLoc))
                             {
-                                if (TerrainInProgress != null)
-                                {
-                                    tile = TerrainInProgress;
-                                    if (TerrainInProgress.Equals(new AutoTile(new TileLayer())))
-                                        GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
-                                    else
-                                        TerrainInProgress.TileTex.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
-                                }
+                                tile = TerrainInProgress.GetBrush(testLoc);
+                                if (tile.TileTex.IsEmpty())
+                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
+                                else
+                                    tile.TileTex.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
                             }
+
                             TerrainData data = tile.GetData();
                             Color color = Color.Transparent;
                             switch (data.BlockType)
@@ -246,20 +224,25 @@ namespace RogueEssence.Dev
                 {
                     for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)) &&
-                            Collision.InBounds(RectPreview(), new Loc(ii, jj)))
+                        Loc testLoc = new Loc(ii, jj);
+                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc) &&
+                            TileInProgress.IncludesLoc(testLoc))
                         {
-                            if (TileInProgress.Equals(new ObjAnimData()))
+                            EffectTile tile = TileInProgress.GetBrush(testLoc);
+                            if (tile.ID < 0)
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
                             else
                             {
-                                if (TileInProgress.AnimIndex != "")
+                                TileData entry = DataManager.Instance.GetTile(tile.ID);
+                                if (entry.Anim.AnimIndex != "")
                                 {
-                                    DirSheet sheet = GraphicsManager.GetObject(TileInProgress.AnimIndex);
+                                    DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
                                     Loc drawLoc = new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start + new Loc(GraphicsManager.TileSize / 2) - new Loc(sheet.Width, sheet.Height) / 2;
-                                    sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), TileInProgress.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames),
-                                        TileInProgress.GetDrawDir(Dir8.None), Color.White);
+                                    sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames),
+                                        entry.Anim.GetDrawDir(Dir8.None), Color.White);
                                 }
+                                else
+                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.White);
                             }
                         }
                     }

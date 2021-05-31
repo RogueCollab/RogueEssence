@@ -73,16 +73,25 @@ namespace RogueEssence.Dungeon
                 anim.Draw(spriteBatch, pos, GraphicsManager.TotalFrameTick);
         }
 
+        public bool IsEmpty()
+        {
+            if (AutoTileset > -1)
+                return false;
+
+            if (Layers.Count > 0)
+                return false;
+            return true;
+        }
 
         public bool Equals(AutoTile other)
         {
             if (other == null)
                 return false;
+            if (AutoTileset != other.AutoTileset)
+                return false;
 
             if (AutoTileset > -1)
             {
-                if (AutoTileset != other.AutoTileset)
-                    return false;
                 if (Associates.Count != other.Associates.Count)
                     return false;
                 foreach (int tile in Associates)

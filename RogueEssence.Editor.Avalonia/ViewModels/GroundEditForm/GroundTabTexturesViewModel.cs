@@ -2,6 +2,7 @@
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -52,47 +53,37 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse] && inWindow)
-                            paintTile(tileCoords, getBrush());
-                        else if (input[FrameInput.InputType.RightMouse] && inWindow)
-                            paintTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
+                        TileBrush brush = getBrush();
+                        if (brush.MultiSelect == Loc.One)
+                        {
+                            CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                                () => new DrawStroke<AutoTile>(tileCoords, brush.GetSanitizedTile()),
+                                () => new DrawStroke<AutoTile>(tileCoords, new AutoTile()),
+                                paintStroke, ref GroundEditScene.Instance.AutoTileInProgress);
+                        }
+                        else
+                        {
+                            CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                                () => new ClusterStroke<AutoTile>(tileCoords, getCluster(brush)),
+                                () => new DrawStroke<AutoTile>(tileCoords, new AutoTile()),
+                                paintStroke, ref GroundEditScene.Instance.AutoTileInProgress);
+                        }
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
-                        Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
-                        {
-                            GroundEditScene.Instance.AutoTileInProgress = getBrush().GetSanitizedTile();
-                            GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.LeftMouse])
-                            GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                        {
-                            rectTile(GroundEditScene.Instance.TileRectPreview(), getBrush());
-                            GroundEditScene.Instance.AutoTileInProgress = null;
-                        }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
-                        {
-                            GroundEditScene.Instance.AutoTileInProgress = new AutoTile(new TileLayer());
-                            GroundEditScene.Instance.RectInProgress = new Rect(groundCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.RightMouse])
-                            GroundEditScene.Instance.RectInProgress.Size = (groundCoords - GroundEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                        {
-                            rectTile(GroundEditScene.Instance.TileRectPreview(), new TileBrush(new TileLayer(), Loc.One));
-                            GroundEditScene.Instance.AutoTileInProgress = null;
-                        }
+                        CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new RectStroke<AutoTile>(tileCoords, getBrush().GetSanitizedTile()),
+                            () => new RectStroke<AutoTile>(tileCoords, new AutoTile()),
+                            paintStroke, ref GroundEditScene.Instance.AutoTileInProgress);
                     }
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse) && inWindow)
-                            fillTile(tileCoords, getBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse) && inWindow)
-                            fillTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
+                        CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new FillStroke<AutoTile>(tileCoords, getBrush().GetSanitizedTile()),
+                            () => new FillStroke<AutoTile>(tileCoords, new AutoTile()),
+                            fillStroke, ref GroundEditScene.Instance.AutoTileInProgress);
                     }
                     break;
                 case TileEditMode.Eyedrop:
@@ -102,8 +93,8 @@ namespace RogueEssence.Dev.ViewModels
                     }
                     break;
             }
-
         }
+
 
         private TileBrush getBrush()
         {
@@ -113,48 +104,30 @@ namespace RogueEssence.Dev.ViewModels
                 return AutotileBrowser.GetBrush();
         }
 
-        private void paintTile(Loc loc, TileBrush brush)
+        private AutoTile[][] getCluster(TileBrush brush)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
-                return;
-
-            if (brush.MultiSelect == Loc.One)
-                ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y] = brush.GetSanitizedTile();
-            else
+            AutoTile[][] tiles = new AutoTile[brush.MultiSelect.X][];
+            for (int xx = 0; xx < brush.MultiSelect.X; xx++)
             {
-                for (int xx = 0; xx < brush.MultiSelect.X; xx++)
-                {
-                    for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
-                    {
-                        Loc offset = new Loc(xx, yy);
-                        if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc + offset))
-                            continue;
-                        ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X + xx][loc.Y + yy] = brush.GetSanitizedTile(offset);
-                    }
-                }
+                tiles[xx] = new AutoTile[brush.MultiSelect.Y];
+                for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
+                    tiles[xx][yy] = brush.GetSanitizedTile(new Loc(xx, yy));
             }
-
-            Rect bounds = new Rect(loc, brush.MultiSelect);
-            //now recompute all tiles within the multiselect rectangle + 1
-            bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
+            return tiles;
         }
 
-        private void rectTile(Rect rect, TileBrush brush)
+        private void paintStroke(CanvasStroke<AutoTile> stroke)
         {
-            for (int xx = rect.X; xx < rect.End.X; xx++)
+            foreach (Loc loc in stroke.GetLocs())
             {
-                for (int yy = rect.Y; yy < rect.End.Y; yy++)
-                {
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(xx, yy)))
-                        continue;
+                if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
+                    continue;
 
-                    ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[xx][yy] = brush.GetSanitizedTile();
-                }
+                ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y] = stroke.GetBrush(loc).Copy();
             }
 
-            Rect bounds = rect;
             //now recompute all tiles within the multiselect rectangle + 1
+            Rect bounds = stroke.CoveredRect;
             bounds.Inflate(1, 1);
             ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
         }
@@ -179,13 +152,15 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void fillTile(Loc loc, TileBrush brush)
+        private void fillStroke(CanvasStroke<AutoTile> stroke)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, stroke.CoveredRect.Start))
                 return;
 
-            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y].Copy();
-            Rect bounds = new Rect(loc, Loc.One);
+            AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].Copy();
+            Rect bounds = new Rect(stroke.CoveredRect.Start, Loc.One);
+
+            AutoTile brushTile = stroke.GetBrush(stroke.CoveredRect.Start);
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height),
                     (Loc testLoc) =>
                     {
@@ -199,9 +174,10 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
                             new Loc(Math.Max(bounds.End.X, testLoc.X+1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[testLoc.X][testLoc.Y] = brush.GetSanitizedTile();
+
+                        ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[testLoc.X][testLoc.Y] = brushTile.Copy();
                     },
-                loc);
+                stroke.CoveredRect.Start);
 
             //now recompute all autotiles within the rectangle
             bounds.Inflate(1, 1);
