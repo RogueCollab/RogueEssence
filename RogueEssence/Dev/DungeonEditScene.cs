@@ -163,25 +163,25 @@ namespace RogueEssence.Dev
 
             //draw the blocks
 
-            if (ShowTerrain)
+            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
-                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                 {
-                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                    Loc testLoc = new Loc(ii, jj);
+                    if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
                     {
-                        Loc testLoc = new Loc(ii, jj);
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
+                        TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Data;
+                        if (TerrainInProgress != null && TerrainInProgress.IncludesLoc(testLoc))
                         {
-                            TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Data;
-                            if (TerrainInProgress != null && TerrainInProgress.IncludesLoc(testLoc))
-                            {
-                                tile = TerrainInProgress.GetBrush(testLoc);
-                                if (tile.TileTex.IsEmpty())
-                                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
-                                else
-                                    tile.TileTex.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
-                            }
+                            tile = TerrainInProgress.GetBrush(testLoc);
+                            if (tile.TileTex.IsEmpty())
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
+                            else
+                                tile.TileTex.Draw(spriteBatch, new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start);
+                        }
 
+                        if (ShowTerrain)
+                        {
                             TerrainData data = tile.GetData();
                             Color color = Color.Transparent;
                             switch (data.BlockType)
@@ -209,7 +209,6 @@ namespace RogueEssence.Dev
                     }
                 }
             }
-
             if (ShowEntrances)
             {
                 foreach (LocRay8 entrance in ZoneManager.Instance.CurrentMap.EntryPoints)

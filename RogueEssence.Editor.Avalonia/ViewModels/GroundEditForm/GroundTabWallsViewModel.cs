@@ -119,4 +119,20 @@ namespace RogueEssence.Dev.ViewModels
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawBlockUndo(brush));
         }
     }
+
+    public class DrawBlockUndo : DrawUndo<uint>
+    {
+        public DrawBlockUndo(Dictionary<Loc, uint> brush) : base(brush)
+        {
+        }
+
+        protected override uint GetValue(Loc loc)
+        {
+            return ZoneManager.Instance.CurrentGround.GetObstacle(loc.X, loc.Y);
+        }
+        protected override void SetValue(Loc loc, uint val)
+        {
+            ZoneManager.Instance.CurrentGround.SetObstacle(loc.X, loc.Y, val);
+        }
+    }
 }

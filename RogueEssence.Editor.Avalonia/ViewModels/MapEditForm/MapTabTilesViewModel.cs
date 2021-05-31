@@ -176,12 +176,6 @@ namespace RogueEssence.Dev.ViewModels
 
         }
 
-        private ObjAnimData getBrushAnim()
-        {
-            TileData entry = DataManager.Instance.GetTile(ChosenTile);
-            return entry.Anim;
-        }
-
         private EffectTile getBrush()
         {
             EffectTile brush = new EffectTile(ChosenTile, IsRevealed);
@@ -207,38 +201,19 @@ namespace RogueEssence.Dev.ViewModels
             TileStates.LoadFromList(states);
         }
 
-        private void paintTile(Loc loc, EffectTile brush)
-        {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
-                return;
-
-        }
-
 
         private void paintStroke(CanvasStroke<EffectTile> stroke)
         {
+            Dictionary<Loc, EffectTile> brush = new Dictionary<Loc, EffectTile>();
             foreach (Loc loc in stroke.GetLocs())
             {
                 if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                     continue;
 
-                ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect = new EffectTile(stroke.GetBrush(loc), loc);
+                brush[loc] = new EffectTile(stroke.GetBrush(loc), loc);
             }
-        }
 
-        private void rectTile(Rect rect, EffectTile brush)
-        {
-            for (int xx = rect.X; xx < rect.End.X; xx++)
-            {
-                for (int yy = rect.Y; yy < rect.End.Y; yy++)
-                {
-                    Loc loc = new Loc(xx, yy);
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
-                        continue;
-
-                    ZoneManager.Instance.CurrentMap.Tiles[xx][yy].Effect = new EffectTile(brush, loc);
-                }
-            }
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawTileUndo(brush));
         }
 
         private void eyedropTile(Loc loc)
@@ -259,12 +234,14 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             EffectTile tile = ZoneManager.Instance.CurrentMap.Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].Effect;
-            Rect bounds = new Rect(stroke.CoveredRect.Start, Loc.One);
 
+            Dictionary<Loc, EffectTile> brush = new Dictionary<Loc, EffectTile>();
             EffectTile brushTile = stroke.GetBrush(stroke.CoveredRect.Start);
             RogueElements.Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
                     (Loc testLoc) =>
                     {
+                        if (brush.ContainsKey(testLoc))
+                            return true;
                         return tile.ID != ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Effect.ID;
                     },
                     (Loc testLoc) =>
@@ -273,11 +250,27 @@ namespace RogueEssence.Dev.ViewModels
                     },
                     (Loc testLoc) =>
                     {
-                        bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
-                            new Loc(Math.Max(bounds.End.X, testLoc.X + 1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Effect = new EffectTile(brushTile, testLoc);
+                        brush[testLoc] = new EffectTile(brushTile, testLoc);
                     },
                 stroke.CoveredRect.Start);
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawTileUndo(brush));
+        }
+    }
+
+    public class DrawTileUndo : DrawUndo<EffectTile>
+    {
+        public DrawTileUndo(Dictionary<Loc, EffectTile> brush) : base(brush)
+        {
+        }
+
+        protected override EffectTile GetValue(Loc loc)
+        {
+            return ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect;
+        }
+        protected override void SetValue(Loc loc, EffectTile val)
+        {
+            ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect = val;
         }
     }
 }

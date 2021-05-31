@@ -60,25 +60,4 @@ namespace RogueEssence.Dev.ViewModels
             Layers.LoadModels(ZoneManager.Instance.CurrentGround.Entities);
         }
     }
-
-    public class GroundEntityStateUndo : StateUndo<EntityLayer>
-    {
-        private int layer;
-        public GroundEntityStateUndo(int layer)
-        {
-            this.layer = layer;
-        }
-
-        public override EntityLayer GetState()
-        {
-            ZoneManager.Instance.CurrentGround.PreSaveEntLayer(layer);
-            return ZoneManager.Instance.CurrentGround.Entities[layer];
-        }
-
-        public override void SetState(EntityLayer state)
-        {
-            ZoneManager.Instance.CurrentGround.Entities[layer] = state;
-            ZoneManager.Instance.CurrentGround.ReloadEntLayer(layer);
-        }
-    }
 }

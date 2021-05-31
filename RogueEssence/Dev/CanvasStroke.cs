@@ -210,4 +210,43 @@ namespace RogueEssence.Dev
             yield return loc;
         }
     }
+
+
+    public abstract class DrawUndo<T> : Undoable
+    {
+        private Dictionary<Loc, T> brush;
+        private Dictionary<Loc, T> prevStates;
+        public DrawUndo(Dictionary<Loc, T> brush)
+        {
+            this.brush = brush;
+        }
+
+        protected abstract T GetValue(Loc loc);
+        protected abstract void SetValue(Loc loc, T val);
+        protected virtual void ValuesFinished() { }
+
+        public override void Apply()
+        {
+            prevStates = new Dictionary<Loc, T>();
+
+            foreach (Loc loc in brush.Keys)
+                prevStates[loc] = GetValue(loc);
+
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            foreach (Loc loc in brush.Keys)
+                SetValue(loc, brush[loc]);
+            ValuesFinished();
+        }
+
+        public override void Undo()
+        {
+            foreach (Loc loc in prevStates.Keys)
+                SetValue(loc, prevStates[loc]);
+            ValuesFinished();
+        }
+    }
 }

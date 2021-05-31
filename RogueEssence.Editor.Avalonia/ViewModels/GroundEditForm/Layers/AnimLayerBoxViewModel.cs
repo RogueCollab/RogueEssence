@@ -57,23 +57,4 @@ namespace RogueEssence.Dev.ViewModels
             Layers.LoadModels(ZoneManager.Instance.CurrentGround.Decorations);
         }
     }
-
-    public class GroundDecorationStateUndo : StateUndo<AnimLayer>
-    {
-        private int layer;
-        public GroundDecorationStateUndo(int layer)
-        {
-            this.layer = layer;
-        }
-
-        public override AnimLayer GetState()
-        {
-            return ZoneManager.Instance.CurrentGround.Decorations[layer];
-        }
-
-        public override void SetState(AnimLayer state)
-        {
-            ZoneManager.Instance.CurrentGround.Decorations[layer] = state;
-        }
-    }
 }

@@ -41,8 +41,7 @@ namespace RogueEssence.Dev.ViewModels
         public void ProcessUndo()
         {
             if (EntMode == EntEditMode.SelectEntity)
-                EntBrowser.SelectEntity(null);
-
+                SelectEntity(null);
         }
 
         public void ProcessInput(InputManager input)
@@ -181,5 +180,26 @@ namespace RogueEssence.Dev.ViewModels
                 EntBrowser.SelectEntity(null);
         }
 
+    }
+
+    public class GroundEntityStateUndo : StateUndo<EntityLayer>
+    {
+        private int layer;
+        public GroundEntityStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override EntityLayer GetState()
+        {
+            ZoneManager.Instance.CurrentGround.PreSaveEntLayer(layer);
+            return ZoneManager.Instance.CurrentGround.Entities[layer];
+        }
+
+        public override void SetState(EntityLayer state)
+        {
+            ZoneManager.Instance.CurrentGround.Entities[layer] = state;
+            ZoneManager.Instance.CurrentGround.ReloadEntLayer(layer);
+        }
     }
 }

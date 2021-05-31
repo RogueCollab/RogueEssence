@@ -59,24 +59,4 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-
-    public class GroundTextureStateUndo : StateUndo<MapLayer>
-    {
-        private int layer;
-        public GroundTextureStateUndo(int layer)
-        {
-            this.layer = layer;
-        }
-
-        public override MapLayer GetState()
-        {
-            return ZoneManager.Instance.CurrentGround.Layers[layer];
-        }
-
-        public override void SetState(MapLayer state)
-        {
-            ZoneManager.Instance.CurrentGround.Layers[layer] = state;
-        }
-    }
-
 }

@@ -60,6 +60,12 @@ namespace RogueEssence.Dev.ViewModels
             ShowEntrances = ShowEntrances;
         }
 
+        public void ProcessUndo()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                SelectEntity(null);
+        }
+
         public void ProcessInput(InputManager input)
         {
             bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
@@ -105,6 +111,7 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.EntryPoints.Remove(ent.Value);
         }
 
@@ -115,6 +122,8 @@ namespace RogueEssence.Dev.ViewModels
             LocRay8 placeableEntity = new LocRay8(SelectedEntity.Loc, SelectedEntity.Dir);
 
             placeableEntity.Loc = position;
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.EntryPoints.Add(placeableEntity);
         }
 
@@ -123,7 +132,10 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(LocRay8? ent)
         {
             if (ent != null)
+            {
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
                 setEntity(ent.Value);
+            }
             else
                 setEntity(new LocRay8());
         }
@@ -156,6 +168,23 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (SelectedEntity != null)
                 SelectedEntity.Loc = loc;
+        }
+    }
+
+    public class MapEntryStateUndo : StateUndo<List<LocRay8>>
+    {
+        public MapEntryStateUndo()
+        {
+        }
+
+        public override List<LocRay8> GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.EntryPoints;
+        }
+
+        public override void SetState(List<LocRay8> state)
+        {
+            ZoneManager.Instance.CurrentMap.EntryPoints = state;
         }
     }
 }

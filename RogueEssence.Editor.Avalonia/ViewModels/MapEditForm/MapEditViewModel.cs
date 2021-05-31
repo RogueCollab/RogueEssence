@@ -216,6 +216,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (result)
                 {
+                    //TODO: support undo for this
+                    DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
                     DiagManager.Instance.LoadMsg = "Resizing Map...";
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
@@ -226,20 +229,26 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        //public void mnuUndo_Click()
-        //{
+        public void mnuUndo_Click()
+        {
+            if (DiagManager.Instance.DevEditor.MapEditor.Edits.CanUndo)
+            {
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Undo();
+                ProcessUndo();
+            }
+        }
 
-        //}
-
-        //public void mnuRedo_Click()
-        //{
-
-        //}
+        public void mnuRedo_Click()
+        {
+            if (DiagManager.Instance.DevEditor.MapEditor.Edits.CanRedo)
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Redo();
+        }
 
         private void DoNew()
         {
-            //take all the necessary steps before and after moving to the map
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
 
+            //take all the necessary steps before and after moving to the map
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
             GameManager.Instance.ForceReady();
@@ -251,8 +260,9 @@ namespace RogueEssence.Dev.ViewModels
         }
         private void DoLoad(string mapName)
         {
-            //take all the necessary steps before and after moving to the map
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
 
+            //take all the necessary steps before and after moving to the map
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
             GameManager.Instance.ForceReady();
@@ -315,6 +325,9 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoClearLayer()
         {
+            //TODO: support undo for this
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
@@ -330,6 +343,9 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoImportTileset(string sheetName)
         {
+            //TODO: support undo for this
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -367,6 +383,20 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
+                if (input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+                {
+                    if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z) && input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift)
+                        || input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Y))
+                    {
+                        mnuRedo_Click();
+                        return;
+                    }
+                    else if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z))
+                    {
+                        mnuUndo_Click();
+                        return;
+                    }
+                }
                 switch (selectedTabIndex)
                 {
                     case 0://Textures
@@ -391,5 +421,23 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void ProcessUndo()
+        {
+            lock (GameBase.lockObj)
+            {
+                switch (selectedTabIndex)
+                {
+                    case 3://Items
+                        Items.ProcessUndo();
+                        break;
+                    case 4://Entities
+                        Entities.ProcessUndo();
+                        break;
+                    case 5://Entrances
+                        Entrances.ProcessUndo();
+                        break;
+                }
+            }
+        }
     }
 }

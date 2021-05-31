@@ -4,6 +4,7 @@ using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace RogueEssence.Dev.ViewModels
@@ -138,18 +139,16 @@ namespace RogueEssence.Dev.ViewModels
 
         private void paintStroke(CanvasStroke<TerrainTile> stroke)
         {
+            Dictionary<Loc, TerrainTile> brush = new Dictionary<Loc, TerrainTile>();
             foreach (Loc loc in stroke.GetLocs())
             {
                 if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                     continue;
 
-                ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Data = stroke.GetBrush(loc).Copy();
+                brush[loc] = stroke.GetBrush(loc).Copy();
             }
 
-            Rect bounds = stroke.CoveredRect;
-            //now recompute all tiles within the multiselect rectangle + 1
-            bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawTerrainUndo(brush, stroke.CoveredRect));
         }
 
         private void eyedropTile(Loc loc)
@@ -181,10 +180,13 @@ namespace RogueEssence.Dev.ViewModels
             TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].Data.Copy();
             Rect bounds = new Rect(stroke.CoveredRect.Start, Loc.One);
 
+            Dictionary<Loc, TerrainTile> brush = new Dictionary<Loc, TerrainTile>();
             TerrainTile brushTile = stroke.GetBrush(stroke.CoveredRect.Start);
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
                     (Loc testLoc) =>
                     {
+                        if (brush.ContainsKey(testLoc))
+                            return true;
                         return !tile.Equals(ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Data);
                     },
                     (Loc testLoc) =>
@@ -195,11 +197,35 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
                             new Loc(Math.Max(bounds.End.X, testLoc.X + 1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Data = brushTile.Copy();
+                        brush[testLoc] = brushTile.Copy();
                     },
                 stroke.CoveredRect.Start);
 
-            //now recompute all autotiles within the rectangle
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawTerrainUndo(brush, bounds));
+        }
+    }
+
+    public class DrawTerrainUndo : DrawUndo<TerrainTile>
+    {
+        private Rect coveredRect;
+
+        public DrawTerrainUndo(Dictionary<Loc, TerrainTile> brush, Rect coveredRect) : base(brush)
+        {
+            this.coveredRect = coveredRect;
+        }
+
+        protected override TerrainTile GetValue(Loc loc)
+        {
+            return ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Data;
+        }
+        protected override void SetValue(Loc loc, TerrainTile val)
+        {
+            ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Data = val;
+        }
+        protected override void ValuesFinished()
+        {
+            //now recompute all tiles within the multiselect rectangle + 1
+            Rect bounds = coveredRect;
             bounds.Inflate(1, 1);
             ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
         }

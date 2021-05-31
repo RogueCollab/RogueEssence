@@ -127,7 +127,7 @@ namespace RogueEssence.Dev.ViewModels
                 brush[loc] = stroke.GetBrush(loc).Copy();
             }
 
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawTextureUndo(Layers.ChosenLayer, brush, stroke.CoveredRect));
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawGroundTexUndo(Layers.ChosenLayer, brush, stroke.CoveredRect));
         }
 
         private void eyedropTile(Loc loc)
@@ -180,7 +180,55 @@ namespace RogueEssence.Dev.ViewModels
                     },
                 stroke.CoveredRect.Start);
 
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawTextureUndo(Layers.ChosenLayer, brush, bounds));
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawGroundTexUndo(Layers.ChosenLayer, brush, bounds));
+        }
+    }
+
+    public class DrawGroundTexUndo : DrawUndo<AutoTile>
+    {
+        private int layer;
+        private Rect coveredRect;
+
+        public DrawGroundTexUndo(int layer, Dictionary<Loc, AutoTile> brush, Rect coveredRect) : base(brush)
+        {
+            this.layer = layer;
+            this.coveredRect = coveredRect;
+        }
+
+        protected override AutoTile GetValue(Loc loc)
+        {
+            return ZoneManager.Instance.CurrentGround.Layers[layer].Tiles[loc.X][loc.Y];
+        }
+        protected override void SetValue(Loc loc, AutoTile val)
+        {
+            ZoneManager.Instance.CurrentGround.Layers[layer].Tiles[loc.X][loc.Y] = val;
+        }
+        protected override void ValuesFinished()
+        {
+            //now recompute all tiles within the multiselect rectangle + 1
+            Rect bounds = coveredRect;
+            bounds.Inflate(1, 1);
+            ZoneManager.Instance.CurrentGround.Layers[layer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
+        }
+    }
+
+
+    public class GroundTextureStateUndo : StateUndo<MapLayer>
+    {
+        private int layer;
+        public GroundTextureStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override MapLayer GetState()
+        {
+            return ZoneManager.Instance.CurrentGround.Layers[layer];
+        }
+
+        public override void SetState(MapLayer state)
+        {
+            ZoneManager.Instance.CurrentGround.Layers[layer] = state;
         }
     }
 }

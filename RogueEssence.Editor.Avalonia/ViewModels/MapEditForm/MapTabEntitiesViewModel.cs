@@ -365,6 +365,11 @@ namespace RogueEssence.Dev.ViewModels
 
         public Character SelectedEntity;
 
+        public void ProcessUndo()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                SelectEntity(null);
+        }
 
         public void ProcessInput(InputManager input)
         {
@@ -473,6 +478,8 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
+
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
             {
                 Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
@@ -506,6 +513,9 @@ namespace RogueEssence.Dev.ViewModels
             Character placeableEntity = SelectedEntity.Clone(team);
 
             placeableEntity.CharLoc = position;
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
+
             ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
             placeableEntity.UpdateFrame();
         }
@@ -515,7 +525,10 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(Character ent)
         {
             if (ent != null)
+            {
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
                 setEntity(ent);
+            }
             else
             {
                 MonsterTeam team = new MonsterTeam();
@@ -585,6 +598,23 @@ namespace RogueEssence.Dev.ViewModels
                 SelectedEntity.CharLoc = loc;
                 SelectedEntity.UpdateFrame();
             }
+        }
+    }
+
+    public class MapEntityStateUndo : StateUndo<List<Team>>
+    {
+        public MapEntityStateUndo()
+        {
+        }
+
+        public override List<Team> GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.MapTeams;
+        }
+
+        public override void SetState(List<Team> state)
+        {
+            ZoneManager.Instance.CurrentMap.MapTeams = state;
         }
     }
 }
