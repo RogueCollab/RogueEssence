@@ -16,6 +16,9 @@ namespace RogueEssence.Dev.ViewModels
 
     public class TextureLayerBoxViewModel : LayerBoxViewModel<MapLayer>
     {
+        public TextureLayerBoxViewModel(UndoStack edits) : base(edits)
+        { }
+
         public override async Task EditLayer()
         {
             MapLayerWindow window = new MapLayerWindow();
@@ -35,6 +38,9 @@ namespace RogueEssence.Dev.ViewModels
                     newLayer.Layer = vm.Front ? DrawLayer.Top : DrawLayer.Bottom;
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Tiles = oldLayer.Tiles;
+
+                    edits.Apply(new GroundTextureStateUndo(ChosenLayer));
+
                     Layers[ChosenLayer] = newLayer;
                 }
             }
@@ -50,6 +56,26 @@ namespace RogueEssence.Dev.ViewModels
         protected override void LoadLayersFromSource()
         {
             Layers.LoadModels(ZoneManager.Instance.CurrentGround.Layers);
+        }
+    }
+
+
+    public class GroundTextureStateUndo : StateUndo<MapLayer>
+    {
+        private int layer;
+        public GroundTextureStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override MapLayer GetState()
+        {
+            return ZoneManager.Instance.CurrentGround.Layers[layer];
+        }
+
+        public override void SetState(MapLayer state)
+        {
+            ZoneManager.Instance.CurrentGround.Layers[layer] = state;
         }
     }
 

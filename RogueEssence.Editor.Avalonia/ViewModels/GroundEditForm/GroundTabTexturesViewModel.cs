@@ -2,6 +2,7 @@
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -9,7 +10,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public GroundTabTexturesViewModel()
         {
-            Layers = new TextureLayerBoxViewModel();
+            Layers = new TextureLayerBoxViewModel(DiagManager.Instance.DevEditor.GroundEditor.Edits);
             TileBrowser = new TileBrowserViewModel();
             TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();
@@ -142,6 +143,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void rectTile(Rect rect, TileBrush brush)
         {
+            List<Loc> fillLocs = new List<Loc>();
             for (int xx = rect.X; xx < rect.End.X; xx++)
             {
                 for (int yy = rect.Y; yy < rect.End.Y; yy++)
@@ -149,14 +151,14 @@ namespace RogueEssence.Dev.ViewModels
                     if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(xx, yy)))
                         continue;
 
-                    ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[xx][yy] = brush.GetSanitizedTile();
+                    fillLocs.Add(new Loc(xx,yy));
                 }
             }
 
             Rect bounds = rect;
             //now recompute all tiles within the multiselect rectangle + 1
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawTextureUndo(Layers.ChosenLayer, brush.GetSanitizedTile(), fillLocs, bounds));
         }
 
         private void eyedropTile(Loc loc)
@@ -185,6 +187,7 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y].Copy();
+            List<Loc> fillLocs = new List<Loc>();
             Rect bounds = new Rect(loc, Loc.One);
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height),
                     (Loc testLoc) =>
@@ -199,13 +202,13 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
                             new Loc(Math.Max(bounds.End.X, testLoc.X+1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[testLoc.X][testLoc.Y] = brush.GetSanitizedTile();
+                        fillLocs.Add(testLoc);
                     },
                 loc);
 
             //now recompute all autotiles within the rectangle
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawTextureUndo(Layers.ChosenLayer, brush.GetSanitizedTile(), fillLocs, bounds));
         }
     }
 }

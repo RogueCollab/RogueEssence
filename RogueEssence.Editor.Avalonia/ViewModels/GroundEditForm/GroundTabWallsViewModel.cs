@@ -2,6 +2,7 @@
 using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -106,6 +107,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void rectBlockTile(Rect rect, bool block)
         {
+            List<Loc> fillLocs = new List<Loc>();
             for (int xx = rect.X; xx < rect.End.X; xx++)
             {
                 for (int yy = rect.Y; yy < rect.End.Y; yy++)
@@ -113,9 +115,11 @@ namespace RogueEssence.Dev.ViewModels
                     if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, new Loc(xx, yy)))
                         continue;
 
-                    ZoneManager.Instance.CurrentGround.SetObstacle(xx, yy, block ? 1u : 0u);
+                    fillLocs.Add(new Loc(xx, yy));
                 }
             }
+
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawBlockUndo(block ? 1u : 0u, fillLocs));
         }
 
         private void fillBlockTile(Loc loc, bool block)
@@ -125,6 +129,7 @@ namespace RogueEssence.Dev.ViewModels
 
             uint tile = ZoneManager.Instance.CurrentGround.GetObstacle(loc.X, loc.Y);
 
+            List<Loc> fillLocs = new List<Loc>();
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight),
                     (Loc testLoc) =>
                     {
@@ -136,9 +141,11 @@ namespace RogueEssence.Dev.ViewModels
                     },
                     (Loc testLoc) =>
                     {
-                        ZoneManager.Instance.CurrentGround.SetObstacle(testLoc.X, testLoc.Y, block ? 1u : 0u);
+                        fillLocs.Add(testLoc);
                     },
                 loc);
+
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawBlockUndo(block ? 1u : 0u, fillLocs));
         }
     }
 }

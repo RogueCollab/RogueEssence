@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
 
     public class EntityLayerBoxViewModel : LayerBoxViewModel<EntityLayer>
     {
+        public EntityLayerBoxViewModel(UndoStack edits) : base(edits)
+        { }
         public override async Task EditLayer()
         {
             EntityLayerWindow window = new EntityLayerWindow();
@@ -39,6 +41,9 @@ namespace RogueEssence.Dev.ViewModels
                     newLayer.MapChars = oldLayer.MapChars;
                     newLayer.Spawners = oldLayer.Spawners;
                     newLayer.TemporaryChars = oldLayer.TemporaryChars;
+
+                    edits.Apply(new GroundEntityStateUndo(ChosenLayer));
+
                     Layers[ChosenLayer] = newLayer;
                 }
             }
@@ -56,4 +61,24 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
+    public class GroundEntityStateUndo : StateUndo<EntityLayer>
+    {
+        private int layer;
+        public GroundEntityStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override EntityLayer GetState()
+        {
+            ZoneManager.Instance.CurrentGround.PreSaveEntLayer(layer);
+            return ZoneManager.Instance.CurrentGround.Entities[layer];
+        }
+
+        public override void SetState(EntityLayer state)
+        {
+            ZoneManager.Instance.CurrentGround.Entities[layer] = state;
+            ZoneManager.Instance.CurrentGround.ReloadEntLayer(layer);
+        }
+    }
 }

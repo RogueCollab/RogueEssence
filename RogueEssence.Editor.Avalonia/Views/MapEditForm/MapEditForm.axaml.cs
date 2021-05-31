@@ -21,14 +21,14 @@ namespace RogueEssence.Dev.Views
     {
 
         public bool Active { get; private set; }
-
+        public UndoStack Edits { get; }
         public MapEditForm()
         {
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
 #endif
-
+            Edits = new UndoStack();
 
         }
 

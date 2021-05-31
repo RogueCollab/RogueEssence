@@ -16,8 +16,11 @@ namespace RogueEssence.Dev.ViewModels
     public abstract class LayerBoxViewModel<T> : ViewModelBase, ILayerBoxViewModel
         where T : IMapLayer
     {
-        public LayerBoxViewModel()
+        protected UndoStack edits { get; }
+
+        public LayerBoxViewModel(UndoStack stack)
         {
+            this.edits = stack;
             Layers = new WrappedObservableCollection<T>();
         }
 
@@ -47,7 +50,8 @@ namespace RogueEssence.Dev.ViewModels
             {
                 int curLayer = chosenLayer;
                 T layer = GetNewLayer();
-                Layers.Insert(chosenLayer + 1, layer);
+
+                edits.Apply(new AddLayerUndo<T>(Layers, chosenLayer + 1, layer, false));
                 ChosenLayer = curLayer + 1;
             }
         }
@@ -59,7 +63,9 @@ namespace RogueEssence.Dev.ViewModels
                 if (Layers.Count > 1)
                 {
                     int curLayer = chosenLayer;
-                    Layers.RemoveAt(chosenLayer);
+
+                    edits.Apply(new AddLayerUndo<T>(Layers, chosenLayer, Layers[chosenLayer], false));
+
                     ChosenLayer = Math.Min(curLayer, Layers.Count - 1);
                 }
             }
@@ -70,7 +76,9 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 T oldLayer = Layers[chosenLayer];
-                Layers.Insert(chosenLayer + 1, (T)oldLayer.Clone());
+
+                T layer = (T)oldLayer.Clone();
+                edits.Apply(new AddLayerUndo<T>(Layers, chosenLayer + 1, layer, false));
             }
         }
 
@@ -83,10 +91,10 @@ namespace RogueEssence.Dev.ViewModels
                     int insertLayer = chosenLayer - 1;
                     T topLayer = Layers[chosenLayer];
                     T bottomLayer = Layers[insertLayer];
-                    Layers.RemoveAt(chosenLayer);
-                    Layers.RemoveAt(insertLayer);
-                    bottomLayer.Merge(topLayer);
-                    Layers.Insert(insertLayer, bottomLayer);
+                    T newLayer = (T)bottomLayer.Clone();
+                    newLayer.Merge(topLayer);
+
+                    edits.Apply(new MergeLayerUndo<T>(Layers, chosenLayer, newLayer));
                     ChosenLayer = insertLayer;
                 }
             }
@@ -99,9 +107,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (chosenLayer > 0)
                 {
                     int insertLayer = chosenLayer - 1;
-                    T oldLayer = Layers[chosenLayer];
-                    Layers.RemoveAt(chosenLayer);
-                    Layers.Insert(insertLayer, oldLayer);
+                    edits.Apply(new MoveLayerUndo<T>(Layers, insertLayer));
                     ChosenLayer = insertLayer;
                 }
             }
@@ -114,9 +120,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (chosenLayer < Layers.Count - 1)
                 {
                     int insertLayer = chosenLayer + 1;
-                    T oldLayer = Layers[chosenLayer];
-                    Layers.RemoveAt(chosenLayer);
-                    Layers.Insert(insertLayer, oldLayer);
+                    edits.Apply(new MoveLayerUndo<T>(Layers, chosenLayer));
                     ChosenLayer = insertLayer;
                 }
             }
@@ -137,5 +141,91 @@ namespace RogueEssence.Dev.ViewModels
         int ChosenLayer { get; set; }
         Task EditLayer();
         void LoadLayers();
+    }
+
+
+    public class AddLayerUndo<T> : ReversibleUndo
+    {
+        private Collection<T> layers;
+        private int index;
+        private T layer;
+        public AddLayerUndo(Collection<T> layers, int index, T layer, bool reversed) : base(reversed)
+        {
+            this.layers = layers;
+            this.index = index;
+            this.layer = layer;
+        }
+
+        public override void Forward()
+        {
+            layers.Insert(index + 1, layer);
+        }
+        public override void Backward()
+        {
+            layers.RemoveAt(index + 1);
+        }
+    }
+
+    public class MoveLayerUndo<T> : SymmetricUndo
+    {
+        private Collection<T> layers;
+        private int index;
+        public MoveLayerUndo(Collection<T> layers, int index)
+        {
+            this.layers = layers;
+            this.index = index;
+        }
+
+        public override void Redo()
+        {
+            int insertLayer = index + 1;
+            T oldLayer = layers[index];
+            layers.RemoveAt(index);
+            layers.Insert(insertLayer, oldLayer);
+        }
+    }
+
+
+    public class MergeLayerUndo<T> : Undoable
+        where T : IMapLayer
+    {
+        private Collection<T> layers;
+        private int index;
+        private T topLayer;
+        private T bottomLayer;
+        private T newLayer;
+
+        public MergeLayerUndo(Collection<T> layers, int index, T mergeLayer)
+        {
+            this.layers = layers;
+            this.index = index;
+            this.newLayer = mergeLayer;
+        }
+
+
+        public override void Apply()
+        {
+            int insertLayer = index - 1;
+            topLayer = layers[index];
+            bottomLayer = layers[insertLayer];
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            //merge down
+            int insertLayer = index - 1;
+            layers.RemoveAt(index);
+            layers.RemoveAt(insertLayer);
+            layers.Insert(insertLayer, newLayer);
+        }
+
+        public override void Undo()
+        {
+            int insertLayer = index - 1;
+            layers.RemoveAt(insertLayer);
+            layers.Insert(insertLayer, bottomLayer);
+            layers.Insert(index, topLayer);
+        }
     }
 }
