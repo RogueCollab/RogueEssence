@@ -13,7 +13,7 @@ namespace RogueEssence.Dev
         }
 
         bool Active { get; }
-
+        public UndoStack Edits { get; }
         void ProcessInput(InputManager input);
     }
 }

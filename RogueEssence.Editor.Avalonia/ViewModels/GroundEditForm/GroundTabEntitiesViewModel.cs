@@ -15,7 +15,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public GroundTabEntitiesViewModel()
         {
-            Layers = new EntityLayerBoxViewModel();
+            Layers = new EntityLayerBoxViewModel(DiagManager.Instance.DevEditor.GroundEditor.Edits);
             Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             EntBrowser = new EntityBrowserViewModel();
         }
@@ -37,6 +37,13 @@ namespace RogueEssence.Dev.ViewModels
 
 
         private Loc dragDiff;
+
+        public void ProcessUndo()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                EntBrowser.SelectEntity(null);
+
+        }
 
         public void ProcessInput(InputManager input)
         {
@@ -97,6 +104,8 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundEntityStateUndo(0));
+
             if (ent.GetEntityType() == GroundEntity.EEntTypes.Character)
                 ZoneManager.Instance.CurrentGround.RemoveMapChar((GroundChar)ent);
             else if (ent.GetEntityType() == GroundEntity.EEntTypes.Object)
@@ -120,6 +129,8 @@ namespace RogueEssence.Dev.ViewModels
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
             placeableEntity.SyncScriptEvents();
 
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundEntityStateUndo(0));
+
             if (placeableEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
                 ZoneManager.Instance.CurrentGround.AddMapChar((GroundChar)placeableEntity);
             else if (placeableEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
@@ -137,7 +148,16 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="position"></param>
         public void SelectEntityAt(Loc position)
         {
-            OperateOnEntityAt(position, EntBrowser.SelectEntity);
+            OperateOnEntityAt(position, SelectEntity);
+        }
+
+
+        public void SelectEntity(GroundEntity ent)
+        {
+            if (ent != null)
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundEntityStateUndo(0));
+
+            EntBrowser.SelectEntity(ent);
         }
 
         public void OperateOnEntityAt(Loc position, EntityOp op)

@@ -22,13 +22,15 @@ namespace RogueEssence.Dev.Views
 
         public bool Active { get; private set; }
 
+        // TODO: make undo/redo enabled/disabled based on if there's anything left on the stack
+        public UndoStack Edits { get; }
         public GroundEditForm()
         {
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
 #endif
-
+            Edits = new UndoStack();
 
         }
 

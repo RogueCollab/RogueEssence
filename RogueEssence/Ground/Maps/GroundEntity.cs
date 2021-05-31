@@ -233,6 +233,11 @@ namespace RogueEssence.Ground
             return false;
         }
 
+        public virtual void OnSerializeMap(GroundMap map)
+        {
+            //does nothing by default
+        }
+
         /// <summary>
         /// This is called when the map owning the entity is deserialized.
         /// Its meant to help entities re-subscribe their events to the proper delegates,

@@ -328,12 +328,6 @@ namespace RogueEssence.Ground
             return new Loc(GraphicsManager.GetChara(CurrentForm).TileWidth, GraphicsManager.GetChara(CurrentForm).TileHeight);
         }
 
-        internal void ReloadPosition()
-        {
-            //restore idle position and direction
-            currentCharAction = new IdleGroundAction(serializationLoc, serializationDir);
-        }
-
         /// <summary>
         /// Returns the localized nickname if there's one, or the specie name, fully colored.
         /// </summary>
@@ -391,6 +385,11 @@ namespace RogueEssence.Ground
         {
             //DiagManager.Instance.LogInfo(String.Format("GroundChar.OnDeserializeMap(): Handling {0}..", EntName));
             ReloadPosition();
+        }
+        public override void OnSerializeMap(GroundMap map)
+        {
+            //DiagManager.Instance.LogInfo(String.Format("GroundChar.OnDeserializeMap(): Handling {0}..", EntName));
+            SavePosition();
         }
 
         public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
@@ -479,11 +478,23 @@ namespace RogueEssence.Ground
         private Loc serializationLoc;
         private Dir8 serializationDir;
 
-        [OnSerializing]
-        internal void OnSerializingMethod(StreamingContext context)
+
+        internal void ReloadPosition()
+        {
+            //restore idle position and direction
+            currentCharAction = new IdleGroundAction(serializationLoc, serializationDir);
+        }
+
+        internal void SavePosition()
         {
             serializationLoc = MapLoc;
             serializationDir = CharDir;
+        }
+
+        [OnSerializing]
+        internal void OnSerializingMethod(StreamingContext context)
+        {
+            SavePosition();
         }
 
         [OnDeserialized]

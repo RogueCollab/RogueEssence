@@ -78,14 +78,17 @@ namespace RogueEssence.Dev.ViewModels
 
         private void paintStroke(CanvasStroke<bool> stroke)
         {
+            Dictionary<Loc, uint> brush = new Dictionary<Loc, uint>();
             foreach (Loc loc in stroke.GetLocs())
             {
                 if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight, loc))
                     continue;
 
-                ZoneManager.Instance.CurrentGround.SetObstacle(loc.X, loc.Y, stroke.GetBrush(loc) ? 1u : 0u);
+                brush[loc] = stroke.GetBrush(loc) ? 1u : 0u;
             }
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawBlockUndo(brush));
         }
+
 
         private void fillStroke(CanvasStroke<bool> stroke)
         {
@@ -95,9 +98,12 @@ namespace RogueEssence.Dev.ViewModels
             uint tile = ZoneManager.Instance.CurrentGround.GetObstacle(stroke.CoveredRect.Start.X, stroke.CoveredRect.Start.Y);
 
             bool blocked = stroke.GetBrush(stroke.CoveredRect.Start);
+            Dictionary<Loc, uint> brush = new Dictionary<Loc, uint>();
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentGround.TexWidth, ZoneManager.Instance.CurrentGround.TexHeight),
                     (Loc testLoc) =>
                     {
+                        if (brush.ContainsKey(testLoc))
+                            return true;
                         return tile != ZoneManager.Instance.CurrentGround.GetObstacle(testLoc.X, testLoc.Y);
                     },
                     (Loc testLoc) =>
@@ -106,9 +112,11 @@ namespace RogueEssence.Dev.ViewModels
                     },
                     (Loc testLoc) =>
                     {
-                        ZoneManager.Instance.CurrentGround.SetObstacle(testLoc.X, testLoc.Y, blocked ? 1u : 0u);
+                        brush[testLoc] = blocked ? 1u : 0u;
                     },
                 stroke.CoveredRect.Start);
+
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawBlockUndo(brush));
         }
     }
 }

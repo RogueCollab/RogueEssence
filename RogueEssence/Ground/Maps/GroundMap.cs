@@ -926,12 +926,42 @@ namespace RogueEssence.Ground
             return list;
         }
 
-        
+        public void ReloadEntLayer(int layer)
+        {
+
+            //reconnect characters and objects references
+            foreach (GroundChar player in Entities[layer].MapChars)
+            {
+                if (player != null)
+                {
+                    player.OnDeserializeMap(this);
+                    signCharToMap(player);
+                }
+            }
+            foreach (GroundObject groundObj in Entities[layer].GroundObjects)
+            {
+                groundObj.OnDeserializeMap(this);
+                grid.Add(groundObj);
+            }
+        }
+
+        public void PreSaveEntLayer(int layer)
+        {
+            //reconnect characters and objects references
+            foreach (GroundChar player in Entities[layer].MapChars)
+            {
+                if (player != null)
+                    player.OnSerializeMap(this);
+            }
+            foreach (GroundObject groundObj in Entities[layer].GroundObjects)
+                groundObj.OnSerializeMap(this);
+        }
+
+
         [OnSerializing]
         internal void OnSerializingMethod(StreamingContext context)
         {
-            
-            
+            PreSaveEntLayer(0);
         }
 
 
@@ -956,21 +986,7 @@ namespace RogueEssence.Ground
                 signCharToMap(ActiveChar);
             }
 
-            //reconnect characters and objects references
-            foreach (GroundChar player in Entities[0].MapChars)
-            {
-                if (player != null)
-                {
-                    player.OnDeserializeMap(this);
-                    signCharToMap(player);
-                }
-            }
-            foreach (GroundObject groundObj in Entities[0].GroundObjects)
-            {
-                groundObj.OnDeserializeMap(this);
-                grid.Add(groundObj);
-            }
-
+            ReloadEntLayer(0);
         }
     }
 }
