@@ -10,6 +10,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public MapTabTexturesViewModel()
         {
+            Layers = new TextureLayerBoxViewModel(false);
             TileBrowser = new TileBrowserViewModel();
             TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();
@@ -25,6 +26,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ILayerBoxViewModel Layers { get; set; }
         public TileBrowserViewModel TileBrowser { get; set; }
         public AutotileBrowserViewModel AutotileBrowser { get; set; }
 
@@ -126,7 +128,7 @@ namespace RogueEssence.Dev.ViewModels
                 brush[loc] = stroke.GetBrush(loc).Copy();
             }
 
-            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawMapTexUndo(brush, stroke.CoveredRect));
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawMapTexUndo(Layers.ChosenLayer, brush, stroke.CoveredRect));
         }
 
         private void eyedropTile(Loc loc)
@@ -134,7 +136,7 @@ namespace RogueEssence.Dev.ViewModels
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                 return;
 
-            AutoTile autoTile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile;
+            AutoTile autoTile = ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y];
 
             if (autoTile.AutoTileset > -1)
             {
@@ -155,7 +157,7 @@ namespace RogueEssence.Dev.ViewModels
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, stroke.CoveredRect.Start))
                 return;
 
-            AutoTile tile = ZoneManager.Instance.CurrentMap.Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].FloorTile.Copy();
+            AutoTile tile = ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].Copy();
             Rect bounds = new Rect(stroke.CoveredRect.Start, Loc.One);
 
             Dictionary<Loc, AutoTile> brush = new Dictionary<Loc, AutoTile>();
@@ -165,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         if (brush.ContainsKey(testLoc))
                             return true;
-                        return !tile.Equals(ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].FloorTile);
+                        return !tile.Equals(ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[testLoc.X][testLoc.Y]);
                     },
                     (Loc testLoc) =>
                     {
@@ -179,33 +181,55 @@ namespace RogueEssence.Dev.ViewModels
                     },
                 stroke.CoveredRect.Start);
 
-            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawMapTexUndo(brush, bounds));
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawMapTexUndo(Layers.ChosenLayer, brush, bounds));
         }
     }
 
     public class DrawMapTexUndo : DrawUndo<AutoTile>
     {
+        private int layer;
         private Rect coveredRect;
 
-        public DrawMapTexUndo(Dictionary<Loc, AutoTile> brush, Rect coveredRect) : base(brush)
+        public DrawMapTexUndo(int layer, Dictionary<Loc, AutoTile> brush, Rect coveredRect) : base(brush)
         {
+            this.layer = layer;
             this.coveredRect = coveredRect;
         }
 
         protected override AutoTile GetValue(Loc loc)
         {
-            return ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile;
+            return ZoneManager.Instance.CurrentMap.Layers[layer].Tiles[loc.X][loc.Y];
         }
         protected override void SetValue(Loc loc, AutoTile val)
         {
-            ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile = val;
+            ZoneManager.Instance.CurrentMap.Layers[layer].Tiles[loc.X][loc.Y] = val;
         }
         protected override void ValuesFinished()
         {
             //now recompute all tiles within the multiselect rectangle + 1
             Rect bounds = coveredRect;
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
+            ZoneManager.Instance.CurrentMap.Layers[layer].CalculateAutotiles(ZoneManager.Instance.CurrentMap.Rand.FirstSeed, bounds.Start, bounds.Size);
+        }
+    }
+
+
+    public class MapTextureStateUndo : StateUndo<MapLayer>
+    {
+        private int layer;
+        public MapTextureStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override MapLayer GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.Layers[layer];
+        }
+
+        public override void SetState(MapLayer state)
+        {
+            ZoneManager.Instance.CurrentMap.Layers[layer] = state;
         }
     }
 }

@@ -22,10 +22,6 @@ namespace RogueEssence.Ground
             Position = pos;
             Direction = dir;
             Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
-            if (pos == null)
-                pos = new Loc(-1,-1);
-            if (name == null)
-                name = "";
         }
         protected GroundMarker(GroundMarker other) : base(other)
         { }

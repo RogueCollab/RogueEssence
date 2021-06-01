@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueEssence.LevelGen;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Data
 {
@@ -67,7 +68,7 @@ namespace RogueEssence.Data
         [Dev.DataFolder(1, "Ground/")]
         public List<string> GroundMaps;
 
-        private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
+        public HashSet<LuaEngine.EZoneCallbacks> ScriptEvents;
 
 
         public ZoneData()
@@ -83,7 +84,7 @@ namespace RogueEssence.Data
             Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
 
-            ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
+            ScriptEvents = new HashSet<LuaEngine.EZoneCallbacks>();
         }
 
         public string GetColoredName()
@@ -91,20 +92,6 @@ namespace RogueEssence.Data
             return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
 
-        public void AddZoneScriptEvent(int idx, LuaEngine.EZoneCallbacks ev)
-        {
-            string assetName = "zone_" + idx;
-            DiagManager.Instance.LogInfo(String.Format("Zone.AddZoneScriptEvent(): Added event {0} to zone {1}!", ev.ToString(), assetName));
-            ScriptEvents[ev] = new ScriptEvent(LuaEngine.MakeZoneScriptCallbackName(assetName, ev));
-        }
-
-        public void RemoveZoneScriptEvent(int idx, LuaEngine.EZoneCallbacks ev)
-        {
-            string assetName = "zone_" + idx;
-            DiagManager.Instance.LogInfo(String.Format("Zone.RemoveZoneScriptEvent(): Removed event {0} from zone {1}!", ev.ToString(), assetName));
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
-        }
 
         public Zone CreateActiveZone(ulong seed, int zoneIndex)
         {
@@ -127,6 +114,13 @@ namespace RogueEssence.Data
             return zone;
         }
 
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: v0.5: remove this
+            if (ScriptEvents == null)
+                ScriptEvents = new HashSet<LuaEngine.EZoneCallbacks>();
+        }
     }
 
 

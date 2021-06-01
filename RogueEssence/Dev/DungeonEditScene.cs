@@ -213,7 +213,8 @@ namespace RogueEssence.Dev
             {
                 foreach (LocRay8 entrance in ZoneManager.Instance.CurrentMap.EntryPoints)
                 {
-                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(entrance.Loc.X * GraphicsManager.TileSize - ViewRect.X, entrance.Loc.Y * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.White * 0.75f);
+                    Color showColor = Color.OrangeRed;
+                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(entrance.Loc.X * GraphicsManager.TileSize - ViewRect.X, entrance.Loc.Y * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, showColor * 0.75f);
                 }
             }
 

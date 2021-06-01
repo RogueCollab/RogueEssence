@@ -81,9 +81,15 @@ namespace RogueEssence.Dungeon
             return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
 
-        public void LoadScriptEvents(Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents)
+        public void LoadScriptEvents(HashSet<LuaEngine.EZoneCallbacks> scriptEvents)
         {
-            ScriptEvents = scriptEvents;
+            ScriptEvents.Clear();
+            foreach (LuaEngine.EZoneCallbacks ev in scriptEvents)
+            {
+                string assetName = "zone_" + this.ID;
+                DiagManager.Instance.LogInfo(String.Format("Zone.LoadScriptEvents(): Added event {0} to zone {1}!", ev.ToString(), assetName));
+                ScriptEvents[ev] = new ScriptEvent(LuaEngine.MakeZoneScriptCallbackName(assetName, ev));
+            }
         }
 
         public void LuaEngineReload()
@@ -162,7 +168,6 @@ namespace RogueEssence.Dungeon
 
             CurrentMap = new Map();
             CurrentMap.CreateNew(10, 10);
-            CurrentMap.EntryPoints.Add(new LocRay8(new Loc(CurrentMap.Width / 2, CurrentMap.Height / 2), Dir8.Down));
 
             CurrentMapID = new SegLoc(0, 0);
         }

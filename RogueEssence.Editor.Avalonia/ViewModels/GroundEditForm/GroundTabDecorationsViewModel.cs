@@ -103,7 +103,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
-            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
+                return;
 
             Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
 
@@ -116,7 +117,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
                             PlaceEntity(groundCoords);
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
                             RemoveEntityAt(groundCoords);
@@ -124,7 +125,7 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
                         {
                             SelectEntityAt(groundCoords);
                             if (SelectedEntity != null)

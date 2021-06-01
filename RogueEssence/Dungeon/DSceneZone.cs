@@ -12,7 +12,10 @@ namespace RogueEssence.Dungeon
     {
         public void EnterFloor(int entryPointIndex)
         {
-            EnterFloor(ZoneManager.Instance.CurrentMap.EntryPoints[entryPointIndex]);
+            LocRay8 entry = new LocRay8(Loc.Zero, Dir8.Down);
+            if (entryPointIndex < ZoneManager.Instance.CurrentMap.EntryPoints.Count)
+                entry = ZoneManager.Instance.CurrentMap.EntryPoints[entryPointIndex];
+            EnterFloor(entry);
         }
         public void EnterFloor(LocRay8 entryPoint)
         {

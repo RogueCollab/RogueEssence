@@ -217,7 +217,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (result)
                 {
                     //TODO: support undo for this
-                    DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+                    DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
 
                     DiagManager.Instance.LoadMsg = "Resizing Map...";
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
@@ -246,7 +246,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoNew()
         {
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
 
             //take all the necessary steps before and after moving to the map
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -260,7 +260,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         private void DoLoad(string mapName)
         {
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
 
             //take all the necessary steps before and after moving to the map
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -287,6 +287,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void loadEditorSettings()
         {
+            Textures.Layers.LoadLayers();
             Textures.TileBrowser.TileSize = GraphicsManager.TileSize;
             Textures.AutotileBrowser.TileSize = GraphicsManager.TileSize;
             Terrain.TileBrowser.TileSize = GraphicsManager.TileSize;
@@ -326,7 +327,7 @@ namespace RogueEssence.Dev.ViewModels
         private void DoClearLayer()
         {
             //TODO: support undo for this
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
@@ -335,7 +336,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int yy = 0; yy < ZoneManager.Instance.CurrentMap.Height; yy++)
             {
                 for (int xx = 0; xx < ZoneManager.Instance.CurrentMap.Width; xx++)
-                    ZoneManager.Instance.CurrentMap.Tiles[xx][yy].FloorTile = new AutoTile();
+                    ZoneManager.Instance.CurrentMap.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile();
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
@@ -344,7 +345,7 @@ namespace RogueEssence.Dev.ViewModels
         private void DoImportTileset(string sheetName)
         {
             //TODO: support undo for this
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
 
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
@@ -357,7 +358,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int yy = 0; yy < newSize.Y; yy++)
             {
                 for (int xx = 0; xx < newSize.X; xx++)
-                    ZoneManager.Instance.CurrentMap.Tiles[xx][yy].FloorTile = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
+                    ZoneManager.Instance.CurrentMap.Layers[Textures.Layers.ChosenLayer].Tiles[xx][yy] = new AutoTile(new TileLayer(new Loc(xx, yy), sheetName));
             }
 
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);

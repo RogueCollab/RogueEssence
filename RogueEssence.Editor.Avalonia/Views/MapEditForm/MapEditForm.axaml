@@ -35,8 +35,8 @@
       </MenuItem>
       <MenuItem Header="_Tiles">
         <MenuItem Header="_Load from .png into Tileset" Command="{Binding mnuImportFromPng_Click}"/>
-        <MenuItem Header="_Load Tileset into Map" Command="{Binding mnuImportFromTileset_Click}"/>
-        <MenuItem Header="_Load Clear Layer" Command="{Binding mnuClearLayer_Click}"/>
+        <MenuItem Header="_Load Tileset into Layer" Command="{Binding mnuImportFromTileset_Click}"/>
+        <MenuItem Header="_Clear Layer" Command="{Binding mnuClearLayer_Click}"/>
         <MenuItem Header="_Load Standardize Frame Length" Command="{Binding mnuStandardizeFrameLength_Click}"/>
       </MenuItem>
     </Menu>

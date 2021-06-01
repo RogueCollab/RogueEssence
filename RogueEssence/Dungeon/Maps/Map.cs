@@ -150,6 +150,9 @@ namespace RogueEssence.Dungeon
 
         public void ResizeJustified(int width, int height, Dir8 anchorDir)
         {
+            foreach (MapLayer layer in Layers)
+                layer.ResizeJustified(width, height, anchorDir);
+
             //tiles
             Grid.LocAction changeOp = (Loc loc) => { Tiles[loc.X][loc.Y].Effect.UpdateTileLoc(loc); };
             Grid.LocAction newOp = (Loc loc) => { Tiles[loc.X][loc.Y] = new Tile(0, loc); };
@@ -383,6 +386,12 @@ namespace RogueEssence.Dungeon
 
         public void CalculateAutotiles(Loc rectStart, Loc rectSize)
         {
+            foreach (MapLayer layer in Layers)
+                layer.CalculateAutotiles(this.rand.FirstSeed, rectStart, rectSize);
+        }
+
+        public void CalculateTerrainAutotiles(Loc rectStart, Loc rectSize)
+        {
             //does not calculate floor tiles.
             //in all known use cases, there is no need to autotile floor tiles.
             //if a use case is brought up that does, this can be changed.
@@ -428,6 +437,7 @@ namespace RogueEssence.Dungeon
         public void MapModified(Loc startLoc, Loc sizeLoc)
         {
             CalculateAutotiles(startLoc, sizeLoc);
+            CalculateTerrainAutotiles(startLoc, sizeLoc);
 
             //update exploration for every character that sees the change
             if (ActiveTeam != null)

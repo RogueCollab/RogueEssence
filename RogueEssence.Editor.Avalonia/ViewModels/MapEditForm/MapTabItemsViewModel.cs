@@ -111,7 +111,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
-            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
+                return;
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
@@ -119,15 +120,15 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
                             PlaceEntity(mapCoords);
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse) && inWindow)
+                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
                             RemoveEntityAt(mapCoords);
                         break;
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse) && inWindow)
+                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
                             SelectEntityAt(mapCoords);
                         else if (input[FrameInput.InputType.LeftMouse])
                             MoveEntity(mapCoords);

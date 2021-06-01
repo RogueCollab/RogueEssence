@@ -123,7 +123,7 @@ namespace RogueEssence.Dungeon
 
         protected virtual void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy)
         {
-            ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
+            ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy), false);
             EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[xx][yy].Effect;
             if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
             {
@@ -314,6 +314,17 @@ namespace RogueEssence.Dungeon
             }
 
             PrepareFrontDraw();
+
+            //draw front tiles
+            for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
+            {
+                for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
+                {
+                    //if it's a tile on the discovery array, show it
+                    if (CanSeeTile(xx, yy))
+                        ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy), true);
+                }
+            }
 
             charIndex = 0;
             while (charIndex < frontDraw.Count)

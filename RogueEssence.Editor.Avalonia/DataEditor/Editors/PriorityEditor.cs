@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
 
             //for strings, use an edit textbox
             TextBox txtValue = new TextBox();
-            txtValue.Text = (member == null) ? "" : member.ToString();
+            txtValue.Text = member.ToString();
             control.Children.Add(txtValue);
         }
 

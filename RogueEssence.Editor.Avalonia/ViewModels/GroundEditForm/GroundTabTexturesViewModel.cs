@@ -10,7 +10,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public GroundTabTexturesViewModel()
         {
-            Layers = new TextureLayerBoxViewModel(DiagManager.Instance.DevEditor.GroundEditor.Edits);
+            Layers = new TextureLayerBoxViewModel(true);
             TileBrowser = new TileBrowserViewModel();
             TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();

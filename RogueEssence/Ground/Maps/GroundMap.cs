@@ -498,7 +498,7 @@ namespace RogueEssence.Ground
 
         public void AddLayer(string name)
         {
-            MapLayer layer = new MapLayer("");
+            MapLayer layer = new MapLayer(name);
             layer.CreateNew(Width, Height);
             Layers.Add(layer);
         }

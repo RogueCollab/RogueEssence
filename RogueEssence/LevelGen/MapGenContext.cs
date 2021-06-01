@@ -42,6 +42,7 @@ namespace RogueEssence.LevelGen
         public bool DropTitle { get { return Map.DropTitle; } set { Map.DropTitle = value; } }
 
         public Tile[][] Tiles { get { return Map.Tiles; } }
+        public MapLayer Floor { get { return Map.Layers[0]; } }
 
         public ITile GetTile(Loc loc) { return Map.Tiles[loc.X][loc.Y]; }
         public virtual bool CanSetTile(Loc loc, ITile tile)
@@ -254,6 +255,7 @@ namespace RogueEssence.LevelGen
             }
 
             Map.CalculateAutotiles(new Loc(), new Loc(Width, Height));
+            Map.CalculateTerrainAutotiles(new Loc(), new Loc(Width, Height));
         }
 
     }
