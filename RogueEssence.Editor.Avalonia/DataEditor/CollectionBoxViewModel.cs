@@ -116,6 +116,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
+            for (int ii = index + 1; ii < Collection.Count; ii++)
+                Collection[ii].Key = ii;
             OnMemberChanged?.Invoke();
         }
 

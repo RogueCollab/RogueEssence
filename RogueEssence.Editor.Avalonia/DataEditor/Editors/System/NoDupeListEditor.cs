@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using RogueEssence.Content;
@@ -12,17 +13,20 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
-    public class TypeDictEditor : Editor<ITypeDict>
+    public class NoDupeListEditor : Editor<IList>
     {
         public override bool DefaultSubgroup => true;
-
         public override bool DefaultDecoration => false;
+        public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ITypeDict member)
+
+        public override Type GetAttributeType() { return typeof(NoDupeAttribute); }
+
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IList member)
         {
             LoadLabelControl(control, name);
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), member.GetType(), 0);
 
             CollectionBox lbxValue = new CollectionBox();
             lbxValue.MaxHeight = 180;
@@ -52,7 +56,7 @@ namespace RogueEssence.Dev
                         //if the element is null, then we are editing a new object, so skip
                         if (ii != index || element == null)
                         {
-                            if (states[ii].GetType() == newElement.GetType())
+                            if (states[ii].Equals(newElement))
                                 itemExists = true;
                         }
                     }
@@ -84,16 +88,13 @@ namespace RogueEssence.Dev
         }
 
 
-        public override ITypeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override IList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
-            CollectionBox lbxValue = (CollectionBox)control.Children[1];
-
-            ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
+            int controlIndex = 0;
+            controlIndex++;
+            IControl lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
-            List<object> states = (List<object>)mv.GetList(typeof(List<object>));
-            for (int ii = 0; ii < states.Count; ii++)
-                member.Set(states[ii]);
-            return member;
+            return mv.GetList(type);
         }
     }
 }

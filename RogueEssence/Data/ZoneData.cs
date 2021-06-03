@@ -68,7 +68,8 @@ namespace RogueEssence.Data
         [Dev.DataFolder(1, "Ground/")]
         public List<string> GroundMaps;
 
-        public HashSet<LuaEngine.EZoneCallbacks> ScriptEvents;
+        [Dev.NoDupe(0)]
+        public List<LuaEngine.EZoneCallbacks> ScriptEvents;
 
 
         public ZoneData()
@@ -84,7 +85,7 @@ namespace RogueEssence.Data
             Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
 
-            ScriptEvents = new HashSet<LuaEngine.EZoneCallbacks>();
+            ScriptEvents = new List<LuaEngine.EZoneCallbacks>();
         }
 
         public string GetColoredName()
@@ -119,7 +120,7 @@ namespace RogueEssence.Data
         {
             //TODO: v0.5: remove this
             if (ScriptEvents == null)
-                ScriptEvents = new HashSet<LuaEngine.EZoneCallbacks>();
+                ScriptEvents = new List<LuaEngine.EZoneCallbacks>();
         }
     }
 

@@ -81,7 +81,7 @@ namespace RogueEssence.Dungeon
             return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
 
-        public void LoadScriptEvents(HashSet<LuaEngine.EZoneCallbacks> scriptEvents)
+        public void LoadScriptEvents(List<LuaEngine.EZoneCallbacks> scriptEvents)
         {
             ScriptEvents.Clear();
             foreach (LuaEngine.EZoneCallbacks ev in scriptEvents)
