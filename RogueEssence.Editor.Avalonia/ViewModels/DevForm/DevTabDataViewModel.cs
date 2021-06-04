@@ -6,6 +6,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -196,6 +197,7 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
                 if (form.MapEditForm == null)
                 {
+                    LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();
                     if (ZoneManager.Instance.CurrentMap != null)
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, ZoneManager.Instance.CurrentMap.AssetName);
@@ -212,6 +214,7 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
                 if (form.GroundEditForm == null)
                 {
+                    LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();
                     if (ZoneManager.Instance.CurrentGround != null)
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, ZoneManager.Instance.CurrentGround.AssetName);

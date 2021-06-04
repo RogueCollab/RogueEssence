@@ -343,6 +343,8 @@ namespace RogueEssence.Script
         public Lua      LuaState { get; set; }
         public GameTime Curtime { get { return m_curtime; } set { m_curtime = value; } }
 
+        public bool Breaking { get; private set; }
+
         //Pre-compiled internal lua functions
         private LuaFunction m_MkCoIter;  //Instantiate a lua coroutine iterator function/state, for the ScriptEvent class mainly.
         private LuaFunction m_UnpackParamsAndRun;
@@ -446,12 +448,18 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]: **- Lua engine ready! -**");
         }
 
+        public void BreakScripts()
+        {
+            Breaking = true;
+        }
+
         /// <summary>
         /// Calling this sends the OnInit event to the script engine.
         /// Use this if you just reset the script state, and want to force it to do its initialization.
         /// </summary>
         public void ReInit()
         {
+            Breaking = true;
             DiagManager.Instance.LogInfo("[SE]:Re-initializing scripts!");
             DiagManager.Instance.LogInfo("[SE]:Loading last serialized script variables!");
             if (DataManager.Instance.Save != null)
@@ -1636,6 +1644,7 @@ namespace RogueEssence.Script
 
                 m_nextUpdate = gametime.TotalGameTime + TimeSpan.FromMilliseconds(20); //Schedule next update
             }
+            Breaking = false;
         }
     }
 

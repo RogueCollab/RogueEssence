@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Dev.Views;
 using RogueEssence.LevelGen;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -161,6 +162,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig("ZoneChoice", chosenZone);
                 DevForm.SetConfig("GroundChoice", chosenGround);
+                LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
@@ -173,6 +175,7 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig("ZoneChoice", chosenZone);
                 DevForm.SetConfig("StructChoice", chosenStructure);
                 DevForm.SetConfig("FloorChoice", chosenFloor);
+                LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
             }

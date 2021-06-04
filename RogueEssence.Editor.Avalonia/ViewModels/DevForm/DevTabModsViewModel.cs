@@ -90,6 +90,7 @@ namespace RogueEssence.Dev.ViewModels
             //modify and reload
             lock (GameBase.lockObj)
             {
+                LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
                 GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(chosenMod.FullPath, false);
             }
