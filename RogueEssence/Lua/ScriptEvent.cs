@@ -65,11 +65,11 @@ namespace RogueEssence.Script
 
         public virtual IEnumerator<YieldInstruction> Apply(params object[] parameters)
         {
-            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
+            LuaFunction func_iter = null;
 
-            //bool func_valid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
-            //if (func_valid)
-            //    func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
+            bool func_valid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
+            if (func_valid)
+                func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
             return ApplyFunc(func_iter);
         }
 
