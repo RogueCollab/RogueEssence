@@ -714,6 +714,8 @@ namespace RogueEssence.Dungeon
                 MapEffect = new ActiveEffect();
             if (AllyTeams == null)
                 AllyTeams = new List<Team>();
+            if (Layers == null)
+                Layers = new List<MapLayer>();
         }
     }
 
