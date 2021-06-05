@@ -1308,7 +1308,7 @@ namespace RogueEssence.Script
             if (luafun != null)
                 return CreateCoroutineIterator(luafun, arguments);
             else
-                throw new Exception(String.Format("LuaEngine.CreateCoroutineIterator(): NLua returned null for the function path \"{0}\"!", luapath));
+                return null;
         }
 
         /// <summary>

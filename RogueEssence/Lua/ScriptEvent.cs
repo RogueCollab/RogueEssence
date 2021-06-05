@@ -65,17 +65,20 @@ namespace RogueEssence.Script
 
         public virtual IEnumerator<YieldInstruction> Apply(params object[] parameters)
         {
-            LuaFunction func_iter = null;
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
 
-            bool func_valid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
-            if (func_valid)
-                func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
-            return Apply(func_iter, parameters);
+            //bool func_valid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
+            //if (func_valid)
+            //    func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
+            return ApplyFunc(func_iter);
         }
 
 
-        public static IEnumerator<YieldInstruction> Apply(LuaFunction func_iter, params object[] parameters)
+        public static IEnumerator<YieldInstruction> ApplyFunc(LuaFunction func_iter)
         {
+            if (func_iter == null)
+                yield break;
+
             //Then call it until it returns null!
             object[] allres = CallInternal(func_iter);
             object res = allres.First();
@@ -177,7 +180,7 @@ namespace RogueEssence.Script
                 throw new Exception("TransientScriptEvent.MakeIterator(): Function is null! Make sure the transientevent isn't being deserialized and run!");
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luafun, parameters);
 
-            return Apply(func_iter, parameters);
+            return ApplyFunc(func_iter);
         }
     }
 
