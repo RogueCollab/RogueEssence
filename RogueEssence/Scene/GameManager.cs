@@ -826,8 +826,9 @@ namespace RogueEssence
             try
             {
                 DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+                DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
                 DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-                LuaEngine.Instance.OnDebugLoad();
+                LuaEngine.Instance.OnNewGame();
                 if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
                     throw new Exception("Script generated an invalid debug team!");
                 return;
@@ -837,6 +838,7 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";

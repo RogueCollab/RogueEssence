@@ -2,6 +2,7 @@
 using RogueEssence.Script;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RogueEssence.Dungeon
 {
@@ -15,18 +16,23 @@ namespace RogueEssence.Dungeon
     public class MapStatusScriptEvent : MapStatusGivenEvent
     {
         public string Script;
+        [Dev.Multiline(0)]
+        public string ArgTable;
 
-        public MapStatusScriptEvent() { Script = ""; }
+        public MapStatusScriptEvent() { Script = ""; ArgTable = "{}"; }
+        public MapStatusScriptEvent(string script) { Script = script; ArgTable = "{}"; }
         protected MapStatusScriptEvent(MapStatusScriptEvent other)
         {
             Script = other.Script;
+            ArgTable = other.ArgTable;
         }
         public override GameEvent Clone() { return new MapStatusScriptEvent(this); }
 
         public override IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, Character character, MapStatus status, bool msg)
         {
-            object[] parameters = new object[] { owner, ownerChar, character, status, msg };
-            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(Script, parameters);
+            LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
+            object[] parameters = new object[] { owner, ownerChar, character, status, msg, args };
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator("MAP_STATUS_SCRIPT." + Script, parameters);
 
             return ScriptEvent.ApplyFunc(func_iter);
         }

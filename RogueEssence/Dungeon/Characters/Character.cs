@@ -2290,6 +2290,14 @@ namespace RogueEssence.Dungeon
 
             //restore idle position and direction
             currentCharAction = new EmptyCharAction(new CharAnimIdle(serializationLoc, serializationDir));
+
+
+            //TODO: v0.5: remove this
+            if (ActionEvents == null)
+            {
+                ActionEvents = new List<BattleEvent>();
+                //ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
+            }
         }
     }
 }

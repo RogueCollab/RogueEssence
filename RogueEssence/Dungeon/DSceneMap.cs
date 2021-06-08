@@ -469,12 +469,22 @@ namespace RogueEssence.Dungeon
 
             if (character == FocusedCharacter && !character.AttackOnly)
             {
-                Loc frontLoc = FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc();
+                Loc frontLoc = character.CharLoc + character.CharDir.GetLoc();
                 foreach(Character member in ActiveTeam.EnumerateChars())
                 {
                     if (member.CharLoc == frontLoc && !member.Dead)
                     {
-                        yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnAllyInteract(character, member, result));
+                        BattleContext context = new BattleContext(BattleActionType.None);
+                        context.User = character;
+                        context.Target = member;
+                        foreach (BattleEvent effect in member.ActionEvents)
+                            yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, member, context));
+
+                        if (!context.CancelState.Cancel)
+                        {
+                            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                            result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
+                        }
                         yield break;
                     }
                 }

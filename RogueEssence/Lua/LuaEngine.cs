@@ -48,7 +48,6 @@ namespace RogueEssence.Script
             EnterSegment,          //When a segment is being entered
             ExitSegment,  //When a segment is exited by escape, defeat, completion, etc.
             //TODO: move these events to services
-            AllyInteract,
             Rescued,
             Invalid
         }
@@ -237,7 +236,7 @@ namespace RogueEssence.Script
             Deinit,
             GraphicsLoad,
             GraphicsUnload,
-            DebugLoad,
+            NewGame,
             Restart,
             Update,
 
@@ -273,35 +272,20 @@ namespace RogueEssence.Script
         #endregion
 
         #region MAIN_SCRIPTS
-        /// <summary>
-        /// Keyval to access the pre-defined script files
-        /// </summary>
-        enum EMainScripts
-        {
-            MAIN,
-            COMMON,
-            SCRIPTVARS,
-        }
 
-        /// <summary>
-        /// List of predefined script files
-        /// </summary>
-        private static readonly IDictionary<EMainScripts, string> MainScripts = new Dictionary<EMainScripts, string>
-        {
-            {EMainScripts.MAIN,         "main.lua" },
-            {EMainScripts.COMMON,       "common.lua"},
-            {EMainScripts.SCRIPTVARS,   "scriptvars.lua"},              //this is the lua script that contains the default values of the ScriptVariables (Aka the variables that gets saved )
-        };
+        const string SCRIPT_MAIN = "main.lua";
+        const string SCRIPT_COMMON = "common.lua";
+        const string SCRIPT_VARS = "scriptvars.lua";
+        const string SCRIPT_EVENT = "event.lua";
 
         /// <summary>
         /// Assemble the path to the specified script
         /// </summary>
         /// <param name="script">Script to make the path for</param>
         /// <returns>The path to the script file.</returns>
-        private string PathToScript(EMainScripts script)
+        private string PathToScript(string script)
         {
-            string sciptp = MainScripts[script];
-            return String.Format("{0}{1}", PathMod.ModPath(SCRIPT_PATH), sciptp);
+            return String.Format("{0}{1}", PathMod.ModPath(SCRIPT_PATH), script);
         }
         #endregion
 
@@ -759,9 +743,11 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Caching scripts..");
             m_scrsvc.SetupLuaFunctions(this);
             //Cache default script variables
-            LuaState.DoFile(PathToScript(EMainScripts.SCRIPTVARS));
+            LuaState.DoFile(PathToScript(SCRIPT_VARS));
             //Cache common lib
-            LuaState.LoadFile(PathToScript(EMainScripts.COMMON));
+            LuaState.LoadFile(PathToScript(SCRIPT_COMMON));
+            //load events
+            LoadEventScript();
 
             //Install misc lua functions each interfaces needs
             DiagManager.Instance.LogInfo("[SE]:Installing game interface functions..");
@@ -782,8 +768,8 @@ namespace RogueEssence.Script
             //    SaveData(DataManager.Instance.Save);
 
             //Run main script
-            DiagManager.Instance.LogInfo(String.Format("[SE]:Running {0} script..", MainScripts[EMainScripts.MAIN]));
-            LuaState.DoFile(PathToScript(EMainScripts.MAIN));
+            DiagManager.Instance.LogInfo(String.Format("[SE]:Running {0} script..", SCRIPT_MAIN));
+            LuaState.DoFile(PathToScript(SCRIPT_MAIN));
         }
 
 
@@ -796,7 +782,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("LuaEngine.LoadSavedData()..");
             if ( loaded == null || loaded.ScriptVars == null)
             {
-                LuaState.DoFile(PathToScript(EMainScripts.SCRIPTVARS));
+                LuaState.DoFile(PathToScript(SCRIPT_VARS));
             }
             else
             {
@@ -1144,6 +1130,20 @@ namespace RogueEssence.Script
         }
 
 
+        public void LoadEventScript()
+        {
+            try
+            {
+                string abspath = PathToScript(SCRIPT_EVENT);
+                LuaState.LoadFile(abspath);
+                RunString(String.Format("require('{0}')", "event"), abspath);
+            }
+            catch
+            {
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.LoadEventScript(): Error loading event script!");
+            }
+        }
+
         /// <summary>
         /// Makes the full absolute path to the directory a map's script should be in.
         /// </summary>
@@ -1304,6 +1304,8 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public LuaFunction CreateCoroutineIterator(string luapath, params object[] arguments)
         {
+            if (!LuaEngine.Instance.DoesFunctionExists(luapath))
+                return null;
             LuaFunction luafun = LuaState.GetFunction(luapath);
             if (luafun != null)
                 return CreateCoroutineIterator(luafun, arguments);
@@ -1504,9 +1506,9 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.GraphicsUnload.ToString());
         }
 
-        public void OnDebugLoad()
+        public void OnNewGame()
         {
-            m_scrsvc.Publish(EServiceEvents.DebugLoad.ToString());
+            m_scrsvc.Publish(EServiceEvents.NewGame.ToString());
         }
 
         /// <summary>

@@ -78,6 +78,8 @@ namespace RogueEssence.Dungeon
         public bool IsFounder;
         public bool IsFavorite;
 
+        public List<BattleEvent> ActionEvents;
+
         public string ScriptVars;
         [NonSerialized]
         public LuaTable LuaDataTable;
@@ -102,6 +104,7 @@ namespace RogueEssence.Dungeon
             DefeatAt = "";
             //DefeatedDungeon = -1;
             //DefeatedFloor = new StructMap(-1,-1);
+            ActionEvents = new List<BattleEvent>();
             LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
         }
 
@@ -139,6 +142,9 @@ namespace RogueEssence.Dungeon
             IsFavorite = other.IsFavorite;
             Discriminator = other.Discriminator;
 
+            ActionEvents = new List<BattleEvent>();
+            foreach (BattleEvent effect in other.ActionEvents)
+                ActionEvents.Add((BattleEvent)effect.Clone());
             //TODO: deep copy?
             LuaDataTable = other.LuaDataTable;
         }

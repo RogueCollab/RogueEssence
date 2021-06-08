@@ -151,18 +151,25 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             DataManager.Instance.SetProgress(new MainProgress(MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-            DataManager.Instance.Save.ActiveTeam.SetRank(0);
-            DataManager.Instance.Save.ActiveTeam.Name = "";
 
             Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.StartLevel, -1, DataManager.Instance.StartPersonality);
             newChar.Nickname = name;
             newChar.IsFounder = true;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
-
             DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Players[0].BaseForm.Species);
-            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
-            DataManager.Instance.Save.UpdateTeamProfile(true);
+
+            try
+            {
+                LuaEngine.Instance.OnNewGame();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid team!");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
         }

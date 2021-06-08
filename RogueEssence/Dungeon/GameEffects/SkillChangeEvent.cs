@@ -1,6 +1,7 @@
 ﻿using NLua;
 using RogueEssence.Script;
 using System;
+using System.Linq;
 
 namespace RogueEssence.Dungeon
 {
@@ -14,20 +15,27 @@ namespace RogueEssence.Dungeon
     public class SkillChangeScriptEvent : SkillChangeEvent
     {
         public string Script;
+        [Dev.Multiline(0)]
+        public string ArgTable;
 
-        public SkillChangeScriptEvent() { Script = ""; }
+        public SkillChangeScriptEvent() { Script = ""; ArgTable = "{}"; }
+        public SkillChangeScriptEvent(string script) { Script = script; ArgTable = "{}"; }
         protected SkillChangeScriptEvent(SkillChangeScriptEvent other)
         {
             Script = other.Script;
+            ArgTable = other.ArgTable;
         }
         public override GameEvent Clone() { return new SkillChangeScriptEvent(this); }
 
         public override void Apply(GameEventOwner owner, Character character, int[] skillIndices)
         {
-            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction(Script);
+            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction("SKILL_CHANGE_SCRIPT." + Script);
 
             if (luafun != null)
-                luafun.Call(new object[] { owner, character, skillIndices });
+            {
+                LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
+                luafun.Call(new object[] { owner, character, skillIndices, args });
+            }
         }
     }
 }
