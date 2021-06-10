@@ -855,9 +855,9 @@ namespace RogueEssence.Dungeon
 
                             if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier >= 6)
                             {
-                                yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
                                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
                                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.SkipAll = false;
+                                yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
                             }
                         }
 

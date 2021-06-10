@@ -24,17 +24,12 @@ namespace RogueEssence.Dev.ViewModels
             MapEffect.OnMemberChanged += MapEffect_Changed;
             MapEffect.OnEditItem += MapEffect_Edit;
 
-            CheckEvents = new CollectionBoxViewModel(new StringConv(typeof(SingleCharEvent), new object[0]));
-            CheckEvents.OnMemberChanged += CheckEvents_Changed;
-            CheckEvents.OnEditItem += Events_EditItem;
-
         }
 
 
 
         public CollectionBoxViewModel Statuses { get; set; }
         public ClassBoxViewModel MapEffect { get; set; }
-        public CollectionBoxViewModel CheckEvents { get; set; }
 
 
         public void MapEffect_Changed()
@@ -142,11 +137,6 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Show();
         }
 
-        public void CheckEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.CheckEvents = CheckEvents.GetList<List<SingleCharEvent>>();
-        }
-
         public void LoadMapEffects()
         {
             List<MapStatus> states = new List<MapStatus>();
@@ -154,7 +144,6 @@ namespace RogueEssence.Dev.ViewModels
                 states.Add(state);
             Statuses.LoadFromList(states);
             MapEffect.LoadFromSource(ZoneManager.Instance.CurrentMap.MapEffect);
-            CheckEvents.LoadFromList(ZoneManager.Instance.CurrentMap.CheckEvents);
 
         }
 
