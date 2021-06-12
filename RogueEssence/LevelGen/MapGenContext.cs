@@ -7,10 +7,23 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    public class TeamSpawn : IGroupSpawnable
+    {
+        public Team Team;
+        public bool AllyFaction;
+
+        public TeamSpawn(Team team, bool ally)
+        {
+            Team = team;
+            AllyFaction = ally;
+        }
+    }
+
+
     public abstract class BaseMapGenContext : IPostProcGenContext, IUnbreakableGenContext, IMobSpawnMap,
         ISpawningGenContext<InvItem>, ISpawningGenContext<MoneySpawn>, ISpawningGenContext<EffectTile>,
         IPlaceableGenContext<InvItem>, IPlaceableGenContext<MoneySpawn>, IPlaceableGenContext<MapItem>, IPlaceableGenContext<EffectTile>,
-        IGroupPlaceableGenContext<Team>
+        IGroupPlaceableGenContext<TeamSpawn>
     {
         public Map Map { get; set; }
 
@@ -194,7 +207,7 @@ namespace RogueEssence.LevelGen
 
 
 
-        List<Loc> IGroupPlaceableGenContext<Team>.GetFreeTiles(Rect rect)
+        List<Loc> IGroupPlaceableGenContext<TeamSpawn>.GetFreeTiles(Rect rect)
         {
             Grid.LocTest checkOp = (Loc testLoc) =>
             {
@@ -204,7 +217,7 @@ namespace RogueEssence.LevelGen
             return Grid.FindTilesInBox(rect.Start, rect.Size, checkOp);
         }
 
-        bool IGroupPlaceableGenContext<Team>.CanPlaceItem(Loc loc) { return canPlaceTeam(loc); }
+        bool IGroupPlaceableGenContext<TeamSpawn>.CanPlaceItem(Loc loc) { return canPlaceTeam(loc); }
 
         protected virtual bool canPlaceTeam(Loc loc)
         {
@@ -230,19 +243,22 @@ namespace RogueEssence.LevelGen
             return true;
         }
 
-        void IGroupPlaceableGenContext<Team>.PlaceItems(Team itemBatch, Loc[] locs)
+        void IGroupPlaceableGenContext<TeamSpawn>.PlaceItems(TeamSpawn itemBatch, Loc[] locs)
         {
             if (locs != null)
             {
-                if (locs.Length != itemBatch.MemberGuestCount)
+                if (locs.Length != itemBatch.Team.MemberGuestCount)
                     throw new Exception("Team members not matching locations!");
-                for (int ii = 0; ii < itemBatch.Players.Count; ii++)
-                    itemBatch.Players[ii].CharLoc = locs[ii];
-                for (int ii = 0; ii < itemBatch.Guests.Count; ii++)
-                    itemBatch.Guests[ii].CharLoc = locs[itemBatch.Players.Count + ii];
+                for (int ii = 0; ii < itemBatch.Team.Players.Count; ii++)
+                    itemBatch.Team.Players[ii].CharLoc = locs[ii];
+                for (int ii = 0; ii < itemBatch.Team.Guests.Count; ii++)
+                    itemBatch.Team.Guests[ii].CharLoc = locs[itemBatch.Team.Players.Count + ii];
             }
 
-            MapTeams.Add(itemBatch);
+            if (itemBatch.AllyFaction)
+                AllyTeams.Add(itemBatch.Team);
+            else
+                MapTeams.Add(itemBatch.Team);
         }
 
         public virtual void FinishGen()

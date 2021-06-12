@@ -6,9 +6,10 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class PlaceSetTeamStep<T> : GenStep<T> where T : class, ITiledGenContext, IGroupPlaceableGenContext<Team>, IMobSpawnMap
+    public class PlaceSetTeamStep<T> : GenStep<T> where T : class, ITiledGenContext, IGroupPlaceableGenContext<TeamSpawn>, IMobSpawnMap
     {
         public List<SpecificTeamSpawner> Spawns;
+        public bool Ally;
         
         public PlaceSetTeamStep()
         {
@@ -18,7 +19,7 @@ namespace RogueEssence.LevelGen
         public override void Apply(T map)
         {
             foreach (SpecificTeamSpawner spawner in Spawns)
-                map.PlaceItems(spawner.Spawn(map), null);
+                map.PlaceItems(new TeamSpawn(spawner.Spawn(map), Ally), null);
         }
     }
 }

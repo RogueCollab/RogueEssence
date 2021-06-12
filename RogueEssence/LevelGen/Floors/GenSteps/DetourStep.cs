@@ -7,7 +7,7 @@ namespace RogueEssence.LevelGen
 {
     [Serializable]
     public class DetourStep<T> : GenStep<T>
-        where T : class, IFloorPlanGenContext, IPlaceableGenContext<EffectTile>, IGroupPlaceableGenContext<Team>, IMobSpawnMap
+        where T : class, IFloorPlanGenContext, IPlaceableGenContext<EffectTile>, IGroupPlaceableGenContext<TeamSpawn>, IMobSpawnMap
     {
         public SpawnList<EffectTile> Spawns;
         public SpawnList<TeamSpawner> GuardSpawns;
@@ -55,7 +55,7 @@ namespace RogueEssence.LevelGen
 
                             Grid.LocTest checkSpawnOpen = (Loc testLoc) =>
                             {
-                                return ((IGroupPlaceableGenContext<Team>)map).CanPlaceItem(testLoc);
+                                return ((IGroupPlaceableGenContext<TeamSpawn>)map).CanPlaceItem(testLoc);
                             };
                             Grid.LocTest checkSpawnBlock = (Loc testLoc) =>
                             {
@@ -78,7 +78,7 @@ namespace RogueEssence.LevelGen
                                 Loc[] locs = new Loc[newTeam.MemberGuestCount];
                                 for (int jj = 0; jj < locs.Length; jj++)
                                     locs[jj] = resultLocs[jj];
-                                map.PlaceItems(newTeam, locs);
+                                map.PlaceItems(new TeamSpawn(newTeam, false), locs);
                                 break;
                             }
                         }

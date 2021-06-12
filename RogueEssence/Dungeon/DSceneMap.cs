@@ -474,18 +474,19 @@ namespace RogueEssence.Dungeon
                 {
                     if (member.CharLoc == frontLoc && !member.Dead)
                     {
-                        BattleContext context = new BattleContext(BattleActionType.None);
-                        context.User = character;
-                        context.Target = member;
-                        foreach (BattleEvent effect in member.ActionEvents)
-                            yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, member, context));
-
-                        if (!context.CancelState.Cancel)
-                        {
-                            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
-                            result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
-                        }
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessAllyInteract(character, member, result));
                         yield break;
+                    }
+                }
+                foreach (Team allyTeam in ZoneManager.Instance.CurrentMap.AllyTeams)
+                {
+                    foreach (Character member in allyTeam.EnumerateChars())
+                    {
+                        if (member.CharLoc == frontLoc && !member.Dead)
+                        {
+                            yield return CoroutineManager.Instance.StartCoroutine(ProcessAllyInteract(character, member, result));
+                            yield break;
+                        }
                     }
                 }
 
@@ -505,9 +506,23 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-
             //no talking, so just attack
             yield return CoroutineManager.Instance.StartCoroutine(ProcessUseSkill(character, BattleContext.DEFAULT_ATTACK_SLOT, result));
+        }
+
+        public IEnumerator<YieldInstruction> ProcessAllyInteract(Character character, Character target, ActionResult result)
+        {
+            BattleContext context = new BattleContext(BattleActionType.None);
+            context.User = character;
+            context.Target = target;
+            foreach (BattleEvent effect in target.ActionEvents)
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, target, context));
+
+            if (!context.CancelState.Cancel)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
+            }
         }
         
         public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, ActionResult result)

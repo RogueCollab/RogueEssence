@@ -63,7 +63,7 @@ namespace RogueEssence.LevelGen
                     List<Loc> freeTiles = Grid.FindTilesInBox(map.RoomPlan.GetRoom(roomNum).Draw.Start, map.RoomPlan.GetRoom(roomNum).Draw.Size,
                         (Loc testLoc) =>
                         {
-                            return ((IGroupPlaceableGenContext<Team>)map).CanPlaceItem(testLoc);
+                            return ((IGroupPlaceableGenContext<TeamSpawn>)map).CanPlaceItem(testLoc);
                         });
 
                     //this actually places the members of the team in random scattered locations, leaving them to group together via wandering
@@ -76,7 +76,7 @@ namespace RogueEssence.LevelGen
                             locs[jj] = freeTiles[randIndex];
                             freeTiles.RemoveAt(randIndex);
                         }
-                        ((IGroupPlaceableGenContext<Team>)map).PlaceItems(newTeam, locs);
+                        ((IGroupPlaceableGenContext<TeamSpawn>)map).PlaceItems(new TeamSpawn(newTeam, Ally), locs);
                         chosenAmount--;
                     }
 

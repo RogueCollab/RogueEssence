@@ -594,12 +594,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public Alignment GetMatchup(Character attacker, Character target)
-        {
-            return GetMatchup(attacker, target, true);
-        }
-
-        public Alignment GetMatchup(Character attacker, Character target, bool action)
+        public Alignment GetMatchup(Character attacker, Character target, bool action = true)
         {
             if (attacker == null) return Alignment.Foe;
             if (target == null) return Alignment.Foe;
@@ -614,19 +609,21 @@ namespace RogueEssence.Dungeon
 
             CharIndex attackerIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(attacker);
             CharIndex targetIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(target);
-            if ((attackerIndex.Faction == Faction.Foe) == (targetIndex.Faction == Faction.Foe))
+            if (attackerIndex.Faction == targetIndex.Faction)
+                return Alignment.Friend;
+            if (!action && (attackerIndex.Faction == Faction.Friend || targetIndex.Faction == Faction.Friend))
                 return Alignment.Friend;
             
             return Alignment.Foe;
         }
 
-        public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets)
+        public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets, bool action = true)
         {
             if (attacker == null || target == null)
                 return true;
             if (target.Dead)
                 return false;
-            Alignment alignment = GetMatchup(attacker, target);
+            Alignment alignment = GetMatchup(attacker, target, action);
             return (acceptedTargets & alignment) != 0;
         }
 

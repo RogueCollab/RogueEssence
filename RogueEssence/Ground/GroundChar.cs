@@ -287,7 +287,7 @@ namespace RogueEssence.Ground
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
 
-            Loc shadowType = new Loc(0, 0 + sheet.ShadowSize * 2);
+            Loc shadowType = new Loc(0, 2 + sheet.ShadowSize * 3);
             Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
 
             GraphicsManager.Shadows.DrawTile(spriteBatch,

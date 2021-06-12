@@ -111,7 +111,7 @@ namespace RogueEssence.LevelGen
                             locs[jj] = freeTiles[randIndex];
                             freeTiles.RemoveAt(randIndex);
                         }
-                        ((IGroupPlaceableGenContext<Team>)map).PlaceItems(newTeam, locs);
+                        ((IGroupPlaceableGenContext<TeamSpawn>)map).PlaceItems(new TeamSpawn(newTeam, Ally), locs);
                         chosenAmount--;
                     }
 

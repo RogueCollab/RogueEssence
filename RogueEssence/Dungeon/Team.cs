@@ -9,7 +9,7 @@ using RogueEssence.LevelGen;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class Team : IGroupSpawnable
+    public abstract class Team
     {
         public List<Character> Players;
         public List<Character> Guests;

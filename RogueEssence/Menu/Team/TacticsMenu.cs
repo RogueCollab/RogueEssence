@@ -46,8 +46,9 @@ namespace RogueEssence.Menu
             List<string> allChoices = new List<string>();
             for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
             {
-                if (DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Released)
-                    allChoices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].GetColoredName());
+                AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                if (summary.Assignable)
+                    allChoices.Add(summary.GetColoredName());
             }
 
             int groupTactic = totalChoices[1].CurrentChoice;

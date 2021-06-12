@@ -1909,7 +1909,7 @@ namespace RogueEssence.Dungeon
             List<Character> seenChars = new List<Character>();
             foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if (CanSeeCharacter(target) && DungeonScene.Instance.IsTargeted(this, target, targetAlignment))
+                if (CanSeeCharacter(target) && DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
                     seenChars.Add(target);
             }
             return seenChars;
@@ -2132,24 +2132,26 @@ namespace RogueEssence.Dungeon
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset, int terrainShadow)
         {
             CharSheet sheet = GraphicsManager.GetChara(Appearance);
-            int teamStatus = 0;
+            int teamStatus = 2;
             //if (DataManager.Instance.Save != null || !DataManager.Instance.Save.CutsceneMode)
             //{
-                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
+                if (ZoneManager.Instance.CurrentMap.AllyTeams.Contains(MemberTeam))
+                    teamStatus = 1;
+                else if (MemberTeam == DungeonScene.Instance.ActiveTeam)
                 {
                     if (DataManager.Instance.Save.TeamMode && DungeonScene.Instance.FocusedCharacter == this)
                     {
                         if (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(15) % 2 == 0)
-                            teamStatus = 1;
+                            teamStatus = 0;
                     }
                     else
-                        teamStatus = 1;
+                        teamStatus = 0;
                 }
             //}
             if (terrainShadow == 0)
                 terrainShadow = sheet.ShadowSize;
             int animFrame = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(5) % 3);
-            Loc shadowType = new Loc(animFrame, teamStatus + terrainShadow * 2);
+            Loc shadowType = new Loc(animFrame, teamStatus + terrainShadow * 3);
             Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
 
             GraphicsManager.Shadows.DrawTile(spriteBatch,
