@@ -16,9 +16,6 @@ using System.IO;
 
 namespace RogueEssence.Script
 {
-
-
-
     /// <summary>
     /// Class each components of the lua engine should implement
     /// </summary>
@@ -277,6 +274,7 @@ namespace RogueEssence.Script
         const string SCRIPT_COMMON = "common.lua";
         const string SCRIPT_VARS = "scriptvars.lua";
         const string SCRIPT_EVENT = "event.lua";
+        const string INCLUDE_EVENT = "include.lua";
 
         /// <summary>
         /// Assemble the path to the specified script
@@ -376,21 +374,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Importing .NET packages..");
             LuaState.LoadCLRPackage();
 
-            LuaState.DoString(String.Format("{0} = import '{0}'", "RogueEssence"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Content"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Data"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Dungeon"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Ground"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Script"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Menu"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.LevelGen"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Resources"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Network"));
-            LuaState.DoString(String.Format("{0} = import '{0}'", "FNA"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna.Framework"));
-            LuaState.DoString(String.Format("{0} = import '{0}'", "RogueElements"));
+            LuaState.DoFile(PathToScript(INCLUDE_EVENT));
         }
 
         /// <summary>
@@ -747,7 +731,7 @@ namespace RogueEssence.Script
             //Cache common lib
             LuaState.LoadFile(PathToScript(SCRIPT_COMMON));
             //load events
-            LoadEventScript();
+            LuaState.DoFile(PathToScript(SCRIPT_EVENT));
 
             //Install misc lua functions each interfaces needs
             DiagManager.Instance.LogInfo("[SE]:Installing game interface functions..");
@@ -1129,21 +1113,6 @@ namespace RogueEssence.Script
             ");
         }
 
-
-        public void LoadEventScript()
-        {
-            try
-            {
-                string abspath = PathToScript(SCRIPT_EVENT);
-                LuaState.LoadFile(abspath);
-                RunString(String.Format("require('{0}')", "event"), abspath);
-            }
-            catch
-            {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.LoadEventScript(): Error loading event script!");
-            }
-        }
-
         /// <summary>
         /// Makes the full absolute path to the directory a map's script should be in.
         /// </summary>
@@ -1405,6 +1374,57 @@ namespace RogueEssence.Script
         public Action MakeLuaAction( LuaFunction fun, params object[] param )
         {
             return new Action( ()=>{ fun.Call(param); } );
+        }
+
+
+        private Type[] parseTypeArgs(LuaTable table)
+        {
+            List<Type> types = new List<Type>();
+            foreach (object val in table.Values)
+            {
+                if (val is ProxyType)
+                    types.Add(((ProxyType)val).UnderlyingSystemType);
+                else if (val is LuaTable)
+                {
+                    throw new NotImplementedException("I haven't decided now to do nested generic types yet...");
+                    //probably make a recursive call to parseTypeArgs
+                }
+            }
+            return types.ToArray();
+        }
+
+        public object MakeGenericType(ProxyType class_type, LuaTable class_arg_table, LuaTable arg_table)
+        {
+            try
+            {
+                Type class_to_make = class_type.UnderlyingSystemType;
+
+                Type[] class_args = parseTypeArgs(class_arg_table);
+                List<object> inst_args = new List<object>();
+                foreach (object val in arg_table.Values)
+                    inst_args.Add(val);
+
+                return makeGenericType(class_to_make, class_args, inst_args.ToArray());
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.MakeGenericType(): Error creating type: " + class_type.ToString() + "\npath:\n" + e.Message);
+                return null;
+            }
+        }
+
+        private object makeGenericType(Type class_type, Type[] class_args, object[] args)
+        {
+            Type[] needed_args = class_type.GetGenericArguments();
+            if (needed_args.Length != class_args.Length)
+                throw new ArgumentException("Argument types not equal to needed amount.");
+
+            Type filled_type = class_type.MakeGenericType(class_args);
+
+            if (args.Length > 0)
+                return Activator.CreateInstance(filled_type, args);
+            else
+                return Activator.CreateInstance(filled_type);
         }
 
         //public dynamic LuaCast(object val, object t)
