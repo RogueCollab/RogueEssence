@@ -15,7 +15,7 @@ using RogueEssence.LevelGen;
 
 namespace RogueEssence.Dev
 {
-    public class TeamStepSpawnerEditor : Editor<ITeamStepSpawner>
+    public class TeamStepSpawnerEditor : Editor<IMultiTeamStepSpawner>
     {
         public override bool DefaultSubgroup => true;
     }
