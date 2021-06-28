@@ -30,7 +30,7 @@ namespace RogueEssence.LevelGen
 
         protected SpreadRoomZoneStep(SpreadRoomZoneStep other, ulong seed) : this()
         {
-            Spawns = other.Spawns;
+            Spawns = (SpawnList<RoomGenOption>)other.Spawns.CopyState();
             PriorityGrid = other.PriorityGrid;
             PriorityList = other.PriorityList;
             SpreadPlan = other.SpreadPlan.Instantiate(seed);
@@ -41,8 +41,10 @@ namespace RogueEssence.LevelGen
         {
             //find the first postproc that is a GridRoom postproc and add this to its special rooms
             //NOTE: if a room-based generator is not found as the generation step, it will just skip this floor but treat it as though it was placed.
-            if (SpreadPlan.CheckIfDistributed(zoneContext, context))
+            foreach(int floorId in SpreadPlan.DropPoints)
             {
+                if (floorId != zoneContext.CurrentID)
+                    continue;
                 //TODO: allow arbitrary components to be added
                 RoomGenOption genDuo = Spawns.Pick(context.Rand);
                 SetGridSpecialRoomStep<MapGenContext> specialStep = new SetGridSpecialRoomStep<MapGenContext>();

@@ -13,8 +13,6 @@ namespace RogueEssence.LevelGen
     public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T>
         where T : StairsMapGenContext, ITiledGenContext
     {
-        public RandRange Amount;
-
         public List<ITile> AcceptedTiles;
 
         public PlaceDisconnectedMobsStep()
@@ -24,12 +22,6 @@ namespace RogueEssence.LevelGen
 
         public PlaceDisconnectedMobsStep(IMultiTeamSpawner<T> spawn) : base(spawn)
         {
-            AcceptedTiles = new List<ITile>();
-        }
-
-        public PlaceDisconnectedMobsStep(IMultiTeamSpawner<T> spawn, RandRange amount) : base(spawn)
-        {
-            Amount = amount;
             AcceptedTiles = new List<ITile>();
         }
 
