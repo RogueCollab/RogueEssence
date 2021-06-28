@@ -28,7 +28,9 @@ namespace RogueEssence.LevelGen
             {
                 if (!map.TeamSpawns.CanPick)
                     break;
-                results.Add(map.TeamSpawns.Pick(map.Rand).Spawn(map));
+                Team team = map.TeamSpawns.Pick(map.Rand).Spawn(map);
+                if (team != null)
+                    results.Add(team);
             }
 
             return results;

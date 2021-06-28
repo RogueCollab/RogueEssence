@@ -34,7 +34,7 @@ namespace RogueEssence.LevelGen
             {
                 Team team = Picker.Spawn(map);
                 if (team != null)
-                result.Add(team);
+                    result.Add(team);
             }
 
             return result;

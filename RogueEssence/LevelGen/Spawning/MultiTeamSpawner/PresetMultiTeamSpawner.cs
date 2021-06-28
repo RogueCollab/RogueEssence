@@ -25,7 +25,11 @@ namespace RogueEssence.LevelGen
         {
             List<Team> result = new List<Team>();
             foreach (SpecificTeamSpawner spawner in Spawns)
-                result.Add(spawner.Spawn(map));
+            {
+                Team team = spawner.Spawn(map);
+                if (team != null)
+                    result.Add(team);
+            }
             return result;
         }
     }
