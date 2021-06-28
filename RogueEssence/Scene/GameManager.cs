@@ -173,16 +173,27 @@ namespace RogueEssence
             return fadeAmount == 1f;
         }
 
-        public IEnumerator<YieldInstruction> FadeIn(int totalTime = 20)
+        public IEnumerator<YieldInstruction> FadeIn()
         {
-            return fade(true, fadeWhite, totalTime);
+            int fadeTime = 10 + ModifyBattleSpeed(20);
+            return FadeIn(fadeTime);
+        }
+        public IEnumerator<YieldInstruction> FadeIn(int fadeTime)
+        {
+            return fade(true, fadeWhite, fadeTime);
         }
 
-        public IEnumerator<YieldInstruction> FadeOut(bool useWhite, int totalTime = 20)
+        public IEnumerator<YieldInstruction> FadeOut(bool useWhite)
         {
-            return fade(false, useWhite, totalTime);
+            int fadeTime = 10 + ModifyBattleSpeed(20);
+            return FadeOut(useWhite, fadeTime);
         }
-        private IEnumerator<YieldInstruction> fade(bool fadeIn, bool useWhite, int totalTime)
+        public IEnumerator<YieldInstruction> FadeOut(bool useWhite, int fadeTime)
+        {
+            return fade(false, useWhite, fadeTime);
+        }
+
+        private IEnumerator<YieldInstruction> fade(bool fadeIn, bool useWhite, int fadeTime)
         {
             if (fadeIn && fadeAmount == 0f)
                 yield break;
@@ -192,7 +203,6 @@ namespace RogueEssence
                 yield break;
             }
 
-            int fadeTime = 10 + ModifyBattleSpeed(totalTime);
             int currentFadeTime = fadeTime;
             while (currentFadeTime > 0)
             {
