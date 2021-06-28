@@ -50,7 +50,7 @@ namespace RogueEssence.Dungeon
 
                     if (checkChar != null)
                     {
-                        if (checkChar.CantWalk || GetMatchup(character, checkChar, false) == Alignment.Foe)
+                        if (checkChar.CantWalk || GetMatchup(character, checkChar, Faction.None, false) == Alignment.Foe)
                             trialDirs.RemoveAt(ii);
                     }
                 }

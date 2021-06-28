@@ -593,8 +593,12 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public Alignment GetMatchup(Character attacker, Character target)
+        {
+            return GetMatchup(attacker, target, Faction.None, true);
+        }
 
-        public Alignment GetMatchup(Character attacker, Character target, bool action = true)
+        public Alignment GetMatchup(Character attacker, Character target, Faction neutralFoes, bool action)
         {
             if (attacker == null) return Alignment.Foe;
             if (target == null) return Alignment.Foe;
@@ -609,21 +613,42 @@ namespace RogueEssence.Dungeon
 
             CharIndex attackerIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(attacker);
             CharIndex targetIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(target);
+            //members of the same faction are friends
             if (attackerIndex.Faction == targetIndex.Faction)
                 return Alignment.Friend;
-            if (!action && (attackerIndex.Faction == Faction.Friend || targetIndex.Faction == Faction.Friend))
-                return Alignment.Friend;
+            //if any faction is friend, then the matchup might be friend.  It depends...
+            if (attackerIndex.Faction == Faction.Friend || targetIndex.Faction == Faction.Friend)
+            {
+                //neutralFoes determines if neutrals and non-neutrals should be hostile to each other
+                if (attackerIndex.Faction == neutralFoes || targetIndex.Faction == neutralFoes)
+                {
+                    //fall through this case statement
+                }
+                else
+                {
+                    //neutrals can accidentally hit members of other parties, and vice versa. (action = true)
+                    //but they won't target them when they're thinking (action = false)
+                    if (!action)
+                        return Alignment.Friend;
+                }
+            }
             
+            //at this point, the entities are confirmed to be of different factions and neither is of faction Friend.  Or one of them is, but the other is foe and neutralFoeConflict is true.
             return Alignment.Foe;
         }
 
-        public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets, bool action = true)
+        public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets)
+        {
+            return IsTargeted(attacker, target, acceptedTargets, Faction.None, true);
+        }
+
+        public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets, Faction neutralFoes, bool action)
         {
             if (attacker == null || target == null)
                 return true;
             if (target.Dead)
                 return false;
-            Alignment alignment = GetMatchup(attacker, target, action);
+            Alignment alignment = GetMatchup(attacker, target, neutralFoes, action);
             return (acceptedTargets & alignment) != 0;
         }
 
