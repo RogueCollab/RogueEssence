@@ -9,8 +9,10 @@ using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
-    public class MainStartingMenu : TitledStripMenu
+    public class MainStartingMenu : MultiPageMenu
     {
+        private const int SLOTS_PER_PAGE = 12;
+
         public SpeakerPortrait Portrait;
         OnChooseSlot chooseAction;
         Action onCancel;
@@ -29,12 +31,18 @@ namespace RogueEssence.Menu
                 int index = ii;
                 flatChoices.Add(new MenuTextChoice(name, () => { this.chooseAction(index); }));
             }
+            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+
+            int totalSlots = SLOTS_PER_PAGE;
+            if (box.Count == 1)
+                totalSlots = box[0].Length;
+
 
             startIndex = Math.Clamp(startIndex, 0, flatChoices.Count - 1);
 
             Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 32), true);
 
-            Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), flatChoices.ToArray(), startIndex);
+            Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -49,7 +57,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Portrait.Speaker = DataManager.Instance.StartChars[CurrentChoice].mon;
+            Portrait.Speaker = DataManager.Instance.StartChars[CurrentChoiceTotal].mon;
             base.ChoiceChanged();
         }
 
