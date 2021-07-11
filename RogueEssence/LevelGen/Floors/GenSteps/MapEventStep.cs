@@ -18,12 +18,12 @@ namespace RogueEssence.LevelGen
 
         public MapEffectStep(ActiveEffect effect)
         {
-            Effect = new ActiveEffect();
+            Effect = effect;
         }
 
         public override void Apply(T map)
         {
-            map.Map.MapEffect = Effect;
+            map.Map.MapEffect.AddOther(Effect);
         }
     }
 }

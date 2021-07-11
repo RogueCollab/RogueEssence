@@ -85,5 +85,46 @@ namespace RogueEssence.Data
             InitActionData = new PriorityList<BattleEvent>();
         }
 
+        public void AddOther(ActiveEffect other)
+        {
+            addOtherPriorityList(BeforeTryActions, other.BeforeTryActions);
+            addOtherPriorityList(BeforeActions, other.BeforeActions);
+            addOtherPriorityList(OnActions, other.OnActions);
+            addOtherPriorityList(BeforeExplosions, other.BeforeExplosions);
+            addOtherPriorityList(BeforeHits, other.BeforeHits);
+            addOtherPriorityList(OnHits, other.OnHits);
+            addOtherPriorityList(OnHitTiles, other.OnHitTiles);
+            addOtherPriorityList(AfterActions, other.AfterActions);
+            addOtherPriorityList(ElementEffects, other.ElementEffects);
+
+            addOtherPriorityList(BeforeStatusAdds, other.BeforeStatusAdds);
+            addOtherPriorityList(OnStatusAdds, other.OnStatusAdds);
+            addOtherPriorityList(OnStatusRemoves, other.OnStatusRemoves);
+            addOtherPriorityList(OnMapStatusAdds, other.OnMapStatusAdds);
+            addOtherPriorityList(OnMapStatusRemoves, other.OnMapStatusRemoves);
+
+            addOtherPriorityList(OnMapStarts, other.OnMapStarts);
+            addOtherPriorityList(OnTurnStarts, other.OnTurnStarts);
+            addOtherPriorityList(OnTurnEnds, other.OnTurnEnds);
+            addOtherPriorityList(OnMapTurnEnds, other.OnMapTurnEnds);
+            addOtherPriorityList(OnWalks, other.OnWalks);
+            addOtherPriorityList(OnDeaths, other.OnDeaths);
+
+            addOtherPriorityList(OnRefresh, other.OnRefresh);
+
+            addOtherPriorityList(ModifyHPs, other.ModifyHPs);
+            addOtherPriorityList(RestoreHPs, other.RestoreHPs);
+
+            addOtherPriorityList(InitActionData, other.InitActionData);
+        }
+
+        private void addOtherPriorityList<T>(PriorityList<T> list, PriorityList<T> other)
+        {
+            foreach (Priority priority in other.GetPriorities())
+            {
+                foreach (T step in other.GetItems(priority))
+                    list.Add(priority, step);
+            }
+        }
     }
 }
