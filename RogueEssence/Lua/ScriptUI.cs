@@ -48,6 +48,7 @@ namespace RogueEssence.Script
         public LuaFunction WaitForChoice;
         public LuaFunction WaitDialog;
         public LuaFunction WaitShowDialogue;
+        public LuaFunction WaitShowTimedDialogue;
         public LuaFunction WaitShowVoiceOver;
         public LuaFunction WaitInput;
         public LuaFunction WaitShowTitle;
@@ -79,12 +80,12 @@ namespace RogueEssence.Script
 
 
 
-        public void TextDialogue(string text)
+        public void TextDialogue(string text, int waitTime = -1)
         {
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text });
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, new string[] { text });
             }
             catch (Exception e)
             {
@@ -986,6 +987,12 @@ namespace RogueEssence.Script
             WaitShowDialogue = state.RunString(@"
             return function(_, text)
                 UI:TextDialogue(text)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitShowDialogue").First() as LuaFunction;
+
+            WaitShowTimedDialogue = state.RunString(@"
+            return function(_, text, time)
+                UI:TextDialogue(text, time)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowDialogue").First() as LuaFunction;
 
