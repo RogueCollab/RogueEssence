@@ -216,8 +216,13 @@ namespace RogueEssence.Script
         {
             if (chara != null)
             {
-                EmoteData emote = DataManager.Instance.GetEmote(emoteid);
-                chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));
+                if (emoteid >= 0)
+                {
+                    EmoteData emote = DataManager.Instance.GetEmote(emoteid);
+                    chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));
+                }
+                else
+                    chara.StartEmote(null);
             }
         }
 
