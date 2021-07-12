@@ -1939,8 +1939,12 @@ namespace RogueEssence.Dungeon
 
         public bool CanSeeLoc(Loc loc, Map.SightRange sight)
         {
+            return CanSeeLocFromLoc(CharLoc, loc, sight);
+        }
+        public bool CanSeeLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
+        {
             //needs to be edited according to FOV
-            Loc diffLoc = (CharLoc - loc);
+            Loc diffLoc = (fromLoc - toLoc);
             switch (sight)
             {
                 case Map.SightRange.Blind:
@@ -1956,7 +1960,7 @@ namespace RogueEssence.Dungeon
                         if (Math.Abs(diffLoc.Y) > seen.Y)
                             return false;
 
-                        return Fov.IsInFOV(CharLoc, loc, DungeonScene.Instance.VisionBlocked);
+                        return Fov.IsInFOV(fromLoc, toLoc, DungeonScene.Instance.VisionBlocked);
                     }
                 default:
                     {
