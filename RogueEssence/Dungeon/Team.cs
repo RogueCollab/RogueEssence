@@ -172,6 +172,18 @@ namespace RogueEssence.Dungeon
             if (Guests == null)
                 Guests = new List<Character>();
             ReconnectTeamReference();
+
+            //TODO: v0.5: remove this
+            foreach (Character player in Players)
+            {
+                if (player.ActionEvents.Count == 0)
+                    player.ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
+            }
+            foreach (Character player in Guests)
+            {
+                if (player.ActionEvents.Count == 0)
+                    player.ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
+            }
         }
 
         protected virtual void ReconnectTeamReference()

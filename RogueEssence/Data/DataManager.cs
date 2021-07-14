@@ -1513,6 +1513,26 @@ namespace RogueEssence.Data
             state.Save = GameProgress.LoadMainData(reader);
             if (version < Versioning.GetVersion())
             {
+                //reload AI
+                foreach (Character player in state.Save.ActiveTeam.Players)
+                {
+                    AITactic ai;
+                    if (player.Tactic != null)
+                        ai = GetAITactic(player.Tactic.ID);
+                    else
+                        ai = GetAITactic(0);
+                    player.Tactic = new AITactic(ai);
+                }
+                foreach (Character player in state.Save.ActiveTeam.Assembly)
+                {
+                    AITactic ai;
+                    if (player.Tactic != null)
+                        ai = GetAITactic(player.Tactic.ID);
+                    else
+                        ai = GetAITactic(0);
+                    player.Tactic = new AITactic(ai);
+                }
+
                 //update unlocks
                 GameProgress.UnlockState[] unlocks = new GameProgress.UnlockState[DataIndices[DataType.Monster].Count];
                 Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
