@@ -36,12 +36,6 @@ namespace RogueEssence.Ground
         /// </summary>
         public HashSet<LuaEngine.EEntLuaEventTypes> EntityCallbacks;
 
-        /// <summary>
-        /// Script events available for this entity's instance.
-        /// </summary>
-        [NonSerialized]
-        public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
-
         public override Color DevEntColoring => Color.Salmon;
 
 
@@ -64,7 +58,6 @@ namespace RogueEssence.Ground
             NPCChar = npcchar;
             Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
         protected GroundSpawner(GroundSpawner other) : base(other)
         {
@@ -74,9 +67,6 @@ namespace RogueEssence.Ground
             foreach (LuaEngine.EEntLuaEventTypes ev in other.EntityCallbacks)
                 EntityCallbacks.Add(ev);
 
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
-                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
         }
 
         public override GroundEntity Clone() { return new GroundSpawner(this); }
@@ -144,49 +134,6 @@ namespace RogueEssence.Ground
             return EntityCallbacks.Contains(ev);
         }
 
-        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            return scriptEvents.ContainsKey(ev);
-        }
-
-        public override void ReloadEvents()
-        {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
-            {
-                if (!IsEventSupported(ev))
-                    continue;
-                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
-                if (!LuaEngine.Instance.DoesFunctionExists(callback))
-                    continue;
-                DiagManager.Instance.LogInfo(String.Format("GroundSpawner.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
-                scriptEvents[ev] = new ScriptEvent(callback);
-            }
-        }
-
-        public override void DoCleanup()
-        {
-            foreach (var entry in scriptEvents)
-                entry.Value.DoCleanup();
-            scriptEvents.Clear();
-        }
-
-        public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
-        {
-            if (scriptEvents.ContainsKey(ev))
-            {
-                //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
-                // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
-                // individual elements, and things will crash left and right.
-                List<object> partopass = new List<object>();
-                partopass.Add(this);
-                partopass.AddRange(parameters);
-                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
-            }
-            else
-                yield break;
-        }
-
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
         {
             return ev == LuaEngine.EEntLuaEventTypes.EntSpawned;
@@ -196,7 +143,6 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         private void OnDeserialized(StreamingContext cntxt)
         {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             Collider.Width = GroundAction.HITBOX_WIDTH;
             Collider.Height = GroundAction.HITBOX_HEIGHT;
         }

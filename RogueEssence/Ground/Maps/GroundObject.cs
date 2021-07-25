@@ -13,10 +13,6 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundObject : BaseTaskUser, IDrawableSprite, IObstacle
     {
-        //Moved script events to their own structure, to avoid duplicates and other issues
-        [NonSerialized]
-        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
-
         public ObjAnimData ObjectAnim;
         public bool Solid;
 
@@ -45,7 +41,6 @@ namespace RogueEssence.Ground
 
         public GroundObject()
         {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             ObjectAnim = new ObjAnimData();
             EntName = "GroundObject" + ToString(); //!#FIXME : Give a default unique name please fix this when we have editor/template names!
             SetTriggerType(EEntityTriggerTypes.Action);
@@ -56,7 +51,6 @@ namespace RogueEssence.Ground
 
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
         {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             ObjectAnim = anim;
             Collider = collider;
             DrawOffset = drawOffset;
@@ -74,9 +68,6 @@ namespace RogueEssence.Ground
 
         protected GroundObject(GroundObject other) : base(other)
         {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
-                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
             ObjectAnim = new ObjAnimData(other.ObjectAnim);
             DrawOffset = other.DrawOffset;
             Solid = other.Solid;
@@ -85,12 +76,6 @@ namespace RogueEssence.Ground
         public override GroundEntity Clone() { return new GroundObject(this); }
 
 
-        public override void DoCleanup()
-        {
-            foreach (var entry in scriptEvents)
-                entry.Value.DoCleanup();
-            scriptEvents.Clear();
-        }
 
         public override IEnumerator<YieldInstruction> Interact(GroundEntity activator) //PSY: Set this value to get the entity that touched us/activated us
         {
@@ -143,26 +128,6 @@ namespace RogueEssence.Ground
                 return false;
         }
 
-        public override void ReloadEvents()
-        {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
-            {
-                if (!IsEventSupported(ev))
-                    continue;
-                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
-                if (!LuaEngine.Instance.DoesFunctionExists(callback))
-                    continue;
-                DiagManager.Instance.LogInfo(String.Format("GroundObject.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
-                scriptEvents[ev] = new ScriptEvent(callback);
-            }
-        }
-
-        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            return scriptEvents.ContainsKey(ev);
-        }
-
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
         {
             return ev != LuaEngine.EEntLuaEventTypes.Invalid && ev != LuaEngine.EEntLuaEventTypes.Think;
@@ -173,26 +138,5 @@ namespace RogueEssence.Ground
             ReloadEvents();
         }
 
-        public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
-        {
-            //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
-            // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
-            // individual elements, and things will crash left and right.
-            List<object> partopass = new List<object>();
-            partopass.Add(this);
-            partopass.AddRange(parameters);
-
-            if (scriptEvents.ContainsKey(ev))
-                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
-            else
-                yield break;
-        }
-
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-        }
     }
 }

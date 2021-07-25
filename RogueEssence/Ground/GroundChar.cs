@@ -31,9 +31,6 @@ namespace RogueEssence.Ground
         [NonSerialized]
         private GroundAction currentCharAction;
 
-        [NonSerialized]
-        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
-
         public LuaTable LuaData
         {
             get { return Data.LuaDataTable; }
@@ -118,7 +115,6 @@ namespace RogueEssence.Ground
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
             TriggerType = EEntityTriggerTypes.Action;
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
 
             //By default all groundcharacters think
             AIEnabled = true;
@@ -136,9 +132,6 @@ namespace RogueEssence.Ground
         }
         protected GroundChar(GroundChar other)
         {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
-                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
             Data = new CharData(other.Data);
 
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
@@ -361,28 +354,6 @@ namespace RogueEssence.Ground
                 return false;
         }
 
-        public override void ReloadEvents()
-        {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
-            {
-                if (!IsEventSupported(ev))
-                    continue;
-                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
-                if (!LuaEngine.Instance.DoesFunctionExists(callback))
-                    continue;
-                DiagManager.Instance.LogInfo(String.Format("GroundChar.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
-                scriptEvents[ev] = new ScriptEvent(callback);
-            }
-        }
-
-        public override void DoCleanup()
-        {
-            foreach (var entry in scriptEvents)
-                entry.Value.DoCleanup();
-            scriptEvents.Clear();
-        }
-
         /// <summary>
         /// Called by the map owning this entity after being deserialized to have it set itself up.
         /// </summary>
@@ -397,10 +368,7 @@ namespace RogueEssence.Ground
             //DiagManager.Instance.LogInfo(String.Format("GroundChar.OnDeserializeMap(): Handling {0}..", EntName));
             SavePosition();
         }
-        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            return scriptEvents.ContainsKey(ev);
-        }
+
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
         {
@@ -416,22 +384,6 @@ namespace RogueEssence.Ground
         public override void SetTriggerType(EEntityTriggerTypes triggerty)
         {
             //do nothing
-        }
-
-        public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
-        {
-            if (scriptEvents.ContainsKey(ev))
-            {
-                //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
-                // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
-                // individual elements, and things will crash left and right.
-                List<object> partopass = new List<object>();
-                partopass.Add(this);
-                partopass.AddRange(arguments);
-                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
-            }
-            else
-                yield break;
         }
 
         public override IEnumerator<YieldInstruction> Interact(GroundEntity activator)
@@ -485,7 +437,6 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
         }
     }

@@ -3,6 +3,7 @@ using RogueEssence.Script;
 using RogueElements;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Ground
 {
@@ -12,6 +13,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public abstract class GroundEntity
     {
+
         /// <summary>
         /// The kind of trigger events available to entity.
         ///
@@ -62,6 +64,10 @@ namespace RogueEssence.Ground
         protected EEntityTriggerTypes triggerType;
         public virtual EEntityTriggerTypes TriggerType { get { return triggerType; } set {triggerType = value; } }
 
+        //Moved script events to their own structure, to avoid duplicates and other issues
+        [NonSerialized]
+        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
+
         /// <summary>
         /// When this property is false, all processing of this entity is disabled.
         /// So it essentially becomes invisible and inactive on the map.
@@ -81,12 +87,16 @@ namespace RogueEssence.Ground
         /// </summary>
         public GroundEntity()
         {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             EntEnabled = true;
             DevEntitySelected = false;
         }
 
         protected GroundEntity(GroundEntity other)
         {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
+                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
             EntEnabled = other.EntEnabled;
             Collider = other.Collider;
             EntName = other.EntName;
@@ -145,7 +155,9 @@ namespace RogueEssence.Ground
         /// </summary>
         public virtual void DoCleanup()
         {
-            //Default does nothing
+            foreach (var entry in scriptEvents)
+                entry.Value.DoCleanup();
+            scriptEvents.Clear();
         }
         
         /// <summary>
@@ -156,13 +168,26 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public virtual bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            return false;
+            return scriptEvents.ContainsKey(ev);
         }
 
         /// <summary>
         /// This reset events  after they are unserialized for example
         /// </summary>
-        public virtual void ReloadEvents() { }
+        public virtual void ReloadEvents()
+        {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
+            {
+                if (!IsEventSupported(ev))
+                    continue;
+                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
+                DiagManager.Instance.LogInfo(String.Format("GroundEntity.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
+                scriptEvents[ev] = new ScriptEvent(callback);
+            }
+        }
 
         /// <summary>
         /// This reset events after a script reload. the execution will break, unlike ReloadEvents
@@ -175,7 +200,6 @@ namespace RogueEssence.Ground
         /// <param name="ev"></param>
         public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            //Default does nothing
             yield return CoroutineManager.Instance.StartCoroutine(RunEvent(ev, this));
         }
 
@@ -185,10 +209,20 @@ namespace RogueEssence.Ground
         /// <param name="ev"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
+        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
         {
-            //Default does nothing
-            yield break;
+            if (scriptEvents.ContainsKey(ev))
+            {
+                //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
+                // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
+                // individual elements, and things will crash left and right.
+                List<object> partopass = new List<object>();
+                partopass.Add(this);
+                partopass.AddRange(arguments);
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
+            }
+            else
+                yield break;
         }
 
         /// <summary>
@@ -271,6 +305,10 @@ namespace RogueEssence.Ground
             yield break;
         }
 
-
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+        }
     }
 }
