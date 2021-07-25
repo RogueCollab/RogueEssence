@@ -16,6 +16,7 @@ using System.Linq;
 using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -101,17 +102,18 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void mnuSave_Click()
+        public async Task<bool> mnuSave_Click()
         {
             if (CurrentFile == "")
-                mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
+                return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
                 lock (GameBase.lockObj)
                     DoSave(ZoneManager.Instance.CurrentMap, CurrentFile, CurrentFile);
+                return true;
             }
         }
-        public async void mnuSaveAs_Click()
+        public async Task<bool> mnuSaveAs_Click()
         {
             string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -128,8 +130,9 @@ namespace RogueEssence.Dev.ViewModels
 
             if (result != null)
             {
-                if (!comparePaths(PathMod.ModPath(DataManager.MAP_PATH), Path.GetDirectoryName(result)))
-                    await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.MAP_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
+                string reqDir = PathMod.ModPath(DataManager.MAP_PATH);
+                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+                    await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
@@ -140,14 +143,17 @@ namespace RogueEssence.Dev.ViewModels
                         //Schedule saving the map
                         DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
                     }
+                    return true;
                 }
             }
+            return false;
         }
 
-        public void mnuTest_Click()
+        public async void mnuTest_Click()
         {
-            mnuSave_Click();
-            GameManager.Instance.SceneOutcome = exitAndTest();
+            bool saved = await mnuSave_Click();
+            if (saved)
+                GameManager.Instance.SceneOutcome = exitAndTest();
         }
 
         private IEnumerator<YieldInstruction> exitAndTest()
