@@ -308,8 +308,8 @@ namespace RogueEssence.Ground
     {
         private bool run;
         private int moveRate;
-        private Loc Destination;
-        private Loc CurPos;
+        private Loc destination;
+        private Loc curPos;
 
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
@@ -317,7 +317,7 @@ namespace RogueEssence.Ground
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
 
-        public bool Complete { get { return Destination == CurPos; } }
+        public bool Complete { get { return destination == curPos; } }
 
         public WalkToPositionGroundAction(Loc loc, Dir8 dir, bool run, int moveRate, FrameTick prevTime, Loc destination)
         {
@@ -326,8 +326,8 @@ namespace RogueEssence.Ground
             this.run = run;
             ActionTime = prevTime;
             this.moveRate = moveRate;
-            Destination = destination;
-            CurPos = MapLoc;
+            this.destination = destination;
+            curPos = MapLoc;
         }
 
         public override void UpdateTime(FrameTick elapsedTime)
@@ -338,13 +338,12 @@ namespace RogueEssence.Ground
         public override void UpdateInput(GameAction action)
         {
             if (Complete)
-                NextAction = new IdleGroundAction(CurPos, CharDir);
+                NextAction = new IdleGroundAction(MapLoc, CharDir);
         }
 
         public override void Update(FrameTick elapsedTime)
         {
-            Loc movediff = Destination - CurPos;
-            int movelen = movediff.Length();
+            Loc movediff = destination - curPos;
 
             //Get the difference between the current position and destination
             double x = movediff.X / Math.Sqrt(movediff.DistSquared());
@@ -375,7 +374,7 @@ namespace RogueEssence.Ground
                 CharDir = newdir;
 
             Move = checkedmove;
-            CurPos += Move; //Increment our internal current position, since we have no ways of knowing where we are otherwise..
+            curPos += Move; //Increment our internal current position, since we have no ways of knowing where we are otherwise..
         }
     }
 
