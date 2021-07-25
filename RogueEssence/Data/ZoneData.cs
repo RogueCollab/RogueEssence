@@ -68,9 +68,6 @@ namespace RogueEssence.Data
         [Dev.DataFolder(1, "Ground/")]
         public List<string> GroundMaps;
 
-        [Dev.NoDupe(0)]
-        public List<LuaEngine.EZoneCallbacks> ScriptEvents;
-
 
         public ZoneData()
         {
@@ -84,8 +81,6 @@ namespace RogueEssence.Data
 
             Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
-
-            ScriptEvents = new List<LuaEngine.EZoneCallbacks>();
         }
 
         public string GetColoredName()
@@ -111,17 +106,9 @@ namespace RogueEssence.Data
             //NOTE: these are not deep copies!
             zone.Segments = Segments;
             zone.GroundMaps = GroundMaps;
-            zone.LoadScriptEvents(ScriptEvents);
             return zone;
         }
 
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //TODO: v0.5: remove this
-            if (ScriptEvents == null)
-                ScriptEvents = new List<LuaEngine.EZoneCallbacks>();
-        }
     }
 
 

@@ -88,7 +88,8 @@
                 <DataTemplate>
                   <CheckBox Margin="4"
                             IsChecked="{Binding IsChecked}"
-                            Content="{Binding EventType}"/>
+                            Content="{Binding EventType}"
+                            IsEnabled="False"/>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -100,7 +101,8 @@
                 <DataTemplate>
                   <CheckBox Margin="4"
                             IsChecked="{Binding IsChecked}"
-                            Content="{Binding EventType}"/>
+                            Content="{Binding EventType}"
+                            IsEnabled="False"/>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -39,7 +39,8 @@ namespace RogueEssence.Ground
         /// <summary>
         /// Script events available for this entity's instance.
         /// </summary>
-        public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
+        [NonSerialized]
+        public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
 
         public override Color DevEntColoring => Color.Salmon;
 
@@ -63,7 +64,7 @@ namespace RogueEssence.Ground
             NPCChar = npcchar;
             Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
         protected GroundSpawner(GroundSpawner other) : base(other)
         {
@@ -72,9 +73,10 @@ namespace RogueEssence.Ground
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
             foreach (LuaEngine.EEntLuaEventTypes ev in other.EntityCallbacks)
                 EntityCallbacks.Add(ev);
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
-                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
+                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
         }
 
         public override GroundEntity Clone() { return new GroundSpawner(this); }
@@ -91,8 +93,7 @@ namespace RogueEssence.Ground
             CurrentNPC = new GroundChar(NPCChar, Position, Direction, NPCName);
 
             //Setup callbacks on the spawned entity
-            foreach (LuaEngine.EEntLuaEventTypes t in EntityCallbacks)
-                CurrentNPC.AddScriptEvent(t);
+            CurrentNPC.ReloadEvents();
 
             currentmap.AddTempChar(CurrentNPC);
             CurrentNPC.OnMapInit();
@@ -132,19 +133,9 @@ namespace RogueEssence.Ground
                 yield return v;
         }
 
-
-
-        public override void AddScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (!IsEventSupported(ev))
-                return;
-            ScriptEvents.Add(ev, new ScriptEvent(LuaEngine.MakeLuaEntityCallbackName(EntName, ev)));
-        }
-
         public override void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
+            ReloadEvents();
         }
 
 
@@ -155,38 +146,34 @@ namespace RogueEssence.Ground
 
         public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            return ScriptEvents.ContainsKey(ev);
-        }
-
-        public override void SyncScriptEvents()
-        {
-            foreach (var ev in ScriptEvents.Keys)
-                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
+            return scriptEvents.ContainsKey(ev);
         }
 
         public override void ReloadEvents()
         {
-            foreach (var entry in ScriptEvents)
-                entry.Value.ReloadEvent();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
+            {
+                if (!IsEventSupported(ev))
+                    continue;
+                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
+                DiagManager.Instance.LogInfo(String.Format("GroundSpawner.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
+                scriptEvents[ev] = new ScriptEvent(callback);
+            }
         }
 
         public override void DoCleanup()
         {
-            foreach (var entry in ScriptEvents)
+            foreach (var entry in scriptEvents)
                 entry.Value.DoCleanup();
-            ScriptEvents.Clear();
-        }
-
-
-        public override void RemoveScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
+            scriptEvents.Clear();
         }
 
         public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
         {
-            if (ScriptEvents.ContainsKey(ev))
+            if (scriptEvents.ContainsKey(ev))
             {
                 //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
                 // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
@@ -194,7 +181,7 @@ namespace RogueEssence.Ground
                 List<object> partopass = new List<object>();
                 partopass.Add(this);
                 partopass.AddRange(parameters);
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(partopass.ToArray()));
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
             }
             else
                 yield break;
@@ -209,8 +196,7 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         private void OnDeserialized(StreamingContext cntxt)
         {
-            if (ScriptEvents == null)
-                ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             Collider.Width = GroundAction.HITBOX_WIDTH;
             Collider.Height = GroundAction.HITBOX_HEIGHT;
         }

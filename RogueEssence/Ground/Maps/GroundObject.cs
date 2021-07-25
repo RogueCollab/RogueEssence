@@ -14,7 +14,8 @@ namespace RogueEssence.Ground
     public class GroundObject : BaseTaskUser, IDrawableSprite, IObstacle
     {
         //Moved script events to their own structure, to avoid duplicates and other issues
-        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
+        [NonSerialized]
+        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
 
         public ObjAnimData ObjectAnim;
         public bool Solid;
@@ -44,7 +45,7 @@ namespace RogueEssence.Ground
 
         public GroundObject()
         {
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             ObjectAnim = new ObjAnimData();
             EntName = "GroundObject" + ToString(); //!#FIXME : Give a default unique name please fix this when we have editor/template names!
             SetTriggerType(EEntityTriggerTypes.Action);
@@ -55,7 +56,7 @@ namespace RogueEssence.Ground
 
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
         {
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             ObjectAnim = anim;
             Collider = collider;
             DrawOffset = drawOffset;
@@ -73,9 +74,9 @@ namespace RogueEssence.Ground
 
         protected GroundObject(GroundObject other) : base(other)
         {
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
-                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
+                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
             ObjectAnim = new ObjAnimData(other.ObjectAnim);
             DrawOffset = other.DrawOffset;
             Solid = other.Solid;
@@ -86,9 +87,9 @@ namespace RogueEssence.Ground
 
         public override void DoCleanup()
         {
-            foreach (var entry in ScriptEvents)
+            foreach (var entry in scriptEvents)
                 entry.Value.DoCleanup();
-            ScriptEvents.Clear();
+            scriptEvents.Clear();
         }
 
         public override IEnumerator<YieldInstruction> Interact(GroundEntity activator) //PSY: Set this value to get the entity that touched us/activated us
@@ -144,19 +145,22 @@ namespace RogueEssence.Ground
 
         public override void ReloadEvents()
         {
-            foreach (var entry in ScriptEvents)
-                entry.Value.ReloadEvent();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
+            {
+                if (!IsEventSupported(ev))
+                    continue;
+                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
+                DiagManager.Instance.LogInfo(String.Format("GroundObject.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
+                scriptEvents[ev] = new ScriptEvent(callback);
+            }
         }
 
         public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            return ScriptEvents.ContainsKey(ev);
-        }
-
-        public override void SyncScriptEvents()
-        {
-            foreach (var ev in ScriptEvents.Keys)
-                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
+            return scriptEvents.ContainsKey(ev);
         }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
@@ -164,26 +168,9 @@ namespace RogueEssence.Ground
             return ev != LuaEngine.EEntLuaEventTypes.Invalid && ev != LuaEngine.EEntLuaEventTypes.Think;
         }
 
-        public override void AddScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            DiagManager.Instance.LogInfo(String.Format("GroundObject.AddScriptEvent({0}): Added script event to {1}!", ev.ToString(), EntName));
-            if (!IsEventSupported(ev))
-                return;
-            ScriptEvents.Add(ev, new ScriptEvent(LuaEngine.MakeLuaEntityCallbackName(EntName, ev)));
-        }
-
         public override void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
-        }
-
-        public override void RemoveScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            DiagManager.Instance.LogInfo(String.Format("GroundObject.RemoveScriptEvent({0}): Removed script event from {1}!", ev.ToString(), EntName));
-
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
+            ReloadEvents();
         }
 
         public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
@@ -195,10 +182,17 @@ namespace RogueEssence.Ground
             partopass.Add(this);
             partopass.AddRange(parameters);
 
-            if (ScriptEvents.ContainsKey(ev))
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(partopass.ToArray()));
+            if (scriptEvents.ContainsKey(ev))
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
             else
                 yield break;
+        }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
     }
 }

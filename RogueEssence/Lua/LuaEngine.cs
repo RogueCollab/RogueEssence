@@ -209,7 +209,7 @@ namespace RogueEssence.Script
         ///
         /// </summary>
         /// <returns></returns>
-        public static IEnumerator<EEntLuaEventTypes> IterateLuaEntityEvents()
+        public static IEnumerable<EEntLuaEventTypes> IterateLuaEntityEvents()
         {
             for (int ii = (int)EEntLuaEventTypes.Action; ii < (int)EEntLuaEventTypes.Invalid; ++ii)
                 yield return (EEntLuaEventTypes)ii;

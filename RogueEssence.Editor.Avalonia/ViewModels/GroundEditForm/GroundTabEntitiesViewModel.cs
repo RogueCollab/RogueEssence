@@ -127,7 +127,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
-            placeableEntity.SyncScriptEvents();
+            placeableEntity.ReloadEvents();
 
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundEntityStateUndo(0));
 

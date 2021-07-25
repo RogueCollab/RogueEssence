@@ -433,7 +433,10 @@ namespace RogueEssence
             SetFade(false, false);
 
             if (newGround)
+            {
+                ZoneManager.Instance.CurrentGround.OnEditorInit();
                 GroundEditScene.Instance.EnterGroundEdit(0);
+            }
             else
                 DungeonEditScene.Instance.EnterMapEdit(0);
             if (DataManager.Instance.Save != null)
@@ -449,10 +452,15 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(MoveToEditor(false, ZoneManager.Instance.CurrentZone.CurrentMap.AssetName));
         }
 
-        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone = false, bool preserveMusic = false)
+        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId)
+        {
+            return MoveToZone(destId, false, false);
+        }
+
+        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone, bool preserveMusic)
         {
             //if we're in a test map, return to editor
-            if (ZoneManager.Instance.InDevZone)
+            if (ZoneManager.Instance.InDevZone && !forceNewZone)
             {
                 yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
                 yield break;
@@ -810,7 +818,7 @@ namespace RogueEssence
             DataManager.Instance.Save.NextDest = dest;
             DataManager.Instance.Save.RestartLogs(MathUtils.Rand.NextUInt64());
             DataManager.Instance.Save.MidAdventure = true;
-            yield return CoroutineManager.Instance.StartCoroutine(MoveToZone(DataManager.Instance.Save.NextDest, true));
+            yield return CoroutineManager.Instance.StartCoroutine(MoveToZone(DataManager.Instance.Save.NextDest, true, false));
         }
 
 

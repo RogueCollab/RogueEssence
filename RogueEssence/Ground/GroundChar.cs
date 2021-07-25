@@ -31,11 +31,8 @@ namespace RogueEssence.Ground
         [NonSerialized]
         private GroundAction currentCharAction;
 
-        /// <summary>
-        /// Just a little test, to see if we couldn't store script event this way. It would avoid accidental duplicates and
-        /// a lot of issues..
-        /// </summary>
-        public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
+        [NonSerialized]
+        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
 
         public LuaTable LuaData
         {
@@ -121,7 +118,7 @@ namespace RogueEssence.Ground
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
             TriggerType = EEntityTriggerTypes.Action;
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
 
             //By default all groundcharacters think
             AIEnabled = true;
@@ -139,9 +136,9 @@ namespace RogueEssence.Ground
         }
         protected GroundChar(GroundChar other)
         {
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
-                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
+                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
             Data = new CharData(other.Data);
 
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
@@ -366,15 +363,24 @@ namespace RogueEssence.Ground
 
         public override void ReloadEvents()
         {
-            foreach (var entry in ScriptEvents)
-                entry.Value.ReloadEvent();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
+            {
+                if (!IsEventSupported(ev))
+                    continue;
+                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
+                DiagManager.Instance.LogInfo(String.Format("GroundChar.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
+                scriptEvents[ev] = new ScriptEvent(callback);
+            }
         }
 
         public override void DoCleanup()
         {
-            foreach (var entry in ScriptEvents)
+            foreach (var entry in scriptEvents)
                 entry.Value.DoCleanup();
-            ScriptEvents.Clear();
+            scriptEvents.Clear();
         }
 
         /// <summary>
@@ -391,16 +397,9 @@ namespace RogueEssence.Ground
             //DiagManager.Instance.LogInfo(String.Format("GroundChar.OnDeserializeMap(): Handling {0}..", EntName));
             SavePosition();
         }
-
         public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            return ScriptEvents.ContainsKey(ev);
-        }
-
-        public override void SyncScriptEvents()
-        {
-            foreach (var ev in ScriptEvents.Keys)
-                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
+            return scriptEvents.ContainsKey(ev);
         }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
@@ -409,23 +408,9 @@ namespace RogueEssence.Ground
                    ev == LuaEngine.EEntLuaEventTypes.Think;
         }
 
-        public override void AddScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (!IsEventSupported(ev))
-                return;
-            ScriptEvents.Add(ev, new ScriptEvent(LuaEngine.MakeLuaEntityCallbackName(EntName, ev)));
-        }
-
         public override void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
-        }
-
-        public override void RemoveScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
+            ReloadEvents();
         }
 
         public override void SetTriggerType(EEntityTriggerTypes triggerty)
@@ -435,7 +420,7 @@ namespace RogueEssence.Ground
 
         public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
         {
-            if (ScriptEvents.ContainsKey(ev))
+            if (scriptEvents.ContainsKey(ev))
             {
                 //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
                 // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
@@ -443,7 +428,7 @@ namespace RogueEssence.Ground
                 List<object> partopass = new List<object>();
                 partopass.Add(this);
                 partopass.AddRange(arguments);
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(partopass.ToArray()));
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
             }
             else
                 yield break;
@@ -500,6 +485,7 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
         }
     }

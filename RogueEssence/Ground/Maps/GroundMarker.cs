@@ -38,15 +38,6 @@ namespace RogueEssence.Ground
             return false;
         }
 
-        /// <summary>
-        /// For markers this doesn't do anything
-        /// </summary>
-        /// <returns></returns>
-        public override IEnumerable<LuaEngine.EEntLuaEventTypes> ActiveLuaCallbacks()
-        {
-            return new List<LuaEngine.EEntLuaEventTypes>();
-        }
-
         [OnDeserialized]
         private void OnDeserialized(StreamingContext cntxt)
         {

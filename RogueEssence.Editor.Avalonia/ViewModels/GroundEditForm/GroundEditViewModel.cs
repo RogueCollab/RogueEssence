@@ -451,7 +451,6 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
-            Script.SaveScripts();
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.

@@ -77,7 +77,7 @@ namespace RogueEssence.Dev.Views
 
             //move to the previous scene or the title, if there was none
             if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
             else
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }

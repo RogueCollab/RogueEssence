@@ -50,7 +50,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
         /// </summary>
-        private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
+        private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents;
 
         public Zone(ulong seed, int zoneIndex)
         {
@@ -73,7 +73,7 @@ namespace RogueEssence.Dungeon
 
             CarryOver = new List<MapStatus>();
 
-            ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
         }
 
         public string GetDisplayName()
@@ -81,21 +81,24 @@ namespace RogueEssence.Dungeon
             return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
 
-        public void LoadScriptEvents(List<LuaEngine.EZoneCallbacks> scriptEvents)
+        public void LoadScriptEvents()
         {
-            ScriptEvents.Clear();
-            foreach (LuaEngine.EZoneCallbacks ev in scriptEvents)
+            scriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
+            for (int ii = 0; ii < (int)LuaEngine.EZoneCallbacks.Invalid; ii++)
             {
+                LuaEngine.EZoneCallbacks ev = (LuaEngine.EZoneCallbacks)ii;
                 string assetName = "zone_" + this.ID;
+                string callback = LuaEngine.MakeZoneScriptCallbackName(assetName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
                 DiagManager.Instance.LogInfo(String.Format("Zone.LoadScriptEvents(): Added event {0} to zone {1}!", ev.ToString(), assetName));
-                ScriptEvents[ev] = new ScriptEvent(LuaEngine.MakeZoneScriptCallbackName(assetName, ev));
+                scriptEvents[ev] = new ScriptEvent(callback);
             }
         }
 
         public void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
+            LoadScriptEvents();
             if (CurrentMap != null)
                 CurrentMap.LuaEngineReload();
             if (CurrentGround != null)
@@ -290,8 +293,10 @@ namespace RogueEssence.Dungeon
             if (assetName != "")
                 LuaEngine.Instance.RunZoneScript(assetName);
 
+            LoadScriptEvents();
+
             //Reload the map events
-            foreach (var ev in ScriptEvents)
+            foreach (var ev in scriptEvents)
                 ev.Value.ReloadEvent();
 
             //Do script event
@@ -335,8 +340,8 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> RunScriptEvent(LuaEngine.EZoneCallbacks ev, params object[] parms)
         {
-            if (ScriptEvents.ContainsKey(ev))
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(parms));
+            if (scriptEvents.ContainsKey(ev))
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(parms));
         }
 
 

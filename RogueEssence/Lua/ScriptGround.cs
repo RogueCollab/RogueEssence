@@ -65,7 +65,7 @@ namespace RogueEssence.Script
 
             groundobject = (GroundObject)template.create(instancename);
             groundobject.Bounds = new Rect(x,y,w,h);
-            groundobject.AddScriptEvent(LuaEngine.EEntLuaEventTypes.Action);
+            groundobject.ReloadEvents();
             map.AddObject(groundobject);
             return groundobject; //Object's properties can be tweaked later on
         }
