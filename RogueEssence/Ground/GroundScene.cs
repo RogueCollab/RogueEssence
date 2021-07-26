@@ -186,7 +186,10 @@ namespace RogueEssence.Ground
                     action = new GameAction(cmdType, input.Direction);
 
                     if (cmdType == GameAction.ActionType.Move)
-                        action.AddArg(input[FrameInput.InputType.Run] ? 1 : 0);
+                    {
+                        action.AddArg(run ? 1 : 0);
+                        action.AddArg(run ? 5 : 2);
+                    }
                 }
 
                 if (action.Type == GameAction.ActionType.None)

@@ -119,7 +119,7 @@ namespace RogueEssence.Ground
         {
             //trigger walk if ordered to
             if (action.Type == GameAction.ActionType.Move)
-                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, new FrameTick());
+                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], new FrameTick());
         }
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
@@ -139,16 +139,18 @@ namespace RogueEssence.Ground
     public class WalkGroundAction : GroundAction
     {
         private bool run;
+        private int speed;
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
-        public WalkGroundAction(Loc loc, Dir8 dir, bool run, FrameTick prevTime)
+        public WalkGroundAction(Loc loc, Dir8 dir, bool run, int speed, FrameTick prevTime)
         {
             MapLoc = loc;
             CharDir = dir;
             this.run = run;
+            this.speed = speed;
             ActionTime = prevTime;
         }
 
@@ -175,7 +177,7 @@ namespace RogueEssence.Ground
         public override void Update(FrameTick elapsedTime)
         {
             //set the character's projected movement
-            Move = CharDir.GetLoc() * (run ? 5 : 2);
+            Move = CharDir.GetLoc() * speed;
         }
     }
 
@@ -197,7 +199,7 @@ namespace RogueEssence.Ground
         {
             //trigger walk if ordered to
             if (action.Type == GameAction.ActionType.Move)
-                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, new FrameTick());
+                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], new FrameTick());
         }
     }
 
@@ -229,7 +231,7 @@ namespace RogueEssence.Ground
         public override void UpdateInput(GameAction action)
         {
             if (action.Type == GameAction.ActionType.Move)//start walk if ordered to
-                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, ActionTime);
+                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], ActionTime);
             else
             {
                 int prevTime = (skidTime / AnimTotalTime).ToFrames();
@@ -303,10 +305,12 @@ namespace RogueEssence.Ground
         }
     }
 
+
     [Serializable]
-    public class WalkToPositionGroundAction : GroundAction
+    public class AnimateToPositionGroundAction : GroundAction
     {
-        private bool run;
+        private int animType;
+        private float animSpeed;
         private int moveRate;
         private Loc destination;
         private Loc curPos;
@@ -315,15 +319,16 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
-        protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
+        protected override int AnimFrameType { get { return animType; } }
 
         public bool Complete { get { return destination == curPos; } }
 
-        public WalkToPositionGroundAction(Loc loc, Dir8 dir, bool run, int moveRate, FrameTick prevTime, Loc destination)
+        public AnimateToPositionGroundAction(int animType, Loc loc, Dir8 dir, float animSpeed, int moveRate, FrameTick prevTime, Loc destination)
         {
+            this.animType = animType;
             MapLoc = loc;
             CharDir = dir;
-            this.run = run;
+            this.animSpeed = animSpeed;
             ActionTime = prevTime;
             this.moveRate = moveRate;
             this.destination = destination;
@@ -332,7 +337,7 @@ namespace RogueEssence.Ground
 
         public override void UpdateTime(FrameTick elapsedTime)
         {
-            base.UpdateTime(elapsedTime * (run ? 2 : 1));
+            base.UpdateTime(new FrameTick((long)(elapsedTime.Ticks * animSpeed)));
         }
 
         public override void UpdateInput(GameAction action)
@@ -368,15 +373,9 @@ namespace RogueEssence.Ground
             checkedmove.X = Math.Min(Math.Abs(movediff.X), Math.Abs(movevec.X * moveRate)) * Math.Sign(movevec.X);
             checkedmove.Y = Math.Min(Math.Abs(movediff.Y), Math.Abs(movevec.Y * moveRate)) * Math.Sign(movevec.Y);
 
-            //Update facing direction. Ignore none, since it crashes the game.
-            Dir8 newdir = movevec.ApproximateDir8();
-            if (newdir != Dir8.None)
-                CharDir = newdir;
-
             Move = checkedmove;
             curPos += Move; //Increment our internal current position, since we have no ways of knowing where we are otherwise..
         }
     }
-
 
 }
