@@ -306,12 +306,12 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneInit(/*assetName, this*/);
         }
 
-        public IEnumerator<YieldInstruction> OnEnterSegment()
+        public IEnumerator<YieldInstruction> OnEnterSegment(bool rescuing)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, CurrentMapID.Segment, CurrentMapID.ID));
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
 
             //Notify script engine
             LuaEngine.Instance.OnZoneSegmentStart(/*assetName, this*/);

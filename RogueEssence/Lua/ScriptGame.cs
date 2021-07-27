@@ -224,7 +224,7 @@ namespace RogueEssence.Script
         }
 
 
-        public int GetGuestPartyCount()
+        public int GetPlayerGuestCount()
         {
             return DataManager.Instance.Save.ActiveTeam.Guests.Count;
         }
@@ -233,7 +233,7 @@ namespace RogueEssence.Script
         /// Return the guests as a LuaTable
         /// </summary>
         /// <returns></returns>
-        public LuaTable GetGuestPartyTable()
+        public LuaTable GetPlayerGuestTable()
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
@@ -241,7 +241,7 @@ namespace RogueEssence.Script
                 addfn.Call(tbl, ent);
             return tbl;
         }
-        public Character GetGuestPartyMember(int index)
+        public Character GetPlayerGuestMember(int index)
         {
             return DataManager.Instance.Save.ActiveTeam.Guests[index];
         }
@@ -290,7 +290,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
         }
 
-        public void AddGuestTeam(Character character)
+        public void AddPlayerGuest(Character character)
         {
             DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
         }
@@ -299,7 +299,7 @@ namespace RogueEssence.Script
         /// Removes the character from the team, placing its item back in the inventory.
         /// </summary>
         /// <param name="slot"></param>
-        public void RemoveGuestTeam(int slot)
+        public void RemovePlayerGuest(int slot)
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
 

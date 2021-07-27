@@ -468,12 +468,12 @@ namespace RogueEssence
 
             bool newGround = (destId.StructID.Segment <= -1);
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
+            bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
+            bool sameSegment = sameZone && (destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment);
 
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
 
             //switch location
-            bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
-            bool sameSegment = sameZone && destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment;
             if (sameZone && !forceNewZone)
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
             else
@@ -482,16 +482,13 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 
-            if (!sameSegment || forceNewZone)
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment());
-
             //switch in new scene
             MoveToScene(destScene);
 
-            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, preserveMusic));
+            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
         }
 
-        private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool preserveMusic)
+        private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
         {
             //Transparency mode
             MenuBase.Transparent = !newGround;
@@ -508,6 +505,13 @@ namespace RogueEssence
                     BGM(ZoneManager.Instance.CurrentGround.Music, true);
 
                 GroundScene.Instance.EnterGround(entryPoint);
+
+                if (newSegment)
+                {
+                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
+                }
+
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround());
                 //no fade; the script handles that itself
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
@@ -518,8 +522,16 @@ namespace RogueEssence
                     BGM(ZoneManager.Instance.CurrentMap.Music, true);
 
                 DungeonScene.Instance.EnterFloor(entryPoint);
+
+                if (newSegment)
+                {
+                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
+                }
+
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
+                // title drop if faded, but do not fade directly
                 if (IsFaded())
                 {
                     if (ZoneManager.Instance.CurrentMap.DropTitle)
@@ -836,7 +848,7 @@ namespace RogueEssence
             MoveToScene(destScene);
 
             //move in like a normal map would
-            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(0, newGround, false));
+            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(0, newGround, true, false));
         }
 
         public void NewGamePlus(ulong seed)
