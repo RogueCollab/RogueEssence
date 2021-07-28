@@ -1904,12 +1904,12 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public List<Character> GetSeenCharacters(Alignment targetAlignment, Faction neutralFoe)
+        public List<Character> GetSeenCharacters(Alignment targetAlignment)
         {
             List<Character> seenChars = new List<Character>();
             foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if (CanSeeCharacter(target) && DungeonScene.Instance.IsTargeted(this, target, targetAlignment, neutralFoe, false))
+                if (CanSeeCharacter(target) && DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
                     seenChars.Add(target);
             }
             return seenChars;

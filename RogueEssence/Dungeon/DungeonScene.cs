@@ -532,7 +532,7 @@ namespace RogueEssence.Dungeon
                                             {
                                                 if (!player.Dead)
                                                 {
-                                                    foreach (Character seenEnemy in player.GetSeenCharacters(Alignment.Foe, Faction.None))
+                                                    foreach (Character seenEnemy in player.GetSeenCharacters(Alignment.Foe))
                                                         newRevealed.Add(seenEnemy);
                                                 }
                                             }

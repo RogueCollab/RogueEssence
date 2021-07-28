@@ -16,6 +16,11 @@ namespace RogueEssence.Dungeon
 
         public int LeaderIndex;
 
+        /// <summary>
+        /// If set to true, will attack/be attacked by Foe faction when in Ally faction.
+        /// </summary>
+        public bool FoeConflict;
+
         private List<InvItem> inventory;
 
         public Team()
