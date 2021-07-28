@@ -165,6 +165,7 @@ namespace RogueEssence.Ground
             {
                 CharDir = action.Dir;
                 run = (action[0] != 0);
+                speed = action[1];
             }
             else if (action.Type == GameAction.ActionType.None)//start skid if ordered to
                 NextAction = new IdleGroundAction(MapLoc, CharDir);// new SkidGroundAction(MapLoc, CharDir, ActionTime);
