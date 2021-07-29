@@ -243,6 +243,30 @@ namespace RogueEssence.LevelGen
             return true;
         }
 
+        public bool BaseCanPlaceTeam(Loc loc)
+        {
+            if (TileBlocked(loc))
+                return false;
+
+            foreach (Team team in AllyTeams)
+            {
+                foreach (Character character in team.EnumerateChars())
+                {
+                    if (!character.Dead && character.CharLoc == loc)
+                        return false;
+                }
+            }
+            foreach (Team team in MapTeams)
+            {
+                foreach (Character character in team.EnumerateChars())
+                {
+                    if (!character.Dead && character.CharLoc == loc)
+                        return false;
+                }
+            }
+            return true;
+        }
+
         void IGroupPlaceableGenContext<TeamSpawn>.PlaceItems(TeamSpawn itemBatch, Loc[] locs)
         {
             if (locs != null)

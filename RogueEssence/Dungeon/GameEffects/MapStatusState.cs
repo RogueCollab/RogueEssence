@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLua;
+using System;
 using System.Collections.Generic;
 
 namespace RogueEssence.Dungeon

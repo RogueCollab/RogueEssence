@@ -203,7 +203,7 @@ namespace RogueEssence.Dungeon
             if (LuaDataTable == null)
             {
                 //Make sure thers is at least a table in the data table when done deserializing.
-                DiagManager.Instance.LogInfo(String.Format("CharData.OnDeserialized(): Couldn't deserialize LuaDataTable string '{0}'!", ScriptVars));
+                DiagManager.Instance.LogInfo(String.Format("CharData.LoadLua(): Couldn't deserialize LuaDataTable string '{0}'!", ScriptVars));
                 LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             }
         }
