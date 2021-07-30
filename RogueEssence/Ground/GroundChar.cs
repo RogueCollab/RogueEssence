@@ -296,8 +296,8 @@ namespace RogueEssence.Ground
             if (EntEnabled)
             {
                 BaseSheet blank = GraphicsManager.Pixel;
-                blank.Draw(spriteBatch, new Rectangle(currentCharAction.Collider.X - offset.X, currentCharAction.Collider.Y - offset.Y,
-                    currentCharAction.Collider.Width, currentCharAction.Collider.Height), null, Color.Yellow * 0.7f);
+                blank.Draw(spriteBatch, new Rectangle(Bounds.X - offset.X, Bounds.Y - offset.Y,
+                    Bounds.Width, Bounds.Height), null, Color.Yellow * 0.7f);
             }
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
             Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);

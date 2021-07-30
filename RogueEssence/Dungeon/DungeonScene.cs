@@ -1223,34 +1223,23 @@ namespace RogueEssence.Dungeon
         public override void DrawDebug(SpriteBatch spriteBatch)
         {
             base.DrawDebug(spriteBatch);
+
+            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
+
+            if (ZoneManager.Instance.CurrentMap != null)
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
+            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
+
+            if (SeeAll)
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "See All", null, DirV.Up, DirH.Right, Color.LightYellow);
+            //if (GodMode)
+            //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, "God Mode", null, DirV.Up, DirH.Right, Color.LightYellow);
+
             if (FocusedCharacter != null)
             {
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.CharLoc.X, FocusedCharacter.CharLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-
-                MonsterID monId;
-                Loc offset;
-                int anim;
-                int currentHeight, currentTime, currentFrame;
-                FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-
-                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
-                Color frameColor = Color.White;
-                string animName = GraphicsManager.Actions[anim].Name;
-                int resultAnim = charSheet.GetReferencedAnimIndex(anim);
-                if (resultAnim == -1)
-                    frameColor = Color.Gray;
-                else if (resultAnim != anim)
-                {
-                    animName += "->" + GraphicsManager.Actions[resultAnim].Name;
-                    frameColor = Color.Yellow;
-                }
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("{0}:{1}:{2:D2}", animName, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
-
                 PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm);
                 sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
-                frameColor = Color.White;
+                Color frameColor = Color.White;
                 string emoteName = GraphicsManager.Emotions[DebugEmote].Name;
                 int resultEmote = sheet.GetReferencedEmoteIndex(DebugEmote);
                 if (resultEmote == -1)
@@ -1261,16 +1250,31 @@ namespace RogueEssence.Dungeon
                     frameColor = Color.Yellow;
                 }
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
+
+                MonsterID monId;
+                Loc offset;
+                int anim;
+                int currentHeight, currentTime, currentFrame;
+                FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
+
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
+                frameColor = Color.White;
+                string animName = GraphicsManager.Actions[anim].Name;
+                int resultAnim = charSheet.GetReferencedAnimIndex(anim);
+                if (resultAnim == -1)
+                    frameColor = Color.Gray;
+                else if (resultAnim != anim)
+                {
+                    animName += "->" + GraphicsManager.Actions[resultAnim].Name;
+                    frameColor = Color.Yellow;
+                }
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.CharLoc.X, FocusedCharacter.CharLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 92, String.Format("{0}:{1}:{2:D2}", animName, FocusedCharacter.CharDir.ToString(), currentFrame), null, DirV.Up, DirH.Right, frameColor);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 102, String.Format("Frame {0:D3}", currentTime), null, DirV.Up, DirH.Right, Color.White);
+
             }
 
-            if (ZoneManager.Instance.CurrentMap != null)
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 102, String.Format("Turn {0:D4}", ZoneManager.Instance.CurrentMap.MapTurns), null, DirV.Up, DirH.Right, Color.White);
-            GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 112, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
-
-            //if (GodMode)
-            //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "God Mode", null, DirV.Up, DirH.Right, Color.LightYellow);
-            if (SeeAll)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, "See All", null, DirV.Up, DirH.Right, Color.LightYellow);
 
         }
 

@@ -9,6 +9,7 @@ using RogueEssence.Dev;
 using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace RogueEssence.Dungeon
 {
@@ -393,8 +394,8 @@ namespace RogueEssence.Dungeon
             {
                 Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
                 Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
             }
         }
 

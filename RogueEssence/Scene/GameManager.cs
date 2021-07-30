@@ -52,7 +52,6 @@ namespace RogueEssence
         public bool Paused;
         public bool AdvanceFrame;
         public bool ShowDebug;
-        public string DebugUI;
 
         public bool FrameProcessed;
 
@@ -86,7 +85,6 @@ namespace RogueEssence
         {
             fadedTitle = "";
             fadedBG = new BGAnimData();
-            DebugUI = "";
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
@@ -1128,24 +1126,21 @@ namespace RogueEssence
             if ((int)(updateTime * 1000) > longestFrame)
                 longestFrame = (int)(updateTime * 1000);
 
+            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 32, String.Format("{0:D2} FPS  {1:D5} Longest", fps, longestFrame), null, DirV.Up, DirH.Left, Color.White);
+            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 42, Versioning.GetVersion().ToString(), null, DirV.Up, DirH.Left, Color.White);
+
+            //if (DataManager.Instance.CurrentReplay != null)
+            //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
+
             if (DiagManager.Instance.DevMode)
             {
                 CurrentScene.DrawDebug(spriteBatch);
 
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
             }
 
-            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 32, String.Format("{0:D2} FPS  {1:D5} Longest", fps, longestFrame), null, DirV.Up, DirH.Left, Color.White);
-            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 42, Versioning.GetVersion().ToString(), null, DirV.Up, DirH.Left, Color.White);
-            if (DataManager.Instance.CurrentReplay != null)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
-            if (DebugUI != null)
-            {
-                string[] lines = DebugUI.Split('\n');
-                for (int ii = 0; ii < lines.Length; ii++)
-                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - 2 + (ii + 1 - lines.Length) * 10, lines[ii], null, DirV.Down, DirH.Left, Color.White);
-            }
+
         }
 
         private void OnError(string msg)

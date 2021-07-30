@@ -7,6 +7,7 @@ using RogueEssence.Menu;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace RogueEssence.Ground
 {
@@ -14,6 +15,8 @@ namespace RogueEssence.Ground
     public abstract class BaseGroundScene : BaseScene
     {
         public Loc MouseLoc;
+
+        public Loc DiffLoc;
 
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
@@ -66,8 +69,7 @@ namespace RogueEssence.Ground
             MouseLoc = input.MouseLoc;
         }
 
-
-        protected void UpdateCam(Loc focusedLoc)
+        protected void UpdateCam(ref Loc focusedLoc)
         {
 
             //update cam
@@ -83,16 +85,13 @@ namespace RogueEssence.Ground
                 drawScale *= 2;
             }
 
-
-            Loc viewCenter = focusedLoc;
-
             if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                viewCenter = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(viewCenter.X,
+                focusedLoc = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(focusedLoc.X,
                     ZoneManager.Instance.CurrentGround.GroundWidth - (int)(GraphicsManager.ScreenWidth / scale / 2))),
-                    Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(viewCenter.Y,
+                    Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(focusedLoc.Y,
                     ZoneManager.Instance.CurrentGround.GroundHeight - (int)(GraphicsManager.ScreenHeight / scale / 2))));
 
-            ViewRect = new Rect((int)(viewCenter.X - GraphicsManager.ScreenWidth / scale / 2), (int)(viewCenter.Y - GraphicsManager.ScreenHeight / scale / 2),
+            ViewRect = new Rect((int)(focusedLoc.X - GraphicsManager.ScreenWidth / scale / 2), (int)(focusedLoc.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));
             viewTileRect = new Rect((int)Math.Floor((float)ViewRect.X / ZoneManager.Instance.CurrentGround.TileSize), (int)Math.Floor((float)ViewRect.Y / ZoneManager.Instance.CurrentGround.TileSize),
                 (ViewRect.End.X - 1) / ZoneManager.Instance.CurrentGround.TileSize + 1 - (int)Math.Floor((float)ViewRect.X / ZoneManager.Instance.CurrentGround.TileSize), (ViewRect.End.Y - 1) / ZoneManager.Instance.CurrentGround.TileSize + 1 - (int)Math.Floor((float)ViewRect.Y / ZoneManager.Instance.CurrentGround.TileSize));
@@ -331,9 +330,9 @@ namespace RogueEssence.Ground
                 Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
                 Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
                 Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 42, String.Format("Block X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Right, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, String.Format("M Wall X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 102, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
             }
         }
 

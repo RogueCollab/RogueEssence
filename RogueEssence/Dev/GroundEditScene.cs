@@ -27,7 +27,6 @@ namespace RogueEssence.Dev
         static Keys[] DirKeys = new Keys[4] { Keys.S, Keys.A, Keys.W, Keys.D };
 
         public Loc FocusedLoc;
-        public Loc DiffLoc;
 
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<bool> BlockInProgress;
@@ -114,18 +113,7 @@ namespace RogueEssence.Dev
                 FocusedLoc += DiffLoc;
                 DiffLoc = new Loc();
 
-                float scale = GraphicsManager.Zoom.GetScale();
-
-                if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                    FocusedLoc = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(FocusedLoc.X,
-                        ZoneManager.Instance.CurrentGround.GroundWidth - (int)(GraphicsManager.ScreenWidth / scale / 2))),
-                        Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(FocusedLoc.Y,
-                        ZoneManager.Instance.CurrentGround.GroundHeight - (int)(GraphicsManager.ScreenHeight / scale / 2))));
-                else
-                    FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth)),
-                        Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight)));
-
-                UpdateCam(FocusedLoc);
+                UpdateCam(ref FocusedLoc);
 
                 base.Update(elapsedTime);
             }
@@ -256,7 +244,7 @@ namespace RogueEssence.Dev
                 }
 
                 if (selectedEntity != null)
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Obj X:{0:D3} Y:{1:D3}", selectedEntity.MapLoc.X, selectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", selectedEntity.MapLoc.X, selectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
             }
         }
 
