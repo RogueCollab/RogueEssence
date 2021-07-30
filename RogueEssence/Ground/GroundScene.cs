@@ -315,8 +315,6 @@ namespace RogueEssence.Ground
                 //write back to cam variables based on clamp
                 if (ZoneManager.Instance.CurrentGround.ViewCenter.HasValue)
                     ZoneManager.Instance.CurrentGround.ViewCenter = focusedLoc;
-                else if (FocusedCharacter != null)
-                    ZoneManager.Instance.CurrentGround.ViewOffset = focusedLoc - FocusedCharacter.Bounds.Center;
 
                 base.Update(elapsedTime);
             }
