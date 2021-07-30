@@ -97,7 +97,7 @@ namespace RogueEssence.Dev
             if (rangeAtt != null)
                 rangeAtt.GetAddVals(out addMin, out addMax);
 
-            if (obj.Min + addMin + 1 >= obj.Max + addMax)
+            if (obj.Min + addMin >= obj.Max + addMax)
                 return obj.Min.ToString();
             else
                 return string.Format("{0}-{1}", obj.Min + addMin, obj.Max + addMax);
