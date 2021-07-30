@@ -64,6 +64,9 @@
     <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\DevForm\DevTabConstants.axaml.cs">
+      <DependentUpon>DevTabConstants.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\DevForm\DevTabMods.axaml.cs">
       <DependentUpon>DevTabMods.axaml</DependentUpon>
     </Compile>
