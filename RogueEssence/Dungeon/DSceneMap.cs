@@ -682,25 +682,24 @@ namespace RogueEssence.Dungeon
 
             for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
             {
+                if (ii >= GainedEXP.Count)
+                    break;
                 Character player = ActiveTeam.Players[ii];
                 int levelDiff = 0;
                 int totalExp = 0;
-                for (int jj = 0; jj < GainedEXP.Count; jj++)
-                {
-                    if (!player.Dead && player.Level < DataManager.Instance.MaxLevel)
-                    {
-                        MonsterData monsterData = DataManager.Instance.GetMonster(GainedEXP[jj].SlainMonster.Species);
-                        BaseMonsterForm monsterForm = monsterData.Forms[GainedEXP[jj].SlainMonster.Form];
-                        totalExp += monsterForm.GetExp(GainedEXP[jj].Level, player.Level + levelDiff);
 
-                        int growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
-                        GrowthData growthData = DataManager.Instance.GetGrowth(growth);
-                        while (player.Level + levelDiff < DataManager.Instance.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
-                            levelDiff++;
-                        while (player.Level + levelDiff > 1 && player.EXP + totalExp < growthData.GetExpTo(player.Level, player.Level + levelDiff))
-                            levelDiff--;
-                    }
+                if (!player.Dead && player.Level < DataManager.Instance.MaxLevel)
+                {
+                    totalExp += GainedEXP[ii];
+
+                    int growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
+                    GrowthData growthData = DataManager.Instance.GetGrowth(growth);
+                    while (player.Level + levelDiff < DataManager.Instance.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
+                        levelDiff++;
+                    while (player.Level + levelDiff > 1 && player.EXP + totalExp < growthData.GetExpTo(player.Level, player.Level + levelDiff))
+                        levelDiff--;
                 }
+
                 player.EXP += totalExp;
                 if (totalExp != 0)
                 {

@@ -734,8 +734,23 @@ namespace RogueEssence.Dungeon
 
             }
 
+            if (MemberTeam is ExplorerTeam)
+            {
+
+            }
+            else
+            {
+                InvItem heldItem = EquippedItem;
+                if (heldItem.ID > -1)
+                {
+                    DequipItem();
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
+                }
+            }
+
             yield return new WaitForFrames(animTime - 1);
 
+            HP = 0;
             Dead = true;
 
             //pre death:
@@ -751,40 +766,13 @@ namespace RogueEssence.Dungeon
             
             if (Dead)
             {
-                if (MemberTeam is ExplorerTeam)
-                {
-
-                }
-                else
-                {
-                    InvItem heldItem = EquippedItem;
-                    if (heldItem.ID > -1)
-                    {
-                        DequipItem();
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
-                    }
-                }
 
                 OnRemove();
 
                 DefeatAt = ZoneManager.Instance.CurrentMap.GetColoredName();
                 //DefeatDungeon = ZoneManager.Instance.CurrentZoneID;
                 //DefeatFloor = ZoneManager.Instance.CurrentMapID;
-                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-                    yield return new WaitForFrames(60);
-                else
-                {
-                    if (EXPMarked)
-                    {
-                        if (MemberTeam is ExplorerTeam)
-                        {
-                            //TODO: hand out EXP only when the final member is defeated
-                        }
-                        else
-                            DungeonScene.Instance.GainedEXP.Add(new EXPGain(BaseForm, Level));
-                    }
-                    DataManager.Instance.Save.SeenMonster(BaseForm.Species);
-                }
+
             }
         }
 

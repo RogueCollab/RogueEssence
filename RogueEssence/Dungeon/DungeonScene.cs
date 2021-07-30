@@ -66,7 +66,7 @@ namespace RogueEssence.Dungeon
             return focusedLoc;
         }
         
-        public List<EXPGain> GainedEXP;
+        public List<int> GainedEXP;
         
         public List<CharIndex> LevelGains;
 
@@ -132,7 +132,7 @@ namespace RogueEssence.Dungeon
 
         public override void Begin()
         {
-            GainedEXP = new List<EXPGain>();
+            GainedEXP = new List<int>();
             LevelGains = new List<CharIndex>();
             PendingLeaderAction = null;
             base.Begin();
