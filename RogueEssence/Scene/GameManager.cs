@@ -553,7 +553,7 @@ namespace RogueEssence
         /// </summary>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
-        public IEnumerator<YieldInstruction> MoveToGround(string mapname, string entrypoint, bool preserveMusic)
+        public IEnumerator<YieldInstruction> MoveToGround(int zone, string mapname, string entrypoint, bool preserveMusic)
         {
             //if we're in a test map, return to editor
             if (ZoneManager.Instance.InDevZone)
@@ -562,9 +562,18 @@ namespace RogueEssence
                 yield break;
             }
 
+            bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
 
-            ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
+            //switch location
+            if (sameZone)
+                ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
+            else
+            {
+                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone));//NOTE: there are better ways to seed a multi-dungeon adventure
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+            }
+
             if (ZoneManager.Instance.CurrentGround == null)
                 throw new Exception(String.Format("GroundScene.MoveToGround(): Failed to load map {0}!", mapname));
 

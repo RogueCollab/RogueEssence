@@ -837,7 +837,10 @@ namespace RogueEssence.Ground
 
         public GroundEntity FindEntity(string name)
         {
-            foreach(GroundEntity entity in IterateEntities())
+            if (name == "PLAYER")
+                return this.ActiveChar;
+
+            foreach (GroundEntity entity in IterateEntities())
             {
                 if (entity.EntName == name)
                     return entity;

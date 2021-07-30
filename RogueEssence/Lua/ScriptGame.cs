@@ -50,7 +50,12 @@ namespace RogueEssence.Script
 
         public void EnterGroundMap(string name, string entrypoint, bool preserveMusic = false)
         {
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(name, entrypoint, preserveMusic);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(ZoneManager.Instance.CurrentZoneID, name, entrypoint, preserveMusic);
+        }
+
+        public void EnterGroundMap(int zone, string name, string entrypoint, bool preserveMusic = false)
+        {
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(zone, name, entrypoint, preserveMusic);
         }
 
 
