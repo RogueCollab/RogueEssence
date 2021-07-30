@@ -285,7 +285,39 @@ namespace RogueEssence.Ground
                 shadowType.X, shadowType.Y);
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        private void drawCross(SpriteBatch spriteBatch, Loc loc, Color color)
+        {
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X - 2, loc.Y, 5, 1), null, color);
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X, loc.Y - 2, 1, 5), null, color);
+        }
+
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        {
+            if (EntEnabled)
+            {
+                BaseSheet blank = GraphicsManager.Pixel;
+                blank.Draw(spriteBatch, new Rectangle(currentCharAction.Collider.X - offset.X, currentCharAction.Collider.Y - offset.Y,
+                    currentCharAction.Collider.Width, currentCharAction.Collider.Height), null, Color.Yellow * 0.7f);
+            }
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);
+            Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
+            Loc leftHand = currentCharAction.GetActionPoint(sheet, ActionPointType.LeftHand);
+            Loc rightHand = currentCharAction.GetActionPoint(sheet, ActionPointType.RightHand);
+
+            drawCross(spriteBatch, head - offset, Color.Black);
+            Color centerColor = new Color(0, 255, 0, 255);
+            if (leftHand == center)
+                centerColor = new Color(255, centerColor.G, centerColor.B, centerColor.A);
+            else
+                drawCross(spriteBatch, leftHand - offset, Color.Red);
+            if (rightHand == center)
+                centerColor = new Color(centerColor.R, centerColor.G, 255, centerColor.A);
+            else
+                drawCross(spriteBatch, rightHand - offset, Color.Blue);
+
+            drawCross(spriteBatch, center - offset, centerColor);
+        }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);

@@ -90,7 +90,14 @@ namespace RogueEssence.Ground
 
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        {
+            if (EntEnabled)
+            {
+                BaseSheet blank = GraphicsManager.Pixel;
+                blank.Draw(spriteBatch, new Rectangle(Collider.X - offset.X, Collider.Y - offset.Y, Collider.Width, Collider.Height), null, Color.Cyan * 0.7f);
+            }
+        }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             if (ObjectAnim.AnimIndex != "")

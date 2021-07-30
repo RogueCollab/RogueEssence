@@ -290,18 +290,7 @@ namespace RogueEssence.Ground
                 {
                     if (box is GroundWall)
                         blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Red * 0.3f);
-                    else if (box is GroundChar)
-                    {
-                        if (((GroundChar)box).EntEnabled)
-                            blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Yellow * 0.7f);
-                    }
-                    else if (box is GroundObject)
-                    {
-                        if (((GroundObject)box).EntEnabled)
-                            blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Cyan * 0.5f);
-                    }
-                    else
-                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Gray * 0.5f);
+                    
                 }, (string message, int x, int y, float alpha) =>
                 {
                     int size = GraphicsManager.SysFont.SubstringWidth(message);
