@@ -74,8 +74,17 @@ namespace RogueEssence.Dungeon
         public string DefeatAt;
         //public int DefeatDungeon;
         //public StructMap DefeatFloor;
-        //cannot release founder
+
+        /// <summary>
+        /// Cannot be removed from assembly.
+        /// </summary>
         public bool IsFounder;
+
+        /// <summary>
+        /// Cannot be removed from team.
+        /// </summary>
+        public bool IsPartner;
+
         public bool IsFavorite;
 
         public List<BattleEvent> ActionEvents;

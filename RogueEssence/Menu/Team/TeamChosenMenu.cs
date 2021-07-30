@@ -58,6 +58,8 @@ namespace RogueEssence.Menu
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction, canAct, canAct ? Color.White : Color.Red));
 
             bool canSendHome = canAct;
+            if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot].IsPartner)
+                canSendHome = false;
             if (DataManager.Instance.Save is RogueProgress && DataManager.Instance.GetSkin(DataManager.Instance.Save.ActiveTeam.Players[teamSlot].BaseForm.Skin).Challenge && !DataManager.Instance.Save.ActiveTeam.Players[teamSlot].Dead)
                 canSendHome = false;
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance && teamSlot != DataManager.Instance.Save.ActiveTeam.LeaderIndex)

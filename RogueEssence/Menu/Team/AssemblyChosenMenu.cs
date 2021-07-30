@@ -30,7 +30,8 @@ namespace RogueEssence.Menu
             else if (!baseMenu.ChoosingLeader(teamSlot))
             {
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction));
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
+                if (!baseMenu.ChoosingStuckMember(teamSlot))
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));

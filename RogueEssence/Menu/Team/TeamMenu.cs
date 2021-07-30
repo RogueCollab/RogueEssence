@@ -24,14 +24,19 @@ namespace RogueEssence.Menu
         {
             int menuWidth = 160;
             this.sendHome = sendHome;
-            bool checkSkin = DataManager.Instance.Save is RogueProgress && sendHome;
-            if (checkSkin && DataManager.Instance.Save.ActiveTeam.Players.Count > ExplorerTeam.MAX_TEAM_SLOTS)
+            bool overrideSendHome = false;
+            bool rogueMode = DataManager.Instance.Save is RogueProgress;
+            // if no one can be sent home, and we are in overflow, we must override and allow someone to be sent home
+            if (sendHome && DataManager.Instance.Save.ActiveTeam.Players.Count > ExplorerTeam.MAX_TEAM_SLOTS)
             {
-                checkSkin = false;
+                overrideSendHome = true;
                 foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
                 {
-                    if (!DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge || character.Dead)
-                        checkSkin = true;
+                    if (character.IsPartner)
+                        continue;
+                    if (rogueMode && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead)
+                        continue;
+                    overrideSendHome = false;
                 }
             }
             List<MenuChoice> team = new List<MenuChoice>();
@@ -39,14 +44,22 @@ namespace RogueEssence.Menu
             {
                 int teamIndex = team.Count;
                 bool disabled = false;
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                if (sendHome)
                 {
-                    CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                    if (sendHome && turnChar.Char == team.Count)//disable the current turn choice in send home mode
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    {
+                        CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                        if (turnChar.Char == team.Count)//disable the current turn choice in send home mode
+                            disabled = true;
+                    }
+                    // individuals with IsPartner cannot be sent home
+                    if (!overrideSendHome && character.IsPartner)
                         disabled = true;
+
+                    // individuals with the challenge skin cannot be sent home unless dead
+                    if (!overrideSendHome && rogueMode)
+                        disabled |= DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead;
                 }
-                if (checkSkin)
-                    disabled |= DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead;
 
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), disabled ? Color.Red : Color.White);
                 MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, disabled ? Color.Red : Color.White);

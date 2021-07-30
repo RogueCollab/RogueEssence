@@ -71,6 +71,15 @@ namespace RogueEssence.Menu
             return choice == DataManager.Instance.Save.ActiveTeam.LeaderIndex;
         }
 
+        public bool ChoosingStuckMember(int choice)
+        {
+            if (DataManager.Instance.Save.ActiveTeam.Players[choice].IsPartner)
+                return true;
+            if (DataManager.Instance.Save is RogueProgress && DataManager.Instance.GetSkin(DataManager.Instance.Save.ActiveTeam.Players[choice].BaseForm.Skin).Challenge && !DataManager.Instance.Save.ActiveTeam.Players[choice].Dead)
+                return true;
+            return false;
+        }
+
         public bool CanChooseAssembly(int choice)
         {
             Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
@@ -144,7 +153,7 @@ namespace RogueEssence.Menu
                 //instantly put the team on or remove it
                 if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
                 {
-                    if (!ChoosingLeader(currentChoice))
+                    if (!ChoosingLeader(currentChoice) && !ChoosingStuckMember(currentChoice))
                     {
                         GameManager.Instance.SE("Menu/Toggle");
                         GroundScene.Instance.SilentSendHome(currentChoice);
