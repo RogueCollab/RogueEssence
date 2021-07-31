@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
             }
             string newMessage = message;
 
-            Text = new DialogueText(newMessage, new Loc(GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 2), GraphicsManager.ScreenWidth, TEXT_SPACE, true, FadeIn ? -1 : 0);
+            Text = new DialogueText(newMessage, new Loc(0, GraphicsManager.ScreenHeight / 2), GraphicsManager.ScreenWidth, TEXT_SPACE, true, true, FadeIn ? -1 : 0);
         }
 
         public void ProcessActions(FrameTick elapsedTime)

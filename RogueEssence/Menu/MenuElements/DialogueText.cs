@@ -15,23 +15,25 @@ namespace RogueEssence.Menu
         public Loc Start;
         public int Width;
         public int CurrentCharIndex;
-        public bool Center;
+        public bool CenterH;
+        public bool CenterV;
         private List<(int idx, Color color)> textColor;
         public float TextOpacity;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= Text.Length; } }
 
-        public DialogueText(string text, Loc start, int width, int lineSpace, bool center, int startIndex)
+        public DialogueText(string text, Loc start, int width, int lineSpace, bool centerH, bool centerV, int startIndex)
         {
             Start = start;
             Width = width;
             LineSpace = lineSpace;
-            Center = center;
+            CenterH = centerH;
+            CenterV = centerV;
             TextOpacity = 1f;
             CurrentCharIndex = startIndex;
             textColor = new List<(int idx, Color color)>();
             SetText(text);
         }
-        public DialogueText(string text, Loc start, int width, int lineSpace, bool center) : this(text, start, width, lineSpace, center, -1)
+        public DialogueText(string text, Loc start, int width, int lineSpace) : this(text, start, width, lineSpace, false, false, -1)
         { }
 
         public void SetText(string text)
@@ -84,11 +86,12 @@ namespace RogueEssence.Menu
         {
             string[] currLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length);
             Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(currLines[currLines.Length - 1]), LineSpace * (currLines.Length - 1));
-            if (Center)
-            {
-                string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, Text.Length);
-                loc -= new Loc(GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1]), LineSpace * (allLines.Length - 1)) / 2;
-            }
+            
+            string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, Text.Length);
+            if (CenterH)
+                loc += new Loc(Width - GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1]), 0) / 2;
+            if (CenterV)
+                loc -= new Loc(0, LineSpace * (allLines.Length - 1)) / 2;
             return loc;
         }
 
@@ -118,8 +121,9 @@ namespace RogueEssence.Menu
 
                         int nextColorIdx = Math.Min(textColor[curColor + 1].idx - lineChars, Math.Min(lines[ii].Length, endIndex - lineChars));
 
-                        GraphicsManager.TextFont.DrawText(spriteBatch, Start.X + offset.X, Start.Y + offset.Y + LineSpace * ii,
-                            lines[ii], null, Center ? DirV.None : DirV.Up, Center ? DirH.None : DirH.Left,
+                        int midWidth = CenterH ? Width / 2 : 0;
+                        GraphicsManager.TextFont.DrawText(spriteBatch, Start.X + offset.X + midWidth, Start.Y + offset.Y + LineSpace * ii,
+                            lines[ii], null, CenterV ? DirV.None : DirV.Up, CenterH ? DirH.None : DirH.Left,
                             colorStack.Peek() * TextOpacity, curChar, nextColorIdx - curChar);
                         curChar = nextColorIdx;
 

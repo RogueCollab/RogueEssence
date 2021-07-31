@@ -7,8 +7,8 @@ namespace RogueEssence.Menu
         private int time;
         private Action action;
 
-        public TimedDialog(string message, bool sound, int time, Action action)
-            : base(message, sound)
+        public TimedDialog(string message, bool sound, bool centered, int time, Action action)
+            : base(message, sound, centered)
         {
             this.time = time;
             this.action = action;

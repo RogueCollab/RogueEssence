@@ -43,7 +43,7 @@ namespace RogueEssence.Menu
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
 
-        public DialogueBox(string msg, bool sound)
+        public DialogueBox(string msg, bool sound, bool centered)
         {
             Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_SPACE * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
 
@@ -53,8 +53,9 @@ namespace RogueEssence.Menu
             Sound = sound;
             message = msg;
 
-            Text = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2 - Bounds.X, TEXT_SPACE, false, 0);
+            Text = new DialogueText("", new Loc(Bounds.Start.X + GraphicsManager.MenuBG.TileWidth + HORIZ_PAD,
+                Bounds.Start.Y + GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET),
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2 - Bounds.X, TEXT_SPACE, centered, false, 0);
 
             updateMessage();
         }

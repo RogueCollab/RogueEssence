@@ -11,9 +11,9 @@ namespace RogueEssence.Menu
     {
         private DialogueChoiceMenu dialogueChoices;
 
-        public QuestionDialog(string message, bool sound, DialogueChoice[] choices, int defaultChoice,
+        public QuestionDialog(string message, bool sound, bool centered, DialogueChoice[] choices, int defaultChoice,
             int cancelChoice)
-            : base(message, sound)
+            : base(message, sound, centered)
         {
             dialogueChoices = new DialogueChoiceMenu(choices, defaultChoice, cancelChoice, Bounds.Y);
         }

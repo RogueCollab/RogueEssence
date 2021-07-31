@@ -10,7 +10,7 @@ namespace RogueEssence.Menu
         DungeonSummary summaryMenu;
 
         public DungeonEnterDialog(string message, int dungeon, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
-            : base(message, sound, choices, defaultChoice, cancelChoice)
+            : base(message, sound, false, choices, defaultChoice, cancelChoice)
         {
             summaryMenu = new DungeonSummary(new Rect(new Loc(8, 8), new Loc(128, GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
             summaryMenu.SetDungeon(dungeon, DataManager.Instance.Save.DungeonUnlocks[dungeon] == GameProgress.UnlockState.Completed);
