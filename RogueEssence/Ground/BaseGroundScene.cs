@@ -16,8 +16,6 @@ namespace RogueEssence.Ground
     {
         public Loc MouseLoc;
 
-        public Loc DiffLoc;
-
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 

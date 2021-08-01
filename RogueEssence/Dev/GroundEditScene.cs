@@ -27,6 +27,7 @@ namespace RogueEssence.Dev
         static Keys[] DirKeys = new Keys[4] { Keys.S, Keys.A, Keys.W, Keys.D };
 
         public Loc FocusedLoc;
+        public Loc DiffLoc;
 
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<bool> BlockInProgress;

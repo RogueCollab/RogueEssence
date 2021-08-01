@@ -23,7 +23,7 @@ namespace RogueEssence.Ground
         }
         public static GroundScene Instance { get { return instance; } }
 
-        public bool FreeCam;
+        public Loc? FreeCamCenter;
         public int DebugEmote;
 
         public GroundChar FocusedCharacter
@@ -83,11 +83,36 @@ namespace RogueEssence.Ground
             if (input.JustPressed(FrameInput.InputType.SeeAll))
             {
                 GameManager.Instance.SE("Menu/Confirm");
-                FreeCam = !FreeCam;
-                if (FreeCam)
-                    ZoneManager.Instance.CurrentGround.ViewCenter = FocusedCharacter.Bounds.Center;
+                if (FreeCamCenter.HasValue)
+                    FreeCamCenter = null;
                 else
-                    ZoneManager.Instance.CurrentGround.ViewCenter = null;
+                    FreeCamCenter = FocusedCharacter.Bounds.Center;
+            }
+
+
+            if (FreeCamCenter.HasValue)
+            {
+                Loc dirLoc = input.Direction.GetLoc();
+
+                bool slow = input[FrameInput.InputType.Run];
+                int speed = 4;
+                if (slow)
+                    speed = 1;
+                else
+                {
+                    switch (GraphicsManager.Zoom)
+                    {
+                        case GraphicsManager.GameZoom.x8Near:
+                        case GraphicsManager.GameZoom.x4Near:
+                            speed = 1;
+                            break;
+                        case GraphicsManager.GameZoom.x2Near:
+                            speed = 2;
+                            break;
+                    }
+                }
+
+                FreeCamCenter += dirLoc * speed;
             }
 
             if (input.JustReleased(FrameInput.InputType.RightMouse) && input[FrameInput.InputType.Ctrl])
@@ -133,31 +158,8 @@ namespace RogueEssence.Ground
 
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
-            if (FreeCam)
-            {
-                Loc dirLoc = input.Direction.GetLoc();
-
-                bool slow = input[FrameInput.InputType.Run];
-                int speed = 4;
-                if (slow)
-                    speed = 1;
-                else
-                {
-                    switch (GraphicsManager.Zoom)
-                    {
-                        case GraphicsManager.GameZoom.x8Near:
-                        case GraphicsManager.GameZoom.x4Near:
-                            speed = 1;
-                            break;
-                        case GraphicsManager.GameZoom.x2Near:
-                            speed = 2;
-                            break;
-                    }
-                }
-
-                DiffLoc = dirLoc * speed;
+            if (FreeCamCenter.HasValue)
                 yield break;
-            }
 
             GameAction action = new GameAction(GameAction.ActionType.None, Dir8.None);
 
@@ -274,9 +276,6 @@ namespace RogueEssence.Ground
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
-                ZoneManager.Instance.CurrentGround.ViewCenter += DiffLoc;
-                DiffLoc = new Loc();
-
                 //Make entities think!
                 foreach (GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
                 {
@@ -303,7 +302,9 @@ namespace RogueEssence.Ground
 
 
                 Loc focusedLoc = new Loc();
-                if (ZoneManager.Instance.CurrentGround.ViewCenter.HasValue)
+                if (FreeCamCenter.HasValue)
+                    focusedLoc = FreeCamCenter.Value;
+                else if (ZoneManager.Instance.CurrentGround.ViewCenter.HasValue)
                     focusedLoc = ZoneManager.Instance.CurrentGround.ViewCenter.Value;
                 else if (FocusedCharacter != null)
                     focusedLoc = FocusedCharacter.Bounds.Center + ZoneManager.Instance.CurrentGround.ViewOffset;
@@ -313,8 +314,8 @@ namespace RogueEssence.Ground
                 UpdateCam(ref focusedLoc);
 
                 //write back to cam variables based on clamp
-                if (ZoneManager.Instance.CurrentGround.ViewCenter.HasValue)
-                    ZoneManager.Instance.CurrentGround.ViewCenter = focusedLoc;
+                if (FreeCamCenter.HasValue)
+                    FreeCamCenter = focusedLoc;
 
                 base.Update(elapsedTime);
             }
@@ -345,7 +346,7 @@ namespace RogueEssence.Ground
 
             GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
 
-            if (FreeCam)
+            if (FreeCamCenter.HasValue)
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "Free Cam", null, DirV.Up, DirH.Right, Color.LightYellow);
 
             if (FocusedCharacter != null)
@@ -364,9 +365,9 @@ namespace RogueEssence.Ground
                 }
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
 
-                if (FreeCam)
+                if (FreeCamCenter.HasValue)
                 {
-                    Loc viewCenter = ZoneManager.Instance.CurrentGround.ViewCenter.Value;
+                    Loc viewCenter = FreeCamCenter.Value;
                     GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("Cam X:{0:D3} Y:{1:D3}", viewCenter.X, viewCenter.Y), null, DirV.Up, DirH.Right, Color.White);
                     GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Rel X:{0:D3} Y:{1:D3}", viewCenter.X - FocusedCharacter.Bounds.Center.X, viewCenter.Y - FocusedCharacter.Bounds.Center.Y), null, DirV.Up, DirH.Right, Color.White);
                 }
