@@ -734,6 +734,11 @@ namespace RogueEssence.Dungeon
 
             }
 
+            yield return new WaitWhile(OccupiedwithAction);
+
+            HP = 0;
+            Dead = true;
+
             if (MemberTeam is ExplorerTeam)
             {
 
@@ -747,12 +752,7 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
                 }
             }
-
-            yield return new WaitForFrames(animTime - 1);
-
-            HP = 0;
-            Dead = true;
-
+            
             //pre death:
             //defeat message
             //mark as dead
