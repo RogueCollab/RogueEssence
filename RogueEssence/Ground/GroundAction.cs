@@ -313,8 +313,9 @@ namespace RogueEssence.Ground
         private int animType;
         private float animSpeed;
         private int moveRate;
-        private Loc destination;
-        private Loc curPos;
+        private Loc goalDiff;
+        private Loc curDiff;
+        private int framesPassed;
 
         protected override int FrameMethod(List<CharAnimFrame> frames)
         {
@@ -322,7 +323,7 @@ namespace RogueEssence.Ground
         }
         protected override int AnimFrameType { get { return animType; } }
 
-        public bool Complete { get { return destination == curPos; } }
+        public bool Complete { get { return curDiff == goalDiff; } }
 
         public AnimateToPositionGroundAction(int animType, Loc loc, Dir8 dir, float animSpeed, int moveRate, FrameTick prevTime, Loc destination)
         {
@@ -332,8 +333,7 @@ namespace RogueEssence.Ground
             this.animSpeed = animSpeed;
             ActionTime = prevTime;
             this.moveRate = moveRate;
-            this.destination = destination;
-            curPos = MapLoc;
+            this.goalDiff = destination - MapLoc;
         }
 
         public override void UpdateTime(FrameTick elapsedTime)
@@ -349,33 +349,13 @@ namespace RogueEssence.Ground
 
         public override void Update(FrameTick elapsedTime)
         {
-            Loc movediff = destination - curPos;
-
-            //Get the difference between the current position and destination
-            double x = movediff.X / Math.Sqrt(movediff.DistSquared());
-            double y = movediff.Y / Math.Sqrt(movediff.DistSquared());
-
-            //Ignore translation on a given axis if its already at the correct position on that axis.
-            // Mainly because we're rounding the values to the nearest integer, and might overshoot otherwise.
-            if (movediff.X == 0)
-                x = 0;
-            if (movediff.Y == 0)
-                y = 0;
-
-            //Convert the floating point number to the biggest nearby integer value, and keep its sign
-            Loc movevec = new Loc();
-            movevec.X = (int)(Math.Ceiling(Math.Abs(x)) * Math.Sign(x));
-            movevec.Y = (int)(Math.Ceiling(Math.Abs(y)) * Math.Sign(y));
-
-
-            Loc checkedmove = new Loc();
-            //Constrain the move vector components to the components of the position difference vector to
-            // ensure we don't overshoot because of the move rate
-            checkedmove.X = Math.Min(Math.Abs(movediff.X), Math.Abs(movevec.X * moveRate)) * Math.Sign(movevec.X);
-            checkedmove.Y = Math.Min(Math.Abs(movediff.Y), Math.Abs(movevec.Y * moveRate)) * Math.Sign(movevec.Y);
-
-            Move = checkedmove;
-            curPos += Move; //Increment our internal current position, since we have no ways of knowing where we are otherwise..
+            framesPassed++;
+            double scalarDiff = Math.Sqrt(goalDiff.DistSquared());
+            Loc newDiff = new Loc((int)Math.Round(moveRate * framesPassed * goalDiff.X / scalarDiff), (int)Math.Round(moveRate * framesPassed * goalDiff.Y / scalarDiff));
+            if (moveRate * framesPassed >= scalarDiff)
+                newDiff = goalDiff;
+            Move = newDiff - curDiff;
+            curDiff = newDiff;
         }
     }
 
