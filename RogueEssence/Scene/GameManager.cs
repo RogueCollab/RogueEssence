@@ -676,6 +676,7 @@ namespace RogueEssence
                     DataManager.Instance.SetProgress(state.Save);
                     LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
                     ZoneManager.LoadFromState(state.Zone);
+                    LuaEngine.Instance.UpdateZoneInstance();
 
                     SceneOutcome = MoveToZone(DataManager.Instance.Save.NextDest);
                 }
