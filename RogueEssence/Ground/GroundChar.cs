@@ -467,9 +467,10 @@ namespace RogueEssence.Ground
         }
 
         [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
+        internal override void OnDeserializedMethod(StreamingContext context)
         {
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
+            base.OnDeserializedMethod(context);
         }
     }
 }

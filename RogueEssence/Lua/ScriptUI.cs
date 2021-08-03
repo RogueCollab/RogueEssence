@@ -46,7 +46,6 @@ namespace RogueEssence.Script
 
 
         //Lua wrapper functions
-        public LuaFunction WaitShowMonologue;
         public LuaFunction WaitForChoice;
         public LuaFunction WaitDialog;
         public LuaFunction WaitShowDialogue;

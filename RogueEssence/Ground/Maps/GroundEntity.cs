@@ -306,7 +306,7 @@ namespace RogueEssence.Ground
         }
 
         [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
+        internal virtual void OnDeserializedMethod(StreamingContext context)
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
