@@ -37,6 +37,7 @@ namespace RogueEssence.Data
         public ObjAnimData Anim;
         public bool ObjectLayer;
         //public bool BlockLight;
+        public bool BlockItem;
         public TriggerType StepType;
         public Loc MinimapIcon;
         public Color MinimapColor;

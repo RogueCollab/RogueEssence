@@ -641,7 +641,11 @@ namespace RogueEssence.Dungeon
                 return true;
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
             if (tile.Effect.ID > -1)
-                return true;
+            {
+                TileData tileData = DataManager.Instance.GetTile(tile.Effect.ID);
+                if (tileData.StepType != TileData.TriggerType.None)
+                    return true;
+            }
 
             return false;
         }

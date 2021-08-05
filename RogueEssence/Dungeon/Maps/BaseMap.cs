@@ -177,7 +177,11 @@ namespace RogueEssence.Dungeon
             if (TileBlocked(loc, mobility, false))
                 return false;
             if (Tiles[loc.X][loc.Y].Effect.ID > -1)
-                return false;
+            {
+                TileData tileData = DataManager.Instance.GetTile(Tiles[loc.X][loc.Y].Effect.ID);
+                if (tileData.BlockItem)
+                    return false;
+            }
 
             if (ignoreItem)
                 return true;
