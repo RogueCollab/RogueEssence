@@ -18,6 +18,7 @@ namespace RogueEssence.Dungeon
         public override int ID { get; set; }
         public bool Cursed;
         public int HiddenValue;
+        public int Price;
 
         public InvItem() : base()
         { }
@@ -38,12 +39,26 @@ namespace RogueEssence.Dungeon
             Cursed = cursed;
             HiddenValue = hiddenValue;
         }
+        public InvItem(int index, bool cursed, int hiddenValue, int price)
+        {
+            ID = index;
+            Cursed = cursed;
+            HiddenValue = hiddenValue;
+            Price = price;
+        }
         public InvItem(InvItem other) : base(other)
         {
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;
+            Price = other.Price;
         }
         public ISpawnable Copy() { return new InvItem(this); }
+
+
+        public string GetPriceString()
+        {
+            return MapItem.GetPriceString(Price);
+        }
 
         public override string GetDisplayName()
         {

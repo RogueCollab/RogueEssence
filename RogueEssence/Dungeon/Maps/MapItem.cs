@@ -3,6 +3,7 @@ using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Text;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,6 +14,7 @@ namespace RogueEssence.Dungeon
         public bool Cursed;
         public int Value;
         public int HiddenValue;
+        public int Price;
 
         public string SpriteIndex
         {
@@ -58,6 +60,7 @@ namespace RogueEssence.Dungeon
             Cursed = other.Cursed;
             Value = other.Value;
             HiddenValue = other.HiddenValue;
+            Price = other.Price;
         }
         public ISpawnable Copy() { return new MapItem(this); }
 
@@ -68,14 +71,47 @@ namespace RogueEssence.Dungeon
             Value = item.ID;
             Cursed = item.Cursed;
             HiddenValue = item.HiddenValue;
+            Price = item.Price;
             TileLoc = loc;
         }
 
         public InvItem MakeInvItem()
         {
-            return new InvItem(Value, Cursed, HiddenValue);
+            return new InvItem(Value, Cursed, HiddenValue, Price);
         }
 
+        public string GetPriceString()
+        {
+            if (Price > 0)
+            {
+                string baseStr = Price.ToString();
+                StringBuilder resultStr = new StringBuilder();
+                for (int ii = 0; ii < baseStr.Length; ii++)
+                {
+                    int en = (int)baseStr[ii] - 0x30;
+                    int un = en + 0xE100;
+                    resultStr.Append((char)un);
+                }
+                return resultStr.ToString();
+            }
+            return null;
+        }
+        public static string GetPriceString(int price)
+        {
+            if (price > 0)
+            {
+                string baseStr = price.ToString();
+                StringBuilder resultStr = new StringBuilder();
+                for (int ii = 0; ii < baseStr.Length; ii++)
+                {
+                    int en = (int)baseStr[ii] - 0x30;
+                    int un = en + 0xE100;
+                    resultStr.Append((char)un);
+                }
+                return resultStr.ToString();
+            }
+            return "";
+        }
 
         public string GetDungeonName()
         {

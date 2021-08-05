@@ -187,19 +187,26 @@ namespace RogueEssence.Dungeon
                             Team memberTeam = character.MemberTeam;
                             if (memberTeam is ExplorerTeam)
                             {
-                                bool canGet = (((ExplorerTeam)memberTeam).GetInvCount() < ((ExplorerTeam)memberTeam).GetMaxInvSlots(ZoneManager.Instance.CurrentZone)) || item.IsMoney;
-                                if (!canGet)
+                                ExplorerTeam explorerTeam = (ExplorerTeam)memberTeam;
+                                bool canGet = (explorerTeam.GetInvCount() < explorerTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
+                                if (item.Price > 0)
+                                    canGet = false;
+                                else
                                 {
-                                    Data.ItemData entry = Data.DataManager.Instance.GetItem(item.Value);
-                                    if (entry.MaxStack > 1)
+                                    canGet |= item.IsMoney;
+                                    if (!canGet)
                                     {
-                                        //find an inventory slot that isn't full stack
-                                        foreach (InvItem inv in ((ExplorerTeam)memberTeam).EnumerateInv())
+                                        ItemData entry = DataManager.Instance.GetItem(item.Value);
+                                        if (entry.MaxStack > 1)
                                         {
-                                            if (inv.ID == item.Value && inv.Cursed == item.Cursed && inv.HiddenValue < entry.MaxStack)
+                                            //find an inventory slot that isn't full stack
+                                            foreach (InvItem inv in explorerTeam.EnumerateInv())
                                             {
-                                                canGet = true;
-                                                break;
+                                                if (inv.ID == item.Value && inv.Cursed == item.Cursed && inv.HiddenValue < entry.MaxStack)
+                                                {
+                                                    canGet = true;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
