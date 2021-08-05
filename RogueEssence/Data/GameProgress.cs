@@ -571,7 +571,7 @@ namespace RogueEssence.Data
         public static void LossPenalty(GameProgress save)
         {
             //remove money
-            save.ActiveTeam.Money = save.ActiveTeam.Money / 2;
+            save.ActiveTeam.Money = 0;
             //remove bag items
             for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
             {
