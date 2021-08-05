@@ -104,7 +104,7 @@ namespace RogueEssence.Dungeon
                 BaseSkills.Add(new SlotSkill());
             BaseIntrinsics = new List<int>();
             for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                BaseIntrinsics.Add(0);
+                BaseIntrinsics.Add(-1);
             Relearnables = new List<bool>();
 
             MetAt = "";

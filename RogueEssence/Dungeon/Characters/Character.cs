@@ -1428,7 +1428,10 @@ namespace RogueEssence.Dungeon
             if (!IntrinsicDisabled)
             {
                 foreach (BackReference<Intrinsic> intrinsic in Intrinsics)
-                    yield return new PassiveContext(intrinsic.Element, intrinsic.Element.GetData(), defaultPortPriority, this);
+				{
+                    if (intrinsic.Element.ID > -1)
+                        yield return new PassiveContext(intrinsic.Element, intrinsic.Element.GetData(), defaultPortPriority, this);
+				}
             }
 
             if (dungeonMode)
@@ -1515,9 +1518,12 @@ namespace RogueEssence.Dungeon
             {
                 foreach (BackReference<Intrinsic> intrinsic in Intrinsics)
                 {
-                    ProximityPassive proximity = (ProximityPassive)intrinsic.Element.GetData();
-                    if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-                        yield return new PassiveContext(intrinsic.Element, proximity.ProximityEvent, portPriority, this);
+                    if (intrinsic.Element.ID > -1)
+                    {
+						ProximityPassive proximity = (ProximityPassive)intrinsic.Element.GetData();
+						if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
+							yield return new PassiveContext(intrinsic.Element, proximity.ProximityEvent, portPriority, this);
+					}
                 }
             }
 
