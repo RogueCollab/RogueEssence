@@ -193,6 +193,7 @@ namespace RogueEssence.Dungeon
         //calculable via save-loading
         public uint Mobility;
         public bool CantWalk;
+        public bool NoSwitch;
         //will prevent the passive item effects, as well as the "stick" effect
         //does not affect active use
         public bool ItemDisabled;
@@ -1310,6 +1311,7 @@ namespace RogueEssence.Dungeon
             ProxySprite = MonsterID.Invalid;
 
             CantWalk = false;
+            NoSwitch = false;
 
             ItemDisabled = false;
             IntrinsicDisabled = false;

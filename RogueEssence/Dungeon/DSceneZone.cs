@@ -619,6 +619,8 @@ namespace RogueEssence.Dungeon
             Character character = ActiveTeam.Players[charIndex];
             if (character.Dead)
                 return false;
+            if (character.NoSwitch)
+                return false;
             if (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
                 return false;
             return true;
