@@ -204,9 +204,9 @@ namespace RogueEssence
                                 if (IsActive)
                                     input.ReadDevInput(Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
                             }
-                            else if (IsActive) //set this frame's input
-                                input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
-
+                            else //set this frame's input
+                                input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse, IsActive);
+                            
                             if (DiagManager.Instance.ActiveDebugReplay == null)
                                 DiagManager.Instance.LogInput(input);
                             DiagManager.Instance.GamePadActive = input.HasGamePad;

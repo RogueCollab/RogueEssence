@@ -81,13 +81,18 @@ namespace RogueEssence
             Direction = Dir8.None;
         }
 
-        public FrameInput(GamePadState gamePad, KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive)
+        public FrameInput(GamePadState gamePad, KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive, bool screenActive)
         {
-            Active = true;
+            Active = screenActive;
             BaseGamepadState = gamePad;
             BaseKeyState = keyboard;
 
             Loc dirLoc = new Loc();
+            inputStates = new bool[(int)InputType.Count];
+            MouseLoc = new Loc(mouse.X, mouse.Y);
+
+            if (Active)
+                ReadDevInput(keyboard, mouse, keyActive, mouseActive);
 
             if (gamePad.IsConnected)
             {
@@ -106,6 +111,8 @@ namespace RogueEssence
                     dirLoc = dirLoc + Dir4.Up.GetLoc();
                 if (gamePad.IsButtonDown(Buttons.DPadRight))
                     dirLoc = dirLoc + Dir4.Right.GetLoc();
+
+                keyActive = false;
             }
 
             if (keyActive)
@@ -146,8 +153,6 @@ namespace RogueEssence
 
             Direction = dirLoc.GetDir();
 
-            inputStates = new bool[(int)InputType.Count];
-
             if (gamePad.IsConnected)
             {
                 for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionButtons.Length; ii++)
@@ -161,24 +166,23 @@ namespace RogueEssence
 
                 inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
                 inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
-
-                inputStates[(int)InputType.MuteMusic] = keyboard.IsKeyDown(Keys.F11);
-                inputStates[(int)InputType.ShowDebug] = keyboard.IsKeyDown(Keys.F1);
             }
-
-            MouseLoc = new Loc(mouse.X, mouse.Y);
 
             if (mouseActive)
             {
                 inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);
                 inputStates[(int)InputType.RightMouse] = (mouse.RightButton == ButtonState.Pressed);
             }
-
-            ReadDevInput(keyboard, mouse, keyActive, mouseActive);
         }
 
         public void ReadDevInput(KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive)
         {
+            if (keyActive)
+            {
+                inputStates[(int)InputType.MuteMusic] = keyboard.IsKeyDown(Keys.F11);
+                inputStates[(int)InputType.ShowDebug] = keyboard.IsKeyDown(Keys.F1);
+            }
+
             if (DiagManager.Instance.DevMode)
             {
                 if (mouseActive)
