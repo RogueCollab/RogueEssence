@@ -1141,9 +1141,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> PointWarp(Character character, Loc loc, bool msg)
         {
             if (msg)
-            {
                 LogMsg(Text.FormatKey("MSG_WARP", character.GetDisplayName(false)));
-            }
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.WarpFX));
 

@@ -26,7 +26,10 @@ namespace RogueEssence.Script
         {
             if (curch == null || turnto == null)
                 return;
-            curch.CharDir = turnto.CharDir.Reverse();
+            Loc diff = turnto.CharLoc - curch.CharLoc;
+            Dir8 dir = diff.ApproximateDir8();
+            if (dir != Dir8.None)
+                curch.CharDir = dir;
         }
 
         //===================================

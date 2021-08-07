@@ -517,13 +517,21 @@ namespace RogueEssence.Script
             return InvSlot.Invalid;
         }
 
-        public int GetPlayerBagCount()
+        public int GetPlayerEquippedCount()
         {
             int nbitems = 0;
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
-                if (player.EquippedItem.ID > -1) ++nbitems;
+            {
+                if (player.EquippedItem.ID > -1)
+                    nbitems++;
+            }
 
-            return DataManager.Instance.Save.ActiveTeam.GetInvCount() + nbitems;
+            return nbitems;
+        }
+
+        public int GetPlayerBagCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.GetInvCount();
         }
 
         public int GetPlayerBagLimit()
