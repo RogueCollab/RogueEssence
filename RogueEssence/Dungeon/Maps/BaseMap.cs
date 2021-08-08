@@ -24,8 +24,6 @@ namespace RogueEssence.Dungeon
 
         public int ID { get; set; }
 
-        public bool NoRescue;
-        public bool NoSwitching;
         public bool DropTitle;
 
         public List<MapLayer> Layers;

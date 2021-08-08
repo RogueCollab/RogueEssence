@@ -328,12 +328,12 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneSegmentEnd(/*assetName, this*/);
         }
 
-        public IEnumerator<YieldInstruction> OnRescued(SOSMail mail)
+        public IEnumerator<YieldInstruction> OnRescued(string name, SOSMail mail)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.Rescued, this, mail));
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.Rescued, this, name, mail));
 
         }
 

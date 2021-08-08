@@ -80,26 +80,6 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public bool NoRescue
-        {
-            get { return ZoneManager.Instance.CurrentMap.NoRescue; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.NoRescue = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public bool NoSwitch
-        {
-            get { return ZoneManager.Instance.CurrentMap.NoSwitching; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.NoSwitching = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
 
         public ObservableCollection<string> Elements { get; }
 
@@ -312,8 +292,6 @@ namespace RogueEssence.Dev.ViewModels
             MapName = MapName;
             ChosenTileSight = ChosenTileSight;
             ChosenCharSight = ChosenCharSight;
-            NoRescue = NoRescue;
-            NoSwitch = NoSwitch;
             ChosenElement = ChosenElement;
             ChosenScroll = ChosenScroll;
 

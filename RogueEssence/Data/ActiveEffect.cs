@@ -46,7 +46,8 @@ namespace RogueEssence.Data
         public PriorityList<SingleCharEvent> OnDeaths;
 
         public PriorityList<RefreshEvent> OnRefresh;
-        
+        public PriorityList<RefreshEvent> OnMapRefresh;
+
         public PriorityList<HPChangeEvent> ModifyHPs;
         public PriorityList<HPChangeEvent> RestoreHPs;
 
@@ -78,6 +79,7 @@ namespace RogueEssence.Data
             OnDeaths = new PriorityList<SingleCharEvent>();
 
             OnRefresh = new PriorityList<RefreshEvent>();
+            OnMapRefresh = new PriorityList<RefreshEvent>();
 
             ModifyHPs = new PriorityList<HPChangeEvent>();
             RestoreHPs = new PriorityList<HPChangeEvent>();
@@ -111,6 +113,7 @@ namespace RogueEssence.Data
             addOtherPriorityList(OnDeaths, other.OnDeaths);
 
             addOtherPriorityList(OnRefresh, other.OnRefresh);
+            addOtherPriorityList(OnMapRefresh, other.OnMapRefresh);
 
             addOtherPriorityList(ModifyHPs, other.ModifyHPs);
             addOtherPriorityList(RestoreHPs, other.RestoreHPs);

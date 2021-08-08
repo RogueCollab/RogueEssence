@@ -94,6 +94,9 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         public ExplorerTeam ActiveTeam;
 
+        public bool NoRescue;
+        public bool NoSwitching;
+
         public Character CurrentCharacter
         {
             get
@@ -177,6 +180,38 @@ namespace RogueEssence.Dungeon
             //entry points
             for (int ii = 0; ii < EntryPoints.Count; ii++)
                 EntryPoints[ii] = new LocRay8(EntryPoints[ii].Loc + diff, EntryPoints[ii].Dir);
+        }
+
+
+        private void baseRefresh()
+        {
+            NoRescue = false;
+            NoSwitching = false;
+        }
+
+        private void OnRefresh()
+        {
+            DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            {
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapRefresh, null);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, MapEffect.OnMapRefresh, null);
+
+                foreach (MapStatus status in Status.Values)
+                {
+                    MapStatusData mapStatusData = DataManager.Instance.GetMapStatus(status.ID);
+                    PassiveContext effectContext = new PassiveContext(status, mapStatusData, GameEventPriority.USER_PORT_PRIORITY, null);
+                    effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, mapStatusData.OnMapRefresh, null);
+                }
+            };
+            foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, null);
+        }
+
+        public void RefreshTraits()
+        {
+            baseRefresh();
+
+            OnRefresh();
         }
 
         public List<Character> RespawnMob()

@@ -1060,6 +1060,7 @@ namespace RogueEssence.Dungeon
                 status.StartEmitter(Anims);
             }
 
+            ZoneManager.Instance.CurrentMap.RefreshTraits();
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.RefreshTraits();
 
@@ -1100,6 +1101,7 @@ namespace RogueEssence.Dungeon
                 ZoneManager.Instance.CurrentMap.Status.Remove(statusToRemove.ID);
                 statusToRemove.EndEmitter();
 
+                ZoneManager.Instance.CurrentMap.RefreshTraits();
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                     character.RefreshTraits();
 

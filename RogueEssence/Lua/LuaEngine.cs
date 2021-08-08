@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RogueEssence.Menu;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 using RogueEssence.Dungeon;
@@ -665,6 +666,7 @@ namespace RogueEssence.Script
             LuaState["_ZONE"] = ZoneManager.Instance;
             LuaState["_GAME"] = GameManager.Instance;
             LuaState["_DATA"] = DataManager.Instance;
+            LuaState["_MENU"] = MenuManager.Instance;
 
             DiagManager.Instance.LogInfo("[SE]:Exposing script interface..");
             //Expose script interface  objects

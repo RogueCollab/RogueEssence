@@ -50,10 +50,12 @@ namespace RogueEssence.Menu
             if (aokPath != null)
             {
                 AOKMail aok = (AOKMail)DataManager.LoadRescueMail(aokPath);
-                SetAOK(aok);
-                //an AOK mail has been found!
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => loadAOK(aokPath, aok), Text.FormatKey("DLG_AWAIT_RESCUE_AOK_FOUND")), true);
-
+                if (aok != null)
+                {
+                    SetAOK(aok);
+                    //an AOK mail has been found!
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => loadAOK(aokPath, aok), Text.FormatKey("DLG_AWAIT_RESCUE_AOK_FOUND")), true);
+                }
             }
             else
             {

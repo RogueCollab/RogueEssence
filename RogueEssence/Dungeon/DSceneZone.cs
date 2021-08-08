@@ -69,6 +69,7 @@ namespace RogueEssence.Dungeon
             focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
 
             //refresh everyone's traits
+            ZoneManager.Instance.CurrentMap.RefreshTraits();
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.RefreshTraits();
 
@@ -265,27 +266,12 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            if (DataManager.Instance.CurrentReplay == null)
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(mail));
+            int nameLength = action[3];
+            string name = "";
+            for (int ii = 0; ii < nameLength; ii++)
+                name += (char)action[4 + ii];
 
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_RESCUES_LEFT", DataManager.Instance.Save.RescuesLeft)));
-                yield return new WaitForFrames(1);
-            }
-            else
-            {
-                GameManager.Instance.SE(GraphicsManager.ReviveSE);
-                GameManager.Instance.SetFade(true, true);
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
-
-                int nameLength = action[3];
-                string name = "";
-                for (int ii = 0; ii < nameLength; ii++)
-                    name += (char)action[4+ii];
-                LogMsg(Text.FormatKey("MSG_RESCUED_BY", name));
-            }
-
-            ZoneManager.Instance.CurrentMap.NoRescue = true;
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(name, mail));
 
             yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
 

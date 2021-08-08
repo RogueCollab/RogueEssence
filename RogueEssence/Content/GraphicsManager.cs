@@ -243,7 +243,6 @@ namespace RogueEssence.Content
         public static string EquipSE { get; private set; }
         public static string MoneySE { get; private set; }
         public static string LeaderSE { get; private set; }
-        public static string ReviveSE { get; private set; }
 
         public static string TitleBG { get; private set; }
 
@@ -618,7 +617,6 @@ namespace RogueEssence.Content
                     EquipSE = sysSounds.SelectSingleNode("Equip").InnerText;
                     MoneySE = sysSounds.SelectSingleNode("Money").InnerText;
                     LeaderSE = sysSounds.SelectSingleNode("Leader").InnerText;
-                    ReviveSE = sysSounds.SelectSingleNode("Revive").InnerText;
 
                     TitleBG = xmldoc.DocumentElement.SelectSingleNode("TitleBG").InnerText;
 
