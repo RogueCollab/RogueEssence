@@ -683,6 +683,12 @@ namespace RogueEssence.Dungeon
             HP = 0;
             Dead = true;
 
+
+            //yield return CoroutineManager.Instance.StartCoroutine(OnDeath());
+
+            //if (Dead)
+            //{
+
             if (MemberTeam is ExplorerTeam)
             {
 
@@ -698,13 +704,9 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            //yield return CoroutineManager.Instance.StartCoroutine(OnDeath());
+            OnRemove();
 
-            //if (Dead)
-            //{
-                OnRemove();
-
-                DefeatAt = ZoneManager.Instance.CurrentMap.GetColoredName();
+            DefeatAt = ZoneManager.Instance.CurrentMap.GetColoredName();
             //}
         }
 
@@ -739,19 +741,6 @@ namespace RogueEssence.Dungeon
             HP = 0;
             Dead = true;
 
-            if (MemberTeam is ExplorerTeam)
-            {
-
-            }
-            else
-            {
-                InvItem heldItem = EquippedItem;
-                if (heldItem.ID > -1)
-                {
-                    DequipItem();
-                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
-                }
-            }
             
             //pre death:
             //defeat message
@@ -766,6 +755,19 @@ namespace RogueEssence.Dungeon
             
             if (Dead)
             {
+                if (MemberTeam is ExplorerTeam)
+                {
+
+                }
+                else
+                {
+                    InvItem heldItem = EquippedItem;
+                    if (heldItem.ID > -1)
+                    {
+                        DequipItem();
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
+                    }
+                }
 
                 OnRemove();
 
