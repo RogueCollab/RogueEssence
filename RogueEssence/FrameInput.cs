@@ -38,6 +38,7 @@ namespace RogueEssence
             SelectItems,
             Wait,
             LeftMouse,
+            //meta input here
             RightMouse,
             MuteMusic,
             ShowDebug,
@@ -168,7 +169,7 @@ namespace RogueEssence
                 inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
             }
 
-            if (mouseActive)
+            if (mouseActive && Active)
             {
                 inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);
                 inputStates[(int)InputType.RightMouse] = (mouse.RightButton == ButtonState.Pressed);
