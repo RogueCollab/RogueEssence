@@ -54,6 +54,12 @@ namespace RogueEssence.Dungeon
             HiddenValue = hiddenValue;
         }
 
+        public MapItem(int value, int hiddenValue, int price)
+            : this(value, hiddenValue)
+        {
+            Price = price;
+        }
+
         public MapItem(MapItem other)
         {
             IsMoney = other.IsMoney;
