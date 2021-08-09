@@ -214,63 +214,68 @@ namespace RogueEssence.Dungeon
             OnRefresh();
         }
 
+        public List<Loc> GetFreeToSpawnTiles()
+        {
+            bool[][] traversedGrid = new bool[Width][];
+            for (int xx = 0; xx < Width; xx++)
+                traversedGrid[xx] = new bool[Height];
+
+            List<Loc> freeTiles = new List<Loc>();
+            Grid.FloodFill(new Rect(new Loc(), new Loc(Width, Height)),
+                (Loc testLoc) =>
+                {
+                    if (traversedGrid[testLoc.X][testLoc.Y])
+                        return true;
+                    return TileBlocked(testLoc);
+                },
+                (Loc testLoc) =>
+                {
+                    if (traversedGrid[testLoc.X][testLoc.Y])
+                        return true;
+                    return TileBlocked(testLoc, true);
+                },
+                (Loc testLoc) =>
+                {
+                    traversedGrid[testLoc.X][testLoc.Y] = true;
+
+                    if (Grid.GetForkDirs(testLoc, TileBlocked, TileBlocked).Count >= 2)
+                        return;
+                        //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
+                        foreach (Character character in ActiveTeam.Players)
+                    {
+                        if (character.IsInSightBounds(testLoc))
+                            return;
+                    }
+
+                    foreach (Team team in AllyTeams)
+                    {
+                        foreach (Character character in team.EnumerateChars())
+                        {
+                            if (!character.Dead && character.CharLoc == testLoc)
+                                return;
+                        }
+                    }
+
+                    foreach (Team team in MapTeams)
+                    {
+                        foreach (Character character in team.EnumerateChars())
+                        {
+                            if (!character.Dead && character.CharLoc == testLoc)
+                                return;
+                        }
+                    }
+                    freeTiles.Add(testLoc);
+                },
+                EntryPoints[0].Loc);
+            return freeTiles;
+        }
+
         public List<Character> RespawnMob()
         {
             List<Character> respawns = new List<Character>();
             if (TeamSpawns.Count > 0)
             {
-                bool[][] traversedGrid = new bool[Width][];
-                for (int xx = 0; xx < Width; xx++)
-                    traversedGrid[xx] = new bool[Height];
-
-                List<Loc> freeTiles = new List<Loc>();
-                Grid.FloodFill(new Rect(new Loc(), new Loc(Width, Height)),
-                    (Loc testLoc) =>
-                    {
-                        if (traversedGrid[testLoc.X][testLoc.Y])
-                            return true;
-                        return TileBlocked(testLoc);
-                    },
-                    (Loc testLoc) =>
-                    {
-                        if (traversedGrid[testLoc.X][testLoc.Y])
-                            return true;
-                        return TileBlocked(testLoc, true);
-                    },
-                    (Loc testLoc) =>
-                    {
-                        traversedGrid[testLoc.X][testLoc.Y] = true;
-
-                        if (Grid.GetForkDirs(testLoc, TileBlocked, TileBlocked).Count >= 2)
-                            return;
-                        //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
-                        foreach (Character character in ActiveTeam.Players)
-                        {
-                            if (character.IsInSightBounds(testLoc))
-                                return;
-                        }
-
-                        foreach (Team team in AllyTeams)
-                        {
-                            foreach (Character character in team.EnumerateChars())
-                            {
-                                if (!character.Dead && character.CharLoc == testLoc)
-                                    return;
-                            }
-                        }
-
-                        foreach (Team team in MapTeams)
-                        {
-                            foreach (Character character in team.EnumerateChars())
-                            {
-                                if (!character.Dead && character.CharLoc == testLoc)
-                                    return;
-                            }
-                        }
-                        freeTiles.Add(testLoc);
-                    },
-                    EntryPoints[0].Loc);
-
+                List<Loc> freeTiles = GetFreeToSpawnTiles();
                 if (freeTiles.Count > 0)
                 {
                     for (int ii = 0; ii < 10; ii++)
@@ -562,13 +567,27 @@ namespace RogueEssence.Dungeon
                 charLoc);
         }
 
+        /// <summary>
+        /// Gets the the acceptable warp destination for a character, as close as possible to the ideal warp destination.
+        /// </summary>
+        /// <param name="character">The character being moved. Null if not a character currently on the map.</param>
+        /// <param name="loc">The ideal warp destination.</param>
+        /// <returns></returns>
         public Loc? GetClosestTileForChar(Character character, Loc loc)
         {
             return Grid.FindClosestConnectedTile(new Loc(), new Loc(Width, Height),
                 (Loc testLoc) =>
                 {
-                    if (TileBlocked(testLoc, character.Mobility))
-                        return false;
+                    if (character == null)
+                    {
+                        if (TileBlocked(testLoc))
+                            return false;
+                    }
+                    else
+                    {
+                        if (TileBlocked(testLoc, character.Mobility))
+                            return false;
+                    }
 
                     Character locChar = GetCharAtLoc(testLoc, character);
                     if (locChar != null)
