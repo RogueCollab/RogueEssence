@@ -213,10 +213,7 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex = 0;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction = Faction.Player;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.SkipAll = false;
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0, false);
             RegenerateTurnMap();
 
             RemoveDeadTeams();

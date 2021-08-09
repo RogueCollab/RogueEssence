@@ -15,12 +15,19 @@ namespace RogueEssence.Dungeon
 
         public TurnState()
         {
-            CurrentOrder = new TurnOrder(0, Faction.Player, 0);
+            CurrentOrder = new TurnOrder(0, Faction.Player, 0, false);
             TurnToChar = new List<CharIndex>();
+        }
+
+        public void SkipRemainingTurns()
+        {
+            CurrentOrder.SkipAll = true;
         }
 
         public CharIndex GetCurrentTurnChar()
         {
+            if (TurnToChar.Count == 0)
+                return CharIndex.Invalid;
             return TurnToChar[CurrentOrder.TurnIndex];
         }
 

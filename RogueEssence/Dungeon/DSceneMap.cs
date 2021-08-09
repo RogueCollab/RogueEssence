@@ -222,7 +222,7 @@ namespace RogueEssence.Dungeon
                             }
                             else if (memberTeam is MonsterTeam)
                             {
-                                if (item.IsMoney || character.EquippedItem.ID > -1)
+                                if (item.Price > 0 || item.IsMoney || character.EquippedItem.ID > -1)
                                     wantItem = false;
                                 else
                                     PickupHoldItem(character);
