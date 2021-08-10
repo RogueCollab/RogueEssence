@@ -30,6 +30,7 @@ namespace RogueEssence.Dungeon
     {
         public int Index;
         public MapIndexState() { }
+        public MapIndexState(int index) { Index = index; }
         protected MapIndexState(MapIndexState other) { Index = other.Index; }
         public override GameplayState Clone() { return new MapIndexState(this); }
     }
