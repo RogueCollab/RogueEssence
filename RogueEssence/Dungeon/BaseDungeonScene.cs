@@ -151,8 +151,9 @@ namespace RogueEssence.Dungeon
                 {
                     if (CanSeeCharOnScreen(character))
                     {
-                        AddToDraw(backDraw, character);
                         shownChars.Add(character);
+                        if (CanIdentifyCharOnScreen(character))
+                            AddToDraw(backDraw, character);
                     }
                 }
             }
@@ -172,6 +173,11 @@ namespace RogueEssence.Dungeon
                 if (CanSeeSprite(ViewRect, effect))
                     AddToDraw(frontDraw, effect);
             }
+        }
+
+        protected virtual bool CanIdentifyCharOnScreen(Character character)
+        {
+            return true;
         }
 
         protected virtual bool CanSeeCharOnScreen(Character character)

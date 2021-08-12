@@ -43,6 +43,9 @@ namespace RogueEssence.Dungeon
             string name = trueName ? BaseName : Name;
 
             Team team = MemberTeam;
+            if (Unidentifiable && team != DataManager.Instance.Save.ActiveTeam)
+                name = "???";
+
             if (team == DataManager.Instance.Save.ActiveTeam)
             {
                 if (this == team.Leader)
@@ -207,7 +210,10 @@ namespace RogueEssence.Dungeon
         //visibility and sight
         public Map.SightRange TileSight;
         public Map.SightRange CharSight;
-        public bool Invis;
+        //sprite is not visible and information about the entity is unavailable
+        public bool Unidentifiable;
+        //position is not visible
+        public bool Unlocatable;
         public bool SeeAllChars;
         public bool SeeWallItems;
 
@@ -617,7 +623,8 @@ namespace RogueEssence.Dungeon
                 if (anim)
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(this, this, DataManager.Instance.HealFX));
 
-                DungeonScene.Instance.MeterChanged(CharLoc, hp, false);
+                if (!Unidentifiable)
+                    DungeonScene.Instance.MeterChanged(CharLoc, hp, false);
 
                 Loc? earshot = null;
                 if (!anim)
@@ -650,7 +657,8 @@ namespace RogueEssence.Dungeon
                 DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE_INFINITY", GetDisplayName(false)), false, false, this, null);
             else
             {
-                DungeonScene.Instance.MeterChanged(CharLoc, -takeHP, false);
+                if (!Unidentifiable)
+                    DungeonScene.Instance.MeterChanged(CharLoc, -takeHP, false);
                 DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DAMAGE", GetDisplayName(false), takeHP), true, false, this, null);
             }
 
@@ -1324,7 +1332,8 @@ namespace RogueEssence.Dungeon
             AttackOnly = false;
             EnemyOfFriend = false;
 
-            Invis = false;
+            Unidentifiable = false;
+            Unlocatable = false;
             SeeAllChars = false;
             SeeWallItems = false;
 
@@ -1938,13 +1947,13 @@ namespace RogueEssence.Dungeon
             if (character == null)
                 return false;
 
-            if (character == this)
+            if (character.MemberTeam == this.MemberTeam)
                 return true;
 
             if (SeeAllChars)
                 return true;
 
-            if (character.Invis)
+            if (character.Unlocatable)
                 return false;
 
             if (CanSeeLoc(character.CharLoc, GetCharSight()))
@@ -2146,6 +2155,9 @@ namespace RogueEssence.Dungeon
 
             foreach (StatusEffect status in StatusEffects.Values)
                 drawEffects.Add(((StatusData)status.GetData()).DrawEffect);
+
+            if (Unidentifiable)
+                drawEffects.Add(DrawEffect.Transparent);
 
             currentCharAction.UpdateDrawEffects(drawEffects);
 

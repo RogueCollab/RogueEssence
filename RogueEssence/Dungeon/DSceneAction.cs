@@ -427,12 +427,15 @@ namespace RogueEssence.Dungeon
 
             //play sound
             GameManager.Instance.BattleSE(data.HitFX.Sound);
-            //the animation
-            FiniteEmitter endEmitter = (FiniteEmitter)data.HitFX.Emitter.Clone();
-            endEmitter.SetupEmit(target.MapLoc, user.MapLoc, target.CharDir);
-            CreateAnim(endEmitter, DrawLayer.NoDraw);
-            SetScreenShake(new ScreenMover(data.HitFX.ScreenMovement));
-            yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(data.HitFX.Delay, target.CharLoc));
+            if (CanIdentifyCharOnScreen(user) && CanIdentifyCharOnScreen(target))
+            {
+                //the animation
+                FiniteEmitter endEmitter = (FiniteEmitter)data.HitFX.Emitter.Clone();
+                endEmitter.SetupEmit(target.MapLoc, user.MapLoc, target.CharDir);
+                CreateAnim(endEmitter, DrawLayer.NoDraw);
+                SetScreenShake(new ScreenMover(data.HitFX.ScreenMovement));
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(data.HitFX.Delay, target.CharLoc));
+            }
         }
 
 
@@ -447,7 +450,17 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessBattleFX(Character user, Character target, BattleFX fx)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(user.CharLoc, target.CharLoc, target.CharDir, fx));
+            //play sound
+            GameManager.Instance.BattleSE(fx.Sound);
+            if (CanIdentifyCharOnScreen(user) && CanIdentifyCharOnScreen(target))
+            {
+                //the animation
+                FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
+                fxEmitter.SetupEmit(target.CharLoc * GraphicsManager.TileSize, user.CharLoc * GraphicsManager.TileSize, user.CharDir);
+                CreateAnim(fxEmitter, DrawLayer.NoDraw);
+                SetScreenShake(new ScreenMover(fx.ScreenMovement));
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, target.CharLoc));
+            }
         }
         public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx)
         {

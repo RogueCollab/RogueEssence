@@ -14,7 +14,8 @@ namespace RogueEssence.Dungeon
         Charging,
         Absent,
         Spinning,
-        Hurt
+        Hurt,
+        Transparent
     }
 
     

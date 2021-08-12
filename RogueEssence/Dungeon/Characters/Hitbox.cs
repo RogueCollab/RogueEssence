@@ -69,9 +69,12 @@ namespace RogueEssence.Dungeon
                 int priority = TilesToEmit.FrontPriority();
                 Loc tile = TilesToEmit.Dequeue();
 
-                FiniteEmitter tileEmitter = (FiniteEmitter)TileEmitter.Clone();
-                tileEmitter.SetupEmit(tile * GraphicsManager.TileSize, User.MapLoc, User.CharDir);
-                DungeonScene.Instance.CreateAnim(tileEmitter, DrawLayer.NoDraw);
+                if (!User.Unidentifiable)
+                {
+                    FiniteEmitter tileEmitter = (FiniteEmitter)TileEmitter.Clone();
+                    tileEmitter.SetupEmit(tile * GraphicsManager.TileSize, User.MapLoc, User.CharDir);
+                    DungeonScene.Instance.CreateAnim(tileEmitter, DrawLayer.NoDraw);
+                }
             }
         }
 
@@ -645,11 +648,13 @@ namespace RogueEssence.Dungeon
             MapLoc = newOrigin;
             DistanceTraveled += addedDist;
 
-
-            //update animation
-            Emitter.SetupEmit(User, MapLoc, User.MapLoc, Dir, LocHeight);
-            //update emittings (list of particles to emit here; place in main particle processor)
-            Emitter.Update(DungeonScene.Instance, elapsedTime);
+            if (!User.Unidentifiable)
+            {
+                //update animation
+                Emitter.SetupEmit(User, MapLoc, User.MapLoc, Dir, LocHeight);
+                //update emittings (list of particles to emit here; place in main particle processor)
+                Emitter.Update(DungeonScene.Instance, elapsedTime);
+            }
 
             //check to see if this hitbox needs to expire
             if (DistanceTraveled >= MaxDistance * GraphicsManager.TileSize)
@@ -680,6 +685,8 @@ namespace RogueEssence.Dungeon
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
+            if (User.Unidentifiable)
+                return;
             DirSheet sheet = getAnimSheet();
             if (sheet == null)
                 return;
@@ -825,6 +832,8 @@ namespace RogueEssence.Dungeon
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
+            if (User.Unidentifiable)
+                return;
             if (Anim.AnimIndex == "")
                 return;
             //draw the beam
@@ -907,10 +916,13 @@ namespace RogueEssence.Dungeon
             MapLoc = StartPoint * GraphicsManager.TileSize + diff * DistanceTraveled / MaxDistance;
             LocHeight = AnimMath.GetArc(MaxDistance / 2, MaxDistance, DistanceTraveled);
 
-            //update animation
-            Emitter.SetupEmit(User, MapLoc, User.MapLoc, User.CharDir, LocHeight);
-            //update emittings (list of particles to emit here; place in main particle processor)
-            Emitter.Update(DungeonScene.Instance, elapsedTime);
+            if (!User.Unidentifiable)
+            {
+                //update animation
+                Emitter.SetupEmit(User, MapLoc, User.MapLoc, User.CharDir, LocHeight);
+                //update emittings (list of particles to emit here; place in main particle processor)
+                Emitter.Update(DungeonScene.Instance, elapsedTime);
+            }
         }
 
         private DirSheet getAnimSheet()
@@ -929,6 +941,8 @@ namespace RogueEssence.Dungeon
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
+            if (User.Unidentifiable)
+                return;
             DirSheet sheet = getAnimSheet();
             if (sheet == null)
                 return;
@@ -1069,14 +1083,19 @@ namespace RogueEssence.Dungeon
             if (HitboxDone)
                 timeLingered += elapsedTime;
 
-            //update animation
-            Emitter.SetupEmit(User, MapLoc, StartPoint * GraphicsManager.TileSize, Dir, LocHeight);
-            //update emittings (list of particles to emit here; place in main particle processor)
-            Emitter.Update(DungeonScene.Instance, elapsedTime);
+            if (!User.Unidentifiable)
+            {
+                //update animation
+                Emitter.SetupEmit(User, MapLoc, StartPoint * GraphicsManager.TileSize, Dir, LocHeight);
+                //update emittings (list of particles to emit here; place in main particle processor)
+                Emitter.Update(DungeonScene.Instance, elapsedTime);
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
+            if (User.Unidentifiable)
+                return;
             if (Anim.AnimIndex == "")
                 return;
             //draw the anim associated with this attack

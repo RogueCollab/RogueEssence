@@ -126,6 +126,8 @@ namespace RogueEssence.Dungeon
 
             if (drawEffects.Contains(DrawEffect.Absent))
                 opacity = 0;
+            else if (drawEffects.Contains(DrawEffect.Transparent))
+                opacity = 128;
 
             if (drawEffects.Contains(DrawEffect.Shaking))
             {

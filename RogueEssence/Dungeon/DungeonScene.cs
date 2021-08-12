@@ -490,7 +490,8 @@ namespace RogueEssence.Dungeon
                             {
                                 Dir8 testDir = DirExt.AddAngles(FocusedCharacter.CharDir, (Dir8)ii);
                                 Loc checkLoc = FocusedCharacter.CharLoc + testDir.GetLoc();
-                                if (ZoneManager.Instance.CurrentMap.GetCharAtLoc(checkLoc) != null)
+                                Character target = ZoneManager.Instance.CurrentMap.GetCharAtLoc(checkLoc);
+                                if (target != null && CanSeeCharOnScreen(target))
                                 {
                                     action = new GameAction(GameAction.ActionType.Dir, testDir);
                                     break;
@@ -786,6 +787,18 @@ namespace RogueEssence.Dungeon
             base.PrepareFrontDraw();
         }
 
+        protected override bool CanIdentifyCharOnScreen(Character character)
+        {
+            if (!base.CanIdentifyCharOnScreen(character))
+                return false;
+            if (SeeAll)
+                return true;
+            if (ActiveTeam == character.MemberTeam)
+                return true;
+
+            return !character.Unidentifiable;
+        }
+
         protected override bool CanSeeCharOnScreen(Character character)
         {
             if (!base.CanSeeCharOnScreen(character))
@@ -799,26 +812,8 @@ namespace RogueEssence.Dungeon
                     return true;
                 else if (!member.Dead || member == FocusedCharacter)
                 {
-                    if (member == character)
+                    if (member.CanSeeCharacter(character))
                         return true;
-                    else if (!character.Invis)
-                    {
-                        Map.SightRange sight = member.GetCharSight();
-                        foreach (Loc loc in character.GetLocsVisible())
-                        {
-                            if (Collision.InBounds(sightRect, loc))
-                            {
-                                if (sight == Map.SightRange.Clear)
-                                    return true;
-                                else
-                                {
-                                    Loc dest = loc - sightRect.Start;
-                                    if (charSightValues[dest.X][dest.Y] > 0f)
-                                        return true;
-                                }
-                            }
-                        }
-                    }
                 }
             }
 
@@ -1162,15 +1157,18 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character hpChar in shownChars)
                 {
-                    Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
-                    GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
-                    int hpAmount = (hpChar.HP * 18 - 1) / hpChar.MaxHP + 1;
-                    Color hpColor = new Color(88, 248, 88);
-                    if (hpChar.HP * 4 <= hpChar.MaxHP)
-                        hpColor = new Color(248, 128, 88);
-                    else if (hpChar.HP * 2 <= hpChar.MaxHP)
-                        hpColor = new Color(248, 232, 88);
-                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(drawLoc.X + 1, drawLoc.Y + 1, hpAmount, 2), null, hpColor);
+                    if (CanIdentifyCharOnScreen(hpChar))
+                    {
+                        Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
+                        GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
+                        int hpAmount = (hpChar.HP * 18 - 1) / hpChar.MaxHP + 1;
+                        Color hpColor = new Color(88, 248, 88);
+                        if (hpChar.HP * 4 <= hpChar.MaxHP)
+                            hpColor = new Color(248, 128, 88);
+                        else if (hpChar.HP * 2 <= hpChar.MaxHP)
+                            hpColor = new Color(248, 232, 88);
+                        GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(drawLoc.X + 1, drawLoc.Y + 1, hpAmount, 2), null, hpColor);
+                    }
                 }
             }
 
