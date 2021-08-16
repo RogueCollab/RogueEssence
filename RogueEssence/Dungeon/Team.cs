@@ -77,15 +77,19 @@ namespace RogueEssence.Dungeon
                 yield return item;
         }
 
-        public void AddToInv(InvItem invItem)
+        public void AddToInv(InvItem invItem, bool skipCheck = false)
         {
             inventory.Add(invItem);
+            if (skipCheck)
+                return;
             UpdateInv(null, invItem);
         }
-        public void RemoveFromInv(int index)
+        public void RemoveFromInv(int index, bool skipCheck = false)
         {
             InvItem invItem = inventory[index];
             inventory.RemoveAt(index);
+            if (skipCheck)
+                return;
             UpdateInv(invItem, null);
         }
         public void UpdateInv(InvItem oldItem, InvItem newItem)
