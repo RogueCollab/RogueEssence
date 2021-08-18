@@ -936,11 +936,11 @@ namespace RogueEssence.Dungeon
         //TODO: method overloads that call other method overloads should just use "return" instead of "yield return"
         public IEnumerator<YieldInstruction> AddStatusEffect(StatusEffect status)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(AddStatusEffect(null, status, null, true));
+            return AddStatusEffect(null, status, null, true);
         }
         public IEnumerator<YieldInstruction> AddStatusEffect(Character attacker, StatusEffect status, StateCollection<ContextState> parentStates, bool msg = true)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(AddStatusEffect(null, status, parentStates, msg, msg));
+            return AddStatusEffect(attacker, status, parentStates, msg, msg);
         }
 
         public IEnumerator<YieldInstruction> AddStatusEffect(Character attacker, StatusEffect status, StateCollection<ContextState> parentStates, bool checkmsg, bool msg)
@@ -957,15 +957,21 @@ namespace RogueEssence.Dungeon
                 yield break;
             context.msg = msg;
 
-            yield return CoroutineManager.Instance.StartCoroutine(RemoveStatusEffect(status.ID, false));
-            StatusEffects.Add(status.ID, status);
+            yield return CoroutineManager.Instance.StartCoroutine(ExecuteAddStatus(context));
+
+        }
+
+        public IEnumerator<YieldInstruction> ExecuteAddStatus(StatusCheckContext context)
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(RemoveStatusEffect(context.Status.ID, false));
+            StatusEffects.Add(context.Status.ID, context.Status);
 
             RefreshTraits();
 
-            if (status.TargetChar != null)
+            if (context.Status.TargetChar != null)
             {
-                status.TargetChar.StatusesTargetingThis.Add(new StatusRef(status.ID, this));
-                status.TargetChar.RefreshTraits();
+                context.Status.TargetChar.StatusesTargetingThis.Add(new StatusRef(context.Status.ID, this));
+                context.Status.TargetChar.RefreshTraits();
             }
             //call all status's on add
             yield return CoroutineManager.Instance.StartCoroutine(OnAddStatus(context));
