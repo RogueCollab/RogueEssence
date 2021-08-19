@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueElements;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Data
 {
@@ -128,6 +129,15 @@ namespace RogueEssence.Data
                 foreach (T step in other.GetItems(priority))
                     list.Add(priority, step);
             }
+        }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: v0.5: remove this
+            if (OnMapRefresh == null)
+                OnMapRefresh = new PriorityList<RefreshEvent>();
         }
     }
 }
