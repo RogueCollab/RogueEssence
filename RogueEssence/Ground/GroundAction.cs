@@ -350,9 +350,14 @@ namespace RogueEssence.Ground
         public override void Update(FrameTick elapsedTime)
         {
             framesPassed++;
-            double scalarDiff = Math.Sqrt(goalDiff.DistSquared());
-            Loc newDiff = new Loc((int)Math.Round(moveRate * framesPassed * goalDiff.X / scalarDiff), (int)Math.Round(moveRate * framesPassed * goalDiff.Y / scalarDiff));
-            if (moveRate * framesPassed >= scalarDiff)
+            if (goalDiff == Loc.Zero)
+                return;
+
+            bool vertical = Math.Abs(goalDiff.Y) > Math.Abs(goalDiff.X);
+            int mainMove = moveRate * framesPassed;
+            int subMove = (int)Math.Abs(Math.Round((double)moveRate * framesPassed * goalDiff.GetScalar(vertical ? Axis4.Horiz : Axis4.Vert) / goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)));
+            Loc newDiff = new Loc((vertical ? subMove : mainMove) * Math.Sign(goalDiff.X), (vertical ? mainMove : subMove) * Math.Sign(goalDiff.Y));
+            if (mainMove >= Math.Abs(goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)))
                 newDiff = goalDiff;
             Move = newDiff - curDiff;
             curDiff = newDiff;
