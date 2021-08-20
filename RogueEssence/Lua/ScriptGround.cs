@@ -247,6 +247,17 @@ namespace RogueEssence.Script
             chara.StartAction(new PoseGroundAction(chara.Position, chara.Direction, animIndex));
         }
 
+
+        public void ObjectSetAnim(GroundObject obj, int frameTime, int startFrame, int endFrame, Dir8 dir, int cycles)
+        {
+            obj.StartAction(new ObjAnimData(obj.ObjectAnim.AnimIndex, frameTime, startFrame, endFrame, 255, dir), cycles);
+        }
+
+        public void ObjectSetDefaultAnim(GroundObject obj, string objectName, int frameTime, int startFrame, int endFrame, Dir8 dir)
+        {
+            obj.ObjectAnim = new ObjAnimData(objectName, frameTime, startFrame, endFrame, 255, dir);
+        }
+
         //===================================
         //  VFX
         //===================================

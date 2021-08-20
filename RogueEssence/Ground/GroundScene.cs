@@ -281,10 +281,15 @@ namespace RogueEssence.Ground
                 //Make entities think!
                 foreach (GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
                 {
-                    if (ent.EntEnabled && ent.GetType().IsSubclassOf(typeof(GroundAIUser)))
+                    if (ent.EntEnabled && ent is GroundAIUser)
                     {
                         GroundAIUser tu = (GroundAIUser)ent;
                         tu.Think();
+                    }
+                    if (ent.EntEnabled && ent is GroundObject)
+                    {
+                        GroundObject tu = (GroundObject)ent;
+                        tu.Update(elapsedTime);
                     }
                 }
 

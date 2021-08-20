@@ -16,6 +16,10 @@ namespace RogueEssence.Ground
         public ObjAnimData ObjectAnim;
         public bool Solid;
 
+        public ObjAnimData CurrentAnim;
+        public FrameTick AnimTime;
+        public int Cycles;
+
         public uint Tags
         {
             get
@@ -42,6 +46,7 @@ namespace RogueEssence.Ground
         public GroundObject()
         {
             ObjectAnim = new ObjAnimData();
+            CurrentAnim = new ObjAnimData();
             EntName = "GroundObject" + ToString(); //!#FIXME : Give a default unique name please fix this when we have editor/template names!
             SetTriggerType(EEntityTriggerTypes.Action);
         }
@@ -90,6 +95,32 @@ namespace RogueEssence.Ground
 
         }
 
+        public void StartAction(ObjAnimData anim, int cycles)
+        {
+            CurrentAnim = anim;
+            Cycles = cycles;
+            AnimTime = FrameTick.Zero;
+        }
+
+
+        public void Update(FrameTick elapsedTime)
+        {
+            if (CurrentAnim.AnimIndex != "")
+            {
+                AnimTime += elapsedTime;
+
+                DirSheet sheet = GraphicsManager.GetObject(CurrentAnim.AnimIndex);
+                int totalTime = CurrentAnim.GetTotalFrames(sheet.TotalFrames) * CurrentAnim.FrameTime * Cycles;
+                //end animation if it is finished
+                if (AnimTime.ToFrames() >= totalTime)
+                {
+                    AnimTime = FrameTick.Zero;
+                    CurrentAnim = new ObjAnimData();
+                    Cycles = 0;
+                }
+            }
+        }
+
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
         {
             if (EntEnabled)
@@ -100,7 +131,14 @@ namespace RogueEssence.Ground
         }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            if (ObjectAnim.AnimIndex != "")
+            if (CurrentAnim.AnimIndex != "")
+            {
+                Loc drawLoc = GetDrawLoc(offset);
+
+                DirSheet sheet = GraphicsManager.GetObject(CurrentAnim.AnimIndex);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Dir8.None), Color.White);
+            }
+            else if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
@@ -145,5 +183,14 @@ namespace RogueEssence.Ground
             ReloadEvents();
         }
 
+
+        [OnDeserialized]
+        internal override void OnDeserializedMethod(StreamingContext context)
+        {
+            base.OnDeserializedMethod(context);
+            //TODO: v0.5: remove this
+            if (CurrentAnim == null)
+                CurrentAnim = new ObjAnimData();
+        }
     }
 }
