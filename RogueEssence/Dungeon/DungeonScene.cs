@@ -360,7 +360,11 @@ namespace RogueEssence.Dungeon
 
             if (replayPlaying)
             {
-
+                //no inputs during a replay
+            }
+            else if (DataManager.Instance.Save.CutsceneMode)
+            {
+                //no inputs during cutscene mode
             }
             else
             {

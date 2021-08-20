@@ -160,6 +160,8 @@ namespace RogueEssence.Ground
         {
             if (FreeCamCenter.HasValue)
                 yield break;
+            if (DataManager.Instance.Save.CutsceneMode)
+                yield break;
 
             GameAction action = new GameAction(GameAction.ActionType.None, Dir8.None);
 
