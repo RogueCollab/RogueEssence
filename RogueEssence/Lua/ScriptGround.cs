@@ -241,10 +241,40 @@ namespace RogueEssence.Script
             chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
         }
 
+        public LuaFunction CharWaitAnim;
+        public YieldInstruction _CharWaitAnim(GroundEntity ent, string anim)
+        {
+            if (ent is GroundChar)
+            {
+                GroundChar ch = (GroundChar)ent;
+                int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
+                ch.StartAction(action);
+                return new WaitUntil(() =>
+                {
+                    return action.Complete;
+                });
+            }
+            else
+                DiagManager.Instance.LogInfo("ScriptGround._CharWaitAnim(): Got invalid entity!");
+            return null;
+        }
+
+        public void CharSetAction(GroundChar chara, GroundAction action)
+        {
+            chara.StartAction(action);
+        }
+
         public void CharPoseAnim(GroundChar chara, string anim)
         {
             int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
             chara.StartAction(new PoseGroundAction(chara.Position, chara.Direction, animIndex));
+        }
+
+        public void CharHopAnim(GroundChar chara, string anim)
+        {
+            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+            chara.StartAction(new HopGroundAction(chara.Position, chara.Direction, animIndex, 10));
         }
 
 
@@ -495,6 +525,24 @@ namespace RogueEssence.Script
             return null;
         }
 
+
+        public LuaFunction CharWaitAction;
+        public YieldInstruction _CharWaitAction(GroundEntity ent, GroundAction action)
+        {
+            if (ent is GroundChar)
+            {
+                GroundChar ch = (GroundChar)ent;
+                ch.StartAction(action);
+                return new WaitUntil(() =>
+                {
+                    return action.Complete;
+                });
+            }
+            else
+                DiagManager.Instance.LogInfo("ScriptGround._CharWaitAction(): Got invalid entity!");
+            return null;
+        }
+
         /// <summary>
         /// Makes an entity move to the selected position over a certain time.
         /// </summary>
@@ -555,6 +603,8 @@ namespace RogueEssence.Script
         public override void SetupLuaFunctions(LuaEngine state)
         {
             //Implement stuff that should be written in lua!
+            CharWaitAnim = state.RunString("return function(_, ent, anim) return coroutine.yield(GROUND:_CharWaitAnim(ent, anim)) end", "CharWaitAnim").First() as LuaFunction;
+
             MoveInDirection = state.RunString("return function(_, chara, direction, duration, shouldrun, speed) return coroutine.yield(GROUND:_MoveInDirection(chara, direction, duration, shouldrun, speed)) end", "MoveInDirection").First() as LuaFunction;
             AnimateInDirection = state.RunString("return function(_, chara, anim, animdir, direction, duration, animspeed, speed) return coroutine.yield(GROUND:_AnimateInDirection(chara, anim, animdir, direction, duration, animspeed, speed)) end", "AnimateInDirection").First() as LuaFunction;
             CharAnimateTurn = state.RunString("return function(_, ch, direction, framedur, ccw) return coroutine.yield(GROUND:_CharAnimateTurn(ch, direction, framedur, ccw)) end", "CharAnimateTurn").First() as LuaFunction;
@@ -564,6 +614,7 @@ namespace RogueEssence.Script
             MoveToMarker = state.RunString("return function(_, ent, mark, shouldrun, speed) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun, speed)) end", "MoveToMarker").First() as LuaFunction;
             MoveToPosition = state.RunString("return function(_, ent, x, y, shouldrun, speed) return coroutine.yield(GROUND:_MoveToPosition(ent, x, y, shouldrun, speed)) end", "MoveToPosition").First() as LuaFunction;
             AnimateToPosition = state.RunString("return function(_, ent, anim, animdir, x, y, animspeed, speed) return coroutine.yield(GROUND:_AnimateToPosition(ent, anim, animdir, x, y, animspeed, speed)) end", "AnimateToPosition").First() as LuaFunction;
+            CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace RogueEssence.Ground
         public Dir8 CharDir { get; set; }
 
         public FrameTick ActionTime { get; protected set; }
+        public abstract bool Complete { get; }
 
         protected Dir8 dirOffset;
         protected int opacity;
@@ -109,6 +110,8 @@ namespace RogueEssence.Ground
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
+        public override bool Complete => true;
+
         public IdleGroundAction(Loc loc, Dir8 dir)
         {
             MapLoc = loc;
@@ -145,6 +148,7 @@ namespace RogueEssence.Ground
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
+        public override bool Complete => true;
         public WalkGroundAction(Loc loc, Dir8 dir, bool run, int speed, FrameTick prevTime)
         {
             MapLoc = loc;
@@ -190,6 +194,7 @@ namespace RogueEssence.Ground
             return CharSheet.TrueFrame(frames, 0, false); //Don't animate
         }
         protected override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
+        public override bool Complete => true;
         public IdleNoAnim(Loc loc, Dir8 dir)
         {
             MapLoc = loc;
@@ -215,6 +220,7 @@ namespace RogueEssence.Ground
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
         protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
+        public override bool Complete => true;
         public SkidGroundAction(Loc loc, Dir8 dir, FrameTick prevTime)
         {
             MapLoc = loc;
@@ -264,6 +270,8 @@ namespace RogueEssence.Ground
         }
         protected override int AnimFrameType { get { return AnimID; } }
 
+        public override bool Complete { get { return !Loop && ActionTime >= AnimTotalTime; } }
+
         int AnimID;
         bool Loop;
 
@@ -277,7 +285,7 @@ namespace RogueEssence.Ground
 
         public override void UpdateInput(GameAction action)
         {
-            if (!Loop && ActionTime >= AnimTotalTime)
+            if (Complete)
                 NextAction = new IdleGroundAction(MapLoc, CharDir);
         }
     }
@@ -290,6 +298,7 @@ namespace RogueEssence.Ground
             return CharSheet.TrueFrame(frames, Math.Min(ActionTime.Ticks, FrameTick.FrameToTick(AnimReturnTime)), true);
         }
         protected override int AnimFrameType { get { return AnimID; } }
+        public override bool Complete { get { return ActionTime >= AnimTotalTime; } }
 
         int AnimID;
 
@@ -323,7 +332,7 @@ namespace RogueEssence.Ground
         }
         protected override int AnimFrameType { get { return animType; } }
 
-        public bool Complete { get { return curDiff == goalDiff; } }
+        public override bool Complete { get { return curDiff == goalDiff; } }
 
         public AnimateToPositionGroundAction(int animType, Loc loc, Dir8 dir, float animSpeed, int moveRate, FrameTick prevTime, Loc destination)
         {
@@ -364,4 +373,40 @@ namespace RogueEssence.Ground
         }
     }
 
+
+    [Serializable]
+    public class HopGroundAction : GroundAction
+    {
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return CharSheet.TrueFrame(frames, 0, true);
+        }
+        protected override int AnimFrameType { get { return AnimID; } }
+        public override bool Complete { get { return ActionTime >= AnimTotalTime; } }
+
+        int AnimID;
+        int Height;
+
+        public HopGroundAction(Loc pos, Dir8 dir, int animid, int height)
+        {
+            MapLoc = pos;
+            CharDir = dir;
+            AnimID = animid;
+            Height = height;
+        }
+
+        public override void UpdateInput(GameAction action)
+        {
+            if (Complete)
+                NextAction = new IdleGroundAction(MapLoc, CharDir);
+        }
+
+        public override void Update(FrameTick elapsedTime)
+        {
+            if (ActionTime < AnimTotalTime / 2)
+                LocHeight = (Height * ActionTime.ToFrames() * 2 - 1) / AnimTotalTime + 1;
+            else
+                LocHeight = (Height * (AnimTotalTime - ActionTime.ToFrames()) * 2 - 1) / AnimTotalTime + 1;
+        }
+    }
 }
