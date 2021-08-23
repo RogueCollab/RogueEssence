@@ -50,13 +50,11 @@ namespace RogueEssence.Ground
             EntName = "GroundObject" + ToString(); //!#FIXME : Give a default unique name please fix this when we have editor/template names!
             SetTriggerType(EEntityTriggerTypes.Action);
         }
-        public GroundObject(ObjAnimData anim, Rect collider, bool contact, string entname)
-            : this(anim, collider, new Loc(), contact, entname)
-        { }
 
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
         {
             ObjectAnim = anim;
+            CurrentAnim = new ObjAnimData();
             Collider = collider;
             DrawOffset = drawOffset;
             SetTriggerType(triggerty);
@@ -69,11 +67,15 @@ namespace RogueEssence.Ground
 
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool contact, string entname)
             : this(anim, collider, drawOffset, true, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
-        {}
+        { }
+        public GroundObject(ObjAnimData anim, Rect collider, bool contact, string entname)
+            : this(anim, collider, new Loc(), contact, entname)
+        { }
 
         protected GroundObject(GroundObject other) : base(other)
         {
             ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            CurrentAnim = new ObjAnimData();
             DrawOffset = other.DrawOffset;
             Solid = other.Solid;
         }
