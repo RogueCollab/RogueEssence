@@ -197,11 +197,11 @@ namespace RogueEssence.Examples
                 {
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
-                    RogueEssence.Dev.DevHelper.ReserializeBase();
-                    RogueEssence.Dev.DevHelper.Reserialize(reserializeIndices);
-                    RogueEssence.Dev.DevHelper.ReserializeData(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT);
-                    RogueEssence.Dev.DevHelper.ReserializeData(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT);
-                    RogueEssence.Dev.DevHelper.RunIndexing(reserializeIndices);
+                    DevHelper.ReserializeBase();
+                    DevHelper.Reserialize(reserializeIndices);
+                    DevHelper.ReserializeData(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT);
+                    DevHelper.ReserializeData(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT);
+                    DevHelper.RunIndexing(reserializeIndices);
                     return;
                 }
 
@@ -315,22 +315,34 @@ namespace RogueEssence.Examples
         public static void InitDllMap()
         {
             CoreDllMap.Init();
-            Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
-            CoreDllMap.Register(fnaAssembly);
-            //load SDL first before FNA3D to sidestep multiple dylibs problem
-            SDL.SDL_GetPlatform();
+            //Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
+            //CoreDllMap.Register(fnaAssembly);
+            ////load SDL first before FNA3D to sidestep multiple dylibs problem
+            //SDL.SDL_GetPlatform();
         }
 
         public static void InitDataEditor()
         {
             DataEditor.Init();
+
+            DataEditor.AddEditor(new MoneySpawnZoneStepEditor());
+
+            DataEditor.AddEditor(new DataFolderEditor());
             DataEditor.AddEditor(new AnimDataEditor());
             DataEditor.AddEditor(new SoundEditor());
             DataEditor.AddEditor(new MusicEditor());
             DataEditor.AddEditor(new EntryDataEditor());
             DataEditor.AddEditor(new FrameTypeEditor());
+            DataEditor.AddEditor(new MapItemEditor());
+            DataEditor.AddEditor(new StepSpawnerEditor());
+            DataEditor.AddEditor(new TeamStepSpawnerEditor());
+            DataEditor.AddEditor(new MonsterIDEditor());
+
+            DataEditor.AddEditor(new TeamMemberSpawnEditor());
+            DataEditor.AddEditor(new MobSpawnEditor());
 
             DataEditor.AddEditor(new BaseEmitterEditor());
+            DataEditor.AddEditor(new ZoneDataEditor());
             DataEditor.AddEditor(new BattleDataEditor());
             DataEditor.AddEditor(new BattleFXEditor());
             DataEditor.AddEditor(new CircleSquareEmitterEditor());
@@ -341,18 +353,23 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new ColumnAnimEditor());
             DataEditor.AddEditor(new StaticAnimEditor());
             DataEditor.AddEditor(new TypeDictEditor());
+            DataEditor.AddEditor(new RangeDictEditor());
             DataEditor.AddEditor(new SpawnListEditor());
             DataEditor.AddEditor(new SpawnRangeListEditor());
             DataEditor.AddEditor(new PriorityListEditor());
             DataEditor.AddEditor(new PriorityEditor());
             DataEditor.AddEditor(new SegLocEditor());
             DataEditor.AddEditor(new LocEditor());
+            DataEditor.AddEditor(new RandRangeEditor());
+            DataEditor.AddEditor(new RandPickerEditor());
+            DataEditor.AddEditor(new MultiRandPickerEditor());
             DataEditor.AddEditor(new IntRangeEditor());
             DataEditor.AddEditor(new FlagTypeEditor());
             DataEditor.AddEditor(new ColorEditor());
             DataEditor.AddEditor(new TypeEditor());
             DataEditor.AddEditor(new ArrayEditor());
             DataEditor.AddEditor(new DictionaryEditor());
+            DataEditor.AddEditor(new NoDupeListEditor());
             DataEditor.AddEditor(new ListEditor());
             DataEditor.AddEditor(new EnumEditor());
             DataEditor.AddEditor(new StringEditor());

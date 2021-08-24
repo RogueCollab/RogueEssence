@@ -82,11 +82,10 @@ namespace RogueEssence.Examples
             return 1;
         }
 
-        public override int GetExp(int level, int recipientLv)
+        public override bool CanLearnSkill(int skill)
         {
-            return 1;
+            return false;
         }
-
     }
 
 

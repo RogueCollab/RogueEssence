@@ -227,15 +227,6 @@ namespace RogueEssence.Examples
                 entry.JoinRate = 0;
                 MonsterFormData formEntry = new MonsterFormData();
                 formEntry.FormName = new LocalText("Test Form");
-                formEntry.Height = 1;
-                formEntry.Weight = 1;
-                formEntry.ExpYield = 1;
-                formEntry.BaseHP = 1;
-                formEntry.BaseAtk = 1;
-                formEntry.BaseDef = 1;
-                formEntry.BaseMAtk = 1;
-                formEntry.BaseMDef = 1;
-                formEntry.BaseSpeed = 1;
                 formEntry.LevelSkills.Add(new LevelUpSkill());
                 entry.Forms.Add(formEntry);
                 DataManager.SaveData(ii, DataManager.DataType.Monster.ToString(), entry);
@@ -325,10 +316,6 @@ namespace RogueEssence.Examples
         public static ZoneData GetZoneData(int index)
         {
             ZoneData zone = new ZoneData();
-            zone.AddZoneScriptEvent(index, LuaEngine.EZoneCallbacks.Init);
-            zone.AddZoneScriptEvent(index, LuaEngine.EZoneCallbacks.ExitSegment);
-            zone.AddZoneScriptEvent(index, LuaEngine.EZoneCallbacks.AllyInteract);
-            zone.AddZoneScriptEvent(index, LuaEngine.EZoneCallbacks.Rescued);
             if (index == 0)
             {
                 zone.Name = new LocalText("Debug Zone");
@@ -420,7 +407,7 @@ namespace RogueEssence.Examples
                     #endregion
 
                     //structure.MainExit = new ZoneLoc(2, 0);
-                    zone.Structures.Add(structure);
+                    zone.Segments.Add(structure);
                 }
 
                 for (int jj = 0; jj < MapNames.Length; jj++)
@@ -440,11 +427,10 @@ namespace RogueEssence.Examples
                     MappedRoomStep<MapLoadContext> startGen = new MappedRoomStep<MapLoadContext>();
                     startGen.MapID = MapNames[jj];
                     layout.GenSteps.Add(0, startGen);
-                    layout.GenSteps.Add(5, new NoRescueStep<MapLoadContext>());
                     staticStructure.Floors.Add(layout);
                 }
 
-                zone.Structures.Add(staticStructure);
+                zone.Segments.Add(staticStructure);
             }
             return zone;
         }
