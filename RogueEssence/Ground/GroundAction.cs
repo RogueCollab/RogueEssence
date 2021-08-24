@@ -382,17 +382,19 @@ namespace RogueEssence.Ground
             return CharSheet.TrueFrame(frames, 0, true);
         }
         protected override int AnimFrameType { get { return AnimID; } }
-        public override bool Complete { get { return ActionTime >= AnimTotalTime; } }
+        public override bool Complete { get { return ActionTime >= Duration; } }
 
         int AnimID;
         int Height;
+        int Duration;
 
-        public HopGroundAction(Loc pos, Dir8 dir, int animid, int height)
+        public HopGroundAction(Loc pos, Dir8 dir, int animid, int height, int duration)
         {
             MapLoc = pos;
             CharDir = dir;
             AnimID = animid;
             Height = height;
+            Duration = duration;
         }
 
         public override void UpdateInput(GameAction action)
@@ -403,10 +405,10 @@ namespace RogueEssence.Ground
 
         public override void Update(FrameTick elapsedTime)
         {
-            if (ActionTime < AnimTotalTime / 2)
-                LocHeight = (Height * ActionTime.ToFrames() * 2 - 1) / AnimTotalTime + 1;
+            if (ActionTime < Duration / 2)
+                LocHeight = (Height * ActionTime.ToFrames() * 2 - 1) / Duration + 1;
             else
-                LocHeight = (Height * (AnimTotalTime - ActionTime.ToFrames()) * 2 - 1) / AnimTotalTime + 1;
+                LocHeight = (Height * (Duration - ActionTime.ToFrames()) * 2 - 1) / Duration + 1;
         }
     }
 }

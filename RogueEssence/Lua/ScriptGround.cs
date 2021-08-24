@@ -271,10 +271,10 @@ namespace RogueEssence.Script
             chara.StartAction(new PoseGroundAction(chara.Position, chara.Direction, animIndex));
         }
 
-        public void CharHopAnim(GroundChar chara, string anim)
+        public void CharHopAnim(GroundChar chara, string anim, int height, int duration)
         {
             int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-            chara.StartAction(new HopGroundAction(chara.Position, chara.Direction, animIndex, 10));
+            chara.StartAction(new HopGroundAction(chara.Position, chara.Direction, animIndex, height, duration));
         }
 
 
