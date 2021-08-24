@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
 <StartChars>
-  <StartChar>1</StartChar>
+  <StartChar>
+    <Species>1</Species>
+    <Form>0</Form>
+    <Skin>0</Skin>
+    <Gender>Unknown</Gender>
+	<Name/>
+  </StartChar>
 </StartChars>
 <StartTeams>
   <StartTeam>Test</StartTeam>
@@ -9,7 +15,6 @@
 <StartLevel>1</StartLevel>
 <MaxLevel>100</MaxLevel>
 <StartPersonality>0</StartPersonality>
-<GroundZone>1</GroundZone>
 <StartMap>
   <Zone>1</Zone>
   <Segment>-1</Segment>

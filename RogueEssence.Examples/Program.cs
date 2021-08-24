@@ -202,6 +202,9 @@ namespace RogueEssence.Examples
                     DevHelper.ReserializeData(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT);
                     DevHelper.ReserializeData(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT);
                     DevHelper.RunIndexing(reserializeIndices);
+
+                    DataManager.Instance.InitData();
+                    DevHelper.RunExtraIndexing(reserializeIndices);
                     return;
                 }
 
@@ -210,6 +213,9 @@ namespace RogueEssence.Examples
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
                     DevHelper.RunIndexing(convertIndices);
+
+                    DataManager.Instance.InitData();
+                    DevHelper.RunExtraIndexing(reserializeIndices);
                     return;
                 }
 
@@ -222,6 +228,7 @@ namespace RogueEssence.Examples
                         DataManager.InitInstance();
                         DataInfo.AddEditorOps();
                         DataInfo.AddSystemFX();
+                        DataInfo.AddUniversalEvent();
                         DataInfo.AddUniversalData();
 
                         if ((dump & DataManager.DataType.Element) != DataManager.DataType.None)
@@ -267,6 +274,8 @@ namespace RogueEssence.Examples
                         }
 
                         DevHelper.RunIndexing(dump);
+
+                        DevHelper.RunExtraIndexing(reserializeIndices);
                     }
                     return;
                 }

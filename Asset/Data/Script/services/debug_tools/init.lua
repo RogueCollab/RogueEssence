@@ -48,11 +48,11 @@ function DebugTools:OnDeinit()
 end
 
 --[[---------------------------------------------------------------
-    DebugTools:OnDebugLoad()
+    DebugTools:OnNewGame()
       When a debug save file is loaded this is called!
 ---------------------------------------------------------------]]
-function DebugTools:OnDebugLoad()
-  assert(self, 'DebugTools:OnDebugLoad() : self is null!')
+function DebugTools:OnNewGame()
+  assert(self, 'DebugTools:OnNewGame() : self is null!')
   PrintInfo("\n<!> ExampleSvc: Preparing debug save file")
   _DATA.Save.ActiveTeam:SetRank(0)
   _DATA.Save.ActiveTeam.Name = "Debug"
@@ -76,7 +76,7 @@ end
 function DebugTools:Subscribe(med)
   med:Subscribe("DebugTools", EngineServiceEvents.Init,                function() self.OnInit(self) end )
   med:Subscribe("DebugTools", EngineServiceEvents.Deinit,              function() self.OnDeinit(self) end )
-  med:Subscribe("DebugTools", EngineServiceEvents.DebugLoad,        function() self.OnDebugLoad(self) end )
+  med:Subscribe("DebugTools", EngineServiceEvents.NewGame,        function() self.OnNewGame(self) end )
 --  med:Subscribe("DebugTools", EngineServiceEvents.GraphicsUnload,      function() self.OnGraphicsUnload(self) end )
 --  med:Subscribe("DebugTools", EngineServiceEvents.Restart,             function() self.OnRestart(self) end )
 end

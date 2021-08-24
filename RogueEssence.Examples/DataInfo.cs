@@ -14,11 +14,18 @@ namespace RogueEssence.Examples
 {
     public static class DataInfo
     {
-        public static void AddUniversalData()
+        public static void AddUniversalEvent()
         {
             File.Delete(PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin"));
             ActiveEffect universalEvent = new ActiveEffect();
             DataManager.SaveData(PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin"), universalEvent);
+        }
+
+        public static void AddUniversalData()
+        {
+            File.Delete(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"));
+            TypeDict<BaseData> baseData = new TypeDict<BaseData>();
+            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), baseData);
         }
 
         public static void AddEditorOps()
