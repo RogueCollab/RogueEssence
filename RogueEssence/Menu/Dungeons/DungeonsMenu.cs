@@ -27,14 +27,14 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
                 int dungeonIndex = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[dungeonIndices[ii]].Name.ToLocal(), () => { chooseDungeon(dungeonIndex); }, true,
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[dungeonIndices[ii]].GetColoredName(), () => { chooseDungeon(dungeonIndex); }, true,
                     (DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[ii]] == GameProgress.UnlockState.Completed) ? Color.White : Color.Cyan));
             }
             for (int ii = 0; ii < groundDests.Count; ii++)
             {
                 ZoneData zone = DataManager.Instance.GetZone(groundDests[ii].ID);
                 int groundIndex = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetGround(zone.GroundMaps[groundDests[ii].StructID.ID]).GetSingleLineName(), () => { chooseGround(groundIndex); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetGround(zone.GroundMaps[groundDests[ii].StructID.ID]).GetColoredName(), () => { chooseGround(groundIndex); }));
             }
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 

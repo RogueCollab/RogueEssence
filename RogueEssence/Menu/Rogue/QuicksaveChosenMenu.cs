@@ -90,6 +90,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             //NOTE: In order to preserve debug consistency, you SHOULD set the language to that of the quicksave.
             //HOWEVER, it would be too inconvenient for players sharing their quicksaves, thus this feature is LEFT OUT.
@@ -137,6 +138,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             DataManager.Instance.CurrentReplay = replay;
             

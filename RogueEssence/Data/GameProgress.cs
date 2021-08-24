@@ -104,6 +104,7 @@ namespace RogueEssence.Data
         public string UUID;
         public ProfilePic[] ProfilePics;
 
+        public bool NoSwitching;
         public RescueState Rescue;
 
         public ZoneLoc NextDest;
@@ -211,7 +212,7 @@ namespace RogueEssence.Data
                 int sendHomeIndex = ActiveTeam.Players.Count - 1;
                 if (sendHomeIndex == ActiveTeam.LeaderIndex)
                     sendHomeIndex--;
-                teamRestrictions.Add(ActiveTeam.Players[sendHomeIndex].BaseName);
+                teamRestrictions.Add(ActiveTeam.Players[sendHomeIndex].GetDisplayName(true));
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                     GroundScene.Instance.SilentSendHome(sendHomeIndex);
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -523,7 +524,7 @@ namespace RogueEssence.Data
                         bool isOriginal = false;
                         for (int jj = 0; jj < DataManager.Instance.StartChars.Count; jj++)
                         {
-                            if (ii == DataManager.Instance.StartChars[jj])
+                            if (ii == DataManager.Instance.StartChars[jj].mon.Species)
                                 isOriginal = true;
                         }
                         if (!isOriginal)
@@ -570,7 +571,7 @@ namespace RogueEssence.Data
         public static void LossPenalty(GameProgress save)
         {
             //remove money
-            save.ActiveTeam.Money = save.ActiveTeam.Money / 2;
+            save.ActiveTeam.Money = 0;
             //remove bag items
             for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
             {
@@ -630,7 +631,7 @@ namespace RogueEssence.Data
             string recordFile = null;
             if (result == ResultType.Rescue)
             {
-                Location = ZoneManager.Instance.CurrentZone.Name.ToLocal();
+                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
                 DataManager.Instance.MsgLog.Clear();
                 //end the game with a recorded ending
@@ -653,9 +654,9 @@ namespace RogueEssence.Data
             else if (result != ResultType.Cleared)
             {
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                    Location = ZoneManager.Instance.CurrentGround.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentGround.GetColoredName();
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    Location = ZoneManager.Instance.CurrentMap.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentMap.GetColoredName();
 
                 DataManager.Instance.MsgLog.Clear();
                 //end the game with a recorded ending
@@ -675,7 +676,7 @@ namespace RogueEssence.Data
                 int completedZone = ZoneManager.Instance.CurrentZoneID;
                 DungeonUnlocks[completedZone] = UnlockState.Completed;
 
-                Location = ZoneManager.Instance.CurrentZone.Name.ToLocal();
+                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
                 DataManager.Instance.MsgLog.Clear();
                 //end the game with a recorded ending
@@ -708,20 +709,20 @@ namespace RogueEssence.Data
             //merge back the team if the dungeon was level-limited
             yield return CoroutineManager.Instance.StartCoroutine(RestoreLevel());
 
+            GameState state = DataManager.Instance.LoadMainGameState();
+            MainProgress mainSave = state?.Save as MainProgress;
+
             //save the result to the main file
             if (Stakes != DungeonStakes.None)
             {
-                GameState state = DataManager.Instance.LoadMainGameState();
-                MainProgress mainSave = state.Save as MainProgress;
-                mainSave.MergeDataTo(this);
+                if (mainSave != null)
+                    mainSave.MergeDataTo(this);
                 DataManager.Instance.SaveMainGameState();
             }
             else
             {
-                GameState state = DataManager.Instance.LoadMainGameState();
-                MainProgress mainSave = state.Save as MainProgress;
-                mainSave.MergeDataTo(mainSave);
-                DataManager.Instance.SetProgress(state.Save);
+                if (mainSave != null)
+                    DataManager.Instance.SetProgress(mainSave);
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 
@@ -818,9 +819,9 @@ namespace RogueEssence.Data
             if (result != ResultType.Cleared)
             {
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                    Location = ZoneManager.Instance.CurrentGround.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentGround.GetColoredName();
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    Location = ZoneManager.Instance.CurrentMap.GetSingleLineName();
+                    Location = ZoneManager.Instance.CurrentMap.GetColoredName();
 
                 Outcome = result;
 
@@ -881,7 +882,7 @@ namespace RogueEssence.Data
 
                 //  if there isn't a next area, end the play, display the plaque, return to title screen
                 //GameManager.Instance.Fanfare("Fanfare/MissionClear");
-                Location = ZoneManager.Instance.CurrentZone.Name.ToLocal();
+                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
                 Outcome = result;
 
@@ -927,7 +928,7 @@ namespace RogueEssence.Data
                 if (state != null && Stakes != DungeonStakes.None && !Seeded)
                 {
                     bool allowTransfer = false;
-                    QuestionDialog question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),
+                    DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),
                         () => { allowTransfer = true; }, () => { });
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
 

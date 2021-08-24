@@ -16,29 +16,50 @@ namespace RogueEssence.Dev.ViewModels
     {
         public MapTabEffectsViewModel()
         {
-            Statuses = new CollectionBoxViewModel();
+            Statuses = new CollectionBoxViewModel(new StringConv(typeof(MapStatus), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
-            PrepareEvents = new CollectionBoxViewModel();
-            PrepareEvents.OnMemberChanged += PrepareEvents_Changed;
-            PrepareEvents.OnEditItem += Events_EditItem;
-            StartEvents = new CollectionBoxViewModel();
-            StartEvents.OnMemberChanged += StartEvents_Changed;
-            StartEvents.OnEditItem += Events_EditItem;
-            CheckEvents = new CollectionBoxViewModel();
-            CheckEvents.OnMemberChanged += CheckEvents_Changed;
-            CheckEvents.OnEditItem += Events_EditItem;
+
+            MapEffect = new ClassBoxViewModel(new StringConv(typeof(ActiveEffect), new object[0]));
+            MapEffect.OnMemberChanged += MapEffect_Changed;
+            MapEffect.OnEditItem += MapEffect_Edit;
 
         }
 
 
 
         public CollectionBoxViewModel Statuses { get; set; }
-        public CollectionBoxViewModel PrepareEvents { get; set; }
-        public CollectionBoxViewModel StartEvents { get; set; }
-        public CollectionBoxViewModel CheckEvents { get; set; }
+        public ClassBoxViewModel MapEffect { get; set; }
 
 
+        public void MapEffect_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.MapEffect = MapEffect.GetObject<ActiveEffect>();
+        }
+
+        public void MapEffect_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        {
+            string elementName = "MapEffect";
+            DataEditForm frmData = new DataEditForm();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(ActiveEffect), new object[0]);
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(ActiveEffect), new object[0], element, true);
+
+            frmData.SelectedOKEvent += () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true);
+                op(element);
+                frmData.Close();
+            };
+            frmData.SelectedCancelEvent += () =>
+            {
+                frmData.Close();
+            };
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
+        }
 
         public void Statuses_Changed()
         {
@@ -52,18 +73,16 @@ namespace RogueEssence.Dev.ViewModels
         //TODO: move these events into ListEditor; they were generic enough to warrant copy+pasting
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
+            string elementName = "Statuses[" + index + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New Status";
-            else
-                frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapStatus), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(Statuses) [" + index + "]", typeof(MapStatus), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapStatus), new object[0], element, true);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Statuses", typeof(MapStatus), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapStatus), new object[0], true);
 
                 bool itemExists = false;
 
@@ -96,18 +115,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Events_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
-            string name = "Events";
+            string elementName = "Events[" + index + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = name + "/" + "New Status";
-            else
-                frmData.Title = name + "/" + element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(SingleCharEvent), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(List) " + name + "[" + index + "]", typeof(SingleCharEvent), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(SingleCharEvent), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(SingleCharEvent), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true);
                 op(index, element);
                 frmData.Close();
             };
@@ -121,30 +137,13 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Show();
         }
 
-        public void PrepareEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.PrepareEvents = PrepareEvents.GetList<List<SingleCharEvent>>();
-        }
-
-        public void StartEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.StartEvents = StartEvents.GetList<List<SingleCharEvent>>();
-        }
-
-        public void CheckEvents_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.CheckEvents = CheckEvents.GetList<List<SingleCharEvent>>();
-        }
-
         public void LoadMapEffects()
         {
             List<MapStatus> states = new List<MapStatus>();
             foreach (MapStatus state in ZoneManager.Instance.CurrentMap.Status.Values)
                 states.Add(state);
             Statuses.LoadFromList(states);
-            PrepareEvents.LoadFromList(ZoneManager.Instance.CurrentMap.PrepareEvents);
-            StartEvents.LoadFromList(ZoneManager.Instance.CurrentMap.StartEvents);
-            CheckEvents.LoadFromList(ZoneManager.Instance.CurrentMap.CheckEvents);
+            MapEffect.LoadFromSource(ZoneManager.Instance.CurrentMap.MapEffect);
 
         }
 

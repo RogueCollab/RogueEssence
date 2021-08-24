@@ -24,11 +24,12 @@ namespace RogueEssence.Menu
                 int tacticIndex = -1;
                 for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
                 {
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Released)
+                    AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                    if (summary.Assignable)
                     {
                         if (jj == character.Tactic.ID)
                             tacticIndex = jj;
-                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Name.ToLocal());
+                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].GetColoredName());
                     }
                 }
                 releasedTactics = choices.Count;
@@ -38,15 +39,16 @@ namespace RogueEssence.Menu
                     choices.Add("---");
                 }
 
-                totalChoices[ii + 1] = new MenuSetting(character.BaseName, character.Dead ? Color.Red : Color.White, character.Dead ? Color.DarkRed : Color.Yellow, 88, 72, choices, tacticIndex, tacticIndex, confirmAction);
+                totalChoices[ii + 1] = new MenuSetting(character.GetDisplayName(true), character.Dead ? Color.Red : Color.White, character.Dead ? Color.DarkRed : Color.Yellow, 88, 72, choices, tacticIndex, tacticIndex, confirmAction);
             }
 
             //tactics meeting
             List<string> allChoices = new List<string>();
             for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
             {
-                if (DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Released)
-                    allChoices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].Name.ToLocal());
+                AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                if (summary.Assignable)
+                    allChoices.Add(summary.GetColoredName());
             }
 
             int groupTactic = totalChoices[1].CurrentChoice;

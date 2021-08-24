@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
 
     public class AnimLayerBoxViewModel : LayerBoxViewModel<AnimLayer>
     {
+        public AnimLayerBoxViewModel(UndoStack edits) : base(edits)
+        { }
         public override async Task EditLayer()
         {
             AnimLayerWindow window = new AnimLayerWindow();
@@ -36,6 +38,9 @@ namespace RogueEssence.Dev.ViewModels
                     newLayer.Layer = vm.Front ? DrawLayer.Top : DrawLayer.Bottom;
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Anims = oldLayer.Anims;
+
+                    edits.Apply(new GroundDecorationStateUndo(ChosenLayer));
+
                     Layers[ChosenLayer] = newLayer;
                 }
             }
@@ -52,5 +57,4 @@ namespace RogueEssence.Dev.ViewModels
             Layers.LoadModels(ZoneManager.Instance.CurrentGround.Decorations);
         }
     }
-
 }

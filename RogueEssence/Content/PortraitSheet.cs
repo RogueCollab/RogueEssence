@@ -30,6 +30,7 @@ namespace RogueEssence.Content
         }
     }
 
+    [Serializable]
     public struct EmoteStyle
     {
         public int Emote;

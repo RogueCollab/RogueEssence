@@ -7,8 +7,6 @@ namespace RogueEssence.Menu
 {
     public abstract class VertChoiceMenu : ChoiceMenu
     {
-        public const int QUESTION_SPACE = 8;
-
         public delegate void OnChooseSlot(int slot);
         public delegate void OnMultiChoice(List<int> slot);
 

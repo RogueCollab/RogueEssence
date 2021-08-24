@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using RogueEssence.Dev.ViewModels;
 using RogueEssence.Dungeon;
+using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
@@ -19,8 +20,18 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public async void lbxItems_DoubleClick(object sender, RoutedEventArgs e)
+        bool doubleclick;
+        public void doubleClickStart(object sender, RoutedEventArgs e)
         {
+            doubleclick = true;
+        }
+
+        public async void lbxItems_DoubleClick(object sender, PointerReleasedEventArgs e)
+        {
+            if (!doubleclick)
+                return;
+            doubleclick = false;
+
             ILayerBoxViewModel viewModel = (ILayerBoxViewModel)DataContext;
             if (viewModel == null)
                 return;

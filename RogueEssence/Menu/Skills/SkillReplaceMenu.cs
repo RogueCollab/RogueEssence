@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
                 if (skill.SkillNum > -1)
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    string skillString = data.Name.ToLocal();
+                    string skillString = data.GetColoredName();
                     string skillCharges = skill.Charges + "/" + (data.BaseCharges + player.ChargeBoost);
                     int index = ii;
                     MenuText menuText = new MenuText(skillString, new Loc(2, 1));
@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
                     char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges, div));
                 }
             }
-            string newSkillString = DataManager.Instance.GetSkill(skillNum).Name.ToLocal();
+            string newSkillString = DataManager.Instance.GetSkill(skillNum).GetColoredName();
             int maxCharges = DataManager.Instance.GetSkill(skillNum).BaseCharges + player.ChargeBoost;
             string newSkillCharges = maxCharges + "/" + maxCharges;
             MenuText newMenuText = new MenuText(newSkillString, new Loc(2, 1));
@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_SPACE * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_SKILLS_TITLE", player.BaseName), char_skills.ToArray(), 0);
+            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_SKILLS_TITLE", player.GetDisplayName(true)), char_skills.ToArray(), 0);
         }
 
         protected override void MenuPressed()

@@ -109,6 +109,7 @@ namespace RogueEssence.Menu
                     DataManager.Instance.SetProgress(state.Save);
                     LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
                     ZoneManager.LoadFromState(state.Zone);
+                    LuaEngine.Instance.UpdateZoneInstance();
 
                     DataManager.Instance.CurrentReplay = replay;
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));

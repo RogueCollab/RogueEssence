@@ -16,12 +16,11 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MobSpawn : ISpawnable, ISpawnGenerator<IMobSpawnMap>
     {
+        [Dev.MonsterID(0, false, false, true, true)]
         public MonsterID BaseForm;
 
-
-        [Dev.DataType(0, DataManager.DataType.AI, false)]
-        public int Tactic;
-
+        [Dev.SubGroup]
+        [Dev.RangeBorder(0, false, true)]
         public RandRange Level;
 
         [Dev.DataType(1, DataManager.DataType.Skill, false)]
@@ -29,6 +28,9 @@ namespace RogueEssence.LevelGen
 
         [Dev.DataType(0, DataManager.DataType.Intrinsic, true)]
         public int Intrinsic;
+
+        [Dev.DataType(0, DataManager.DataType.AI, false)]
+        public int Tactic;
 
         public List<MobSpawnExtra> SpawnFeatures;
         //extra spawn event

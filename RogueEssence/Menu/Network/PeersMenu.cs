@@ -68,10 +68,9 @@ namespace RogueEssence.Menu
         {
             if (!itemPresence[index])
             {
-                //TODO: make this calculation not require item loading.
                 itemPresence[index] = true;
-                ItemData entry = DataManager.Instance.GetItem(index);
-                if (entry.ItemStates.Contains<MaterialState>())
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                if (itemEntry.ContainsState<MaterialState>())
                     return true;
             }
             return false;

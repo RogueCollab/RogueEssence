@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
             List<MenuText> validItems = new List<MenuText>();
 
             for (int ii = 0; ii < offer.Count; ii++)
-                validItems.Add(new MenuText(offer[ii].GetName(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET)));
+                validItems.Add(new MenuText(offer[ii].GetDisplayName(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET)));
             
             if (validItems.Count > 0)
                 Items = validItems.ToArray();
@@ -93,7 +93,7 @@ namespace RogueEssence.Menu
                 {
                     if (tradeItem.CurrentState == ExchangeState.Ready)
                     {
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRADE_ITEM_ASK"), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRADE_ITEM_ASK"), () =>
                         {
                             baseMenu.CurrentState = ExchangeState.Exchange;
                             tradeItem.SetReady(baseMenu.CurrentState);

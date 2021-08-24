@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Color member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Color member)
         {
             LoadLabelControl(control, name);
 
@@ -28,14 +28,17 @@ namespace RogueEssence.Dev
             TextBlock lblR = new TextBlock();
             lblR.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblR.Text = "R:";
+            lblR.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblR.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblR);
+            innerPanel.ColumnDefinitions[0].Width = new GridLength(18);
             lblR.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
             NumericUpDown nudValueR = new NumericUpDown();
             nudValueR.Margin = new Thickness(4, 0, 0, 0);
             nudValueR.Minimum = byte.MinValue;
             nudValueR.Maximum = byte.MaxValue;
-            nudValueR.Value = (member == null) ? 0 : member.R;
+            nudValueR.Value = member.R;
             innerPanel.Children.Add(nudValueR);
             nudValueR.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -43,14 +46,17 @@ namespace RogueEssence.Dev
             lblG.Margin = new Thickness(8, 0, 0, 0);
             lblG.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblG.Text = "G:";
+            lblG.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblG.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblG);
+            innerPanel.ColumnDefinitions[2].Width = new GridLength(18);
             lblG.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
             NumericUpDown nudValueG = new NumericUpDown();
             nudValueG.Margin = new Thickness(4, 0, 0, 0);
             nudValueG.Minimum = byte.MinValue;
             nudValueG.Maximum = byte.MaxValue;
-            nudValueG.Value = (member == null) ? 0 : member.G;
+            nudValueG.Value = member.G;
             innerPanel.Children.Add(nudValueG);
             nudValueG.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 
@@ -58,14 +64,17 @@ namespace RogueEssence.Dev
             lblB.Margin = new Thickness(8, 0, 0, 0);
             lblB.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblB.Text = "B:";
+            lblB.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblB.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblB);
+            innerPanel.ColumnDefinitions[4].Width = new GridLength(18);
             lblB.SetValue(Avalonia.Controls.Grid.ColumnProperty, 4);
 
             NumericUpDown nudValueB = new NumericUpDown();
             nudValueB.Margin = new Thickness(4, 0, 0, 0);
             nudValueB.Minimum = byte.MinValue;
             nudValueB.Maximum = byte.MaxValue;
-            nudValueB.Value = (member == null) ? 0 : member.B;
+            nudValueB.Value = member.B;
             innerPanel.Children.Add(nudValueB);
             nudValueB.SetValue(Avalonia.Controls.Grid.ColumnProperty, 5);
 
@@ -73,14 +82,17 @@ namespace RogueEssence.Dev
             lblA.Margin = new Thickness(8, 0, 0, 0);
             lblA.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblA.Text = "A:";
+            lblA.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblA.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblA);
+            innerPanel.ColumnDefinitions[6].Width = new GridLength(18);
             lblA.SetValue(Avalonia.Controls.Grid.ColumnProperty, 6);
 
             NumericUpDown nudValueA = new NumericUpDown();
             nudValueA.Margin = new Thickness(4, 0, 0, 0);
             nudValueA.Minimum = byte.MinValue;
             nudValueA.Maximum = byte.MaxValue;
-            nudValueA.Value = (member == null) ? 0 : member.A;
+            nudValueA.Value = member.A;
             innerPanel.Children.Add(nudValueA);
             nudValueA.SetValue(Avalonia.Controls.Grid.ColumnProperty, 7);
 

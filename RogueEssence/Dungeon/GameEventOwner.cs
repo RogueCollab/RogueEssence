@@ -10,9 +10,9 @@ namespace RogueEssence.Dungeon
         public abstract GameEventPriority.EventCause GetEventCause();
 
         public abstract int GetID();
-        public abstract string GetName();
+        public abstract string GetDisplayName();
 
-        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList) where T : GameEvent
+        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, EventQueueElement<T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList, Character targetChar) where T : GameEvent
         {
             foreach(Priority priority in effectList.GetPriorities())
             {
@@ -22,7 +22,11 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < effectList.GetCountAtPriority(priority); ii++)
                 {
                     if (priority == nextPriority)
-                        queue.Enqueue(new GameEventPriority(priority, GameEventPriority.USER_PORT_PRIORITY, GetEventCause(), GetID(), ii), new Tuple<GameEventOwner, Character, T>(this, null, effectList.Get(priority, ii)));
+                    {
+                        GameEventPriority gameEventPriority = new GameEventPriority(priority, GameEventPriority.USER_PORT_PRIORITY, GetEventCause(), GetID(), ii);
+                        EventQueueElement<T> eventQueueElement = new EventQueueElement<T>(this, null, effectList.Get(priority, ii), targetChar);
+                        queue.Enqueue(gameEventPriority, eventQueueElement);
+                    }
                     else if (priority < nextPriority || nextPriority == Priority.Invalid)
                     {
                         //if the item has a lower priority variable than maxPriority, ignore it
@@ -31,7 +35,9 @@ namespace RogueEssence.Dungeon
                         {
                             nextPriority = priority;
                             queue.Clear();
-                            queue.Enqueue(new GameEventPriority(priority, GameEventPriority.USER_PORT_PRIORITY, GetEventCause(), GetID(), ii), new Tuple<GameEventOwner, Character, T>(this, null, effectList.Get(priority, ii)));
+                            GameEventPriority gameEventPriority = new GameEventPriority(priority, GameEventPriority.USER_PORT_PRIORITY, GetEventCause(), GetID(), ii);
+                            EventQueueElement<T> eventQueueElement = new EventQueueElement<T>(this, null, effectList.Get(priority, ii), targetChar);
+                            queue.Enqueue(gameEventPriority, eventQueueElement);
                         }
                     }
                 }
@@ -45,7 +51,7 @@ namespace RogueEssence.Dungeon
     {
         public override int GetID() { return ID; }
         public abstract PassiveData GetData();
-        public int ID;
+        public abstract int ID { get; set; }
 
         public PassiveActive()
         {
@@ -57,14 +63,31 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    public class EventQueueElement<T>
+        where T : GameEvent
+    {
+        public GameEventOwner Owner;
+        public Character OwnerChar;
+        public T Event;
+        public Character TargetChar;
+
+        public EventQueueElement(GameEventOwner owner, Character ownerChar, T newEvent, Character targetChar)
+        {
+            Owner = owner;
+            OwnerChar = ownerChar;
+            Event = newEvent;
+            TargetChar = targetChar;
+        }
+    }
+
     public class PassiveContext
     {
         public PassiveActive Passive;
         public PassiveData EventData;
-        public int PortPriority;
+        public Priority PortPriority;
         public Character EventChar;
 
-        public PassiveContext(PassiveActive passive, PassiveData passiveEntry, int portPriority, Character effectChar)
+        public PassiveContext(PassiveActive passive, PassiveData passiveEntry, Priority portPriority, Character effectChar)
         {
             Passive = passive;
             EventData = passiveEntry;
@@ -73,7 +96,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList) where T : GameEvent
+        public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, EventQueueElement<T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList, Character targetChar) where T : GameEvent
         {
             foreach(Priority priority in effectList.GetPriorities())
             {
@@ -83,7 +106,11 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < effectList.GetCountAtPriority(priority); ii++)
                 {
                     if (priority == nextPriority)
-                        queue.Enqueue(new GameEventPriority(priority, PortPriority, Passive.GetEventCause(), Passive.GetID(), ii), new Tuple<GameEventOwner, Character, T>(Passive, EventChar, effectList.Get(priority, ii)));
+                    {
+                        GameEventPriority gameEventPriority = new GameEventPriority(priority, PortPriority, Passive.GetEventCause(), Passive.GetID(), ii);
+                        EventQueueElement<T> queueElement = new EventQueueElement<T>(Passive, EventChar, effectList.Get(priority, ii), targetChar);
+                        queue.Enqueue(gameEventPriority, queueElement);
+                    }
                     else if (priority < nextPriority || nextPriority == Priority.Invalid)
                     {
                         //if the item has a lower priority variable than maxPriority, ignore it
@@ -92,7 +119,9 @@ namespace RogueEssence.Dungeon
                         {
                             nextPriority = priority;
                             queue.Clear();
-                            queue.Enqueue(new GameEventPriority(priority, PortPriority, Passive.GetEventCause(), Passive.GetID(), ii), new Tuple<GameEventOwner, Character, T>(Passive, EventChar, effectList.Get(priority, ii)));
+                            GameEventPriority gameEventPriority = new GameEventPriority(priority, PortPriority, Passive.GetEventCause(), Passive.GetID(), ii);
+                            EventQueueElement<T> queueElement = new EventQueueElement<T>(Passive, EventChar, effectList.Get(priority, ii), targetChar);
+                            queue.Enqueue(gameEventPriority, queueElement);
                         }
                     }
                 }

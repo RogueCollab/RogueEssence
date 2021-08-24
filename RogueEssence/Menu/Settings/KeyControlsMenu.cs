@@ -72,7 +72,7 @@ namespace RogueEssence.Menu
                     continue;
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).Text = "[" + actionKeys[index].ToLocal() + "]";
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText("[" + actionKeys[index].ToLocal() + "]");
                 if (actionConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;
@@ -97,7 +97,7 @@ namespace RogueEssence.Menu
                 int index = remapDirIndex(ii);
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).Text = "[" + dirKeys[index].ToLocal() + "]";
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText("[" + dirKeys[index].ToLocal() + "]");
                 if (dirConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;
@@ -174,7 +174,7 @@ namespace RogueEssence.Menu
 
         private void chooseDir(int index, MenuText buttonType)
         {
-            buttonType.Text = "["+Text.FormatKey("MENU_CONTROLS_CHOOSE_KEY") +"]";
+            buttonType.SetText("["+Text.FormatKey("MENU_CONTROLS_CHOOSE_KEY") +"]");
 
             MenuManager.Instance.AddMenu(new GetKeyMenu(Settings.ForbiddenKeys, (Keys key) =>
             {
@@ -186,7 +186,7 @@ namespace RogueEssence.Menu
 
         private void chooseAction(int index, MenuText buttonType)
         {
-            buttonType.Text = "[" + Text.FormatKey("MENU_CONTROLS_CHOOSE_KEY") + "]";
+            buttonType.SetText("[" + Text.FormatKey("MENU_CONTROLS_CHOOSE_KEY") + "]");
 
             MenuManager.Instance.AddMenu(new GetKeyMenu(Settings.ForbiddenKeys, (Keys key) =>
             {

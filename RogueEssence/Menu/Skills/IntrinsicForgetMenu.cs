@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
             {
                 if (player.BaseIntrinsics[ii] > -1)
-                    intrinsics.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[ii]).Name.ToLocal(), () => { choose(ii); }));
+                    intrinsics.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[ii]).GetColoredName(), () => { choose(ii); }));
             }
             
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16,
@@ -34,10 +34,10 @@ namespace RogueEssence.Menu
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             Description = new DialogueText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE, false);
+                summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE);
             summaryMenu.Elements.Add(Description);
 
-            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_TITLE", player.BaseName), intrinsics.ToArray(), 0);
+            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_TITLE", player.GetDisplayName(true)), intrinsics.ToArray(), 0);
         }
 
         protected override void MenuPressed()
@@ -61,7 +61,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[CurrentChoice]);
-            Description.Text = entry.Desc.ToLocal();
+            Description.SetText(entry.Desc.ToLocal());
 
             base.ChoiceChanged();
         }

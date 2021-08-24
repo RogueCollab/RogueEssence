@@ -73,7 +73,7 @@ namespace RogueEssence.Menu
                     if (getHelp.CurrentState == ExchangeRescueState.SOSReady)
                     {
                         //ready to receive SOS
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_RESCUE_SEND_SOS_ASK", getHelp.TargetInfo.Data.TeamName), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_RESCUE_SEND_SOS_ASK", getHelp.TargetInfo.Data.TeamName), () =>
                         {
                             CurrentState = ExchangeRescueState.SOSTrading;
                             getHelp.SetReady(CurrentState);
@@ -95,7 +95,7 @@ namespace RogueEssence.Menu
 
                         string baseAskString = (getHelp.OfferedMail.OfferedItem.Value > -1) ? "DLG_RESCUE_GET_AOK_ASK_REWARD" : "DLG_RESCUE_GET_AOK_ASK";
 
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, getHelp.TargetInfo.Data.TeamName), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, getHelp.TargetInfo.Data.TeamName), () =>
                         {
                             CurrentState = ExchangeRescueState.AOKTrading;
                             getHelp.SetReady(CurrentState);
@@ -177,22 +177,22 @@ namespace RogueEssence.Menu
             switch (CurrentState)
             {
                 case ExchangeRescueState.Communicating:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_COMMUNICATING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_COMMUNICATING"));
                     break;
                 case ExchangeRescueState.SOSReady:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_SOS_CONFIRMING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_SOS_CONFIRMING"));
                     break;
                 case ExchangeRescueState.SOSTrading:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_SOS_SENDING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_SOS_SENDING"));
                     break;
                 case ExchangeRescueState.AOKReady:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_AOK_CONFIRMING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_AOK_CONFIRMING"));
                     break;
                 case ExchangeRescueState.AOKTrading:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_AOK_RECEIVING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_AOK_RECEIVING"));
                     break;
                 case ExchangeRescueState.Completed:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_WAITING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_WAITING"));
                     break;
             }
         }

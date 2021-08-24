@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_CONTROLS_CONFIRM"), confirm));
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 
-            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_KEYBOARD_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_GAMEPAD_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
         }
 
 
@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
                     continue;
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).Text = "(" + actionButtons[index].ToLocal() + ")";
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText("(" + actionButtons[index].ToLocal() + ")");
                 if (actionConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;
@@ -116,7 +116,7 @@ namespace RogueEssence.Menu
 
         private void chooseAction(int index, MenuText buttonType)
         {
-            buttonType.Text = "(" + Text.FormatKey("MENU_CONTROLS_CHOOSE_BUTTON") + ")";
+            buttonType.SetText("(" + Text.FormatKey("MENU_CONTROLS_CHOOSE_BUTTON") + ")");
 
             MenuManager.Instance.AddMenu(new GetButtonMenu(Settings.ForbiddenButtons, (Buttons button) =>
             {

@@ -35,7 +35,8 @@
           <DataTemplate>
             <CheckBox Margin="4"
                       IsChecked="{Binding IsChecked}"
-                      Content="{Binding Description}"/>
+                      Content="{Binding Description}"
+                      IsEnabled="False"/>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>

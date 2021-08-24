@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
-            BG = new ClassBoxViewModel();
+            BG = new ClassBoxViewModel(new StringConv(typeof(MapBG), new object[0]));
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
             BlankBG = new TileBoxViewModel();
@@ -66,6 +66,17 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        public bool NoSwitch
+        {
+            get { return ZoneManager.Instance.CurrentGround.NoSwitching; }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.NoSwitching = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
         public ClassBoxViewModel BG { get; set; }
         public TileBoxViewModel BlankBG { get; set; }
 
@@ -90,14 +101,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
+            string elementName = "MapBG";
             DataEditForm frmData = new DataEditForm();
-            frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, typeof(MapBG), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, elementName, typeof(MapBG), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapBG), new object[0], true);
                 op(element);
                 frmData.Close();
             };
@@ -191,6 +203,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             MapName = MapName;
             ChosenScroll = ChosenScroll;
+            NoSwitch = NoSwitch;
             
             BG.LoadFromSource(ZoneManager.Instance.CurrentGround.Background);
             BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);

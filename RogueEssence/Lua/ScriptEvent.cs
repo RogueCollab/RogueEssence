@@ -13,60 +13,14 @@ using System.Runtime.Serialization;
 namespace RogueEssence.Script
 {
     /// <summary>
-    /// Base class for all script events
-    /// </summary>
-    [Serializable]
-    public abstract class BaseScriptEvent
-    {
-        /// <summary>
-        /// Called to create a copy of this instance
-        /// </summary>
-        /// <returns></returns>
-        public abstract BaseScriptEvent Clone();
-
-        /// <summary>
-        /// Returns a name for this event
-        /// </summary>
-        /// <returns></returns>
-        public abstract string EventName();
-
-        /// <summary>
-        /// Runs the event with the given parameters
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public abstract IEnumerator<YieldInstruction> Apply(params object[] parameters);
-
-        /// <summary>
-        /// Called to execute cleanup on map change.
-        /// </summary>
-        public virtual void DoCleanup() { }
-
-
-        /// <summary>
-        /// This is called to make the event relink with the lua state
-        /// </summary>
-        public abstract void ReloadEvent();
-
-        /// <summary>
-        /// This is called when the Lua engine reloads
-        /// </summary>
-        public abstract void LuaEngineReload();
-    };
-
-
-    /// <summary>
     /// An event which calls a script function when triggered!
     /// </summary>
     [Serializable]
-    public class ScriptEvent : BaseScriptEvent
+    public class ScriptEvent
     {
         protected string m_luapath;
-        [NonSerialized] protected LuaFunction   m_iterator;
-        [NonSerialized] protected bool          m_bfunvalid;
-        [NonSerialized] protected bool          m_bforcebreak = false;
 
-        public override string EventName()
+        public virtual string EventName()
         {
             return m_luapath;
         }
@@ -77,8 +31,6 @@ namespace RogueEssence.Script
         protected ScriptEvent()
         {
             m_luapath = null;
-            m_iterator = null;
-            m_bfunvalid = false;
         }
 
         /// <summary>
@@ -93,12 +45,12 @@ namespace RogueEssence.Script
         public void SetLuaFunctionPath(string luafunpath)
         {
             m_luapath = luafunpath;
-            m_bfunvalid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
-            if (!m_bfunvalid && m_luapath != null)
+            bool func_valid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
+            if (!func_valid && m_luapath != null)
                 DiagManager.Instance.LogInfo(String.Format("ScriptEvent(): Lua function '{0}' does not exists. The event will not run!", m_luapath));
         }
 
-        public override BaseScriptEvent Clone()
+        public virtual ScriptEvent Clone()
         {
             return new ScriptEvent(m_luapath);
         }
@@ -106,78 +58,56 @@ namespace RogueEssence.Script
         /// <summary>
         /// Called when the event is about to be removed from the context. Add everything that needs to be done before the event is removed in here.
         /// </summary>
-        public override void DoCleanup()
+        public virtual void DoCleanup()
         {
             DiagManager.Instance.LogInfo(String.Format("ScriptEvent.DoCleanup(): Doing cleanup on {0}!", m_luapath));
-            m_iterator = null;
         }
 
-        public override IEnumerator<YieldInstruction> Apply(params object[] parameters)
+        public virtual IEnumerator<YieldInstruction> Apply(params object[] parameters)
         {
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
+            return ApplyFunc(func_iter);
+        }
 
-            if (!m_bfunvalid)
+
+        public static IEnumerator<YieldInstruction> ApplyFunc(LuaFunction func_iter)
+        {
+            if (func_iter == null)
                 yield break;
-            //If force break had been set before we even rand this, set it back to false
-            m_bforcebreak = false;
-
-            //Create a lua iterator function for the lua coroutine
-            m_iterator = MakeIterator(parameters);
 
             //Then call it until it returns null!
-            object[] allres = CallInternal();
+            object[] allres = CallInternal(func_iter);
             object res = allres.First();
             while (res != null)
             {
                 if (res.GetType() == typeof(Coroutine)) //This handles waiting on coroutines
-                    yield return StartCoroutine(res as Coroutine);
+                    yield return CoroutineManager.Instance.StartCoroutine(res as Coroutine, false);
                 else if (res.GetType().IsSubclassOf(typeof(YieldInstruction)))
                     yield return res as YieldInstruction;
 
                 //In case we get the order to break out of this, do it! This will happen when the engine is reloaded, and we don't want
                 // to be running a coroutine when this happens!
-                if (m_bforcebreak)
+                if (LuaEngine.Instance.Breaking)
                 {
-                    DiagManager.Instance.LogInfo(String.Format("ScriptEvent.Apply(): Coroutine for event {0} interrupted by engine reload!", m_luapath));
-                    m_bforcebreak = false;
+                    DiagManager.Instance.LogInfo(String.Format("ScriptEvent.Apply(): Coroutine for event interrupted by break command!"));
                     break;
                 }
 
                 //Pick another yield from the lua coroutine
-                allres = CallInternal();
+                allres = CallInternal(func_iter);
                 res = allres.First();
             }
-        }
-
-        /// <summary>
-        /// This method handles the creation of the lua iterator. Meant to be reimplemented while subclassing the scriptevent class,
-        /// changing this to fit a new purpose without having to rewrite the entire Apply method!
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        protected virtual LuaFunction MakeIterator(params object[] parameters)
-        {
-            return LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
-        }
-
-        /// <summary>
-        /// Wraps the starting of sub-coroutine, so it can be inherited and changed as neeeded!
-        /// </summary>
-        /// <param name="coro"></param>
-        /// <returns></returns>
-        protected virtual Coroutine StartCoroutine(Coroutine coro)
-        {
-            return CoroutineManager.Instance.StartCoroutine(coro, false);
         }
 
         /// <summary>
         /// Wrapper around the lua iterator to catch and print any possible script errors.
         /// </summary>
         /// <returns></returns>
-        protected object[] CallInternal()
+        private static object[] CallInternal(LuaFunction func_internal)
         {
             try
             {
-                return m_iterator.Call();
+                return func_internal.Call();
             }
             catch (Exception e)
             {
@@ -191,33 +121,20 @@ namespace RogueEssence.Script
         /// be run or not.
         /// This should be called only after the corresponding map script has been loaded, otherwise it won't find its matching function.
         /// </summary>
-        public override void ReloadEvent()
+        public virtual void ReloadEvent()
         {
             DiagManager.Instance.LogInfo(String.Format("ScriptEvent.ReloadEvent(): Reloading event {0}!", m_luapath));
-            m_bfunvalid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
-            if (!m_bfunvalid)
+            bool func_valid = LuaEngine.Instance.DoesFunctionExists(m_luapath); //Make an initial check for that, and keeps the event from running
+            if (!func_valid)
                 DiagManager.Instance.LogInfo(String.Format("ScriptEvent.ReloadEvent(): Lua function '{0}' does not exists. The event will not run!", m_luapath));
         }
 
         //Called when the engine is reloaded.
         // Since all lua references are invalidated, we have to set them up again!
-        public override void LuaEngineReload()
+        public virtual void LuaEngineReload()
         {
             DiagManager.Instance.LogInfo(String.Format("ScriptEvent.OnLuaEngineReload(): Reloading event {0}, and interrupting current coroutine!", m_luapath));
             ReloadEvent();
-            m_bforcebreak = true;
-        }
-
-        /// <summary>
-        /// Called when events are loaded from save, or a saved map.
-        /// This is called before the GroundMap's own OnDeserializedMethod.
-        /// </summary>
-        /// <param name="context"></param>
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //DiagManager.Instance.LogInfo(String.Format("ScriptEvent.OnDeserializedMethod(): Event {0} deserialized!", m_luapath));
-            //Setup our delegates with the LuaEngine
         }
 
     }
@@ -235,15 +152,15 @@ namespace RogueEssence.Script
         public TransientScriptEvent(LuaFunction luafun)
         {
             m_luafun = luafun;
-            m_bfunvalid = luafun != null;
-            if (!m_bfunvalid)
+            bool func_valid = luafun != null;
+            if (!func_valid)
                 DiagManager.Instance.LogInfo("TransientScriptEvent.TransientScriptEvent(): lua function passed as parameter is null!");
         }
         public TransientScriptEvent(string luafun)
         {
             m_luafun = LuaEngine.Instance.RunString("return " + luafun).First() as LuaFunction;
-            m_bfunvalid = luafun != null;
-            if (!m_bfunvalid)
+            bool func_valid = luafun != null;
+            if (!func_valid)
                 DiagManager.Instance.LogInfo("TransientScriptEvent.TransientScriptEvent(): lua function path passed as parameter is invalid!");
         }
 
@@ -252,11 +169,14 @@ namespace RogueEssence.Script
             return m_luafun.ToString();
         }
 
-        protected override LuaFunction MakeIterator(params object[] parameters)
+
+        public override IEnumerator<YieldInstruction> Apply(params object[] parameters)
         {
             if (m_luafun == null)
                 throw new Exception("TransientScriptEvent.MakeIterator(): Function is null! Make sure the transientevent isn't being deserialized and run!");
-            return LuaEngine.Instance.CreateCoroutineIterator(m_luafun, parameters);
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luafun, parameters);
+
+            return ApplyFunc(func_iter);
         }
     }
 

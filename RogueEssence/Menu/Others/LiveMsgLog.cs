@@ -10,6 +10,7 @@ namespace RogueEssence.Menu
         public const int START_VERT = 6;
         private const int MAX_LINES = 3;
         public const int SIDE_BUFFER = 8;
+        public const int VERT_PAD = 2;
         const int LOG_VISIBLE_TIME = 180;
 
         private List<MenuText> entries;
@@ -21,7 +22,7 @@ namespace RogueEssence.Menu
         {
             entries = new List<MenuText>();
             dividers = new List<MenuDivider>();
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + VERT_SPACE * MAX_LINES)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + VERT_SPACE * MAX_LINES + VERT_PAD)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
             timeSinceUpdate = new FrameTick();
             Visible = false;
         }
@@ -39,11 +40,12 @@ namespace RogueEssence.Menu
 
         public void LogAdded(string msg)
         {
-            if (msg == "\n")
+            if (msg == Text.DIVIDER_STR)
                 LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, msg);
             else
             {
-                string[] lines = GraphicsManager.TextFont.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+
+                string[] lines = MenuText.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                 foreach (string line in lines)
                     LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, line);
                 timeSinceUpdate = new FrameTick();
@@ -54,10 +56,10 @@ namespace RogueEssence.Menu
         public static void LogAdded(List<MenuText> entries, List<MenuDivider> dividers, int startVert, int sideBuffer, string msgLine)
         {
             //methodize this for message log
-            if (msgLine == "\n")
+            if (msgLine == Text.DIVIDER_STR)
             {
                 if (entries.Count > 0)
-                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 11),
+                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 12),
                                GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - sideBuffer * 2);
             }
             else

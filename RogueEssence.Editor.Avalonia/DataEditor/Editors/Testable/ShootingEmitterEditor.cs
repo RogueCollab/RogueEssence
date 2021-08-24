@@ -13,8 +13,9 @@ namespace RogueEssence.Dev
         protected override void RunTest(ShootingEmitter data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;
-            data.SetupEmit(player.MapLoc, player.CharDir, 4 * GraphicsManager.TileSize + GraphicsManager.TileSize / 2, 10 * GraphicsManager.TileSize);
-            DungeonScene.Instance.CreateAnim(data, DrawLayer.NoDraw);
+            ShootingEmitter emitter = (ShootingEmitter)data.Clone();
+            emitter.SetupEmit(player.MapLoc, player.CharDir, 4 * GraphicsManager.TileSize + GraphicsManager.TileSize / 2, 10 * GraphicsManager.TileSize);
+            DungeonScene.Instance.CreateAnim(emitter, DrawLayer.NoDraw);
         }
     }
 }

@@ -46,8 +46,32 @@ namespace RogueEssence.Menu
 
             bool canAct = (GameManager.Instance.CurrentScene != DungeonScene.Instance) || (Data.DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.CurrentCharacter == DungeonScene.Instance.ActiveTeam.Leader);
 
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_UP"), ShiftUpAction, canAct && (teamSlot > 0), canAct && (teamSlot > 0) ? Color.White : Color.Red));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), ShiftDownAction, canAct && (teamSlot < DataManager.Instance.Save.ActiveTeam.Players.Count - 1), canAct && (teamSlot < DataManager.Instance.Save.ActiveTeam.Players.Count - 1) ? Color.White : Color.Red));
+            bool canShiftUp = canAct;
+            bool canShiftDown = canAct;
+            if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot].IsPartner)
+            {
+                canShiftUp = false;
+                canShiftDown = false;
+            }
+            if (teamSlot > 0)
+            {
+                if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot - 1].IsPartner)
+                    canShiftUp = false;
+            }
+            else
+                canShiftUp = false;
+            if (teamSlot < DataManager.Instance.Save.ActiveTeam.Players.Count - 1)
+            {
+                if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot + 1].IsPartner)
+                    canShiftDown = false;
+            }
+            else
+                canShiftDown = false;
+
+            if (canShiftUp)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_UP"), ShiftUpAction));
+            if (canShiftDown)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), ShiftDownAction));
 
             if (teamSlot == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
             {
@@ -58,6 +82,8 @@ namespace RogueEssence.Menu
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction, canAct, canAct ? Color.White : Color.Red));
 
             bool canSendHome = canAct;
+            if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot].IsPartner)
+                canSendHome = false;
             if (DataManager.Instance.Save is RogueProgress && DataManager.Instance.GetSkin(DataManager.Instance.Save.ActiveTeam.Players[teamSlot].BaseForm.Skin).Challenge && !DataManager.Instance.Save.ActiveTeam.Players[teamSlot].Dead)
                 canSendHome = false;
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance && teamSlot != DataManager.Instance.Save.ActiveTeam.LeaderIndex)
@@ -110,7 +136,7 @@ namespace RogueEssence.Menu
         private void SendHomeAction()
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
-            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SEND_HOME_ASK", player.Name), () =>
+            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SEND_HOME_ASK", player.GetDisplayName(true)), () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 List<IInteractable> save = MenuManager.Instance.SaveMenuState();

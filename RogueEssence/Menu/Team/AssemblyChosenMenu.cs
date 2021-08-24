@@ -30,7 +30,8 @@ namespace RogueEssence.Menu
             else if (!baseMenu.ChoosingLeader(teamSlot))
             {
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction));
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
+                if (!baseMenu.ChoosingStuckMember(teamSlot))
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));
@@ -85,18 +86,18 @@ namespace RogueEssence.Menu
 
         private void RenameAction()
         {
-            MenuManager.Instance.AddMenu(new NicknameMenu(baseMenu.ConfirmRename), false);
+            MenuManager.Instance.AddMenu(new NicknameMenu(baseMenu.ConfirmRename, () => { }), false);
         }
 
         private void ReleaseAction()
         {
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid,
-                null, new EmoteStyle(0), Text.FormatKey("DLG_ASSEMBLY_RELEASE_ASK", player.BaseName), true, () =>
+                null, new EmoteStyle(0), Text.FormatKey("DLG_ASSEMBLY_RELEASE_ASK", player.GetDisplayName(true)), true, false, false, () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 baseMenu.ReleaseAssembly(teamSlot);
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ASSEMBLY_RELEASE", player.BaseName)), false);
+                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ASSEMBLY_RELEASE", player.GetDisplayName(true))), false);
             }, () => { }, true), false);
         }
 

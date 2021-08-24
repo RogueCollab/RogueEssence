@@ -9,7 +9,7 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
@@ -35,6 +35,11 @@ namespace RogueEssence.Data
             Comment = "";
             Symbol = symbol;
             LeaderFX  = new BattleFX();
+        }
+
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
         }
     }
 }

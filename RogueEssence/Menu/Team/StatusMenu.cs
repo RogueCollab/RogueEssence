@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
                 {
                     Data.MapStatusData statusData = Data.DataManager.Instance.GetMapStatus(status);
                     mapIndices.Add(status);
-                    MenuText statusName = statusName = new MenuText(statusData.Name.ToLocal(), new Loc(2, 1));
+                    MenuText statusName = statusName = new MenuText(statusData.GetColoredName(), new Loc(2, 1));
                     MapCountDownState countDown = statusInstance.StatusStates.GetWithDefault<MapCountDownState>();
                     if (countDown != null && countDown.Counter > 0)
                         flatChoices.Add(new MenuElementChoice(() => { }, true, statusName, new MenuText("[" + countDown.Counter + "]", new Loc(menuWidth - 8 * 4, 1), DirH.Right)));
@@ -45,9 +45,9 @@ namespace RogueEssence.Menu
                     MenuText statusName = null;
                     StackState stack = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.GetWithDefault<StackState>();
                     if (stack != null)
-                        statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).Name.ToLocal() + (stack.Stack < 0 ? " " : " +") + stack.Stack, new Loc(2, 1));
+                        statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).GetColoredName() + (stack.Stack < 0 ? " " : " +") + stack.Stack, new Loc(2, 1));
                     else
-                        statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).Name.ToLocal(), new Loc(2, 1));
+                        statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).GetColoredName(), new Loc(2, 1));
 
                     CountDownState countDown = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.GetWithDefault<CountDownState>();
                     if (countDown != null && countDown.Counter > 0)
@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             Description = new DialogueText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE, false);
+                summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE);
             summaryMenu.Elements.Add(Description);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_STATUS_TITLE"), statuses.ToArray(), 0, 0, SLOTS_PER_PAGE);
@@ -81,13 +81,13 @@ namespace RogueEssence.Menu
             {
                 int entryIndex = mapIndices[index];
                 Data.MapStatusData entry = Data.DataManager.Instance.GetMapStatus(entryIndex);
-                Description.Text = entry.Desc.ToLocal();
+                Description.SetText(entry.Desc.ToLocal());
             }
             else
             {
                 int entryIndex = indices[index - mapIndices.Count];
                 Data.StatusData entry = Data.DataManager.Instance.GetStatus(entryIndex);
-                Description.Text = entry.Desc.ToLocal();
+                Description.SetText(entry.Desc.ToLocal());
             }
             base.ChoiceChanged();
         }

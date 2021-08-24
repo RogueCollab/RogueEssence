@@ -7,10 +7,9 @@ namespace RogueEssence.Data
     [Serializable]
     public class MonsterData : IEntryData
     {
-
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
@@ -22,9 +21,9 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary()
         {
-            FormEntrySummary summary = new FormEntrySummary(Name, Released, Comment);
+            MonsterEntrySummary summary = new MonsterEntrySummary(Name, Released, Comment);
             foreach (BaseMonsterForm form in Forms)
-                summary.FormTexts.Add(form.FormName);
+                summary.Forms.Add(form.GenerateEntrySummary());
             return summary;
         }
 
@@ -57,10 +56,38 @@ namespace RogueEssence.Data
             Promotions = new List<PromoteBranch>();
             Forms = new List<BaseMonsterForm>();
         }
-        
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
     }
 
 
+
+
+    [Serializable]
+    public class MonsterEntrySummary : EntrySummary
+    {
+        public List<BaseFormSummary> Forms;
+
+        public MonsterEntrySummary() : base()
+        {
+            Forms = new List<BaseFormSummary>();
+        }
+
+        public MonsterEntrySummary(LocalText name, bool released, string comment) : base(name, released, comment)
+        {
+            Forms = new List<BaseFormSummary>();
+        }
+
+
+        public override string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
+    }
 
 
 }

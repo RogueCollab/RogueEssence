@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(MonsterID.Invalid, null, new EmoteStyle(0), true, 
                 () => {
-                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), Text.FormatKey("DLG_DELETE_CONFIRM"), true, () =>
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), Text.FormatKey("DLG_DELETE_CONFIRM"), true, false, false, () =>
                     {
                         MenuManager.Instance.ClearMenus();
                         DataManager.Instance.DeleteSaveData();
@@ -51,7 +51,7 @@ namespace RogueEssence.Menu
                         GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
                     }, () => { }, true), false);
                 },
-                -1, Text.FormatKey("DLG_DELETE_SAVE")), false);
+                -1, false, false, Text.FormatKey("DLG_DELETE_SAVE")), false);
         }
     }
 }

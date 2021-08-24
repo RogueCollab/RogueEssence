@@ -137,7 +137,7 @@ namespace RogueEssence.Menu
             int origChosenIndex = -1;
             for (int jj = 0; jj < legalSkins.Count; jj++)
             {
-                choices.Add(DataManager.Instance.GetSkin(legalSkins[jj]).Name.ToLocal());
+                choices.Add(DataManager.Instance.GetSkin(legalSkins[jj]).GetColoredName());
                 if (legalSkins[jj] == baseMenu.SkinSetting)
                     chosenIndex = jj;
                 if (legalSkins[jj] == origSkinSetting)
@@ -188,11 +188,11 @@ namespace RogueEssence.Menu
                 else
                 {
                     if (legalIntrinsics[jj] == 0)
-                        choices.Add(DataManager.Instance.GetIntrinsic(dex.Forms[intrinsicFormIndex].Intrinsic1).Name.ToLocal());
+                        choices.Add(DataManager.Instance.GetIntrinsic(dex.Forms[intrinsicFormIndex].Intrinsic1).GetColoredName());
                     else if (legalIntrinsics[jj] == 1)
-                        choices.Add(DataManager.Instance.GetIntrinsic(dex.Forms[intrinsicFormIndex].Intrinsic2).Name.ToLocal());
+                        choices.Add(DataManager.Instance.GetIntrinsic(dex.Forms[intrinsicFormIndex].Intrinsic2).GetColoredName());
                     else
-                        choices.Add(DataManager.Instance.GetIntrinsic(dex.Forms[intrinsicFormIndex].Intrinsic3).Name.ToLocal());
+                        choices.Add(DataManager.Instance.GetIntrinsic(dex.Forms[intrinsicFormIndex].Intrinsic3).GetColoredName());
                 }
 
 

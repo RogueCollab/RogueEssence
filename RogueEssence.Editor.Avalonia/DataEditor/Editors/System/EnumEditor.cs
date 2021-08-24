@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Enum member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Enum member)
         {
             LoadLabelControl(control, name);
 

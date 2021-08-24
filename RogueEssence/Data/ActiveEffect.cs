@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueElements;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Data
 {
@@ -15,7 +16,7 @@ namespace RogueEssence.Data
 
         public override int GetID() { return -1; }
 
-        public override string GetName()
+        public override string GetDisplayName()
         {
             return null;
         }
@@ -46,7 +47,8 @@ namespace RogueEssence.Data
         public PriorityList<SingleCharEvent> OnDeaths;
 
         public PriorityList<RefreshEvent> OnRefresh;
-        
+        public PriorityList<RefreshEvent> OnMapRefresh;
+
         public PriorityList<HPChangeEvent> ModifyHPs;
         public PriorityList<HPChangeEvent> RestoreHPs;
 
@@ -78,6 +80,7 @@ namespace RogueEssence.Data
             OnDeaths = new PriorityList<SingleCharEvent>();
 
             OnRefresh = new PriorityList<RefreshEvent>();
+            OnMapRefresh = new PriorityList<RefreshEvent>();
 
             ModifyHPs = new PriorityList<HPChangeEvent>();
             RestoreHPs = new PriorityList<HPChangeEvent>();
@@ -85,5 +88,56 @@ namespace RogueEssence.Data
             InitActionData = new PriorityList<BattleEvent>();
         }
 
+        public void AddOther(ActiveEffect other)
+        {
+            addOtherPriorityList(BeforeTryActions, other.BeforeTryActions);
+            addOtherPriorityList(BeforeActions, other.BeforeActions);
+            addOtherPriorityList(OnActions, other.OnActions);
+            addOtherPriorityList(BeforeExplosions, other.BeforeExplosions);
+            addOtherPriorityList(BeforeHits, other.BeforeHits);
+            addOtherPriorityList(OnHits, other.OnHits);
+            addOtherPriorityList(OnHitTiles, other.OnHitTiles);
+            addOtherPriorityList(AfterActions, other.AfterActions);
+            addOtherPriorityList(ElementEffects, other.ElementEffects);
+
+            addOtherPriorityList(BeforeStatusAdds, other.BeforeStatusAdds);
+            addOtherPriorityList(OnStatusAdds, other.OnStatusAdds);
+            addOtherPriorityList(OnStatusRemoves, other.OnStatusRemoves);
+            addOtherPriorityList(OnMapStatusAdds, other.OnMapStatusAdds);
+            addOtherPriorityList(OnMapStatusRemoves, other.OnMapStatusRemoves);
+
+            addOtherPriorityList(OnMapStarts, other.OnMapStarts);
+            addOtherPriorityList(OnTurnStarts, other.OnTurnStarts);
+            addOtherPriorityList(OnTurnEnds, other.OnTurnEnds);
+            addOtherPriorityList(OnMapTurnEnds, other.OnMapTurnEnds);
+            addOtherPriorityList(OnWalks, other.OnWalks);
+            addOtherPriorityList(OnDeaths, other.OnDeaths);
+
+            addOtherPriorityList(OnRefresh, other.OnRefresh);
+            addOtherPriorityList(OnMapRefresh, other.OnMapRefresh);
+
+            addOtherPriorityList(ModifyHPs, other.ModifyHPs);
+            addOtherPriorityList(RestoreHPs, other.RestoreHPs);
+
+            addOtherPriorityList(InitActionData, other.InitActionData);
+        }
+
+        private void addOtherPriorityList<T>(PriorityList<T> list, PriorityList<T> other)
+        {
+            foreach (Priority priority in other.GetPriorities())
+            {
+                foreach (T step in other.GetItems(priority))
+                    list.Add(priority, step);
+            }
+        }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: v0.5: remove this
+            if (OnMapRefresh == null)
+                OnMapRefresh = new PriorityList<RefreshEvent>();
+        }
     }
 }

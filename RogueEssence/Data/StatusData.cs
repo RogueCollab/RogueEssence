@@ -10,11 +10,12 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
         public bool MenuName;
+        public bool CarryOver;
         public LocalText Desc { get; set; }
 
         public bool Released { get; set; }
@@ -54,6 +55,12 @@ namespace RogueEssence.Data
             OnSkillChanges = new PriorityList<SkillChangeEvent>();
 
             TargetPassive = new PassiveData();
+        }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
         }
     }
 

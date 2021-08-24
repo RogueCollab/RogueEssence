@@ -28,9 +28,9 @@ namespace RogueEssence.Data
 
         public override int GetID() { return ID; }
         //TODO: later on, make child classes for skills, traps, item usages and throws?
-        public override string GetName()
+        public override string GetDisplayName()
         {
-            return DataManager.Instance.GetSkill(ID).Name.ToLocal();
+            return DataManager.Instance.GetSkill(ID).GetIconName();
         }
 
         public override string ToString()
@@ -135,14 +135,15 @@ namespace RogueEssence.Data
 
         public IEnumerator<YieldInstruction> Hit(BattleContext context)
         {
-            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<BattleEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<BattleEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 //include the universal effect here
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnHits);
-                AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, OnHits);
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnHits, null);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnHits, null);
+                AddEventsToQueue<BattleEvent>(queue, maxPriority, ref nextPriority, OnHits, null);
             };
-            foreach (Tuple<GameEventOwner, Character, BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, context));
+            foreach (EventQueueElement<BattleEvent> effect in DungeonScene.IterateEvents<BattleEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
         }
     }
 }

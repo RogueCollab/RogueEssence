@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(DataTypeAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Int32 member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Int32 member)
         {
             LoadLabelControl(control, name);
 
@@ -64,5 +64,14 @@ namespace RogueEssence.Dev
             return returnValue;
         }
 
+        public override string GetString(Int32 obj, Type type, object[] attributes)
+        {
+            DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
+
+            EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataAtt.DataType];
+            if (obj >= 0 && obj < nameIndex.Count)
+                return nameIndex.Entries[obj].Name.ToLocal();
+            return "---";
+        }
     }
 }

@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
             if (formString != "")
                 rules.Add(new MenuText(formString, new Loc()));
             if (skinSetting > 0)
-                rules.Add(new MenuText(Text.FormatKey("MENU_CHARA_DETAIL_SKIN", DataManager.Instance.GetSkin(skinSetting).Name.ToLocal()), new Loc()));
+                rules.Add(new MenuText(Text.FormatKey("MENU_CHARA_DETAIL_SKIN", DataManager.Instance.GetSkin(skinSetting).GetColoredName()), new Loc()));
             if (genderSetting != Gender.Unknown)
                 rules.Add(new MenuText(genderSetting.ToLocal(), new Loc()));
             if (intrinsicString != "")

@@ -48,7 +48,7 @@ namespace RogueEssence.Menu
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.Name, () => { chooseSelf(DataManager.Instance.Save.UUID); }, true, TextIndigo));
+            flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetDisplayName(), () => { chooseSelf(DataManager.Instance.Save.UUID); }, true, TextIndigo));
             for (int ii = 0; ii < DiagManager.Instance.CurSettings.ContactList.Count; ii++)
             {
                 int index = ii;
@@ -77,10 +77,9 @@ namespace RogueEssence.Menu
         {
             if (!itemPresence[index])
             {
-                //TODO: make this calculation not require item loading.
                 itemPresence[index] = true;
-                ItemData entry = DataManager.Instance.GetItem(index);
-                if (entry.ItemStates.Contains<MaterialState>())
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                if (itemEntry.ContainsState<MaterialState>())
                     return true;
             }
             return false;

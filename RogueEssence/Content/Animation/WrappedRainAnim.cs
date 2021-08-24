@@ -43,7 +43,7 @@ namespace RogueEssence.Content
             Vector2 drawDest = new Vector2(drawLoc.X % GraphicsManager.ScreenWidth, (drawLoc.Y - LocHeight) % GraphicsManager.ScreenHeight);
 
             DirSheet sheet = GraphicsManager.GetAttackSheet(Anim.AnimIndex);
-            sheet.DrawDir(spriteBatch, drawDest, Anim.GetCurrentFrame(ActionTime, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), DirExt.AddAngles(Direction, Anim.AnimDir), Color.White * ((float)Anim.Alpha / 255));
+            sheet.DrawDir(spriteBatch, drawDest, Anim.GetCurrentFrame(ActionTime, GraphicsManager.GetAttackSheet(Anim.AnimIndex).TotalFrames), Anim.GetDrawDir(Direction), Color.White * ((float)Anim.Alpha / 255));
 
         }
 

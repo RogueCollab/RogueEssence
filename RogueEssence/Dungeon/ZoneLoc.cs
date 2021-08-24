@@ -31,7 +31,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        private static readonly ZoneLoc invalid = new ZoneLoc(-1, new SegLoc(-1, -1));
+        private static readonly ZoneLoc invalid = new ZoneLoc(-1, new SegLoc(-1, -1), -1);
 
         public static ZoneLoc Invalid { get { return invalid; } }
 

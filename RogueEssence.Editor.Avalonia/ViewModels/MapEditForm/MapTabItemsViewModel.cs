@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System.Collections.Generic;
@@ -102,9 +103,17 @@ namespace RogueEssence.Dev.ViewModels
         public MapItem SelectedEntity;
 
 
+        public void ProcessUndo()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                SelectEntity(null);
+        }
 
         public void ProcessInput(InputManager input)
         {
+            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
+                return;
+
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
             switch (EntMode)
@@ -146,6 +155,7 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.Items.Remove(ent);
         }
 
@@ -156,6 +166,8 @@ namespace RogueEssence.Dev.ViewModels
             MapItem placeableEntity = new MapItem(SelectedEntity);
 
             placeableEntity.TileLoc = position;
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.Items.Add(placeableEntity);
         }
 
@@ -164,7 +176,10 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(MapItem ent)
         {
             if (ent != null)
+            {
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
                 setEntity(ent);
+            }
             else
                 setEntity(new MapItem());
         }
@@ -199,6 +214,23 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (SelectedEntity != null)
                 SelectedEntity.TileLoc = loc;
+        }
+    }
+
+    public class MapItemStateUndo : StateUndo<List<MapItem>>
+    {
+        public MapItemStateUndo()
+        {
+        }
+
+        public override List<MapItem> GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.Items;
+        }
+
+        public override void SetState(List<MapItem> state)
+        {
+            ZoneManager.Instance.CurrentMap.Items = state;
         }
     }
 }

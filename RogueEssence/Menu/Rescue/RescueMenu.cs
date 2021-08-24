@@ -50,10 +50,12 @@ namespace RogueEssence.Menu
             if (aokPath != null)
             {
                 AOKMail aok = (AOKMail)DataManager.LoadRescueMail(aokPath);
-                SetAOK(aok);
-                //an AOK mail has been found!
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => loadAOK(aokPath, aok), Text.FormatKey("DLG_AWAIT_RESCUE_AOK_FOUND")), true);
-
+                if (aok != null)
+                {
+                    SetAOK(aok);
+                    //an AOK mail has been found!
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => loadAOK(aokPath, aok), Text.FormatKey("DLG_AWAIT_RESCUE_AOK_FOUND")), true);
+                }
             }
             else
             {
@@ -205,6 +207,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             //NOTE: In order to preserve debug consistency, you SHOULD set the language to that of the quicksave.
             //HOWEVER, it would be too inconvenient for players sharing their quicksaves, thus this feature is LEFT OUT.

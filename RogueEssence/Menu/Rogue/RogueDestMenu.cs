@@ -39,7 +39,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
                 int zone = dungeonIndices[ii];
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetZone(zone).Name.ToLocal(), () => { choose(zone); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetZone(zone).GetColoredName(), () => { choose(zone); }));
             }
             List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
             

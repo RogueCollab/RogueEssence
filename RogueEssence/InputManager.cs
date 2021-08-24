@@ -72,16 +72,12 @@ namespace RogueEssence
 
         public bool JustPressed(FrameInput.InputType input)
         {
-            if (CurrentInput.Active)
-                return !PrevInput[input] && CurrentInput[input];
-            return false;
+            return !PrevInput[input] && CurrentInput[input];
         }
 
         public bool JustReleased(FrameInput.InputType input)
         {
-            if (CurrentInput.Active)
-                return PrevInput[input] && !CurrentInput[input];
-            return false;
+            return PrevInput[input] && !CurrentInput[input];
         }
 
         public bool BaseKeyDown(Keys key)
@@ -91,22 +87,17 @@ namespace RogueEssence
 
         public bool BaseKeyPressed(Keys key)
         {
-            if (CurrentInput.Active)
-                return (CurrentInput.BaseKeyState.IsKeyDown(key) && !PrevInput.BaseKeyState.IsKeyDown(key));
-            return false;
+            return (CurrentInput.BaseKeyState.IsKeyDown(key) && !PrevInput.BaseKeyState.IsKeyDown(key));
         }
 
         public bool AnyKeyPressed()
         {
-            if (CurrentInput.Active)
+            if (PrevInput.BaseKeyState.GetPressedKeys().Length == 0)
             {
-                if (PrevInput.BaseKeyState.GetPressedKeys().Length == 0)
+                foreach (Keys key in CurrentInput.BaseKeyState.GetPressedKeys())
                 {
-                    foreach (Keys key in CurrentInput.BaseKeyState.GetPressedKeys())
-                    {
-                        if (key < Keys.F1 || key > Keys.F24)
-                            return true;
-                    }
+                    if (key < Keys.F1 || key > Keys.F24)
+                        return true;
                 }
             }
             return false;
@@ -119,19 +110,13 @@ namespace RogueEssence
 
         public bool BaseButtonPressed(Buttons button)
         {
-            if (CurrentInput.Active)
-                return (CurrentInput.BaseGamepadState.IsButtonDown(button) && !PrevInput.BaseGamepadState.IsButtonDown(button));
-            return false;
+            return (CurrentInput.BaseGamepadState.IsButtonDown(button) && !PrevInput.BaseGamepadState.IsButtonDown(button));
         }
 
         public bool AnyButtonPressed()
         {
-            if (CurrentInput.Active)
-            {
-                GamePadButtons untouchedButtons = new GamePadButtons();
-                return (CurrentInput.BaseGamepadState.Buttons != untouchedButtons && PrevInput.BaseGamepadState.Buttons == untouchedButtons);
-            }
-            return false;
+            GamePadButtons untouchedButtons = new GamePadButtons();
+            return (CurrentInput.BaseGamepadState.Buttons != untouchedButtons && PrevInput.BaseGamepadState.Buttons == untouchedButtons);
         }
     }
 }

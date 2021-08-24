@@ -16,7 +16,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, AutoTile member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, AutoTile member)
         {
             LoadLabelControl(control, name);
 

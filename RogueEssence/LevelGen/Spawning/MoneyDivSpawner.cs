@@ -23,23 +23,29 @@ namespace RogueEssence.LevelGen
         public List<MoneySpawn> GetSpawns(T map)
         {
             MoneySpawn total = map.Spawner.Pick(map.Rand);
-            int chosenDiv = Math.Max(1, DivAmount.Pick(map.Rand));
+            int chosenDiv = Math.Min(total.Amount, Math.Max(1, DivAmount.Pick(map.Rand)));
             int avgAmount = total.Amount / chosenDiv;
             int currentTotal = 0;
             List<MoneySpawn> results = new List<MoneySpawn>();
             for (int ii = 0; ii < chosenDiv; ii++)
             {
                 int nextTotal = total.Amount;
-                if (ii < chosenDiv)
+                if (ii + 1 < chosenDiv)
                 {
-                    int expectedCurrentTotal = total.Amount * ii / chosenDiv;
-                    int amount = avgAmount * (200 + map.Rand.Next(DIV_DIFF * 2) - DIV_DIFF) / 200;
+                    int expectedCurrentTotal = total.Amount * (ii+1) / chosenDiv;
+                    int amount = avgAmount * (/*map.Rand.Next(DIV_DIFF * 2)*/((ii % 2 == 0) ? 0 : 99) - DIV_DIFF) / 200;
                     nextTotal = expectedCurrentTotal + amount;
                 }
-                results.Add(new MoneySpawn(nextTotal - currentTotal));
+                if (nextTotal > currentTotal)
+                    results.Add(new MoneySpawn(nextTotal - currentTotal));
                 currentTotal = nextTotal;
             }
             return results;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: Div:{1}", this.GetType().Name, this.DivAmount.ToString());
         }
     }
 }

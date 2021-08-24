@@ -54,6 +54,7 @@ namespace RogueEssence.Data
         public static DataManager Instance { get { return instance; } }
 
         public const string DATA_PATH = "Data/";
+        public const string MISC_PATH = DATA_PATH + "Misc/";
         public const string MAP_PATH = DATA_PATH + "Map/";
         public const string GROUND_PATH = DATA_PATH + "Ground/";
         public const string DATA_EXT = ".bin";
@@ -108,15 +109,14 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
-        public List<int> StartChars;
+        public List<(MonsterID mon, string name)> StartChars;
         public List<string> StartTeams;
-        public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
         public int StartPersonality;
-        public int GroundZone;
         public ZoneLoc StartMap;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
+        public TypeDict<BaseData> UniversalData;
 
         public BattleFX HealFX;
         public BattleFX RestoreChargeFX;
@@ -188,6 +188,7 @@ namespace RogueEssence.Data
             skinCache = new Dictionary<int, SkinData>();
 
             DataIndices = new Dictionary<DataType, EntryDataIndex>();
+            UniversalData = new TypeDict<BaseData>();
         }
 
         public void InitData()
@@ -207,8 +208,8 @@ namespace RogueEssence.Data
 
 
             UniversalEvent = (ActiveEffect)LoadData(PathMod.ModPath(DATA_PATH + "Universal.bin"), null);
+            UniversalData = (TypeDict<BaseData>)LoadData(PathMod.ModPath(MISC_PATH + "Index.bin"), null);
             LoadStartParams();
-            LoadRarity();
 
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -227,6 +228,7 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.AI, aiCache);
             LoadIndexFull(DataType.Rank, rankCache);
             LoadIndexFull(DataType.Skin, skinCache);
+            LoadUniversalData();
         }
 
 
@@ -250,42 +252,18 @@ namespace RogueEssence.Data
         }
 
 
-        private void LoadRarity()
+        public void LoadUniversalData()
         {
-            RarityMap = new Dictionary<(int, int), List<int>>();
-
-            string path = PathMod.ModPath(DATA_PATH + "Rarity.xml");
-            //try to load from file
-            if (File.Exists(path))
+            foreach (BaseData baseData in UniversalData)
             {
                 try
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    foreach (XmlNode speciesNode in xmldoc.DocumentElement.SelectNodes("Species"))
-                    {
-                        int species = Int32.Parse(speciesNode.Attributes.GetNamedItem("name").Value);
-                        foreach (XmlNode rarityNode in speciesNode.SelectNodes("Rarity"))
-                        {
-                            int rarity = Int32.Parse(rarityNode.Attributes.GetNamedItem("name").Value);
-
-                            foreach (XmlNode itemNode in rarityNode.SelectNodes("Item"))
-                            {
-                                int item = Int32.Parse(itemNode.InnerText);
-
-                                if (!RarityMap.ContainsKey((species, rarity)))
-                                    RarityMap[(species, rarity)] = new List<int>();
-
-                                RarityMap[(species, rarity)].Add(item);
-                            }
-                        }
-                    }
-
+                    BaseData data = (BaseData)DataManager.LoadData(PathMod.ModPath(MISC_PATH + baseData.FileName + DATA_EXT));
+                    UniversalData.Set(data);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    DiagManager.Instance.LogError(ex);
+                    //leave as is
                 }
             }
         }
@@ -298,7 +276,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    StartChars = new List<int>();
+                    StartChars = new List<(MonsterID, string)>();
                     StartTeams = new List<string>();
 
                     XmlDocument xmldoc = new XmlDocument();
@@ -306,7 +284,21 @@ namespace RogueEssence.Data
 
                     XmlNode startChars = xmldoc.DocumentElement.SelectSingleNode("StartChars");
                     foreach (XmlNode startChar in startChars.SelectNodes("StartChar"))
-                        StartChars.Add(Int32.Parse(startChar.InnerText));
+                    {
+                        XmlNode startSpecies = startChar.SelectSingleNode("Species");
+                        int species = Int32.Parse(startSpecies.InnerText);
+                        XmlNode startForm = startChar.SelectSingleNode("Form");
+                        int form = Int32.Parse(startForm.InnerText);
+                        XmlNode startSkin = startChar.SelectSingleNode("Skin");
+                        int skin = Int32.Parse(startSkin.InnerText);
+                        XmlNode startGender = startChar.SelectSingleNode("Gender");
+                        Gender gender = (Gender)Enum.Parse(typeof(Gender), startGender.InnerText);
+
+                        XmlNode startName = startChar.SelectSingleNode("Name");
+                        string name = startName.InnerText;
+
+                        StartChars.Add((new MonsterID(species, form, skin, gender), name));
+                    }
 
                     XmlNode startTeams = xmldoc.DocumentElement.SelectSingleNode("StartTeams");
                     foreach (XmlNode startTeam in startTeams.SelectNodes("StartTeam"))
@@ -321,9 +313,6 @@ namespace RogueEssence.Data
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
                     StartPersonality = Int32.Parse(startPersonality.InnerText);
 
-                    XmlNode groundZone = xmldoc.DocumentElement.SelectSingleNode("GroundZone");
-                    GroundZone = Int32.Parse(groundZone.InnerText);
-
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(Int32.Parse(startMap.SelectSingleNode("Zone").InnerText),
                         new SegLoc(Int32.Parse(startMap.SelectSingleNode("Segment").InnerText), Int32.Parse(startMap.SelectSingleNode("ID").InnerText)),
@@ -335,8 +324,7 @@ namespace RogueEssence.Data
                     DiagManager.Instance.LogError(ex);
                 }
             }
-            StartChars = new List<int>();
-            StartChars.Add(0);
+            StartChars = new List<(MonsterID, string)>();
             StartTeams = new List<string>();
         }
 
@@ -398,6 +386,28 @@ namespace RogueEssence.Data
             }
         }
 
+        public void ContentChanged(DataType dataType, int entryNum, IEntryData data)
+        {
+            SaveData(entryNum, dataType.ToString(), data);
+            ClearCache(dataType);
+            EntrySummary entrySummary = data.GenerateEntrySummary();
+            if (entryNum < DataIndices[dataType].Entries.Count)
+                DataIndices[dataType].Entries[entryNum] = entrySummary;
+            else
+                DataIndices[dataType].Entries.Add(entrySummary);
+            SaveIndex(dataType);
+
+            foreach (BaseData baseData in UniversalData)
+            {
+                if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
+                {
+                    baseData.ContentChanged(entryNum);
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
+                }
+            }
+
+            DiagManager.Instance.DevEditor.ReloadData(dataType);
+        }
 
         public static IEntryData LoadData(int indexNum, string subPath)
         {
@@ -1502,7 +1512,38 @@ namespace RogueEssence.Data
 
             state.Save = GameProgress.LoadMainData(reader);
             if (version < Versioning.GetVersion())
+            {
+                //reload AI
+                foreach (Character player in state.Save.ActiveTeam.Players)
+                {
+                    AITactic ai;
+                    if (player.Tactic != null)
+                        ai = GetAITactic(player.Tactic.ID);
+                    else
+                        ai = GetAITactic(0);
+                    player.Tactic = new AITactic(ai);
+                }
+                foreach (Character player in state.Save.ActiveTeam.Assembly)
+                {
+                    AITactic ai;
+                    if (player.Tactic != null)
+                        ai = GetAITactic(player.Tactic.ID);
+                    else
+                        ai = GetAITactic(0);
+                    player.Tactic = new AITactic(ai);
+                }
+
+                //update unlocks
+                GameProgress.UnlockState[] unlocks = new GameProgress.UnlockState[DataIndices[DataType.Monster].Count];
+                Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
+                state.Save.Dex = unlocks;
+
+                unlocks = new GameProgress.UnlockState[DataIndices[DataType.Zone].Count];
+                Array.Copy(state.Save.DungeonUnlocks, unlocks, Math.Min(unlocks.Length, state.Save.DungeonUnlocks.Length));
+                state.Save.DungeonUnlocks = unlocks;
+
                 ZoneManager.LoadDefaultState(state);
+            }
             else
                 ZoneManager.LoadToState(reader, state);
 

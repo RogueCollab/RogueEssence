@@ -18,7 +18,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public GroundTabDecorationsViewModel()
         {
-            Layers = new AnimLayerBoxViewModel();
+            Layers = new AnimLayerBoxViewModel(DiagManager.Instance.DevEditor.GroundEditor.Edits);
             Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             SelectedEntity = new GroundAnim();
 
@@ -103,6 +103,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
+                return;
+
             Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
 
             bool snapGrid = input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl) || input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
@@ -159,12 +162,17 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
+
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
         }
 
         public void PlaceEntity(Loc position)
         {
             GroundAnim placeableEntity = new GroundAnim(new ObjAnimData(SelectedEntity.ObjectAnim), position);
+
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
+
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
         }
 
@@ -172,7 +180,10 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(GroundAnim ent)
         {
             if (ent != null)
+            {
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
                 setEntity(ent);
+            }
             else
                 setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1), Loc.Zero));
         }
@@ -217,5 +228,24 @@ namespace RogueEssence.Dev.ViewModels
                 SelectEntity(null);
         }
 
+    }
+
+    public class GroundDecorationStateUndo : StateUndo<AnimLayer>
+    {
+        private int layer;
+        public GroundDecorationStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override AnimLayer GetState()
+        {
+            return ZoneManager.Instance.CurrentGround.Decorations[layer];
+        }
+
+        public override void SetState(AnimLayer state)
+        {
+            ZoneManager.Instance.CurrentGround.Decorations[layer] = state;
+        }
     }
 }

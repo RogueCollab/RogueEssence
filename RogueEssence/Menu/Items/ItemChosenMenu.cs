@@ -29,59 +29,69 @@ namespace RogueEssence.Menu
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             //able to use if an item is not held, or if an item is held, but the focused character is the holder
-            if (GameManager.Instance.CurrentScene != DungeonScene.Instance)
-            {
-
-            }
-            else if (!held || focus)
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
                 switch (entry.UsageType)
                 {
-                    case Data.ItemData.UseType.Eat:
+                    case ItemData.UseType.Learn:
                         {
-                            if (leader && !held)
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            else
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White)); ;
                             break;
                         }
-                    case Data.ItemData.UseType.Drink:
-                        {
-                            if (leader && !held)
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            else
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            break;
-                        }
-                    case Data.ItemData.UseType.Use:
-                        {
-                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            break;
-                        }
-                    case Data.ItemData.UseType.UseOther:
-                        {
-                            if (leader && !held)
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            else
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            break;
-                        }
-                    case Data.ItemData.UseType.Learn:
-                        {
-                            bool canLearn = true;
-                            if (!(leader && !held))
+                }
+            }
+            else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                if (!held || focus)
+                {
+                    switch (entry.UsageType)
+                    {
+                        case ItemData.UseType.Eat:
                             {
-                                //if the character is teaching the skill itself, need to disable this choice if not compatible
-                                if (!TeachMenu.CanLearnSkill(DungeonScene.Instance.FocusedCharacter, DungeonScene.Instance.FocusedCharacter, held ? BattleContext.EQUIP_ITEM_SLOT : slot))
-                                    canLearn = false;
+                                if (leader && !held)
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                else
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                break;
                             }
+                        case ItemData.UseType.Drink:
+                            {
+                                if (leader && !held)
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                else
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                break;
+                            }
+                        case ItemData.UseType.Use:
+                            {
+                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                break;
+                            }
+                        case ItemData.UseType.UseOther:
+                            {
+                                if (leader && !held)
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                else
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                break;
+                            }
+                        case ItemData.UseType.Learn:
+                            {
+                                bool canLearn = true;
+                                if (!(leader && !held))
+                                {
+                                    //if the character is teaching the skill itself, need to disable this choice if not compatible
+                                    if (!TeachMenu.CanLearnSkill(DungeonScene.Instance.FocusedCharacter, DungeonScene.Instance.FocusedCharacter, slot, held))
+                                        canLearn = false;
+                                }
 
-                            if (leader && !held)
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
-                            else
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), UseSelfAction, canLearn && !invItem.Cursed, (canLearn && !invItem.Cursed) ? Color.White : Color.Red));
-                            break;
-                        }
+                                if (leader && !held)
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                else
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), UseSelfAction, canLearn && !invItem.Cursed, (canLearn && !invItem.Cursed) ? Color.White : Color.Red));
+                                break;
+                            }
+                    }
                 }
             }
 
@@ -128,13 +138,13 @@ namespace RogueEssence.Menu
                     }
                     choices.Add(new MenuTextChoice(dropString, PlaceAction, !disableDrop, disableDrop ? Color.Red : Color.White));
 
-                    if (entry.UsageType == Data.ItemData.UseType.Throw)
+                    if (entry.UsageType == ItemData.UseType.Throw)
                         choices.Insert(0, new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
                     else
                         choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
                 }
             }
-            if (entry.UsageType == Data.ItemData.UseType.Learn)
+            if (entry.UsageType == ItemData.UseType.Learn)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), InfoAction));
             if (GameManager.Instance.CurrentScene != DungeonScene.Instance)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TRASH"), TrashAction));
@@ -155,7 +165,7 @@ namespace RogueEssence.Menu
         private void TeachOtherAction()
         {
             //leader gets to choose who to use item on, with previews
-            MenuManager.Instance.AddMenu(new TeachMenu(getItemUseSlot()), false);
+            MenuManager.Instance.AddMenu(new TeachMenu(slot, held), false);
         }
         private void UseOtherAction()
         {

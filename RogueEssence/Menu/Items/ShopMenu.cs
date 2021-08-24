@@ -30,8 +30,8 @@ namespace RogueEssence.Menu
                 int index = ii;
 
                 bool canAfford = goods[index].Item2 <= DataManager.Instance.Save.ActiveTeam.Money;
-                MenuText itemText = new MenuText(goods[index].Item1.GetName(), new Loc(2, 1), canAfford ? Color.White : Color.Red);
-                MenuText itemPrice = new MenuText(goods[index].Item2.ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, canAfford ? Color.Lime : Color.Red);
+                MenuText itemText = new MenuText(goods[index].Item1.GetDisplayName(), new Loc(2, 1), canAfford ? Color.White : Color.Red);
+                MenuText itemPrice = new MenuText(goods[index].Item2.ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
                 flatChoices.Add(new MenuElementChoice(() => { choose(index); }, true, itemText, itemPrice));
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);

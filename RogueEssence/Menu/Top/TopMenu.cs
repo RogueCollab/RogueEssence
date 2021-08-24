@@ -4,11 +4,15 @@ using RogueEssence.Data;
 using System.IO;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
+using RogueEssence.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
     public class TopMenu : SingleStripMenu
     {
+        SummaryMenu titleMenu;
+
         public TopMenu()
         {
             bool inMod = PathMod.Mod != "";
@@ -29,7 +33,7 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MenuManager.Instance.AddMenu(new MainStartingMenu(), false); }));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
 
 
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)) || DataManager.Instance.Save != null || RecordHeaderData.LoadHighScores().Count > 0)
@@ -48,6 +52,10 @@ namespace RogueEssence.Menu
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
+            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            MenuText title = new MenuText(Path.GetFileName(PathMod.Mod), new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            titleMenu.Elements.Add(title);
+
         }
 
         protected override void MenuPressed()
@@ -58,6 +66,17 @@ namespace RogueEssence.Menu
         protected override void Canceled()
         {
 
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            //draw other windows
+            if (PathMod.Mod != "")
+                titleMenu.Draw(spriteBatch);
         }
 
         private void exitMod()
@@ -127,6 +146,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             //NOTE: In order to preserve debug consistency, you SHOULD set the language to that of the quicksave.
             //HOWEVER, it would be too inconvenient for players sharing their quicksaves, thus this feature is LEFT OUT.
@@ -176,6 +196,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(mainSave);
             mainSave.MergeDataTo(mainSave);
             ZoneManager.LoadFromState(mainState.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentMapID.Segment > -1)

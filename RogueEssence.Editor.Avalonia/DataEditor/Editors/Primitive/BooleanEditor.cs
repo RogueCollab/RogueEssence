@@ -20,11 +20,11 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Boolean member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Boolean member)
         {
             CheckBox chkValue = new CheckBox();
             chkValue.Margin = new Thickness(0, 4, 0, 0);
-            chkValue.Content = name;
+            chkValue.Content = DataEditor.GetMemberTitle(name);
             chkValue.IsChecked = member;
             control.Children.Add(chkValue);
         }

@@ -13,9 +13,9 @@ namespace RogueEssence.Dev
     public abstract class TestableEditor<T> : Editor<T>
     {
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, T obj)
         {
-            base.LoadWindowControls(control, name, type, attributes, obj);
+            base.LoadWindowControls(control, parent, name, type, attributes, obj);
 
             Button btnTest = new Button();
             btnTest.Margin = new Avalonia.Thickness(0, 4, 0, 0);

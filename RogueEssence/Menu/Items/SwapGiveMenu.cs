@@ -42,12 +42,13 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (itemPresence[index] > 0)
                 {
-                    ItemData itemEntry = DataManager.Instance.GetItem(index);
-                    if (itemEntry.ItemStates.Contains<MaterialState>())
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[ii] as ItemEntrySummary;
+
+                    if (itemEntry.ContainsState<MaterialState>())
                     {
                         AllowedGoods.Add(index);
 
-                        MenuText menuText = new MenuText((itemEntry.Icon > -1 ? ((char)(itemEntry.Icon + 0xE0A0)).ToString() : "") + DataManager.Instance.GetItem(ii).Name.ToLocal(), new Loc(2, 1));
+                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                         MenuText menuCount = new MenuText("(" + itemPresence[index] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { }, true, menuText, menuCount));
                     }

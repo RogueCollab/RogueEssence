@@ -56,8 +56,8 @@ namespace RectPacker
         {
             // Right now, it is unknown how many rectangles need to be placed.
             // So guess that a 1000 by 1000 capacity will be enough.
-            const int initialCapacityX = 2000;
-            const int initialCapacityY = 2000;
+            const int initialCapacityX = 4096;
+            const int initialCapacityY = 4096;
 
             // Initially, there is one free cell, which covers the entire canvas.
             _canvasCells.Initialize(initialCapacityX, initialCapacityY, canvasWidth, canvasHeight, new CanvasCell(false));

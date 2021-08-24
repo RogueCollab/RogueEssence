@@ -43,8 +43,11 @@ namespace RogueEssence.Content
             x8Far = 3,
         }
 
-        public static int ConvertZoom(this GameZoom zoom, int amount)
+        public static int ConvertZoom(this GameZoom zoom, int amount, bool reverse = false)
         {
+            if (reverse)
+                zoom = (GameZoom)(-(int)zoom);
+
             switch (zoom)
             {
                 case GameZoom.x8Near:
@@ -240,7 +243,6 @@ namespace RogueEssence.Content
         public static string EquipSE { get; private set; }
         public static string MoneySE { get; private set; }
         public static string LeaderSE { get; private set; }
-        public static string ReviveSE { get; private set; }
 
         public static string TitleBG { get; private set; }
 
@@ -615,7 +617,6 @@ namespace RogueEssence.Content
                     EquipSE = sysSounds.SelectSingleNode("Equip").InnerText;
                     MoneySE = sysSounds.SelectSingleNode("Money").InnerText;
                     LeaderSE = sysSounds.SelectSingleNode("Leader").InnerText;
-                    ReviveSE = sysSounds.SelectSingleNode("Revive").InnerText;
 
                     TitleBG = xmldoc.DocumentElement.SelectSingleNode("TitleBG").InnerText;
 

@@ -74,6 +74,19 @@ namespace RogueEssence.Dungeon
 
         //include a current groundmap, with moveto methods included
 
+        public void MoveToZone(int zoneIndex, string mapname, ulong seed)
+        {
+            if (CurrentZone != null)
+                CurrentZone.DoCleanup();
+            CurrentZoneID = zoneIndex;
+            ZoneData zone = DataManager.Instance.GetZone(zoneIndex);
+            if (zone != null)
+            {
+                CurrentZone = zone.CreateActiveZone(seed, zoneIndex);
+                CurrentZone.SetCurrentGround(mapname);
+            }
+        }
+
         public void MoveToZone(int zoneIndex, SegLoc mapId, ulong seed)
         {
             if (CurrentZone != null)
@@ -114,7 +127,17 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentZone.DevNewMap();
             }
         }
-
+        public bool InDevZone
+        {
+            get
+            {
+                if (CurrentZoneID > -1)
+                    return false;
+                if (CurrentZone == null)
+                    return false;
+                return CurrentZone.CurrentMapID.ID == 0;
+            }
+        }
 
         public void LuaEngineReload()
         {

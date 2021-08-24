@@ -23,11 +23,14 @@ namespace RogueEssence
     }
     public static class Text
     {
+        public const string DIVIDER_STR = "\n";
         public static List<Dictionary<string, string>> Strings;
         public static List<Dictionary<string, string>> StringsEx;
         public static CultureInfo Culture;
         public static string[] SupportedLangs;
         public static Dictionary<string, LanguageSetting> LangNames;
+
+        public static Regex MsgTags = new Regex("(?<pause>\\[pause=(?<pauseval>\\d+)\\])|(?<colorstart>\\[color=#(?<colorval>[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f])\\])|(?<colorend>\\[color\\])|(?<boxbreak>\\[br\\])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
         {

@@ -3,6 +3,7 @@ using RogueEssence.Script;
 using RogueElements;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Ground
 {
@@ -12,6 +13,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public abstract class GroundEntity
     {
+
         /// <summary>
         /// The kind of trigger events available to entity.
         ///
@@ -62,6 +64,10 @@ namespace RogueEssence.Ground
         protected EEntityTriggerTypes triggerType;
         public virtual EEntityTriggerTypes TriggerType { get { return triggerType; } set {triggerType = value; } }
 
+        //Moved script events to their own structure, to avoid duplicates and other issues
+        [NonSerialized]
+        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
+
         /// <summary>
         /// When this property is false, all processing of this entity is disabled.
         /// So it essentially becomes invisible and inactive on the map.
@@ -81,12 +87,16 @@ namespace RogueEssence.Ground
         /// </summary>
         public GroundEntity()
         {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             EntEnabled = true;
             DevEntitySelected = false;
         }
 
         protected GroundEntity(GroundEntity other)
         {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in other.scriptEvents.Keys)
+                scriptEvents.Add(ev, (ScriptEvent)other.scriptEvents[ev].Clone());
             EntEnabled = other.EntEnabled;
             Collider = other.Collider;
             EntName = other.EntName;
@@ -145,21 +155,11 @@ namespace RogueEssence.Ground
         /// </summary>
         public virtual void DoCleanup()
         {
-            //Default does nothing
+            foreach (var entry in scriptEvents)
+                entry.Value.DoCleanup();
+            scriptEvents.Clear();
         }
-
-        /// <summary>
-        /// Method to be implemented by the child classes that accept script events.
-        /// This allows to set the default callbacks for each types for the entity.
-        /// The entity will decide whether the callback is compatible with itself, or will set an equivalent callback instead.
-        /// It also ignores adding duplicate callbacks and simply does nothing when an existing callback is added!
-        /// </summary>
-        /// <param name="ev"></param>
-        public virtual void AddScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            //Default does nothing
-        }
-
+        
         /// <summary>
         /// Returns the event with the same name as the string eventname.
         /// Or return null if the event can't be found.
@@ -168,22 +168,26 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public virtual bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            return false;
-        }
-
-        /// <summary>
-        /// Synchronizes the script call nams
-        /// </summary>
-        /// <param name="ev"></param>
-        public virtual void SyncScriptEvents()
-        {
-
+            return scriptEvents.ContainsKey(ev);
         }
 
         /// <summary>
         /// This reset events  after they are unserialized for example
         /// </summary>
-        public virtual void ReloadEvents() { }
+        public virtual void ReloadEvents()
+        {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
+            {
+                if (!IsEventSupported(ev))
+                    continue;
+                string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
+                DiagManager.Instance.LogInfo(String.Format("GroundEntity.ReloadEvents(): Added event {0} to entity {1}!", ev.ToString(), EntName));
+                scriptEvents[ev] = new ScriptEvent(callback);
+            }
+        }
 
         /// <summary>
         /// This reset events after a script reload. the execution will break, unlike ReloadEvents
@@ -191,23 +195,11 @@ namespace RogueEssence.Ground
         public virtual void LuaEngineReload() { }
 
         /// <summary>
-        /// Method to be implemented by child classes that make use of script events.
-        /// This will remove the default lua callback specified from the entity if possible.
-        /// If its incompatible, or if the callback is not present nothing will happen.
-        /// </summary>
-        /// <param name="ev"></param>
-        public virtual void RemoveScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            //Default does nothing
-        }
-
-        /// <summary>
         /// Run a lua event by type
         /// </summary>
         /// <param name="ev"></param>
         public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            //Default does nothing
             yield return CoroutineManager.Instance.StartCoroutine(RunEvent(ev, this));
         }
 
@@ -217,10 +209,20 @@ namespace RogueEssence.Ground
         /// <param name="ev"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
+        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
         {
-            //Default does nothing
-            yield break;
+            if (scriptEvents.ContainsKey(ev))
+            {
+                //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
+                // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
+                // individual elements, and things will crash left and right.
+                List<object> partopass = new List<object>();
+                partopass.Add(this);
+                partopass.AddRange(arguments);
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
+            }
+            else
+                yield break;
         }
 
         /// <summary>
@@ -231,6 +233,11 @@ namespace RogueEssence.Ground
         public virtual bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
         {
             return false;
+        }
+
+        public virtual void OnSerializeMap(GroundMap map)
+        {
+            //does nothing by default
         }
 
         /// <summary>
@@ -259,8 +266,6 @@ namespace RogueEssence.Ground
         /// <param name="triggerty"></param>
         public virtual void SetTriggerType(EEntityTriggerTypes triggerty)
         {
-            if(TriggerType != triggerty)
-                RemoveTriggerCallback(); //Remove any leftover callback for the previous trigger type
             TriggerType = triggerty;
         }
 
@@ -275,40 +280,17 @@ namespace RogueEssence.Ground
         }
 
         /// <summary>
-        /// Removes the configured trigger script callback from the entity.
-        /// Does nothing if it doesn't exists or the entity doesn't support callbacks.
-        /// Does not change the trigger method type.
-        /// </summary>
-        public virtual void RemoveTriggerCallback()
-        {
-            switch (TriggerType)
-            {
-                case EEntityTriggerTypes.Action:
-                    RemoveScriptEvent(LuaEngine.EEntLuaEventTypes.Action);
-                    break;
-                case EEntityTriggerTypes.Touch:
-                    RemoveScriptEvent(LuaEngine.EEntLuaEventTypes.Touch);
-                    break;
-                case EEntityTriggerTypes.None:
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
         /// Returns a list of all the lua callbacks this entity is subscribed to currently.
         /// </summary>
         /// <returns></returns>
-        public virtual IEnumerable<LuaEngine.EEntLuaEventTypes> ActiveLuaCallbacks()
+        public IEnumerable<LuaEngine.EEntLuaEventTypes> ActiveLuaCallbacks()
         {
             List<LuaEngine.EEntLuaEventTypes> callbacks = new List<LuaEngine.EEntLuaEventTypes>();
-            var eventstypes = LuaEngine.IterateLuaEntityEvents();
-            do
+            foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
             {
-                if (HasScriptEvent(eventstypes.Current))
-                    callbacks.Add(eventstypes.Current);
+                if (HasScriptEvent(ev))
+                    callbacks.Add(ev);
             }
-            while (eventstypes.MoveNext());
             return callbacks;
         }
 
@@ -323,6 +305,10 @@ namespace RogueEssence.Ground
             yield break;
         }
 
-
+        [OnDeserialized]
+        internal virtual void OnDeserializedMethod(StreamingContext context)
+        {
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+        }
     }
 }

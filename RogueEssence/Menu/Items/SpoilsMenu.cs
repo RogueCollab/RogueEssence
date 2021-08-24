@@ -25,8 +25,8 @@ namespace RogueEssence.Menu
             {
                 int index = ii;
 
-                MenuText boxText = new MenuText(goods[index].Item1.GetName(), new Loc(2, 1));
-                MenuText itemText = new MenuText("\u2192 "+goods[index].Item2.GetName(), new Loc((SPOILS_MENU_WIDTH - 8 * 4) / 2 - 16, 1));
+                MenuText boxText = new MenuText(goods[index].Item1.GetDisplayName(), new Loc(2, 1));
+                MenuText itemText = new MenuText("\u2192 "+goods[index].Item2.GetDisplayName(), new Loc((SPOILS_MENU_WIDTH - 8 * 4) / 2 - 16, 1));
                 flatChoices.Add(new MenuElementChoice(choose, true, boxText, itemText));
             }
 

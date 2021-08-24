@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
             Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
             
             Info = new DialogueText(message, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, LINE_SPACE, false);
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, LINE_SPACE);
         }
 
         public override IEnumerable<IMenuElement> GetElements()

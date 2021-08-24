@@ -76,8 +76,8 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> BeginGround()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetSingleLineName()));
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetColoredName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
             //psy's note: might as well help encapsulate map stuff
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnEnter());
         }
@@ -136,6 +136,15 @@ namespace RogueEssence.Ground
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessObjectInteract(character));
                         break;
                     }
+                case GameAction.ActionType.UseItem:
+                    {
+                        //[0] = item slot to use (-1 for held item, -2 for the ground item)
+                        //[1] = who to use it on (-1 for the user)
+                        //others: which slot to delete,
+                        //which intrinsic to have, which team member/item to send in, etc.
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1] != 0));
+                        break;
+                    }
                 case GameAction.ActionType.ShiftTeam:
                     {
                         int charIndex = action[0];
@@ -175,6 +184,7 @@ namespace RogueEssence.Ground
                             AITactic tactic = DataManager.Instance.GetAITactic(choice);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
+                            target.Tactic.Initialize(target);
                         }
                         break;
                     }
@@ -226,6 +236,8 @@ namespace RogueEssence.Ground
         {
             if (charIndex >= DataManager.Instance.Save.ActiveTeam.Players.Count || charIndex == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
                 GameManager.Instance.SE("Menu/Cancel");
+            else if (ZoneManager.Instance.CurrentGround.NoSwitching || DataManager.Instance.Save.NoSwitching)
+                GameManager.Instance.SE("Menu/Cancel");
             else
             {
                 if (!canSwitchToChar(charIndex))
@@ -242,7 +254,7 @@ namespace RogueEssence.Ground
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
 
                     if (!silent)
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_LEADER_SWAP", DataManager.Instance.Save.ActiveTeam.Leader.BaseName)));
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_LEADER_SWAP", DataManager.Instance.Save.ActiveTeam.Leader.GetDisplayName(true))));
                 }
             }
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));

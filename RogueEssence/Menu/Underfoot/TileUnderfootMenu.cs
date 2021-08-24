@@ -39,7 +39,7 @@ namespace RogueEssence.Menu
             summaryMenu.SetTile(tileIndex);
 
             int menuwidth = CalculateChoiceLength(choices, 72);
-            Initialize(new Loc(GraphicsManager.ScreenWidth - 16 - menuwidth, 16), menuwidth, choices.ToArray(), 0, entry.Name.ToLocal());
+            Initialize(new Loc(GraphicsManager.ScreenWidth - 16 - menuwidth, 16), menuwidth, choices.ToArray(), 0, entry.Name.ToLocal(), null);
         }
 
         private void choose(int choice)

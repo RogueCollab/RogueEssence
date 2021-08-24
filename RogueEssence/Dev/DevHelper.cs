@@ -62,6 +62,18 @@ namespace RogueEssence.Dev
                     IndexNamedData(DataManager.DATA_PATH + type.ToString() + "/");
             }
         }
+        public static void RunExtraIndexing(DataManager.DataType conversionFlags)
+        {
+            //index extra based on triggers
+            foreach (BaseData baseData in DataManager.Instance.UniversalData)
+            {
+                if ((baseData.TriggerType & conversionFlags) != DataManager.DataType.None)
+                {
+                    baseData.ReIndex();
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
+                }
+            }
+        }
 
 
         public static void IndexNamedData(string dataPath)

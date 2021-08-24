@@ -16,6 +16,7 @@ namespace RogueEssence.Script
         //===========================================
         public LuaFunction WaitStartEntityTask;
         public LuaFunction WaitEntityTask;
+        public LuaFunction WaitTask;
         public LuaFunction JoinCoroutines;
 
         //===========================================
@@ -122,6 +123,22 @@ namespace RogueEssence.Script
             return new Coroutine(LuaEngine._DummyWait());
         }
 
+
+        public Coroutine _WaitTask(object obj)
+        {
+            if (obj is IEnumerator<YieldInstruction>)
+            {
+                Coroutine coro = new Coroutine(obj as IEnumerator<YieldInstruction>);
+                return coro;
+            }
+            else if (obj is Coroutine)
+            {
+                Coroutine coro = obj as Coroutine;
+                return coro;
+            }
+            return null;
+        }
+
         //===================================
         // Coroutines
         //===================================
@@ -212,6 +229,7 @@ namespace RogueEssence.Script
             WaitStartEntityTask = state.RunString("return function(_, ent, fun) return coroutine.yield(TASK:_WaitStartEntityTask(ent, fun)) end").First() as LuaFunction;
             WaitEntityTask = state.RunString("return function(_, ent) return coroutine.yield(TASK:_WaitEntityTask(ent)) end").First() as LuaFunction;
             JoinCoroutines = state.RunString("return function(_, ent) return coroutine.yield(TASK:_JoinCoroutines(ent)) end").First() as LuaFunction;
+            WaitTask = state.RunString("return function(_, ent) return coroutine.yield(TASK:_WaitTask(ent)) end").First() as LuaFunction;
         }
     }
 }

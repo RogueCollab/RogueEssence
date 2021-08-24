@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -24,20 +25,25 @@ namespace RogueEssence.Dungeon
         }
 
         public override int GetID() { return ID; }
-        public override string GetName() { return DataManager.Instance.GetTile(ID).Name.ToLocal(); }
+        public TileData GetData() { return DataManager.Instance.GetTile(ID); }
+        public override string GetDisplayName() { return GetData().GetColoredName(); }
 
+
+        [DataType(0, DataManager.DataType.Tile, true)]
+        public int ID;
 
         public bool Exposed { get { return true; } }
         public bool Revealed;
+
+        [Dev.Multiline(0)]
         public bool Danger;
         public TileOwner Owner;
-
-        public int ID;
 
         public StateCollection<TileState> TileStates;
 
         //[NonSerialized]
         //redundant, but no need to remove from serialization...
+        [Dev.NonEdited]
         public Loc TileLoc { get; private set; }
         public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
         public int LocHeight { get { return 0; } }
@@ -88,24 +94,24 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> InteractWithTile(Character character)
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
-                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.InteractWithTiles);
+                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.InteractWithTiles, character);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, character));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
         }
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
-                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.LandedOnTiles);
+                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.LandedOnTiles, character);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, character));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
         }
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
@@ -119,7 +125,7 @@ namespace RogueEssence.Dungeon
             if (entry.Anim.AnimIndex != "")
             {
                 DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.AnimDir, Color.White * ((Owner == TileOwner.Player) ? 0.70f : 1f));
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.GetDrawDir(Dir8.None), Color.White * ((Owner == TileOwner.Player) ? 0.70f : 1f));
             }
         }
         

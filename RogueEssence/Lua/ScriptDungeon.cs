@@ -26,7 +26,10 @@ namespace RogueEssence.Script
         {
             if (curch == null || turnto == null)
                 return;
-            curch.CharDir = turnto.CharDir.Reverse();
+            Loc diff = turnto.CharLoc - curch.CharLoc;
+            Dir8 dir = diff.ApproximateDir8();
+            if (dir != Dir8.None)
+                curch.CharDir = dir;
         }
 
         //===================================
@@ -59,7 +62,7 @@ namespace RogueEssence.Script
         /// Returns the localized name of the current dungeon.
         /// </summary>
         /// <returns></returns>
-        public string DungeonLocaleName()
+        public string DungeonDisplayName()
         {
             return ZoneManager.Instance.CurrentZone.Name.ToLocal();
         }

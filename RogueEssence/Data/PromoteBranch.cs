@@ -26,10 +26,12 @@ namespace RogueEssence.Data
             return true;
         }
 
-        public void OnPromote(Character character, bool inDungeon)
+        public void OnPromote(Character character, bool inDungeon, bool noGive)
         {
             foreach (PromoteDetail detail in Details)
             {
+                if (noGive && detail.GiveItem > -1)
+                    continue;
                 if (inDungeon)
                     detail.OnPromote(character);
                 else

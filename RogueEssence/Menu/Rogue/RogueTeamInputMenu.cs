@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
             {
                 //tab will replace the current line with a suggestion
                 GameManager.Instance.SE("Menu/Skip");
-                Text.Text = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+                Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
 
                 UpdatePickerPos();
             }
@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
             GameManager.Instance.SE("Menu/Confirm");
             if (Text.Text == "")
             {
-                Text.Text = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+                Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
                 UpdatePickerPos();
             }
             MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, chosenDest, seed), false);

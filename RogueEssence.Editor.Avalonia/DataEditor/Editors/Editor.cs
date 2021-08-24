@@ -23,15 +23,7 @@ namespace RogueEssence.Dev
         {
             TextBlock lblName = new TextBlock();
             lblName.Margin = new Thickness(0, 4, 0, 0);
-            //StringBuilder separatedName = new StringBuilder();
-            //for (int ii = 0; ii < name.Length; ii++)
-            //{
-            //    if (ii > 0 && (char.IsUpper(name[ii]) && !char.IsLower(name[ii-1]) || char.IsDigit(name[ii])))
-            //        separatedName.Append(' ');
-            //    separatedName.Append(name[ii]);
-            //}
-            //separatedName.Append(":");
-            lblName.Text = name + ":";
+            lblName.Text = DataEditor.GetMemberTitle(name) + ":";
             control.Children.Add(lblName);
         }
 
@@ -48,7 +40,7 @@ namespace RogueEssence.Dev
         public virtual Type GetAttributeType() { return null; }
         public Type GetConvertingType() { return typeof(T); }
 
-        public virtual void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
+        public virtual void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, T obj)
         {
             //go through all members and add for them
             //control starts off clean; this is the control that will have all member controls on it
@@ -80,7 +72,7 @@ namespace RogueEssence.Dev
                         MemberInfo myInfo = tieredFields[ii][0];
                         StackPanel stack = new StackPanel();
                         control.Children.Add(stack);
-                        DataEditor.LoadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
+                        DataEditor.LoadMemberControl(name, obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
                     }
                     else
                     {
@@ -92,7 +84,7 @@ namespace RogueEssence.Dev
                             StackPanel stack = new StackPanel();
                             sharedRowPanel.Children.Add(stack);
                             stack.SetValue(Grid.ColumnProperty, jj);
-                            DataEditor.LoadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
+                            DataEditor.LoadMemberControl(name, obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
                         }
                     }
                 }
@@ -104,9 +96,9 @@ namespace RogueEssence.Dev
         }
 
         //TODO: add the ability to tag- using attributes- a specific member with a specific editor
-        public virtual void LoadMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public virtual void LoadMemberControl(string parent, T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
-            DataEditor.LoadClassControls(control, name, type, attributes, member, isWindow);
+            DataEditor.LoadClassControls(control, parent, name, type, attributes, member, isWindow);
         }
 
         public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
@@ -174,7 +166,13 @@ namespace RogueEssence.Dev
             return DataEditor.SaveClassControls(control, name, type, attributes, isWindow);
         }
 
-        void IEditor.LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+
+        public virtual string GetString(T obj, Type type, object[] attributes)
+        {
+            return obj == null ? "NULL" : obj.ToString();
+        }
+
+        void IEditor.LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow)
         {
             //if you want a class that is by default isolated to a classbox but has a custom UI when opened on its own/overridden to render,
             //override LoadWindowControls, which is called by those methods.
@@ -217,7 +215,7 @@ namespace RogueEssence.Dev
                 }
                 //else
                 //    txtValue.Size = new Size(0, 20);
-                ClassBoxViewModel mv = new ClassBoxViewModel();
+                ClassBoxViewModel mv = new ClassBoxViewModel(new StringConv(type, ReflectionExt.GetPassableAttributes(0, attributes)));
                 mv.LoadFromSource(member);
                 cbxValue.DataContext = mv;
                 control.Children.Add(cbxValue);
@@ -226,9 +224,9 @@ namespace RogueEssence.Dev
                 mv.OnEditItem += (object element, ClassBoxViewModel.EditElementOp op) =>
                 {
                     DataEditForm frmData = new DataEditForm();
-                    frmData.Title = name + "/" + type.Name;
+                    frmData.Title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
 
-                    DataEditor.LoadClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                    DataEditor.LoadClassControls(frmData.ControlPanel, parent, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
 
                     frmData.SelectedOKEvent += () =>
                     {
@@ -244,6 +242,37 @@ namespace RogueEssence.Dev
                     control.GetOwningForm().RegisterChild(frmData);
                     frmData.Show();
                 };
+
+                {
+                    ContextMenu copyPasteStrip = new ContextMenu();
+
+                    MenuItem copyToolStripMenuItem = new MenuItem();
+                    MenuItem pasteToolStripMenuItem = new MenuItem();
+
+                    Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+                    list.AddRange(new MenuItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+
+                    copyToolStripMenuItem.Header = "Copy " + type.Name;
+                    pasteToolStripMenuItem.Header = "Paste " + type.Name;
+
+                    copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
+                    {
+                        DataEditor.SetClipboardObj(mv.Object);
+                    };
+                    pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+                    {
+                        Type type1 = DataEditor.clipboardObj.GetType();
+                        Type type2 = type;
+                        if (type2.IsAssignableFrom(type1))
+                            mv.LoadFromSource(DataEditor.clipboardObj);
+                        else
+                            await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    };
+
+                    control.ContextMenu = copyPasteStrip;
+                }
             }
             else
             {
@@ -285,7 +314,7 @@ namespace RogueEssence.Dev
                     if (children[0] != memberType)
                         throw new TargetException("Types do not match.");
 
-                    StackPanel chosenParent = control;
+                    StackPanel controlParent = control;
                     if (includeDecoration)
                     {
                         LoadLabelControl(control, name);
@@ -300,7 +329,7 @@ namespace RogueEssence.Dev
                         groupBoxPanel.Margin = new Thickness(2);
                         border.Child = groupBoxPanel;
 
-                        chosenParent = groupBoxPanel;
+                        controlParent = groupBoxPanel;
                     }
 
                     {
@@ -319,7 +348,7 @@ namespace RogueEssence.Dev
 
                         copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                         {
-                            object obj = DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes);
+                            object obj = DataEditor.SaveWindowControls(controlParent, name, children[0], attributes);
                             DataEditor.SetClipboardObj(obj);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
@@ -328,17 +357,17 @@ namespace RogueEssence.Dev
                             Type type2 = type;
                             if (type2.IsAssignableFrom(type1))
                             {
-                                chosenParent.Children.Clear();
-                                DataEditor.LoadWindowControls(chosenParent, name, type1, attributes, DataEditor.clipboardObj);
+                                controlParent.Children.Clear();
+                                DataEditor.LoadWindowControls(controlParent, parent, name, type1, attributes, DataEditor.clipboardObj);
                             }
                             else
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                         };
 
-                        chosenParent.ContextMenu = copyPasteStrip;
+                        control.ContextMenu = copyPasteStrip;
                     }
-                    chosenParent.Background = Avalonia.Media.Brushes.Transparent;
-                    DataEditor.LoadWindowControls(chosenParent, name, children[0], attributes, member);
+                    controlParent.Background = Avalonia.Media.Brushes.Transparent;
+                    DataEditor.LoadWindowControls(controlParent, parent, name, children[0], attributes, member);
 
                 }
                 else
@@ -349,7 +378,7 @@ namespace RogueEssence.Dev
                     //show the one that is active right now
                     //include a combobox for switching children
 
-                    StackPanel chosenParent = null;
+                    StackPanel controlParent = null;
                     if (includeDecoration)
                         LoadLabelControl(control, name);
 
@@ -383,13 +412,13 @@ namespace RogueEssence.Dev
                         groupBoxPanel.Margin = new Thickness(2);
                         border.Child = groupBoxPanel;
 
-                        chosenParent = groupBoxPanel;
+                        controlParent = groupBoxPanel;
                     }
                     else
                     {
                         StackPanel groupBoxPanel = new StackPanel();
                         control.Children.Add(groupBoxPanel);
-                        chosenParent = groupBoxPanel;
+                        controlParent = groupBoxPanel;
                     }
 
 
@@ -408,9 +437,9 @@ namespace RogueEssence.Dev
                         {
                             if (refreshPanel)
                             {
-                                chosenParent.Children.Clear();
+                                controlParent.Children.Clear();
                                 object emptyMember = ReflectionExt.CreateMinimalInstance(childType);
-                                DataEditor.LoadWindowControls(chosenParent, name, childType, attributes, emptyMember);//TODO: POTENTIAL INFINITE RECURSION?
+                                DataEditor.LoadWindowControls(controlParent, parent, name, childType, attributes, emptyMember);//TODO: POTENTIAL INFINITE RECURSION?
                             }
                         });
                         if (childType == member.GetType())
@@ -445,7 +474,7 @@ namespace RogueEssence.Dev
 
                         copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                         {
-                            object obj = DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes);
+                            object obj = DataEditor.SaveWindowControls(controlParent, name, children[cbValue.SelectedIndex], attributes);
                             DataEditor.SetClipboardObj(obj);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
@@ -467,29 +496,29 @@ namespace RogueEssence.Dev
                                 cbValue.SelectedIndex = type_idx;
                                 refreshPanel = true;
 
-                                chosenParent.Children.Clear();
-                                DataEditor.LoadWindowControls(chosenParent, name, type1, attributes, DataEditor.clipboardObj);
+                                controlParent.Children.Clear();
+                                DataEditor.LoadWindowControls(controlParent, parent, name, type1, attributes, DataEditor.clipboardObj);
                             }
                             else
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                         };
 
-                        chosenParent.ContextMenu = copyPasteStrip;
+                        control.ContextMenu = copyPasteStrip;
                     }
-                    chosenParent.Background = Avalonia.Media.Brushes.Transparent;
-                    DataEditor.LoadWindowControls(chosenParent, name, children[selection], attributes, member);
+                    controlParent.Background = Avalonia.Media.Brushes.Transparent;
+                    DataEditor.LoadWindowControls(controlParent, parent, name, children[selection], attributes, member);
                 }
             }
         }
 
-        void IEditor.LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
+        void IEditor.LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj)
         {
-            LoadWindowControls(control, name, type, attributes, (T)obj);
+            LoadWindowControls(control, parent, name, type, attributes, (T)obj);
         }
 
-        void IEditor.LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        void IEditor.LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
         {
-            LoadMemberControl((T)obj, control, name, type, attributes, member, isWindow);
+            LoadMemberControl(parent, (T)obj, control, name, type, attributes, member, isWindow);
         }
         object IEditor.SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
@@ -577,6 +606,11 @@ namespace RogueEssence.Dev
         object IEditor.SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
         {
             return SaveMemberControl((T)obj, control, name, type, attributes, isWindow);
+        }
+
+        string IEditor.GetString(object obj, Type type, object[] attributes)
+        {
+            return GetString((T)obj, type, attributes);
         }
     }
 }

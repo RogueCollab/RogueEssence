@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
                 if (activeChar.EquippedItem.ID > -1)
                 {
                     bool enabled = DataManager.Instance.GetItem(activeChar.EquippedItem.ID).UsageType == ItemData.UseType.Box;
-                    flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), () => { choose(new InvSlot(true, index)); }, enabled, enabled ? Color.White : Color.Red));
+                    flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), () => { choose(new InvSlot(true, index)); }, enabled, enabled ? Color.White : Color.Red));
                 }
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
                 int index = ii;
 
                 bool enabled = DataManager.Instance.GetItem(DataManager.Instance.Save.ActiveTeam.GetInv(index).ID).UsageType == ItemData.UseType.Box;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), () => { choose(new InvSlot(false, index)); }, enabled, enabled ? Color.White : Color.Red));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), () => { choose(new InvSlot(false, index)); }, enabled, enabled ? Color.White : Color.Red));
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;

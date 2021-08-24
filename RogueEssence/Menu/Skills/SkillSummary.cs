@@ -34,7 +34,7 @@ namespace RogueEssence.Menu
 
 
             Description = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE, false);
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE);
             Elements.Add(Description);
 
             MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + LINE_SPACE),
@@ -46,13 +46,13 @@ namespace RogueEssence.Menu
         {
             SkillData skillEntry = DataManager.Instance.GetSkill(index);
             ElementData elementEntry = DataManager.Instance.GetElement(skillEntry.Data.Element);
-            SkillElement.Text = Text.FormatKey("MENU_SKILLS_ELEMENT", String.Format("{0}\u2060{1}", elementEntry.Symbol, elementEntry.Name.ToLocal()));
-            SkillCategory.Text = Text.FormatKey("MENU_SKILLS_CATEGORY", skillEntry.Data.Category.ToLocal());
+            SkillElement.SetText(Text.FormatKey("MENU_SKILLS_ELEMENT", elementEntry.GetIconName()));
+            SkillCategory.SetText(Text.FormatKey("MENU_SKILLS_CATEGORY", skillEntry.Data.Category.ToLocal()));
             BasePowerState powerState = skillEntry.Data.SkillStates.GetWithDefault<BasePowerState>();
-            SkillPower.Text = Text.FormatKey("MENU_SKILLS_POWER", (powerState != null ? powerState.Power.ToString() : "---"));
-            SkillHitRate.Text = Text.FormatKey("MENU_SKILLS_HIT_RATE", (skillEntry.Data.HitRate > -1 ? skillEntry.Data.HitRate + "%" : "---"));
-            Targets.Text = Text.FormatKey("MENU_SKILLS_RANGE", skillEntry.HitboxAction.GetDescription());
-            Description.Text = skillEntry.Desc.ToLocal();
+            SkillPower.SetText(Text.FormatKey("MENU_SKILLS_POWER", (powerState != null ? powerState.Power.ToString() : "---")));
+            SkillHitRate.SetText(Text.FormatKey("MENU_SKILLS_HIT_RATE", (skillEntry.Data.HitRate > -1 ? skillEntry.Data.HitRate + "%" : "---")));
+            Targets.SetText(Text.FormatKey("MENU_SKILLS_RANGE", skillEntry.HitboxAction.GetDescription()));
+            Description.SetText(skillEntry.Desc.ToLocal());
         }
 
     }

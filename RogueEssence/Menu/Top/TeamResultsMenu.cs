@@ -84,7 +84,7 @@ namespace RogueEssence.Menu
         protected override string GetTitle()
         {
             if (Ending.ActiveTeam.Name != "")
-                return Ending.ActiveTeam.Name;
+                return Ending.ActiveTeam.GetDisplayName();
             else
                 return Text.FormatKey("MENU_TEAM_TITLE");
         }
@@ -135,9 +135,9 @@ namespace RogueEssence.Menu
         protected override string GetTitle()
         {
             if (Ending.ActiveTeam.Name != "")
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.Name, Page + 1, (Ending.ActiveTeam.Assembly.Count - 1) / 4 + 1);
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, (Ending.ActiveTeam.Assembly.Count - 1) / 4 + 1);
             else
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.Name, Page + 1, (Ending.ActiveTeam.Assembly.Count - 1) / 4 + 1);
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, (Ending.ActiveTeam.Assembly.Count - 1) / 4 + 1);
         }
 
         protected override List<Character> GetChars()

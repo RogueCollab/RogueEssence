@@ -397,14 +397,14 @@ namespace RogueEssence.Dev.ViewModels
             CharaIndexNode charaNode = GetIndexNode();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                FormEntrySummary dex = (FormEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
+                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
 
                 MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
                 MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
-                for (int jj = 0; jj < dex.FormTexts.Count; jj++)
+                for (int jj = 0; jj < dex.Forms.Count; jj++)
                 {
                     MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
-                    MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.FormTexts[jj].ToLocal(), formID, hasSprite(charaNode, formID));
+                    MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
                     for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
                     {
                         SkinData skinData = DataManager.Instance.GetSkin(kk);
@@ -489,12 +489,12 @@ namespace RogueEssence.Dev.ViewModels
             CharaIndexNode charaNode = GetIndexNode();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                FormEntrySummary dex = (FormEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
+                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
 
                 MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
                 if (hasSprite(charaNode, dexID))
                     Export(currentPath + ii.ToString("D4") + "/", dexID, singleSheet);
-                for (int jj = 0; jj < dex.FormTexts.Count; jj++)
+                for (int jj = 0; jj < dex.Forms.Count; jj++)
                 {
                     MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
                     if (hasSprite(charaNode, formID))

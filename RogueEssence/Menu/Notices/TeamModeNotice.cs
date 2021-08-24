@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
 
         public void SetTeamMode(bool teamMode)
         {
-            menuText.Text = (teamMode ? Text.FormatKey("MENU_TEAM_MODE_ON") : Text.FormatKey("MENU_TEAM_MODE_OFF"));
+            menuText.SetText((teamMode ? Text.FormatKey("MENU_TEAM_MODE_ON") : Text.FormatKey("MENU_TEAM_MODE_OFF")));
             timeSinceUpdate = new FrameTick();
             Visible = true;
         }

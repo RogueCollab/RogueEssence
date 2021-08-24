@@ -31,12 +31,6 @@ namespace RogueEssence.Ground
         [NonSerialized]
         private GroundAction currentCharAction;
 
-        /// <summary>
-        /// Just a little test, to see if we couldn't store script event this way. It would avoid accidental duplicates and
-        /// a lot of issues..
-        /// </summary>
-        public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
-
         public LuaTable LuaData
         {
             get { return Data.LuaDataTable; }
@@ -121,7 +115,6 @@ namespace RogueEssence.Ground
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
             TriggerType = EEntityTriggerTypes.Action;
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
 
             //By default all groundcharacters think
             AIEnabled = true;
@@ -139,9 +132,6 @@ namespace RogueEssence.Ground
         }
         protected GroundChar(GroundChar other)
         {
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
-                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
             Data = new CharData(other.Data);
 
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
@@ -287,7 +277,7 @@ namespace RogueEssence.Ground
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
 
-            Loc shadowType = new Loc(0, 0 + sheet.ShadowSize * 2);
+            Loc shadowType = new Loc(0, 2 + sheet.ShadowSize * 3);
             Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
 
             GraphicsManager.Shadows.DrawTile(spriteBatch,
@@ -295,7 +285,39 @@ namespace RogueEssence.Ground
                 shadowType.X, shadowType.Y);
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        private void drawCross(SpriteBatch spriteBatch, Loc loc, Color color)
+        {
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X - 2, loc.Y, 5, 1), null, color);
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X, loc.Y - 2, 1, 5), null, color);
+        }
+
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        {
+            if (EntEnabled)
+            {
+                BaseSheet blank = GraphicsManager.Pixel;
+                blank.Draw(spriteBatch, new Rectangle(Bounds.X - offset.X, Bounds.Y - offset.Y,
+                    Bounds.Width, Bounds.Height), null, Color.Yellow * 0.7f);
+            }
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);
+            Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
+            Loc leftHand = currentCharAction.GetActionPoint(sheet, ActionPointType.LeftHand);
+            Loc rightHand = currentCharAction.GetActionPoint(sheet, ActionPointType.RightHand);
+
+            drawCross(spriteBatch, head - offset, Color.Black);
+            Color centerColor = new Color(0, 255, 0, 255);
+            if (leftHand == center)
+                centerColor = new Color(255, centerColor.G, centerColor.B, centerColor.A);
+            else
+                drawCross(spriteBatch, leftHand - offset, Color.Red);
+            if (rightHand == center)
+                centerColor = new Color(centerColor.R, centerColor.G, 255, centerColor.A);
+            else
+                drawCross(spriteBatch, rightHand - offset, Color.Blue);
+
+            drawCross(spriteBatch, center - offset, centerColor);
+        }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
@@ -328,22 +350,27 @@ namespace RogueEssence.Ground
             return new Loc(GraphicsManager.GetChara(CurrentForm).TileWidth, GraphicsManager.GetChara(CurrentForm).TileHeight);
         }
 
-        internal void ReloadPosition()
-        {
-            //restore idle position and direction
-            currentCharAction = new IdleGroundAction(serializationLoc, serializationDir);
-        }
-
         /// <summary>
-        /// Returns the localized nickname if there's one, or the specie name.
+        /// Returns the localized nickname if there's one, or the specie name, fully colored.
         /// </summary>
         /// <returns></returns>
         public string GetDisplayName()
         {
+            string name = Nickname;
             if (String.IsNullOrEmpty(Nickname))
-                return DataManager.Instance.GetMonster(CurrentForm.Species).Name.ToLocal();
-            else
-                return Nickname;
+                name = DataManager.Instance.GetMonster(CurrentForm.Species).Name.ToLocal();
+
+            if (Data is Character)
+            {
+                Team team = ((Character)Data).MemberTeam;
+                if (team == DataManager.Instance.Save.ActiveTeam)
+                {
+                    if (Data == team.Leader)
+                        return String.Format("[color=#009CFF]{0}[color]", name);
+                    return String.Format("[color=#FFFF00]{0}[color]", name);
+                }
+            }
+            return String.Format("[color=#00FFFF]{0}[color]", name);
         }
 
         public override EEntTypes GetEntityType()
@@ -359,19 +386,6 @@ namespace RogueEssence.Ground
                 return false;
         }
 
-        public override void ReloadEvents()
-        {
-            foreach (var entry in ScriptEvents)
-                entry.Value.ReloadEvent();
-        }
-
-        public override void DoCleanup()
-        {
-            foreach (var entry in ScriptEvents)
-                entry.Value.DoCleanup();
-            ScriptEvents.Clear();
-        }
-
         /// <summary>
         /// Called by the map owning this entity after being deserialized to have it set itself up.
         /// </summary>
@@ -381,17 +395,12 @@ namespace RogueEssence.Ground
             //DiagManager.Instance.LogInfo(String.Format("GroundChar.OnDeserializeMap(): Handling {0}..", EntName));
             ReloadPosition();
         }
-
-        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
+        public override void OnSerializeMap(GroundMap map)
         {
-            return ScriptEvents.ContainsKey(ev);
+            //DiagManager.Instance.LogInfo(String.Format("GroundChar.OnDeserializeMap(): Handling {0}..", EntName));
+            SavePosition();
         }
 
-        public override void SyncScriptEvents()
-        {
-            foreach (var ev in ScriptEvents.Keys)
-                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
-        }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
         {
@@ -399,44 +408,14 @@ namespace RogueEssence.Ground
                    ev == LuaEngine.EEntLuaEventTypes.Think;
         }
 
-        public override void AddScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (!IsEventSupported(ev))
-                return;
-            ScriptEvents.Add(ev, new ScriptEvent(LuaEngine.MakeLuaEntityCallbackName(EntName, ev)));
-        }
-
         public override void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
-        }
-
-        public override void RemoveScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
+            ReloadEvents();
         }
 
         public override void SetTriggerType(EEntityTriggerTypes triggerty)
         {
             //do nothing
-        }
-
-        public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
-        {
-            if (ScriptEvents.ContainsKey(ev))
-            {
-                //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
-                // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
-                // individual elements, and things will crash left and right.
-                List<object> partopass = new List<object>();
-                partopass.Add(this);
-                partopass.AddRange(arguments);
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(partopass.ToArray()));
-            }
-            else
-                yield break;
         }
 
         public override IEnumerator<YieldInstruction> Interact(GroundEntity activator)
@@ -468,17 +447,30 @@ namespace RogueEssence.Ground
         private Loc serializationLoc;
         private Dir8 serializationDir;
 
-        [OnSerializing]
-        internal void OnSerializingMethod(StreamingContext context)
+
+        internal void ReloadPosition()
+        {
+            //restore idle position and direction
+            currentCharAction = new IdleGroundAction(serializationLoc, serializationDir);
+        }
+
+        internal void SavePosition()
         {
             serializationLoc = MapLoc;
             serializationDir = CharDir;
         }
 
+        [OnSerializing]
+        internal void OnSerializingMethod(StreamingContext context)
+        {
+            SavePosition();
+        }
+
         [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
+        internal override void OnDeserializedMethod(StreamingContext context)
         {
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
+            base.OnDeserializedMethod(context);
         }
     }
 }

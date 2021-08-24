@@ -52,18 +52,22 @@ namespace RogueEssence
         public bool Paused;
         public bool AdvanceFrame;
         public bool ShowDebug;
-        public string DebugUI;
 
         public bool FrameProcessed;
 
         private int totalErrorCount;
-        private int timeSinceError;
+        private bool thisFrameErrored;
+        private int framesErrored;
         private int longestFrame;
 
         private float fadeAmount;
         private bool fadeWhite;
+        
         private float titleFadeAmount;
         private string fadedTitle;
+
+        private float bgFadeAmount;
+        private BGAnimData fadedBG;
 
         public string Song;
         public string NextSong;
@@ -76,11 +80,11 @@ namespace RogueEssence
         public const int FANFARE_FADE_END = 40;
         public const int FANFARE_WAIT_EXTRA = 20;
 
-        
+
         public GameManager()
         {
             fadedTitle = "";
-            DebugUI = "";
+            fadedBG = new BGAnimData();
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
@@ -167,16 +171,27 @@ namespace RogueEssence
             return fadeAmount == 1f;
         }
 
-        public IEnumerator<YieldInstruction> FadeIn(int totalTime = 20)
+        public IEnumerator<YieldInstruction> FadeIn()
         {
-            return fade(true, fadeWhite, totalTime);
+            int fadeTime = 10 + ModifyBattleSpeed(20);
+            return FadeIn(fadeTime);
+        }
+        public IEnumerator<YieldInstruction> FadeIn(int fadeTime)
+        {
+            return fade(true, fadeWhite, fadeTime);
         }
 
-        public IEnumerator<YieldInstruction> FadeOut(bool useWhite, int totalTime = 20)
+        public IEnumerator<YieldInstruction> FadeOut(bool useWhite)
         {
-            return fade(false, useWhite, totalTime);
+            int fadeTime = 10 + ModifyBattleSpeed(20);
+            return FadeOut(useWhite, fadeTime);
         }
-        private IEnumerator<YieldInstruction> fade(bool fadeIn, bool useWhite, int totalTime)
+        public IEnumerator<YieldInstruction> FadeOut(bool useWhite, int fadeTime)
+        {
+            return fade(false, useWhite, fadeTime);
+        }
+
+        private IEnumerator<YieldInstruction> fade(bool fadeIn, bool useWhite, int fadeTime)
         {
             if (fadeIn && fadeAmount == 0f)
                 yield break;
@@ -186,7 +201,6 @@ namespace RogueEssence
                 yield break;
             }
 
-            int fadeTime = 10 + ModifyBattleSpeed(totalTime);
             int currentFadeTime = fadeTime;
             while (currentFadeTime > 0)
             {
@@ -221,6 +235,28 @@ namespace RogueEssence
             }
             if (!fadeIn)
                 fadedTitle = "";
+        }
+
+
+        public IEnumerator<YieldInstruction> FadeBG(bool fadeIn, BGAnimData bg, int totalTime = 20)
+        {
+            if (fadeIn)
+                fadedBG = bg;
+            int fadeTime = 10 + ModifyBattleSpeed(totalTime);
+            long currentFadeTime = fadeTime;
+            while (currentFadeTime > 0)
+            {
+                currentFadeTime--;
+                float amount = 0f;
+                if (fadeIn)
+                    amount = ((float)currentFadeTime / (float)fadeTime);
+                else
+                    amount = ((float)(fadeTime - currentFadeTime) / (float)fadeTime);
+                bgFadeAmount = 1f - amount;
+                yield return new WaitForFrames(1);
+            }
+            if (!fadeIn)
+                fadedBG = new BGAnimData();
         }
 
         public int ModifyBattleSpeed(int waitTime, Loc origin)
@@ -331,7 +367,7 @@ namespace RogueEssence
             PathMod.Mod = modPath;
             reInit();
             TitleScene.TitleMenuSaveState = null;
-            MoveToScene(new TitleScene(true));
+            MoveToScene(new TitleScene(false));
             //clean up and reload all caches
             GraphicsManager.ReloadStatic();
             DataManager.Instance.InitData();
@@ -387,13 +423,18 @@ namespace RogueEssence
             ZoneManager.Instance.MoveToDevZone(newGround, name);
 
             //Transparency mode
-            MenuBase.Transparent = true;
+            MenuBase.Transparent = !newGround;
 
             //switch in new scene
             MoveToScene(destScene);
 
+            SetFade(false, false);
+
             if (newGround)
+            {
+                ZoneManager.Instance.CurrentGround.OnEditorInit();
                 GroundEditScene.Instance.EnterGroundEdit(0);
+            }
             else
                 DungeonEditScene.Instance.EnterMapEdit(0);
             if (DataManager.Instance.Save != null)
@@ -401,16 +442,36 @@ namespace RogueEssence
             yield break;
         }
 
-        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone = false, bool preserveMusic = false)
+        public IEnumerator<YieldInstruction> ReturnToEditor()
         {
+            if (ZoneManager.Instance.CurrentZone.CurrentMapID.Segment == -1)//ground
+                yield return CoroutineManager.Instance.StartCoroutine(MoveToEditor(true, ZoneManager.Instance.CurrentZone.CurrentGround.AssetName));
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(MoveToEditor(false, ZoneManager.Instance.CurrentZone.CurrentMap.AssetName));
+        }
+
+        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId)
+        {
+            return MoveToZone(destId, false, false);
+        }
+
+        public IEnumerator<YieldInstruction> MoveToZone(ZoneLoc destId, bool forceNewZone, bool preserveMusic)
+        {
+            //if we're in a test map, return to editor
+            if (ZoneManager.Instance.InDevZone && !forceNewZone)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
+                yield break;
+            }
+
             bool newGround = (destId.StructID.Segment <= -1);
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
+            bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
+            bool sameSegment = sameZone && (destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment);
 
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
 
             //switch location
-            bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
-            bool sameSegment = sameZone && destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment;
             if (sameZone && !forceNewZone)
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
             else
@@ -418,16 +479,18 @@ namespace RogueEssence
                 ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
-            
-            if (!sameSegment || forceNewZone)
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment());
-
-
-            //Transparency mode
-            MenuBase.Transparent = !newGround;
 
             //switch in new scene
             MoveToScene(destScene);
+
+            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
+        }
+
+        private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
+        {
+            //Transparency mode
+            MenuBase.Transparent = !newGround;
+
             if (newGround && CurrentScene != GroundScene.Instance)
                 LuaEngine.Instance.OnGroundModeBegin();
             else if (!newGround && CurrentScene != DungeonScene.Instance)
@@ -439,7 +502,14 @@ namespace RogueEssence
                 if (!preserveMusic)
                     BGM(ZoneManager.Instance.CurrentGround.Music, true);
 
-                GroundScene.Instance.EnterGround(destId.EntryPoint);
+                GroundScene.Instance.EnterGround(entryPoint);
+
+                if (newSegment)
+                {
+                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
+                }
+
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround());
                 //no fade; the script handles that itself
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
@@ -449,9 +519,17 @@ namespace RogueEssence
                 if (!preserveMusic)
                     BGM(ZoneManager.Instance.CurrentMap.Music, true);
 
-                DungeonScene.Instance.EnterFloor(destId.EntryPoint);
+                DungeonScene.Instance.EnterFloor(entryPoint);
+
+                if (newSegment)
+                {
+                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
+                }
+
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
+                // title drop if faded, but do not fade directly
                 if (IsFaded())
                 {
                     if (ZoneManager.Instance.CurrentMap.DropTitle)
@@ -460,7 +538,6 @@ namespace RogueEssence
                         yield return new WaitForFrames(30);
                         yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(false, ""));
                     }
-                    yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());
@@ -471,17 +548,32 @@ namespace RogueEssence
 
 
 
-
         /// <summary>
         /// Enter a ground map by name, and makes the player spawn at the specified named marker
         /// </summary>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
-        public IEnumerator<YieldInstruction> MoveToGround(string mapname, string entrypoint, bool preserveMusic)
+        public IEnumerator<YieldInstruction> MoveToGround(int zone, string mapname, string entrypoint, bool preserveMusic)
         {
+            //if we're in a test map, return to editor
+            if (ZoneManager.Instance.InDevZone)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
+                yield break;
+            }
+
+            bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
 
-            ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
+            //switch location
+            if (sameZone)
+                ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
+            else
+            {
+                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone));//NOTE: there are better ways to seed a multi-dungeon adventure
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+            }
+
             if (ZoneManager.Instance.CurrentGround == null)
                 throw new Exception(String.Format("GroundScene.MoveToGround(): Failed to load map {0}!", mapname));
 
@@ -556,6 +648,12 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result)
         {
+            if (ZoneManager.Instance.InDevZone)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
+                yield break;
+            }
+
             if ((result == GameProgress.ResultType.Failed || result == GameProgress.ResultType.Downed || result == GameProgress.ResultType.TimedOut)
                 && DataManager.Instance.CurrentReplay == null)
             {
@@ -578,6 +676,7 @@ namespace RogueEssence
                     DataManager.Instance.SetProgress(state.Save);
                     LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
                     ZoneManager.LoadFromState(state.Zone);
+                    LuaEngine.Instance.UpdateZoneInstance();
 
                     SceneOutcome = MoveToZone(DataManager.Instance.Save.NextDest);
                 }
@@ -722,28 +821,52 @@ namespace RogueEssence
             CurrentScene.Begin();
         }
 
-        public IEnumerator<YieldInstruction> DebugWarp(ZoneLoc dest, ulong seed)
+        private void startCleanSave(ulong seed)
         {
             DataManager.Instance.MsgLog.Clear();
             DataManager.Instance.EndPlay(null, null);
             if (DataManager.Instance.Save == null)
-                newGamePlus(seed);
+                NewGamePlus(seed);
             else
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
+        }
+
+        public IEnumerator<YieldInstruction> DebugWarp(ZoneLoc dest, ulong seed)
+        {
+            startCleanSave(seed);
 
             DataManager.Instance.Save.NextDest = dest;
             DataManager.Instance.Save.RestartLogs(MathUtils.Rand.NextUInt64());
             DataManager.Instance.Save.MidAdventure = true;
-            yield return CoroutineManager.Instance.StartCoroutine(MoveToZone(DataManager.Instance.Save.NextDest, true));
+            yield return CoroutineManager.Instance.StartCoroutine(MoveToZone(DataManager.Instance.Save.NextDest, true, false));
         }
 
-        private void newGamePlus(ulong seed)
+
+        public IEnumerator<YieldInstruction> TestWarp(string mapName, bool newGround, ulong seed)
+        {
+            startCleanSave(seed);
+
+            BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : (BaseScene)DungeonScene.Instance;
+
+            yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
+
+            ZoneManager.Instance.MoveToDevZone(newGround, mapName);
+
+            //switch in new scene
+            MoveToScene(destScene);
+
+            //move in like a normal map would
+            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(0, newGround, true, false));
+        }
+
+        public void NewGamePlus(ulong seed)
         {
             try
             {
                 DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+                DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
                 DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-                LuaEngine.Instance.OnDebugLoad();
+                LuaEngine.Instance.OnNewGame();
                 if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
                     throw new Exception("Script generated an invalid debug team!");
                 return;
@@ -753,10 +876,11 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.StartChars[0], 0, 0, Gender.Unknown), DataManager.Instance.StartLevel, -1, 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 
@@ -802,10 +926,12 @@ namespace RogueEssence
                 if (MetaInputManager.JustPressed(FrameInput.InputType.Restart))
                 {
                     MenuManager.Instance.ClearMenus();
-                    if (MetaInputManager[FrameInput.InputType.ShowDebug])
+                    if (MetaInputManager[FrameInput.InputType.Ctrl])
+                        SceneOutcome = RestartToTitle();
+                    else if (MetaInputManager[FrameInput.InputType.ShowDebug])
                         SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 0);
                     else
-                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.GroundZone, new SegLoc(-1, 0), 0), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc(-1, 0), 0), 0);
                 }
             }
 
@@ -935,8 +1061,9 @@ namespace RogueEssence
                 }
             }
             SoundManager.SetBGMVolume(musicFadeFraction);
-            if (timeSinceError > 0)
-                timeSinceError--;
+            if (!thisFrameErrored)
+                framesErrored = 0;
+            thisFrameErrored = false;
 
             MenuManager.Instance.ProcessActions(elapsedTime);
 
@@ -979,6 +1106,12 @@ namespace RogueEssence
                 if (titleFadeAmount > 0)
                     GraphicsManager.DungeonFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 2,
                         fadedTitle, null, DirV.None, DirH.None, Color.White * titleFadeAmount);
+                if (bgFadeAmount > 0 && fadedBG.AnimIndex != "")
+                {
+                    DirSheet bg = GraphicsManager.GetBackground(fadedBG.AnimIndex);
+                    bg.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - bg.TileWidth / 2, GraphicsManager.ScreenHeight / 2 - bg.TileHeight / 2),
+                        fadedBG.GetCurrentFrame(GraphicsManager.TotalFrameTick, bg.TotalFrames), Dir8.Down, Color.White * ((float)fadedBG.Alpha / 255) * bgFadeAmount);
+                }
             }
 
             MenuManager.Instance.DrawMenus(spriteBatch);
@@ -1003,33 +1136,59 @@ namespace RogueEssence
             if ((int)(updateTime * 1000) > longestFrame)
                 longestFrame = (int)(updateTime * 1000);
 
+            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 32, String.Format("{0:D2} FPS  {1:D5} Longest", fps, longestFrame), null, DirV.Up, DirH.Left, Color.White);
+            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 42, Versioning.GetVersion().ToString(), null, DirV.Up, DirH.Left, Color.White);
+
+            //if (DataManager.Instance.CurrentReplay != null)
+            //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
+
             if (DiagManager.Instance.DevMode)
             {
                 CurrentScene.DrawDebug(spriteBatch);
 
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
             }
 
-            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 32, String.Format("{0:D2} FPS  {1:D5} Longest", fps, longestFrame), null, DirV.Up, DirH.Left, Color.White);
-            GraphicsManager.SysFont.DrawText(spriteBatch, 2, 42, Versioning.GetVersion().ToString(), null, DirV.Up, DirH.Left, Color.White);
-            if (DataManager.Instance.CurrentReplay != null)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
-            if (DebugUI != null)
-            {
-                string[] lines = DebugUI.Split('\n');
-                for(int ii = 0; ii < lines.Length; ii++)
-                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - 2 + (ii + 1 - lines.Length) * 10, lines[ii], null, DirV.Down, DirH.Left, Color.White);
-            }
+
         }
 
         private void OnError(string msg)
         {
             totalErrorCount++;
-            if (timeSinceError == 0)
-            {
+            if (framesErrored == 0)
                 SE("Menu/Error");
-                timeSinceError = 15;
+            if (!thisFrameErrored)
+                framesErrored++;
+            thisFrameErrored = true;
+            if (framesErrored > 300)
+                GameBase.CurrentPhase = GameBase.LoadPhase.Error;
+        }
+
+        public IEnumerator<YieldInstruction> LogSkippableMsg(string msg)
+        {
+            return LogSkippableMsg(msg, DataManager.Instance.Save.ActiveTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(string msg, Team involvedTeam)
+        {
+            return LogSkippableMsg(MonsterID.Invalid, null, new EmoteStyle(0), msg, involvedTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(MonsterID speaker, string msg, Team involvedTeam)
+        {
+            return LogSkippableMsg(speaker, DataManager.Instance.GetMonster(speaker.Species).Name.ToLocal(), new EmoteStyle(0), msg, involvedTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(MonsterID speaker, string name, EmoteStyle emotion, string msg)
+        {
+            return LogSkippableMsg(speaker, name, emotion, msg, DataManager.Instance.Save.ActiveTeam);
+        }
+        public IEnumerator<YieldInstruction> LogSkippableMsg(MonsterID speaker, string name, EmoteStyle emotion, string msg, Team involvedTeam)
+        {
+            if (involvedTeam == DataManager.Instance.Save.ActiveTeam && DataManager.Instance.CurrentReplay == null)
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(speaker, name, emotion, false, msg));
+            else
+            {
+                DungeonScene.Instance.LogMsg(msg);
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
             }
         }
     }

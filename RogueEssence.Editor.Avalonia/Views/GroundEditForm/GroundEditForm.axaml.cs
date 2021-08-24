@@ -22,13 +22,15 @@ namespace RogueEssence.Dev.Views
 
         public bool Active { get; private set; }
 
+        // TODO: make undo/redo enabled/disabled based on if there's anything left on the stack
+        public UndoStack Edits { get; }
         public GroundEditForm()
         {
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
 #endif
-
+            Edits = new UndoStack();
 
         }
 
@@ -52,11 +54,19 @@ namespace RogueEssence.Dev.Views
             Active = true;
         }
 
+        private bool silentClose;
+        public void SilentClose()
+        {
+            silentClose = true;
+            Close();
+        }
+
         public void Window_Closed(object sender, EventArgs e)
         {
             Active = false;
             CloseChildren();
-            GameManager.Instance.SceneOutcome = exitGroundEdit();
+            if (!silentClose)
+                GameManager.Instance.SceneOutcome = exitGroundEdit();
         }
 
 
@@ -67,7 +77,7 @@ namespace RogueEssence.Dev.Views
 
             //move to the previous scene or the title, if there was none
             if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
             else
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }

@@ -6,6 +6,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -106,7 +107,7 @@ namespace RogueEssence.Dev.ViewModels
                             IEntryData data = entryOp(entryNum);
 
                             Views.DataEditForm editor = new Views.DataEditForm();
-                            editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                            editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                             DataEditor.LoadDataControls(data, editor.ControlPanel);
                             editor.SelectedOKEvent += () =>
                             {
@@ -114,14 +115,10 @@ namespace RogueEssence.Dev.ViewModels
                                 {
                                     object obj = data;
                                     DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                                    data = (IEntryData)obj;
-                                    DataManager.SaveData(entryNum, dataType.ToString(), data);
-                                    DataManager.Instance.ClearCache(dataType);
-                                    EntrySummary entrySummary = data.GenerateEntrySummary();
-                                    DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
-                                    DataManager.Instance.SaveIndex(dataType);
-                                    DiagManager.Instance.DevEditor.ReloadData(dataType);
-                                    choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
+                                    DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+
+                                    string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                    choices.ModifyEntry(entryNum, newName);
                                     editor.Close();
                                 }
                             };
@@ -142,7 +139,7 @@ namespace RogueEssence.Dev.ViewModels
                         IEntryData data = createOp();
 
                         Views.DataEditForm editor = new Views.DataEditForm();
-                        editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += () =>
                         {
@@ -151,14 +148,10 @@ namespace RogueEssence.Dev.ViewModels
                                 object obj = data;
                                 DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
                                 data = (IEntryData)obj;
-                                DataManager.SaveData(entryNum, dataType.ToString(), data);
-                                DataManager.Instance.ClearCache(dataType);
-                                EntrySummary entrySummary = data.GenerateEntrySummary();
-                                DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
-                                DataManager.Instance.SaveIndex(dataType);
-                                DiagManager.Instance.DevEditor.ReloadData(dataType);
-                                entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                                choices.AddEntry(entrySummary.GetLocalString(true));
+                                DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+
+                                string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                choices.AddEntry(newName);
                                 editor.Close();
                             }
                         };
@@ -176,7 +169,9 @@ namespace RogueEssence.Dev.ViewModels
                     lock (GameBase.lockObj)
                     {
                         DevHelper.RunIndexing(dataType);
+                        DevHelper.RunExtraIndexing(dataType);
                         DataManager.Instance.LoadIndex(dataType);
+                        DataManager.Instance.LoadUniversalData();
                         DataManager.Instance.ClearCache(dataType);
                         DiagManager.Instance.DevEditor.ReloadData(dataType);
                         string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
@@ -202,6 +197,7 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
                 if (form.MapEditForm == null)
                 {
+                    LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();
                     if (ZoneManager.Instance.CurrentMap != null)
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, ZoneManager.Instance.CurrentMap.AssetName);
@@ -218,6 +214,7 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
                 if (form.GroundEditForm == null)
                 {
+                    LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();
                     if (ZoneManager.Instance.CurrentGround != null)
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, ZoneManager.Instance.CurrentGround.AssetName);

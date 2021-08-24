@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             {
                 int teamIndex = team.Count;
                 bool validTarget = !character.Dead || !useItem;
-                team.Add(new MenuTextChoice(character.BaseName, () => { choose(teamIndex); }, validTarget, !validTarget ? Color.Red : Color.White));
+                team.Add(new MenuTextChoice(character.GetDisplayName(true), () => { choose(teamIndex); }, validTarget, !validTarget ? Color.Red : Color.White));
             }
 
             summaryMenu = new SummaryMenu(new Rect(new Loc(16, 16 + team.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset),
@@ -43,9 +43,9 @@ namespace RogueEssence.Menu
         {
             int itemIndex = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.ID;
             if (itemIndex > -1)
-                Text.Text = RogueEssence.Text.FormatKey("MENU_HELD_ITEM", DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.GetName());
+                Text.SetText(RogueEssence.Text.FormatKey("MENU_HELD_ITEM", DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.GetDisplayName()));
             else
-                Text.Text = RogueEssence.Text.FormatKey("MENU_HELD_NO_ITEM");
+                Text.SetText(RogueEssence.Text.FormatKey("MENU_HELD_NO_ITEM"));
             base.ChoiceChanged();
         }
 

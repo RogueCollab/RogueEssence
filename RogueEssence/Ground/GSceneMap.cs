@@ -24,6 +24,47 @@ namespace RogueEssence.Ground
 
 
 
+        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, bool held)
+        {
+            InvItem invItem = null;
+            if (held)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[invSlot];
+                invItem = activeChar.EquippedItem;
+            }
+            else
+                invItem = DataManager.Instance.Save.ActiveTeam.GetInv(invSlot);
+
+            ItemData itemEntry = (ItemData)invItem.GetData();
+
+            switch (itemEntry.UsageType)
+            {
+                case ItemData.UseType.Learn:
+                    {
+                        ItemIndexState effect = itemEntry.ItemStates.GetWithDefault<ItemIndexState>();
+                        int skill = effect.Index;
+
+                        Character player = (Character)character.Data;
+                        int learn = -1;
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(player, skill, (int slot) => { learn = slot; }, () => { }));
+
+                        if (learn > -1)
+                            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(player, skill, learn));
+                        else
+                            yield break;
+                    }
+                    break;
+            }
+
+            if (held)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[invSlot];
+                activeChar.EquippedItem = new InvItem();
+            }
+            else
+                DataManager.Instance.Save.ActiveTeam.RemoveFromInv(invSlot);
+        }
+
         private IEnumerator<YieldInstruction> ProcessTrashItem(GroundChar character, int invSlot, bool held)
         {
             InvItem invItem = null;
@@ -43,8 +84,7 @@ namespace RogueEssence.Ground
                 memberTeam.RemoveFromInv(invSlot);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetName())));
-
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetDisplayName())));
         }
 
         public IEnumerator<YieldInstruction> ProcessObjectInteract(GroundChar character)
@@ -102,12 +142,12 @@ namespace RogueEssence.Ground
 
             if (itemChar.EquippedItem.ID > -1)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetName(), itemChar.EquippedItem.GetName())));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.GetDisplayName(false), item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName())));
                 //put item in inv
                 memberTeam.AddToInv(new InvItem(itemChar.EquippedItem));
             }
             else
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetName())));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
 
             itemChar.EquipItem(item);
@@ -124,7 +164,7 @@ namespace RogueEssence.Ground
             memberTeam.AddToInv(item);
             itemChar.DequipItem();
             GameManager.Instance.SE(GraphicsManager.EquipSE);
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.Name, item.GetName())));
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
         }
 
@@ -140,16 +180,6 @@ namespace RogueEssence.Ground
 
 
 
-        //public IEnumerator<YieldInstruction> CheckLevelSkills(Character player, int oldLevel)
-
-        //public IEnumerator<YieldInstruction> LearnSkillWithFanfare(Character player, int skill, int slot)
-
-        //public IEnumerator<YieldInstruction> TrySkillLearn(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
-
-        //public IEnumerator<YieldInstruction> TrySkillDelete(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
-
-
-        //public void TryStopLearn(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
 
 
         //public IEnumerator<YieldInstruction> AskToSendHome()

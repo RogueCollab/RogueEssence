@@ -10,12 +10,12 @@ namespace RogueEssence.Dungeon
         public int TurnIndex;
         public bool SkipAll;
 
-        public TurnOrder(int turnTier, Faction faction, int turnIndex)
+        public TurnOrder(int turnTier, Faction faction, int turnIndex, bool skipAll)
         {
             TurnTier = turnTier;
             Faction = faction;
             TurnIndex = turnIndex;
-            SkipAll = false;
+            SkipAll = skipAll;
         }
     }
 }

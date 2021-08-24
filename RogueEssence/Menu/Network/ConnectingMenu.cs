@@ -49,7 +49,7 @@ namespace RogueEssence.Menu
             else
             {
                 if (NetworkManager.Instance.Status == OnlineStatus.FindingPartner || NetworkManager.Instance.Status == OnlineStatus.ReceivingPartner)
-                    ConnectingMsg.Text = Text.FormatKey("MENU_CONNECTING_PARTNER");
+                    ConnectingMsg.SetText(Text.FormatKey("MENU_CONNECTING_PARTNER"));
 
                 if (input.JustPressed(FrameInput.InputType.Menu) || input.JustPressed(FrameInput.InputType.Cancel))
                 {

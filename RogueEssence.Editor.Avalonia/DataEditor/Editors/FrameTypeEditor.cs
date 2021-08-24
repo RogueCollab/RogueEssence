@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(FrameTypeAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Int32 member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Int32 member)
         {
             LoadLabelControl(control, name);
 
@@ -78,5 +78,11 @@ namespace RogueEssence.Dev
             return 0;
         }
 
+        public override string GetString(Int32 obj, Type type, object[] attributes)
+        {
+            if (obj >= 0 && obj < GraphicsManager.Actions.Count)
+                return GraphicsManager.Actions[obj].Name;
+            return "---";
+        }
     }
 }

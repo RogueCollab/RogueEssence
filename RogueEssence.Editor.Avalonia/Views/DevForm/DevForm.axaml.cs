@@ -166,13 +166,6 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.GroundZone);
-                    devViewModel.Travel.Grounds.Clear();
-                    for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
-                        devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
-                    devViewModel.Travel.ChosenGround = -1;
-                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
-
                     string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
                     devViewModel.Travel.Zones.Clear();
                     for (int ii = 0; ii < dungeon_names.Length; ii++)
@@ -185,6 +178,9 @@ namespace RogueEssence.Dev.Views
 
                     devViewModel.Travel.ChosenFloor = -1;
                     devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
+
+                    devViewModel.Travel.ChosenGround = -1;
+                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("GroundChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
                 }
 
                 if (dataType == DataManager.DataType.All)

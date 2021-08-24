@@ -125,7 +125,7 @@ namespace RogueEssence.LevelGen
                     queue.Enqueue(priority, genStep);
             }
 
-            foreach (ZonePostProc zoneStep in zoneContext.ZoneSteps)
+            foreach (ZoneStep zoneStep in zoneContext.ZoneSteps)
                 zoneStep.Apply(zoneContext, map, queue);
 
             ApplyGenSteps(map, queue);

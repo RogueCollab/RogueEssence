@@ -30,7 +30,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
-            BG = new ClassBoxViewModel();
+            BG = new ClassBoxViewModel(new StringConv(typeof(MapBG), new object[0]));
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
             BlankBG = new TileBoxViewModel();
@@ -38,7 +38,7 @@ namespace RogueEssence.Dev.ViewModels
             BlankBG.OnEditItem += AutoTile_Edit;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            TextureMap = new DictionaryBoxViewModel(form.MapEditForm);
+            TextureMap = new DictionaryBoxViewModel(form.MapEditForm, new StringConv(typeof(AutoTile), new object[0]));
             TextureMap.OnMemberChanged += TextureMap_Changed;
             TextureMap.OnEditKey += TextureMap_EditKey;
             TextureMap.OnEditItem += TextureMap_EditItem;
@@ -76,26 +76,6 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 ZoneManager.Instance.CurrentMap.CharSight = (Map.SightRange)value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public bool NoRescue
-        {
-            get { return ZoneManager.Instance.CurrentMap.NoRescue; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.NoRescue = value;
-                this.RaisePropertyChanged();
-            }
-        }
-
-        public bool NoSwitch
-        {
-            get { return ZoneManager.Instance.CurrentMap.NoSwitching; }
-            set
-            {
-                ZoneManager.Instance.CurrentMap.NoSwitching = value;
                 this.RaisePropertyChanged();
             }
         }
@@ -154,14 +134,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
+            string elementName = "MapBG";
             DataEditForm frmData = new DataEditForm();
-            frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapBG), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapBG), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapBG), new object[0], true);
                 op(element);
                 frmData.Close();
             };
@@ -212,22 +193,20 @@ namespace RogueEssence.Dev.ViewModels
         public void TextureMap_Changed()
         {
             ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
+            ZoneManager.Instance.CurrentMap.CalculateTerrainAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
         }
 
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
+            string elementName = "TextureMap<Key>";
             DataEditForm frmKey = new DataEditForm();
-            if (element == null)
-                frmKey.Title = "New Key";
-            else
-                frmKey.Title = element.ToString();
+            frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(int), new object[0]);
 
-            DataEditor.LoadClassControls(frmKey.ControlPanel, "(TextureMap) <New Key>", typeof(int), new object[0] { }, null, true);
+            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(int), new object[0], key, true);
 
             frmKey.SelectedOKEvent += () =>
             {
-                key = DataEditor.SaveClassControls(frmKey.ControlPanel, "TextureMap", typeof(int), new object[0] { }, true);
+                key = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[0], true);
                 op(key, element);
                 frmKey.Close();
             };
@@ -243,17 +222,15 @@ namespace RogueEssence.Dev.ViewModels
 
         public void TextureMap_EditItem(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
+            string elementName = "TextureMap[" + key.ToString() + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New Autotile";
-            else
-                frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(TextureMap) [" + key.ToString() + "]", typeof(AutoTile), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(AutoTile), new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "TextureMap", typeof(AutoTile), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true);
                 op(key, element);
                 frmData.Close();
             };
@@ -315,8 +292,6 @@ namespace RogueEssence.Dev.ViewModels
             MapName = MapName;
             ChosenTileSight = ChosenTileSight;
             ChosenCharSight = ChosenCharSight;
-            NoRescue = NoRescue;
-            NoSwitch = NoSwitch;
             ChosenElement = ChosenElement;
             ChosenScroll = ChosenScroll;
 

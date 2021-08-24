@@ -49,6 +49,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 LuaEngine.Instance.Reset();
                 LuaEngine.Instance.ReInit();
+                LoadScripts();
             }
         }
 
@@ -62,20 +63,6 @@ namespace RogueEssence.Dev.ViewModels
                 var scev = ZoneManager.Instance.CurrentGround.ActiveScriptEvent();
                 foreach (LuaEngine.EMapCallbacks s in scev)
                     ScriptItems[(int)s] = new ScriptItem(ScriptItems[(int)s].Callback, true);
-            }
-        }
-
-        public void SaveScripts()
-        {
-            lock (GameBase.lockObj)
-            {
-                for (int ii = 0; ii < ScriptItems.Count; ii++)
-                {
-                    if (ScriptItems[ii].IsChecked)
-                        ZoneManager.Instance.CurrentGround.AddMapScriptEvent(ScriptItems[ii].Callback);
-                    else
-                        ZoneManager.Instance.CurrentGround.RemoveMapScriptEvent(ScriptItems[ii].Callback);
-                }
             }
         }
 

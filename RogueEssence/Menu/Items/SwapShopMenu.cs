@@ -82,7 +82,7 @@ namespace RogueEssence.Menu
                     ItemData itemEntry = DataManager.Instance.GetItem(goods[ii].Item1);
                     if (PriceList[itemEntry.Rarity] > DataManager.Instance.Save.ActiveTeam.Money || wildcards > presenceCount)
                         canTrade = false;
-                    flatChoices.Add(new MenuTextChoice((itemEntry.Icon > -1 ? ((char)(itemEntry.Icon + 0xE0A0)).ToString() : "") + itemEntry.Name.ToLocal(), () => { choose(index); }, canTrade, canTrade ? Color.White : Color.Red));
+                    flatChoices.Add(new MenuTextChoice(itemEntry.GetIconName(), () => { choose(index); }, canTrade, canTrade ? Color.White : Color.Red));
                 }
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
@@ -109,8 +109,9 @@ namespace RogueEssence.Menu
             if (!itemPresence[index])
             {
                 itemPresence[index] = true;
-                ItemData entry = DataManager.Instance.GetItem(index);
-                if (entry.ItemStates.Contains<MaterialState>())
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+
+                if (itemEntry.ContainsState<MaterialState>())
                 {
                     presenceCount++;
                     tradePresence[index] = true;

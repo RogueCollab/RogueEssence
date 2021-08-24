@@ -27,7 +27,7 @@ namespace RogueEssence.Dungeon
         //we want to be able to create new maps and save them to a file
         //we want ground and dungeon mode to both be accessible via a structloc, whatever data that structloc may contain
 
-        public List<ZoneSegmentBase> Structures;
+        public List<ZoneSegmentBase> Segments;
 
         public List<string> GroundMaps;
 
@@ -38,7 +38,7 @@ namespace RogueEssence.Dungeon
 
         public int MapCount { get { return maps.Count; } }
 
-        private int zoneIndex;
+        public int ID { get; private set; }
         public SegLoc CurrentMapID { get; private set; }
         public Map CurrentMap { get; private set; }
 
@@ -50,14 +50,14 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
         /// </summary>
-        private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
+        private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents;
 
         public Zone(ulong seed, int zoneIndex)
         {
             DiagManager.Instance.LogInfo("Zone Seed: " + seed);
             rand = new ReRandom(seed);
 
-            this.zoneIndex = zoneIndex;
+            this.ID = zoneIndex;
             Name = new LocalText();
 
             CurrentMapID = SegLoc.Invalid;
@@ -69,22 +69,36 @@ namespace RogueEssence.Dungeon
 
             structureContexts = new Dictionary<int, ZoneGenContext>();
             maps = new Dictionary<SegLoc, Map>();
-            Structures = new List<ZoneSegmentBase>();
+            Segments = new List<ZoneSegmentBase>();
 
             CarryOver = new List<MapStatus>();
 
-            ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
         }
 
-        public void LoadScriptEvents(Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents)
+        public string GetDisplayName()
         {
-            ScriptEvents = scriptEvents;
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
+        }
+
+        public void LoadScriptEvents()
+        {
+            scriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
+            for (int ii = 0; ii < (int)LuaEngine.EZoneCallbacks.Invalid; ii++)
+            {
+                LuaEngine.EZoneCallbacks ev = (LuaEngine.EZoneCallbacks)ii;
+                string assetName = "zone_" + this.ID;
+                string callback = LuaEngine.MakeZoneScriptCallbackName(assetName, ev);
+                if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                    continue;
+                DiagManager.Instance.LogInfo(String.Format("Zone.LoadScriptEvents(): Added event {0} to zone {1}!", ev.ToString(), assetName));
+                scriptEvents[ev] = new ScriptEvent(callback);
+            }
         }
 
         public void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
+            LoadScriptEvents();
             if (CurrentMap != null)
                 CurrentMap.LuaEngineReload();
             if (CurrentGround != null)
@@ -157,9 +171,8 @@ namespace RogueEssence.Dungeon
 
             CurrentMap = new Map();
             CurrentMap.CreateNew(10, 10);
-            CurrentMap.EntryPoints.Add(new LocRay8(new Loc(CurrentMap.Width / 2, CurrentMap.Height / 2), Dir8.Down));
 
-            CurrentMapID = new SegLoc(0, -1);
+            CurrentMapID = new SegLoc(0, 0);
         }
 
 
@@ -172,7 +185,7 @@ namespace RogueEssence.Dungeon
             exitMap();
 
             CurrentMap = DataManager.Instance.GetMap(mapname);
-            CurrentMapID = new SegLoc(0, -1);
+            CurrentMapID = new SegLoc(0, 0);
         }
 
 
@@ -185,7 +198,7 @@ namespace RogueEssence.Dungeon
             exitMap();
 
             CurrentGround = DataManager.Instance.GetGround(mapname);
-            CurrentMapID = new SegLoc(-1, -1);
+            CurrentMapID = new SegLoc(-1, 0);
         }
 
         /// <summary>
@@ -197,7 +210,7 @@ namespace RogueEssence.Dungeon
 
             CurrentGround = new GroundMap();
             CurrentGround.CreateNew(16, 16, Content.GraphicsManager.DungeonTexSize);
-            CurrentMapID = new SegLoc(-1, -1);
+            CurrentMapID = new SegLoc(-1, 0);
         }
 
 
@@ -216,37 +229,48 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < id.ID; ii++)
                     structRand.NextUInt64();
 
-                ulong mapSeed = structRand.NextUInt64();
-
                 //load the struct context if it isn't present yet
                 if (!structureContexts.ContainsKey(id.Segment))
                 {
                     ReRandom initRand = new ReRandom(structSeed);
                     ZoneGenContext newContext = new ZoneGenContext();
-                    newContext.CurrentZone = zoneIndex;
+                    newContext.CurrentZone = ID;
                     newContext.CurrentSegment = id.Segment;
-                    foreach (ZonePostProc zoneStep in Structures[id.Segment].PostProcessingSteps)
+                    foreach (ZoneStep zoneStep in Segments[id.Segment].ZoneSteps)
                     {
-                        //TODO: find a better way to feed ZonePostProcs into full structures.
+                        //TODO: find a better way to feed ZoneSteps into full zone segments.
                         //Is there a way for them to be stateless?
-                        //Additionally, the ZonePostProcs themselves sometimes hold IGenSteps that are copied over to the layouts.
+                        //Additionally, the ZoneSteps themselves sometimes hold IGenSteps that are copied over to the layouts.
                         //Is that really OK? (I would guess yes because there is no chance by design for them to be mutated when generating...)
-                        ZonePostProc newStep = zoneStep.Instantiate(initRand.NextUInt64());
+                        ZoneStep newStep = zoneStep.Instantiate(initRand.NextUInt64());
                         newContext.ZoneSteps.Add(newStep);
                     }
                     structureContexts[id.Segment] = newContext;
                 }
                 ZoneGenContext zoneContext = structureContexts[id.Segment];
                 zoneContext.CurrentID = id.ID;
-                zoneContext.Seed = mapSeed;
+                zoneContext.Seed = structRand.NextUInt64();
 
                 //TODO: remove the need for this explicit cast
                 //make a parameterized version of zonestructure and then make zonestructure itself put in basemapgencontext as the parameter
-                Map map = ((BaseMapGenContext)Structures[id.Segment].GetMap(zoneContext)).Map;
+                for (int ii = 0; ii < 5; ii++)
+                {
+                    try
+                    {
+                        IGenContext context = Segments[id.Segment].GetMap(zoneContext);
+                        Map map = ((BaseMapGenContext)context).Map;
 
-                //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...
-                //maps.Add(id, map);
-                return map;
+                        //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...
+                        //maps.Add(id, map);
+                        return map;
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii));
+                        zoneContext.Seed = structRand.NextUInt64();
+                    }
+                }
             }
             return maps[id];
         }
@@ -269,8 +293,10 @@ namespace RogueEssence.Dungeon
             if (assetName != "")
                 LuaEngine.Instance.RunZoneScript(assetName);
 
+            LoadScriptEvents();
+
             //Reload the map events
-            foreach (var ev in ScriptEvents)
+            foreach (var ev in scriptEvents)
                 ev.Value.ReloadEvent();
 
             //Do script event
@@ -280,12 +306,12 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneInit(/*assetName, this*/);
         }
 
-        public IEnumerator<YieldInstruction> OnEnterSegment()
+        public IEnumerator<YieldInstruction> OnEnterSegment(bool rescuing)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, CurrentMapID.Segment, CurrentMapID.ID));
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
 
             //Notify script engine
             LuaEngine.Instance.OnZoneSegmentStart(/*assetName, this*/);
@@ -302,29 +328,20 @@ namespace RogueEssence.Dungeon
             LuaEngine.Instance.OnZoneSegmentEnd(/*assetName, this*/);
         }
 
-        public IEnumerator<YieldInstruction> OnAllyInteract(Character chara, Character target)
+        public IEnumerator<YieldInstruction> OnRescued(string name, SOSMail mail)
         {
             string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.AllyInteract, chara, target, this));
-
-        }
-
-        public IEnumerator<YieldInstruction> OnRescued(SOSMail mail)
-        {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
-
-            //Do script event
-            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.Rescued, this, mail));
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.Rescued, this, name, mail));
 
         }
 
 
         public IEnumerator<YieldInstruction> RunScriptEvent(LuaEngine.EZoneCallbacks ev, params object[] parms)
         {
-            if (ScriptEvents.ContainsKey(ev))
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(parms));
+            if (scriptEvents.ContainsKey(ev))
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(parms));
         }
 
 
@@ -332,7 +349,7 @@ namespace RogueEssence.Dungeon
         {
             exitMap();
 
-            string assetName = "zone_" + zoneIndex;
+            string assetName = "zone_" + ID;
             DiagManager.Instance.LogInfo(String.Format("Zone.~Zone(): Finalizing {0}..", assetName));
 
             LuaEngine.Instance.CleanZoneScript(assetName);

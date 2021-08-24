@@ -41,7 +41,7 @@ namespace RogueEssence.Dev
             foreach (object obj in attributes)
             {
                 PassableAttribute att = obj as PassableAttribute;
-                if (att != null)
+                if (att != null && att.PassableArgFlag == flag)
                     objects.Add(att);
             }
             return objects.ToArray();

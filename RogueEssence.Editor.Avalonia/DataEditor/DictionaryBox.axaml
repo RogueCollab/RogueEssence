@@ -10,7 +10,6 @@
     <vm:DictionaryBoxViewModel/>
   </Design.DataContext>
   <UserControl.Resources>
-    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -22,12 +21,12 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
+    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Key"
                       Binding="{Binding Key}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
+                            Binding="{Binding Path=DisplayValue}" />
       </DataGrid.Columns>
     </DataGrid>
     <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>

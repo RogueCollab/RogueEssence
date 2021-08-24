@@ -26,7 +26,7 @@ namespace RogueEssence.Dev.ViewModels
                 Owners.Add(((EffectTile.TileOwner)ii).ToString());
 
 
-            TileStates = new CollectionBoxViewModel();
+            TileStates = new CollectionBoxViewModel(new StringConv(typeof(TileState), new object[0]));
             TileStates.OnEditItem += TileStates_EditItem;
         }
 
@@ -89,19 +89,17 @@ namespace RogueEssence.Dev.ViewModels
 
         public void TileStates_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
+            string elementName = "TileStates[" + index + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New State";
-            else
-                frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle("Tile", elementName, element, typeof(TileState), new object[0]);
 
             //TODO: make this a member and reference it that way
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(TileStates) [" + index + "]", typeof(TileState), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", elementName, typeof(TileState), new object[0], element, true);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "TileStates", typeof(TileState), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(TileState), new object[0], true);
 
                 bool itemExists = false;
 
@@ -136,51 +134,36 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc tileCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
             switch (TileMode)
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            paintTile(tileCoords, getBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
-                            paintTile(tileCoords, new EffectTile());
+                        EffectTile brush = getBrush();
+                        CanvasStroke<EffectTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new DrawStroke<EffectTile>(tileCoords, brush),
+                            () => new DrawStroke<EffectTile>(tileCoords, new EffectTile()),
+                            paintStroke, ref DungeonEditScene.Instance.TileInProgress);
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                        {
-                            DungeonEditScene.Instance.TileInProgress = getBrushAnim();
-                            DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.LeftMouse])
-                            DungeonEditScene.Instance.RectInProgress.Size = (tileCoords - DungeonEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                        {
-                            rectTile(DungeonEditScene.Instance.RectPreview(), getBrush());
-                            DungeonEditScene.Instance.TileInProgress = null;
-                        }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                        {
-                            DungeonEditScene.Instance.TileInProgress = new ObjAnimData();
-                            DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.RightMouse])
-                            DungeonEditScene.Instance.RectInProgress.Size = (tileCoords - DungeonEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                        {
-                            rectTile(DungeonEditScene.Instance.RectPreview(), new EffectTile());
-                            DungeonEditScene.Instance.TileInProgress = null;
-                        }
+                        EffectTile brush = getBrush();
+                        CanvasStroke<EffectTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new RectStroke<EffectTile>(tileCoords, brush),
+                            () => new RectStroke<EffectTile>(tileCoords, new EffectTile()),
+                            paintStroke, ref DungeonEditScene.Instance.TileInProgress);
                     }
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            fillTile(tileCoords, getBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            fillTile(tileCoords, new EffectTile());
+                        EffectTile brush = getBrush();
+                        CanvasStroke<EffectTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new FillStroke<EffectTile>(tileCoords, brush),
+                            () => new FillStroke<EffectTile>(tileCoords, new EffectTile()),
+                            fillStroke, ref DungeonEditScene.Instance.TileInProgress);
                     }
                     break;
                 case TileEditMode.Eyedrop:
@@ -191,12 +174,6 @@ namespace RogueEssence.Dev.ViewModels
                     break;
             }
 
-        }
-
-        private ObjAnimData getBrushAnim()
-        {
-            TileData entry = DataManager.Instance.GetTile(ChosenTile);
-            return entry.Anim;
         }
 
         private EffectTile getBrush()
@@ -224,27 +201,19 @@ namespace RogueEssence.Dev.ViewModels
             TileStates.LoadFromList(states);
         }
 
-        private void paintTile(Loc loc, EffectTile brush)
-        {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
-                return;
 
-            ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect = new EffectTile(brush, loc);
-        }
-
-        private void rectTile(Rect rect, EffectTile brush)
+        private void paintStroke(CanvasStroke<EffectTile> stroke)
         {
-            for (int xx = rect.X; xx < rect.End.X; xx++)
+            Dictionary<Loc, EffectTile> brush = new Dictionary<Loc, EffectTile>();
+            foreach (Loc loc in stroke.GetLocs())
             {
-                for (int yy = rect.Y; yy < rect.End.Y; yy++)
-                {
-                    Loc loc = new Loc(xx, yy);
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
-                        continue;
+                if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+                    continue;
 
-                    ZoneManager.Instance.CurrentMap.Tiles[xx][yy].Effect = new EffectTile(brush, loc);
-                }
+                brush[loc] = new EffectTile(stroke.GetBrush(loc), loc);
             }
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawTileUndo(brush));
         }
 
         private void eyedropTile(Loc loc)
@@ -258,16 +227,21 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void fillTile(Loc loc, EffectTile brush)
+
+        private void fillStroke(CanvasStroke<EffectTile> stroke)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, stroke.CoveredRect.Start))
                 return;
 
-            EffectTile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect;
-            Rect bounds = new Rect(loc, Loc.One);
+            EffectTile tile = ZoneManager.Instance.CurrentMap.Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].Effect;
+
+            Dictionary<Loc, EffectTile> brush = new Dictionary<Loc, EffectTile>();
+            EffectTile brushTile = stroke.GetBrush(stroke.CoveredRect.Start);
             RogueElements.Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
                     (Loc testLoc) =>
                     {
+                        if (brush.ContainsKey(testLoc))
+                            return true;
                         return tile.ID != ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Effect.ID;
                     },
                     (Loc testLoc) =>
@@ -276,12 +250,27 @@ namespace RogueEssence.Dev.ViewModels
                     },
                     (Loc testLoc) =>
                     {
-                        bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
-                            new Loc(Math.Max(bounds.End.X, testLoc.X + 1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].Effect = new EffectTile(brush, testLoc);
+                        brush[testLoc] = new EffectTile(brushTile, testLoc);
                     },
-                loc);
+                stroke.CoveredRect.Start);
 
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawTileUndo(brush));
+        }
+    }
+
+    public class DrawTileUndo : DrawUndo<EffectTile>
+    {
+        public DrawTileUndo(Dictionary<Loc, EffectTile> brush) : base(brush)
+        {
+        }
+
+        protected override EffectTile GetValue(Loc loc)
+        {
+            return ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect;
+        }
+        protected override void SetValue(Loc loc, EffectTile val)
+        {
+            ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect = val;
         }
     }
 }

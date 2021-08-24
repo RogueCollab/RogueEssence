@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             {
                 int teamIndex = team.Count;
 
-                MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), Color.White);
+                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), Color.White);
                 MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                 team.Add(new MenuElementChoice(() => { choose(teamIndex); }, true, memberName, memberLv));
             }

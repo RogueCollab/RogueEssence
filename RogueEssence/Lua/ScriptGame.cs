@@ -50,7 +50,12 @@ namespace RogueEssence.Script
 
         public void EnterGroundMap(string name, string entrypoint, bool preserveMusic = false)
         {
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(name, entrypoint, preserveMusic);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(ZoneManager.Instance.CurrentZoneID, name, entrypoint, preserveMusic);
+        }
+
+        public void EnterGroundMap(int zone, string name, string entrypoint, bool preserveMusic = false)
+        {
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(zone, name, entrypoint, preserveMusic);
         }
 
 
@@ -88,16 +93,6 @@ namespace RogueEssence.Script
         public Coroutine _EndDungeonRun(GameProgress.ResultType result, int destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
         {
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
-        }
-
-        public void SetDebugUI(string str)
-        {
-            GameManager.Instance.DebugUI = str;
-        }
-
-        public string GetDebugUI()
-        {
-            return GameManager.Instance.DebugUI;
         }
 
         /// <summary>
@@ -142,6 +137,9 @@ namespace RogueEssence.Script
         }
 
 
+        /// <summary>
+        /// Centers the camera on a position.
+        /// </summary>
         public LuaFunction MoveCamera;
         public Coroutine _MoveCamera(int x, int y, int duration, bool toPlayer = false)
         {
@@ -189,6 +187,11 @@ namespace RogueEssence.Script
                 ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
         }
 
+        public void SetCanSwitch(bool canSwitch)
+        {
+            DataManager.Instance.Save.NoSwitching = !canSwitch;
+        }
+
         /// <summary>
         /// Returns the player party count
         /// </summary>
@@ -216,7 +219,7 @@ namespace RogueEssence.Script
         }
 
 
-        public int GetGuestPartyCount()
+        public int GetPlayerGuestCount()
         {
             return DataManager.Instance.Save.ActiveTeam.Guests.Count;
         }
@@ -225,7 +228,7 @@ namespace RogueEssence.Script
         /// Return the guests as a LuaTable
         /// </summary>
         /// <returns></returns>
-        public LuaTable GetGuestPartyTable()
+        public LuaTable GetPlayerGuestTable()
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
@@ -233,7 +236,7 @@ namespace RogueEssence.Script
                 addfn.Call(tbl, ent);
             return tbl;
         }
-        public Character GetGuestPartyMember(int index)
+        public Character GetPlayerGuestMember(int index)
         {
             return DataManager.Instance.Save.ActiveTeam.Guests[index];
         }
@@ -282,7 +285,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
         }
 
-        public void AddGuestTeam(Character character)
+        public void AddPlayerGuest(Character character)
         {
             DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
         }
@@ -291,7 +294,7 @@ namespace RogueEssence.Script
         /// Removes the character from the team, placing its item back in the inventory.
         /// </summary>
         /// <param name="slot"></param>
-        public void RemoveGuestTeam(int slot)
+        public void RemovePlayerGuest(int slot)
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
 
@@ -337,7 +340,7 @@ namespace RogueEssence.Script
 
         public string GetTeamName()
         {
-            return DataManager.Instance.Save.ActiveTeam.Name;
+            return DataManager.Instance.Save.ActiveTeam.GetDisplayName();
         }
 
         /// <summary>
@@ -367,6 +370,27 @@ namespace RogueEssence.Script
                     return true;
             }
             return false;
+        }
+
+
+        public LuaFunction CheckLevelSkills;
+        public Coroutine _CheckLevelSkills(Character chara, int oldLevel)
+        {
+            return new Coroutine(checkLevelSkills(chara, oldLevel));
+        }
+
+        private IEnumerator<YieldInstruction> checkLevelSkills(Character chara, int oldLevel)
+        {
+            DungeonScene.GetLevelSkills(chara, oldLevel);
+
+            foreach (int skill in DungeonScene.GetLevelSkills(chara, oldLevel))
+            {
+                int learn = -1;
+
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                if (learn > -1)
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
+            }
         }
 
         public void LearnSkill(Character chara, int skillNum)
@@ -459,7 +483,7 @@ namespace RogueEssence.Script
                 newData.Form = 0;
             character.Promote(newData);
             character.FullRestore();
-            branch.OnPromote(character, false);
+            branch.OnPromote(character, false, bypass);
             //remove exception item if there is one...
             if (bypass)
                 character.DequipItem();
@@ -493,13 +517,21 @@ namespace RogueEssence.Script
             return InvSlot.Invalid;
         }
 
-        public int GetPlayerBagCount()
+        public int GetPlayerEquippedCount()
         {
             int nbitems = 0;
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
-                if (player.EquippedItem.ID > -1) ++nbitems;
+            {
+                if (player.EquippedItem.ID > -1)
+                    nbitems++;
+            }
 
-            return DataManager.Instance.Save.ActiveTeam.GetInvCount() + nbitems;
+            return nbitems;
+        }
+
+        public int GetPlayerBagCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.GetInvCount();
         }
 
         public int GetPlayerBagLimit()
@@ -757,6 +789,7 @@ namespace RogueEssence.Script
         /// </summary>
         public override void SetupLuaFunctions(LuaEngine state)
         {
+            CheckLevelSkills = state.RunString("return function(_,chara, oldLevel) return coroutine.yield(GAME:_CheckLevelSkills(chara, oldLevel)) end").First() as LuaFunction;
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;

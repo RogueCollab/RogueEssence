@@ -19,6 +19,7 @@ namespace RogueEssence.Dev.ViewModels
             Sprites = new DevTabSpritesViewModel();
             Script = new DevTabScriptViewModel();
             Mods = new DevTabModsViewModel();
+            Constants = new DevTabConstantsViewModel();
         }
 
         public DevTabGameViewModel Game { get; set; }
@@ -28,6 +29,7 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabSpritesViewModel Sprites { get; set; }
         public DevTabScriptViewModel Script { get; set; }
         public DevTabModsViewModel Mods { get; set; }
+        public DevTabConstantsViewModel Constants { get; set; }
 
 
 

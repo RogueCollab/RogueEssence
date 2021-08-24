@@ -28,9 +28,16 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return val; }
         }
-
-        public SpawnListElement(int weight, double chance, object val)
+        public string DisplayValue
         {
+            get { return conv.GetString(val); }
+        }
+
+        private StringConv conv;
+
+        public SpawnListElement(StringConv conv, int weight, double chance, object val)
+        {
+            this.conv = conv;
             this.weight = weight;
             this.chance = chance;
             this.val = val;
@@ -44,9 +51,11 @@ namespace RogueEssence.Dev.ViewModels
 
         public event ElementOp OnEditItem;
 
+        public StringConv StringConv;
 
-        public SpawnListBoxViewModel()
+        public SpawnListBoxViewModel(StringConv conv)
         {
+            StringConv = conv;
             Collection = new ObservableCollection<SpawnListElement>();
         }
 
@@ -101,7 +110,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 object obj = source.GetSpawn(ii);
                 int rate = source.GetSpawnRate(ii);
-                Collection.Add(new SpawnListElement(rate, (double)rate / source.SpawnTotal, obj));
+                Collection.Add(new SpawnListElement(StringConv, rate, (double)rate / source.SpawnTotal, obj));
             }
         }
 
@@ -109,7 +118,7 @@ namespace RogueEssence.Dev.ViewModels
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
-            Collection[index] = new SpawnListElement(Collection[index].Weight, Collection[index].Chance, element);
+            Collection[index] = new SpawnListElement(StringConv, Collection[index].Weight, Collection[index].Chance, element);
         }
 
         private void insertItem(int index, object element)
@@ -122,7 +131,7 @@ namespace RogueEssence.Dev.ViewModels
             spawnTotal += newWeight;
             foreach (SpawnListElement curSpawn in Collection)
                 curSpawn.Chance = (double)curSpawn.Weight / spawnTotal;
-            Collection.Insert(index, new SpawnListElement(newWeight, (double)newWeight / spawnTotal, element));
+            Collection.Insert(index, new SpawnListElement(StringConv, newWeight, (double)newWeight / spawnTotal, element));
         }
 
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)

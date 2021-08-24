@@ -9,6 +9,11 @@ namespace RogueEssence.Data
     [Serializable]
     public class TileData : IDescribedData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
+
         public enum TriggerType
         {
             None,
@@ -32,6 +37,7 @@ namespace RogueEssence.Data
         public ObjAnimData Anim;
         public bool ObjectLayer;
         //public bool BlockLight;
+        public bool BlockItem;
         public TriggerType StepType;
         public Loc MinimapIcon;
         public Color MinimapColor;
@@ -47,6 +53,12 @@ namespace RogueEssence.Data
             Anim = new ObjAnimData();
             LandedOnTiles = new PriorityList<SingleCharEvent>();
             InteractWithTiles = new PriorityList<SingleCharEvent>();
+        }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
         }
     }
 }

@@ -7,12 +7,56 @@ using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
+using Avalonia.Data.Converters;
 
 namespace RogueEssence.Dev.ViewModels
 {
+    public class ListElement : ViewModelBase
+    {
+        private int key;
+        public int Key
+        {
+            get { return key; }
+            set
+            {
+                key = value;
+                DisplayKey = DisplayKey;
+            }
+        }
+
+        public int DisplayKey
+        {
+            get { return key + addIndex; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        private object val;
+        public object Value
+        {
+            get { return val; }
+        }
+
+        private int addIndex;
+
+        public string DisplayValue
+        {
+            get { return conv.GetString(val); }
+        }
+
+        private StringConv conv;
+
+        public ListElement(StringConv conv, int addIndex, int key, object val)
+        {
+            this.addIndex = addIndex;
+            this.key = key;
+            this.conv = conv;
+            this.val = val;
+        }
+    }
+
     public class CollectionBoxViewModel : ViewModelBase
     {
-        public ObservableCollection<object> Collection { get; }
+        public ObservableCollection<ListElement> Collection { get; }
 
         private int selectedIndex;
         public int SelectedIndex
@@ -21,6 +65,8 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref selectedIndex, value); }
         }
 
+        public StringConv StringConv;
+
 
         public delegate void EditElementOp(int index, object element);
         public delegate void ElementOp(int index, object element, EditElementOp op);
@@ -28,9 +74,13 @@ namespace RogueEssence.Dev.ViewModels
         public event ElementOp OnEditItem;
         public event Action OnMemberChanged;
 
-        public CollectionBoxViewModel()
+        public bool Index1;
+        public int AddIndex { get { return Index1 ? 1 : 0; } }
+
+        public CollectionBoxViewModel(StringConv conv)
         {
-            Collection = new ObservableCollection<object>();
+            StringConv = conv;
+            Collection = new ObservableCollection<ListElement>();
         }
 
 
@@ -42,8 +92,8 @@ namespace RogueEssence.Dev.ViewModels
         public IList GetList(Type type)
         {
             IList result = (IList)Activator.CreateInstance(type);
-            foreach (object obj in Collection)
-                result.Add(obj);
+            foreach (ListElement obj in Collection)
+                result.Add(obj.Value);
             return result;
         }
 
@@ -51,21 +101,23 @@ namespace RogueEssence.Dev.ViewModels
         {
             Collection.Clear();
             foreach (object obj in source)
-                Collection.Add(obj);
+                Collection.Add(new ListElement(StringConv, AddIndex, Collection.Count, obj));
         }
 
 
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
-            Collection[index] = element;
+            Collection[index] = new ListElement(StringConv, AddIndex, index, element);
             OnMemberChanged?.Invoke();
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
-            Collection.Insert(index, element);
+            Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
+            for (int ii = index + 1; ii < Collection.Count; ii++)
+                Collection[ii].Key = ii;
             OnMemberChanged?.Invoke();
         }
 
@@ -76,7 +128,7 @@ namespace RogueEssence.Dev.ViewModels
             int index = SelectedIndex;
             if (index > -1)
             {
-                object element = Collection[index];
+                object element = Collection[index].Value;
                 OnEditItem?.Invoke(index, element, editItem);
             }
         }
@@ -95,16 +147,22 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
+                int index = SelectedIndex;
                 Collection.RemoveAt(SelectedIndex);
+                for (int ii = index; ii < Collection.Count; ii++)
+                    Collection[ii].Key = ii;
                 OnMemberChanged?.Invoke();
             }
         }
 
         private void Switch(int a, int b)
         {
-            object obj = Collection[a];
+            ListElement obj = Collection[a];
             Collection[a] = Collection[b];
             Collection[b] = obj;
+
+            Collection[a].Key = a;
+            Collection[b].Key = b;
         }
 
         private void btnUp_Click()

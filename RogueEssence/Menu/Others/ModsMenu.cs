@@ -16,9 +16,10 @@ namespace RogueEssence.Menu
             string[] files = Directory.GetDirectories(PathMod.MODS_PATH);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            foreach (string mod in files)
+            foreach (string modPath in files)
             {
-                flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(mod), () => { choose(mod); }));
+                string mod = Path.GetFileNameWithoutExtension(modPath);
+                flatChoices.Add(new MenuTextChoice(mod, () => { choose(Path.Join(PathMod.MODS_FOLDER, mod)); }));
             }
             List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 

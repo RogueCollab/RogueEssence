@@ -9,12 +9,17 @@ using RogueEssence.LevelGen;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class Team : IGroupSpawnable
+    public abstract class Team
     {
         public List<Character> Players;
         public List<Character> Guests;
 
         public int LeaderIndex;
+
+        /// <summary>
+        /// If set to true, will attack/be attacked by Foe faction when in Ally faction.
+        /// </summary>
+        public bool FoeConflict;
 
         private List<InvItem> inventory;
 
@@ -72,15 +77,19 @@ namespace RogueEssence.Dungeon
                 yield return item;
         }
 
-        public void AddToInv(InvItem invItem)
+        public void AddToInv(InvItem invItem, bool skipCheck = false)
         {
             inventory.Add(invItem);
+            if (skipCheck)
+                return;
             UpdateInv(null, invItem);
         }
-        public void RemoveFromInv(int index)
+        public void RemoveFromInv(int index, bool skipCheck = false)
         {
             InvItem invItem = inventory[index];
             inventory.RemoveAt(index);
+            if (skipCheck)
+                return;
             UpdateInv(invItem, null);
         }
         public void UpdateInv(InvItem oldItem, InvItem newItem)
@@ -172,6 +181,18 @@ namespace RogueEssence.Dungeon
             if (Guests == null)
                 Guests = new List<Character>();
             ReconnectTeamReference();
+
+            //TODO: v0.5: remove this
+            foreach (Character player in Players)
+            {
+                if (player.ActionEvents.Count == 0)
+                    player.ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
+            }
+            foreach (Character player in Guests)
+            {
+                if (player.ActionEvents.Count == 0)
+                    player.ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
+            }
         }
 
         protected virtual void ReconnectTeamReference()
@@ -264,6 +285,14 @@ namespace RogueEssence.Dungeon
                 return Name;
             else
                 return Players[0].BaseName;
+        }
+
+        public string GetDisplayName()
+        {
+            string name = Players[0].BaseName;
+            if (Name != "")
+                name = Name;
+            return String.Format("[color=#FFA5FF]{0}[color]", name);
         }
 
 

@@ -18,41 +18,41 @@ namespace RogueEssence.Dev
 
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, ITypeDict member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ITypeDict member)
         {
             LoadLabelControl(control, name);
 
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
+
             CollectionBox lbxValue = new CollectionBox();
             lbxValue.MaxHeight = 180;
-            CollectionBoxViewModel mv = new CollectionBoxViewModel();
+            CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
-            //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = "New " + elementType.Name;
-                else
-                    frmData.Title = element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(TypeDict) [" + index + "]", elementType, new object[0] { }, element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, "TypeDict", elementType, new object[0] { }, true);
+                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
 
                     bool itemExists = false;
 
                     List<object> states = (List<object>)mv.GetList(typeof(List<object>));
                     for (int ii = 0; ii < states.Count; ii++)
                     {
-                        if (ii != index)
+                        //ignore the current index being edited
+                        //if the element is null, then we are editing a new object, so skip
+                        if (ii != index || element == null)
                         {
-                            if (states[ii].GetType() == element.GetType())
+                            if (states[ii].GetType() == newElement.GetType())
                                 itemExists = true;
                         }
                     }
@@ -63,7 +63,7 @@ namespace RogueEssence.Dev
                     }
                     else
                     {
-                        op(index, element);
+                        op(index, newElement);
                         frmData.Close();
                     }
                 };

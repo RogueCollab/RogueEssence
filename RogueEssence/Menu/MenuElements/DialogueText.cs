@@ -2,67 +2,137 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
+using System.Collections.Generic;
+using System;
+using System.Text.RegularExpressions;
 
 namespace RogueEssence.Menu
 {
     public class DialogueText : IMenuElement
     {
         public int LineSpace;
-        public string Text;
+        public string Text { get; private set; }
         public Loc Start;
         public int Width;
         public int CurrentCharIndex;
-        public bool Center;
-        public Color TextColor;
+        public bool CenterH;
+        public bool CenterV;
+        private List<(int idx, Color color)> textColor;
+        public float TextOpacity;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= Text.Length; } }
 
-        public DialogueText(string text, Loc start, int width, int lineSpace, bool center, bool startEmpty)
+        public DialogueText(string text, Loc start, int width, int lineSpace, bool centerH, bool centerV, int startIndex)
         {
-            Text = text;
             Start = start;
             Width = width;
             LineSpace = lineSpace;
-            Center = center;
-            TextColor = Color.White;
-            if (!startEmpty)
-                CurrentCharIndex = -1;
+            CenterH = centerH;
+            CenterV = centerV;
+            TextOpacity = 1f;
+            CurrentCharIndex = startIndex;
+            textColor = new List<(int idx, Color color)>();
+            SetText(text);
         }
-        public DialogueText(string text, Loc start, int width, int lineSpace, bool center) : this(text, start, width, lineSpace, center, false)
+        public DialogueText(string text, Loc start, int width, int lineSpace) : this(text, start, width, lineSpace, false, false, -1)
         { }
+
+        public void SetText(string text)
+        {
+            textColor.Clear();
+            textColor.Add((0, Color.White));
+
+            List<IntRange> ranges = new List<IntRange>();
+            int lag = 0;
+            MatchCollection matches = RogueEssence.Text.MsgTags.Matches(text);
+            foreach (Match match in matches)
+            {
+                foreach (string key in match.Groups.Keys)
+                {
+                    if (!match.Groups[key].Success)
+                        continue;
+                    switch (key)
+                    {
+                        case "pause":
+                            break;
+                        case "colorstart":
+                            {
+                                string hex = match.Groups["colorval"].Value;
+                                Color color = new Color(Convert.ToInt32(hex.Substring(0, 2), 16), Convert.ToInt32(hex.Substring(2, 2), 16), Convert.ToInt32(hex.Substring(4, 2), 16));
+                                textColor.Add((match.Index - lag, color));
+                            }
+                            break;
+                        case "colorend":
+                            {
+                                textColor.Add((match.Index - lag, Color.Transparent));
+                            }
+                            break;
+                    }
+                }
+
+                ranges.Add(new IntRange(match.Index, match.Index + match.Length));
+                lag += match.Length;
+            }
+
+            for (int ii = ranges.Count - 1; ii >= 0; ii--)
+                text = text.Remove(ranges[ii].Min, ranges[ii].Length);
+
+            textColor.Add((text.Length, Color.Transparent));
+
+
+            Text = text;
+        }
 
         public Loc GetTextProgress()
         {
             string[] currLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length);
             Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(currLines[currLines.Length - 1]), LineSpace * (currLines.Length - 1));
-            if (Center)
-            {
-                string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, Text.Length);
-                loc -= new Loc(GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1]), LineSpace * (allLines.Length - 1)) / 2;
-            }
+            
+            string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, Text.Length);
+            if (CenterH)
+                loc += new Loc(Width - GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1]), 0) / 2;
+            if (CenterV)
+                loc -= new Loc(0, LineSpace * (allLines.Length - 1)) / 2;
             return loc;
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length);
+            int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;
+            Stack<Color> colorStack = new Stack<Color>();
+            colorStack.Push(textColor[0].color);
+            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, Text.Length);
             if (lines != null)
             {
-                if (Center)
+                int curColor = 0;
+                int lineChars = 0;
+                for (int ii = 0; ii < lines.Length; ii++)
                 {
-                    string[] fullLines = GraphicsManager.TextFont.BreakIntoLines(Text, Width, Text.Length);
-                    int vertStart = Start.Y - LineSpace * (fullLines.Length - 1) / 2;
-                    for (int ii = 0; ii < lines.Length; ii++)
+                    int curChar = 0;
+                    while (curChar < lines[ii].Length)
                     {
-                        int horizStart = Start.X - GraphicsManager.TextFont.SubstringWidth(fullLines[ii]) / 2;
-                        GraphicsManager.TextFont.DrawText(spriteBatch, horizStart + offset.X, vertStart + offset.Y + LineSpace * ii, lines[ii], null,
-                            DirV.Up, DirH.Left, TextColor);
+                        while (textColor[curColor + 1].idx - lineChars == curChar)
+                        {
+                            curColor++;
+                            if (textColor[curColor].color == Color.Transparent && colorStack.Count > 1)
+                                colorStack.Pop();
+                            else
+                                colorStack.Push(textColor[curColor].color);
+                        }
+
+                        int nextColorIdx = Math.Min(textColor[curColor + 1].idx - lineChars, Math.Min(lines[ii].Length, endIndex - lineChars));
+
+                        int midWidth = CenterH ? Width / 2 : 0;
+                        GraphicsManager.TextFont.DrawText(spriteBatch, Start.X + offset.X + midWidth, Start.Y + offset.Y + LineSpace * ii,
+                            lines[ii], null, CenterV ? DirV.None : DirV.Up, CenterH ? DirH.None : DirH.Left,
+                            colorStack.Peek() * TextOpacity, curChar, nextColorIdx - curChar);
+                        curChar = nextColorIdx;
+
+                        if (curChar + lineChars >= endIndex)
+                            break;
                     }
-                }
-                else
-                {
-                    for (int ii = 0; ii < lines.Length; ii++)
-                        GraphicsManager.TextFont.DrawText(spriteBatch, Start.X + offset.X, Start.Y + offset.Y + LineSpace * ii, lines[ii], null,
-                            DirV.Up, DirH.Left, TextColor);
+                    lineChars += lines[ii].Length;
+                    if (lineChars >= endIndex)
+                        break;
                 }
             }
         }

@@ -65,35 +65,6 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void fillTile(Loc loc, TileBrush brush)
-        {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
-                return;
-
-            AutoTile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile.Copy();
-            Rect bounds = new Rect(loc, Loc.One);
-            Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
-                    (Loc testLoc) =>
-                    {
-                        return !tile.Equals(ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].FloorTile);
-                    },
-                    (Loc testLoc) =>
-                    {
-                        return true;
-                    },
-                    (Loc testLoc) =>
-                    {
-                        bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
-                            new Loc(Math.Max(bounds.End.X, testLoc.X+1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].FloorTile = brush.GetSanitizedTile();
-                    },
-                loc);
-
-            //now recompute all autotiles within the rectangle
-            bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
-        }
-
         public void btnOK_Click()
         {
             SelectedOKEvent?.Invoke();

@@ -201,7 +201,7 @@ namespace RogueEssence.Menu
                     if (AltChar.ContainsKey(checkChar))
                     {
                         GameManager.Instance.SE("Menu/Confirm");
-                        Text.Text = Text.Text.Substring(0, Text.Text.Length - 1) + AltChar[checkChar];
+                        Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1) + AltChar[checkChar]);
                     }
                     else
                         GameManager.Instance.SE("Menu/Cancel");
@@ -214,7 +214,7 @@ namespace RogueEssence.Menu
             {
                 //backspace will erase (if there's something there)
                 if (Text.Text != "")
-                    Text.Text = Text.Text.Substring(0, Text.Text.Length - 1);
+                    Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1));
                 GameManager.Instance.SE("Menu/Cancel");
                 UpdatePickerPos();
             }
@@ -245,10 +245,10 @@ namespace RogueEssence.Menu
                 int ii;
                 for (ii = 0; ii < inputChars.Length; ii++)
                 {
-                    Text.Text += inputChars[ii];
+                    Text.SetText(Text.Text + inputChars[ii]);
                     if (MaxCharLength > 0 && Text.Text.Length > MaxCharLength || Text.GetTextLength() > MaxLength)
                     {
-                        Text.Text = Text.Text.Substring(0, Text.Text.Length - 1);
+                        Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1));
                         break;
                     }
                 }

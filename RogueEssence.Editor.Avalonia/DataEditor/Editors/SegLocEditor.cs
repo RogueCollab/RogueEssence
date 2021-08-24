@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, SegLoc member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, SegLoc member)
         {
             LoadLabelControl(control, name);
 
@@ -30,6 +30,7 @@ namespace RogueEssence.Dev
             lblX.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblX.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblX);
+            innerPanel.ColumnDefinitions[0].Width = new GridLength(40);
             lblX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
             NumericUpDown nudValueX = new NumericUpDown();
@@ -46,6 +47,7 @@ namespace RogueEssence.Dev
             lblY.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblY.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
             innerPanel.Children.Add(lblY);
+            innerPanel.ColumnDefinitions[2].Width = new GridLength(40);
             lblY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
             NumericUpDown nudValueY = new NumericUpDown();

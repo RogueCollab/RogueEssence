@@ -48,15 +48,15 @@ namespace RogueEssence.Menu
 
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
                 Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
-            string speciesText = player.BaseName + " / " + CharData.GetFullFormName(player.BaseForm);
+            string speciesText = player.GetDisplayName(true) + " / " + CharData.GetFullFormName(player.BaseForm);
             Name = new MenuText(speciesText, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET));
 
             ElementData element1 = DataManager.Instance.GetElement(player.Element1);
             ElementData element2 = DataManager.Instance.GetElement(player.Element2);
 
-            string typeString = String.Format("{0}\u2060{1}", element1.Symbol, element1.Name.ToLocal());
+            string typeString = element1.GetIconName();
             if (player.Element2 != 00)
-                typeString += "/" + String.Format("{0}\u2060{1}", element2.Symbol, element2.Name.ToLocal());
+                typeString += "/" + element2.GetIconName();
             bool origElements = (player.Element1 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element1);
             origElements &= (player.Element2 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element2);
             Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
@@ -80,8 +80,7 @@ namespace RogueEssence.Menu
                 if (skill.SkillNum > -1)
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    ElementData element = DataManager.Instance.GetElement(data.Data.Element);
-                    skillString = String.Format("{0}\u2060{1}", element.Symbol, data.Name.ToLocal());
+                    skillString = data.GetIconName();
                     skillCharges = skill.Charges.ToString();
                     totalCharges = "/" + (data.BaseCharges + player.ChargeBoost);
                 }
@@ -94,9 +93,9 @@ namespace RogueEssence.Menu
 
             bool origIntrinsic = (player.Intrinsics[0].Element.ID == player.BaseIntrinsics[0]);
             IntrinsicData entry = DataManager.Instance.GetIntrinsic(player.Intrinsics[0].Element.ID);
-            Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.Name.ToLocal()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
+            Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
             IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, LINE_SPACE, false);
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, LINE_SPACE);
         }
 
         public override IEnumerable<IMenuElement> GetElements()

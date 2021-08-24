@@ -7,7 +7,7 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
@@ -33,5 +33,9 @@ namespace RogueEssence.Data
             FameToNext = fameToNext;
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFA5FF]{0}[color]", Name.ToLocal());
+        }
     }
 }

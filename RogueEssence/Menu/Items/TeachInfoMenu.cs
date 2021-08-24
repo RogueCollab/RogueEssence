@@ -30,10 +30,10 @@ namespace RogueEssence.Menu
             SkillData skillEntry = DataManager.Instance.GetSkill(effect.Index);
             ElementData elementEntry = DataManager.Instance.GetElement(skillEntry.Data.Element);
 
-            SkillName = new MenuText(skillEntry.Name.ToLocal(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            SkillName = new MenuText(skillEntry.GetColoredName(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             SkillCharges = new MenuText(Text.FormatKey("MENU_SKILLS_TOTAL_CHARGES", skillEntry.BaseCharges), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight));
 
-            SkillElement = new MenuText(Text.FormatKey("MENU_SKILLS_ELEMENT", String.Format("{0}\u2060{1}", elementEntry.Symbol, elementEntry.Name.ToLocal())), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
+            SkillElement = new MenuText(Text.FormatKey("MENU_SKILLS_ELEMENT", elementEntry.GetIconName()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
             SkillCategory = new MenuText(Text.FormatKey("MENU_SKILLS_CATEGORY", skillEntry.Data.Category.ToLocal()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
 
             BasePowerState powerState = skillEntry.Data.SkillStates.GetWithDefault<BasePowerState>();
@@ -44,7 +44,7 @@ namespace RogueEssence.Menu
 
 
             Description = new DialogueText(skillEntry.Desc.ToLocal(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE, false);
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE);
 
             MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + LINE_SPACE),
                 Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);

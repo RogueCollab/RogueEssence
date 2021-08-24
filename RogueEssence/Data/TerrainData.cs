@@ -7,6 +7,10 @@ namespace RogueEssence.Data
     [Serializable]
     public class TerrainData : IEntryData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
         public enum Mobility
         {
             Impassable = -1,
@@ -38,6 +42,11 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Comment = "";
             LandedOnTiles = new PriorityList<SingleCharEvent>();
+        }
+
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
         }
     }
 }

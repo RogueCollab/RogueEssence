@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RogueEssence.Menu;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 using RogueEssence.Dungeon;
@@ -16,9 +17,6 @@ using System.IO;
 
 namespace RogueEssence.Script
 {
-
-
-
     /// <summary>
     /// Class each components of the lua engine should implement
     /// </summary>
@@ -48,7 +46,6 @@ namespace RogueEssence.Script
             EnterSegment,          //When a segment is being entered
             ExitSegment,  //When a segment is exited by escape, defeat, completion, etc.
             //TODO: move these events to services
-            AllyInteract,
             Rescued,
             Invalid
         }
@@ -213,7 +210,7 @@ namespace RogueEssence.Script
         ///
         /// </summary>
         /// <returns></returns>
-        public static IEnumerator<EEntLuaEventTypes> IterateLuaEntityEvents()
+        public static IEnumerable<EEntLuaEventTypes> IterateLuaEntityEvents()
         {
             for (int ii = (int)EEntLuaEventTypes.Action; ii < (int)EEntLuaEventTypes.Invalid; ++ii)
                 yield return (EEntLuaEventTypes)ii;
@@ -237,7 +234,7 @@ namespace RogueEssence.Script
             Deinit,
             GraphicsLoad,
             GraphicsUnload,
-            DebugLoad,
+            NewGame,
             Restart,
             Update,
 
@@ -273,35 +270,21 @@ namespace RogueEssence.Script
         #endregion
 
         #region MAIN_SCRIPTS
-        /// <summary>
-        /// Keyval to access the pre-defined script files
-        /// </summary>
-        enum EMainScripts
-        {
-            MAIN,
-            COMMON,
-            SCRIPTVARS,
-        }
 
-        /// <summary>
-        /// List of predefined script files
-        /// </summary>
-        private static readonly IDictionary<EMainScripts, string> MainScripts = new Dictionary<EMainScripts, string>
-        {
-            {EMainScripts.MAIN,         "main.lua" },
-            {EMainScripts.COMMON,       "common.lua"},
-            {EMainScripts.SCRIPTVARS,   "scriptvars.lua"},              //this is the lua script that contains the default values of the ScriptVariables (Aka the variables that gets saved )
-        };
+        const string SCRIPT_MAIN = "main.lua";
+        const string SCRIPT_COMMON = "common.lua";
+        const string SCRIPT_VARS = "scriptvars.lua";
+        const string SCRIPT_EVENT = "event.lua";
+        const string INCLUDE_EVENT = "include.lua";
 
         /// <summary>
         /// Assemble the path to the specified script
         /// </summary>
         /// <param name="script">Script to make the path for</param>
         /// <returns>The path to the script file.</returns>
-        private string PathToScript(EMainScripts script)
+        private string PathToScript(string script)
         {
-            string sciptp = MainScripts[script];
-            return String.Format("{0}{1}", PathMod.ModPath(SCRIPT_PATH), sciptp);
+            return String.Format("{0}{1}", PathMod.ModPath(SCRIPT_PATH), script);
         }
         #endregion
 
@@ -342,6 +325,8 @@ namespace RogueEssence.Script
         //Properties
         public Lua      LuaState { get; set; }
         public GameTime Curtime { get { return m_curtime; } set { m_curtime = value; } }
+
+        public bool Breaking { get; private set; }
 
         //Pre-compiled internal lua functions
         private LuaFunction m_MkCoIter;  //Instantiate a lua coroutine iterator function/state, for the ScriptEvent class mainly.
@@ -390,21 +375,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Importing .NET packages..");
             LuaState.LoadCLRPackage();
 
-            LuaState.DoString(String.Format("{0} = import '{0}'", "RogueEssence"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Content"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Data"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Dungeon"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Ground"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Script"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Menu"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.LevelGen"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Resources"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "RogueEssence.Network"));
-            LuaState.DoString(String.Format("{0} = import '{0}'", "FNA"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna"));
-            LuaState.DoString(String.Format("{0} = luanet.namespace('{0}')", "Microsoft.Xna.Framework"));
-            LuaState.DoString(String.Format("{0} = import '{0}'", "RogueElements"));
+            LuaState.DoFile(PathToScript(INCLUDE_EVENT));
         }
 
         /// <summary>
@@ -446,12 +417,18 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]: **- Lua engine ready! -**");
         }
 
+        public void BreakScripts()
+        {
+            Breaking = true;
+        }
+
         /// <summary>
         /// Calling this sends the OnInit event to the script engine.
         /// Use this if you just reset the script state, and want to force it to do its initialization.
         /// </summary>
         public void ReInit()
         {
+            Breaking = true;
             DiagManager.Instance.LogInfo("[SE]:Re-initializing scripts!");
             DiagManager.Instance.LogInfo("[SE]:Loading last serialized script variables!");
             if (DataManager.Instance.Save != null)
@@ -689,6 +666,7 @@ namespace RogueEssence.Script
             LuaState["_ZONE"] = ZoneManager.Instance;
             LuaState["_GAME"] = GameManager.Instance;
             LuaState["_DATA"] = DataManager.Instance;
+            LuaState["_MENU"] = MenuManager.Instance;
 
             DiagManager.Instance.LogInfo("[SE]:Exposing script interface..");
             //Expose script interface  objects
@@ -751,9 +729,11 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Caching scripts..");
             m_scrsvc.SetupLuaFunctions(this);
             //Cache default script variables
-            LuaState.DoFile(PathToScript(EMainScripts.SCRIPTVARS));
+            LuaState.DoFile(PathToScript(SCRIPT_VARS));
             //Cache common lib
-            LuaState.LoadFile(PathToScript(EMainScripts.COMMON));
+            LuaState.LoadFile(PathToScript(SCRIPT_COMMON));
+            //load events
+            LuaState.DoFile(PathToScript(SCRIPT_EVENT));
 
             //Install misc lua functions each interfaces needs
             DiagManager.Instance.LogInfo("[SE]:Installing game interface functions..");
@@ -774,8 +754,8 @@ namespace RogueEssence.Script
             //    SaveData(DataManager.Instance.Save);
 
             //Run main script
-            DiagManager.Instance.LogInfo(String.Format("[SE]:Running {0} script..", MainScripts[EMainScripts.MAIN]));
-            LuaState.DoFile(PathToScript(EMainScripts.MAIN));
+            DiagManager.Instance.LogInfo(String.Format("[SE]:Running {0} script..", SCRIPT_MAIN));
+            LuaState.DoFile(PathToScript(SCRIPT_MAIN));
         }
 
 
@@ -788,7 +768,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("LuaEngine.LoadSavedData()..");
             if ( loaded == null || loaded.ScriptVars == null)
             {
-                LuaState.DoFile(PathToScript(EMainScripts.SCRIPTVARS));
+                LuaState.DoFile(PathToScript(SCRIPT_VARS));
             }
             else
             {
@@ -1135,7 +1115,6 @@ namespace RogueEssence.Script
             ");
         }
 
-
         /// <summary>
         /// Makes the full absolute path to the directory a map's script should be in.
         /// </summary>
@@ -1248,14 +1227,19 @@ namespace RogueEssence.Script
                         foreach (EMapCallbacks fn in EnumerateCallbackTypes())
                         {
                             string callbackname = MakeMapScriptCallbackName(mapassetname, fn);
-                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}(map, time)\n", callbackname);
+                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}(map)\n", callbackname);
                             if (fn == EMapCallbacks.Init)
                             {
                                 //Add the map string loader
                                 fstream.WriteLine(
                                 "  --This will fill the localized strings table automatically based on the locale the game is \n" +
                                 "  -- currently in. You can use the MapStrings table after this line!\n" +
-                                "  MapStrings = AutoLoadLocalizedStrings()");
+                                "  MapStrings = COMMON.AutoLoadLocalizedStrings()");
+                            }
+                            else if (fn == EMapCallbacks.Enter)
+                            {
+                                fstream.WriteLine(
+                                "  GAME:FadeIn(20)");
                             }
                             fstream.WriteLine("\nend\n");
                         }
@@ -1291,11 +1275,13 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public LuaFunction CreateCoroutineIterator(string luapath, params object[] arguments)
         {
+            if (!LuaEngine.Instance.DoesFunctionExists(luapath))
+                return null;
             LuaFunction luafun = LuaState.GetFunction(luapath);
             if (luafun != null)
                 return CreateCoroutineIterator(luafun, arguments);
             else
-                throw new Exception(String.Format("LuaEngine.CreateCoroutineIterator(): NLua returned null for the function path \"{0}\"!", luapath));
+                return null;
         }
 
         /// <summary>
@@ -1390,6 +1376,57 @@ namespace RogueEssence.Script
         public Action MakeLuaAction( LuaFunction fun, params object[] param )
         {
             return new Action( ()=>{ fun.Call(param); } );
+        }
+
+
+        private Type[] parseTypeArgs(LuaTable table)
+        {
+            List<Type> types = new List<Type>();
+            foreach (object val in table.Values)
+            {
+                if (val is ProxyType)
+                    types.Add(((ProxyType)val).UnderlyingSystemType);
+                else if (val is LuaTable)
+                {
+                    throw new NotImplementedException("I haven't decided now to do nested generic types yet...");
+                    //probably make a recursive call to parseTypeArgs
+                }
+            }
+            return types.ToArray();
+        }
+
+        public object MakeGenericType(ProxyType class_type, LuaTable class_arg_table, LuaTable arg_table)
+        {
+            try
+            {
+                Type class_to_make = class_type.UnderlyingSystemType;
+
+                Type[] class_args = parseTypeArgs(class_arg_table);
+                List<object> inst_args = new List<object>();
+                foreach (object val in arg_table.Values)
+                    inst_args.Add(val);
+
+                return makeGenericType(class_to_make, class_args, inst_args.ToArray());
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.MakeGenericType(): Error creating type: " + class_type.ToString() + "\npath:\n" + e.Message);
+                return null;
+            }
+        }
+
+        private object makeGenericType(Type class_type, Type[] class_args, object[] args)
+        {
+            Type[] needed_args = class_type.GetGenericArguments();
+            if (needed_args.Length != class_args.Length)
+                throw new ArgumentException("Argument types not equal to needed amount.");
+
+            Type filled_type = class_type.MakeGenericType(class_args);
+
+            if (args.Length > 0)
+                return Activator.CreateInstance(filled_type, args);
+            else
+                return Activator.CreateInstance(filled_type);
         }
 
         //public dynamic LuaCast(object val, object t)
@@ -1491,9 +1528,9 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.GraphicsUnload.ToString());
         }
 
-        public void OnDebugLoad()
+        public void OnNewGame()
         {
-            m_scrsvc.Publish(EServiceEvents.DebugLoad.ToString());
+            m_scrsvc.Publish(EServiceEvents.NewGame.ToString());
         }
 
         /// <summary>
@@ -1631,6 +1668,7 @@ namespace RogueEssence.Script
 
                 m_nextUpdate = gametime.TotalGameTime + TimeSpan.FromMilliseconds(20); //Schedule next update
             }
+            Breaking = false;
         }
     }
 

@@ -12,8 +12,8 @@ namespace RogueEssence.Menu
 
         private Action action;
 
-        public ClickedDialog(string message, bool sound, Action action)
-            : base(message, sound)
+        public ClickedDialog(string message, bool sound, bool centered, Action action)
+            : base(message, sound, centered)
         {
             this.action = action;
         }

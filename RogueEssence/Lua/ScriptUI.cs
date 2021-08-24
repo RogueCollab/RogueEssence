@@ -26,6 +26,8 @@ namespace RogueEssence.Script
         private object                 m_choiceresult = -1;
         private MonsterID       m_curspeakerID = new MonsterID();
         private string              m_curspeakerName= "";
+        private bool m_curcenter = false;
+        private bool m_curautoFinish = false;
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
         private IEnumerator<YieldInstruction> m_curdialogue;
@@ -44,42 +46,36 @@ namespace RogueEssence.Script
 
 
         //Lua wrapper functions
-        public LuaFunction WaitShowMonologue;
         public LuaFunction WaitForChoice;
         public LuaFunction WaitDialog;
         public LuaFunction WaitShowDialogue;
+        public LuaFunction WaitShowTimedDialogue;
         public LuaFunction WaitShowVoiceOver;
+        public LuaFunction WaitInput;
         public LuaFunction WaitShowTitle;
         public LuaFunction WaitHideTitle;
+        public LuaFunction WaitShowBG;
+        public LuaFunction WaitHideBG;
 
         //================================================================
         // Dialogue
         //================================================================
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="text"></param>
-        public void TextMonologue(string text)
+
+
+        public void TextDialogue(string text, int waitTime = -1)
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.SetSign(text);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextMonologue({0}): Encountered exception:\n{1}", text, e.Message));
-            }
-        }
-
-
-
-
-        public void TextDialogue(string text)
-        {
-            try
-            {
-                m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text }); //!#NOTE : I really don't know why we should pass tables of strings?
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter, new string[] { text });
+                else
+                {
+                    if (!String.IsNullOrEmpty(m_curspeakerName))
+                        DungeonScene.Instance.LogMsg(String.Format("{0}: {1}", m_curspeakerName, text));
+                    else
+                        DungeonScene.Instance.LogMsg(text);
+                }
             }
             catch (Exception e)
             {
@@ -92,11 +88,25 @@ namespace RogueEssence.Script
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, true, expireTime, () => { }));
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, m_curautoFinish, expireTime, () => { }));
             }
             catch (Exception e)
             {
                 DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception:\n{2}", text, expireTime, e.Message));
+            }
+        }
+
+        public void TextWaitMenu(bool anyInput)
+        {
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(anyInput);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextWaitMenu({0}): Encountered exception:\n{1}", anyInput, e.Message));
             }
         }
 
@@ -122,7 +132,34 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextDialogue({0}): Encountered exception:\n{1}", time, e.Message));
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextFadeTitle({0}): Encountered exception:\n{1}", time, e.Message));
+            }
+        }
+
+
+
+        public void ShowBG(string bg, int frameTime, int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception:\n{2}", bg, frameTime, time, e.Message));
+            }
+        }
+
+
+        public void FadeBG(int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(false, new BGAnimData(), time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowBG({0}): Encountered exception:\n{1}", time, e.Message));
             }
         }
 
@@ -135,6 +172,8 @@ namespace RogueEssence.Script
             m_curspeakerName = null;
             m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
+            m_curautoFinish = false;
+            m_curcenter = false;
         }
 
 
@@ -147,9 +186,9 @@ namespace RogueEssence.Script
         /// <param name="form"></param>
         /// <param name="skin"></param>
         /// <param name="gender"></param>
-        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender = Gender.Male)
+        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender)
         {
-            m_curspeakerID = new MonsterID(specie, form, skin, gender) ;
+            m_curspeakerID = new MonsterID(specie, form, skin, gender);
             m_curspeakerName = name;
             m_curspeakerEmo.Emote = 0;
             m_curspeakerSnd = keysound;
@@ -182,7 +221,7 @@ namespace RogueEssence.Script
             if (chara != null)
             {
                 m_curspeakerID = chara.CurrentForm;
-                m_curspeakerName = chara.Name;
+                m_curspeakerName = chara.GetDisplayName(true);
             }
             else
             {
@@ -205,6 +244,15 @@ namespace RogueEssence.Script
             m_curspeakerEmo.Emote = emoteIndex;
         }
 
+        public void SetCenter(bool centered)
+        {
+            m_curcenter = centered;
+        }
+
+        public void SetAutoFinish(bool autoFinish)
+        {
+            m_curautoFinish = autoFinish;
+        }
 
 
         /// <summary>
@@ -212,6 +260,9 @@ namespace RogueEssence.Script
         /// </summary>
         public Coroutine _WaitDialog()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                return new Coroutine(_DummyWait());
+
             return new Coroutine(m_curdialogue);
         }
 
@@ -240,6 +291,12 @@ namespace RogueEssence.Script
         /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
         public void ChoiceMenuYesNo( string message, bool bdefaultstono = false )
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI() == 0 ? false : true;
+                return;
+            }
+
             try
             {
                 m_choiceresult = null;
@@ -253,17 +310,17 @@ namespace RogueEssence.Script
                                                                       m_curspeakerName,
                                                                       m_curspeakerEmo,
                                                                       message,
-                                                                      m_curspeakerSnd,
-                                                                      () => { m_choiceresult = true; },
-                                                                      () => { m_choiceresult = false; },
+                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter,
+                                                                      () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                                                                      () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
                 }
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(message,
                         m_curspeakerSnd,
-                        () => { m_choiceresult = true; },
-                        () => { m_choiceresult = false; });
+                        () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                        () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); });
                 }
             }
             catch (Exception e)
@@ -286,6 +343,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = "";
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new TeamNameMenu(title, desc, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
@@ -299,6 +357,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = false;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new AssemblyMenu(0, () => { m_choiceresult = true; });
             }
             catch (Exception e)
@@ -328,6 +387,7 @@ namespace RogueEssence.Script
                     Int64 price = (Int64)entry["Price"];
                     goodsList.Add(new Tuple<InvItem, int>(item, (int)price));
                 }
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new ShopMenu(goodsList, 0, (List<int> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
@@ -354,6 +414,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SellMenu(0, (List<InvSlot> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
@@ -372,6 +433,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new DepositMenu(0);
             }
             catch (Exception e)
@@ -385,6 +447,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new WithdrawMenu(0, true, onChooseSlot);
             }
             catch (Exception e)
@@ -429,6 +492,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new BankMenu(DataManager.Instance.Save.ActiveTeam.Money, onChooseAmount);
             }
             catch (Exception e)
@@ -489,6 +553,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new TutorTeamMenu(-1,
                     (int teamSlot) => { m_choiceresult = teamSlot; },
                     () => { });
@@ -505,6 +570,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 List<int> forgottenSkills = chara.GetRelearnableSkills();
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
                 (int skillNum) => { m_choiceresult = skillNum; },
@@ -522,6 +588,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SkillReplaceMenu(chara, moveNum,
                         (int slot) => { m_choiceresult = slot; },
                         () => { });
@@ -538,6 +605,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SkillForgetMenu(chara,
                         (int slot) => { m_choiceresult = slot; },
                         () => { });
@@ -554,6 +622,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new PromoteMenu(-1,
                     (int teamSlot) => { m_choiceresult = teamSlot; },
                     () => { });
@@ -640,7 +709,7 @@ namespace RogueEssence.Script
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { m_choiceresult = true; });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { m_choiceresult = false; });
-                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.Name.ToLocal()), dungeonid, false, choices, 0, 1);
+                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.GetColoredName()), dungeonid, false, choices, 0, 1);
             }
             catch (Exception e)
             {
@@ -799,6 +868,12 @@ namespace RogueEssence.Script
         /// <param name="message">The question to ask the user.</param>
         public void BeginChoiceMenu(string message, LuaTable choicespairs, object defaultchoice, object cancelchoice)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = null;
@@ -819,20 +894,20 @@ namespace RogueEssence.Script
                         choicetext = (string)tbl[1];
                         enabled = (bool)tbl[2];
                     }
-                    object choiceval = dict.Key;
+                    long choiceval = (long)dict.Key;
 
                     if (defaultchoice.Equals(choiceval))
                         mappedDefault = choices.Count;
                     if (cancelchoice.Equals(choiceval))
                         mappedCancel = choices.Count;
-                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; }, enabled));
+                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
 
                 //Make a choice menu, and check if we display a speaker or not
                 if (m_curspeakerName != null)
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo,
-                            message, m_curspeakerSnd, choices.ToArray(), mappedDefault, mappedCancel);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter, choices.ToArray(), mappedDefault, mappedCancel);
                 }
                 else
                 {
@@ -862,6 +937,9 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public Coroutine _WaitForChoice()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                return new Coroutine(_DummyWait());
+
             if (m_curchoice != null)
                 return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
             else
@@ -901,15 +979,15 @@ namespace RogueEssence.Script
                 return coroutine.yield(UI:_WaitForChoice())
             end", "WaitForChoice").First() as LuaFunction;
 
-            WaitShowMonologue = state.RunString(@"
-            return function(_, text)
-                UI:TextMonologue(text)
-                return coroutine.yield(UI:_WaitDialog())
-            end", "WaitShowMonologue").First() as LuaFunction;
-
             WaitShowDialogue = state.RunString(@"
             return function(_, text)
                 UI:TextDialogue(text)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitShowDialogue").First() as LuaFunction;
+
+            WaitShowTimedDialogue = state.RunString(@"
+            return function(_, text, time)
+                UI:TextDialogue(text, time)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowDialogue").First() as LuaFunction;
 
@@ -918,6 +996,12 @@ namespace RogueEssence.Script
                 UI:TextVoiceOver(text, expiretime)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowVoiceOver").First() as LuaFunction;
+
+            WaitInput = state.RunString(@"
+            return function(_, any)
+                UI:TextWaitMenu(any)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitInput").First() as LuaFunction;
 
             WaitShowTitle = state.RunString(@"
             return function(_, text, time)
@@ -930,6 +1014,18 @@ namespace RogueEssence.Script
                 UI:TextFadeTitle(time)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitHideTitle").First() as LuaFunction;
+
+            WaitShowBG = state.RunString(@"
+            return function(_, text, frameTime, time)
+                UI:ShowBG(text, frameTime, time)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitShowBG").First() as LuaFunction;
+
+            WaitHideBG = state.RunString(@"
+            return function(_, time)
+                UI:FadeBG(time)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitHideBG").First() as LuaFunction;
         }
     }
 }

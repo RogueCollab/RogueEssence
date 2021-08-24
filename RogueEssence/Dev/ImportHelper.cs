@@ -503,13 +503,12 @@ namespace RogueEssence.Dev
             //go through each font folder
             for (int ii = 0; ii < fonts.Length; ii++)
             {
-                using (Content.FontSheet font = Content.FontSheet.Import(Path.Combine(sourceDir, fonts[ii]) + "/"))
+                using (FontSheet font = FontSheet.Import(Path.Combine(sourceDir, fonts[ii]) + "/"))
                 {
-                    //using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii] + ".png"), System.IO.FileMode.Create, System.IO.FileAccess.Write))
-                    //{
-                    //    font.SaveAsPng(stream);
-                    //}
-                    using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii]), System.IO.FileMode.Create, System.IO.FileAccess.Write))
+                    //using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii] + ".png"), FileMode.Create, FileAccess.Write))
+                    //    font.Export(stream);
+
+                    using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii]), FileMode.Create, FileAccess.Write))
                     {
                         using (BinaryWriter writer = new BinaryWriter(stream))
                             font.Save(writer);

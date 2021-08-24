@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
                 else
                 {
                     ItemData entry = DataManager.Instance.GetItem(reqItem);
-                    reqs.Add(new MenuText(entry.Name.ToLocal(), new Loc(), itemPresence[reqItem] ? Color.White : Color.Red));
+                    reqs.Add(new MenuText(entry.GetIconName(), new Loc(), itemPresence[reqItem] ? Color.White : Color.Red));
                 }
             }
             if (wildcards > 0)

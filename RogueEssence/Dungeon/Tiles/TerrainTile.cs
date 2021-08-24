@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -15,12 +16,11 @@ namespace RogueEssence.Dungeon
 
         public override int GetID() { return ID; }
 
-        public TerrainData GetData()
-        {
-            return DataManager.Instance.GetTerrain(ID);
-        }
-        public override string GetName() { return GetData().Name.ToLocal(); }
+        public TerrainData GetData() { return DataManager.Instance.GetTerrain(ID); }
+        public override string GetDisplayName() { return GetData().GetColoredName(); }
 
+
+        [DataType(0, DataManager.DataType.Terrain, false)]
         public int ID;
         public AutoTile TileTex;
         public TerrainTile()
@@ -45,13 +45,13 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
-            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, Tuple<GameEventOwner, Character, SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TerrainData entry = DataManager.Instance.GetTerrain(ID);
-                AddEventsToQueue(queue, maxPriority, ref nextPriority, entry.LandedOnTiles);
+                AddEventsToQueue(queue, maxPriority, ref nextPriority, entry.LandedOnTiles, character);
             };
-            foreach (Tuple<GameEventOwner, Character, SingleCharEvent> effect in DungeonScene.IterateEvents(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Item3.Apply(effect.Item1, effect.Item2, character));
+            foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents(function))
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
         }
 
         public bool Equals(TerrainTile other)

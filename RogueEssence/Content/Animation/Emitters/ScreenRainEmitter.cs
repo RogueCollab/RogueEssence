@@ -26,7 +26,6 @@ namespace RogueEssence.Content
             Layer = other.Layer;
             ParticlesPerBurst = other.ParticlesPerBurst;
             BurstTime = other.BurstTime;
-            AnimDir = other.AnimDir;
             HeightSpeed = other.HeightSpeed;
             SpeedDiff = other.SpeedDiff;
         }
@@ -38,7 +37,6 @@ namespace RogueEssence.Content
         public DrawLayer Layer;
         public int ParticlesPerBurst;
         public int BurstTime;
-        public Dir8 AnimDir;
         //Pixels per sec
         public int HeightSpeed;
         //Pixels per sec
@@ -62,7 +60,7 @@ namespace RogueEssence.Content
                     startLoc += scene.ViewRect.Start;
 
                     WrappedRainAnim anim = new WrappedRainAnim(Anim, ResultAnim, Layer, time);
-                    anim.SetupEmitted(startLoc, new Loc(SpeedDiff, 0), Loc.Zero, height, HeightSpeed, 0, AnimDir);
+                    anim.SetupEmitted(startLoc, new Loc(SpeedDiff, 0), Loc.Zero, height, HeightSpeed, 0, Dir);
                     scene.Anims[(int)Layer].Add(anim);
                 }
             }

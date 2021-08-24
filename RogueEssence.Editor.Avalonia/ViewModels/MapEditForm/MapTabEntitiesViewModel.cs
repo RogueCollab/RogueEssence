@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using ReactiveUI;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
@@ -66,7 +67,7 @@ namespace RogueEssence.Dev.ViewModels
 
             speciesChanged();
 
-            Statuses = new CollectionBoxViewModel();
+            Statuses = new CollectionBoxViewModel(new StringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
         }
@@ -196,7 +197,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.Intrinsics[0].Element.ID; }
             set
             {
-                SelectedEntity.ReplaceIntrinsic(0, value, false, false);
+                SelectedEntity.LearnIntrinsic(value, 0);
                 this.RaisePropertyChanged();
             }
         }
@@ -364,9 +365,17 @@ namespace RogueEssence.Dev.ViewModels
 
         public Character SelectedEntity;
 
+        public void ProcessUndo()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                SelectEntity(null);
+        }
 
         public void ProcessInput(InputManager input)
         {
+            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
+                return;
+
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
             switch (EntMode)
@@ -418,18 +427,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
+            string elementName = "Statuses[" + index + "]";
             DataEditForm frmData = new DataEditForm();
-            if (element == null)
-                frmData.Title = "New Status";
-            else
-                frmData.Title = element.ToString();
-
-            DataEditor.LoadClassControls(frmData.ControlPanel, "(Statuses) [" + index + "]", typeof(StatusEffect), new object[0] { }, element, true);
+            frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "Statuses", typeof(StatusEffect), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true);
 
                 bool itemExists = false;
 
@@ -474,6 +479,8 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
+
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
             {
                 Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
@@ -507,6 +514,9 @@ namespace RogueEssence.Dev.ViewModels
             Character placeableEntity = SelectedEntity.Clone(team);
 
             placeableEntity.CharLoc = position;
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
+
             ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
             placeableEntity.UpdateFrame();
         }
@@ -516,7 +526,10 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(Character ent)
         {
             if (ent != null)
+            {
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
                 setEntity(ent);
+            }
             else
             {
                 MonsterTeam team = new MonsterTeam();
@@ -586,6 +599,23 @@ namespace RogueEssence.Dev.ViewModels
                 SelectedEntity.CharLoc = loc;
                 SelectedEntity.UpdateFrame();
             }
+        }
+    }
+
+    public class MapEntityStateUndo : StateUndo<List<Team>>
+    {
+        public MapEntityStateUndo()
+        {
+        }
+
+        public override List<Team> GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.MapTeams;
+        }
+
+        public override void SetState(List<Team> state)
+        {
+            ZoneManager.Instance.CurrentMap.MapTeams = state;
         }
     }
 }

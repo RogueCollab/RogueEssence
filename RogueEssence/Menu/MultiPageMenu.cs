@@ -64,9 +64,9 @@ namespace RogueEssence.Menu
         {
             CurrentPage = page;
             if (TotalChoices.Length == 1 && !ShowPagesOnSingle)
-                PageText.Text = "";
+                PageText.SetText("");
             else
-                PageText.Text = "(" + (CurrentPage + 1) + "/" + TotalChoices.Length+ ")";
+                PageText.SetText("(" + (CurrentPage + 1) + "/" + TotalChoices.Length+ ")");
             IChoosable[] choices = new IChoosable[TotalChoices[CurrentPage].Length];
             for (int ii = 0; ii < choices.Length; ii++)
                 choices[ii] = TotalChoices[CurrentPage][ii];

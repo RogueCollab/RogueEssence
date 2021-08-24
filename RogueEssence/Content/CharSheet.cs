@@ -480,6 +480,23 @@ namespace RogueEssence.Content
                 }
                 offsetTex.Dispose();
 
+                // automatically add default animation
+                {
+                    CharAnimGroup anim = new CharAnimGroup();
+                    CharAnimGroup parentGroup = animData[GraphicsManager.IdleAction];
+                    while (parentGroup.CopyOf > -1)
+                        parentGroup = animData[parentGroup.CopyOf];
+                    foreach (CharAnimSequence sequence in parentGroup.Sequences)
+                    {
+                        CharAnimSequence newSequence = new CharAnimSequence();
+                        CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
+                        frame.EndTime = 1;
+                        newSequence.Frames.Add(frame);
+                        anim.Sequences.Add(newSequence);
+                    }
+                    animData[0] = anim;
+                }
+
                 CharSheet charSheet = new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
                 charSheet.Collapse(false);
                 return charSheet;
@@ -1322,6 +1339,7 @@ namespace RogueEssence.Content
         //however, also need a way to determine frame for an animation playing at the true specified speed
         public void DrawChar(SpriteBatch spriteBatch, int type, bool truncateDash, Dir8 dir, Vector2 pos, DetermineFrame frameMethod, Color color)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1342,6 +1360,7 @@ namespace RogueEssence.Content
         }
         public Loc GetActionPoint(int type, bool truncateDash, Dir8 dir, ActionPointType pointType, DetermineFrame frameMethod)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1376,6 +1395,7 @@ namespace RogueEssence.Content
 
         public void DrawCharFrame(SpriteBatch spriteBatch, int type, bool truncateDash , Dir8 dir, Vector2 pos, int frameNum, Color color)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1409,6 +1429,7 @@ namespace RogueEssence.Content
 
         public int GetCurrentFrame(int type, Dir8 dir, DetermineFrame frameMethod)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
                 return frameMethod(group.SeqAtDir(dir).Frames);
@@ -1437,7 +1458,6 @@ namespace RogueEssence.Content
 
         private CharAnimGroup getReferencedAnim(int type)
         {
-            type = GetReferencedAnimIndex(type);
             if (type > -1)
                 return AnimData[type];
             else
@@ -1446,6 +1466,7 @@ namespace RogueEssence.Content
 
         public int GetTotalTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1459,6 +1480,7 @@ namespace RogueEssence.Content
 
         public int GetReturnTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1474,6 +1496,7 @@ namespace RogueEssence.Content
 
         public int GetHitTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1489,6 +1512,7 @@ namespace RogueEssence.Content
 
         public int GetRushTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {

@@ -29,40 +29,10 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public AutoTile AutoTileInProgress;
-        public bool? BlockInProgress;
-        public Rect RectInProgress;
+        public CanvasStroke<AutoTile> AutoTileInProgress;
+        public CanvasStroke<bool> BlockInProgress;
         public bool ShowWalls;
 
-        public Rect TileRectPreview()
-        {
-            return RectPreview(ZoneManager.Instance.CurrentGround.TileSize);
-        }
-        public Rect BlockRectPreview()
-        {
-            return RectPreview(GraphicsManager.TEX_SIZE);
-        }
-        public Rect RectPreview(int size)
-        {
-            Rect resultRect = new Rect(RectInProgress.Start / size, RectInProgress.Size / size);
-            if (resultRect.Size.X <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X + resultRect.Size.X, resultRect.Start.Y);
-                resultRect.Size = new Loc(-resultRect.Size.X + 1, resultRect.Size.Y);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X + 1, resultRect.Size.Y);
-
-            if (resultRect.Size.Y <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X, resultRect.Start.Y + resultRect.Size.Y);
-                resultRect.Size = new Loc(resultRect.Size.X, -resultRect.Size.Y + 1);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X, resultRect.Size.Y + 1);
-
-            return resultRect;
-        }
 
         public override void UpdateMeta()
         {
@@ -95,7 +65,6 @@ namespace RogueEssence.Dev
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             Loc dirLoc = Loc.Zero;
-            bool fast = !input.BaseKeyDown(Keys.LeftShift);
 
             for (int ii = 0; ii < DirKeys.Length; ii++)
             {
@@ -103,7 +72,27 @@ namespace RogueEssence.Dev
                     dirLoc = dirLoc + ((Dir4)ii).GetLoc();
             }
 
-            DiffLoc = dirLoc * (fast ? 8 : 1);
+            bool slow = input.BaseKeyDown(Keys.LeftShift);
+            int speed = 8;
+            if (slow)
+                speed = 1;
+            else
+            {
+                switch (GraphicsManager.Zoom)
+                {
+                    case GraphicsManager.GameZoom.x8Near:
+                        speed = 1;
+                        break;
+                    case GraphicsManager.GameZoom.x4Near:
+                        speed = 2;
+                        break;
+                    case GraphicsManager.GameZoom.x2Near:
+                        speed = 4;
+                        break;
+                }
+            }
+
+            DiffLoc = dirLoc * speed;
 
             yield break;
         }
@@ -125,15 +114,7 @@ namespace RogueEssence.Dev
                 FocusedLoc += DiffLoc;
                 DiffLoc = new Loc();
 
-
-                if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                    FocusedLoc = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth - GraphicsManager.ScreenWidth / 2)),
-                        Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight - GraphicsManager.ScreenHeight / 2)));
-                else
-                    FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth)),
-                        Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight)));
-
-                UpdateCam(FocusedLoc);
+                UpdateCam(ref FocusedLoc);
 
                 base.Update(elapsedTime);
             }
@@ -157,13 +138,15 @@ namespace RogueEssence.Dev
                     {
                         for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                         {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)) &&
-                                Collision.InBounds(TileRectPreview(), new Loc(ii, jj)))
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, testLoc) &&
+                                AutoTileInProgress.IncludesLoc(testLoc))
                             {
-                                if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
+                                AutoTile brush = AutoTileInProgress.GetBrush(testLoc);
+                                if (brush.IsEmpty())
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.X, jj * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize, ZoneManager.Instance.CurrentGround.TileSize), null, Color.Black);
                                 else
-                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
+                                    brush.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
                             }
                         }
                     }
@@ -177,11 +160,12 @@ namespace RogueEssence.Dev
                     {
                         for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
                         {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, testLoc))
                             {
                                 bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
-                                if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
-                                    blocked = BlockInProgress.Value;
+                                if (BlockInProgress != null && BlockInProgress.IncludesLoc(testLoc))
+                                    blocked = BlockInProgress.GetBrush(testLoc);
 
                                 if (blocked)
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.6f);
@@ -201,21 +185,21 @@ namespace RogueEssence.Dev
                         //Invert the color of selected entities
                         dbg.DrawColor = new Color(entity.DevEntColoring.B, entity.DevEntColoring.G, entity.DevEntColoring.R, entity.DevEntColoring.A);
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(entity.Bounds, 92);
+                        dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 92);
                     }
                     else if (!entity.DevHasGraphics())
                     {
                         //Draw entities with no graphics of their own as a filled box
                         dbg.DrawColor = entity.DevEntColoring;
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(entity.Bounds, 128);
+                        dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 128);
                     }
                     else
                     {
                         //Draw boxes around other entities with graphics using low opacity
                         dbg.DrawColor = new Color(entity.DevEntColoring.R, entity.DevEntColoring.G, entity.DevEntColoring.B, 92);
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawBox(entity.Bounds);
+                        dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
                     }
                     //And don't draw bounds of entities that have a graphics representation
                 }
@@ -247,6 +231,23 @@ namespace RogueEssence.Dev
             base.DrawDev(spriteBatch);
         }
 
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                GroundEntity selectedEntity = null;
+                foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
+                {
+                    if (entity.DevEntitySelected)
+                        selectedEntity = entity;
+                }
+
+                if (selectedEntity != null)
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", selectedEntity.MapLoc.X, selectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+            }
+        }
 
         public void EnterGroundEdit(int entryPoint)
         {

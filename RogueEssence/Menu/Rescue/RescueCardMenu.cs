@@ -34,31 +34,31 @@ namespace RogueEssence.Menu
 
         public void SetSOS(SOSMail sos)
         {
-            Title.Text = Text.FormatKey("MENU_SOS_TITLE");
+            Title.SetText(Text.FormatKey("MENU_SOS_TITLE"));
             Portraits = new SpeakerPortrait[sos.TeamProfile.Length];
             for (int ii = 0; ii < sos.TeamProfile.Length; ii++)
                 Portraits[ii] = new SpeakerPortrait(sos.TeamProfile[ii], new EmoteStyle(sos.RescuedBy == null ? GraphicsManager.SOSEmotion : 0, true),
                     new Loc(Bounds.X + Bounds.Width / 2 - (GraphicsManager.PortraitSize * sos.TeamProfile.Length + (sos.TeamProfile.Length - 1) * 2) / 2 + ii * (GraphicsManager.PortraitSize + 2),
                     Bounds.Y + GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
-            Name.Text = Text.FormatKey("MENU_SOS_CLIENT", sos.TeamName);
-            LastSeen.Text = Text.FormatKey("MENU_SOS_DATE", sos.DateDefeated);
-            Goal.Text = Text.FormatKey("MENU_SOS_GOAL", sos.GoalText.ToLocal().Replace('\n', ' '));
-            Reward.Text = sos.OfferedItem.Value > 0 ? Text.FormatKey("MENU_SOS_REWARD", sos.OfferedItem.GetDungeonName()) : "";
+            Name.SetText(Text.FormatKey("MENU_SOS_CLIENT", sos.TeamName));
+            LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", sos.DateDefeated));
+            Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", sos.GoalText.ToLocal().Replace('\n', ' ')));
+            Reward.SetText(sos.OfferedItem.Value > 0 ? Text.FormatKey("MENU_SOS_REWARD", sos.OfferedItem.GetDungeonName()) : "");
 
         }
 
         public void SetAOK(AOKMail aok)
         {
-            Title.Text = Text.FormatKey("MENU_AOK_TITLE");
+            Title.SetText(Text.FormatKey("MENU_AOK_TITLE"));
             Portraits = new SpeakerPortrait[aok.RescuingProfile.Length];
             for (int ii = 0; ii < aok.RescuingProfile.Length; ii++)
                 Portraits[ii] = new SpeakerPortrait(aok.RescuingProfile[ii], new EmoteStyle(GraphicsManager.AOKEmotion, true),
                     new Loc(Bounds.X + Bounds.Width / 2 - (GraphicsManager.PortraitSize * aok.RescuingProfile.Length + (aok.RescuingProfile.Length - 1) * 2) / 2 + ii * (GraphicsManager.PortraitSize + 2),
                     Bounds.Y + GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
-            Name.Text = Text.FormatKey("MENU_AOK_TEAM", aok.RescuingTeam);
-            LastSeen.Text = Text.FormatKey("MENU_SOS_DATE", aok.DateRescued);
-            Goal.Text = Text.FormatKey("MENU_SOS_GOAL", aok.GoalText.ToLocal().Replace('\n', ' '));
-            Reward.Text = aok.OfferedItem.Value > 0 ? Text.FormatKey("MENU_SOS_REWARD", aok.OfferedItem.GetDungeonName()) : "";
+            Name.SetText(Text.FormatKey("MENU_AOK_TEAM", aok.RescuingTeam));
+            LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", aok.DateRescued));
+            Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", aok.GoalText.ToLocal().Replace('\n', ' ')));
+            Reward.SetText(aok.OfferedItem.Value > 0 ? Text.FormatKey("MENU_SOS_REWARD", aok.OfferedItem.GetDungeonName()) : "");
 
         }
 

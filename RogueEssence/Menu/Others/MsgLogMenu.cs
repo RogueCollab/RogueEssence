@@ -50,10 +50,10 @@ namespace RogueEssence.Menu
             coveredLines = new List<string[]>();
             foreach (string entry in DataManager.Instance.GetRecentMsgs(MAX_LINES * 2))
             {
-                if (entry == "\n")
+                if (entry == Text.DIVIDER_STR)
                     coveredLines.Add(new string[1] { entry });
                 else
-                    coveredLines.Add(GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
+                    coveredLines.Add(MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
             }
 
             if (coveredLines.Count > 0)
@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
                     for (int jj = coveredLines[ii].Length - 1; jj >= 0; jj--)
                     {
                         lineIndex = jj;
-                        if (coveredLines[ii][jj] != "\n")
+                        if (coveredLines[ii][jj] != Text.DIVIDER_STR)
                             displayLines++;
                         if (displayLines >= MAX_LINES)
                             break;
@@ -103,9 +103,9 @@ namespace RogueEssence.Menu
             int total_lines = 0;
             foreach (string entry in DataManager.Instance.GetRecentMsgs(MAX_LINES * 2))
             {
-                if (entry != "\n")
+                if (entry != Text.DIVIDER_STR)
                 {
-                    string[] lines = GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+                    string[] lines = MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                     total_lines += lines.Length;
                     if (total_lines > MAX_LINES)
                         return true;
@@ -153,14 +153,14 @@ namespace RogueEssence.Menu
                         {
                             foreach (string entry in DataManager.Instance.GetRecentMsgs(msgIndex + coveredLines.Count, msgIndex + coveredLines.Count + delta * 2))
                             {
-                                if (entry == "\n")
+                                if (entry == Text.DIVIDER_STR)
                                 {
                                     coveredLines.Add(new string[1] { entry });
                                     lineEndIndex = 0;
                                 }
                                 else
                                 {
-                                    string[] lines = GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+                                    string[] lines = MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                                     coveredLines.Add(lines);
                                     lineEndIndex = Math.Min(delta - addedLines, lines.Length) - 1;
                                     addedLines += Math.Min(delta - addedLines, lines.Length);
@@ -175,7 +175,7 @@ namespace RogueEssence.Menu
                             int removedLines = 0;
                             while (removedLines < addedLines)
                             {
-                                if (coveredLines[0].Length == 1 && coveredLines[0][0] == "\n")
+                                if (coveredLines[0].Length == 1 && coveredLines[0][0] == Text.DIVIDER_STR)
                                 {
                                     coveredLines.RemoveAt(0);
                                     msgIndex++;
@@ -211,10 +211,10 @@ namespace RogueEssence.Menu
                             int addedEntries = 0;
                             foreach (string entry in DataManager.Instance.GetRecentMsgs(msgIndex - delta * 2, msgIndex))
                             {
-                                if (entry == "\n")
+                                if (entry == Text.DIVIDER_STR)
                                     coveredLines.Insert(addedEntries, new string[1] { entry });
                                 else
-                                    coveredLines.Insert(addedEntries, GraphicsManager.TextFont.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
+                                    coveredLines.Insert(addedEntries, MenuText.BreakIntoLines(entry, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2));
                                 addedEntries++;
                             }
                             int msgsBack = 0;
@@ -224,7 +224,7 @@ namespace RogueEssence.Menu
                                 for (int jj = coveredLines[ii].Length - 1; jj >= 0; jj--)
                                 {
                                     lineIndex = jj;
-                                    if (coveredLines[ii][jj] != "\n")
+                                    if (coveredLines[ii][jj] != Text.DIVIDER_STR)
                                         addedLines++;
                                     if (addedLines >= delta)
                                         break;
@@ -243,7 +243,7 @@ namespace RogueEssence.Menu
                             int removedLines = 0;
                             while (removedLines < addedLines)
                             {
-                                if (coveredLines[coveredLines.Count - 1].Length == 1 && coveredLines[coveredLines.Count - 1][0] == "\n")
+                                if (coveredLines[coveredLines.Count - 1].Length == 1 && coveredLines[coveredLines.Count - 1][0] == Text.DIVIDER_STR)
                                 {
                                     coveredLines.RemoveAt(coveredLines.Count - 1);
                                     lineEndIndex = coveredLines[coveredLines.Count - 1].Length - 1;

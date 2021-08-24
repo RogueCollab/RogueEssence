@@ -17,32 +17,29 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, ISpawnList member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ISpawnList member)
         {
             LoadLabelControl(control, name);
 
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
+
             SpawnListBox lbxValue = new SpawnListBox();
             lbxValue.MaxHeight = 220;
-            SpawnListBoxViewModel mv = new SpawnListBoxViewModel();
+            SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
-            //lbxValue.StringConv = DataEditor.GetStringRep(elementType, new object[0] { });
             //add lambda expression for editing a single element
-
             mv.OnEditItem += (int index, object element, SpawnListBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = name + "/" + "New " + elementType.Name;
-                else
-                    frmData.Title = name + "/" + element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(SpawnList) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
                     op(index, element);
                     frmData.Close();
                 };

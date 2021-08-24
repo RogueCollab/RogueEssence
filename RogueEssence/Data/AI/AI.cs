@@ -12,17 +12,22 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
         public bool Released { get; set; }
         public string Comment { get; set; }
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public EntrySummary GenerateEntrySummary() { return new AIEntrySummary(Name, Released, Comment, Assignable); }
 
 
         public int ID;
+
+        /// <summary>
+        /// Can be assigned via tactics menu
+        /// </summary>
+        public bool Assignable;
         public List<BasePlan> Plans;
 
         [NonSerialized]
@@ -64,11 +69,12 @@ namespace RogueEssence.Data
 
         public AITactic(AITactic other) : this()
         {
+            ID = other.ID;
+            Assignable = other.Assignable;
             Name = new LocalText(other.Name);
             Comment = other.Comment;
             foreach (BasePlan plan in other.Plans)
                 Plans.Add(plan.CreateNew());
-            ID = other.ID;
         }
 
         public void Initialize(Character controlledChar)
@@ -90,6 +96,35 @@ namespace RogueEssence.Data
             return new GameAction(GameAction.ActionType.Wait, Dir8.None);
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
+    }
+
+
+
+    [Serializable]
+    public class AIEntrySummary : EntrySummary
+    {
+        public bool Assignable;
+
+        public AIEntrySummary() : base()
+        {
+
+        }
+
+        public AIEntrySummary(LocalText name, bool released, string comment, bool assignable)
+            : base(name, released, comment)
+        {
+            Assignable = assignable;
+        }
+
+
+        public override string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }
 
