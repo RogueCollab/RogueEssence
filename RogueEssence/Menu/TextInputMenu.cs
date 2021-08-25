@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Input;
 using SDL2;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -293,7 +294,7 @@ namespace RogueEssence.Menu
         protected bool PressedPaste(InputManager input)
         {
             bool holdCtrl = false;
-            if (CoreDllMap.OS == "osx")
+            if (OperatingSystem.IsMacOS())
                 holdCtrl = (input.BaseKeyDown(Keys.LeftWindows) || input.BaseKeyDown(Keys.RightWindows));
             else
                 holdCtrl = (input.BaseKeyDown(Keys.LeftControl) || input.BaseKeyDown(Keys.RightControl));

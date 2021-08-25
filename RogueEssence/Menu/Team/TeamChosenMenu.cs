@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_STATUS_TITLE"), StatusAction, hasStatus, hasStatus ? Color.White : Color.Red));
 
-            bool canAct = !inDungeon || (Data.DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.CurrentCharacter == DungeonScene.Instance.ActiveTeam.Leader);
+            bool canAct = !inDungeon || (DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.CurrentCharacter == DungeonScene.Instance.ActiveTeam.Leader);
 
             bool canShiftUp = canAct;
             bool canShiftDown = canAct;
