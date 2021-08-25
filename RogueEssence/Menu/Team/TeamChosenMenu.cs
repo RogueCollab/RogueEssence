@@ -22,7 +22,9 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
 
             bool hasStatus = false;
-            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            bool inDungeon = GameManager.Instance.CurrentScene == DungeonScene.Instance;
+            bool inGround = GameManager.Instance.CurrentScene == GroundScene.Instance;
+            if (inDungeon)
             {
                 foreach (int status in ZoneManager.Instance.CurrentMap.Status.Keys)
                 {
@@ -44,7 +46,7 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_STATUS_TITLE"), StatusAction, hasStatus, hasStatus ? Color.White : Color.Red));
 
-            bool canAct = (GameManager.Instance.CurrentScene != DungeonScene.Instance) || (Data.DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.CurrentCharacter == DungeonScene.Instance.ActiveTeam.Leader);
+            bool canAct = !inDungeon || (Data.DataManager.Instance.CurrentReplay == null) && (DungeonScene.Instance.CurrentCharacter == DungeonScene.Instance.ActiveTeam.Leader);
 
             bool canShiftUp = canAct;
             bool canShiftDown = canAct;
@@ -79,7 +81,16 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_MODE"), TeamModeAction, canAct, canAct ? Color.White : Color.Red));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction, canAct, canAct ? Color.White : Color.Red));
+            {
+                bool canSwitch = canAct;
+                if (inDungeon && ZoneManager.Instance.CurrentMap.NoSwitching)
+                    canSwitch = false;
+                if (inGround && ZoneManager.Instance.CurrentGround.NoSwitching)
+                    canSwitch = false;
+                if (DataManager.Instance.Save.NoSwitching)
+                    canSwitch = false;
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction, canSwitch, canSwitch ? Color.White : Color.Red));
+            }
 
             bool canSendHome = canAct;
             if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot].IsPartner)
