@@ -326,8 +326,8 @@ namespace RogueEssence.Examples
             CoreDllMap.Init();
             //Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
             //CoreDllMap.Register(fnaAssembly);
-            ////load SDL first before FNA3D to sidestep multiple dylibs problem
-            //SDL.SDL_GetPlatform();
+            //load SDL first before FNA3D to sidestep multiple dylibs problem
+            SDL.SDL_GetPlatform();
         }
 
         public static void InitDataEditor()
