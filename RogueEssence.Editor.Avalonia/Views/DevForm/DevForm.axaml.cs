@@ -225,6 +225,11 @@ namespace RogueEssence.Dev.Views
 
         public void OpenGround()
         {
+            ExecuteOrInvoke(openGround);
+        }
+
+        private void openGround()
+        {
             GroundEditForm = new GroundEditForm();
             ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel();
             GroundEditForm.DataContext = vm;
@@ -233,6 +238,11 @@ namespace RogueEssence.Dev.Views
         }
 
         public void OpenMap()
+        {
+            ExecuteOrInvoke(openMap);
+        }
+
+        public void openMap()
         {
             MapEditForm = new MapEditForm();
             ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
@@ -283,7 +293,7 @@ namespace RogueEssence.Dev.Views
             // However, this is only happening on linux.  Why not windows and mac?
             // With Mac, cocoa can ONLY start the game window if it's on the main thread. Weird...
 
-            if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
+            if (!OperatingSystem.IsLinux())
                 LoadGameDelegate();
             else
             {
@@ -295,7 +305,7 @@ namespace RogueEssence.Dev.Views
 
         public static void ExecuteOrInvoke(Action action)
         {
-            if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
+            if (!OperatingSystem.IsLinux())
                 action();
             else
                 Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Background);
@@ -428,13 +438,10 @@ namespace RogueEssence.Dev.Views
             //https://jimrich.sk/environment-specialfolder-on-windows-linux-and-os-x/
             //MacOS actually uses a different folder for config data, traditionally
             //I guess it's the odd one out...
-            switch (CoreDllMap.OS)
-            {
-                case "osx":
-                    return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
-                default:
-                    return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
-            }
+            if (OperatingSystem.IsMacOS())
+                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
+            else
+                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
         }
     }
 }

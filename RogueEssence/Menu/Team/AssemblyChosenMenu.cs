@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -29,7 +30,15 @@ namespace RogueEssence.Menu
             }
             else if (!baseMenu.ChoosingLeader(teamSlot))
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction));
+                bool canSwitch = true;
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance && ZoneManager.Instance.CurrentMap.NoSwitching)
+                    canSwitch = false;
+                if (GameManager.Instance.CurrentScene == GroundScene.Instance && ZoneManager.Instance.CurrentGround.NoSwitching)
+                    canSwitch = false;
+                if (DataManager.Instance.Save.NoSwitching)
+                    canSwitch = false;
+                if (canSwitch)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction));
                 if (!baseMenu.ChoosingStuckMember(teamSlot))
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
             }
