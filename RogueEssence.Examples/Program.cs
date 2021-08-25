@@ -319,11 +319,9 @@ namespace RogueEssence.Examples
             }
         }
 
-        // TheSpyDog's branch on resolving dllmap for DotNetCore
-        // https://github.com/FNA-XNA/FNA/pull/315
         public static void InitDllMap()
         {
-            CoreDllMap.Init();
+            //CoreDllMap.Init();
             //Assembly fnaAssembly = Assembly.GetAssembly(typeof(Game));
             //CoreDllMap.Register(fnaAssembly);
             //load SDL first before FNA3D to sidestep multiple dylibs problem
