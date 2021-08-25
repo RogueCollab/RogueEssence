@@ -225,6 +225,11 @@ namespace RogueEssence.Dev.Views
 
         public void OpenGround()
         {
+            ExecuteOrInvoke(openGround);
+        }
+
+        private void openGround()
+        {
             GroundEditForm = new GroundEditForm();
             ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel();
             GroundEditForm.DataContext = vm;
@@ -233,6 +238,11 @@ namespace RogueEssence.Dev.Views
         }
 
         public void OpenMap()
+        {
+            ExecuteOrInvoke(openMap);
+        }
+
+        public void openMap()
         {
             MapEditForm = new MapEditForm();
             ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();

@@ -125,7 +125,8 @@ namespace RogueEssence.Ground
                     ent.DoCleanup();
             }
 
-            LuaEngine.Instance.CleanMapScript(AssetName);
+            if (AssetName != "")
+                LuaEngine.Instance.CleanMapScript(AssetName);
         }
 
         /// <summary>
@@ -870,14 +871,17 @@ namespace RogueEssence.Ground
         public void LoadScriptEvents()
         {
             scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
-            for (int ii = 0; ii < (int)LuaEngine.EMapCallbacks.Invalid; ii++)
+            if (!String.IsNullOrEmpty(AssetName))
             {
-                LuaEngine.EMapCallbacks ev = (LuaEngine.EMapCallbacks)ii;
-                string callback = LuaEngine.MakeMapScriptCallbackName(AssetName, ev);
-                if (!LuaEngine.Instance.DoesFunctionExists(callback))
-                    continue;
-                DiagManager.Instance.LogInfo(String.Format("GroundMap.LoadScriptEvents(): Added event {0} to map {1}!", ev.ToString(), AssetName));
-                scriptEvents[ev] = new ScriptEvent(callback);
+                for (int ii = 0; ii < (int)LuaEngine.EMapCallbacks.Invalid; ii++)
+                {
+                    LuaEngine.EMapCallbacks ev = (LuaEngine.EMapCallbacks)ii;
+                    string callback = LuaEngine.MakeMapScriptCallbackName(AssetName, ev);
+                    if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                        continue;
+                    DiagManager.Instance.LogInfo(String.Format("GroundMap.LoadScriptEvents(): Added event {0} to map {1}!", ev.ToString(), AssetName));
+                    scriptEvents[ev] = new ScriptEvent(callback);
+                }
             }
         }
 
