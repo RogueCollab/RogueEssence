@@ -216,6 +216,9 @@ namespace RogueEssence.Dev.ViewModels
 
         private void MassImport(string currentPath, int tileSize)
         {
+            if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN))))
+                Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN)));
+
             ImportHelper.ImportAllTiles(currentPath, PathMod.HardMod(GraphicsManager.TILE_PATTERN), true, true, tileSize);
 
             GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
@@ -245,6 +248,9 @@ namespace RogueEssence.Dev.ViewModels
         {
             string sheetName = Path.GetFileNameWithoutExtension(currentPath);
             string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+
+            if (!Directory.Exists(Path.GetDirectoryName(outputFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
 
             //load into tilesets
             using (BaseSheet tileset = BaseSheet.Import(currentPath))
