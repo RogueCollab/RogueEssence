@@ -376,21 +376,47 @@ namespace RogueEssence.Script
         public LuaFunction CheckLevelSkills;
         public Coroutine _CheckLevelSkills(Character chara, int oldLevel)
         {
-            return new Coroutine(checkLevelSkills(chara, oldLevel));
+            return new Coroutine(__CheckLevelSkills(chara, oldLevel));
         }
 
-        private IEnumerator<YieldInstruction> checkLevelSkills(Character chara, int oldLevel)
+        private IEnumerator<YieldInstruction> __CheckLevelSkills(Character chara, int oldLevel)
         {
             DungeonScene.GetLevelSkills(chara, oldLevel);
 
             foreach (int skill in DungeonScene.GetLevelSkills(chara, oldLevel))
             {
                 int learn = -1;
-
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                if (DataManager.Instance.CurrentReplay != null)
+                    learn = DataManager.Instance.CurrentReplay.ReadUI();
+                else
+                {
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                    DataManager.Instance.LogUIPlay(learn);
+                }
                 if (learn > -1)
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
             }
+        }
+
+
+        public LuaFunction TryLearnSkill;
+        public Coroutine _TryLearnSkill(Character chara, int skill)
+        {
+            return new Coroutine(__TryLearnSkill(chara, skill));
+        }
+
+        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, int skill)
+        {
+            int learn = -1;
+            if (DataManager.Instance.CurrentReplay != null)
+                learn = DataManager.Instance.CurrentReplay.ReadUI();
+            else
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                DataManager.Instance.LogUIPlay(learn);
+            }
+            if (learn > -1)
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
         }
 
         public void LearnSkill(Character chara, int skillNum)
@@ -790,6 +816,7 @@ namespace RogueEssence.Script
         public override void SetupLuaFunctions(LuaEngine state)
         {
             CheckLevelSkills = state.RunString("return function(_,chara, oldLevel) return coroutine.yield(GAME:_CheckLevelSkills(chara, oldLevel)) end").First() as LuaFunction;
+            TryLearnSkill = state.RunString("return function(_,chara, skill) return coroutine.yield(GAME:_TryLearnSkill(chara, skill)) end").First() as LuaFunction;
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;
