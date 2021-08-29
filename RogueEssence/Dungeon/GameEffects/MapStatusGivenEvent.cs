@@ -21,6 +21,7 @@ namespace RogueEssence.Dungeon
 
         public MapStatusScriptEvent() { Script = ""; ArgTable = "{}"; }
         public MapStatusScriptEvent(string script) { Script = script; ArgTable = "{}"; }
+        public MapStatusScriptEvent(string script, string argTable) { Script = script; ArgTable = argTable; }
         protected MapStatusScriptEvent(MapStatusScriptEvent other)
         {
             Script = other.Script;

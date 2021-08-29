@@ -20,6 +20,7 @@ namespace RogueEssence.Dungeon
 
         public RefreshScriptEvent() { Script = ""; ArgTable = "{}"; }
         public RefreshScriptEvent(string script) { Script = script; ArgTable = "{}"; }
+        public RefreshScriptEvent(string script, string argTable) { Script = script; ArgTable = argTable; }
         protected RefreshScriptEvent(RefreshScriptEvent other)
         {
             Script = other.Script;
