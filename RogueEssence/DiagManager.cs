@@ -27,6 +27,7 @@ namespace RogueEssence
 
         public delegate void LogAdded(string message);
 
+        private bool inError;
         private LogAdded errorAddedEvent;
 
         public SerializationBinder UpgradeBinder { get; set; }
@@ -165,40 +166,46 @@ namespace RogueEssence
         }
 
 
-        public void LogError(Exception exception, bool signal = true)
+        public void LogError(Exception exception)
         {
-
+            LogError(exception, true);
+        }
+        public void LogError(Exception exception, bool signal)
+        {
             lock (lockObj)
             {
-                if (errorAddedEvent != null && signal)
-                    errorAddedEvent(exception.Message);
-
-                StringBuilder errorMsg = new StringBuilder();
-                errorMsg.Append(String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), exception.Message));
-                errorMsg.Append("\n");
-                Exception innerException = exception;
-                int depth = 0;
-                while (innerException != null)
+                if (inError)
+                    throw new InvalidOperationException("Attempted to log an error when within an error.", exception);
+                inError = true;
+                try
                 {
-                    errorMsg.Append("Exception Depth: " + depth);
+                    StringBuilder errorMsg = new StringBuilder();
+                    errorMsg.Append(String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), exception.Message));
                     errorMsg.Append("\n");
+                    Exception innerException = exception;
+                    int depth = 0;
+                    while (innerException != null)
+                    {
+                        errorMsg.Append("Exception Depth: " + depth);
+                        errorMsg.Append("\n");
 
-                    errorMsg.Append(innerException.ToString());
-                    errorMsg.Append("\n\n");
+                        errorMsg.Append(innerException.ToString());
+                        errorMsg.Append("\n\n");
 
-                    innerException = innerException.InnerException;
-                    depth++;
-                }
+                        innerException = innerException.InnerException;
+                        depth++;
+                    }
 
 
 #if DEBUG
-                Debug.WriteLine(errorMsg);
+                    Debug.WriteLine(errorMsg);
 #else
-                Console.WriteLine(errorMsg);
+                    Console.WriteLine(errorMsg);
 #endif
 
-                try
-                {
+                    if (errorAddedEvent != null && signal)
+                        errorAddedEvent(exception.Message);
+
 
                     string filePath = LOG_PATH + String.Format("{0:yyyy-MM-dd}", DateTime.Now) + ".txt";
 
@@ -209,6 +216,7 @@ namespace RogueEssence
                 {
                     Debug.Write(ex.ToString());
                 }
+                inError = false;
             }
         }
 

@@ -100,11 +100,18 @@ namespace RogueEssence
 
         public void SE(string newSE)
         {
-            if (DataManager.Instance.Loading != DataManager.LoadMode.None)
-                return;
+            try
+            {
+                if (DataManager.Instance.Loading != DataManager.LoadMode.None)
+                    return;
 
-            if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
-                SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), 1);
+                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                    SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), 1);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
@@ -122,11 +129,18 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 yield break;
 
-            if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+            int pauseFrames = 0;
+            try
             {
-                int pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
-                yield return new WaitForFrames(pauseFrames);
+                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                    pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
             }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            if (pauseFrames > 0)
+                yield return new WaitForFrames(pauseFrames);
         }
 
         public void Fanfare(string newSE)
@@ -1156,13 +1170,14 @@ namespace RogueEssence
         private void OnError(string msg)
         {
             totalErrorCount++;
-            if (framesErrored == 0)
-                SE("Menu/Error");
+            bool ping = (framesErrored == 0);
             if (!thisFrameErrored)
                 framesErrored++;
             thisFrameErrored = true;
             if (framesErrored > 300)
                 GameBase.CurrentPhase = GameBase.LoadPhase.Error;
+            if (ping)
+                SE("Menu/Error");
         }
 
         public IEnumerator<YieldInstruction> LogSkippableMsg(string msg)
