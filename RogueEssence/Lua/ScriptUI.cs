@@ -550,13 +550,19 @@ namespace RogueEssence.Script
 
         public void TutorTeamMenu()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
                 //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new TutorTeamMenu(-1,
-                    (int teamSlot) => { m_choiceresult = teamSlot; },
-                    () => { });
+                    (int teamSlot) => { m_choiceresult = teamSlot; DataManager.Instance.LogUIPlay(teamSlot); },
+                    () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
@@ -567,14 +573,19 @@ namespace RogueEssence.Script
 
         public void RelearnMenu(Character chara)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
-                //TODO: allow this to work in dungeon mode by skipping replays
                 List<int> forgottenSkills = chara.GetRelearnableSkills();
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
-                (int skillNum) => { m_choiceresult = skillNum; },
-                () => { });
+                (int skillNum) => { m_choiceresult = skillNum; DataManager.Instance.LogUIPlay(skillNum); },
+                () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
@@ -585,13 +596,18 @@ namespace RogueEssence.Script
 
         public void LearnMenu(Character chara, int moveNum)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
-                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SkillReplaceMenu(chara, moveNum,
-                        (int slot) => { m_choiceresult = slot; },
-                        () => { });
+                        (int slot) => { m_choiceresult = slot; DataManager.Instance.LogUIPlay(slot); },
+                        () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
@@ -602,13 +618,18 @@ namespace RogueEssence.Script
 
         public void ForgetMenu(Character chara)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
-                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SkillForgetMenu(chara,
-                        (int slot) => { m_choiceresult = slot; },
-                        () => { });
+                        (int slot) => { m_choiceresult = slot; DataManager.Instance.LogUIPlay(slot); },
+                        () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {

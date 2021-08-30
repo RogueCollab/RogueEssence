@@ -116,6 +116,9 @@ namespace RogueEssence.Dungeon
                 {
                     if (!character.Dead)
                     {
+                        DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts, character);
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStarts, character);
+
                         foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
                             effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStarts, character);
                     }

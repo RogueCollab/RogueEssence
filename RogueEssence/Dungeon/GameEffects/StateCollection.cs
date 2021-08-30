@@ -35,6 +35,14 @@ namespace RogueEssence.Dungeon
             return default;
         }
 
+        public T GetWithDefault(Type type)
+        {
+            T state;
+            if (TryGet(type, out state))
+                return state;
+            return default;
+        }
+
         public override string ToString()
         {
             if (Count == 0)

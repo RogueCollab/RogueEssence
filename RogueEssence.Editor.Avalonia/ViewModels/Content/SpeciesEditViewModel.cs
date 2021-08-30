@@ -120,6 +120,8 @@ namespace RogueEssence.Dev.ViewModels
             //get current sprite
             MonsterID currentForm = chosenMonster.ID;
             string fileName = GetFilename(currentForm.Species);
+            if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
             if (!chosenMonster.Filled)
             {
@@ -432,10 +434,14 @@ namespace RogueEssence.Dev.ViewModels
 
         private void MassImport(string currentPath)
         {
+            string assetPattern = PathMod.HardMod(GetPattern());
+            if (!Directory.Exists(Path.GetDirectoryName(assetPattern)))
+                Directory.CreateDirectory(Path.GetDirectoryName(assetPattern));
+
             if (checkSprites)
-                ImportHelper.ImportAllChars(currentPath, PathMod.HardMod(GetPattern()));
+                ImportHelper.ImportAllChars(currentPath, assetPattern);
             else
-                ImportHelper.ImportAllPortraits(currentPath, PathMod.HardMod(GetPattern()));
+                ImportHelper.ImportAllPortraits(currentPath, assetPattern);
 
             GraphicsManager.RebuildIndices(GetAssetType());
             GraphicsManager.ClearCaches(GetAssetType());
@@ -459,6 +465,8 @@ namespace RogueEssence.Dev.ViewModels
         private void Import(string currentPath, MonsterID currentForm)
         {
             string fileName = GetFilename(currentForm.Species);
+            if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
             //load data
             Dictionary<MonsterID, byte[]> data = LoadSpeciesData(currentForm.Species);
@@ -545,6 +553,9 @@ namespace RogueEssence.Dev.ViewModels
         private void Delete(MonsterID formdata)
         {
             string fileName = GetFilename(formdata.Species);
+            if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
             Dictionary<MonsterID, byte[]> data = LoadSpeciesData(formdata.Species);
 
             //delete sprite data

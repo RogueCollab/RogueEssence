@@ -20,6 +20,7 @@ namespace RogueEssence.Dungeon
 
         public SkillChangeScriptEvent() { Script = ""; ArgTable = "{}"; }
         public SkillChangeScriptEvent(string script) { Script = script; ArgTable = "{}"; }
+        public SkillChangeScriptEvent(string script, string argTable) { Script = script; ArgTable = argTable; }
         protected SkillChangeScriptEvent(SkillChangeScriptEvent other)
         {
             Script = other.Script;

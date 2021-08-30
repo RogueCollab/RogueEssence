@@ -21,6 +21,7 @@ namespace RogueEssence.Data
             return null;
         }
 
+        public StateCollection<UniversalState> UniversalStates;
         public PriorityList<BattleEvent> BeforeTryActions;
         public PriorityList<BattleEvent> BeforeActions;
         public PriorityList<BattleEvent> OnActions;
@@ -56,6 +57,8 @@ namespace RogueEssence.Data
 
         public ActiveEffect()
         {
+            UniversalStates = new StateCollection<UniversalState>();
+
             BeforeTryActions = new PriorityList<BattleEvent>();
             BeforeActions = new PriorityList<BattleEvent>();
             OnActions = new PriorityList<BattleEvent>();
@@ -90,6 +93,9 @@ namespace RogueEssence.Data
 
         public void AddOther(ActiveEffect other)
         {
+            foreach (UniversalState state in other.UniversalStates)
+                UniversalStates.Set(state);
+
             addOtherPriorityList(BeforeTryActions, other.BeforeTryActions);
             addOtherPriorityList(BeforeActions, other.BeforeActions);
             addOtherPriorityList(OnActions, other.OnActions);

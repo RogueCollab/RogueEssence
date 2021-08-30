@@ -22,6 +22,7 @@ namespace RogueEssence.Dungeon
 
         public SingleCharScriptEvent() { Script = ""; ArgTable = "{}"; }
         public SingleCharScriptEvent(string script) { Script = script; ArgTable = "{}"; }
+        public SingleCharScriptEvent(string script, string argTable) { Script = script; ArgTable = argTable; }
         protected SingleCharScriptEvent(SingleCharScriptEvent other)
         {
             Script = other.Script;

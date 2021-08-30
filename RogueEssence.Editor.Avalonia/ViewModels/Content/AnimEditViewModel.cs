@@ -241,7 +241,9 @@ namespace RogueEssence.Dev.ViewModels
 
         private void MassImport(string currentPath)
         {
-            ImportHelper.ImportAllNameDirs(currentPath, PathMod.HardMod(GetPattern()));
+            if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(assetPattern))))
+                Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(assetPattern)));
+            ImportHelper.ImportAllNameDirs(currentPath, PathMod.HardMod(assetPattern));
 
             GraphicsManager.RebuildIndices(assetType);
             GraphicsManager.ClearCaches(assetType);
@@ -257,10 +259,14 @@ namespace RogueEssence.Dev.ViewModels
         {
             string animName = Path.GetFileNameWithoutExtension(currentPath);
             string[] components = animName.Split('.');
+            string destFile = PathMod.HardMod(String.Format(assetPattern, components[0]));
+            if (!Directory.Exists(Path.GetDirectoryName(destFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+
             //write sprite data
             using (DirSheet sheet = DirSheet.Import(currentPath))
             {
-                using (FileStream stream = File.OpenWrite(PathMod.HardMod(String.Format(assetPattern, components[0]))))
+                using (FileStream stream = File.OpenWrite(destFile))
                 {
                     //save data
                     using (BinaryWriter writer = new BinaryWriter(stream))
@@ -345,27 +351,6 @@ namespace RogueEssence.Dev.ViewModels
                     DungeonScene.Instance.DebugAsset = assetType;
                     DungeonScene.Instance.DebugAnim = anims[Anims.InternalIndex];
                 }
-            }
-        }
-
-
-
-        private string GetPattern()
-        {
-            switch (assetType)
-            {
-                case GraphicsManager.AssetType.VFX:
-                    return GraphicsManager.PARTICLE_PATTERN;
-                case GraphicsManager.AssetType.Icon:
-                    return GraphicsManager.ICON_PATTERN;
-                case GraphicsManager.AssetType.Object:
-                    return GraphicsManager.OBJECT_PATTERN;
-                case GraphicsManager.AssetType.Item:
-                    return GraphicsManager.ITEM_PATTERN;
-                case GraphicsManager.AssetType.BG:
-                    return GraphicsManager.BG_PATTERN;
-                default:
-                    throw new InvalidOperationException();
             }
         }
     }

@@ -145,9 +145,9 @@ namespace RogueEssence
             }
             return key;
         }
-        public static string ToLocal<T>(this T value, string extra) where T : Enum
+        public static string ToLocal(this Enum value, string extra)
         {
-            string key = "_ENUM_" + typeof(T).Name + "_" + value;
+            string key = "_ENUM_" + value.GetType().Name + "_" + value;
             if (extra != null)
                 key += "_" + extra;
 
@@ -162,7 +162,7 @@ namespace RogueEssence
                 return Regex.Unescape(text);
             return value.ToString();
         }
-        public static string ToLocal<T>(this T value) where T : Enum
+        public static string ToLocal(this Enum value)
         {
             return value.ToLocal(null);
         }
