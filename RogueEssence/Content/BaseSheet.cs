@@ -190,6 +190,16 @@ namespace RogueEssence.Content
             tempTex.Dispose();
         }
 
+
+        public static void ExportColors(string fileName, Color[] colors, Point imgSize)
+        {
+            Texture2D animImg = new Texture2D(device, imgSize.X, imgSize.Y);
+            animImg.SetData<Color>(0, null, colors, 0, colors.Length);
+            using (Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                ExportTex(stream, animImg);
+            animImg.Dispose();
+        }
+
         public Rectangle GetCoveredRect(Rectangle bounds)
         {
             return GetCoveredRect(baseTexture, bounds);
@@ -302,9 +312,18 @@ namespace RogueEssence.Content
             }
         }
 
+        public static Color[] GetData(BaseSheet source)
+        {
+            return GetData(source.baseTexture, 0, 0, source.Width, source.Height);
+        }
+
         public static Color[] GetData(BaseSheet source, int srcPx, int srcPy, int srcW, int srcH)
         {
             return GetData(source.baseTexture, srcPx, srcPy, srcW, srcH);
+        }
+        public static Color[] GetData(Texture2D source)
+        {
+            return GetData(source, 0, 0, source.Width, source.Height);
         }
 
         public static Color[] GetData(Texture2D source, int srcPx, int srcPy, int srcW, int srcH)

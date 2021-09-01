@@ -35,10 +35,14 @@ namespace RogueEssence.Dev.ViewModels
             editForm.Show();
         }
 
-        //public void btnEditBeams_Click()
-        //{
-
-        //}
+        public void btnEditBeams_Click()
+        {
+            BeamEditViewModel mv = new BeamEditViewModel();
+            Views.AnimEditForm editForm = new Views.AnimEditForm();
+            mv.LoadDataEntries(GraphicsManager.AssetType.VFX, GraphicsManager.BEAM_PATTERN, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
 
         public void btnEditBGs_Click()
         {

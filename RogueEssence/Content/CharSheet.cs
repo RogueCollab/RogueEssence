@@ -931,7 +931,7 @@ namespace RogueEssence.Content
                     setOffsetsToRGB(particleColors, imgSize.X, tilePos + offsets.RightHand, new Color(0, 0, 255, 255));
                 }
 
-                exportColors(baseDirectory + "Offsets.png", particleColors, imgSize);
+                ExportColors(baseDirectory + "Offsets.png", particleColors, imgSize);
 
                 XmlDocument doc = new XmlDocument();
                 XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
@@ -1132,9 +1132,9 @@ namespace RogueEssence.Content
                     }
                     string name = GraphicsManager.Actions[key].Name;
 
-                    exportColors(baseDirectory + name + "-Anim.png", animColors, imgSize);
-                    exportColors(baseDirectory + name + "-Offsets.png", particleColors, imgSize);
-                    exportColors(baseDirectory + name + "-Shadow.png", shadowColors, imgSize);
+                    ExportColors(baseDirectory + name + "-Anim.png", animColors, imgSize);
+                    ExportColors(baseDirectory + name + "-Offsets.png", particleColors, imgSize);
+                    ExportColors(baseDirectory + name + "-Shadow.png", shadowColors, imgSize);
 
                 }
 
@@ -1190,15 +1190,6 @@ namespace RogueEssence.Content
 
                 doc.Save(baseDirectory + "AnimData.xml");
             }
-        }
-
-        private static void exportColors(string fileName, Color[] colors, Point imgSize)
-        {
-            Texture2D animImg = new Texture2D(device, imgSize.X, imgSize.Y);
-            animImg.SetData<Color>(0, null, colors, 0, colors.Length);
-            using (Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                ExportTex(stream, animImg);
-            animImg.Dispose();
         }
 
 

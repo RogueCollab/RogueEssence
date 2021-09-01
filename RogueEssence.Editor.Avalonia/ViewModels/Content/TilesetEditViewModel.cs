@@ -107,6 +107,36 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        public async void mnuMassExport_Click()
+        {
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            string folder = await openFileDialog.ShowAsync(parent);
+
+            if (folder != "")
+            {
+                DevForm.SetConfig("TilesetDir", folder);
+                CachedPath = folder + "/";
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        MassExport(CachedPath);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
         public async void mnuReIndex_Click()
         {
             try
@@ -195,6 +225,33 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public async void btnExport_Click()
+        {
+            //get current sprite
+            string animData = tileIndices[Tilesets.InternalIndex];
+
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Directory = folderName;
+
+            FileDialogFilter filter = new FileDialogFilter();
+            filter.Name = "PNG Files";
+            filter.Extensions.Add("png");
+            saveFileDialog.Filters.Add(filter);
+
+            string folder = await saveFileDialog.ShowAsync(parent);
+
+            if (folder != null)
+            {
+                DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+                //CachedPath = folder;
+                lock (GameBase.lockObj)
+                    Export(folder, animData);
+            }
+        }
+
 
         public async void btnDelete_Click()
         {
@@ -269,6 +326,25 @@ namespace RogueEssence.Dev.ViewModels
 
             //recompute
             reloadFullList();
+        }
+
+        private void MassExport(string currentPath)
+        {
+            string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(GraphicsManager.TILE_PATTERN), String.Format(Path.GetFileName(GraphicsManager.TILE_PATTERN), "*"));
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                Export(currentPath + filename, filename);
+            }
+        }
+
+        private void Export(string currentPath, string anim)
+        {
+            string animPath = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, anim));
+            ImportHelper.ExportTileSheet(animPath, currentPath);
+
+            DiagManager.Instance.LogInfo("Frames from:\n" +
+                anim + "\nhave been exported to:" + currentPath);
         }
 
 
