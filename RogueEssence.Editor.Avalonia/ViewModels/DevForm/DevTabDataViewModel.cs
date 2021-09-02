@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Script;
@@ -51,7 +54,122 @@ namespace RogueEssence.Dev.ViewModels
         }
         public void btnEditAutoTile_Click()
         {
-            OpenList(DataManager.DataType.AutoTile, DataManager.Instance.GetAutoTile, () => { return new AutoTileData(); });
+            DataManager.DataType dataType = DataManager.DataType.AutoTile;
+            GetEntry entryOp = DataManager.Instance.GetAutoTile;
+            CreateEntry createOp = () => { return new AutoTileData(); };
+
+            lock (GameBase.lockObj)
+            {
+                DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
+                DataOpContainer reindexOp = createReindexOp(dataType, choices);
+
+                DataOpContainer.TaskAction importAction = async () =>
+                {
+                    //remember addresses in registry
+                    string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+                    //open window to choose directory
+                    OpenFolderDialog openFileDialog = new OpenFolderDialog();
+                    openFileDialog.Directory = folderName;
+
+                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                    string folder = await openFileDialog.ShowAsync(form);
+
+                    if (folder != "")
+                    {
+                        string animName = Path.GetFileNameWithoutExtension(folder);
+
+                        bool conflict = false;
+                        foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+                        {
+                            if (name.ToLower() == animName.ToLower())
+                            {
+                                conflict = true;
+                                break;
+                            }
+                        }
+
+                        if (conflict)
+                        {
+                            MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Tileset already exists.",
+                                MessageBox.MessageBoxButtons.YesNo);
+                            if (result == MessageBox.MessageBoxResult.No)
+                                return;
+                        }
+
+                        DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+                        try
+                        {
+                            lock (GameBase.lockObj)
+                            {
+                                string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
+                                DtefImportHelper.ImportDtef(folder, destFile);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            DiagManager.Instance.LogError(ex, false);
+                            await MessageBox.Show(form, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                            return;
+                        }
+                    }
+                };
+                DataOpContainer importOp = new DataOpContainer("Import DTEF", importAction);
+
+
+                DataOpContainer.TaskAction exportAction = async () =>
+                {
+                    if (choices.SearchList.InternalIndex > -1)
+                    {
+                        //remember addresses in registry
+                        string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+                        //open window to choose directory
+                        OpenFolderDialog openFileDialog = new OpenFolderDialog();
+                        openFileDialog.Directory = folderName;
+
+                        DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                        string folder = await openFileDialog.ShowAsync(form);
+
+                        if (folder != "")
+                        {
+                            DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+                            lock (GameBase.lockObj)
+                            {
+                                int entryIndex = choices.SearchList.InternalIndex;
+                                DtefImportHelper.ExportDtefTile(entryIndex, folder);
+                            }
+                        }
+                    }
+                };
+                DataOpContainer exportOp = new DataOpContainer("Export as DTEF", exportAction);
+                choices.SetOps(reindexOp/*, importOp, exportOp*/);
+
+                DataListForm dataListForm = new DataListForm
+                {
+                    DataContext = choices,
+                };
+                dataListForm.Show();
+            }
+        }
+
+        private List<string> getDtefConflictSheets(string animName)
+        {
+            List<string> conflicts = new List<string>();
+
+            foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+            {
+                foreach (string suffix in DtefImportHelper.TileTitles)
+                {
+                    string subName = animName + suffix;
+                    if (name.ToLower() == subName.ToLower())
+                        conflicts.Add(name);
+                }
+            }
+
+            return conflicts;
         }
 
         public void btnEditEmote_Click()
@@ -92,54 +210,57 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                DataListFormViewModel choices = new DataListFormViewModel();
-                choices.Name = dataType.ToString();
-                string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                choices.SetEntries(entries);
+                DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
+                DataOpContainer reindexOp = createReindexOp(dataType, choices);
+                choices.SetOps(reindexOp);
 
-                choices.SelectedOKEvent += () =>
+                Views.DataListForm dataListForm = new Views.DataListForm
                 {
-                    if (choices.SearchList.InternalIndex > -1)
-                    {
-                        lock (GameBase.lockObj)
-                        {
-                            int entryNum = choices.SearchList.InternalIndex;
-                            IEntryData data = entryOp(entryNum);
-
-                            Views.DataEditForm editor = new Views.DataEditForm();
-                            editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
-                            DataEditor.LoadDataControls(data, editor.ControlPanel);
-                            editor.SelectedOKEvent += () =>
-                            {
-                                lock (GameBase.lockObj)
-                                {
-                                    object obj = data;
-                                    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                                    DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
-
-                                    string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
-                                    choices.ModifyEntry(entryNum, newName);
-                                    editor.Close();
-                                }
-                            };
-                            editor.SelectedCancelEvent += () =>
-                            {
-                                editor.Close();
-                            };
-
-                            editor.Show();
-                        }
-                    }
+                    DataContext = choices,
                 };
-                choices.SelectedAddEvent += () =>
+                dataListForm.Show();
+            }
+        }
+
+        private DataOpContainer createReindexOp(DataManager.DataType dataType, DataListFormViewModel choices)
+        {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            DataOpContainer.TaskAction reindexAction = async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                lock (GameBase.lockObj)
+                {
+                    DevHelper.RunIndexing(dataType);
+                    DevHelper.RunExtraIndexing(dataType);
+                    DataManager.Instance.LoadIndex(dataType);
+                    DataManager.Instance.LoadUniversalData();
+                    DataManager.Instance.ClearCache(dataType);
+                    DiagManager.Instance.DevEditor.ReloadData(dataType);
+                    string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                    choices.SetEntries(entries);
+                }
+            };
+            return new DataOpContainer("Re-Index", reindexAction);
+        }
+
+        private DataListFormViewModel createChoices(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
+        {
+            DataListFormViewModel choices = new DataListFormViewModel();
+            choices.Name = dataType.ToString();
+            string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+            choices.SetEntries(entries);
+
+            choices.SelectedOKEvent += () =>
+            {
+                if (choices.SearchList.InternalIndex > -1)
                 {
                     lock (GameBase.lockObj)
                     {
-                        int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
-                        IEntryData data = createOp();
+                        int entryNum = choices.SearchList.InternalIndex;
+                        IEntryData data = entryOp(entryNum);
 
-                        Views.DataEditForm editor = new Views.DataEditForm();
-                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
+                        DataEditForm editor = new DataEditForm();
+                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += () =>
                         {
@@ -147,11 +268,10 @@ namespace RogueEssence.Dev.ViewModels
                             {
                                 object obj = data;
                                 DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                                data = (IEntryData)obj;
                                 DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 
                                 string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
-                                choices.AddEntry(newName);
+                                choices.ModifyEntry(entryNum, newName);
                                 editor.Close();
                             }
                         };
@@ -162,29 +282,41 @@ namespace RogueEssence.Dev.ViewModels
 
                         editor.Show();
                     }
-                };
-
-                choices.SelectedReindexEvent += () =>
+                }
+            };
+            choices.SelectedAddEvent += () =>
+            {
+                lock (GameBase.lockObj)
                 {
-                    lock (GameBase.lockObj)
+                    int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
+                    IEntryData data = createOp();
+
+                    DataEditForm editor = new DataEditForm();
+                    editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
+                    DataEditor.LoadDataControls(data, editor.ControlPanel);
+                    editor.SelectedOKEvent += () =>
                     {
-                        DevHelper.RunIndexing(dataType);
-                        DevHelper.RunExtraIndexing(dataType);
-                        DataManager.Instance.LoadIndex(dataType);
-                        DataManager.Instance.LoadUniversalData();
-                        DataManager.Instance.ClearCache(dataType);
-                        DiagManager.Instance.DevEditor.ReloadData(dataType);
-                        string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                        choices.SetEntries(entries);
-                    }
-                };
+                        lock (GameBase.lockObj)
+                        {
+                            object obj = data;
+                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                            data = (IEntryData)obj;
+                            DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 
-                Views.DataListForm dataListForm = new Views.DataListForm
-                {
-                    DataContext = choices,
-                };
-                dataListForm.Show();
-            }
+                            string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                            choices.AddEntry(newName);
+                            editor.Close();
+                        }
+                    };
+                    editor.SelectedCancelEvent += () =>
+                    {
+                        editor.Close();
+                    };
+
+                    editor.Show();
+                }
+            };
+            return choices;
         }
 
 
