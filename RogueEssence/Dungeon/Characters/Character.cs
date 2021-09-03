@@ -22,12 +22,16 @@ namespace RogueEssence.Dungeon
         public const int MAX_SPEED = 3;
         public const int MIN_SPEED = -3;
 
+        public string ProxyName;
+
         public string Name
         {
             get
             {
+                if (ProxyName != "")
+                    return ProxyName;
                 if (MemberTeam is MonsterTeam)
-                    return GetFullFormName(Appearance);
+                    return GetFullFormName(CurrentForm);
                 else
                     return BaseName;
             }
@@ -242,6 +246,7 @@ namespace RogueEssence.Dungeon
                 Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic()));
 
             EquippedItem = new InvItem();
+            ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
             ProxyDef = -1;
@@ -292,6 +297,7 @@ namespace RogueEssence.Dungeon
                 Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
 
             EquippedItem = new InvItem();
+            ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
             ProxyDef = -1;
@@ -1323,6 +1329,7 @@ namespace RogueEssence.Dungeon
         //find a way to prevent repeated calls to this method in various other methods
         private void baseRefresh()
         {
+            ProxyName = "";
             ProxySprite = MonsterID.Invalid;
 
             CantWalk = false;
