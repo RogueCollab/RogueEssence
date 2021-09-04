@@ -141,7 +141,7 @@ namespace RogueEssence.Data
 
         public bool RecordingReplay { get { return (replayWriter != null); } }
         private BinaryWriter replayWriter;
-        private long replaySaveStatePos;
+        private long replayGroundStatePos;
         public ReplayData CurrentReplay;
         public LoadMode Loading;
 
@@ -779,7 +779,7 @@ namespace RogueEssence.Data
                     throw new Exception("Started a new play before closing the existing one!");
 
                 replayWriter = new BinaryWriter(new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None));
-                replaySaveStatePos = 0;
+                replayGroundStatePos = 0;
 
                 //write start info
                 Version version = Versioning.GetVersion();
@@ -806,16 +806,23 @@ namespace RogueEssence.Data
             }
         }
 
-        public void ResumePlay(string filePath, long statePos)
+        public void ResumePlay(ReplayData replay)
         {
             try
             {
                 if (replayWriter != null)
                     throw new Exception("Started a new play before closing the existing one!");
 
-                replayWriter = new BinaryWriter(new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None));
-                replaySaveStatePos = statePos;
-                replayWriter.BaseStream.Seek(0, SeekOrigin.End);
+                replayWriter = new BinaryWriter(new FileStream(replay.RecordDir, FileMode.Open, FileAccess.Write, FileShare.None));
+                replayGroundStatePos = replay.GroundsavePos;
+                if (replay.QuicksavePos > 0)
+                {
+                    replayWriter.BaseStream.SetLength(replay.QuicksavePos);
+                    replayWriter.BaseStream.Seek(replay.QuicksavePos, SeekOrigin.Begin);
+                    replayWriter.Flush();
+                }
+                else
+                    replayWriter.BaseStream.Seek(0, SeekOrigin.End);
             }
             catch (Exception ex)
             {
@@ -842,16 +849,35 @@ namespace RogueEssence.Data
             }
         }
 
+        public void LogGroundsave()
+        {
+            if (replayWriter != null)
+            {
+                try
+                {
+                    //erase the previous groundsave on this log
+                    if (replayGroundStatePos > 0)
+                        replayWriter.BaseStream.SetLength(replayGroundStatePos);
+
+                    //serialize the entire save data to mark the start of the dungeon
+                    replayWriter.Write((byte)ReplayData.ReplayLog.GroundsaveLog);
+                    SaveMainGameState(replayWriter);
+
+                    replayWriter.Flush();
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+        }
+
         public void LogQuicksave()
         {
             if (replayWriter != null)
             {
                 try
                 {
-                    //erase the previous quicksave on this log
-                    if (replaySaveStatePos > 0)
-                        replayWriter.BaseStream.SetLength(replaySaveStatePos);
-
                     //serialize the entire save data to mark the start of the dungeon
                     replayWriter.Write((byte)ReplayData.ReplayLog.QuicksaveLog);
                     SaveMainGameState(replayWriter);
@@ -939,7 +965,7 @@ namespace RogueEssence.Data
 
                     replayWriter.Close();
                     replayWriter = null;
-                    replaySaveStatePos = 0;
+                    replayGroundStatePos = 0;
                 }
 
                 if (fileName == null)
@@ -1156,8 +1182,9 @@ namespace RogueEssence.Data
                         {
                             try
                             {
+                                long savePos = reader.BaseStream.Position;
                                 byte type = reader.ReadByte();
-                                if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog)
+                                if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog || type == (byte)ReplayData.ReplayLog.GroundsaveLog)
                                 {
                                     if (quickload)
                                     {
@@ -1165,15 +1192,14 @@ namespace RogueEssence.Data
                                         replay.Actions.Clear();
                                         replay.UICodes.Clear();
                                     }
-                                    long newPos = -1;
-                                    if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
-                                        newPos = reader.BaseStream.Position;
                                     //read team info
                                     GameState gameState = ReadGameState(reader, false);
                                     replay.States.Add(gameState);
 
-                                    if (newPos > -1)
-                                        replay.QuicksavePos = newPos;
+                                    if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
+                                        replay.QuicksavePos = savePos;
+                                    else if (type == (byte)ReplayData.ReplayLog.GroundsaveLog)
+                                        replay.GroundsavePos = savePos;
                                 }
                                 else if (type == (byte)ReplayData.ReplayLog.GameLog)
                                 {

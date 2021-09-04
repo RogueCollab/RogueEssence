@@ -167,7 +167,7 @@ namespace RogueEssence.Menu
             else
             {
                 //no valid next dest happens when the player has saved in a ground map in the middle of an adventure
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
 
                 GameManager.Instance.SetFade(true, false);
@@ -210,13 +210,16 @@ namespace RogueEssence.Menu
             else
             {
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)
+                {
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
+                }
                 else
+                {
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
+                }
 
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
-
-                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
             }
         }

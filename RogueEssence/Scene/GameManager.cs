@@ -712,7 +712,7 @@ namespace RogueEssence
                     else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
                     {
                         //resuming a game that was just rescued
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Loading = DataManager.LoadMode.None;
                         SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
@@ -746,7 +746,7 @@ namespace RogueEssence
                         else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                         {
                             //the game accepts loading into a file that has been downed, or passed its section with nothing else
-                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                             DataManager.Instance.CurrentReplay = null;
 
                             SetFade(true, false);

@@ -342,7 +342,7 @@ namespace RogueEssence.Dungeon
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(DataManager.Instance.CurrentReplay.ReadCommand()));
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                     {
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                         DataManager.Instance.CurrentReplay = null;
 
                         GameManager.Instance.SetFade(true, false);
