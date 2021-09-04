@@ -29,11 +29,12 @@ namespace RogueEssence.Menu
                 }
                 else
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(null); }));
-                if (DataManager.Instance.Save.ActiveTeam.Name != "" && !inMod)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
             }
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
+
+            if ((DiagManager.Instance.DevMode || DataManager.Instance.Save != null) && !inMod)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
 
 
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)) || DataManager.Instance.Save != null || RecordHeaderData.LoadHighScores().Count > 0)
@@ -175,7 +176,7 @@ namespace RogueEssence.Menu
 
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                 {
-                    GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
+                    GameManager.Instance.MoveToScene(DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
                 }
                 else

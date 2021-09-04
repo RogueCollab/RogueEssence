@@ -1154,36 +1154,49 @@ namespace RogueEssence.Data
                             endPos = reader.BaseStream.Length;
                         while (reader.BaseStream.Position != endPos)
                         {
-                            byte type = reader.ReadByte();
-                            if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog)
+                            try
                             {
-                                if (quickload)
+                                byte type = reader.ReadByte();
+                                if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog)
                                 {
-                                    replay.States.Clear();
-                                    replay.Actions.Clear();
-                                    replay.UICodes.Clear();
+                                    if (quickload)
+                                    {
+                                        replay.States.Clear();
+                                        replay.Actions.Clear();
+                                        replay.UICodes.Clear();
+                                    }
+                                    long newPos = -1;
+                                    if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
+                                        newPos = reader.BaseStream.Position;
+                                    //read team info
+                                    GameState gameState = ReadGameState(reader, false);
+                                    replay.States.Add(gameState);
+
+                                    if (newPos > -1)
+                                        replay.QuicksavePos = newPos;
                                 }
-                                if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
-                                    replay.QuicksavePos = reader.BaseStream.Position;
-                                //read team info
-                                replay.States.Add(ReadGameState(reader, false));
+                                else if (type == (byte)ReplayData.ReplayLog.GameLog)
+                                {
+                                    GameAction play = new GameAction((GameAction.ActionType)reader.ReadByte(), (Dir8)reader.ReadByte());
+                                    int totalArgs = reader.ReadByte();
+                                    for (int ii = 0; ii < totalArgs; ii++)
+                                        play.AddArg(reader.ReadInt32());
+                                    replay.Actions.Add(play);
+                                }
+                                else if (type == (byte)ReplayData.ReplayLog.UILog)
+                                {
+                                    int totalCodes = reader.ReadByte();
+                                    for (int ii = 0; ii < totalCodes; ii++)
+                                        replay.UICodes.Add(reader.ReadInt32());
+                                }
+                                else
+                                    throw new Exception("Invalid Replay command type: " + type);
                             }
-                            else if (type == (byte)ReplayData.ReplayLog.GameLog)
+                            catch (Exception ex)
                             {
-                                GameAction play = new GameAction((GameAction.ActionType)reader.ReadByte(), (Dir8)reader.ReadByte());
-                                int totalArgs = reader.ReadByte();
-                                for (int ii = 0; ii < totalArgs; ii++)
-                                    play.AddArg(reader.ReadInt32());
-                                replay.Actions.Add(play);
+                                //In this case, the error will be presented clearly to the player.  Do not signal.
+                                DiagManager.Instance.LogError(ex, false);
                             }
-                            else if (type == (byte)ReplayData.ReplayLog.UILog)
-                            {
-                                int totalCodes = reader.ReadByte();
-                                for (int ii = 0; ii < totalCodes; ii++)
-                                    replay.UICodes.Add(reader.ReadInt32());
-                            }
-                            else
-                                throw new Exception("Invalid Replay command type: " + type);
                         }
                     }
                 }

@@ -34,7 +34,9 @@ namespace RogueEssence.Menu
             startChars = new List<int>();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
+                if (DiagManager.Instance.DevMode)
+                    startChars.Add(ii);
+                else if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
                     startChars.Add(ii);
                 else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
@@ -182,8 +184,7 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
-                save.DungeonUnlocks[ii] = DataManager.Instance.Save.DungeonUnlocks[ii];
+            save.DungeonUnlocks[chosenDest] = GameProgress.UnlockState.Discovered;
             DataManager.Instance.SetProgress(save);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);
