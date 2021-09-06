@@ -216,7 +216,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < dex.Forms.Count; ii++)
             {
                 //check to see if the form is allowed, or if it's only mid-dungeon
-                if (DiagManager.Instance.DevMode || !dex.Forms[ii].Temporary && dex.Forms[ii].Released)
+                if (!dex.Forms[ii].Temporary && (DiagManager.Instance.DevMode || dex.Forms[ii].Released))
                     forms.Add(ii);
             }
 
