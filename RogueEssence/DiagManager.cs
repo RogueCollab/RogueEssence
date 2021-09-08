@@ -316,6 +316,7 @@ namespace RogueEssence
                         settings.ActionButtons[index] = (Buttons)Enum.Parse(typeof(Buttons), key.InnerText);
                         index++;
                     }
+                    settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);
                 }
 
                 path = PathMod.NoMod("Contacts.xml");
@@ -426,6 +427,7 @@ namespace RogueEssence
                     appendConfigNode(xmldoc, actionButtons, "ActionButton", button.ToString());
                 }
                 docNode.AppendChild(actionButtons);
+                appendConfigNode(xmldoc, docNode, "InactiveInput", settings.InactiveInput.ToString());
 
                 xmldoc.Save(PathMod.NoMod("Gamepad.xml"));
             }

@@ -26,6 +26,7 @@ namespace RogueEssence
         public Keys[] DirKeys;
         public Keys[] ActionKeys;
         public Buttons[] ActionButtons;
+        public bool InactiveInput;
 
         public List<ServerInfo> ServerList;
         public List<ContactInfo> ContactList;
@@ -133,7 +134,7 @@ namespace RogueEssence
             PeerList = new List<PeerInfo>();
 
             DefaultControls(DirKeys, ActionKeys, ActionButtons);
-
+            InactiveInput = false;
         }
 
         public static void DefaultControls(Keys[] dirKeys, Keys[] actionKeys, Buttons[] actionButtons)
