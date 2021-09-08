@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         {
             base.LoadWindowControls(control, parent, name, type, attributes, obj);
 
-            LoadLabelControl(control, "Script Events:");
+            LoadLabelControl(control, "Script Events");
 
             Border border = new Border();
             border.BorderThickness = new Thickness(1);

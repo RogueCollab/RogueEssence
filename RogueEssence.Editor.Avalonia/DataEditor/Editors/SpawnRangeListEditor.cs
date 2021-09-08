@@ -26,7 +26,13 @@ namespace RogueEssence.Dev
             RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
 
             SpawnRangeListBox lbxValue = new SpawnRangeListBox();
-            lbxValue.MaxHeight = 260;
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 260;
+
             SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             if (rangeAtt != null)
             {
@@ -34,6 +40,7 @@ namespace RogueEssence.Dev
                 mv.Inclusive = rangeAtt.Inclusive;
             }
             lbxValue.DataContext = mv;
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
 
             //add lambda expression for editing a single element

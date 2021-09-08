@@ -24,9 +24,16 @@ namespace RogueEssence.Dev
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
 
             SpawnListBox lbxValue = new SpawnListBox();
-            lbxValue.MaxHeight = 220;
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 220;
+
             SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, SpawnListBoxViewModel.EditElementOp op) =>

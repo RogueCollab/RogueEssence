@@ -30,7 +30,13 @@ namespace RogueEssence.Dev
             RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
 
             RangeDictBox lbxValue = new RangeDictBox();
-            lbxValue.MaxHeight = 180;
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 180;
+
             RangeDictBoxViewModel mv = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             if (rangeAtt != null)
             {

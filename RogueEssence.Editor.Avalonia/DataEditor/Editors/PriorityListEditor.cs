@@ -25,8 +25,16 @@ namespace RogueEssence.Dev
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
 
             PriorityListBox lbxValue = new PriorityListBox();
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 220;
+
             PriorityListBoxViewModel mv = new PriorityListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
             lbxValue.DataContext = mv;
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
             mv.OnEditItem = (Priority priority, int index, object element, PriorityListBoxViewModel.EditElementOp op) =>

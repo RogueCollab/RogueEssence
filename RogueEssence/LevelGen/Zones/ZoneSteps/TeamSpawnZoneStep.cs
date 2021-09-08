@@ -16,6 +16,7 @@ namespace RogueEssence.LevelGen
 
         [SubGroup]
         [RangeBorder(0, true, true)]
+        [Dev.EditorHeight(0, 290)]
         public SpawnRangeList<TeamMemberSpawn> Spawns;
         [SubGroup]
         [RangeBorder(0, true, true)]
