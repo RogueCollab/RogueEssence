@@ -85,7 +85,7 @@ namespace RogueEssence.Dungeon
         public Dictionary<int, AutoTile> TextureMap;
         public int Element;
 
-        public MapBG Background;
+        public IBackgroundSprite Background;
 
 
         public Loc? ViewCenter;

@@ -28,6 +28,11 @@ namespace RogueEssence.Content
         Loc GetDrawSize();
     }
 
+    public interface IBackgroundSprite : IDrawableSprite
+    {
+
+    }
+
     public interface ICharSprite : IDrawableSprite
     {
         void GetCurrentSprite(out Dungeon.MonsterID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame);

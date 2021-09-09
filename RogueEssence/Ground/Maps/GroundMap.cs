@@ -30,7 +30,7 @@ namespace RogueEssence.Ground
         [NonSerialized]
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> scriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
 
-        public MapBG Background;
+        public IBackgroundSprite Background;
         public AutoTile BlankBG;
 
         public List<MapLayer> Layers;

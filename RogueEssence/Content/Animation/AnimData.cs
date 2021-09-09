@@ -119,6 +119,7 @@ namespace RogueEssence.Content
         /// </summary>
         public int FrameTime;
         public int StartFrame;
+        [Dev.SharedRow]
         public int EndFrame;
         public Dir8 AnimDir;
         public byte Alpha;
