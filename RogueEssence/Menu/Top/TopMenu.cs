@@ -44,7 +44,7 @@ namespace RogueEssence.Menu
             if (!inMod)
             {
                 string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-                if (DataManager.Instance.Save != null && modsPath.Length > 0)
+                if (DataManager.Instance.Save != null && ModsMenu.GetEligibleMods().Count > 0)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
             }
             else
