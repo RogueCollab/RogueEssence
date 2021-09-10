@@ -162,7 +162,7 @@ namespace RogueEssence.Ground
 
         public override void ForceState(string statename)
         {
-            throw new NotImplementedException();
+            CurrentState = statename;
         }
 
 

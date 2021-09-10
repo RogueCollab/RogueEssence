@@ -44,6 +44,15 @@ namespace RogueEssence.Ground
         }
 
         /// <summary>
+        /// Sets the AI state.
+        /// </summary>
+        /// <param name="ai"></param>
+        public virtual void SetAIState(string state)
+        {
+            AI.ForceState(state);
+        }
+
+        /// <summary>
         /// Whether the entity has currently an AI set!
         /// </summary>
         /// <returns></returns>
