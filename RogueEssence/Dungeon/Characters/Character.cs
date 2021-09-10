@@ -189,7 +189,20 @@ namespace RogueEssence.Dungeon
         public Dictionary<int, StatusEffect> StatusEffects;
 
         public bool MustHitNext;
+
+        /// <summary>
+        /// The number of turns this character must wait before being able to move again.
+        /// </summary>
         public int TurnWait;
+
+        /// <summary>
+        /// The number of turn tiers that this character has moved OR acted on.
+        /// </summary>
+        public int TiersUsed;
+
+        /// <summary>
+        /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
+        /// </summary>
         public bool TurnUsed;
         [NonSerialized]
         public List<StatusRef> StatusesTargetingThis;
@@ -208,7 +221,10 @@ namespace RogueEssence.Dungeon
         public bool StopItemAtHit;
         public bool MovesScrambled;
         public bool ChargeSaver;
-        //for charging attacks
+        
+        /// <summary>
+        /// Can only use basic attack as an action.
+        /// </summary>
         public bool AttackOnly;
         public bool EnemyOfFriend;
         //visibility and sight

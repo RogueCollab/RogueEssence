@@ -129,6 +129,7 @@ namespace RogueEssence.Dungeon
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
                 {
                     character.TurnWait--;
+                    character.TiersUsed = 0;
                     character.TurnUsed = false;//refresh turn-used immediately after
                 }
             }

@@ -520,6 +520,7 @@ namespace RogueEssence.Dungeon
         public void OnCharAdd(Character newChar)
         {
             newChar.TurnWait = 0;
+            newChar.TiersUsed = 0;
             newChar.TurnUsed = false;
         }
 
@@ -819,6 +820,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> MoveToUsableTurn(bool action, bool walked)
         {
             CurrentCharacter.TurnWait = (walked ? -CurrentCharacter.MovementSpeed : 0) + 1;
+            CurrentCharacter.TiersUsed++;
             CurrentCharacter.TurnUsed = action;
 
             if (!IsGameOver())
