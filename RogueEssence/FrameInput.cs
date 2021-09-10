@@ -95,86 +95,87 @@ namespace RogueEssence
             if (Active)
                 ReadDevInput(keyboard, mouse, keyActive, mouseActive);
 
-            if (Active || DiagManager.Instance.CurSettings.InactiveInput)
+            keyActive &= screenActive;
+            mouseActive &= screenActive;
+            bool controllerActive = gamePad.IsConnected;
+            controllerActive &= (Active || DiagManager.Instance.CurSettings.InactiveInput);
+
+            if (controllerActive)
             {
+                if (gamePad.ThumbSticks.Left.Length() > 0.25f)
+                    dirLoc = DirExt.ApproximateDir8(new Loc((int)(gamePad.ThumbSticks.Left.X * 100), (int)(-gamePad.ThumbSticks.Left.Y * 100))).GetLoc();
 
-                if (gamePad.IsConnected)
+                //if (gamePad.ThumbSticks.Right.Length() > 0.25f)
+                //    dirLoc = DirExt.ApproximateDir8(new Loc((int)(gamePad.ThumbSticks.Right.X * 100), (int)(-gamePad.ThumbSticks.Right.Y * 100))).GetLoc();
+
+
+                if (gamePad.IsButtonDown(Buttons.DPadDown))
+                    dirLoc = dirLoc + Dir4.Down.GetLoc();
+                if (gamePad.IsButtonDown(Buttons.DPadLeft))
+                    dirLoc = dirLoc + Dir4.Left.GetLoc();
+                if (gamePad.IsButtonDown(Buttons.DPadUp))
+                    dirLoc = dirLoc + Dir4.Up.GetLoc();
+                if (gamePad.IsButtonDown(Buttons.DPadRight))
+                    dirLoc = dirLoc + Dir4.Right.GetLoc();
+
+                //if (DiagManager.Instance.CurSettings.ControllerDisablesKeyboard)
+                //    keyActive = false;
+            }
+
+            if (keyActive)
+            {
+                if (dirLoc == Loc.Zero)
                 {
-                    if (gamePad.ThumbSticks.Left.Length() > 0.25f)
-                        dirLoc = DirExt.ApproximateDir8(new Loc((int)(gamePad.ThumbSticks.Left.X * 100), (int)(-gamePad.ThumbSticks.Left.Y * 100))).GetLoc();
-
-                    //if (gamePad.ThumbSticks.Right.Length() > 0.25f)
-                    //    dirLoc = DirExt.ApproximateDir8(new Loc((int)(gamePad.ThumbSticks.Right.X * 100), (int)(-gamePad.ThumbSticks.Right.Y * 100))).GetLoc();
-
-
-                    if (gamePad.IsButtonDown(Buttons.DPadDown))
-                        dirLoc = dirLoc + Dir4.Down.GetLoc();
-                    if (gamePad.IsButtonDown(Buttons.DPadLeft))
-                        dirLoc = dirLoc + Dir4.Left.GetLoc();
-                    if (gamePad.IsButtonDown(Buttons.DPadUp))
-                        dirLoc = dirLoc + Dir4.Up.GetLoc();
-                    if (gamePad.IsButtonDown(Buttons.DPadRight))
-                        dirLoc = dirLoc + Dir4.Right.GetLoc();
-
-                    keyActive = false;
+                    for (int ii = 0; ii < DiagManager.Instance.CurSettings.DirKeys.Length; ii++)
+                    {
+                        if (keyboard.IsKeyDown(DiagManager.Instance.CurSettings.DirKeys[ii]))
+                            dirLoc = dirLoc + ((Dir4)ii).GetLoc();
+                    }
                 }
 
-                if (keyActive)
+                if (dirLoc == Loc.Zero)
                 {
-                    if (dirLoc == Loc.Zero)
-                    {
-                        for (int ii = 0; ii < DiagManager.Instance.CurSettings.DirKeys.Length; ii++)
-                        {
-                            if (keyboard.IsKeyDown(DiagManager.Instance.CurSettings.DirKeys[ii]))
-                                dirLoc = dirLoc + ((Dir4)ii).GetLoc();
-                        }
-                    }
+                    if (keyboard.IsKeyDown(Keys.NumPad2))
+                        dirLoc = dirLoc + Dir8.Down.GetLoc();
+                    if (keyboard.IsKeyDown(Keys.NumPad4))
+                        dirLoc = dirLoc + Dir8.Left.GetLoc();
+                    if (keyboard.IsKeyDown(Keys.NumPad8))
+                        dirLoc = dirLoc + Dir8.Up.GetLoc();
+                    if (keyboard.IsKeyDown(Keys.NumPad6))
+                        dirLoc = dirLoc + Dir8.Right.GetLoc();
 
                     if (dirLoc == Loc.Zero)
                     {
-                        if (keyboard.IsKeyDown(Keys.NumPad2))
+                        if (keyboard.IsKeyDown(Keys.NumPad3) || keyboard.IsKeyDown(Keys.NumPad1))
                             dirLoc = dirLoc + Dir8.Down.GetLoc();
-                        if (keyboard.IsKeyDown(Keys.NumPad4))
+                        if (keyboard.IsKeyDown(Keys.NumPad1) || keyboard.IsKeyDown(Keys.NumPad7))
                             dirLoc = dirLoc + Dir8.Left.GetLoc();
-                        if (keyboard.IsKeyDown(Keys.NumPad8))
+                        if (keyboard.IsKeyDown(Keys.NumPad7) || keyboard.IsKeyDown(Keys.NumPad9))
                             dirLoc = dirLoc + Dir8.Up.GetLoc();
-                        if (keyboard.IsKeyDown(Keys.NumPad6))
+                        if (keyboard.IsKeyDown(Keys.NumPad9) || keyboard.IsKeyDown(Keys.NumPad3))
                             dirLoc = dirLoc + Dir8.Right.GetLoc();
-
-                        if (dirLoc == Loc.Zero)
-                        {
-                            if (keyboard.IsKeyDown(Keys.NumPad3) || keyboard.IsKeyDown(Keys.NumPad1))
-                                dirLoc = dirLoc + Dir8.Down.GetLoc();
-                            if (keyboard.IsKeyDown(Keys.NumPad1) || keyboard.IsKeyDown(Keys.NumPad7))
-                                dirLoc = dirLoc + Dir8.Left.GetLoc();
-                            if (keyboard.IsKeyDown(Keys.NumPad7) || keyboard.IsKeyDown(Keys.NumPad9))
-                                dirLoc = dirLoc + Dir8.Up.GetLoc();
-                            if (keyboard.IsKeyDown(Keys.NumPad9) || keyboard.IsKeyDown(Keys.NumPad3))
-                                dirLoc = dirLoc + Dir8.Right.GetLoc();
-                        }
                     }
-                }
-
-                if (gamePad.IsConnected)
-                {
-                    for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionButtons.Length; ii++)
-                        inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurSettings.ActionButtons[ii]);
-                }
-
-                if (keyActive)
-                {
-                    for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
-                        inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
-
-                    inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
-                    inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
                 }
             }
 
             Direction = dirLoc.GetDir();
 
+            if (gamePad.IsConnected)
+            {
+                for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionButtons.Length; ii++)
+                    inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurSettings.ActionButtons[ii]);
+            }
 
-            if (mouseActive && Active)
+            if (keyActive)
+            {
+                for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
+                    inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
+
+                inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
+                inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
+            }
+
+            if (mouseActive)
             {
                 inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);
                 inputStates[(int)InputType.RightMouse] = (mouse.RightButton == ButtonState.Pressed);
