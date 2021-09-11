@@ -97,7 +97,7 @@ namespace RogueEssence.Menu
                 else
                 {
                     MenuManager.Instance.ClearMenus();
-                    GameManager.Instance.SceneOutcome = DefaultBegin();
+                    GameManager.Instance.SceneOutcome = Begin(new MonsterID(0, 0, 0, Gender.Genderless), "");
                     return;
                 }
             }

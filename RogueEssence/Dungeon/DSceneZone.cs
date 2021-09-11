@@ -73,8 +73,6 @@ namespace RogueEssence.Dungeon
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.RefreshTraits();
 
-            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
-
         }
 
         public IEnumerator<YieldInstruction> InitFloor()
@@ -82,6 +80,8 @@ namespace RogueEssence.Dungeon
             //start emitters for existing map status
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 mapStatus.StartEmitter(Anims);
+
+            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
 
             //Notify script engine
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
@@ -179,6 +179,8 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            //TODO: resolve all Nonserialized variables (such as in mapgen, AI) being inconsistent before enabling this.
+            //DataManager.Instance.LogQuicksave();
             DataManager.Instance.SuspendPlay();
 
             MenuBase.Transparent = false;
@@ -518,6 +520,7 @@ namespace RogueEssence.Dungeon
         public void OnCharAdd(Character newChar)
         {
             newChar.TurnWait = 0;
+            newChar.TiersUsed = 0;
             newChar.TurnUsed = false;
         }
 
@@ -817,6 +820,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> MoveToUsableTurn(bool action, bool walked)
         {
             CurrentCharacter.TurnWait = (walked ? -CurrentCharacter.MovementSpeed : 0) + 1;
+            CurrentCharacter.TiersUsed++;
             CurrentCharacter.TurnUsed = action;
 
             if (!IsGameOver())

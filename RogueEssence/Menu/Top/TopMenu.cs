@@ -29,11 +29,12 @@ namespace RogueEssence.Menu
                 }
                 else
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(null); }));
-                if (DataManager.Instance.Save.ActiveTeam.Name != "" && !inMod)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
             }
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
+
+            if ((DiagManager.Instance.DevMode || DataManager.Instance.Save != null) && !inMod)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
 
 
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)) || DataManager.Instance.Save != null || RecordHeaderData.LoadHighScores().Count > 0)
@@ -43,7 +44,7 @@ namespace RogueEssence.Menu
             if (!inMod)
             {
                 string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-                if (DataManager.Instance.Save != null && modsPath.Length > 0)
+                if (DataManager.Instance.Save != null && ModsMenu.GetEligibleMods().Count > 0)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
             }
             else
@@ -166,7 +167,7 @@ namespace RogueEssence.Menu
             else
             {
                 //no valid next dest happens when the player has saved in a ground map in the middle of an adventure
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
 
                 GameManager.Instance.SetFade(true, false);
@@ -175,7 +176,7 @@ namespace RogueEssence.Menu
 
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                 {
-                    GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
+                    GameManager.Instance.MoveToScene(DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
                 }
                 else
@@ -209,13 +210,16 @@ namespace RogueEssence.Menu
             else
             {
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)
+                {
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
+                }
                 else
+                {
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
+                }
 
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
-
-                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
             }
         }

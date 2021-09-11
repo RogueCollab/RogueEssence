@@ -60,7 +60,6 @@ namespace RogueEssence.Ground
 
         public void ResetGround()
         {
-            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
             ZoneManager.Instance.CurrentGround.ViewCenter = null;
             ZoneManager.Instance.CurrentGround.ViewOffset = new Loc();
         }
@@ -70,6 +69,8 @@ namespace RogueEssence.Ground
             //start emitters for existing map status
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentGround.Status.Values)
                 mapStatus.StartEmitter(Anims);
+
+            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
         }
@@ -88,7 +89,7 @@ namespace RogueEssence.Ground
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
-            DataManager.Instance.LogQuicksave();
+            DataManager.Instance.LogGroundsave();
             DataManager.Instance.SuspendPlay();
 
             MenuBase.Transparent = false;

@@ -13,9 +13,11 @@ using Microsoft.Xna.Framework.Graphics;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class MapBG : IDrawableSprite
+    public class MapBG : IBackgroundSprite
     {
+        [Dev.SubGroup]
         public BGAnimData BGAnim;
+
         public Loc BGMovement;
 
         public Loc MapLoc { get { return Loc.Zero; } }
@@ -44,14 +46,15 @@ namespace RogueEssence.Dungeon
                 DirSheet sheet = GraphicsManager.GetBackground(BGAnim.AnimIndex);
 
                 Loc diff = BGMovement * (int)FrameTick.TickToFrames(GraphicsManager.TotalFrameTick) / 60;
+                float alpha = BGAnim.Alpha / 255f;
                 if (sheet.Width == 1 && sheet.Height == 1)
-                    sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color.White);
+                    sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color.White * alpha);
                 else
                 {
                     for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
                     {
                         for (int y = diff.Y % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
-                            sheet.DrawDir(spriteBatch, new Vector2(x, y), BGAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), BGAnim.GetDrawDir(Dir8.None), Color.White);
+                            sheet.DrawDir(spriteBatch, new Vector2(x, y), BGAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), BGAnim.GetDrawDir(Dir8.None), Color.White * alpha);
                     }
                 }
             }

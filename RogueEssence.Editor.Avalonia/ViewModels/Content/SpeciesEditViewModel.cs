@@ -15,13 +15,13 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class OpContainer
+    public class SpeciesOpContainer
     {
         public Action CommandAction;
         public CharSheetOp Op;
         public string Name { get { return Op.Name; } }
 
-        public OpContainer(CharSheetOp op, Action command)
+        public SpeciesOpContainer(CharSheetOp op, Action command)
         {
             Op = op;
             CommandAction = command;
@@ -79,7 +79,7 @@ namespace RogueEssence.Dev.ViewModels
             set { }
         }
         public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
-        public ObservableCollection<OpContainer> OpList { get; }
+        public ObservableCollection<SpeciesOpContainer> OpList { get; }
 
 
         private MonsterNodeViewModel chosenMonster;
@@ -106,7 +106,7 @@ namespace RogueEssence.Dev.ViewModels
         public SpeciesEditViewModel()
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
-            OpList = new ObservableCollection<OpContainer>();
+            OpList = new ObservableCollection<SpeciesOpContainer>();
         }
 
 
@@ -169,9 +169,9 @@ namespace RogueEssence.Dev.ViewModels
             this.parent = parent;
             if (sprites)
             {
-                OpList.Add(new OpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
+                OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
                 foreach (CharSheetOp op in DevGraphicsManager.CharSheetOps)
-                    OpList.Add(new OpContainer(op, () => applyOpToCharSheet(op)));
+                    OpList.Add(new SpeciesOpContainer(op, () => applyOpToCharSheet(op)));
             }
 
             lock (GameBase.lockObj)

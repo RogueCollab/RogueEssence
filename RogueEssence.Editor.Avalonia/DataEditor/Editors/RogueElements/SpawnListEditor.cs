@@ -12,32 +12,31 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
-    public class SpawnRangeListEditor : Editor<ISpawnRangeList>
+    public class SpawnListEditor : Editor<ISpawnList>
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ISpawnRangeList member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ISpawnList member)
         {
             LoadLabelControl(control, name);
 
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
 
-            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            SpawnListBox lbxValue = new SpawnListBox();
 
-            SpawnRangeListBox lbxValue = new SpawnRangeListBox();
-            lbxValue.MaxHeight = 260;
-            SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
-            if (rangeAtt != null)
-            {
-                mv.Index1 = rangeAtt.Index1;
-                mv.Inclusive = rangeAtt.Inclusive;
-            }
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 220;
+
+            SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
-
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
-            mv.OnEditItem += (int index, object element, SpawnRangeListBoxViewModel.EditElementOp op) =>
+            mv.OnEditItem += (int index, object element, SpawnListBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
@@ -64,12 +63,12 @@ namespace RogueEssence.Dev
             control.Children.Add(lbxValue);
         }
 
-        public override ISpawnRangeList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override ISpawnList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
             int controlIndex = 0;
             controlIndex++;
-            SpawnRangeListBox lbxValue = (SpawnRangeListBox)control.Children[controlIndex];
-            SpawnRangeListBoxViewModel mv = (SpawnRangeListBoxViewModel)lbxValue.DataContext;
+            SpawnListBox lbxValue = (SpawnListBox)control.Children[controlIndex];
+            SpawnListBoxViewModel mv = (SpawnListBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);
         }
     }

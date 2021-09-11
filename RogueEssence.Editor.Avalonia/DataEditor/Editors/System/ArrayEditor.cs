@@ -29,14 +29,27 @@ namespace RogueEssence.Dev
             if (rangeAtt != null)
             {
                 RankedCollectionBox lbxValue = new RankedCollectionBox();
-                lbxValue.MaxHeight = 180;
+
+                EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+                if (heightAtt != null)
+                    lbxValue.MaxHeight = heightAtt.Height;
+                else
+                    lbxValue.MaxHeight = 180;
+
                 lbxValue.DataContext = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
+                lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
             else
             {
                 CollectionBox lbxValue = new CollectionBox();
-                lbxValue.MaxHeight = 180;
+
+                EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+                if (heightAtt != null)
+                    lbxValue.MaxHeight = heightAtt.Height;
+                else
+                    lbxValue.MaxHeight = 180;
+
                 lbxValue.DataContext = createViewModel(control, parent, name, type, attributes, member, false);
                 control.Children.Add(lbxValue);
             }

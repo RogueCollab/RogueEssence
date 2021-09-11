@@ -29,7 +29,13 @@ namespace RogueEssence.Dev
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), member.GetType(), 0);
 
             CollectionBox lbxValue = new CollectionBox();
-            lbxValue.MaxHeight = 180;
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 180;
+
             CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             lbxValue.DataContext = mv;
 

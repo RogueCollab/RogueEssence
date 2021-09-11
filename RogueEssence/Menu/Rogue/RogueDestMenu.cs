@@ -24,13 +24,15 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
             {
                 ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii] as ZoneEntrySummary;
-                if (DataManager.Instance.Save.DungeonUnlocks[ii] == GameProgress.UnlockState.None)
-                    continue;
-                if (summary == null)
-                    continue;
-                if (summary.Rogue != RogueStatus.AllTransfer)
-                    continue;
-
+                if (!DiagManager.Instance.DevMode)
+                {
+                    if (DataManager.Instance.Save.DungeonUnlocks[ii] == GameProgress.UnlockState.None)
+                        continue;
+                    if (summary == null)
+                        continue;
+                    if (summary.Rogue != RogueStatus.AllTransfer)
+                        continue;
+                }
                 dungeonIndices.Add(ii);
             }
 
@@ -39,7 +41,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
                 int zone = dungeonIndices[ii];
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetZone(zone).GetColoredName(), () => { choose(zone); }));
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii] as ZoneEntrySummary;
+                flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
             }
             List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
             
@@ -61,7 +64,10 @@ namespace RogueEssence.Menu
             if (choice > -1)
             {
                 summaryMenu.Visible = true;
-                summaryMenu.SetDungeon(dungeonIndices[choice], DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[choice]] == GameProgress.UnlockState.Completed);
+                bool isComplete = false;
+                if (DataManager.Instance.Save != null)
+                    isComplete = DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[choice]] == GameProgress.UnlockState.Completed;
+                summaryMenu.SetDungeon(dungeonIndices[choice], isComplete);
             }
             else
                 summaryMenu.Visible = false;

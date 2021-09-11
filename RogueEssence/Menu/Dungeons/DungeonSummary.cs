@@ -50,21 +50,23 @@ namespace RogueEssence.Menu
                     else
                         rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), new Loc()));
                 }
+
+                GameProgress save = DataManager.Instance.Save;
                 if (zoneEntry.TeamSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_TEAM", zoneEntry.TeamSize), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.Players.Count > zoneEntry.TeamSize) ? Color.Red : Color.White));
+                        (!DiagManager.Instance.DevMode && save.ActiveTeam.Players.Count > zoneEntry.TeamSize) ? Color.Red : Color.White));
                 if (zoneEntry.TeamRestrict)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_ALONE"), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.Players.Count > 1) ? Color.Red : Color.White));
+                        (!DiagManager.Instance.DevMode && save.ActiveTeam.Players.Count > 1) ? Color.Red : Color.White));
                 if (zoneEntry.MoneyRestrict)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
+                        (!DiagManager.Instance.DevMode && save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
                 if (zoneEntry.BagSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.GetInvCount() > zoneEntry.BagSize) ? Color.Red : Color.White));
+                        (!DiagManager.Instance.DevMode && save.ActiveTeam.GetInvCount() > zoneEntry.BagSize) ? Color.Red : Color.White));
                 if (zoneEntry.BagRestrict > -1)
                     rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), new Loc(),
-                        (DataManager.Instance.Save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                        (!DiagManager.Instance.DevMode && save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
 
                 for (int ii = 0; ii < rules.Count; ii++)
                 {

@@ -22,12 +22,16 @@ namespace RogueEssence.Dungeon
         public const int MAX_SPEED = 3;
         public const int MIN_SPEED = -3;
 
+        public string ProxyName;
+
         public string Name
         {
             get
             {
+                if (ProxyName != "")
+                    return ProxyName;
                 if (MemberTeam is MonsterTeam)
-                    return GetFullFormName(Appearance);
+                    return GetFullFormName(CurrentForm);
                 else
                     return BaseName;
             }
@@ -185,7 +189,20 @@ namespace RogueEssence.Dungeon
         public Dictionary<int, StatusEffect> StatusEffects;
 
         public bool MustHitNext;
+
+        /// <summary>
+        /// The number of turns this character must wait before being able to move again.
+        /// </summary>
         public int TurnWait;
+
+        /// <summary>
+        /// The number of turn tiers that this character has moved OR acted on.
+        /// </summary>
+        public int TiersUsed;
+
+        /// <summary>
+        /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
+        /// </summary>
         public bool TurnUsed;
         [NonSerialized]
         public List<StatusRef> StatusesTargetingThis;
@@ -204,7 +221,10 @@ namespace RogueEssence.Dungeon
         public bool StopItemAtHit;
         public bool MovesScrambled;
         public bool ChargeSaver;
-        //for charging attacks
+        
+        /// <summary>
+        /// Can only use basic attack as an action.
+        /// </summary>
         public bool AttackOnly;
         public bool EnemyOfFriend;
         //visibility and sight
@@ -242,6 +262,7 @@ namespace RogueEssence.Dungeon
                 Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic()));
 
             EquippedItem = new InvItem();
+            ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
             ProxyDef = -1;
@@ -292,6 +313,7 @@ namespace RogueEssence.Dungeon
                 Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
 
             EquippedItem = new InvItem();
+            ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
             ProxyDef = -1;
@@ -1323,6 +1345,7 @@ namespace RogueEssence.Dungeon
         //find a way to prevent repeated calls to this method in various other methods
         private void baseRefresh()
         {
+            ProxyName = "";
             ProxySprite = MonsterID.Invalid;
 
             CantWalk = false;

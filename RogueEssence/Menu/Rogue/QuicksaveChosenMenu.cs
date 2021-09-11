@@ -106,7 +106,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
 
                 GameManager.Instance.SetFade(true, false);
@@ -117,11 +117,13 @@ namespace RogueEssence.Menu
                 {
                     GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
                 }
                 else
                 {
                     GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
@@ -148,7 +150,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
 
                 GameManager.Instance.SetFade(true, false);
@@ -159,13 +161,14 @@ namespace RogueEssence.Menu
                 {
                     GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
                 }
                 else
                 {
                     GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
                 }
-                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
             }

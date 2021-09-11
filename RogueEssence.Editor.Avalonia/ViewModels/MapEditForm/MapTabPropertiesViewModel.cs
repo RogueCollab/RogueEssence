@@ -30,7 +30,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
-            BG = new ClassBoxViewModel(new StringConv(typeof(MapBG), new object[0]));
+            BG = new ClassBoxViewModel(new StringConv(typeof(IBackgroundSprite), new object[0]));
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
             BlankBG = new TileBoxViewModel();
@@ -129,20 +129,21 @@ namespace RogueEssence.Dev.ViewModels
 
         public void BG_Changed()
         {
-            ZoneManager.Instance.CurrentMap.Background = BG.GetObject<MapBG>();
+            ZoneManager.Instance.CurrentMap.Background = BG.GetObject<IBackgroundSprite>();
         }
 
         public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
-            string elementName = "MapBG";
+            Type type = typeof(IBackgroundSprite);
+            string elementName = type.Name;
             DataEditForm frmData = new DataEditForm();
-            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapBG), new object[0]);
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapBG), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, type, new object[0], element, true);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapBG), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true);
                 op(element);
                 frmData.Close();
             };

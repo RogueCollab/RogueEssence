@@ -73,6 +73,31 @@ namespace RogueEssence.Content
                 throw new Exception("Error finding XML file in " + path + ".");
         }
 
+        public static void Export(BeamSheet sheet, string baseDirectory)
+        {
+            //export head
+            for(int ii = 0; ii < 3; ii++)
+            {
+                Rectangle referenceRect = sheet.spriteRects[ii * sheet.TotalFrames];
+                Point imgSize = new Point(referenceRect.Width * sheet.TotalFrames, referenceRect.Height);
+
+                Color[] part_colors = BaseSheet.GetData(sheet, 0, referenceRect.Y, sheet.Width, referenceRect.Height);
+                ExportColors(baseDirectory + ((BeamFrame)ii).ToString() + ".png", part_colors, imgSize);
+            }
+
+            //export xml
+            XmlDocument doc = new XmlDocument();
+            XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
+            doc.AppendChild(configNode);
+
+            XmlNode docNode = doc.CreateElement("BeamData");
+            docNode.AppendInnerTextChild(doc, "TotalFrames", sheet.TotalFrames.ToString());
+            doc.AppendChild(docNode);
+
+            doc.Save(baseDirectory + "BeamData.xml");
+        }
+
+
         public static new BeamSheet Load(BinaryReader reader)
         {
             long length = reader.ReadInt64();

@@ -16,6 +16,22 @@ namespace RogueEssence.Dev
 {
     public class RangeDictEditor : Editor<IRangeDict>
     {
+        /// <summary>
+        /// Default display behavior of whether to treat 0s as 1s
+        /// </summary>
+        public bool Index1;
+
+        /// <summary>
+        /// Default display behavior of whether to treat end borders exclsusively
+        /// </summary>
+        public bool Inclusive;
+
+        public RangeDictEditor(bool index1, bool inclusive)
+        {
+            Index1 = index1;
+            Inclusive = inclusive;
+        }
+
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
@@ -27,16 +43,26 @@ namespace RogueEssence.Dev
             Type keyType = typeof(IntRange);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IRangeDict<>), type, 0);
 
-            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
 
             RangeDictBox lbxValue = new RangeDictBox();
-            lbxValue.MaxHeight = 180;
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 180;
+
             RangeDictBoxViewModel mv = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+
+            mv.Index1 = Index1;
+            mv.Inclusive = Inclusive;
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
             if (rangeAtt != null)
             {
                 mv.Index1 = rangeAtt.Index1;
                 mv.Inclusive = rangeAtt.Inclusive;
             }
+
             lbxValue.DataContext = mv;
 
             //add lambda expression for editing a single element

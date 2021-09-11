@@ -85,7 +85,7 @@ namespace RogueEssence.Dungeon
         public Dictionary<int, AutoTile> TextureMap;
         public int Element;
 
-        public MapBG Background;
+        public IBackgroundSprite Background;
 
 
         public Loc? ViewCenter;
@@ -509,24 +509,30 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public IEnumerable<Character> IterateCharacters()
+        public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)
         {
-            if (ActiveTeam != null)
+            if (ally)
             {
-                foreach (Character player in ActiveTeam.EnumerateChars())
-                    yield return player;
+                if (ActiveTeam != null)
+                {
+                    foreach (Character player in ActiveTeam.EnumerateChars())
+                        yield return player;
+                }
+
+                foreach (Team team in AllyTeams)
+                {
+                    foreach (Character character in team.EnumerateChars())
+                        yield return character;
+                }
             }
 
-            foreach (Team team in AllyTeams)
+            if (foe)
             {
-                foreach (Character character in team.EnumerateChars())
-                    yield return character;
-            }
-
-            foreach (Team team in MapTeams)
-            {
-                foreach (Character character in team.EnumerateChars())
-                    yield return character;
+                foreach (Team team in MapTeams)
+                {
+                    foreach (Character character in team.EnumerateChars())
+                        yield return character;
+                }
             }
         }
 

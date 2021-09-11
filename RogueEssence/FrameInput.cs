@@ -95,7 +95,12 @@ namespace RogueEssence
             if (Active)
                 ReadDevInput(keyboard, mouse, keyActive, mouseActive);
 
-            if (gamePad.IsConnected)
+            keyActive &= screenActive;
+            mouseActive &= screenActive;
+            bool controllerActive = gamePad.IsConnected;
+            controllerActive &= (Active || DiagManager.Instance.CurSettings.InactiveInput);
+
+            if (controllerActive)
             {
                 if (gamePad.ThumbSticks.Left.Length() > 0.25f)
                     dirLoc = DirExt.ApproximateDir8(new Loc((int)(gamePad.ThumbSticks.Left.X * 100), (int)(-gamePad.ThumbSticks.Left.Y * 100))).GetLoc();
@@ -113,7 +118,8 @@ namespace RogueEssence
                 if (gamePad.IsButtonDown(Buttons.DPadRight))
                     dirLoc = dirLoc + Dir4.Right.GetLoc();
 
-                keyActive = false;
+                //if (DiagManager.Instance.CurSettings.ControllerDisablesKeyboard)
+                //    keyActive = false;
             }
 
             if (keyActive)
@@ -169,7 +175,7 @@ namespace RogueEssence
                 inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
             }
 
-            if (mouseActive && Active)
+            if (mouseActive)
             {
                 inputStates[(int)InputType.LeftMouse] = (mouse.LeftButton == ButtonState.Pressed);
                 inputStates[(int)InputType.RightMouse] = (mouse.RightButton == ButtonState.Pressed);

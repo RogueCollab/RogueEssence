@@ -62,6 +62,12 @@ namespace RogueEssence.Content
             }
         }
 
+        public static void Export(TileSheet sheet, string filepath)
+        {
+            using (Stream stream = new FileStream(filepath, FileMode.Create, FileAccess.Write, FileShare.None))
+                ExportTex(stream, sheet.baseTexture);
+        }
+
         public static new TileSheet Load(BinaryReader reader)
         {
             long length = reader.ReadInt64();

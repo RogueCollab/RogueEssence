@@ -10,6 +10,7 @@ namespace RogueEssence.LevelGen
     public class CategorySpawn<T>
     {
         [RangeBorder(0, true, true)]
+        [Dev.EditorHeight(0, 290)]
         public SpawnRangeList<T> Spawns;
         [RangeBorder(0, true, true)]
         public RangeDict<int> SpawnRates;
@@ -36,6 +37,7 @@ namespace RogueEssence.LevelGen
         public Priority Priority;
 
         [Dev.SubGroup]
+        [Dev.EditorHeight(0, 260)]
         public Dictionary<string, CategorySpawn<InvItem>> Spawns;
 
         public ItemSpawnZoneStep()

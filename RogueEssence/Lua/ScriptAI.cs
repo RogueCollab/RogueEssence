@@ -59,6 +59,22 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Enable a given groundchar's AI processing if its currently disabled
+        /// </summary>
+        /// <param name="ch"></param>
+        public void SetAIState(GroundChar ch, string state)
+        {
+            try
+            {
+                ch.SetAIState(state);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptAI.SetAIState(): Got exception :\n{0}", ex.Message));
+            }
+        }
+
 
         public override void SetupLuaFunctions(LuaEngine state)
         {

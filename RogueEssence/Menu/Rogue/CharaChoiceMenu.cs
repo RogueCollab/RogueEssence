@@ -5,6 +5,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -34,7 +35,9 @@ namespace RogueEssence.Menu
             startChars = new List<int>();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
+                if (DiagManager.Instance.DevMode)
+                    startChars.Add(ii);
+                else if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
                     startChars.Add(ii);
                 else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
@@ -182,12 +185,12 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
-                save.DungeonUnlocks[ii] = DataManager.Instance.Save.DungeonUnlocks[ii];
+            save.DungeonUnlocks[chosenDest] = GameProgress.UnlockState.Discovered;
             DataManager.Instance.SetProgress(save);
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-            DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = team;
+
             MonsterData monsterData = DataManager.Instance.GetMonster(choice);
 
             int formSlot = FormSetting;
@@ -204,7 +207,7 @@ namespace RogueEssence.Menu
                 gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
             
             int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, IntrinsicSetting);
-            int intrinsic = 0;
+            int intrinsic;
             if (intrinsicSlot == -1)
                 intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
             else if (intrinsicSlot == 0)
@@ -217,11 +220,18 @@ namespace RogueEssence.Menu
             Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(choice, formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
             newChar.Nickname = name;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
-
             DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Players[0].BaseForm.Species);
-            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
 
-            DataManager.Instance.MsgLog.Clear();
+            try
+            {
+                LuaEngine.Instance.OnNewGame();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid team!");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(chosenDest, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
         }
