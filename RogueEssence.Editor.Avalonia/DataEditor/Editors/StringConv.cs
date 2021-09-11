@@ -32,7 +32,7 @@ namespace RogueEssence.Dev
 
         public string GetString(object obj)
         {
-            return DataEditor.GetString(obj, ObjectType, Attributes);
+            return DataEditor.GetString(obj, obj.GetType(), Attributes);
         }
     }
 }

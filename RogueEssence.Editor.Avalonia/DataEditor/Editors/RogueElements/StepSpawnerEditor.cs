@@ -16,6 +16,12 @@ using System.Reflection;
 
 namespace RogueEssence.Dev
 {
+    public class StepSpawnerEditor : Editor<IStepSpawner>
+    {
+        public override bool DefaultSubgroup => true;
+
+    }
+
     public class MultiStepSpawnerEditor : Editor<IMultiStepSpawner>
     {
         public override bool DefaultSubgroup => true;
@@ -24,8 +30,8 @@ namespace RogueEssence.Dev
         public override string GetString(IMultiStepSpawner obj, Type type, object[] attributes)
         {
             //TODO: find a way to get member info without using a string literal of the member name
-            MemberInfo[] memberInfo = type.GetMember("Picker");
-            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Picker, memberInfo[0].GetMemberInfoType(), memberInfo[0].GetCustomAttributes(false)));
+            PropertyInfo memberInfo = type.GetProperty("Picker");
+            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
     public class PickerSpawnerEditor : Editor<IPickerSpawner>
@@ -36,8 +42,8 @@ namespace RogueEssence.Dev
         public override string GetString(IPickerSpawner obj, Type type, object[] attributes)
         {
             //TODO: find a way to get member info without using a string literal of the member name
-            MemberInfo[] memberInfo = type.GetMember("Picker");
-            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Picker, memberInfo[0].GetMemberInfoType(), memberInfo[0].GetCustomAttributes(false)));
+            PropertyInfo memberInfo = type.GetProperty("Picker");
+            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
     public class ContextSpawnerEditor : Editor<IContextSpawner>
@@ -48,8 +54,8 @@ namespace RogueEssence.Dev
         public override string GetString(IContextSpawner obj, Type type, object[] attributes)
         {
             //TODO: find a way to get member info without using a string literal of the member name
-            MemberInfo[] memberInfo = type.GetMember("Amount");
-            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Amount, memberInfo[0].GetMemberInfoType(), memberInfo[0].GetCustomAttributes(false)));
+            PropertyInfo memberInfo = type.GetProperty("Amount");
+            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
 }
