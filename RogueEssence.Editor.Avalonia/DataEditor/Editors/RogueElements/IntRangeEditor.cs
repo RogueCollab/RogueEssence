@@ -16,18 +16,44 @@ namespace RogueEssence.Dev
 {
     public class IntRangeEditor : Editor<IntRange>
     {
+        /// <summary>
+        /// Default display behavior of whether to treat 0s as 1s
+        /// </summary>
+        public bool Index1;
+
+        /// <summary>
+        /// Default display behavior of whether to treat end borders exclsusively
+        /// </summary>
+        public bool Inclusive;
+
+        public IntRangeEditor(bool index1, bool inclusive)
+        {
+            Index1 = index1;
+            Inclusive = inclusive;
+        }
+
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
+
+        private void getMinMaxOffsets(object[] attributes, out int addMin, out int addMax)
+        {
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
+            bool index1 = Index1;
+            bool inclusive = Inclusive;
+            if (rangeAtt != null)
+            {
+                index1 = rangeAtt.Index1;
+                inclusive = rangeAtt.Inclusive;
+            }
+            RangeBorderAttribute.GetAddVals(index1, inclusive, out addMin, out addMax);
+        }
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IntRange member)
         {
             LoadLabelControl(control, name);
 
-            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
-            int addMin = 0;
-            int addMax = 0;
-            if (rangeAtt != null)
-                rangeAtt.GetAddVals(out addMin, out addMax);
+            int addMin, addMax;
+            getMinMaxOffsets(attributes, out addMin, out addMax);
 
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
             innerPanel.ColumnDefinitions[0].Width = new GridLength(30);
@@ -70,11 +96,8 @@ namespace RogueEssence.Dev
 
         public override IntRange SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
         {
-            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
-            int addMin = 0;
-            int addMax = 0;
-            if (rangeAtt != null)
-                rangeAtt.GetAddVals(out addMin, out addMax);
+            int addMin, addMax;
+            getMinMaxOffsets(attributes, out addMin, out addMax);
 
             int controlIndex = 0;
             controlIndex++;
@@ -91,11 +114,8 @@ namespace RogueEssence.Dev
 
         public override string GetString(IntRange obj, Type type, object[] attributes)
         {
-            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
-            int addMin = 0;
-            int addMax = 0;
-            if (rangeAtt != null)
-                rangeAtt.GetAddVals(out addMin, out addMax);
+            int addMin, addMax;
+            getMinMaxOffsets(attributes, out addMin, out addMax);
 
             if (obj.Min + addMin + 1 >= obj.Max + addMax)
                 return obj.Min.ToString();

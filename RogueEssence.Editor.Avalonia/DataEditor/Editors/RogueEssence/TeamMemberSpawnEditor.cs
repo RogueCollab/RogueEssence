@@ -20,6 +20,7 @@ namespace RogueEssence.Dev
     {
         public override string GetString(TeamMemberSpawn obj, Type type, object[] attributes)
         {
+            //TODO: find a way to get member info without using a string literal of the member name
             MemberInfo[] spawnInfo = type.GetMember("Spawn");
             return DataEditor.GetString(obj.Spawn, spawnInfo[0].GetMemberInfoType(), spawnInfo[0].GetCustomAttributes(false));
         }

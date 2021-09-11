@@ -15,14 +15,19 @@ namespace RogueEssence.Dev
 
         public void GetAddVals(out int addMin, out int addMax)
         {
+            GetAddVals(Index1, Inclusive, out addMin, out addMax);
+        }
+
+        public static void GetAddVals(bool index1, bool inclusive, out int addMin, out int addMax)
+        {
             addMin = 0;
             addMax = 0;
-            if (Index1)
+            if (index1)
             {
                 addMin += 1;
                 addMax += 1;
             }
-            if (Inclusive)
+            if (inclusive)
                 addMax -= 1;
         }
     }

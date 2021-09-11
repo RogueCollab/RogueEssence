@@ -11,6 +11,9 @@ using System.Text;
 
 namespace RogueEssence.Dev
 {
+    /// <summary>
+    /// Used in conjunction with class editors that contain other elements inside.
+    /// </summary>
     public class StringConv
     {
         public Type ObjectType;

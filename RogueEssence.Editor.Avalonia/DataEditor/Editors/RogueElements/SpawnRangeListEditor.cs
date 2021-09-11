@@ -14,6 +14,22 @@ namespace RogueEssence.Dev
 {
     public class SpawnRangeListEditor : Editor<ISpawnRangeList>
     {
+        /// <summary>
+        /// Default display behavior of whether to treat 0s as 1s
+        /// </summary>
+        public bool Index1;
+
+        /// <summary>
+        /// Default display behavior of whether to treat end borders exclsusively
+        /// </summary>
+        public bool Inclusive;
+
+        public SpawnRangeListEditor(bool index1, bool inclusive)
+        {
+            Index1 = index1;
+            Inclusive = inclusive;
+        }
+
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -22,8 +38,6 @@ namespace RogueEssence.Dev
             LoadLabelControl(control, name);
 
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);
-
-            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
 
             SpawnRangeListBox lbxValue = new SpawnRangeListBox();
 
@@ -34,11 +48,16 @@ namespace RogueEssence.Dev
                 lbxValue.MaxHeight = 260;
 
             SpawnRangeListBoxViewModel mv = new SpawnRangeListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+
+            mv.Index1 = Index1;
+            mv.Inclusive = Inclusive;
+            RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
             if (rangeAtt != null)
             {
                 mv.Index1 = rangeAtt.Index1;
                 mv.Inclusive = rangeAtt.Inclusive;
             }
+
             lbxValue.DataContext = mv;
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
