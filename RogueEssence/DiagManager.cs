@@ -65,10 +65,7 @@ namespace RogueEssence
             if (!Directory.Exists(PathMod.MODS_PATH))
                 Directory.CreateDirectory(PathMod.MODS_PATH);
             Settings.InitStatic();
-
-            CurSettings = LoadSettings();
-
-
+            CurSettings = new Settings();
         }
 
         public void SetErrorListener(LogAdded errorAdded)
