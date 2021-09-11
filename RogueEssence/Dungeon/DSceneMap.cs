@@ -1571,5 +1571,32 @@ namespace RogueEssence.Dungeon
 
             return false;
         }
+
+        public Dir8 getTurnDir(bool ally, bool foe)
+        {
+            bool[] losTargets = new bool[DirExt.DIR8_COUNT];
+
+            //First, get a list of all entities in line of sight
+            //not empty?  pick the first one in a clockwise rotation
+            foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters(ally, foe))
+            {
+                Dir8 offDir = (target.CharLoc - FocusedCharacter.CharLoc).GetDir();
+                if (offDir != Dir8.None)
+                {
+                    if (CanSeeCharOnScreen(target) && Collision.InFront(FocusedCharacter.CharLoc, target.CharLoc, offDir, -1))
+                        losTargets[(int)offDir] = true;
+                }
+            }
+
+            for (int ii = 1; ii < DirExt.DIR8_COUNT; ii++)
+            {
+                Dir8 testDir = DirExt.AddAngles(FocusedCharacter.CharDir, (Dir8)ii);
+                if (losTargets[(int)testDir])
+                    return testDir;
+            }
+            if (losTargets[(int)FocusedCharacter.CharDir])
+                return FocusedCharacter.CharDir;
+            return Dir8.None;
+        }
     }
 }

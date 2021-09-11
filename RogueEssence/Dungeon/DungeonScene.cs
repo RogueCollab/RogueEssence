@@ -490,17 +490,14 @@ namespace RogueEssence.Dungeon
                         }//directions
                         else if (input.JustPressed(FrameInput.InputType.Turn))
                         {
-                            for (int ii = 1; ii < DirExt.DIR8_COUNT; ii++)
-                            {
-                                Dir8 testDir = DirExt.AddAngles(FocusedCharacter.CharDir, (Dir8)ii);
-                                Loc checkLoc = FocusedCharacter.CharLoc + testDir.GetLoc();
-                                Character target = ZoneManager.Instance.CurrentMap.GetCharAtLoc(checkLoc);
-                                if (target != null && CanSeeCharOnScreen(target))
-                                {
-                                    action = new GameAction(GameAction.ActionType.Dir, testDir);
-                                    break;
-                                }
-                            }
+                            //first attempt to turn to a foe
+                            Dir8 losTarget = getTurnDir(false, true);
+                            //then attempt to turn to an ally
+                            if (losTarget == Dir8.None)
+                                losTarget = getTurnDir(true, false);
+                            //if we've found a direction to turn to, turn there
+                            if (losTarget != Dir8.None && losTarget != FocusedCharacter.CharDir)
+                                action = new GameAction(GameAction.ActionType.Dir, losTarget);
                         }
                         else if (input.Direction != Dir8.None)
                         {
