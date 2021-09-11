@@ -38,6 +38,7 @@ namespace RogueEssence.Examples
             string[] args = System.Environment.GetCommandLineArgs();
             PathMod.InitExePath(System.IO.Path.GetDirectoryName(args[0]));
             DiagManager.InitInstance();
+            DiagManager.Instance.CurSettings = DiagManager.Instance.LoadSettings();
             //DiagManager.Instance.UpgradeBinder = new UpgradeBinder();
 
 
@@ -334,6 +335,7 @@ namespace RogueEssence.Examples
 
             DataEditor.AddEditor(new MoneySpawnZoneStepEditor());
 
+            //DataEditor.AddConverter(new AutoTileBaseConverter());
             DataEditor.AddEditor(new DataFolderEditor());
             DataEditor.AddEditor(new AnimDataEditor());
             DataEditor.AddEditor(new SoundEditor());
@@ -341,8 +343,24 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new EntryDataEditor());
             DataEditor.AddEditor(new FrameTypeEditor());
             DataEditor.AddEditor(new MapItemEditor());
-            DataEditor.AddEditor(new StepSpawnerEditor());
+
+            DataEditor.AddEditor(new MultiStepSpawnerEditor());
+            DataEditor.AddEditor(new PickerSpawnerEditor());
+            DataEditor.AddEditor(new ContextSpawnerEditor());
             DataEditor.AddEditor(new TeamStepSpawnerEditor());
+            DataEditor.AddEditor(new StepSpawnerEditor());
+
+            DataEditor.AddEditor(new GridPathCircleEditor());
+            DataEditor.AddEditor(new GridPathBranchEditor());
+
+            DataEditor.AddEditor(new AddConnectedRoomsStepEditor());
+            DataEditor.AddEditor(new AddDisconnectedRoomsStepEditor());
+            DataEditor.AddEditor(new ConnectRoomStepEditor());
+            DataEditor.AddEditor(new FloorPathBranchEditor());
+
+            DataEditor.AddEditor(new RoomGenCrossEditor());
+            DataEditor.AddEditor(new SizedRoomGenEditor());
+
             DataEditor.AddEditor(new MonsterIDEditor());
 
             DataEditor.AddEditor(new TeamMemberSpawnEditor());
@@ -355,22 +373,24 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new CircleSquareEmitterEditor());
             DataEditor.AddEditor(new CombatActionEditor());
             DataEditor.AddEditor(new ExplosionDataEditor());
+            //DataEditor.AddConverter(new ItemDataConverter());
+            //DataEditor.AddConverter(new TileLayerConverter());
             DataEditor.AddEditor(new ShootingEmitterEditor());
             DataEditor.AddEditor(new SkillDataEditor());
             DataEditor.AddEditor(new ColumnAnimEditor());
             DataEditor.AddEditor(new StaticAnimEditor());
             DataEditor.AddEditor(new TypeDictEditor());
-            DataEditor.AddEditor(new RangeDictEditor());
+            DataEditor.AddEditor(new RangeDictEditor(false, true));
             DataEditor.AddEditor(new SpawnListEditor());
-            DataEditor.AddEditor(new SpawnRangeListEditor());
+            DataEditor.AddEditor(new SpawnRangeListEditor(false, true));
             DataEditor.AddEditor(new PriorityListEditor());
             DataEditor.AddEditor(new PriorityEditor());
             DataEditor.AddEditor(new SegLocEditor());
             DataEditor.AddEditor(new LocEditor());
-            DataEditor.AddEditor(new RandRangeEditor());
+            DataEditor.AddEditor(new RandRangeEditor(false, true));
             DataEditor.AddEditor(new RandPickerEditor());
             DataEditor.AddEditor(new MultiRandPickerEditor());
-            DataEditor.AddEditor(new IntRangeEditor());
+            DataEditor.AddEditor(new IntRangeEditor(false, true));
             DataEditor.AddEditor(new FlagTypeEditor());
             DataEditor.AddEditor(new ColorEditor());
             DataEditor.AddEditor(new TypeEditor());
