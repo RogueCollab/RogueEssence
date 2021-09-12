@@ -25,7 +25,7 @@ namespace RogueEssence.Content
         }
 
 
-        public int TotalFrames { get { return TotalX; } }
+        public int TotalFrames { get { return TotalTiles; } }
         public RotateType Dirs { get; protected set; }
 
         //public DirSheet(int width, int height, int tileWidth, int tileHeight, RotateType dirs)
@@ -50,40 +50,50 @@ namespace RogueEssence.Content
         {
             string fileName = Path.GetFileNameWithoutExtension(path);
             string[] components = fileName.Split('.');
-            int frames = 0;
-            if (Int32.TryParse(components[components.Length - 1], out frames))
+            string typeString = components[components.Length - 1];
+            int framesW = 0;
+            if (Int32.TryParse(typeString, out framesW))
             {
                 using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     Texture2D tex = ImportTex(fileStream);
-                    return new DirSheet(tex, tex.Width / frames, tex.Height, RotateType.None);
+                    return new DirSheet(tex, tex.Width / framesW, tex.Height, RotateType.None);
                 }
             }
-            else
+            string[] dims = typeString.Split("x");
+            int framesH = 0;
+            if (dims.Length == 2 && Int32.TryParse(dims[0], out framesW) && Int32.TryParse(dims[1], out framesH))
             {
-                RotateType dirs = (RotateType)Enum.Parse(typeof(RotateType), components[components.Length - 1]);
-                int div = 0;
-                switch (dirs)
-                {
-                    case RotateType.Dir2:
-                        div = 2;
-                        break;
-                    case RotateType.Dir5:
-                        div = 5;
-                        break;
-                    case RotateType.Dir8:
-                        div = 8;
-                        break;
-                    default:
-                        div = 1;
-                        break;
-                }
                 using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     Texture2D tex = ImportTex(fileStream);
-                    int tileWidth = tex.Height / div;
-                    return new DirSheet(tex, tileWidth, tileWidth, dirs);
+                    return new DirSheet(tex, tex.Width / framesW, tex.Height / framesH, RotateType.None);
                 }
+            }
+
+
+            RotateType dirs = (RotateType)Enum.Parse(typeof(RotateType), typeString);
+            int div = 0;
+            switch (dirs)
+            {
+                case RotateType.Dir2:
+                    div = 2;
+                    break;
+                case RotateType.Dir5:
+                    div = 5;
+                    break;
+                case RotateType.Dir8:
+                    div = 8;
+                    break;
+                default:
+                    div = 1;
+                    break;
+            }
+            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                Texture2D tex = ImportTex(fileStream);
+                int tileWidth = tex.Height / div;
+                return new DirSheet(tex, tileWidth, tileWidth, dirs);
             }
         }
 
@@ -94,9 +104,11 @@ namespace RogueEssence.Content
             {
                 case RotateType.None:
                     {
-                        if (sheet.TileWidth == sheet.TileHeight)
+                        if (sheet.TileHeight < sheet.Height)//uses the second tier or more
+                            suffix = string.Format("{0}x{1}", sheet.TotalX.ToString(), sheet.TotalY.ToString());
+                        if (sheet.TileWidth == sheet.TileHeight)//all square frames on one tier
                             suffix = sheet.Dirs.ToString();
-                        else
+                        else//rectangular frames on one tier
                             suffix = sheet.TotalFrames.ToString();
                     }
                     break;
@@ -163,7 +175,7 @@ namespace RogueEssence.Content
             switch (Dirs)
             {
                 case RotateType.None:
-                    DrawTile(spriteBatch, pos, frame, 0, color);
+                    DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX, color);
                     break;
                 case RotateType.Dir1:
                     DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, 0, color, (float)((int)dir * Math.PI / 4));
