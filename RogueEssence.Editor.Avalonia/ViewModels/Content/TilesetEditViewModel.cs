@@ -247,8 +247,18 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
                 //CachedPath = folder;
-                lock (GameBase.lockObj)
-                    Export(folder, animData);
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        Export(folder, animData);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
             }
         }
 

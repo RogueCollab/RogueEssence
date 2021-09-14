@@ -42,7 +42,8 @@ namespace RogueEssence.Dev.ViewModels
 
             Anims = new SearchListBoxViewModel();
             Anims.DataName = "Graphics:";
-            Anims.SelectedIndexChanged += Anims_SelectedIndexChanged;
+            //TODO: properly support beam/column anims
+            //Anims.SelectedIndexChanged += Anims_SelectedIndexChanged;
 
         }
 
@@ -207,8 +208,18 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
                 //CachedPath = folder;
-                lock (GameBase.lockObj)
-                    Export(folder, animData);
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        Export(folder, animData);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
             }
         }
 

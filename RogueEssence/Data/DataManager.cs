@@ -292,7 +292,7 @@ namespace RogueEssence.Data
                         XmlNode startSkin = startChar.SelectSingleNode("Skin");
                         int skin = Int32.Parse(startSkin.InnerText);
                         XmlNode startGender = startChar.SelectSingleNode("Gender");
-                        Gender gender = (Gender)Enum.Parse(typeof(Gender), startGender.InnerText);
+                        Gender gender = Enum.Parse<Gender>(startGender.InnerText);
 
                         XmlNode startName = startChar.SelectSingleNode("Name");
                         string name = startName.InnerText;

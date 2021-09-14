@@ -265,7 +265,7 @@ namespace RogueEssence
                     settings.BGMBalance = Int32.Parse(xmldoc.SelectSingleNode("Config/BGM").InnerText);
                     settings.SEBalance = Int32.Parse(xmldoc.SelectSingleNode("Config/SE").InnerText);
 
-                    settings.BattleFlow = (Settings.BattleSpeed)Enum.Parse(typeof(Settings.BattleSpeed), xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
+                    settings.BattleFlow = Enum.Parse<Settings.BattleSpeed>(xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
 
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
@@ -283,7 +283,7 @@ namespace RogueEssence
                     XmlNode keys = xmldoc.SelectSingleNode("Config/DirKeys");
                     foreach (XmlNode key in keys.SelectNodes("DirKey"))
                     {
-                        settings.DirKeys[index] = (Keys)Enum.Parse(typeof(Keys), key.InnerText);
+                        settings.DirKeys[index] = Enum.Parse<Keys>(key.InnerText);
                         index++;
                     }
 
@@ -293,7 +293,7 @@ namespace RogueEssence
                     {
                         while (!Settings.UsedByKeyboard((FrameInput.InputType)index) && index < settings.ActionKeys.Length)
                             index++;
-                        settings.ActionKeys[index] = (Keys)Enum.Parse(typeof(Keys), key.InnerText);
+                        settings.ActionKeys[index] = Enum.Parse<Keys>(key.InnerText);
                         index++;
                     }
                 }
@@ -310,7 +310,7 @@ namespace RogueEssence
                     {
                         while (!Settings.UsedByGamepad((FrameInput.InputType)index) && index < settings.ActionButtons.Length)
                             index++;
-                        settings.ActionButtons[index] = (Buttons)Enum.Parse(typeof(Buttons), key.InnerText);
+                        settings.ActionButtons[index] = Enum.Parse<Buttons>(key.InnerText);
                         index++;
                     }
                     settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);

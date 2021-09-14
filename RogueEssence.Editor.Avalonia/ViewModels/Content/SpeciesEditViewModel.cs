@@ -364,8 +364,18 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
-                lock (GameBase.lockObj)
-                    Export(CachedPath, formdata, singleSheet);
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        Export(CachedPath, formdata, singleSheet);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
             }
         }
 
