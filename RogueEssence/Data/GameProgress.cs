@@ -807,7 +807,11 @@ namespace RogueEssence.Data
             Stakes = stakes;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(PathMod.NoMod(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
+            {
+                if (!Directory.Exists(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
+                    Directory.CreateDirectory(PathMod.ModSavePath(DataManager.ROGUE_PATH));
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
+            }
 
             yield break;
         }

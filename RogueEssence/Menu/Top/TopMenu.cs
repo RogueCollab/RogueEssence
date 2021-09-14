@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
 
-            if ((DiagManager.Instance.DevMode || DataManager.Instance.Save != null) && !inMod)
+            if (DiagManager.Instance.DevMode || DataManager.Instance.Save != null)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
 
 

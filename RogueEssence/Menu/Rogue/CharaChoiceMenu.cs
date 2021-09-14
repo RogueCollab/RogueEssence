@@ -112,10 +112,15 @@ namespace RogueEssence.Menu
             //however, when switching between species, the settings are kept even if invalid for new species, just display legal substitutes in those cases
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
-                GameManager.Instance.SE("Menu/Confirm");
                 int totalChoice = CurrentChoiceTotal;
-                CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : -1, this);
-                MenuManager.Instance.AddMenu(menu, true);
+                if (totalChoice > 0)
+                {
+                    GameManager.Instance.SE("Menu/Confirm");
+                    CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : -1, this);
+                    MenuManager.Instance.AddMenu(menu, true);
+                }
+                else//TODO: allow editing on the random spot
+                    GameManager.Instance.SE("Menu/Cancel");
             }
             else
                 base.UpdateKeys(input);
