@@ -30,6 +30,7 @@ namespace RogueEssence.Data
         [Dev.Multiline(0)]
         public LocalText Desc { get; set; }
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }

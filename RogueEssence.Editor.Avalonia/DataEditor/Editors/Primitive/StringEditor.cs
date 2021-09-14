@@ -31,7 +31,7 @@ namespace RogueEssence.Dev
             MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
             if (attribute != null)
             {
-                //txtValue.Multiline = true;
+                txtValue.AcceptsReturn = true;
                 txtValue.Height = 80;
                 //txtValue.Size = new Size(0, 80);
             }

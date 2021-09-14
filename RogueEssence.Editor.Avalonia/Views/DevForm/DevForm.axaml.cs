@@ -89,7 +89,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Skill) != DataManager.DataType.None)
                 {
-                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
+                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
                     devViewModel.Game.Skills.Clear();
                     for (int ii = 0; ii < skill_names.Length; ii++)
                         devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
@@ -99,7 +99,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
                 {
-                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
+                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
                     devViewModel.Game.Intrinsics.Clear();
                     for (int ii = 0; ii < intrinsic_names.Length; ii++)
                         devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
@@ -109,7 +109,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Status) != DataManager.DataType.None)
                 {
-                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
+                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
                     devViewModel.Game.Statuses.Clear();
                     for (int ii = 0; ii < status_names.Length; ii++)
                         devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
@@ -119,7 +119,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
                 {
-                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
                     devViewModel.Game.Items.Clear();
                     for (int ii = 0; ii < item_names.Length; ii++)
                         devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
@@ -130,7 +130,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Monster) != DataManager.DataType.None)
                 {
-                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
                     devViewModel.Player.Monsters.Clear();
                     for (int ii = 0; ii < monster_names.Length; ii++)
                         devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
@@ -140,7 +140,7 @@ namespace RogueEssence.Dev.Views
                     devViewModel.Player.ChosenForm = -1;
                     devViewModel.Player.ChosenForm = 0;
 
-                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
                     devViewModel.Player.Skins.Clear();
                     for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
                         devViewModel.Player.Skins.Add(skin_names[ii]);
@@ -166,7 +166,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
+                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
                     devViewModel.Travel.Zones.Clear();
                     for (int ii = 0; ii < dungeon_names.Length; ii++)
                         devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);

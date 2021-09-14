@@ -17,6 +17,7 @@ namespace RogueEssence.Data
         public LocalText Title;
 
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary()

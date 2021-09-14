@@ -28,19 +28,19 @@ namespace RogueEssence.Dev.ViewModels
                 Directions.Add(dir.ToLocal());
 
             Tactics = new ObservableCollection<string>();
-            string[] tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray();
+            string[] tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
             for (int ii = 0; ii < tactic_names.Length; ii++)
                 Tactics.Add(ii.ToString("D2") + ": " + tactic_names[ii]);
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
             for (int ii = 0; ii < monster_names.Length; ii++)
                 Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
                 Skins.Add(skin_names[ii]);
 
@@ -49,19 +49,19 @@ namespace RogueEssence.Dev.ViewModels
                 Genders.Add(((Gender)ii).ToLocal());
 
             Intrinsics = new ObservableCollection<string>();
-            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
+            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
             for (int ii = 0; ii < intrinsic_names.Length; ii++)
                 Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
 
             Equips = new ObservableCollection<string>();
             Equips.Add("---: None");
-            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             for (int ii = 0; ii < item_names.Length; ii++)
                 Equips.Add(ii.ToString("D3") + ": " + item_names[ii]);
 
             Skills = new ObservableCollection<string>();
             Skills.Add("---: None");
-            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
+            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
             for (int ii = 0; ii < skill_names.Length; ii++)
                 Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
 

@@ -41,7 +41,7 @@ namespace RogueEssence.Dev
             }
 
             for (int ii = 0; ii < nameIndex.Count; ii++)
-                items.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(false));
+                items.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(true));
 
             var subject = new Subject<List<string>>();
             cbValue.Bind(ComboBox.ItemsProperty, subject);

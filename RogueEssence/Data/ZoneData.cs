@@ -39,6 +39,7 @@ namespace RogueEssence.Data
 
         public LocalText Name { get; set; }
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public bool NoEXP { get; set; }

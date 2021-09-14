@@ -22,7 +22,7 @@ namespace RogueEssence.Dev.ViewModels
                 Sights.Add(((Map.SightRange)ii).ToLocal());
 
             Elements = new ObservableCollection<string>();
-            string[] element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray();
+            string[] element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray(true);
             for (int ii = 0; ii < element_names.Length; ii++)
                 Elements.Add(ii.ToString("D2") + ": " + element_names[ii]);
 

@@ -14,6 +14,7 @@ namespace RogueEssence.Data
 
         public LocalText Name { get; set; }
         public bool Released { get { return true; } }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public char Symbol;

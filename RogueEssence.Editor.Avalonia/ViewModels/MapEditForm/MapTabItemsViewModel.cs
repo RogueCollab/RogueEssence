@@ -18,7 +18,7 @@ namespace RogueEssence.Dev.ViewModels
 
             ItemTypes = new ObservableCollection<string>();
             ItemTypes.Add("---: Money");
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             for (int ii = 0; ii < monster_names.Length; ii++)
                 ItemTypes.Add(ii.ToString("D3") + ": " + monster_names[ii]);
 

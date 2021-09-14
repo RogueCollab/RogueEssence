@@ -58,7 +58,8 @@ namespace RogueEssence.Data
             if (verbose && Comment != "")
             {
                 result += "  #";
-                result += Comment.ToString();
+                string[] lines = Comment.Split('\n', StringSplitOptions.None);
+                result += lines[0];
             }
 
             return result;

@@ -209,12 +209,11 @@ namespace RogueEssence.Dev
                 MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
                 if (attribute != null)
                 {
-                    //txtValue.Multiline = true;
                     cbxValue.Height = 80;
-                    //txtValue.Size = new Size(0, 80);
+                    //cbxValue.Size = new Size(0, 80);
                 }
                 //else
-                //    txtValue.Size = new Size(0, 20);
+                //    cbxValue.Size = new Size(0, 20);
                 ClassBoxViewModel mv = new ClassBoxViewModel(new StringConv(type, ReflectionExt.GetPassableAttributes(0, attributes)));
                 mv.LoadFromSource(member);
                 cbxValue.DataContext = mv;
