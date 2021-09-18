@@ -13,6 +13,9 @@ namespace RogueEssence.Menu
     {
         SummaryMenu titleMenu;
 
+        public override bool CanMenu { get { return false; } }
+        public override bool CanCancel { get { return false; } }
+
         public TopMenu()
         {
             bool inMod = PathMod.Mod != "";

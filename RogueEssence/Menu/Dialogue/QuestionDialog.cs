@@ -46,6 +46,10 @@ namespace RogueEssence.Menu
 
         public const int QUESTION_SPACE = 8;
 
+        public override bool CanMenu { get { return false; } }
+        public override bool CanCancel { get { return cancelChoice > -1; } }
+
+
         public DialogueChoiceMenu(DialogueChoice[] choices, int defaultChoice, int cancelChoice, int startY)
         {
             MenuTextChoice[] menu_choices = new MenuTextChoice[choices.Length];
@@ -76,8 +80,7 @@ namespace RogueEssence.Menu
 
         protected override void Canceled()
         {
-            if (cancelChoice > -1)
-                choose(cancelChoice);
+            choose(cancelChoice);
         }
     }
 

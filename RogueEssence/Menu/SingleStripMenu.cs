@@ -20,6 +20,9 @@ namespace RogueEssence.Menu
         public IntRange MultiSelect { get; protected set; }
         private int selectedTotal;
 
+        public virtual bool CanMenu { get { return true; } }
+        public virtual bool CanCancel { get { return true; } }
+
         public override Loc PickerPos
         {
             get
@@ -140,13 +143,19 @@ namespace RogueEssence.Menu
             }
             else if (input.JustPressed(FrameInput.InputType.Menu))
             {
-                GameManager.Instance.SE("Menu/Cancel");
-                MenuPressed();
+                if (CanMenu)
+                {
+                    GameManager.Instance.SE("Menu/Cancel");
+                    MenuPressed();
+                }
             }
             else if (input.JustPressed(FrameInput.InputType.Cancel))
             {
-                GameManager.Instance.SE("Menu/Cancel");
-                Canceled();
+                if (CanCancel)
+                {
+                    GameManager.Instance.SE("Menu/Cancel");
+                    Canceled();
+                }
             }
             else if (MultiSelect.Max > 0 && input.JustPressed(FrameInput.InputType.SelectItems))
             {

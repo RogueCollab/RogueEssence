@@ -898,8 +898,8 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
-                int mappedDefault = 0;
-                int mappedCancel = 0;
+                int? mappedDefault = null;
+                int? mappedCancel = null;
                 //Intepret the choices from lua
                 List<DialogueChoice> choices = new List<DialogueChoice>();
                 IDictionaryEnumerator dict = choicespairs.GetEnumerator();
@@ -924,15 +924,20 @@ namespace RogueEssence.Script
                     choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
 
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+                if (mappedCancel == null)
+                    mappedCancel = -1;
+
                 //Make a choice menu, and check if we display a speaker or not
                 if (m_curspeakerName != null)
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo,
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter, choices.ToArray(), mappedDefault, mappedCancel);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
                 else
                 {
-                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault, mappedCancel);
+                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
