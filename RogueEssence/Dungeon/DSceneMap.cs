@@ -1559,6 +1559,13 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
+        public void GetSideBlocks(Character character, int forward, out bool blockedL, out bool blockedR)
+        {
+            Loc loc = character.CharLoc + character.CharDir.GetLoc() * forward;
+            blockedL = ZoneManager.Instance.CurrentMap.TileBlocked(loc + DirExt.AddAngles(character.CharDir, Dir8.Left).GetLoc());
+            blockedR = ZoneManager.Instance.CurrentMap.TileBlocked(loc + DirExt.AddAngles(character.CharDir, Dir8.Right).GetLoc());
+        }
+
         public bool IsRunningHazard(Loc loc)
         {
             Tile tile = ZoneManager.Instance.CurrentMap.GetTile(loc);

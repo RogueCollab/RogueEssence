@@ -519,15 +519,36 @@ namespace RogueEssence.Dungeon
                                         if (AreTilesDistinct(FocusedCharacter.CharLoc, FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc()) ||
                                             IsRunningHazard(FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc()))
                                         {
+                                            //check against terrain/tile features in the direct front
                                             runCancelling = true;
                                         }
-                                        else if (!IsRunningHall(FocusedCharacter, FocusedCharacter.CharLoc) && IsRunningHall(FocusedCharacter, FocusedCharacter.CharLoc - FocusedCharacter.CharDir.GetLoc()))
+                                        else if (!FocusedCharacter.CharDir.IsDiagonal())
                                         {
-                                            runCancelling = true;
-                                            //AreTilesDistinct(FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.Left).GetLoc(), FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.DownLeft).GetLoc())
-                                            //AreTilesDistinct(FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.Right).GetLoc(), FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.DownRight).GetLoc()))
+                                            bool behindL, behindR, currentL, currentR, aheadL, aheadR, furtherL, furtherR, furtherFront;
+                                            GetSideBlocks(FocusedCharacter, -1, out behindL, out behindR);
+                                            GetSideBlocks(FocusedCharacter, 0, out currentL, out currentR);
+                                            GetSideBlocks(FocusedCharacter, 1, out aheadL, out aheadR);
+                                            GetSideBlocks(FocusedCharacter, 2, out furtherL, out furtherR);
+                                            furtherFront = ZoneManager.Instance.CurrentMap.TileBlocked(FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc() * 2);
+
+                                            //both sides current are blocked
+                                            //one side ahead + further are not
+                                            //and front even further ahead is not.
+                                            if (currentL && currentR && ((!aheadL && !furtherL) || (!aheadR && !furtherR)) && !furtherFront)
+                                                runCancelling = true;
+                                            //Both sides behind are blocked
+                                            //AND one or more sides current are walkables.
+                                            else if (behindL && behindR && (!currentL || !currentR))
+                                                runCancelling = true;
+                                            //Only one side current is a different tile than the same side behind
+                                            //AND that side current is walkable.
+                                            else if (!currentL && currentL != behindL && currentR == behindR)
+                                                runCancelling = true;
+                                            else if (!currentR && currentR != behindR && currentL == behindL)
+                                                runCancelling = true;
                                         }
-                                        else
+                                        
+                                        if (!runCancelling)
                                         {
                                             newRevealed = new HashSet<Character>();
                                             foreach (Character player in ActiveTeam.Players)
