@@ -89,6 +89,7 @@ namespace RogueEssence.LevelGen
                             else
                                 break;
                         }
+
                         if (setsTaken == exitSets.Count)
                         {
                             for (int xx = 0; xx < chosenRoom.Size.X; xx++)
