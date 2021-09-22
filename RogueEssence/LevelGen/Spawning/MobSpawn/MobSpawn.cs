@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueElements;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.LevelGen
 {
@@ -32,6 +33,7 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(0, DataManager.DataType.AI, false)]
         public int Tactic;
 
+        public List<MobSpawnCheck> SpawnConditions;
         public List<MobSpawnExtra> SpawnFeatures;
         //extra spawn event
         //items
@@ -44,6 +46,7 @@ namespace RogueEssence.LevelGen
             BaseForm = new MonsterID(0, 0, -1, Gender.Unknown);
             SpecifiedSkills = new List<int>();
             Intrinsic = -1;
+            SpawnConditions = new List<MobSpawnCheck>();
             SpawnFeatures = new List<MobSpawnExtra>();
         }
         protected MobSpawn(MobSpawn other) : this()
@@ -53,11 +56,23 @@ namespace RogueEssence.LevelGen
             Level = other.Level;
             SpecifiedSkills.AddRange(other.SpecifiedSkills);
             Intrinsic = other.Intrinsic;
-            foreach(MobSpawnExtra extra in other.SpawnFeatures)
+            foreach (MobSpawnCheck extra in other.SpawnConditions)
+                SpawnConditions.Add(extra.Copy());
+            foreach (MobSpawnExtra extra in other.SpawnFeatures)
                 SpawnFeatures.Add(extra.Copy());
         }
         public MobSpawn Copy() { return new MobSpawn(this); }
         ISpawnable ISpawnable.Copy() { return Copy(); }
+
+        public bool CanSpawn()
+        {
+            foreach (MobSpawnCheck extra in SpawnConditions)
+            {
+                if (!extra.CanSpawn())
+                    return false;
+            }
+            return true;
+        }
 
         protected Character SpawnBase(Team team, IMobSpawnMap map)
         {
@@ -116,5 +131,16 @@ namespace RogueEssence.LevelGen
             MonsterData entry = DataManager.Instance.GetMonster(BaseForm.Species);
             return String.Format("{0} Lv.{1}", entry.Name.ToLocal(), Level);
         }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: Remove on v0.5
+            if (SpawnConditions == null)
+                SpawnConditions = new List<MobSpawnCheck>();
+        }
     }
+
+
 }

@@ -48,48 +48,75 @@ namespace RogueEssence
                 if (possibleDirs.Count == 0)
                     break;
 
-                //pick a direction to tunnel in
-                LocRay4 tunnelDir = possibleDirs[map.Rand.Next(possibleDirs.Count)];
-
-                int curLength = 0;
-                int finalLength = MaxLength.Pick(map.Rand);
-
-                while (curLength < finalLength)
+                for (int nn = 0; nn < 10; nn++)
                 {
-                    int addLength = TurnLength.Pick(map.Rand);
-                    //length bust always be at least 2
-                    addLength = Math.Max(2, addLength);
+                    //pick a direction to tunnel in
+                    LocRay4 tunnelDir = possibleDirs[map.Rand.Next(possibleDirs.Count)];
 
+                    int curLength = 0;
+                    int finalLength = MaxLength.Pick(map.Rand);
+
+                    List<LocRay4> drawnLocs = new List<LocRay4>();
+                    bool crossedSelf = false;
                     bool bonk = false;
-                    //traverse the length in the specified tunnelDir until we hit a border or a new walkable
-                    for (int jj = 0; jj < addLength; jj++)
+                    bool bonkFloor = false;
+                    while (curLength < finalLength)
                     {
-                        //draw brush
-                        Brush.DrawHallBrush(map, fullRect, tunnelDir.Loc, tunnelDir.Dir.ToAxis() == Axis4.Vert);
+                        int addLength = TurnLength.Pick(map.Rand);
+                        //length bust always be at least 2
+                        addLength = Math.Max(2, addLength);
 
-                        //move forward
-                        tunnelDir.Loc = tunnelDir.Traverse(1);
-
-                        if (!checkBlock(tunnelDir.Loc))
+                        //traverse the length in the specified tunnelDir until we hit a border or a new walkable
+                        for (int jj = 0; jj < addLength; jj++)
                         {
-                            bonk = true;
-                            break;
+                            //draw brush
+                            drawnLocs.Add(new LocRay4(tunnelDir.Loc, tunnelDir.Dir));
+
+                            //move forward
+                            tunnelDir.Loc = tunnelDir.Traverse(1);
+
+                            foreach (LocRay4 ray in drawnLocs)
+                            {
+                                if (ray.Loc == tunnelDir.Loc)
+                                {
+                                    crossedSelf = true;
+                                    break;
+                                }
+                            }
+
+                            if (!checkBlock(tunnelDir.Loc) || crossedSelf)
+                            {
+                                bonk = true;
+                                if (checkGround(tunnelDir.Loc) || crossedSelf)
+                                    bonkFloor = true;
+                                break;
+                            }
                         }
+
+                        if (bonk)
+                            break;
+
+                        curLength += addLength;
+
+                        //make a turn
+                        if (map.Rand.Next(2) == 0)
+                            tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Left);
+                        else
+                            tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Right);
                     }
 
-                    if (bonk)
-                        break;
+                    if (!AllowDeadEnd)
+                    {
+                        if (!bonkFloor || crossedSelf)
+                            continue;
+                    }
 
-                    curLength += addLength;
-
-                    //make a turn
-                    if (map.Rand.Next(2) == 0)
-                        tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Left);
-                    else
-                        tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Right);
+                    foreach(LocRay4 ray in drawnLocs)
+                        Brush.DrawHallBrush(map, fullRect, ray.Loc, ray.Dir.ToAxis() == Axis4.Vert);
+                    break;
                 }
-
                 GenContextDebug.DebugProgress("Added Tunnel");
+
             }
         }
     }

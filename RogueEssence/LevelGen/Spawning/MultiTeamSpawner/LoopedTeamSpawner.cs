@@ -30,11 +30,13 @@ namespace RogueEssence.LevelGen
         {
             List<Team> result = new List<Team>();
             int amount = AmountSpawner.Pick(((IGenContext)map).Rand);
-            for (int ii = 0; ii < amount; ii++)
+            for (int ii = 0; ii < amount * 10; ii++)
             {
                 Team team = Picker.Spawn(map);
                 if (team != null)
                     result.Add(team);
+                if (result.Count >= amount)
+                    break;
             }
 
             return result;
