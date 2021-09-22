@@ -5,6 +5,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System;
+using System.Linq;
 
 namespace RogueEssence.Menu
 {
@@ -13,6 +14,7 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         public SpeakerPortrait Portrait;
+        private readonly List<(MonsterID mon, string name)> choices;
         private readonly OnChooseSlot chooseAction;
         private readonly Action onCancel;
         private readonly bool canMenu;
@@ -20,21 +22,21 @@ namespace RogueEssence.Menu
         public override bool CanMenu => canMenu;
         public override bool CanCancel => onCancel is not null;
 
-        public ChooseMonsterMenu(string title, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true)
+        public ChooseMonsterMenu(string title, List<(MonsterID mon, string name)> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true)
         {
             this.chooseAction = chooseAction;
             this.onCancel = onCancel;
             this.canMenu = canMenu;
-            List<MenuChoice> flatChoices = new();
-            for (int ii = 0; ii < DataManager.Instance.StartChars.Count; ii++)
+            this.choices = choices;
+            List<MenuChoice> flatChoices = choices.Select((choice, i) =>
             {
-                MonsterID startChar = DataManager.Instance.StartChars[ii].mon;
-                string name = DataManager.Instance.GetMonster(startChar.Species).GetColoredName();
-                if (DataManager.Instance.StartChars[ii].name != "")
-                    name = DataManager.Instance.StartChars[ii].name;
-                int index = ii;
-                flatChoices.Add(new MenuTextChoice(name, () => { this.chooseAction(index); }));
-            }
+                MonsterID monster = choice.mon;
+                string name = choice.name;
+                if (string.IsNullOrEmpty(name))
+                    name = DataManager.Instance.GetMonster(monster.Species).GetColoredName();
+                int index = i;
+                return (MenuChoice)new MenuTextChoice(name, () => { this.chooseAction(index); });
+            }).ToList();
             List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 
             int totalSlots = SLOTS_PER_PAGE;
@@ -61,7 +63,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Portrait.Speaker = DataManager.Instance.StartChars[CurrentChoiceTotal].mon;
+            Portrait.Speaker = choices[CurrentChoiceTotal].mon;
             base.ChoiceChanged();
         }
 

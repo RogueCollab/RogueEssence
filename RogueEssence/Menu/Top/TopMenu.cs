@@ -237,7 +237,7 @@ namespace RogueEssence.Menu
                     int startIndex = 0;
                     if (backPhase == 0)
                         startIndex = DataManager.Instance.StartChars.FindIndex(start => start.mon == monId);
-                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), startIndex, (int index) =>
+                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), DataManager.Instance.StartChars, startIndex, (int index) =>
                     {
                         string newName = null;
                         if (DataManager.Instance.StartChars[index].name != "")
