@@ -248,7 +248,7 @@ namespace RogueEssence.Ground
             {
                 IHit first = move.Hits.FirstOrDefault((c) => c.Box.Tags == 2);
                 if (first != null)
-                    GroundScene.Instance.PendingLeaderAction = ((GroundObject)first.Box).Interact(this);
+                    GroundScene.Instance.PendingLeaderAction = ((GroundObject)first.Box).Interact(this, new TriggerResult());
             }
 
             UpdateFrame();
@@ -418,7 +418,7 @@ namespace RogueEssence.Ground
             //do nothing
         }
 
-        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator)
+        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator, TriggerResult result)
         {
             if (!activator.EntEnabled)
                 yield break;
@@ -431,7 +431,7 @@ namespace RogueEssence.Ground
             if (GetTriggerType() == EEntityTriggerTypes.Action)
             {
                 IsInteracting = true;
-                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, ent));
+                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, result, ent));
                 IsInteracting = false;
             }
         }

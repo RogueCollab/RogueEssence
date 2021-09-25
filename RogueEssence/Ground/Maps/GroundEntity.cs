@@ -4,6 +4,7 @@ using RogueElements;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Ground
 {
@@ -198,9 +199,9 @@ namespace RogueEssence.Ground
         /// Run a lua event by type
         /// </summary>
         /// <param name="ev"></param>
-        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev)
+        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, TriggerResult result)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(RunEvent(ev, this));
+            yield return CoroutineManager.Instance.StartCoroutine(RunEvent(ev, result, this));
         }
 
         /// <summary>
@@ -209,7 +210,7 @@ namespace RogueEssence.Ground
         /// <param name="ev"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
+        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, TriggerResult result, params object[] arguments)
         {
             if (scriptEvents.ContainsKey(ev))
             {
@@ -220,6 +221,7 @@ namespace RogueEssence.Ground
                 partopass.Add(this);
                 partopass.AddRange(arguments);
                 yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
+                result.Success = true;
             }
             else
                 yield break;
@@ -299,7 +301,7 @@ namespace RogueEssence.Ground
         /// When something tries to interact with this entity, this method is called.
         /// </summary>
         /// <param name="activator"></param>
-        public virtual IEnumerator<YieldInstruction> Interact(GroundEntity activator)
+        public virtual IEnumerator<YieldInstruction> Interact(GroundEntity activator, TriggerResult result)
         {
             //default does nothing
             yield break;

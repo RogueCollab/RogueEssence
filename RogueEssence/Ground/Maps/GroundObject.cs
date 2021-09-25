@@ -84,16 +84,16 @@ namespace RogueEssence.Ground
 
 
 
-        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator) //PSY: Set this value to get the entity that touched us/activated us
+        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator, TriggerResult result) //PSY: Set this value to get the entity that touched us/activated us
         {
             if (!EntEnabled)
                 yield break;
 
             //Run script events
             if (GetTriggerType() == EEntityTriggerTypes.Action)
-                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, activator));
+                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, result, activator));
             else if (GetTriggerType() == EEntityTriggerTypes.Touch)
-                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Touch, activator));
+                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Touch, result, activator));
 
         }
 
