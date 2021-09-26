@@ -57,6 +57,17 @@ namespace RogueEssence.LevelGen
                 queue.Enqueue(genStep.Priority, genStep.GetItem());
             }
         }
+
+        public override string ToString()
+        {
+            int count = 0;
+            if (Spawns != null)
+            {
+                foreach (IGenPriority gen in Spawns)
+                    count++;
+            }
+            return string.Format("{0}[{1}]", this.GetType().Name, count);
+        }
     }
 
     [Serializable]
@@ -113,6 +124,11 @@ namespace RogueEssence.LevelGen
                 IGenPriority genStep = DropItems[ii];
                 queue.Enqueue(genStep.Priority, genStep.GetItem());
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]", this.GetType().Name, Spawns.Count.ToString());
         }
     }
 }
