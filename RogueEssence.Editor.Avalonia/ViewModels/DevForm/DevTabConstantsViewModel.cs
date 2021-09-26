@@ -121,7 +121,7 @@ namespace RogueEssence.Dev.ViewModels
                     lock (GameBase.lockObj)
                     {
                         object obj = data;
-                        DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                        DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
                         saveOp((T)obj);
                         editor.Close();
                     }

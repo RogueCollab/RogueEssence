@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, FlagType member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, FlagType member, Type[] subGroupStack)
         {
             StringTypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<StringTypeConstraintAttribute>(attributes);
 
@@ -66,7 +66,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override FlagType SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override FlagType SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
             StringTypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<StringTypeConstraintAttribute>(attributes);

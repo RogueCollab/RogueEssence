@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Loc member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Loc member, Type[] subGroupStack)
         {
             LoadLabelControl(control, name);
 
@@ -63,7 +63,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override Loc SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override Loc SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
             controlIndex++;

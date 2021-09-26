@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(MusicAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
             LoadLabelControl(control, name);
 
@@ -53,7 +53,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
             controlIndex++;

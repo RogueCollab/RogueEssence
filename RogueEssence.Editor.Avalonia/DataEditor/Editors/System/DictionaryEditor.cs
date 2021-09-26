@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IDictionary member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IDictionary member, Type[] subGroupStack)
         {
             LoadLabelControl(control, name);
 
@@ -45,11 +45,11 @@ namespace RogueEssence.Dev
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
                     op(key, element);
                     frmData.Close();
                 };
@@ -68,11 +68,11 @@ namespace RogueEssence.Dev
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0]);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true);
+                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
                     op(key, element);
                     frmData.Close();
                 };
@@ -90,7 +90,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
             controlIndex++;

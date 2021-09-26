@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, MonsterID member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, MonsterID member, Type[] subGroupStack)
         {
             LoadLabelControl(control, name);
 
@@ -177,7 +177,7 @@ namespace RogueEssence.Dev
             throw new NotImplementedException();
         }
 
-        public override MonsterID SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override MonsterID SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             MonsterID result = new MonsterID();
             MonsterIDAttribute dataAtt = ReflectionExt.FindAttribute<MonsterIDAttribute>(attributes);

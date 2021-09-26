@@ -16,7 +16,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, AutoTile member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, AutoTile member, Type[] subGroupStack)
         {
             LoadLabelControl(control, name);
 
@@ -54,7 +54,7 @@ namespace RogueEssence.Dev
             control.Children.Add(cbxValue);
         }
 
-        public override AutoTile SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override AutoTile SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
             controlIndex++;

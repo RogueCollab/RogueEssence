@@ -41,7 +41,10 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}, {2}", this.GetType().Name, this.BoxID.ToString(), this.BaseSpawner.ToString());
+            string baseSpawnerString = "NULL";
+            if (this.BaseSpawner != null)
+                baseSpawnerString = this.BaseSpawner.ToString();
+            return string.Format("{0}: {1}, {2}", this.GetType().Name, this.BoxID.ToString(), baseSpawnerString);
         }
     }
 }
