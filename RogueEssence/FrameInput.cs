@@ -160,7 +160,7 @@ namespace RogueEssence
 
             Direction = dirLoc.GetDir();
 
-            if (gamePad.IsConnected)
+            if (controllerActive)
             {
                 for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionButtons.Length; ii++)
                     inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurSettings.ActionButtons[ii]);
