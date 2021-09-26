@@ -357,6 +357,7 @@ namespace RogueEssence
                 while (SceneOutcome == null)
                     yield return CoroutineManager.Instance.StartCoroutine(CurrentScene.ProcessInput());
 
+                LuaEngine.Instance.SceneOver();
                 IEnumerator<YieldInstruction> outcome = SceneOutcome;
                 SceneOutcome = null;
                 yield return CoroutineManager.Instance.StartCoroutine(outcome);

@@ -422,6 +422,11 @@ namespace RogueEssence.Script
             Breaking = true;
         }
 
+        public void SceneOver()
+        {
+            Breaking = false;
+        }
+
         /// <summary>
         /// Calling this sends the OnInit event to the script engine.
         /// Use this if you just reset the script state, and want to force it to do its initialization.
@@ -1668,7 +1673,6 @@ namespace RogueEssence.Script
 
                 m_nextUpdate = gametime.TotalGameTime + TimeSpan.FromMilliseconds(20); //Schedule next update
             }
-            Breaking = false;
         }
     }
 
