@@ -22,7 +22,7 @@ namespace RogueEssence.Menu
 
             Title = new MenuText(Text.FormatKey("MENU_RESULTS_INVENTORY_TITLE"), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
 
             Items = new MenuText[ending.ActiveTeam.MaxInv];
             List<string> flatChoices = new List<string>();

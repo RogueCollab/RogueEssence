@@ -46,14 +46,14 @@ namespace RogueEssence.Menu
 
         protected void Initialize(string title, string notes, int boxLength)
         {
-            Bounds = new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - boxLength / 2, 50), new Loc(boxLength, TitledStripMenu.TITLE_OFFSET + LINE_SPACE * 5 + GraphicsManager.MenuBG.TileHeight * 2));
+            Bounds = new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - boxLength / 2, 50), new Loc(boxLength, TitledStripMenu.TITLE_OFFSET + LINE_HEIGHT * 5 + GraphicsManager.MenuBG.TileHeight * 2));
 
             Title = new MenuText(title, new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
 
             Text = new MenuText("", new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2));
-            NameLine = new MenuDivider(new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_SPACE), MaxLength);
+            NameLine = new MenuDivider(new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT), MaxLength);
 
-            Notes = new MenuText(notes, new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_SPACE * 7 / 2), DirV.None, DirH.None, Color.White);
+            Notes = new MenuText(notes, new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT * 7 / 2), DirV.None, DirH.None, Color.White);
 
             AddAltWheel('.', '·');
             AddAltWheel('!', '¡');
@@ -268,7 +268,7 @@ namespace RogueEssence.Menu
         protected void UpdatePickerPos()
         {
             PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
-            cursorPos = new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2 + Text.GetTextLength() - 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_SPACE);
+            cursorPos = new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2 + Text.GetTextLength() - 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

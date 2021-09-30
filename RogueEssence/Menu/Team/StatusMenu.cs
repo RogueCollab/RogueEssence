@@ -61,8 +61,8 @@ namespace RogueEssence.Menu
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Description = new DialogueText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE);
+            Description = new DialogueText("", new Rect(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, summaryMenu.Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - summaryMenu.Bounds.Y)), LINE_HEIGHT);
             summaryMenu.Elements.Add(Description);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_STATUS_TITLE"), statuses.ToArray(), 0, 0, SLOTS_PER_PAGE);
@@ -81,13 +81,13 @@ namespace RogueEssence.Menu
             {
                 int entryIndex = mapIndices[index];
                 Data.MapStatusData entry = Data.DataManager.Instance.GetMapStatus(entryIndex);
-                Description.SetText(entry.Desc.ToLocal());
+                Description.SetFormattedText(entry.Desc.ToLocal());
             }
             else
             {
                 int entryIndex = indices[index - mapIndices.Count];
                 Data.StatusData entry = Data.DataManager.Instance.GetStatus(entryIndex);
-                Description.SetText(entry.Desc.ToLocal());
+                Description.SetFormattedText(entry.Desc.ToLocal());
             }
             base.ChoiceChanged();
         }

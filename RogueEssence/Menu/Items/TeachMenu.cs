@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
 
             SummaryTitle = new MenuText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             summaryMenu.Elements.Add(SummaryTitle);
-            summaryMenu.Elements.Add(new MenuDivider(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), 144 - GraphicsManager.MenuBG.TileWidth * 2));
+            summaryMenu.Elements.Add(new MenuDivider(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), 144 - GraphicsManager.MenuBG.TileWidth * 2));
             Skills = new MenuText[CharData.MAX_SKILL_SLOTS];
             SkillCharges = new MenuText[CharData.MAX_SKILL_SLOTS];
             for (int ii = 0; ii < Skills.Length; ii++)

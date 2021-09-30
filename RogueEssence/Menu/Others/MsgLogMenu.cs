@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
             dividers = new List<MenuDivider>();
             Bounds = Rect.FromPoints(new Loc(LiveMsgLog.SIDE_BUFFER, 24), new Loc(GraphicsManager.ScreenWidth - LiveMsgLog.SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
             Title = new MenuText(Text.FormatKey("MENU_MSG_LOG_TITLE"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
             LoadMsgs();
         }
 

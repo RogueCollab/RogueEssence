@@ -17,7 +17,7 @@ namespace RogueEssence.Menu
         {
             Title = new MenuText(Text.FormatKey("MENU_SWAP_NEEDED"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Title);
-            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE),
+            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
                 Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
         }

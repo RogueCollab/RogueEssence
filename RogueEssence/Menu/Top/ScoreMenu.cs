@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
 
             string zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[chosenZone].GetColoredName();
             Title = new MenuText(Text.FormatKey("MENU_SCORES_TITLE") + ": " + zoneName, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
 
             Scores = new MenuText[scores.Count * 3];
             for (int ii = 0; ii < scores.Count; ii++)

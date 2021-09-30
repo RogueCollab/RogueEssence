@@ -11,15 +11,15 @@ namespace RogueEssence.Menu
         public TileSummary(Rect bounds)
             : base(bounds)
         {
-            Description = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE);
+            Description = new DialogueText("", new Rect(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - Bounds.Y)), LINE_HEIGHT);
             Elements.Add(Description);
         }
 
         public void SetTile(int index)
         {
             Data.TileData entry = Data.DataManager.Instance.GetTile(index);
-            Description.SetText(entry.Desc.ToLocal());
+            Description.SetFormattedText(entry.Desc.ToLocal());
         }
     }
 }

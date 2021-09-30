@@ -44,7 +44,7 @@ namespace RogueEssence.Menu
 
             //TODO: align this text properly
             Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES") + " (1/3)", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
 
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
                 Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
@@ -94,8 +94,8 @@ namespace RogueEssence.Menu
             bool origIntrinsic = (player.Intrinsics[0].Element.ID == player.BaseIntrinsics[0]);
             IntrinsicData entry = DataManager.Instance.GetIntrinsic(player.Intrinsics[0].Element.ID);
             Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
-            IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, LINE_SPACE);
+            IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), new Rect(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
+                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 3 - Bounds.Y)), LINE_HEIGHT);
         }
 
         public override IEnumerable<IMenuElement> GetElements()

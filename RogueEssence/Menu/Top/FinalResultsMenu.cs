@@ -30,7 +30,7 @@ namespace RogueEssence.Menu
             Title = new MenuText(Text.FormatKey("MENU_RESULTS_TITLE"),
                 new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
 
             Team = new MenuText(Ending.ActiveTeam.GetDisplayName(), new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE + TitledStripMenu.TITLE_OFFSET), DirH.None);
             string message = "";

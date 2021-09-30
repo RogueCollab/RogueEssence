@@ -64,18 +64,18 @@ namespace RogueEssence.Menu
             List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 
 
-            Initialize(new Loc(0, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2), menuWidth, Text.FormatKey("MENU_STORAGE_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, 8);
+            Initialize(new Loc(0, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2), menuWidth, Text.FormatKey("MENU_STORAGE_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, 8);
 
-            theirInfo = new OfferItemsMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
+            theirInfo = new OfferItemsMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
 
-            yourTitle = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.Start.Y - LINE_SPACE - GraphicsManager.MenuBG.TileHeight * 2), new Loc(Bounds.End.X, Bounds.Start.Y)));
+            yourTitle = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.Start.Y - LINE_HEIGHT - GraphicsManager.MenuBG.TileHeight * 2), new Loc(Bounds.End.X, Bounds.Start.Y)));
             MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetDisplayName(),
                 new Loc((yourTitle.Bounds.X + yourTitle.Bounds.End.X) / 2, yourTitle.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourText.Color = TextTan;
             yourTitle.Elements.Add(yourText);
 
             yourSummary = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.End.Y),
-                new Loc(Bounds.End.X, Bounds.End.Y + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+                new Loc(Bounds.End.X, Bounds.End.Y + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             yourStatus = new MenuText("",
                 new Loc((yourSummary.Bounds.X + yourSummary.Bounds.End.X) / 2, yourSummary.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourStatus.Color = TextTan;
@@ -85,14 +85,14 @@ namespace RogueEssence.Menu
 
             
 
-            theirTitle = new SummaryMenu(Rect.FromPoints(new Loc(theirInfo.Bounds.Start.X, theirInfo.Bounds.Start.Y - LINE_SPACE - GraphicsManager.MenuBG.TileHeight * 2), new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.Start.Y)));
+            theirTitle = new SummaryMenu(Rect.FromPoints(new Loc(theirInfo.Bounds.Start.X, theirInfo.Bounds.Start.Y - LINE_HEIGHT - GraphicsManager.MenuBG.TileHeight * 2), new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.Start.Y)));
             MenuText theirText = new MenuText("",
                 new Loc((theirTitle.Bounds.X + theirTitle.Bounds.End.X) / 2, theirTitle.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             theirText.Color = TextTan;
             theirTitle.Elements.Add(theirText);
 
             theirSummary = new SummaryMenu(Rect.FromPoints(new Loc(theirInfo.Bounds.Start.X, theirInfo.Bounds.End.Y),
-                new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.End.Y + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+                new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.End.Y + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             theirStatus = new MenuText("",
                 new Loc((theirSummary.Bounds.X + theirSummary.Bounds.End.X) / 2, theirSummary.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             theirStatus.Color = TextTan;

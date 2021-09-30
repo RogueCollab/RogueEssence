@@ -15,7 +15,7 @@ namespace RogueEssence.Menu
             Loc size = new Loc(80, 64);
             
             int length = max.ToString().Length;
-            MenuDigits digits = new MenuDigits(1, length, start + new Loc(size.X / 2 - MenuDigits.DIGIT_SPACE * length / 2, GraphicsManager.MenuBG.TileHeight + LINE_SPACE * 2));
+            MenuDigits digits = new MenuDigits(1, length, start + new Loc(size.X / 2 - MenuDigits.DIGIT_SPACE * length / 2, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT * 2));
 
             Initialize(new Rect(start, size), digits, 1, max, length - 1);
             

@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         {
             Details = new MenuText(Text.FormatKey("MENU_SEED_CUSTOMIZE", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Details);
-            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE),
+            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
                 Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
 

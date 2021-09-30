@@ -17,7 +17,7 @@ namespace RogueEssence.Menu
 
 
             summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_GROUND_TITLE"), summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight)));
-            summaryMenu.Elements.Add(new MenuDivider(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2));
+            summaryMenu.Elements.Add(new MenuDivider(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2));
             summaryMenu.Elements.Add(new MenuText(name, summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET)));
             if (!String.IsNullOrEmpty(price))
                 summaryMenu.Elements.Add(new MenuText(price, new Loc(summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2, summaryMenu.Bounds.Start.Y + GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), DirH.Right));

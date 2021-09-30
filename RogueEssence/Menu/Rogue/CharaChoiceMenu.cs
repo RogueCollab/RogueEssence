@@ -63,11 +63,11 @@ namespace RogueEssence.Menu
 
             Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 64), true);
 
-            infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
 
             Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
 
-            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
             title.Color = TextTan;
             titleMenu.Elements.Add(title);

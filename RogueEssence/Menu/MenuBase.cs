@@ -9,7 +9,7 @@ namespace RogueEssence.Menu
     public abstract class MenuBase
     {
         public const int VERT_SPACE = 14;
-        public const int LINE_SPACE = 12;
+        public const int LINE_HEIGHT = 12;
 
         //system colors:
         //White #FFFFFF

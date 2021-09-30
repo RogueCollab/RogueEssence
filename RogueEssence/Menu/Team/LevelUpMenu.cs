@@ -30,9 +30,9 @@ namespace RogueEssence.Menu
             Speed = genMenuTier(Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7, Text.FormatKey("MENU_LABEL", Data.Stat.Speed.ToLocal("tiny")), oldSpeed, player.BaseSpeed - oldSpeed, player.BaseSpeed);
 
             Divs = new MenuDivider[6];
-            Divs[0] = new MenuDivider(new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.Width - 8 * 4);
+            Divs[0] = new MenuDivider(new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - 8 * 4);
             for (int ii = 1; ii < 6; ii++)
-                Divs[ii] = new MenuDivider(new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + LINE_SPACE + VERT_SPACE * (ii+1)), Bounds.Width - 8 * 4);
+                Divs[ii] = new MenuDivider(new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT + VERT_SPACE * (ii+1)), Bounds.Width - 8 * 4);
         }
 
         private MenuText[] genMenuTier(int height, string label, int oldVal, int diff, int newVal)

@@ -182,7 +182,7 @@ namespace RogueEssence.Content
             if (String.IsNullOrWhiteSpace(text))
                 return;
 
-            int lineSpace = CharHeight + LineSpace;
+            int lineHeight = CharHeight + LineSpace;
 
             //Draw positions
             int dX = x;
@@ -245,7 +245,7 @@ namespace RogueEssence.Content
                             targetX = (area.Value.Left + area.Value.Right - SubstringWidth(text.Substring(ii + 1).ToString())) / 2;
                             break;
                     }
-                    dY += lineSpace;
+                    dY += lineHeight;
                     dX = targetX;
                 }
                 //Character

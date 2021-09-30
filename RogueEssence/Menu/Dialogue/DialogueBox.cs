@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         protected const int CURSOR_FLASH_TIME = 24;
         public const int TEXT_TIME = 1;
         public const int SIDE_BUFFER = 8;
-        public const int TEXT_SPACE = 16;//14
+        public const int TEXT_HEIGHT = 16;//14
         public const int VERT_PAD = 2;//1
         public const int VERT_OFFSET = -2;//-3
         public const int HORIZ_PAD = 4;
@@ -43,9 +43,9 @@ namespace RogueEssence.Menu
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
 
-        public DialogueBox(string msg, bool sound, bool centered)
+        public DialogueBox(string msg, bool sound, bool centerH, bool centerV)
         {
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_SPACE * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
 
             Pauses = new List<TextPause>();
             speakerName = "";
@@ -53,9 +53,8 @@ namespace RogueEssence.Menu
             Sound = sound;
             message = msg;
 
-            Text = new DialogueText("", new Loc(Bounds.Start.X + GraphicsManager.MenuBG.TileWidth + HORIZ_PAD,
-                Bounds.Start.Y + GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2 - Bounds.X, TEXT_SPACE, centered, false, 0);
+            Text = new DialogueText("", new Rect(Bounds.Start.X + GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, Bounds.Start.Y + GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
+                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2 - Bounds.Y), TEXT_HEIGHT, centerH, centerV, 0);
 
             updateMessage();
         }
@@ -79,7 +78,7 @@ namespace RogueEssence.Menu
                 //else
                 //{
                     TextPause textPause = getCurrentTextPause();
-                    bool continueText = false;
+                    bool continueText;
                     if (textPause != null)
                     {
                         if (textPause.Time > 0)
@@ -121,7 +120,7 @@ namespace RogueEssence.Menu
             {
                 //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
                 //the coordinates are relative to the string's position
-                Loc loc = Text.GetTextProgress() + Text.Start;
+                Loc loc = Text.GetTextProgress() + Text.Rect.Start;
 
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                     GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);
@@ -231,7 +230,7 @@ namespace RogueEssence.Menu
 
             Text.CurrentCharIndex -= startLag;
 
-            Text.SetText(msg);
+            Text.SetFormattedText(msg);
         }
     }
 

@@ -94,9 +94,9 @@ namespace RogueEssence.Menu
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            tradeSummary = new TradeSummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_SPACE * 7 - GraphicsManager.MenuBG.TileHeight * 2),
+            tradeSummary = new TradeSummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_HEIGHT * 7 - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, summaryMenu.Bounds.Top)));
-            moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, tradeSummary.Bounds.Top - LINE_SPACE * 2 - GraphicsManager.MenuBG.TileHeight * 2),
+            moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, tradeSummary.Bounds.Top - LINE_HEIGHT * 2 - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, tradeSummary.Bounds.Top)));
 
             int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();

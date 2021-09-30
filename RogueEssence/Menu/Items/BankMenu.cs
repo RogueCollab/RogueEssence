@@ -28,28 +28,28 @@ namespace RogueEssence.Menu
                 128 + TitledStripMenu.TITLE_OFFSET + 8 + GraphicsManager.MenuBG.TileHeight));
             
             MenuText notes = new MenuText(Text.FormatKey("MENU_BANK_TITLE"), new Loc(GraphicsManager.ScreenWidth / 2,
-                128 + TitledStripMenu.TITLE_OFFSET + LINE_SPACE * 3 + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                128 + TitledStripMenu.TITLE_OFFSET + LINE_HEIGHT * 3 + GraphicsManager.MenuBG.TileHeight), DirH.None);
 
             int minSize = (Math.Max(MenuDigits.DIGIT_SPACE * maxLength, notes.GetTextLength()) / 16 + 1) * 16;
 
             Initialize(new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - (minSize + 16) / 2, 128),
-                new Loc(minSize + 16, TitledStripMenu.TITLE_OFFSET + GraphicsManager.MenuBG.TileHeight * 2 + LINE_SPACE * 5)),
+                new Loc(minSize + 16, TitledStripMenu.TITLE_OFFSET + GraphicsManager.MenuBG.TileHeight * 2 + LINE_HEIGHT * 5)),
                 digits, Math.Max(0, (int)(total - Int32.MaxValue)), maxVal, maxLength - onHand.ToString().Length);
             
             MenuText moneyTitle = new MenuText(Text.FormatKey("MENU_BANK_MONEY"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             NonChoices.Add(moneyTitle);
-            NonChoices.Add(new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2));
+            NonChoices.Add(new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2));
             NonChoices.Add(notes);
 
             bankMenu = new SummaryMenu(new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - minSize / 2, 24),
-                new Loc(minSize, TitledStripMenu.TITLE_OFFSET + GraphicsManager.MenuBG.TileHeight * 2 + LINE_SPACE * 2)));
+                new Loc(minSize, TitledStripMenu.TITLE_OFFSET + GraphicsManager.MenuBG.TileHeight * 2 + LINE_HEIGHT * 2)));
             BankDigits = new MenuDigits(DataManager.Instance.Save.ActiveTeam.Bank, maxLength, new Loc(GraphicsManager.ScreenWidth / 2 - MenuDigits.DIGIT_SPACE * maxLength / 2,
                 24 + TitledStripMenu.TITLE_OFFSET + 8 + GraphicsManager.MenuBG.TileHeight));
             bankMenu.Elements.Add(BankDigits);
 
             MenuText bankTitle = new MenuText(Text.FormatKey("MENU_BANK_BANK"), bankMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             bankMenu.Elements.Add(bankTitle);
-            bankMenu.Elements.Add(new MenuDivider(bankMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), bankMenu.Bounds.End.X - bankMenu.Bounds.X - GraphicsManager.MenuBG.TileWidth * 2));
+            bankMenu.Elements.Add(new MenuDivider(bankMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), bankMenu.Bounds.End.X - bankMenu.Bounds.X - GraphicsManager.MenuBG.TileWidth * 2));
         }
 
         protected override void ValueChanged()

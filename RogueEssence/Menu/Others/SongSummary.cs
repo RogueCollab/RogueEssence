@@ -22,8 +22,8 @@ namespace RogueEssence.Menu
             Elements.Add(OriginName);
             Origin = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
             Elements.Add(Origin);
-            Artist = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE);
+            Artist = new DialogueText("", new Rect(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2),
+                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - Bounds.Y)), LINE_HEIGHT);
             Elements.Add(Artist);
         }
 
@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
             Name.SetText(name);
             OriginName.SetText(Text.FormatKey("MENU_SONG_ORIGIN_NAME", originName));
             Origin.SetText(Text.FormatKey("MENU_SONG_ORIGIN", origin));
-            Artist.SetText(Text.FormatKey("MENU_SONG_ARTIST", artist));
+            Artist.SetFormattedText(Text.FormatKey("MENU_SONG_ARTIST", artist));
         }
     }
 }

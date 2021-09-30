@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
             List<MenuChoice[]> char_skills = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
 
             summaryMenu = new SkillSummary(Rect.FromPoints(new Loc(16,
-                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_SPACE * 2 - VERT_SPACE * 4),
+                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_HEIGHT * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_SKILL_RECALL"), char_skills.ToArray(), 0, 0, SLOTS_PER_PAGE);

@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
         protected const int CURSOR_FLASH_TIME = 24;
         public const int TEXT_TIME = 1;
         public const int SIDE_BUFFER = 8;
-        public const int TEXT_SPACE = 16;
+        public const int TEXT_HEIGHT = 16;
         public const int MAX_LINES = 2;
         public const int FADE_TIME = 60;
 
@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
             }
             string newMessage = message;
 
-            Text = new DialogueText(newMessage, new Loc(0, GraphicsManager.ScreenHeight / 2), GraphicsManager.ScreenWidth, TEXT_SPACE, true, true, FadeIn ? -1 : 0);
+            Text = new DialogueText(newMessage, new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, FadeIn ? -1 : 0);
         }
 
         public void ProcessActions(FrameTick elapsedTime)
@@ -169,7 +169,7 @@ namespace RogueEssence.Menu
             {
                 //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
                 //the coordinates are relative to the string's position
-                Loc loc = Text.GetTextProgress() + Text.Start;
+                Loc loc = Text.GetTextProgress() + Text.Rect.Start;
 
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                     GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);

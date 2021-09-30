@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
 
             summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
-            infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             UpdateExtraInfo("");
 
             Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
