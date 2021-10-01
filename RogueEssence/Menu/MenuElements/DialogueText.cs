@@ -92,7 +92,7 @@ namespace RogueEssence.Menu
             
             string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
             if (CenterH)
-                loc += new Loc(Rect.Width - GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1]) / 2, 0);
+                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1])) / 2, 0);
             if (CenterV)
                 loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (allLines.Length - 1) * LineHeight)) / 2);
             return loc;

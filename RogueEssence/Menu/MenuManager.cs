@@ -200,7 +200,7 @@ namespace RogueEssence.Menu
                 box = new ClickedDialog(msg, sound, centerH, centerV, finishAction);
             box.SetSpeaker(speaker, speakerName, emotion);
             if (autoFinish)
-                box.Text.FinishText();
+                box.FinishText();
             return box;
         }
 
@@ -229,7 +229,7 @@ namespace RogueEssence.Menu
             DialogueBox box = new QuestionDialog(break_str[break_str.Length-1], sound, false, false, choices, defaultNo ? 1 : 0, 1);
             box.SetSpeaker(speaker, speakerName, emotion);
             if (autoFinish)
-                box.Text.FinishText();
+                box.FinishText();
 
             if (break_str.Length > 1)
             {
@@ -259,7 +259,7 @@ namespace RogueEssence.Menu
             DialogueBox box = new QuestionDialog(break_str[break_str.Length - 1], sound, false, false, choices, defaultChoice, cancelChoice);
             box.SetSpeaker(speaker, speakerName, emotion);
             if (autoFinish)
-                box.Text.FinishText();
+                box.FinishText();
 
             if (break_str.Length > 1)
             {

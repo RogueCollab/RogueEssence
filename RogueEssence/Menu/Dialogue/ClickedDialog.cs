@@ -8,8 +8,6 @@ namespace RogueEssence.Menu
 
     public class ClickedDialog : DialogueBox
     {
-        private const int HOLD_CANCEL_TIME = 30;
-
         private Action action;
 
         public ClickedDialog(string message, bool sound, bool centerH, bool centerV, Action action)
@@ -42,7 +40,7 @@ namespace RogueEssence.Menu
             base.Draw(spriteBatch);
 
             //draw down-tick
-            if (Text.Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+            if (Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                 GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
         }
     }

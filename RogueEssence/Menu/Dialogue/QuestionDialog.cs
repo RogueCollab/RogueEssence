@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
                 return;
             base.Draw(spriteBatch);
 
-            if (Text.Finished)
+            if (Finished)
                 dialogueChoices.Draw(spriteBatch);
 
         }
