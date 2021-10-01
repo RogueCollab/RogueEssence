@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Network;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Script
 {
@@ -879,6 +880,42 @@ namespace RogueEssence.Script
             catch (Exception e)
             {
                 DiagManager.Instance.LogInfo(String.Format("ScriptUI.CurrentActivityMenu(): Encountered exception:\n{0}", e.Message));
+            }
+        }
+
+        public void ChooseMonsterMenu(string title, LuaTable choices, bool canMenu = false, bool canCancel = false)
+        {
+            try
+            {
+                m_choiceresult = null;
+
+                List<(MonsterID mon, string name)> monsters = new();
+
+                for (int ii = 1; choices[ii] is not null; ii++)
+                {
+                    var choice = choices[ii];
+                    if (choice is MonsterID monster)
+                        monsters.Add((monster, ""));
+                    else
+                        throw new ArgumentException($"Table must be array of '{nameof(MonsterID)}'", nameof(choices));
+                }
+
+                if (monsters.Count == 0)
+                    throw new ArgumentException($"Table must be array of one or more '{nameof(MonsterID)}'", nameof(choices));
+
+                void chooseAction(int slot)
+                {
+                    m_choiceresult = monsters[slot].mon;
+                    MenuManager.Instance.RemoveMenu();
+                }
+
+                void cancelAction() { }
+
+                m_curchoice = new ChooseMonsterMenu(title, monsters, 0, chooseAction, canCancel ? cancelAction : null, canMenu);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ChooseMonsterMenu(): Encountered exception:\n{0}", e.Message));
             }
         }
 
