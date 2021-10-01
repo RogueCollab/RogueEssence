@@ -11,7 +11,7 @@ namespace RogueEssence.Menu
 {
     public abstract class DialogueBox : MenuBase, IInteractable
     {
-        public static Regex SplitTags = new Regex("\\[scroll\\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static Regex SplitTags = new Regex(@"\[scroll\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         protected const int HOLD_CANCEL_TIME = 30;
         private const int SCROLL_TIME = 40;
