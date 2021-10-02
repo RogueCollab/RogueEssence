@@ -182,6 +182,7 @@ namespace RogueEssence.Menu
 
                         DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = new Character(tradeTeam.OfferedChar, DataManager.Instance.Save.ActiveTeam);
                         DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
+                        DataManager.Instance.Save.RogueUnlockMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
 
                         baseMenu.CurrentState = ExchangeState.PostTradeWait;
                         tradeTeam.SetReady(baseMenu.CurrentState);

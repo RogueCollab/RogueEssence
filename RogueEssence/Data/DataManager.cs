@@ -1577,6 +1577,17 @@ namespace RogueEssence.Data
                 Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
                 state.Save.Dex = unlocks;
 
+                //TODO: v0.5 Remove this
+                if (state.Save.RogueStarters == null)
+                {
+                    state.Save.RogueStarters = new bool[DataIndices[DataType.Monster].Count];
+                    for (int ii = 0; ii < unlocks.Length; ii++)
+                        state.Save.RogueStarters[ii] = unlocks[ii] == GameProgress.UnlockState.Completed;
+                }
+                bool[] starterUnlocks = new bool[DataIndices[DataType.Monster].Count];
+                Array.Copy(state.Save.RogueStarters, starterUnlocks, Math.Min(starterUnlocks.Length, state.Save.Dex.Length));
+                state.Save.RogueStarters = starterUnlocks;
+
                 unlocks = new GameProgress.UnlockState[DataIndices[DataType.Zone].Count];
                 Array.Copy(state.Save.DungeonUnlocks, unlocks, Math.Min(unlocks.Length, state.Save.DungeonUnlocks.Length));
                 state.Save.DungeonUnlocks = unlocks;

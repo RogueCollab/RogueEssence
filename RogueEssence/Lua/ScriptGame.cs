@@ -514,6 +514,7 @@ namespace RogueEssence.Script
             if (bypass)
                 character.DequipItem();
             DataManager.Instance.Save.RegisterMonster(character.BaseForm.Species);
+            DataManager.Instance.Save.RogueUnlockMonster(character.BaseForm.Species);
         }
 
         //===================================

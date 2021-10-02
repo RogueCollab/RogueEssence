@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
             {
                 if (DiagManager.Instance.DevMode)
                     startChars.Add(ii);
-                else if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
+                else if (DataManager.Instance.Save.RogueStarters[ii] && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
                     startChars.Add(ii);
                 else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
@@ -225,7 +225,6 @@ namespace RogueEssence.Menu
             Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(choice, formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
             newChar.Nickname = name;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
-            DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Players[0].BaseForm.Species);
 
             try
             {

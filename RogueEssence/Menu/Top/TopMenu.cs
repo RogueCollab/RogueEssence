@@ -328,7 +328,6 @@ namespace RogueEssence.Menu
             newChar.Nickname = name;
             newChar.IsFounder = true;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
-            DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Players[0].BaseForm.Species);
 
             try
             {
