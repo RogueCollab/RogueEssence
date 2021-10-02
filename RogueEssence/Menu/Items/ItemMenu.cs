@@ -54,7 +54,7 @@ namespace RogueEssence.Menu
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
 
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
@@ -63,7 +63,7 @@ namespace RogueEssence.Menu
             int startPage = actualChoice / SLOTS_PER_PAGE;
             int startIndex = actualChoice % SLOTS_PER_PAGE;
 
-            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv.ToArray(), startIndex, startPage, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv, startIndex, startPage, SLOTS_PER_PAGE);
 
         }
 

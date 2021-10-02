@@ -32,14 +32,14 @@ namespace RogueEssence.Menu
                 string filename = files[ii];
                 flatChoices.Add(new MenuTextChoice(files[ii].Substring(files[ii].LastIndexOf('/')+1), () => { choose(filename); }));
             }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new MailMiniSummary(Rect.FromPoints(new Loc(8,
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 8, GraphicsManager.ScreenHeight - 8)));
 
-            Initialize(new Loc(8, 8), 196, Text.FormatKey(sosMode ? "MENU_MAIL_SOS_TITLE" : "MENU_MAIL_AOK_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(8, 8), 196, Text.FormatKey(sosMode ? "MENU_MAIL_SOS_TITLE" : "MENU_MAIL_AOK_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
 

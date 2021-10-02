@@ -51,10 +51,10 @@ namespace RogueEssence.Menu
                 int startChar = startChars[ii];
                 flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar].GetColoredName(), () => { choose(startChar); }));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
-            
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+
             int totalSlots = SLOTS_PER_PAGE;
-            if (box.Count == 1)
+            if (box.Length == 1)
                 totalSlots = box[0].Length;
 
             team = teamName;
@@ -65,7 +65,7 @@ namespace RogueEssence.Menu
 
             infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
 
-            Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
+            Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box, 0, 0, totalSlots, false, -1);
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);

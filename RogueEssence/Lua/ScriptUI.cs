@@ -919,6 +919,22 @@ namespace RogueEssence.Script
             }
         }
 
+
+
+        public void ChooseCustomMenu(ChoiceMenu menu)
+        {
+            try
+            {
+                m_choiceresult = null;
+
+                m_curchoice = menu;
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ChooseCustomMenu(): Encountered exception:\n{0}", e.Message));
+            }
+        }
+
         /// <summary>
         /// Marks the start of a multi-choice menu.
         /// Choices must be added after calling this method using the AddChoice() method.
@@ -995,6 +1011,14 @@ namespace RogueEssence.Script
             return m_choiceresult;
         }
 
+        public Action GetChoiceAction(object obj)
+        {
+            return () =>
+            {
+                MenuManager.Instance.RemoveMenu();
+                m_choiceresult = obj;
+            };
+        }
 
 
         /// <summary>

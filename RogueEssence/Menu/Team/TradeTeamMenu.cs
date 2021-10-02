@@ -40,12 +40,12 @@ namespace RogueEssence.Menu
                     DirV.Up, DirH.Right, tradeable ? Color.White : Color.Red);
                 flatChoices.Add(new MenuElementChoice(() => { choose(index); }, tradeable, memberName, memberLv));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
-            
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+
             int page = defaultChoice / SLOTS_PER_PAGE;
             int choice = defaultChoice % SLOTS_PER_PAGE;
             
-            Initialize(new Loc(0, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box.ToArray(), choice, page, SLOTS_PER_PAGE);
+            Initialize(new Loc(0, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, choice, page, SLOTS_PER_PAGE);
 
             theirInfo = new OfferFeaturesMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
 

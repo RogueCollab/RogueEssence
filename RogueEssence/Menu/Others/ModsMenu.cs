@@ -19,9 +19,9 @@ namespace RogueEssence.Menu
             foreach (string mod in mods)
                 flatChoices.Add(new MenuTextChoice(mod, () => { choose(Path.Join(PathMod.MODS_FOLDER, mod)); }));
 
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_MODS_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_MODS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
         public static List<string> GetEligibleMods()

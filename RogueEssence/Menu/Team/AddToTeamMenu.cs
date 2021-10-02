@@ -34,7 +34,7 @@ namespace RogueEssence.Menu
                     DirV.Up, DirH.Right, character.Dead ? Color.Red : Color.White);
                 flatChoices.Add(new MenuElementChoice(() => { choose(index); }, !character.Dead, memberName, memberLv));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             summaryMenu = new TeamMiniSummary(Rect.FromPoints(new Loc(16,
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 5),
@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
 
             portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
 
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, 0, 0, SLOTS_PER_PAGE);
 
         }
 

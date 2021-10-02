@@ -56,8 +56,8 @@ namespace RogueEssence.Menu
                         flatChoices.Add(new MenuElementChoice(() => { }, true, statusName));
                 }
             }
-            List<MenuChoice[]> statuses = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
-            
+            IChoosable[][] statuses = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
@@ -65,7 +65,7 @@ namespace RogueEssence.Menu
                 new Loc(summaryMenu.Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, summaryMenu.Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             summaryMenu.Elements.Add(Description);
 
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_STATUS_TITLE"), statuses.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_STATUS_TITLE"), statuses, 0, 0, SLOTS_PER_PAGE);
 
         }
 

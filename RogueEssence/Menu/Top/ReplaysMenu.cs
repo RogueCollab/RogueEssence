@@ -39,12 +39,12 @@ namespace RogueEssence.Menu
                 else
                     flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
             }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             //for the summary menu, include team, date, filename, location (string), seed, indication of rogue and seeded runs
             //if it can't be read, just include the filename
 
-            Initialize(new Loc(0, 0), 240, Text.FormatKey("MENU_REPLAYS_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(0, 0), 240, Text.FormatKey("MENU_REPLAYS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
         private void choose(string dir)

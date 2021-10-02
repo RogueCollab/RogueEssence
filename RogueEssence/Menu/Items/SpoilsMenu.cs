@@ -32,14 +32,14 @@ namespace RogueEssence.Menu
 
             int startChoice = 0;
             int startPage = 0;
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
-            Initialize(new Loc(16, 16), SPOILS_MENU_WIDTH, Text.FormatKey("MENU_TREASURE_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), SPOILS_MENU_WIDTH, Text.FormatKey("MENU_TREASURE_TITLE"), inv, startChoice, startPage, SLOTS_PER_PAGE);
 
         }
 

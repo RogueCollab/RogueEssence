@@ -36,11 +36,11 @@ namespace RogueEssence.Menu
                 int groundIndex = ii;
                 flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetGround(zone.GroundMaps[groundDests[ii].StructID.ID]).GetColoredName(), () => { chooseGround(groundIndex); }));
             }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
-            Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices.ToArray(), 0, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
+            Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices, 0, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
         }
 
         private void chooseDungeon(int choice)

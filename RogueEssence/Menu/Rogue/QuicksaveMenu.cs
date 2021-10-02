@@ -35,10 +35,10 @@ namespace RogueEssence.Menu
                 else
                     flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
             }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
-            Initialize(new Loc(0, 0), 240, Text.FormatKey("MENU_SAVE_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(0, 0), 240, Text.FormatKey("MENU_SAVE_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
         private void choose(string dir)

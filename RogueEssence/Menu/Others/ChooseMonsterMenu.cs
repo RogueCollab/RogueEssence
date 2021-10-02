@@ -37,10 +37,10 @@ namespace RogueEssence.Menu
                 int index = i;
                 return (MenuChoice)new MenuTextChoice(name, () => { this.chooseAction(index); });
             }).ToList();
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             int totalSlots = SLOTS_PER_PAGE;
-            if (box.Count == 1)
+            if (box.Length == 1)
                 totalSlots = box[0].Length;
 
 
@@ -48,7 +48,7 @@ namespace RogueEssence.Menu
 
             Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 32), true);
 
-            Initialize(new Loc(16, 16), 112, title, box.ToArray(), 0, 0, totalSlots, false, -1);
+            Initialize(new Loc(16, 16), 112, title, box, 0, 0, totalSlots, false, -1);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
