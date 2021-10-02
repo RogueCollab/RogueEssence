@@ -68,7 +68,7 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             title.Color = TextTan;
             titleMenu.Elements.Add(title);
 

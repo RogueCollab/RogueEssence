@@ -17,17 +17,17 @@ namespace RogueEssence.Menu
         public HotkeyMenu(int skillSlot)
         {
             this.skillSlot = skillSlot;
-            Loc center = new Loc();
+            Loc center = Loc.Zero;
 
             Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2));
-            skillText = new MenuText("", center + new Loc(-48, GraphicsManager.MenuBG.TileHeight), DirH.Left);
-            skillElement = new MenuText("", center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Left);
-            skillCharges = new MenuText("", center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Right);
+            skillText = new MenuText("", Bounds.Center + new Loc(-48, GraphicsManager.MenuBG.TileHeight), DirH.Left);
+            skillElement = new MenuText("", Bounds.Center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Left);
+            skillCharges = new MenuText("", Bounds.Center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Right);
         }
 
         public void SetArrangement(bool diamond)
         {
-            Loc center = new Loc();
+            Loc center = Loc.Zero;
             if (diamond)
             {
                 if (skillSlot == 0)
@@ -52,9 +52,9 @@ namespace RogueEssence.Menu
             }
 
             Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2));
-            skillText.Loc =center + new Loc(-48, GraphicsManager.MenuBG.TileHeight);
-            skillElement.Loc = center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
-            skillCharges.Loc = center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
+            skillText.Loc = new Loc(Bounds.Size.X / 2 - 48, GraphicsManager.MenuBG.TileHeight);
+            skillElement.Loc = new Loc(Bounds.Size.X / 2 - 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
+            skillCharges.Loc = new Loc(Bounds.Size.X / 2 + 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
         }
 
         public void SetSkill(string skillName, int element, int charges, int max, bool skillSealed)

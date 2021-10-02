@@ -14,12 +14,12 @@ namespace RogueEssence.Menu
         public ItemSummary(Rect bounds)
             : base(bounds)
         {
-            Description = new DialogueText("", new Rect(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - Bounds.Y)), LINE_HEIGHT);
+            Description = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             Elements.Add(Description);
-            SalePrice = new MenuText("", new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + 4 * LINE_HEIGHT), DirH.Right);
+            SalePrice = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 4 * LINE_HEIGHT), DirH.Right);
             Elements.Add(SalePrice);
-            Rarity = new MenuText("", new Loc(Bounds.Start.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + 4 * LINE_HEIGHT), DirH.Left);
+            Rarity = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 4 * LINE_HEIGHT), DirH.Left);
             Elements.Add(Rarity);
         }
 

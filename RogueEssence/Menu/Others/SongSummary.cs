@@ -16,14 +16,14 @@ namespace RogueEssence.Menu
         public SongSummary(Rect bounds)
             : base(bounds)
         {
-            Name = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
+            Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
-            OriginName = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
+            OriginName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
             Elements.Add(OriginName);
-            Origin = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
+            Origin = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
             Elements.Add(Origin);
-            Artist = new DialogueText("", new Rect(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2),
-                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - Bounds.Y)), LINE_HEIGHT);
+            Artist = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             Elements.Add(Artist);
         }
 

@@ -57,8 +57,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < choices.Length; ii++)
             {
                 Choices.Add(choices[ii]);
-                choices[ii].Bounds = Rect.FromPoints(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 16 - 5, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii - 1),
-                    new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth - 4, Bounds.Y + GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * (ii + 1) - 3));
+                choices[ii].Bounds = new Rect(new Loc(GraphicsManager.MenuBG.TileWidth + 16 - 5, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii - 1),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + 5 - 4, VERT_SPACE - 2));
             }
         }
         protected int CalculateChoiceLength(IEnumerable<MenuTextChoice> choices, int minWidth)
@@ -199,7 +199,7 @@ namespace RogueEssence.Menu
         {
             for (int ii = Choices.Count - 1; ii >= 0; ii--)
             {
-                if (Collision.InBounds(Choices[ii].Bounds, input.MouseLoc / GraphicsManager.WindowZoom))
+                if (Collision.InBounds(Choices[ii].Bounds, input.MouseLoc / GraphicsManager.WindowZoom - Bounds.Start))
                     return ii;
             }
             return -1;

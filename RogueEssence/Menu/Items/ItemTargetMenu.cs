@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
 
             summaryMenu = new SummaryMenu(new Rect(new Loc(16, 16 + team.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset),
                 new Loc(128, VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
-            Text = new MenuText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            Text = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             summaryMenu.Elements.Add(Text);
 
             Initialize(new Loc(16, 16), 144, RogueEssence.Text.FormatKey("MENU_ITEM_TARGET_TITLE"), team.ToArray(), 0);

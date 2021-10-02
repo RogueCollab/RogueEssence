@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         public TeamModeNotice()
         {
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 48, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 48, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2));
-            menuText = new MenuText("", new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            menuText = new MenuText("", new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             timeSinceUpdate = new FrameTick();
             Visible = false;
         }

@@ -15,10 +15,10 @@ namespace RogueEssence.Menu
         public TradeSummary(Rect bounds)
             : base(bounds)
         {
-            Title = new MenuText(Text.FormatKey("MENU_SWAP_NEEDED"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            Title = new MenuText(Text.FormatKey("MENU_SWAP_NEEDED"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Title);
-            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
-                Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
+                Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
         }
 
@@ -37,19 +37,19 @@ namespace RogueEssence.Menu
                 else
                 {
                     ItemData entry = DataManager.Instance.GetItem(reqItem);
-                    reqs.Add(new MenuText(entry.GetIconName(), new Loc(), itemPresence[reqItem] ? Color.White : Color.Red));
+                    reqs.Add(new MenuText(entry.GetIconName(), Loc.Zero, itemPresence[reqItem] ? Color.White : Color.Red));
                 }
             }
             if (wildcards > 0)
             {
-                reqs.Add(new MenuText(Text.FormatKey("MENU_SWAP_ANY", wildcards), new Loc(), presenceCount >= wildcards ? Color.White : Color.Red));
+                reqs.Add(new MenuText(Text.FormatKey("MENU_SWAP_ANY", wildcards), Loc.Zero, presenceCount >= wildcards ? Color.White : Color.Red));
             }
 
-            reqs.Add(new MenuText(Text.FormatKey("MONEY_AMOUNT", price), new Loc(), (DataManager.Instance.Save.ActiveTeam.Money >= price) ? Color.White : Color.Red));
+            reqs.Add(new MenuText(Text.FormatKey("MONEY_AMOUNT", price), Loc.Zero, (DataManager.Instance.Save.ActiveTeam.Money >= price) ? Color.White : Color.Red));
 
             for (int ii = 0; ii < reqs.Count; ii++)
             {
-                reqs[ii].Loc = Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * ii);
+                reqs[ii].Loc = new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * ii);
                 Elements.Add(reqs[ii]);
             }
         }

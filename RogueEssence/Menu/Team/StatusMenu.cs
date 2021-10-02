@@ -61,8 +61,8 @@ namespace RogueEssence.Menu
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Description = new DialogueText("", new Rect(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                new Loc(summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, summaryMenu.Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - summaryMenu.Bounds.Y)), LINE_HEIGHT);
+            Description = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(summaryMenu.Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, summaryMenu.Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             summaryMenu.Elements.Add(Description);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_STATUS_TITLE"), statuses.ToArray(), 0, 0, SLOTS_PER_PAGE);

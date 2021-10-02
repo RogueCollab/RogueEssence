@@ -33,9 +33,9 @@ namespace RogueEssence.Menu
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_HEIGHT * 3),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Description = new DialogueText("", new Rect(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                new Loc(summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X,
-                summaryMenu.Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 4 - summaryMenu.Bounds.Y)), LINE_HEIGHT);
+            Description = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(summaryMenu.Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4,
+                summaryMenu.Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             summaryMenu.Elements.Add(Description);
 
             Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_TITLE", player.GetDisplayName(true)), intrinsics.ToArray(), 0);

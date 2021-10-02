@@ -15,12 +15,12 @@ namespace RogueEssence.Menu
 
         public DungeonSummary(Rect bounds) : base(bounds)
         {
-            DungeonName = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            DungeonName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(DungeonName);
-            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
-                Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
+                Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
-            Floors = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET));
+            Floors = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET));
             Elements.Add(Floors);
 
         }
@@ -42,35 +42,35 @@ namespace RogueEssence.Menu
                 List<MenuText> rules = new List<MenuText>();
 
                 if (zoneEntry.NoEXP)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_EXP"), new Loc()));
+                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_EXP"), Loc.Zero));
                 if (zoneEntry.Level > -1)
                 {
                     if (zoneEntry.LevelCap)
-                        rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), new Loc()));
+                        rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), Loc.Zero));
                     else
-                        rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), new Loc()));
+                        rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), Loc.Zero));
                 }
 
                 GameProgress save = DataManager.Instance.Save;
                 if (zoneEntry.TeamSize > -1)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_TEAM", zoneEntry.TeamSize), new Loc(),
+                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_TEAM", zoneEntry.TeamSize), Loc.Zero,
                         (!DiagManager.Instance.DevMode && save.ActiveTeam.Players.Count > zoneEntry.TeamSize) ? Color.Red : Color.White));
                 if (zoneEntry.TeamRestrict)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_ALONE"), new Loc(),
+                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_ALONE"), Loc.Zero,
                         (!DiagManager.Instance.DevMode && save.ActiveTeam.Players.Count > 1) ? Color.Red : Color.White));
                 if (zoneEntry.MoneyRestrict)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), new Loc(),
+                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), Loc.Zero,
                         (!DiagManager.Instance.DevMode && save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
                 if (zoneEntry.BagSize > -1)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), new Loc(),
+                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), Loc.Zero,
                         (!DiagManager.Instance.DevMode && save.ActiveTeam.GetInvCount() > zoneEntry.BagSize) ? Color.Red : Color.White));
                 if (zoneEntry.BagRestrict > -1)
-                    rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), new Loc(),
+                    rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), Loc.Zero,
                         (!DiagManager.Instance.DevMode && save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
 
                 for (int ii = 0; ii < rules.Count; ii++)
                 {
-                    rules[ii].Loc = Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * (1 + ii));
+                    rules[ii].Loc = new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * (1 + ii));
                     Elements.Add(rules[ii]);
                 }
 

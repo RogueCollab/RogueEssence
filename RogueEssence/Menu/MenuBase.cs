@@ -89,7 +89,7 @@ namespace RogueEssence.Menu
 
             //draw Texts
             foreach (IMenuElement element in GetElements())
-                element.Draw(spriteBatch, new Loc());
+                element.Draw(spriteBatch, Bounds.Start);
 
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, null, null, null, zoomMatrix);

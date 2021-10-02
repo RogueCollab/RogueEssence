@@ -35,7 +35,7 @@ namespace RogueEssence.Menu
 
             IncludeTitle(title);
 
-            PageText = new MenuText("", start + new Loc(width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
+            PageText = new MenuText("", new Loc(width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
             NonChoices.Add(PageText);
 
             SetPage(defaultPage);

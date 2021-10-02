@@ -176,7 +176,7 @@ namespace RogueEssence.Menu
                 List<string> sep_msgs = new List<string>();
                 for (int ii = 0; ii < msgs.Length; ii++)
                 {
-                    string[] break_str = Regex.Split(msgs[ii], "\\[br\\]", RegexOptions.IgnoreCase);
+                    string[] break_str = Regex.Split(msgs[ii], @"\[br\]", RegexOptions.IgnoreCase);
                     sep_msgs.AddRange(break_str);
                 }
                 DialogueBox box = null;

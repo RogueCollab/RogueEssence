@@ -25,19 +25,19 @@ namespace RogueEssence.Menu
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 128, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 128, 224));
 
             string zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[chosenZone].GetColoredName();
-            Title = new MenuText(Text.FormatKey("MENU_SCORES_TITLE") + ": " + zoneName, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Title = new MenuText(Text.FormatKey("MENU_SCORES_TITLE") + ": " + zoneName, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Scores = new MenuText[scores.Count * 3];
             for (int ii = 0; ii < scores.Count; ii++)
             {
                 Color color = (scores[ii].Path == highlightedPath) ? Color.Yellow : Color.White;
                 Scores[ii * 3] = new MenuText((ii + 1) + ". ",
-                new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2 + 12, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, color);
+                new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 12, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, color);
                 Scores[ii * 3 + 1] = new MenuText(scores[ii].Name,
-                new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2 + 12, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), color);
+                new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 12, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), color);
                 Scores[ii * 3 + 2] = new MenuText(scores[ii].Score.ToString(),
-                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, color);
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, color);
             }
         }
 

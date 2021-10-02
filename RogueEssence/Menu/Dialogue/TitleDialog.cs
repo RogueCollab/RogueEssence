@@ -161,7 +161,7 @@ namespace RogueEssence.Menu
         {
             if (!Visible)
                 return;
-            Text.Draw(spriteBatch, new Loc());
+            Text.Draw(spriteBatch, Loc.Zero);
             
             //when text is paused and waiting for input, flash a tick at the end
             TextPause textPause = getCurrentTextPause();

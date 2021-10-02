@@ -43,13 +43,13 @@ namespace RogueEssence.Menu
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
 
             //TODO: align this text properly
-            Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES") + " (1/3)", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES") + " (1/3)", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
-                Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
+                new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
             string speciesText = player.GetDisplayName(true) + " / " + CharData.GetFullFormName(player.BaseForm);
-            Name = new MenuText(speciesText, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET));
+            Name = new MenuText(speciesText, new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET));
 
             ElementData element1 = DataManager.Instance.GetElement(player.Element1);
             ElementData element2 = DataManager.Instance.GetElement(player.Element2);
@@ -59,17 +59,17 @@ namespace RogueEssence.Menu
                 typeString += "/" + element2.GetIconName();
             bool origElements = (player.Element1 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element1);
             origElements &= (player.Element2 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element2);
-            Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
+            Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
 
-            Level = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", player.Level), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
+            Level = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", player.Level), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
 
 
-            HP = new MenuText(Text.FormatKey("MENU_TEAM_HP", player.HP, player.MaxHP), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
-            Fullness = new MenuText(Text.FormatKey("MENU_TEAM_HUNGER", player.Fullness, player.MaxFullness), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
+            HP = new MenuText(Text.FormatKey("MENU_TEAM_HP", player.HP, player.MaxHP), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
+            Fullness = new MenuText(Text.FormatKey("MENU_TEAM_HUNGER", player.Fullness, player.MaxFullness), new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
 
-            MainDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            SkillTitle = new MenuText(Text.FormatKey("MENU_TEAM_SKILLS"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
+            SkillTitle = new MenuText(Text.FormatKey("MENU_TEAM_SKILLS"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
             Skills = new MenuText[CharData.MAX_SKILL_SLOTS * 3];
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
             {
@@ -84,18 +84,18 @@ namespace RogueEssence.Menu
                     skillCharges = skill.Charges.ToString();
                     totalCharges = "/" + (data.BaseCharges + player.ChargeBoost);
                 }
-                Skills[ii * 3] = new MenuText(skillString, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET));
-                Skills[ii * 3 + 1] = new MenuText(skillCharges, new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 16 - GraphicsManager.TextFont.CharSpace, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Right);
-                Skills[ii * 3 + 2] = new MenuText(totalCharges, new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 16, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Left);
+                Skills[ii * 3] = new MenuText(skillString, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET));
+                Skills[ii * 3 + 1] = new MenuText(skillCharges, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 - GraphicsManager.TextFont.CharSpace, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Skills[ii * 3 + 2] = new MenuText(totalCharges, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Left);
             }
 
-            IntrinsicDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            IntrinsicDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             bool origIntrinsic = (player.Intrinsics[0].Element.ID == player.BaseIntrinsics[0]);
             IntrinsicData entry = DataManager.Instance.GetIntrinsic(player.Intrinsics[0].Element.ID);
-            Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
-            IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), new Rect(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
-                new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 3 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 3 - Bounds.Y)), LINE_HEIGHT);
+            Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
+            IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 3, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 3)), LINE_HEIGHT);
         }
 
         public override IEnumerable<IMenuElement> GetElements()

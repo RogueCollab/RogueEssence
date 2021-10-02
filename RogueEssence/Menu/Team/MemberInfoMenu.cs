@@ -36,14 +36,14 @@ namespace RogueEssence.Menu
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
 
             //TODO: align the page text properly
-            Title = new MenuText(Text.FormatKey("MENU_TEAM_INFO") +" (3/3)", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Title = new MenuText(Text.FormatKey("MENU_TEAM_INFO") +" (3/3)", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
 
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
-                Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
+                new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
 
             string speciesName = dexEntry.GetColoredName();
             if (player.BaseForm.Skin > 0)
@@ -52,15 +52,15 @@ namespace RogueEssence.Menu
                 speciesName += (player.BaseForm.Gender == Gender.Male) ? " (\u2642)" : " (\u2640)";
             else
                 speciesName += " (-)";
-            Species = new MenuText(Text.FormatKey("MENU_TEAM_SPECIES", speciesName), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 0 + TitledStripMenu.TITLE_OFFSET));
-            Category = new MenuText(dexEntry.Title.ToLocal(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET));
+            Species = new MenuText(Text.FormatKey("MENU_TEAM_SPECIES", speciesName), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 0 + TitledStripMenu.TITLE_OFFSET));
+            Category = new MenuText(dexEntry.Title.ToLocal(), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET));
             if (DataManager.Instance.Save.UUID == player.OriginalUUID)
-                MetAt = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", player.MetAt), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
+                MetAt = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", player.MetAt), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
             else
-                MetAt = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", player.OriginalTeam), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
-            MainDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+                MetAt = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", player.OriginalTeam), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
+            MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            Promotions = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTION"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
+            Promotions = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTION"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
             List<MenuText> validPromotions = new List<MenuText>();
 
             bool inDungeon = (GameManager.Instance.CurrentScene == DungeonScene.Instance);
@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {
                     validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(),
-                        Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET)));
+                        new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET)));
                 }
                 else
                 {
@@ -87,7 +87,7 @@ namespace RogueEssence.Menu
                     if (!hardReq)
                     {
                         validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(),
-                            Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET), Color.Red));
+                            new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET), Color.Red));
                     }
                 }
             }
@@ -96,7 +96,7 @@ namespace RogueEssence.Menu
             else
             {
                 PromoteMethods = new MenuText[1];
-                PromoteMethods[0] = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTE_NONE"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET));
+                PromoteMethods[0] = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTE_NONE"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET));
             }
         }
 

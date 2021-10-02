@@ -153,7 +153,7 @@ namespace RogueEssence.Menu
             {
                 //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
                 //the coordinates are relative to the string's position
-                Loc loc = CurrentText.GetTextProgress() + CurrentText.Rect.Start;
+                Loc loc = Bounds.Start + CurrentText.GetTextProgress() + CurrentText.Rect.Start;
 
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                     GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);
@@ -276,8 +276,8 @@ namespace RogueEssence.Menu
 
                 Pauses.Add(pauses);
 
-                DialogueText text = new DialogueText("", new Rect(Bounds.Start.X + GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, Bounds.Start.Y + GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
-                    Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2 - Bounds.X, Bounds.End.Y - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2 - Bounds.Y), TEXT_HEIGHT, centerH, centerV, 0);
+                DialogueText text = new DialogueText("", new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
+                    Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2), TEXT_HEIGHT, centerH, centerV, 0);
                 text.SetFormattedText(scrolls[nn]);
                 Texts.Add(text);
             }
