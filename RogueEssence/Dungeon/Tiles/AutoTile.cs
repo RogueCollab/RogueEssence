@@ -128,7 +128,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries.Count)
+            if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count)
                 return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[AutoTileset].Name.ToLocal());
             else
             {

@@ -80,7 +80,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            if (ID > -1 && ID < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries.Count)
+            if (ID > -1 && ID < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count)
                 return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID].Name.ToLocal();
             else
                 return "[EMPTY]";

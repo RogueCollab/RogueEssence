@@ -288,7 +288,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 lock (GameBase.lockObj)
                 {
-                    int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
+                    int entryNum = DataManager.Instance.DataIndices[dataType].Count;
                     IEntryData data = createOp();
 
                     DataEditForm editor = new DataEditForm();

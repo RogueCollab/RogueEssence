@@ -391,10 +391,15 @@ namespace RogueEssence.Data
             SaveData(entryNum, dataType.ToString(), data);
             ClearCache(dataType);
             EntrySummary entrySummary = data.GenerateEntrySummary();
-            if (entryNum < DataIndices[dataType].Entries.Count)
-                DataIndices[dataType].Entries[entryNum] = entrySummary;
-            else
-                DataIndices[dataType].Entries.Add(entrySummary);
+            if (entryNum > DataIndices[dataType].Count)
+                throw new ArgumentException(String.Format("Attempted to change entry {0} in a {1}-size index.", entryNum, DataIndices[dataType].Count));
+            else if (entryNum == DataIndices[dataType].Count)
+            {
+                EntrySummary[] newEntries = new EntrySummary[DataIndices[dataType].Count + 1];
+                DataIndices[dataType].Entries.CopyTo(newEntries, 0);
+                DataIndices[dataType].Entries = newEntries;
+            }
+            DataIndices[dataType].Entries[entryNum] = entrySummary;
             SaveIndex(dataType);
 
             foreach (BaseData baseData in UniversalData)

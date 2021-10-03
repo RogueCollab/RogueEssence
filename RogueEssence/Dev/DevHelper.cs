@@ -3,7 +3,7 @@ using System.IO;
 using RogueEssence.Data;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev
 {
@@ -81,16 +81,17 @@ namespace RogueEssence.Dev
             try
             {
                 EntryDataIndex fullGuide = new EntryDataIndex();
-
+                List<EntrySummary> entries = new List<EntrySummary>();
                 foreach (string dir in PathMod.GetModFiles(dataPath, "*"+DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file);
                     IEntryData data = (IEntryData)DataManager.LoadData(dir);
-                    while (fullGuide.Entries.Count <= num)
-                        fullGuide.Entries.Add(new EntrySummary());
-                    fullGuide.Entries[num] = data.GenerateEntrySummary();
+                    while (entries.Count <= num)
+                        entries.Add(new EntrySummary());
+                    entries[num] = data.GenerateEntrySummary();
                 }
+                fullGuide.Entries = entries.ToArray();
 
                 using (Stream stream = new FileStream(PathMod.ModPath(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
                 {
