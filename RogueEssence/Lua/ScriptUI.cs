@@ -85,6 +85,27 @@ namespace RogueEssence.Script
             }
         }
 
+        public void TextDialogue(string text, LuaTable callbacks, int waitTime)
+        {
+            //TODO: support mid-menu script callbacks
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, new string[] { text });
+                else
+                {
+                    if (!String.IsNullOrEmpty(m_curspeakerName))
+                        DungeonScene.Instance.LogMsg(String.Format("{0}: {1}", m_curspeakerName, text));
+                    else
+                        DungeonScene.Instance.LogMsg(text);
+                }
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextDialogue({0}): Encountered exception:\n{1}", text, e.Message));
+            }
+        }
+
 
         public void TextVoiceOver(string text, int expireTime)
         {

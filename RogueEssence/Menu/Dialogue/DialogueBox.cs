@@ -28,6 +28,8 @@ namespace RogueEssence.Menu
         public bool Skippable;
         public List<List<TextPause>> Pauses;
         protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
+        public List<List<TextScript>> ScriptCalls;
+        protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
 
         //Dialogue Text needs to be able to set character index accurately
         protected List<DialogueText> Texts;
@@ -61,6 +63,7 @@ namespace RogueEssence.Menu
             Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
 
             Pauses = new List<List<TextPause>>();
+            ScriptCalls = new List<List<TextScript>>();
             speakerName = "";
 
             Sound = sound;
@@ -85,38 +88,36 @@ namespace RogueEssence.Menu
         {
             if (!CurrentText.Finished)
             {
-                //if (input[FrameInput.InputType.Cancel] && (input.JustPressed(FrameInput.InputType.Confirm) || input.JustPressed(FrameInput.InputType.Start)))
-                //{
-                //    Text.CurrentCharIndex = Text.Text.Length;
-                //    CurrentTextTime = new FrameTick();
-                //    Pauses.Clear();
-                //}
-                //else
-                //{
-                    TextPause textPause = getCurrentTextPause();
-                    bool continueText;
-                    if (textPause != null)
-                    {
-                        if (textPause.Time > 0)
-                            continueText = CurrentTextTime >= textPause.Time;
-                        else
-                            continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
-                                || input.JustPressed(FrameInput.InputType.LeftMouse));
-                    }
+                TextScript textScript = getCurrentTextScript();
+                if (textScript != null)
+                {
+                    //TODO: execute callback and wait for its completion
+                    CurrentScript.RemoveAt(0);
+                }
+
+                TextPause textPause = getCurrentTextPause();
+                bool continueText;
+                if (textPause != null)
+                {
+                    if (textPause.Time > 0)
+                        continueText = CurrentTextTime >= textPause.Time;
                     else
-                        continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
+                        continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                            || input.JustPressed(FrameInput.InputType.LeftMouse));
+                }
+                else
+                    continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
 
-                    if (continueText)
-                    {
-                        CurrentTextTime = new FrameTick();
-                        CurrentText.CurrentCharIndex++;
-                        if (Sound && CurrentText.CurrentCharIndex % 3 == 0)
-                            GameManager.Instance.SE("Menu/Speak");
+                if (continueText)
+                {
+                    CurrentTextTime = new FrameTick();
+                    CurrentText.CurrentCharIndex++;
+                    if (Sound && CurrentText.CurrentCharIndex % 3 == 0)
+                        GameManager.Instance.SE("Menu/Speak");
 
-                        if (textPause != null)//remove last text pause
-                            CurrentPause.RemoveAt(0);
-                    }
-                //}
+                    if (textPause != null)//remove last text pause
+                        CurrentPause.RemoveAt(0);
+                }
             }
             else if (curTextIndex < Texts.Count - 1)
             {
@@ -182,6 +183,16 @@ namespace RogueEssence.Menu
             return null;
         }
 
+        private TextScript getCurrentTextScript()
+        {
+            if (CurrentScript.Count > 0)
+            {
+                if (CurrentScript[0].LetterIndex == CurrentText.CurrentCharIndex)
+                    return CurrentScript[0];
+            }
+            return null;
+        }
+
         public void SetPortrait(MonsterID speaker, EmoteStyle emotion)
         {
             if (speaker.IsValid())
@@ -223,6 +234,7 @@ namespace RogueEssence.Menu
             Texts.Clear();
             curTextIndex = 0;
             Pauses.Clear();
+            ScriptCalls.Clear();
 
             int curCharIndex = 0;
             string msg = message;
@@ -237,7 +249,8 @@ namespace RogueEssence.Menu
             for (int nn = 0; nn < scrolls.Length; nn++)
             {
                 List<TextPause> pauses = new List<TextPause>();
-                List<IntRange> pauseRanges = new List<IntRange>();
+                List<TextScript> scripts = new List<TextScript>();
+                List<IntRange> tagRanges = new List<IntRange>();
                 int lag = 0;
                 MatchCollection matches = Text.MsgTags.Matches(scrolls[nn]);
                 foreach (Match match in matches)
@@ -256,7 +269,18 @@ namespace RogueEssence.Menu
                                     if (Int32.TryParse(match.Groups["pauseval"].Value, out param))
                                         pause.Time = param;
                                     pauses.Add(pause);
-                                    pauseRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                }
+                                break;
+                            case "script":
+                                {
+                                    TextScript script = new TextScript();
+                                    script.LetterIndex = match.Index - lag;
+                                    int param;
+                                    if (Int32.TryParse(match.Groups["scriptval"].Value, out param))
+                                        script.Script = param;
+                                    scripts.Add(script);
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
                             case "colorstart":
@@ -271,10 +295,11 @@ namespace RogueEssence.Menu
                         startLag += match.Length;
                 }
 
-                for (int ii = pauseRanges.Count - 1; ii >= 0; ii--)
-                    scrolls[nn] = scrolls[nn].Remove(pauseRanges[ii].Min, pauseRanges[ii].Length);
+                for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
+                    scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
 
                 Pauses.Add(pauses);
+                ScriptCalls.Add(scripts);
 
                 DialogueText text = new DialogueText("", new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
                     Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2), TEXT_HEIGHT, centerH, centerV, 0);
@@ -289,6 +314,12 @@ namespace RogueEssence.Menu
     {
         public int LetterIndex;
         public int Time;//1 in order to wait on button press
+    }
+
+    public class TextScript
+    {
+        public int LetterIndex;
+        public int Script;
     }
 
 }
