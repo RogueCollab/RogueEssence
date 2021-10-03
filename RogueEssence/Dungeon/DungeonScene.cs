@@ -501,6 +501,7 @@ namespace RogueEssence.Dungeon
                         }
                         else if (input.Direction != Dir8.None)
                         {
+                            //only move on an empty stomach when the key is pressed, not held
                             bool moveRun = run && (FocusedCharacter.Fullness > 0);
                             GameAction.ActionType cmdType = GameAction.ActionType.None;
                             if (input.Direction.IsDiagonal())
@@ -508,7 +509,9 @@ namespace RogueEssence.Dungeon
                             else if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(2) || input.Direction == Dir8.None)
                                 cmdType = GameAction.ActionType.Dir;
 
-                            if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(moveRun ? 1 : 5))
+                            int startFrame = moveRun ? 2 : 6;
+                            if (FrameTick.FromFrames(input.InputTime) >= FrameTick.FromFrames(startFrame) &&
+                                (FocusedCharacter.Fullness > 0 || FrameTick.FromFrames(input.InputTime) == FrameTick.FromFrames(startFrame)))
                             {
                                 if (moveRun)
                                 {
@@ -547,7 +550,7 @@ namespace RogueEssence.Dungeon
                                             else if (!currentR && currentR != behindR && currentL == behindL)
                                                 runCancelling = true;
                                         }
-                                        
+
                                         if (!runCancelling)
                                         {
                                             newRevealed = new HashSet<Character>();
@@ -593,6 +596,7 @@ namespace RogueEssence.Dungeon
                             if (!turn)
                                 diagonal = false;
                         }
+                        
                     }
                     RunMode = runCommand;
                     RunCancel = runCancelling;
