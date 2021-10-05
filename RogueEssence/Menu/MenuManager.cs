@@ -147,6 +147,12 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
 
+        public IEnumerator<YieldInstruction> SetTitleDialog(int holdTime, bool fadeIn, Action finishAction, params string[] msgs)
+        {
+            TitleDialog box = CreateTitleDialog(holdTime, fadeIn, finishAction, msgs);
+            yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
+        }
+
         public IEnumerator<YieldInstruction> SetWaitMenu(bool anyInput)
         {
             WaitMenu box = new WaitMenu(anyInput);
@@ -202,6 +208,27 @@ namespace RogueEssence.Menu
             if (autoFinish)
                 box.FinishText();
             return box;
+        }
+
+        public TitleDialog CreateTitleDialog(int holdTime, bool fadeIn, Action finishAction, params string[] msgs)
+        {
+            if (msgs.Length > 0)
+            {
+                List<string> sep_msgs = new List<string>();
+                for (int ii = 0; ii < msgs.Length; ii++)
+                {
+                    string[] break_str = Regex.Split(msgs[ii], @"\[br\]", RegexOptions.IgnoreCase);
+                    sep_msgs.AddRange(break_str);
+                }
+                TitleDialog box = null;
+                for (int ii = sep_msgs.Count - 1; ii >= 0; ii--)
+                {
+                    TitleDialog prevBox = box;
+                    box = new TitleDialog(sep_msgs[ii], fadeIn, holdTime, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); });
+                }
+                return box;
+            }
+            return null;
         }
 
         public DialogueBox CreateQuestion(string message, Action yes, Action no)

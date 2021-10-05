@@ -4,11 +4,17 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
+using System.Text.RegularExpressions;
 
 namespace RogueEssence.Menu
 {
     public class TitleDialog : IInteractable
     {
+        public static Regex SplitTags = new Regex(@"\[scroll\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        protected const int HOLD_CANCEL_TIME = 30;
+        private const int SCROLL_TIME = 40;
+
         protected const int CURSOR_FLASH_TIME = 24;
         public const int TEXT_TIME = 1;
         public const int SIDE_BUFFER = 8;
@@ -16,30 +22,72 @@ namespace RogueEssence.Menu
         public const int MAX_LINES = 2;
         public const int FADE_TIME = 60;
 
-        public List<TextPause> Pauses;
+        public List<List<TextPause>> Pauses;
+        protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
+        public List<List<TextScript>> ScriptCalls;
+        protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
 
         //Dialogue Text needs to be able to set character index accurately
-        public DialogueText Text;
-        public bool FadeIn;
+        protected List<DialogueText> Texts;
+        private int curTextIndex;
+        private bool scrolling;
+        protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
+        public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count - 1; } }
+
+        public bool UseFade;
         public int HoldTime;
 
-        private bool showing;
+        private bool fading;
+        private bool fadingIn;
         private FrameTick CurrentFadeTime;
+        private FrameTick TotalTextTime;
         private FrameTick CurrentTextTime;
+        private FrameTick CurrentScrollTime;
         private Action action;
+        private string message;
 
         public virtual bool IsCheckpoint { get { return false; } }
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
         public bool Visible { get; set; }
 
-        public TitleDialog(string message, bool fadeIn, int holdTime, Action action)
+        public Rect Bounds;
+
+        DepthStencilState s1;
+        DepthStencilState s2;
+        AlphaTestEffect alphaTest;
+
+
+        public TitleDialog(string msg, bool fadeIn, int holdTime, Action action)
         {
+            s1 = new DepthStencilState
+            {
+                StencilEnable = true,
+                StencilFunction = CompareFunction.Always,
+                StencilPass = StencilOperation.Replace,
+                ReferenceStencil = 1,
+                DepthBufferEnable = false,
+            };
+
+            s2 = new DepthStencilState
+            {
+                StencilEnable = true,
+                StencilFunction = CompareFunction.LessEqual,
+                StencilPass = StencilOperation.Keep,
+                ReferenceStencil = 1,
+                DepthBufferEnable = false,
+            };
+            alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
+
             Visible = true;
             this.action = action;
-            FadeIn = fadeIn;
-            showing = true;
-            if (!FadeIn)
+            UseFade = fadeIn;
+            if (UseFade)
+            {
+                fading = true;
+                fadingIn = true;
+            }
+            else
                 CurrentFadeTime = FrameTick.FromFrames(FADE_TIME);
 
             HoldTime = holdTime;
@@ -47,71 +95,157 @@ namespace RogueEssence.Menu
             //message will contain pauses, which get parsed here.
             //and colors, which will get parsed by the text renderer
 
-            Pauses = new List<TextPause>();
-            int startIndex = 0;
-            int tabIndex = message.IndexOf("[pause=", startIndex, StringComparison.OrdinalIgnoreCase);
-            while (tabIndex > -1)
+            Pauses = new List<List<TextPause>>();
+            ScriptCalls = new List<List<TextScript>>();
+            message = msg;
+
+            Texts = new List<DialogueText>();
+            updateMessage();
+        }
+
+
+        private void updateMessage()
+        {
+            //message will contain pauses, which get parsed here.
+            //and colors, which will get parsed by the text renderer
+            Texts.Clear();
+            curTextIndex = 0;
+            Pauses.Clear();
+            ScriptCalls.Clear();
+
+            string msg = message;
+
+            Loc maxSize = Loc.Zero;
+
+            string[] scrolls = SplitTags.Split(msg);
+            for (int nn = 0; nn < scrolls.Length; nn++)
             {
-                int endIndex = message.IndexOf("]", tabIndex);
-                if (endIndex == -1)
-                    break;
-                int param;
-                if (Int32.TryParse(message.Substring(tabIndex + "[pause=".Length, endIndex - (tabIndex + "[pause=".Length)), out param))
+                List<TextPause> pauses = new List<TextPause>();
+                List<TextScript> scripts = new List<TextScript>();
+                List<IntRange> tagRanges = new List<IntRange>();
+                int lag = 0;
+                MatchCollection matches = Text.MsgTags.Matches(scrolls[nn]);
+                foreach (Match match in matches)
                 {
-                    TextPause pause = new TextPause();
-                    pause.LetterIndex = tabIndex;
-                    pause.Time = param;
-                    message = message.Remove(tabIndex, endIndex - tabIndex + "]".Length);
-                    Pauses.Add(pause);
+                    foreach (string key in match.Groups.Keys)
+                    {
+                        if (!match.Groups[key].Success)
+                            continue;
+                        switch (key)
+                        {
+                            case "pause":
+                                {
+                                    TextPause pause = new TextPause();
+                                    pause.LetterIndex = match.Index - lag;
+                                    int param;
+                                    if (Int32.TryParse(match.Groups["pauseval"].Value, out param))
+                                        pause.Time = param;
+                                    pauses.Add(pause);
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                }
+                                break;
+                            case "script":
+                                {
+                                    TextScript script = new TextScript();
+                                    script.LetterIndex = match.Index - lag;
+                                    int param;
+                                    if (Int32.TryParse(match.Groups["scriptval"].Value, out param))
+                                        script.Script = param;
+                                    scripts.Add(script);
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                }
+                                break;
+                            case "colorstart":
+                            case "colorend":
+                                break;
+                        }
+                    }
 
-                    tabIndex = message.IndexOf("[pause=", startIndex, StringComparison.OrdinalIgnoreCase);
+                    lag += match.Length;
                 }
-                else
-                    break;
-            }
-            string newMessage = message;
 
-            Text = new DialogueText(newMessage, new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, FadeIn ? -1 : 0);
+                for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
+                    scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
+
+                Pauses.Add(pauses);
+                ScriptCalls.Add(scripts);
+
+                DialogueText text = new DialogueText("", new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
+
+                text.SetFormattedText(scrolls[nn]);
+                Texts.Add(text);
+
+                Loc size = text.GetTextSize();
+                maxSize = Loc.Max(maxSize, size);
+            }
+            maxSize += new Loc(8 + 4);//Magic number plus VERT_BUFFER
+            Bounds = new Rect((GraphicsManager.ScreenWidth - maxSize.X) / 2, (GraphicsManager.ScreenHeight - maxSize.Y) / 2, maxSize.X, maxSize.Y);
+            foreach (DialogueText text in Texts)
+                text.Rect = Bounds;
         }
 
         public void ProcessActions(FrameTick elapsedTime)
         {
-            if (showing)
+            if (fading)
             {
-                if (CurrentFadeTime < FADE_TIME)
+                if (fadingIn)
+                {
                     CurrentFadeTime += elapsedTime;
+                    if (CurrentFadeTime >= FADE_TIME)
+                        CurrentFadeTime = FrameTick.FromFrames(FADE_TIME);
+                }
                 else
-                    CurrentTextTime += elapsedTime;
+                {
+                    CurrentFadeTime -= elapsedTime;
+                    if (CurrentFadeTime <= 0)
+                        CurrentFadeTime = FrameTick.FromFrames(0);
+                }
             }
             else
-                CurrentFadeTime -= elapsedTime;
-
-            Text.TextOpacity = CurrentFadeTime.FractionOf(FADE_TIME);
+            {
+                TotalTextTime += elapsedTime;
+                if (!CurrentText.Finished)
+                    CurrentTextTime += elapsedTime;
+                if (scrolling)
+                    CurrentScrollTime += elapsedTime;
+            }
+            CurrentText.TextOpacity = CurrentFadeTime.FractionOf(FADE_TIME);
         }
 
         public void Update(InputManager input)
         {
-            if (!showing || CurrentFadeTime < FADE_TIME)
+            if (fading)
             {
-                if (!showing && CurrentFadeTime <= 0)
+                if (!fadingIn && CurrentFadeTime <= 0)
                 {
+                    fading = false;
                     //close this
                     MenuManager.Instance.RemoveMenu();
 
                     //do what it wants
                     action();
                 }
+                else if (fadingIn && CurrentFadeTime >= FrameTick.FromFrames(FADE_TIME))
+                    fading = false;
             }
-            else if (!Text.Finished)
+            else if (!CurrentText.Finished)
             {
+                TextScript textScript = getCurrentTextScript();
+                if (textScript != null)
+                {
+                    //TODO: execute callback and wait for its completion
+                    CurrentScript.RemoveAt(0);
+                }
+
                 TextPause textPause = getCurrentTextPause();
-                bool continueText = false;
+                bool continueText;
                 if (textPause != null)
                 {
                     if (textPause.Time > 0)
                         continueText = CurrentTextTime >= textPause.Time;
                     else
-                        continueText = (input.JustPressed(FrameInput.InputType.Confirm));
+                        continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                            || input.JustPressed(FrameInput.InputType.LeftMouse));
                 }
                 else
                     continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
@@ -119,13 +253,30 @@ namespace RogueEssence.Menu
                 if (continueText)
                 {
                     CurrentTextTime = new FrameTick();
-                    Text.CurrentCharIndex++;
+                    CurrentText.CurrentCharIndex++;
 
                     if (textPause != null)//remove last text pause
-                        Pauses.RemoveAt(0);
+                        CurrentPause.RemoveAt(0);
                 }
             }
-            else
+            else if (curTextIndex < Texts.Count - 1)
+            {
+                if (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel] && TotalTextTime >= HOLD_CANCEL_TIME
+                    || input.JustPressed(FrameInput.InputType.LeftMouse))
+                {
+                    scrolling = true;
+                }
+
+                if (scrolling)//TODO: calculate position based on interpolation between the original start and the start minus size of dialogue box
+                    CurrentText.Rect.Start -= new Loc(0, 3);
+                if (CurrentScrollTime >= FrameTick.FromFrames(SCROLL_TIME))
+                {
+                    curTextIndex++;
+                    CurrentScrollTime = new FrameTick();
+                    scrolling = false;
+                }
+            }
+            else//ProcessTextDone
             {
                 bool exit = false;
                 if (HoldTime > -1)
@@ -141,8 +292,11 @@ namespace RogueEssence.Menu
 
                 if (exit)
                 {
-                    if (FadeIn)
-                        showing = false;
+                    if (UseFade)
+                    {
+                        fading = true;
+                        fadingIn = false;
+                    }
                     else
                     {
                         //close this
@@ -161,38 +315,74 @@ namespace RogueEssence.Menu
         {
             if (!Visible)
                 return;
-            Text.Draw(spriteBatch, Loc.Zero);
-            
-            //when text is paused and waiting for input, flash a tick at the end
-            TextPause textPause = getCurrentTextPause();
-            if (textPause != null && textPause.Time == 0)
-            {
-                //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
-                //the coordinates are relative to the string's position
-                Loc loc = Text.GetTextProgress() + Text.Rect.Start;
 
-                if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);
+
+            spriteBatch.End();
+            float scale = GraphicsManager.WindowZoom;
+            Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(0,
+                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferHeight,
+                0, 0, 1);
+
+            alphaTest.Projection = orthMatrix;
+            BlendState blend = new BlendState();
+            blend.ColorWriteChannels = ColorWriteChannels.None;
+            spriteBatch.Begin(SpriteSortMode.Deferred, blend, SamplerState.PointWrap, s1, null, alphaTest);
+
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X, Bounds.Y, Bounds.Width, Bounds.Height), null, Color.White);
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s2, null, null, zoomMatrix);
+
+            //actual draw call
+            {
+                CurrentText.Draw(spriteBatch, Loc.Zero);
+
+                //when text is paused and waiting for input, flash a tick at the end
+                TextPause textPause = getCurrentTextPause();
+                if (textPause != null && textPause.Time == 0)
+                {
+                    //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
+                    //the coordinates are relative to the string's position
+                    Loc loc = Bounds.Start + CurrentText.GetTextProgress() + CurrentText.Rect.Start;
+
+                    if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);
+                }
+
+                //draw down-tick
+                if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && CurrentText.Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                {
+                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+                }
             }
 
-            //draw down-tick
-            if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && Text.Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-            {
-                Loc end = Text.GetTextProgress();
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, GraphicsManager.ScreenHeight / 2 + end.Y + 16), 1, 0);
-            }
-
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
         }
+
 
         private TextPause getCurrentTextPause()
         {
-            if (Pauses.Count > 0)
+            if (CurrentPause.Count > 0)
             {
-                if (Pauses[0].LetterIndex == Text.CurrentCharIndex)
-                    return Pauses[0];
+                if (CurrentPause[0].LetterIndex == CurrentText.CurrentCharIndex)
+                    return CurrentPause[0];
             }
             return null;
         }
+
+        private TextScript getCurrentTextScript()
+        {
+            if (CurrentScript.Count > 0)
+            {
+                if (CurrentScript[0].LetterIndex == CurrentText.CurrentCharIndex)
+                    return CurrentScript[0];
+            }
+            return null;
+        }
+
     }
 
 }

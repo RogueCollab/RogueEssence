@@ -112,7 +112,7 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, m_curautoFinish, expireTime, () => { }));
+                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, () => { }, text);
             }
             catch (Exception e)
             {

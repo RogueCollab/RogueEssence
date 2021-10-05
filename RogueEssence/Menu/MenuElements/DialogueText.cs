@@ -98,6 +98,16 @@ namespace RogueEssence.Menu
             return loc;
         }
 
+        public Loc GetTextSize()
+        {
+            int maxWidth = 0;
+            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
+            foreach (string line in lines)
+                maxWidth = Math.Max(maxWidth, GraphicsManager.TextFont.SubstringWidth(line));
+
+            return new Loc(maxWidth, GraphicsManager.TextFont.CharHeight + (lines.Length - 1) * LineHeight);
+        }
+
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;
