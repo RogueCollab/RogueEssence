@@ -108,6 +108,14 @@ namespace RogueEssence.Menu
             return new Loc(maxWidth, GraphicsManager.TextFont.CharHeight + (lines.Length - 1) * LineHeight);
         }
 
+        public int GetLineCount()
+        {
+            int maxWidth = 0;
+            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
+            
+            return lines.Length;
+        }
+
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;

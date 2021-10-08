@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         public static Regex SplitTags = new Regex(@"\[scroll\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         protected const int HOLD_CANCEL_TIME = 30;
-        private const int SCROLL_TIME = 40;
+        private const int SCROLL_SPEED = 2;
 
         protected const int CURSOR_FLASH_TIME = 24;
         public const int TEXT_TIME = 1;
@@ -127,9 +127,10 @@ namespace RogueEssence.Menu
                     scrolling = true;
                 }
 
-                if (scrolling)//TODO: calculate position based on interpolation between the original start and the start minus size of dialogue box
-                    CurrentText.Rect.Start -= new Loc(0, 3);
-                if (CurrentScrollTime >= FrameTick.FromFrames(SCROLL_TIME))
+                if (scrolling)
+                    CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
+                int scrollFrames = TEXT_HEIGHT * MAX_LINES / SCROLL_SPEED;
+                if (CurrentScrollTime >= FrameTick.FromFrames(scrollFrames))
                 {
                     curTextIndex++;
                     CurrentScrollTime = new FrameTick();

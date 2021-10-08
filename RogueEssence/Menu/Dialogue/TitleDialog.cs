@@ -13,13 +13,12 @@ namespace RogueEssence.Menu
         public static Regex SplitTags = new Regex(@"\[scroll\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         protected const int HOLD_CANCEL_TIME = 30;
-        private const int SCROLL_TIME = 40;
+        private const int SCROLL_SPEED = 2;
 
         protected const int CURSOR_FLASH_TIME = 24;
         public const int TEXT_TIME = 1;
         public const int SIDE_BUFFER = 8;
         public const int TEXT_HEIGHT = 16;
-        public const int MAX_LINES = 2;
         public const int FADE_TIME = 60;
 
         public List<List<TextPause>> Pauses;
@@ -52,6 +51,7 @@ namespace RogueEssence.Menu
         public bool Visible { get; set; }
 
         public Rect Bounds;
+        public int MaxLines;
 
         DepthStencilState s1;
         DepthStencilState s2;
@@ -116,6 +116,7 @@ namespace RogueEssence.Menu
             string msg = message;
 
             Loc maxSize = Loc.Zero;
+            MaxLines = 1;
 
             string[] scrolls = SplitTags.Split(msg);
             for (int nn = 0; nn < scrolls.Length; nn++)
@@ -177,6 +178,7 @@ namespace RogueEssence.Menu
 
                 Loc size = text.GetTextSize();
                 maxSize = Loc.Max(maxSize, size);
+                MaxLines = Math.Max(MaxLines, text.GetLineCount());
             }
             maxSize += new Loc(8 + 4);//Magic number plus VERT_BUFFER
             Bounds = new Rect((GraphicsManager.ScreenWidth - maxSize.X) / 2, (GraphicsManager.ScreenHeight - maxSize.Y) / 2, maxSize.X, maxSize.Y);
@@ -267,9 +269,10 @@ namespace RogueEssence.Menu
                     scrolling = true;
                 }
 
-                if (scrolling)//TODO: calculate position based on interpolation between the original start and the start minus size of dialogue box
-                    CurrentText.Rect.Start -= new Loc(0, 3);
-                if (CurrentScrollTime >= FrameTick.FromFrames(SCROLL_TIME))
+                if (scrolling)
+                    CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
+                int scrollFrames = TEXT_HEIGHT * MaxLines / SCROLL_SPEED;
+                if (CurrentScrollTime >= FrameTick.FromFrames(scrollFrames))
                 {
                     curTextIndex++;
                     CurrentScrollTime = new FrameTick();
