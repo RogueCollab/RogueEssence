@@ -147,6 +147,10 @@ namespace RogueEssence.Dungeon
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
+                else if (entry.MaxStack < 0)
+                {
+                    //reusable, do nothing.
+                }
                 else
                     ((ExplorerTeam)context.User.MemberTeam).RemoveFromInv(context.UsageSlot);
             }
@@ -156,6 +160,10 @@ namespace RogueEssence.Dungeon
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
+                else if (entry.MaxStack < 0)
+                {
+                    //reusable, do nothing.
+                }
                 else
                     context.User.DequipItem();
             }
@@ -166,6 +174,10 @@ namespace RogueEssence.Dungeon
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
+                else if (entry.MaxStack < 0)
+                {
+                    //reusable, do nothing.
+                }
                 else
                     ZoneManager.Instance.CurrentMap.Items.RemoveAt(mapSlot);
             }
