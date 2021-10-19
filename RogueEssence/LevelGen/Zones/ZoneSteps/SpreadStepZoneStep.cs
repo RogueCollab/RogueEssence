@@ -103,7 +103,7 @@ namespace RogueEssence.LevelGen
                 int floor = SpreadPlan.DropPoints[ii];
                 SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(floor);
                 if (!spawnList.CanPick)
-                    break;
+                    continue;
 
                 ReRandom rand = new ReRandom(seed);
                 IGenPriority genStep = spawnList.Pick(rand);

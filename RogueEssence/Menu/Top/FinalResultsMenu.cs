@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         public MenuDivider Div;
         public MenuText MoneyTally;
         public MenuText InvValueTally;
-        public MenuText StorageValueTally;
+        public MenuText BankValueTally;
         public MenuText TotalTally;
         public MenuText TotalTurns;
         public MenuText Seed;
@@ -81,7 +81,7 @@ namespace RogueEssence.Menu
 
             if (rogue != null)
             {
-                StorageValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
+                BankValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
                     new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_SCORE", Ending.ActiveTeam.GetTotalScore()),
                     new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
@@ -89,7 +89,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                StorageValueTally = new MenuText("",
+                BankValueTally = new MenuText("",
                     new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText("",
                     new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
@@ -106,7 +106,7 @@ namespace RogueEssence.Menu
             yield return Div;
             yield return MoneyTally;
             yield return InvValueTally;
-            yield return StorageValueTally;
+            yield return BankValueTally;
             yield return TotalTally;
             yield return TotalTurns;
             yield return Seed;
