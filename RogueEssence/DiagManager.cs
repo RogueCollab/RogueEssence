@@ -4,7 +4,6 @@ using System.IO;
 using System.Xml;
 using Microsoft.Xna.Framework.Input;
 using System.Text;
-using System.Diagnostics;
 using RogueEssence.Dev;
 using System.Runtime.Serialization;
 
@@ -192,13 +191,8 @@ namespace RogueEssence
                         innerException = innerException.InnerException;
                         depth++;
                     }
-
-
-#if DEBUG
-                    Debug.WriteLine(errorMsg);
-#else
+                    
                     Console.WriteLine(errorMsg);
-#endif
 
                     if (errorAddedEvent != null && signal)
                         errorAddedEvent(exception.Message);
@@ -211,7 +205,7 @@ namespace RogueEssence
                 }
                 catch (Exception ex)
                 {
-                    Debug.Write(ex.ToString());
+                    Console.Write(ex.ToString());
                 }
                 inError = false;
             }
@@ -224,11 +218,7 @@ namespace RogueEssence
                 string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), diagInfo);
                 if (DevMode)
                 {
-#if DEBUG
-                    Debug.WriteLine(fullMsg);
-#else
                     Console.WriteLine(fullMsg);
-#endif
                 }
 
                 try
@@ -243,7 +233,7 @@ namespace RogueEssence
                 }
                 catch (Exception ex)
                 {
-                    Debug.Write(ex.ToString());
+                    Console.Write(ex.ToString());
                 }
             }
         }

@@ -69,13 +69,16 @@ namespace RogueEssence
             
             LuaEngine.InitInstance();
             GraphicsManager.InitStatic();
-
+            
+#if NO_THREADING
+            LoadInBackground();
+#else
             Thread thread = new Thread(LoadInBackground);
             thread.IsBackground = true;
             //thread.CurrentCulture = Thread.CurrentThread.CurrentCulture;
             //thread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture;
             thread.Start();
-
+#endif
             base.Initialize();
         }
 

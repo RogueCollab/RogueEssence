@@ -32,7 +32,7 @@ namespace RogueEssence.Dev
             {
                 try
                 {
-                    CharSheetOp newOp = (CharSheetOp)Data.DataManager.LoadData(path);
+                    CharSheetOp newOp = Data.DataManager.LoadData<CharSheetOp>(path);
                     CharSheetOps.Add(newOp);
                 }
                 catch (Exception ex)

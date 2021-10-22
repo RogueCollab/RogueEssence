@@ -3,6 +3,7 @@ using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 /*
  * MapBG.cs
  * 2021/02/06

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 

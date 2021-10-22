@@ -3,6 +3,7 @@ using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 /*
  * GroundAnim.cs
  * 2017/07/03
