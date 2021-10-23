@@ -75,7 +75,7 @@ namespace RogueEssence.Menu
             updateMessage();
         }
 
-        public void ProcessActions(FrameTick elapsedTime)
+        public virtual void ProcessActions(FrameTick elapsedTime)
         {
             TotalTextTime += elapsedTime;
             if (!CurrentText.Finished)
