@@ -161,15 +161,15 @@ namespace RogueEssence.Script
 
 
 
-        public void ShowBG(string bg, int frameTime, int time)
+        public void ShowBG(string bg, int frameTime, int fadeInTime)
         {
             try
             {
-                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), time);
+                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), fadeInTime);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception:\n{2}", bg, frameTime, time, e.Message));
+                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception:\n{2}", bg, frameTime, fadeInTime, e.Message));
             }
         }
 
@@ -1127,8 +1127,8 @@ namespace RogueEssence.Script
             end", "WaitHideTitle").First() as LuaFunction;
 
             WaitShowBG = state.RunString(@"
-            return function(_, text, frameTime, time)
-                UI:ShowBG(text, frameTime, time)
+            return function(_, text, frameTime, fadeInTime)
+                UI:ShowBG(text, frameTime, fadeInTime)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowBG").First() as LuaFunction;
 

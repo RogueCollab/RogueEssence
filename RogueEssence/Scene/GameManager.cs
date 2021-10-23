@@ -230,11 +230,15 @@ namespace RogueEssence
             }
         }
 
-        public IEnumerator<YieldInstruction> FadeTitle(bool fadeIn, string title, int totalTime = 20)
+        public IEnumerator<YieldInstruction> FadeTitle(bool fadeIn, string title)
+        {
+            int fadeTime = 10 + ModifyBattleSpeed(20);
+            return FadeTitle(fadeIn, title, fadeTime);
+        }
+        public IEnumerator<YieldInstruction> FadeTitle(bool fadeIn, string title, int fadeTime)
         {
             if (fadeIn)
                 fadedTitle = title;
-            int fadeTime = 10 + ModifyBattleSpeed(totalTime);
             long currentFadeTime = fadeTime;
             while (currentFadeTime > 0)
             {
@@ -252,11 +256,15 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> FadeBG(bool fadeIn, BGAnimData bg, int totalTime = 20)
+        public IEnumerator<YieldInstruction> FadeBG(bool fadeIn, BGAnimData bg)
+        {
+            int fadeTime = 10 + ModifyBattleSpeed(20);
+            return FadeBG(fadeIn, bg, fadeTime);
+        }
+        public IEnumerator<YieldInstruction> FadeBG(bool fadeIn, BGAnimData bg, int fadeTime)
         {
             if (fadeIn)
                 fadedBG = bg;
-            int fadeTime = 10 + ModifyBattleSpeed(totalTime);
             long currentFadeTime = fadeTime;
             while (currentFadeTime > 0)
             {
@@ -1118,15 +1126,15 @@ namespace RogueEssence
                 //draw transitions
                 if (fadeAmount > 0)
                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), null, (fadeWhite ? Color.White : Color.Black) * fadeAmount);
-                if (titleFadeAmount > 0)
-                    GraphicsManager.DungeonFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 2,
-                        fadedTitle, null, DirV.None, DirH.None, Color.White * titleFadeAmount);
                 if (bgFadeAmount > 0 && fadedBG.AnimIndex != "")
                 {
                     DirSheet bg = GraphicsManager.GetBackground(fadedBG.AnimIndex);
                     bg.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - bg.TileWidth / 2, GraphicsManager.ScreenHeight / 2 - bg.TileHeight / 2),
                         fadedBG.GetCurrentFrame(GraphicsManager.TotalFrameTick, bg.TotalFrames), Dir8.Down, Color.White * ((float)fadedBG.Alpha / 255) * bgFadeAmount);
                 }
+                if (titleFadeAmount > 0)
+                    GraphicsManager.DungeonFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 2,
+                        fadedTitle, null, DirV.None, DirH.None, Color.White * titleFadeAmount);
             }
 
             MenuManager.Instance.DrawMenus(spriteBatch);
