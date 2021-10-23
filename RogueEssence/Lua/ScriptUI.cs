@@ -363,13 +363,13 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="title"></param>
         /// <param name="desc"></param>
-        public void NameMenu(string title, string desc)
+        public void NameMenu(string title, string desc, int maxLength = 116)
         {
             try
             {
                 m_choiceresult = "";
                 //TODO: allow this to work in dungeon mode by skipping replays
-                m_curchoice = new TeamNameMenu(title, desc, (string name) => { m_choiceresult = name; });
+                m_curchoice = new TeamNameMenu(title, desc, maxLength, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
             {
