@@ -15,7 +15,7 @@
     <PackageReference Include="System.Resources.Extensions" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\NLua\build\net5.0\NLua.net5.0.csproj" />
+    <ProjectReference Include="..\NLua\build\net5.0\NLua.net5.0.csproj" />
     <ProjectReference Include="..\FNA\FNA.Core.csproj" />
     <ProjectReference Include="..\RogueElements\RogueElements\RogueElements.csproj">
       <Project>{a777bc3d-2635-401d-96d7-162178d8dfc4}</Project>
