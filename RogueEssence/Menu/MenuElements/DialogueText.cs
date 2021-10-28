@@ -75,6 +75,21 @@ namespace RogueEssence.Menu
 
             colors.Add((text.Length, Color.Transparent));
 
+            //manually discount all newlines from the color indices
+            int newLag = 0;
+            int colorIdx = 0;
+            for (int ii = 0; ii < text.Length; ii++)
+            {
+                while (colors[colorIdx].idx == ii)
+                {
+                    colors[colorIdx] = (colors[colorIdx].idx - newLag, colors[colorIdx].color);
+                    colorIdx++;
+                    if (colorIdx >= colors.Count)
+                        break;
+                }
+                if (text[ii] == '\n')
+                    newLag++;
+            }
         }
 
         public void SetFormattedText(string text)
@@ -110,7 +125,6 @@ namespace RogueEssence.Menu
 
         public int GetLineCount()
         {
-            int maxWidth = 0;
             string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
             
             return lines.Length;

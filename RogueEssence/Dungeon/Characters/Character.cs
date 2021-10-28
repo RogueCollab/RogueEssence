@@ -1965,13 +1965,17 @@ namespace RogueEssence.Dungeon
             List<Character> seenChars = new List<Character>();
             foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if (CanSeeCharacter(target) && DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
+                if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
                     seenChars.Add(target);
             }
             return seenChars;
         }
 
         public bool CanSeeCharacter(Character character)
+        {
+            return CanSeeCharacter(character, GetCharSight());
+        }
+        public bool CanSeeCharacter(Character character, Map.SightRange sight)
         {
             if (character == null)
                 return false;
@@ -1985,7 +1989,7 @@ namespace RogueEssence.Dungeon
             if (character.Unlocatable)
                 return false;
 
-            if (CanSeeLoc(character.CharLoc, GetCharSight()))
+            if (CanSeeLoc(character.CharLoc, sight))
                 return true;
             return false;
         }

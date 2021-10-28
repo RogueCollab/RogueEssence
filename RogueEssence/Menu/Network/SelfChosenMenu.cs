@@ -13,6 +13,8 @@ namespace RogueEssence.Menu
         private ContactsMenu.OnChooseActivity action;
         private bool rescueMode;
 
+        const int CHAR_NAME_SIZE = 116;
+
         public SelfChosenMenu(string copyString, bool rescueMode, ContactsMenu.OnChooseActivity action)
         {
             this.copyString = copyString;
@@ -24,7 +26,7 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_COPY_UUID"), CopyAction));
             if (!rescueMode)
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_RENAME"), () => { MenuManager.Instance.AddMenu(new TeamNameMenu(Text.FormatKey("INPUT_TEAM_TITLE"), "", RenameAction), false); }));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_RENAME"), () => { MenuManager.Instance.AddMenu(new TeamNameMenu(Text.FormatKey("INPUT_TEAM_TITLE"), "", CHAR_NAME_SIZE, RenameAction), false); }));
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_UPDATE_TEAM"), UpdateAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));

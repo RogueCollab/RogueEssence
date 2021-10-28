@@ -2,13 +2,15 @@
 {
     public class TeamNameMenu : TextInputMenu
     {
-        public override int MaxLength { get { return 116; } }
+        private int maxLength;
+        public override int MaxLength { get { return maxLength; } }
         public delegate void OnChooseString(string name);
         private OnChooseString action;
 
-        public TeamNameMenu(string title, string desc, OnChooseString action)
+        public TeamNameMenu(string title, string desc, int maxLength, OnChooseString action)
         {
             this.action = action;
+            this.maxLength = maxLength;
             Initialize(title, desc, 256);
         }
         

@@ -45,7 +45,14 @@ namespace RogueEssence.Menu
                     MenuText statusName = null;
                     StackState stack = DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects[status].StatusStates.GetWithDefault<StackState>();
                     if (stack != null)
-                        statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).GetColoredName() + (stack.Stack < 0 ? " " : " +") + stack.Stack, new Loc(2, 1));
+                    {
+                        string stackStr = "";
+                        if (stack.Stack < 0)
+                            stackStr = " " + stack.Stack;
+                        else if (stack.Stack > 0)
+                            stackStr = " +" + stack.Stack;
+                        statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).GetColoredName() + stackStr, new Loc(2, 1));
+                    }
                     else
                         statusName = new MenuText(Data.DataManager.Instance.GetStatus(status).GetColoredName(), new Loc(2, 1));
 

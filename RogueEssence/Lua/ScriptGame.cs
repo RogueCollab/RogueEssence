@@ -14,6 +14,12 @@ namespace RogueEssence.Script
     {
         public ReRandom Rand { get { return MathUtils.Rand; } }
 
+        public void GroundSave()
+        {
+            DataManager.Instance.SaveMainGameState();
+        }
+
+
         //===================================
         // Current Map
         //===================================

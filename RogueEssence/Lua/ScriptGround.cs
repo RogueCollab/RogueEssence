@@ -510,9 +510,12 @@ namespace RogueEssence.Script
                 GroundChar ch = (GroundChar)ent;
                 FrameTick prevTime = new FrameTick();
                 GroundAction prevAction = ch.GetCurrentAction();
-                if (prevAction is AnimateToPositionGroundAction)
-                    prevTime = prevAction.ActionTime;
                 int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                if (prevAction is AnimateToPositionGroundAction)
+                {
+                    if (animIndex == prevAction.AnimFrameType)
+                        prevTime = prevAction.ActionTime;
+                }
                 AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(animIndex, ch.Position, animDir, animSpeed, speed, prevTime, new Loc(x, y));
                 ch.StartAction(newAction);
                 return new WaitUntil(() =>
