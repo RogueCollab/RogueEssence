@@ -15,7 +15,7 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             string startInfo = "[EMPTY]";
-            foreach (GenStep<MapGenContext> step in GenSteps)
+            foreach (GenStep<MapGenContext> step in GenSteps.EnumerateInOrder())
             {
                 var startStep = step as InitGridPlanStep<MapGenContext>;
                 if (startStep != null)
@@ -39,7 +39,7 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             string startInfo = "[EMPTY]";
-            foreach (GenStep<ListMapGenContext> step in GenSteps)
+            foreach (GenStep<ListMapGenContext> step in GenSteps.EnumerateInOrder())
             {
                 var startStep = step as InitFloorPlanStep<ListMapGenContext>;
                 if (startStep != null)
@@ -63,7 +63,7 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             string startInfo = "[EMPTY]";
-            foreach (GenStep<StairsMapGenContext> step in GenSteps)
+            foreach (GenStep<StairsMapGenContext> step in GenSteps.EnumerateInOrder())
             {
                 var startStep = step as InitTilesStep<StairsMapGenContext>;
                 if (startStep != null)
@@ -87,7 +87,7 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             string startInfo = "[EMPTY]";
-            foreach (GenStep<MapLoadContext> step in GenSteps)
+            foreach (GenStep<MapLoadContext> step in GenSteps.EnumerateInOrder())
             {
                 var startStep = step as MappedRoomStep<MapLoadContext>;
                 if (startStep != null)
