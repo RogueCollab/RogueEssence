@@ -67,7 +67,7 @@ namespace RogueEssence.Ground
 
         //Moved script events to their own structure, to avoid duplicates and other issues
         [NonSerialized]
-        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
+        protected Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
 
         /// <summary>
         /// When this property is false, all processing of this entity is disabled.
@@ -308,7 +308,7 @@ namespace RogueEssence.Ground
         }
 
         [OnDeserialized]
-        internal virtual void OnDeserializedMethod(StreamingContext context)
+        internal void OnDeserializedMethod(StreamingContext context)
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }

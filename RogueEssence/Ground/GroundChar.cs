@@ -467,10 +467,10 @@ namespace RogueEssence.Ground
         }
 
         [OnDeserialized]
-        internal override void OnDeserializedMethod(StreamingContext context)
+        internal new void OnDeserializedMethod(StreamingContext context)
         {
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
-            base.OnDeserializedMethod(context);
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
     }
 }
