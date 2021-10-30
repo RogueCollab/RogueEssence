@@ -187,9 +187,9 @@ namespace RogueEssence.Ground
 
 
         [OnDeserialized]
-        internal override void OnDeserializedMethod(StreamingContext context)
+        internal new void OnDeserializedMethod(StreamingContext context)
         {
-            base.OnDeserializedMethod(context);
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             //TODO: v0.5: remove this
             if (CurrentAnim == null)
                 CurrentAnim = new ObjAnimData();
