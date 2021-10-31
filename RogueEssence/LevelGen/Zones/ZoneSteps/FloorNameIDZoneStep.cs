@@ -9,6 +9,11 @@ namespace RogueEssence.LevelGen
         public LocalText Name;
         public Priority Priority;
 
+        public FloorNameIDZoneStep()
+        {
+            Name = new LocalText();
+        }
+
         public FloorNameIDZoneStep(Priority priority)
         {
             Priority = priority;

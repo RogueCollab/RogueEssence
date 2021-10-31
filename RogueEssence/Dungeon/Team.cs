@@ -249,7 +249,7 @@ namespace RogueEssence.Dungeon
             Name = "";
             Assembly = new List<Character>();
             BoxStorage = new List<InvItem>();
-            Storage = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            Storage = new int[10000];//TODO: remove this magic number and make it an adjustable value
         }
 
         public void SetRank(int rank)

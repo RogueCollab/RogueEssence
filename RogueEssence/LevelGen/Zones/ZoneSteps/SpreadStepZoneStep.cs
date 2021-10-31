@@ -63,7 +63,7 @@ namespace RogueEssence.LevelGen
             int count = 0;
             if (Spawns != null)
             {
-                foreach (IGenPriority gen in Spawns)
+                foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
                     count++;
             }
             return string.Format("{0}[{1}]", this.GetType().Name, count);

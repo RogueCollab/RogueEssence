@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace RogueElements
 {
-    public interface ISpawnDict<TK, TV> : IEnumerable<TV>, IEnumerable
+    public interface ISpawnDict<TK, TV>
     {
         int Count { get; }
 
@@ -32,7 +32,7 @@ namespace RogueElements
         public bool ContainsKey(TK key);
     }
 
-    public interface ISpawnDict : IEnumerable
+    public interface ISpawnDict
     {
         int Count { get; }
 
