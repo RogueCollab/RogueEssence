@@ -138,9 +138,9 @@ namespace RogueEssence.Data
         {
             ActiveTeam = new ExplorerTeam();
 
-            Dex = new UnlockState[DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count];
-            RogueStarters = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count];
-            DungeonUnlocks = new UnlockState[DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count];
+            Dex = new UnlockState[10000];//TODO: remove this magic number and make it an adjustable value
+            RogueStarters = new bool[10000];//TODO: remove this magic number and make it an adjustable value
+            DungeonUnlocks = new UnlockState[10000];//TODO: remove this magic number and make it an adjustable value
 
             NextDest = ZoneLoc.Invalid;
 

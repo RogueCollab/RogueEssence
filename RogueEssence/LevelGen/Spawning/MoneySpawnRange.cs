@@ -30,13 +30,13 @@ namespace RogueEssence.LevelGen
         }
         public IRandPicker<MoneySpawn> CopyState() { return new MoneySpawnRange(this); }
 
-        public IEnumerator<MoneySpawn> GetEnumerator()
+        public IEnumerable<MoneySpawn> EnumerateOutcomes()
         {
             yield return new MoneySpawn(Min);
             for (int ii = Min + 1; ii < Max; ii++)
                 yield return new MoneySpawn(ii);
         }
-        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
         public MoneySpawn Pick(IRandom rand) { return new MoneySpawn(rand.Next(Min, Max)); }
 
         public override string ToString()

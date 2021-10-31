@@ -23,6 +23,13 @@ namespace RogueEssence.Dungeon
         public HashSet<int> Associates { get; private set; }
         public int NeighborCode;
 
+        public AutoTile()
+        {
+            Layers = new List<TileLayer>();
+            AutoTileset = -1;
+            NeighborCode = -1;
+            Associates = new HashSet<int>();
+        }
         public AutoTile(params TileLayer[] layers)
         {
             Layers = new List<TileLayer>();
