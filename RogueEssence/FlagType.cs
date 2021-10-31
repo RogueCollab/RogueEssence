@@ -18,7 +18,7 @@ namespace RogueEssence
         public FlagType()
         {
             fullType = typeof(object);
-            assembly = fullType.FullName;
+            assembly = fullType.Assembly.FullName;
             this.type = fullType.FullName;
         }
         public FlagType(Type type)
