@@ -15,6 +15,7 @@ namespace RogueEssence.Data
         {
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+            TypeNameHandling = TypeNameHandling.Auto,
         };
         
         public static object Deserialize(Stream stream, Type type)
@@ -34,8 +35,8 @@ namespace RogueEssence.Data
         {
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
-                var props = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Select(f => CreateProperty(f, memberSerialization))
+                List<MemberInfo> fields = Dev.ReflectionExt.GetEditableMembers(type);
+                List<JsonProperty> props = fields.Select(f => CreateProperty(f, memberSerialization))
                     .ToList();
                 props.ForEach(p => { p.Writable = true; p.Readable = true; });
                 return props;
