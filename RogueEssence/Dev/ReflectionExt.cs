@@ -58,6 +58,52 @@ namespace RogueEssence.Dev
             return null;
         }
 
+        public static List<MemberInfo> GetSerializableMembers(this Type type)
+        {
+            List<MemberInfo> members = new List<MemberInfo>();
+            Type privateType = type;
+            Dictionary<string, FieldInfo> backingFields = new Dictionary<string, FieldInfo>();
+            while (privateType != null)
+            {
+                FieldInfo[] fields = privateType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (FieldInfo field in fields)
+                    backingFields[field.Name] = field;
+                privateType = privateType.BaseType;
+            }
+
+            PropertyInfo[] myProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo info in myProperties)
+            {
+                List<string> keys = new List<string>();
+                foreach (string key in backingFields.Keys)
+                    keys.Add(key);
+                for (int ii = 0; ii < keys.Count; ii++)
+                {
+                    if (backingFields[keys[ii]].Name == "<" + info.Name + ">k__BackingField")
+                    {
+                        members.Add(info);
+                        backingFields.Remove(keys[ii]);
+                        break;
+                    }
+                }
+            }
+
+            foreach (FieldInfo info in backingFields.Values)
+                members.Add(info);
+
+            FieldInfo[] myFields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            foreach (FieldInfo info in myFields)
+                members.Add(info);
+
+            for (int ii = members.Count-1; ii >= 0; ii--)
+            {
+                if (members[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
+                    members.RemoveAt(ii);
+            }
+
+            return members;
+        }
+
         public static List<MemberInfo> GetEditableMembers(this Type type)
         {
             List<MemberInfo> members = new List<MemberInfo>();
