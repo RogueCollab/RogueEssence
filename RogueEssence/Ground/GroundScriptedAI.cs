@@ -182,12 +182,6 @@ namespace RogueEssence.Ground
         }
 
 
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-        }
-
         public override void OnMapInit()
         {
             InstantiateAI();
