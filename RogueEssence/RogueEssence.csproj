@@ -10,12 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="0.8.3.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NLua" Version="1.4.22" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
     <PackageReference Include="System.Resources.Extensions" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\NLua\build\net5.0\NLua.net5.0.csproj" />
     <ProjectReference Include="..\FNA\FNA.Core.csproj" />
     <ProjectReference Include="..\RogueElements\RogueElements\RogueElements.csproj">
       <Project>{a777bc3d-2635-401d-96d7-162178d8dfc4}</Project>
@@ -23,9 +22,9 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;NO_THREADING</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;NO_THREADING</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 </Project>
