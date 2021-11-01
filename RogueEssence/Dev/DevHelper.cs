@@ -11,8 +11,25 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
+        static int legacy = 0;
+
         public static void ReserializeBase()
         {
+            if (legacy == 2)
+            {
+                string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
+                object data = LegacyLoad(dir);
+                LegacySave(dir, data);
+            }
+            else if (legacy == 1)
+            {
+                string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
+                object data = LegacyLoad(dir);
+                DataManager.SaveData(dir, data);
+                DataManager.LoadData<ActiveEffect>(dir);
+                LegacySave(dir, data);
+            }
+            else
             {
                 string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
                 object data = LoadWithLegacySupport<ActiveEffect>(dir);
@@ -29,15 +46,58 @@ namespace RogueEssence.Dev
             foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*.fx"))
             {
                 object data;
-                if (Path.GetFileName(dir) == "NoCharge.fx")
+                if (legacy == 2)
                 {
-                    data = LoadWithLegacySupport<EmoteFX>(dir);
+                    if (Path.GetFileName(dir) == "NoCharge.fx")
+                        data = LegacyLoad(dir);
+                    else
+                        data = LegacyLoad(dir);
+                    LegacySave(dir, data);
+                }
+                else if (legacy == 1)
+                {
+                    if (Path.GetFileName(dir) == "NoCharge.fx")
+                        data = LegacyLoad(dir);
+                    else
+                        data = LegacyLoad(dir);
+                    DataManager.SaveData(dir, data);
+                    if (Path.GetFileName(dir) == "NoCharge.fx")
+                        data = DataManager.LoadData<EmoteFX>(dir);
+                    else
+                        data = DataManager.LoadData<BattleFX>(dir);
+                    LegacySave(dir, data);
                 }
                 else
                 {
-                    data = LoadWithLegacySupport<BattleFX>(dir);
+                    if (Path.GetFileName(dir) == "NoCharge.fx")
+                        data = LoadWithLegacySupport<EmoteFX>(dir);
+                    else
+                        data = LoadWithLegacySupport<BattleFX>(dir);
+                    DataManager.SaveData(dir, data);
                 }
-                DataManager.SaveData(dir, data);
+            }
+
+
+            foreach (string dir in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
+            {
+                object data;
+                if (legacy == 2)
+                {
+                    data = LegacyLoad(dir);
+                    LegacySave(dir, data);
+                }
+                else if (legacy == 1)
+                {
+                    data = LegacyLoad(dir);
+                    DataManager.SaveData(dir, data);
+                    data = DataManager.LoadData<CharSheetOp>(dir);
+                    LegacySave(dir, data);
+                }
+                else
+                {
+                    data = LoadWithLegacySupport<CharSheetOp>(dir);
+                    DataManager.SaveData(dir, data);
+                }
             }
         }
 
@@ -61,8 +121,23 @@ namespace RogueEssence.Dev
         {
             foreach (string dir in PathMod.GetModFiles(dataPath, "*"+ext))
             {
-                object data = LoadWithLegacySupport(dir, t);
-                DataManager.SaveData(dir, data);
+                if (legacy == 2)
+                {
+                    object data = LegacyLoad(dir);
+                    LegacySave(dir, data);
+                }
+                else if (legacy == 1)
+                {
+                    object data = LegacyLoad(dir);
+                    DataManager.SaveData(dir, data);
+                    object json = DataManager.LoadData(dir, t);
+                    LegacySave(dir, json);
+                }
+                else
+                {
+                    object data = LoadWithLegacySupport(dir, t);
+                    DataManager.SaveData(dir, data);
+                }
             }
         }
 
@@ -90,6 +165,7 @@ namespace RogueEssence.Dev
                     DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
                 }
             }
+            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), DataManager.Instance.UniversalData);
         }
 
 
@@ -112,10 +188,7 @@ namespace RogueEssence.Dev
 
                 using (Stream stream = new FileStream(PathMod.ModPath(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                    {
-                        Serializer.Serialize(stream, fullGuide);
-                    }
+                    Serializer.Serialize(stream, fullGuide);
                 }
             }
             catch (Exception ex)
@@ -150,7 +223,7 @@ namespace RogueEssence.Dev
             return (T)LoadWithLegacySupport(path, typeof(T));
         }
 
-        private static object LoadWithLegacySupport(string path, Type t)
+        public static object LoadWithLegacySupport(string path, Type t)
         {
             Console.WriteLine("Loading {0}...", path);
             try
@@ -159,6 +232,14 @@ namespace RogueEssence.Dev
             }
             catch (Exception)
             {
+                return LegacyLoad(path);
+            }
+        }
+
+        public static object LegacyLoad(string path)
+        {
+            try
+            {
                 using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
 #pragma warning disable 618
@@ -166,6 +247,19 @@ namespace RogueEssence.Dev
                     return formatter.Deserialize(stream);
 #pragma warning restore 618
                 }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public static void LegacySave(string path, object entry)
+        {
+            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                IFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(stream, entry);
             }
         }
     }

@@ -388,12 +388,8 @@ namespace RogueEssence.Data
             {
                 using (Stream stream = new FileStream(PathMod.ModPath(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                    {
-                        IFormatter formatter = new BinaryFormatter();
-                        EntryDataIndex result = (EntryDataIndex)formatter.Deserialize(stream);
-                        DataIndices[type] = result;
-                    }
+                    EntryDataIndex result = (EntryDataIndex)Serializer.Deserialize(stream, typeof(EntryDataIndex));
+                    DataIndices[type] = result;
                 }
             }
             catch
@@ -423,11 +419,7 @@ namespace RogueEssence.Data
         {
             using (Stream stream = new FileStream(PathMod.HardMod(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, DataIndices[type]);
-                }
+                Serializer.Serialize(stream, DataIndices[type]);
             }
         }
 

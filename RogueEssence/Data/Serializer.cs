@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -16,6 +17,7 @@ namespace RogueEssence.Data
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.Indented,
         };
         
         public static object Deserialize(Stream stream, Type type)
@@ -35,7 +37,8 @@ namespace RogueEssence.Data
         {
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
-                List<MemberInfo> fields = Dev.ReflectionExt.GetEditableMembers(type);
+                FieldInfo[] fieldsLess = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                List<MemberInfo> fields = type.GetSerializableMembers();
                 List<JsonProperty> props = fields.Select(f => CreateProperty(f, memberSerialization))
                     .ToList();
                 props.ForEach(p => { p.Writable = true; p.Readable = true; });
