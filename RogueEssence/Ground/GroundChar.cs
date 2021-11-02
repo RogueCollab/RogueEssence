@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using AABB;
 using System.Linq;
 using NLua;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Ground
 {
@@ -105,6 +106,11 @@ namespace RogueEssence.Ground
             //!#FIXME : Give a default unique name please fix this when we have editor/template names!
         }
 
+        [JsonConstructor]
+        public GroundChar(bool populateSlots) : this(new MonsterID(), new Loc(), Dir8.Down, "", "GroundChar", populateSlots)
+        {
+        }
+
         public GroundChar(CharData baseChar, Loc newLoc, Dir8 charDir, string instancename)
         {
             Data = baseChar;
@@ -121,11 +127,17 @@ namespace RogueEssence.Ground
             IsInteracting = false;
         }
 
-        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string instancename) : this(appearance, newLoc, charDir, "", instancename)
+        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string instancename) : this(appearance, newLoc, charDir, "", instancename, true)
         {
 
         }
-        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string nickname, string instancename) : this(new CharData(), newLoc, charDir, instancename)
+
+        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string nickname, string instancename) : this(appearance, newLoc, charDir, nickname, instancename, true)
+        {
+
+        }
+
+        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string nickname, string instancename, bool populateSlots) : this(new CharData(populateSlots), newLoc, charDir, instancename)
         {
             Data.BaseForm = appearance;
             Data.Nickname = nickname;

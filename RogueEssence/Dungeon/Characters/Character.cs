@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
 using NLua;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -248,18 +249,28 @@ namespace RogueEssence.Dungeon
 
         public TempCharBackRef BackRef;
 
-        public Character()
+        public Character() : this(true)
+        { }
+
+        [JsonConstructor]
+        public Character(bool populateSlots) : base(populateSlots)
         {
             Skills = new List<BackReference<Skill>>();
-            for(int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
-                Skills.Add(new BackReference<Skill>(new Skill()));
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
+                    Skills.Add(new BackReference<Skill>(new Skill()));
+            }
 
             Element1 = 00;
             Element2 = 00;
 
             Intrinsics = new List<BackReference<Intrinsic>>();
-            for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic()));
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
+                    Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic()));
+            }
 
             EquippedItem = new InvItem();
             ProxyName = "";

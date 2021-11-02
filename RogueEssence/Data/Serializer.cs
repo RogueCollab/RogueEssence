@@ -16,7 +16,7 @@ namespace RogueEssence.Data
         {
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-            TypeNameHandling = TypeNameHandling.Auto,
+            TypeNameHandling = TypeNameHandling.All,
             Formatting = Formatting.Indented,
         };
         

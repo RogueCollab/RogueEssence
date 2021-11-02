@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using NLua;
 using RogueEssence.Data;
 
@@ -94,17 +95,27 @@ namespace RogueEssence.Dungeon
         public LuaTable LuaDataTable;
 
 
-        public CharData()
+        public CharData() : this(true)
+        { }
+
+        [JsonConstructor]
+        public CharData(bool populateSlots)
         {
             Nickname = "";
             OriginalUUID = "";
             OriginalTeam = "";
             BaseSkills = new List<SlotSkill>();
-            for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
-                BaseSkills.Add(new SlotSkill());
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
+                    BaseSkills.Add(new SlotSkill());
+            }
             BaseIntrinsics = new List<int>();
-            for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                BaseIntrinsics.Add(-1);
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
+                    BaseIntrinsics.Add(-1);
+            }
             Relearnables = new List<bool>();
 
             MetAt = "";
