@@ -1336,9 +1336,7 @@ namespace RogueEssence.Data
                         string dateDefeated = reader.ReadString();
                         ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-
-                        IFormatter formatter = new BinaryFormatter();
-                        return (BaseRescueMail)formatter.Deserialize(stream);
+                        return (BaseRescueMail)Serializer.Deserialize(stream, typeof(BaseRescueMail));
                     }
                 }
             }
@@ -1385,8 +1383,7 @@ namespace RogueEssence.Data
                     writer.Write(mail.DefeatedVersion.Minor);
                     writer.Write(mail.DefeatedVersion.Build);
                     writer.Write(mail.DefeatedVersion.Revision);
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, mail);
+                    Serializer.Serialize(stream, mail);
                 }
             }
         }

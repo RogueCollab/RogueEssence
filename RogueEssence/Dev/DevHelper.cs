@@ -218,11 +218,13 @@ namespace RogueEssence.Dev
             }
         }
 
+        //TODO: v0.6 Delete this
         private static T LoadWithLegacySupport<T>(string path)
         {
             return (T)LoadWithLegacySupport(path, typeof(T));
         }
 
+        //TODO: v0.6 Delete this
         public static object LoadWithLegacySupport(string path, Type t)
         {
             Console.WriteLine("Loading {0}...", path);
@@ -236,30 +238,36 @@ namespace RogueEssence.Dev
             }
         }
 
+        //TODO: v0.6 Delete this
         public static object LegacyLoad(string path)
         {
             try
             {
                 using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-#pragma warning disable 618
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                     IFormatter formatter = new BinaryFormatter();
                     return formatter.Deserialize(stream);
-#pragma warning restore 618
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 }
             }
             catch (Exception ex)
             {
-                throw ex;
+                DiagManager.Instance.LogError(ex);
             }
+            return null;
         }
 
+        //Needed to use this for testing.
+        //TODO: v0.6 Delet this
         public static void LegacySave(string path, object entry)
         {
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 IFormatter formatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                 formatter.Serialize(stream, entry);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
             }
         }
     }

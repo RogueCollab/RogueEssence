@@ -57,8 +57,7 @@ namespace RogueEssence
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(stream, Data);
+                Serializer.Serialize(stream, Data);
                 return stream.ToArray();
             }
         }
@@ -70,7 +69,7 @@ namespace RogueEssence
                 stream.Write(bytes, 0, bytes.Length);
                 stream.Position = 0;
                 IFormatter formatter = new BinaryFormatter();
-                Data = (ContactData)formatter.Deserialize(stream);
+                Data = (ContactData)Serializer.Deserialize(stream, typeof(ContactData));
             }
         }
     }
