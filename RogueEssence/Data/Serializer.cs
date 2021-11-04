@@ -10,27 +10,39 @@ using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
+    [Serializable]
+    public class SerializationContainer
+    {
+        public object Object;
+        public Version Version;
+    }
+
     public static class Serializer
     {
         private static readonly JsonSerializerSettings Settings = new()
         {
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-            TypeNameHandling = TypeNameHandling.All,
-            Formatting = Formatting.Indented,
+            TypeNameHandling = TypeNameHandling.Auto,
         };
         
         public static object Deserialize(Stream stream, Type type)
         {
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
-                return JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
+            {
+                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(reader.ReadToEnd(), typeof(SerializationContainer), Settings);
+                return container.Object;
+            }
         }
 
         public static void Serialize(Stream stream, object entry)
         {
             using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
             {
-                string val = JsonConvert.SerializeObject(entry, Settings);
+                SerializationContainer container = new SerializationContainer();
+                container.Object = entry;
+                container.Version = Versioning.GetVersion();
+                string val = JsonConvert.SerializeObject(container, Settings);
                 writer.Write(val);
             }
         }
