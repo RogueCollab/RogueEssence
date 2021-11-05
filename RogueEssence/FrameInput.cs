@@ -197,7 +197,7 @@ namespace RogueEssence
 
                 if (keyActive)
                 {
-                    inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
+                    inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
 
                     inputStates[(int)InputType.Pause] |= keyboard.IsKeyDown(Keys.F2);
                     inputStates[(int)InputType.AdvanceFrame] |= keyboard.IsKeyDown(Keys.F3);

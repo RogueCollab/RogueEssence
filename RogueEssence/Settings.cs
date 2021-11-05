@@ -88,8 +88,6 @@ namespace RogueEssence
             for (int ii = 0; ii < 24; ii++)
                 ForbiddenKeys.Add(Keys.F1 + ii);
             ForbiddenKeys.Add(Keys.Enter);
-            ForbiddenKeys.Add(Keys.LeftShift);
-            ForbiddenKeys.Add(Keys.RightShift);
             ForbiddenKeys.Add(Keys.LeftControl);
             ForbiddenKeys.Add(Keys.RightControl);
             ForbiddenKeys.Add(Keys.LeftAlt);
