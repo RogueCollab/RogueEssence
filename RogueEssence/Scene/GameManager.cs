@@ -390,7 +390,6 @@ namespace RogueEssence
             PathMod.Mod = modPath;
             reInit();
             TitleScene.TitleMenuSaveState = null;
-            MoveToScene(new TitleScene(false));
             //clean up and reload all caches
             GraphicsManager.ReloadStatic();
             DataManager.Instance.InitData();
@@ -398,6 +397,7 @@ namespace RogueEssence
             DataManager.InitSaveDirs();
             //call data editor's load method to reload the dropdowns
             DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.All);
+            MoveToScene(new TitleScene(false));
 
             if (fade)
                 yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
