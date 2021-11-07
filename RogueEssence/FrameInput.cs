@@ -133,7 +133,7 @@ namespace RogueEssence
                     }
                 }
 
-                if (dirLoc == Loc.Zero)
+                if (dirLoc == Loc.Zero && DiagManager.Instance.CurSettings.NumPad)
                 {
                     if (keyboard.IsKeyDown(Keys.NumPad2))
                         dirLoc = dirLoc + Dir8.Down.GetLoc();
@@ -171,7 +171,8 @@ namespace RogueEssence
                 for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
                     inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
 
-                inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
+                if (DiagManager.Instance.CurSettings.Enter)
+                    inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
                 inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
             }
 

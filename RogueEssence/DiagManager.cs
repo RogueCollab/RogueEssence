@@ -193,6 +193,9 @@ namespace RogueEssence
                     }
                     
                     Console.WriteLine(errorMsg);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+#endif
 
                     if (errorAddedEvent != null && signal)
                         errorAddedEvent(exception.Message);
@@ -219,6 +222,9 @@ namespace RogueEssence
                 if (DevMode)
                 {
                     Console.WriteLine(fullMsg);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine(fullMsg);
+#endif
                 }
 
                 try
@@ -242,12 +248,12 @@ namespace RogueEssence
         {
             //try to load from file
 
-            try
-            {
-                Settings settings = new Settings();
+            Settings settings = new Settings();
 
-                string path = PathMod.NoMod("Config.xml");
-                if (File.Exists(path))
+            string path = PathMod.NoMod("Config.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -262,9 +268,16 @@ namespace RogueEssence
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
 
                 }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
 
-                path = PathMod.NoMod("Keyboard.xml");
-                if (File.Exists(path))
+            path = PathMod.NoMod("Keyboard.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -286,10 +299,20 @@ namespace RogueEssence
                         settings.ActionKeys[index] = Enum.Parse<Keys>(key.InnerText);
                         index++;
                     }
-                }
 
-                path = PathMod.NoMod("Gamepad.xml");
-                if (File.Exists(path))
+                    settings.Enter = Boolean.Parse(xmldoc.SelectSingleNode("Config/Enter").InnerText);
+                    settings.NumPad = Boolean.Parse(xmldoc.SelectSingleNode("Config/NumPad").InnerText);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+
+            path = PathMod.NoMod("Gamepad.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -304,10 +327,18 @@ namespace RogueEssence
                         index++;
                     }
                     settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);
-                }
 
-                path = PathMod.NoMod("Contacts.xml");
-                if (File.Exists(path))
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+
+            path = PathMod.NoMod("Contacts.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -345,14 +376,12 @@ namespace RogueEssence
                     }
 
                 }
-                return settings;
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
             }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            return new Settings();
+            return settings;
         }
 
         public void SaveSettings(Settings settings)
@@ -395,6 +424,8 @@ namespace RogueEssence
                     appendConfigNode(xmldoc, actionKeys, "ActionKey", key.ToString());
                 }
                 docNode.AppendChild(actionKeys);
+                appendConfigNode(xmldoc, docNode, "Enter", settings.Enter.ToString());
+                appendConfigNode(xmldoc, docNode, "NumPad", settings.NumPad.ToString());
 
                 xmldoc.Save(PathMod.NoMod("Keyboard.xml"));
             }
