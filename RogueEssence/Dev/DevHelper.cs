@@ -227,7 +227,6 @@ namespace RogueEssence.Dev
         //TODO: v0.6 Delete this
         public static object LoadWithLegacySupport(string path, Type t)
         {
-            Console.WriteLine("Loading {0}...", path);
             try
             {
                 return DataManager.LoadData(path, t);
