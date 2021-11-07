@@ -582,7 +582,7 @@ namespace RogueEssence.Dungeon
             int recovery = (combat ? 0 : 12);
 
             int residual = 0;
-            if (MemberTeam is ExplorerTeam && MemberTeam.Leader == this)
+            if (MemberTeam == DungeonScene.Instance.ActiveTeam)
             {
                 residual = 80;
             }
