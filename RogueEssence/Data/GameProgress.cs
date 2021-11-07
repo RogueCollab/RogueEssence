@@ -192,15 +192,28 @@ namespace RogueEssence.Data
             return Dex[index];
         }
 
+        public int GetTotalMonsterUnlock(UnlockState state)
+        {
+            int total = 0;
+            for (int ii = 0; ii < Dex.Length; ii++)
+            {
+                if (Dex[ii] == state)
+                    total++;
+            }
+            return total;
+        }
+
+        public virtual void RegisterMonster(int index)
+        {
+            Dex[index] = UnlockState.Completed;
+        }
+
         public virtual void SeenMonster(int index)
         {
             if (Dex[index] == UnlockState.None)
                 Dex[index] = UnlockState.Discovered;
         }
-        public virtual void RegisterMonster(int index)
-        {
-            Dex[index] = UnlockState.Completed;
-        }
+
         public virtual void RogueUnlockMonster(int index)
         {
             RogueStarters[index] = true;
