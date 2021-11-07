@@ -21,8 +21,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Priority member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             //for strings, use an edit textbox
             TextBox txtValue = new TextBox();
             txtValue.Text = member.ToString();
@@ -33,7 +31,7 @@ namespace RogueEssence.Dev
         public override Priority SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             //attempt to parse
             //TODO: enforce validation
             TextBox txtValue = (TextBox)control.Children[controlIndex];

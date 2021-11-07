@@ -25,8 +25,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             DataFolderAttribute animAtt = ReflectionExt.FindAttribute<DataFolderAttribute>(attributes);
             ComboBox cbValue = new ComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
@@ -56,7 +54,6 @@ namespace RogueEssence.Dev
         public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
             ComboBox cbValue = (ComboBox)control.Children[controlIndex];
             return (string)cbValue.SelectedItem;
         }

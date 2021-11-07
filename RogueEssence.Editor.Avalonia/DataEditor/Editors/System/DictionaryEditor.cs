@@ -21,8 +21,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IDictionary member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
@@ -93,7 +91,7 @@ namespace RogueEssence.Dev
         public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             DictionaryBox lbxValue = (DictionaryBox)control.Children[controlIndex];
             DictionaryBoxViewModel mv = (DictionaryBoxViewModel)lbxValue.DataContext;
             return mv.GetDict(type);

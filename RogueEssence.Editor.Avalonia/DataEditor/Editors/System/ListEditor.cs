@@ -21,8 +21,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IList member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             RankedListAttribute rangeAtt = ReflectionExt.FindAttribute<RankedListAttribute>(attributes);
 
             if (rangeAtt != null)
@@ -91,7 +89,7 @@ namespace RogueEssence.Dev
         public override IList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             IControl lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);

@@ -22,8 +22,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Int32 member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
             NumericUpDown nudValue = new NumericUpDown();
             nudValue.Minimum = Int32.MinValue;
@@ -43,7 +41,6 @@ namespace RogueEssence.Dev
         public override Int32 SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
 
             NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
             return (Int32)nudValue.Value;

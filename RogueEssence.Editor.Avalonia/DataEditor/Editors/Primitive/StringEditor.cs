@@ -23,8 +23,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             //for strings, use an edit textbox
             TextBox txtValue = new TextBox();
             //txtValue.Dock = DockStyle.Fill;
@@ -45,7 +43,6 @@ namespace RogueEssence.Dev
         public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
 
             TextBox txtValue = (TextBox)control.Children[controlIndex];
             return txtValue.Text;

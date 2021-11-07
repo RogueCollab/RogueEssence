@@ -16,8 +16,20 @@ namespace RogueEssence.Dev
     {
         protected delegate void CreateMethod();
 
+        /// <summary>
+        /// Determines if the editor contents should be shown in the containing panel.
+        /// If not, they will show up as a classbox that needs to be clicked on to show the contents.
+        /// </summary>
         public virtual bool DefaultSubgroup => false;
+        /// <summary>
+        /// Detemines if the editor contents should be enclosed in a box.
+        /// </summary>
         public virtual bool DefaultDecoration => true;
+
+        /// <summary>
+        /// Determines whether a label should be put above the object editor contents.
+        /// </summary>
+        public virtual bool DefaultLabel => true;
         public virtual bool DefaultType => false;
 
         public static void LoadLabelControl(StackPanel control, string name)
@@ -27,7 +39,6 @@ namespace RogueEssence.Dev
             lblName.Text = DataEditor.GetMemberTitle(name) + ":";
             control.Children.Add(lblName);
         }
-
 
         protected static Grid getSharedRowPanel(int cols)
         {
@@ -292,8 +303,12 @@ namespace RogueEssence.Dev
                 //when isWindow is false, (which means either subgroup or defaultsubgroup is active) it's up to the editor itself to decide 
 
                 bool includeDecoration = DefaultDecoration;
+                bool includeLabel = DefaultLabel;
                 if (isWindow)
+                {
                     includeDecoration = false;
+                    includeLabel = false;
+                }
 
 
                 //if it's a class of its own, create a new panel
@@ -319,10 +334,12 @@ namespace RogueEssence.Dev
                         throw new TargetException("Types do not match.");
 
                     StackPanel controlParent = control;
-                    if (includeDecoration)
-                    {
+
+                    if (includeLabel)
                         LoadLabelControl(control, name);
 
+                    if (includeDecoration)
+                    {
                         Border border = new Border();
                         border.BorderThickness = new Thickness(1);
                         border.BorderBrush = Avalonia.Media.Brushes.LightGray;
@@ -333,6 +350,12 @@ namespace RogueEssence.Dev
                         groupBoxPanel.Margin = new Thickness(2);
                         border.Child = groupBoxPanel;
 
+                        controlParent = groupBoxPanel;
+                    }
+                    else
+                    {
+                        StackPanel groupBoxPanel = new StackPanel();
+                        control.Children.Add(groupBoxPanel);
                         controlParent = groupBoxPanel;
                     }
 
@@ -392,7 +415,7 @@ namespace RogueEssence.Dev
                     //include a combobox for switching children
 
                     StackPanel controlParent = null;
-                    if (includeDecoration)
+                    if (includeLabel)
                         LoadLabelControl(control, name);
 
                     Grid sharedRowPanel = getSharedRowPanel(2);
@@ -585,20 +608,28 @@ namespace RogueEssence.Dev
                 //save using THAT panel
 
                 bool includeDecoration = DefaultDecoration;
+                bool includeLabel = DefaultLabel;
                 if (isWindow)
+                {
                     includeDecoration = false;
+                    includeLabel = false;
+                }
 
 
                 if (children.Length == 1)
                 {
                     StackPanel chosenParent = control;
+                    
+                    if (includeLabel)
+                        controlIndex++;
                     if (includeDecoration)
                     {
-                        controlIndex++;
-
                         Border border = (Border)control.Children[controlIndex];
                         chosenParent = (StackPanel)border.Child;
                     }
+                    else
+                        chosenParent = (StackPanel)control.Children[controlIndex];
+
                     Type[] newStack = new Type[subGroupStack.Length + 1];
                     subGroupStack.CopyTo(newStack, 0);
                     newStack[newStack.Length - 1] = type;
@@ -607,7 +638,8 @@ namespace RogueEssence.Dev
                 else
                 {
                     StackPanel chosenParent = null;
-                    if (includeDecoration)
+
+                    if (includeLabel)
                         controlIndex++;
 
                     Grid subGrid = (Grid)control.Children[controlIndex];

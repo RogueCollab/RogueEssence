@@ -38,8 +38,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IRangeDict member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type keyType = typeof(IntRange);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IRangeDict<>), type, 0);
 
@@ -124,7 +122,7 @@ namespace RogueEssence.Dev
         public override IRangeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             RangeDictBox lbxValue = (RangeDictBox)control.Children[controlIndex];
             RangeDictBoxViewModel mv = (RangeDictBoxViewModel)lbxValue.DataContext;
             return mv.GetDict(type);

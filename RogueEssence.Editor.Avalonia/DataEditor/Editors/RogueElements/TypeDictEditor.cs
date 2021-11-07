@@ -20,8 +20,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ITypeDict member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
 
             CollectionBox lbxValue = new CollectionBox();
@@ -92,7 +90,9 @@ namespace RogueEssence.Dev
 
         public override ITypeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            CollectionBox lbxValue = (CollectionBox)control.Children[1];
+            int controlIndex = 0;
+
+            CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
 
             ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;

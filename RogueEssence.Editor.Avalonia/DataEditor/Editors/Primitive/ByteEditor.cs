@@ -22,8 +22,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Byte member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             NumericUpDown nudValue = new NumericUpDown();
             nudValue.Minimum = byte.MinValue;
             nudValue.Maximum = byte.MaxValue;
@@ -42,7 +40,6 @@ namespace RogueEssence.Dev
         public override Byte SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
             NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
             return (byte)nudValue.Value;
         }

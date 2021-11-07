@@ -22,8 +22,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Array member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             RankedListAttribute rangeAtt = ReflectionExt.FindAttribute<RankedListAttribute>(attributes);
 
             if (rangeAtt != null)
@@ -100,7 +98,6 @@ namespace RogueEssence.Dev
             //TODO: 2D array grid support
             //if (type.GetElementType().IsArray)
 
-            controlIndex++;
             IControl lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             List<object> objList = (List<object>)mv.GetList(typeof(List<object>));

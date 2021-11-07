@@ -35,8 +35,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ISpawnRangeList member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);
 
             SpawnRangeListBox lbxValue = new SpawnRangeListBox();
@@ -93,7 +91,7 @@ namespace RogueEssence.Dev
         public override ISpawnRangeList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             SpawnRangeListBox lbxValue = (SpawnRangeListBox)control.Children[controlIndex];
             SpawnRangeListBoxViewModel mv = (SpawnRangeListBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);

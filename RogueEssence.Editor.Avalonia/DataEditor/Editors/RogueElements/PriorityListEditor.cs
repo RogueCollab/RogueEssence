@@ -20,8 +20,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IPriorityList member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
 
             PriorityListBox lbxValue = new PriorityListBox();
@@ -90,7 +88,7 @@ namespace RogueEssence.Dev
         public override IPriorityList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             PriorityListBox lbxValue = (PriorityListBox)control.Children[controlIndex];
             PriorityListBoxViewModel mv = (PriorityListBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);

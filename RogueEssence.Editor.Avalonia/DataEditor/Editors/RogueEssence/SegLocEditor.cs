@@ -21,8 +21,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, SegLoc member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(4);
 
             TextBlock lblX = new TextBlock();
@@ -65,7 +63,7 @@ namespace RogueEssence.Dev
         public override SegLoc SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             Avalonia.Controls.Grid innerControl = (Avalonia.Controls.Grid)control.Children[controlIndex];
             int innerControlIndex = 0;
 

@@ -22,8 +22,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Enum member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Array enums = type.GetEnumValues();
             if (type.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0)
             {
@@ -85,7 +83,6 @@ namespace RogueEssence.Dev
         public override Enum SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
 
             Array enums = type.GetEnumValues();
             if (type.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0)

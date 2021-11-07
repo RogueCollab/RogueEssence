@@ -21,8 +21,6 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, MonsterID member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             MonsterIDAttribute dataAtt = ReflectionExt.FindAttribute<MonsterIDAttribute>(attributes);
 
             {
@@ -183,7 +181,7 @@ namespace RogueEssence.Dev
             MonsterIDAttribute dataAtt = ReflectionExt.FindAttribute<MonsterIDAttribute>(attributes);
 
             int controlIndex = 0;
-            controlIndex++;
+
             Avalonia.Controls.Grid innerControl1 = (Avalonia.Controls.Grid)control.Children[controlIndex];
 
             int innerControlIndex = 0;
