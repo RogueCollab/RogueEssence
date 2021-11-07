@@ -128,5 +128,9 @@ namespace RogueEssence.LevelGen
         }
 
 
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]: Amount:{2}", this.GetType().Name, Combos.Count, MergeRate.ToString());
+        }
     }
 }
