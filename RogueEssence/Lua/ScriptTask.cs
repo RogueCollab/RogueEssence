@@ -162,16 +162,6 @@ namespace RogueEssence.Script
             }
         }
 
-        public object GetArrayValue(object arr, int index)
-        {
-            if (arr is Array)
-            {
-                Array array = arr as Array;
-                return array.GetValue(index);
-            }
-            return null;
-        }
-
         public Coroutine BranchCoroutine(object obj)
         {
             if (obj is Coroutine)

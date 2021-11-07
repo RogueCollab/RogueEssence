@@ -187,6 +187,11 @@ namespace RogueEssence.Data
             ProfilePics = teamProfile.ToArray();
         }
 
+        public UnlockState GetMonsterUnlock(int index)
+        {
+            return Dex[index];
+        }
+
         public virtual void SeenMonster(int index)
         {
             if (Dex[index] == UnlockState.None)
@@ -199,6 +204,14 @@ namespace RogueEssence.Data
         public virtual void RogueUnlockMonster(int index)
         {
             RogueStarters[index] = true;
+        }
+        public bool GetRogueUnlock(int index)
+        {
+            return RogueStarters[index];
+        }
+        public UnlockState GetDungeonUnlock(int index)
+        {
+            return DungeonUnlocks[index];
         }
         public abstract IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);

@@ -186,7 +186,7 @@ namespace RogueEssence.Dev
                 }
                 fullGuide.Entries = entries.ToArray();
 
-                using (Stream stream = new FileStream(PathMod.ModPath(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
+                using (Stream stream = new FileStream(PathMod.HardMod(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     Serializer.Serialize(stream, fullGuide);
                 }
