@@ -36,13 +36,6 @@ namespace RogueEssence.Dev
                 DataManager.SaveData(dir, data);
             }
 
-            /*string editPath = Path.Combine(PathMod.RESOURCE_PATH, "Extensions");
-            foreach (string dir in Directory.GetFiles(editPath, "*.op"))
-            {
-                object data = LoadWithLegacySupport(dir, typeof(Extension???));
-                DataManager.SaveData(dir, data);
-            }*/
-
             foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*.fx"))
             {
                 object data;

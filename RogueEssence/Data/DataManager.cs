@@ -288,6 +288,7 @@ namespace RogueEssence.Data
             Directory.CreateDirectory(Path.Join(baseFolder, MAP_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, GROUND_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, FX_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, MISC_PATH));
         }
 
         public static void InitSaveDirs()
