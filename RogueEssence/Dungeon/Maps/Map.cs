@@ -762,20 +762,6 @@ namespace RogueEssence.Dungeon
                     c.DoCleanup();
             }
         }
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //TODO: v0.5: remove this
-            if (ScriptEvents == null)
-                ScriptEvents = new Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent>();
-            if (MapEffect == null)
-                MapEffect = new ActiveEffect();
-            if (AllyTeams == null)
-                AllyTeams = new List<Team>();
-            if (Layers == null)
-                Layers = new List<MapLayer>();
-        }
     }
 
 

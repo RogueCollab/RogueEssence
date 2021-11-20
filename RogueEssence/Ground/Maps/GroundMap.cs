@@ -973,16 +973,8 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            //DiagManager.Instance.LogInfo(String.Format("GroundMap.OnDeserializedMethod(): Map {0} deserialized!", AssetName));
-
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
-
-            //TODO: v0.5: remove this
-            if (Background == null)
-                Background = new MapBG();
-            if (BlankBG == null)
-                BlankBG = new AutoTile();
 
             if (ActiveChar != null)
             {

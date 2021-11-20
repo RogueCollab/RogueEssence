@@ -1237,7 +1237,7 @@ namespace RogueEssence.Data
                                         replay.UICodes.Clear();
                                     }
                                     //read team info
-                                    GameState gameState = ReadGameState(reader, false);
+                                    GameState gameState = ReadGameState(reader);
                                     replay.States.Add(gameState);
 
                                     if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
@@ -1422,21 +1422,6 @@ namespace RogueEssence.Data
                 {
                     DiagManager.Instance.LogError(ex);
                 }
-
-                //TODO: v0.5: remove this
-                //versionless load
-                try
-                {
-                    using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
-                    {
-                        using (BinaryReader reader = new BinaryReader(stream))
-                            return (MainProgress)GameProgress.LoadMainData(reader);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
             }
 
             return null;
@@ -1553,24 +1538,7 @@ namespace RogueEssence.Data
                     {
                         //loads dungeon, zone, and ground, if there will be one...
                         using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader, false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //In this case, the error will be presented clearly to the player.  Do not signal.
-                    DiagManager.Instance.LogError(ex, false);
-                }
-
-                //TODO: v0.5: remove this
-                //versionless read
-                try
-                {
-                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        //loads dungeon, zone, and ground, if there will be one...
-                        using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader, true);
+                            return ReadGameState(reader);
                     }
                 }
                 catch (Exception ex)
@@ -1582,13 +1550,11 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public GameState ReadGameState(BinaryReader reader, bool versionless)
+        public GameState ReadGameState(BinaryReader reader)
         {
             GameState state = new GameState();
-            //TODO: v0.5: remove this
-            Version version = new Version();
-            if (!versionless)
-                version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+
+            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
 
             state.Save = GameProgress.LoadMainData(reader);
             if (version < Versioning.GetVersion())
@@ -1618,13 +1584,6 @@ namespace RogueEssence.Data
                 Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
                 state.Save.Dex = unlocks;
 
-                //TODO: v0.5 Remove this
-                if (state.Save.RogueStarters == null)
-                {
-                    state.Save.RogueStarters = new bool[DataIndices[DataType.Monster].Count];
-                    for (int ii = 0; ii < unlocks.Length; ii++)
-                        state.Save.RogueStarters[ii] = unlocks[ii] == GameProgress.UnlockState.Completed;
-                }
                 bool[] starterUnlocks = new bool[DataIndices[DataType.Monster].Count];
                 Array.Copy(state.Save.RogueStarters, starterUnlocks, Math.Min(starterUnlocks.Length, state.Save.Dex.Length));
                 state.Save.RogueStarters = starterUnlocks;

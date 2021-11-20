@@ -190,9 +190,6 @@ namespace RogueEssence.Ground
         internal new void OnDeserializedMethod(StreamingContext context)
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            //TODO: v0.5: remove this
-            if (CurrentAnim == null)
-                CurrentAnim = new ObjAnimData();
         }
     }
 }

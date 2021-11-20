@@ -136,14 +136,5 @@ namespace RogueEssence.Data
                     list.Add(priority, step);
             }
         }
-
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //TODO: v0.5: remove this
-            if (OnMapRefresh == null)
-                OnMapRefresh = new PriorityList<RefreshEvent>();
-        }
     }
 }

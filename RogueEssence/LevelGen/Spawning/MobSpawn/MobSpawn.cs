@@ -131,15 +131,6 @@ namespace RogueEssence.LevelGen
             MonsterData entry = DataManager.Instance.GetMonster(BaseForm.Species);
             return String.Format("{0} Lv.{1}", entry.Name.ToLocal(), Level);
         }
-
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //TODO: Remove on v0.5
-            if (SpawnConditions == null)
-                SpawnConditions = new List<MobSpawnCheck>();
-        }
     }
 
 
