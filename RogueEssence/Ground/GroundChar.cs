@@ -483,6 +483,8 @@ namespace RogueEssence.Ground
         {
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            if (AI != null)
+                AI.EntityPointer = this;
         }
     }
 }
