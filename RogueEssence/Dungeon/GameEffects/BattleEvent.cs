@@ -36,7 +36,7 @@ namespace RogueEssence.Dungeon
             string name = "BATTLE_SCRIPT." + Script;
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
-            return ScriptEvent.ApplyFunc(name, func_iter);
+            yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));
         }
     }
 

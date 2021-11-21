@@ -63,20 +63,25 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo(String.Format("ScriptEvent.DoCleanup(): Doing cleanup on {0}!", m_luapath));
         }
 
-        public virtual IEnumerator<YieldInstruction> Apply(params object[] parameters)
+        public virtual Coroutine Apply(params object[] parameters)
         {
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
-            return ApplyFunc(m_luapath, func_iter);
+            return new LuaCoroutine(m_luapath, applyFunc(m_luapath, func_iter));
         }
 
 
-        public static IEnumerator<YieldInstruction> ApplyFunc(string name, LuaFunction func_iter)
+        public static Coroutine ApplyFunc(string name, LuaFunction func_iter)
+        {
+            return new LuaCoroutine(name, applyFunc(name, func_iter));
+        }
+
+        private static IEnumerator<YieldInstruction> applyFunc(string name, LuaFunction func_iter)
         {
             if (func_iter == null)
                 yield break;
 
             //Then call it until it returns null!
-            object[] allres = CallInternal(name, func_iter);
+            object[] allres = callInternal(name, func_iter);
             object res = allres.First();
             while (res != null)
             {
@@ -94,7 +99,7 @@ namespace RogueEssence.Script
                 }
 
                 //Pick another yield from the lua coroutine
-                allres = CallInternal(name, func_iter);
+                allres = callInternal(name, func_iter);
                 res = allres.First();
             }
         }
@@ -103,7 +108,7 @@ namespace RogueEssence.Script
         /// Wrapper around the lua iterator to catch and print any possible script errors.
         /// </summary>
         /// <returns></returns>
-        private static object[] CallInternal(string name, LuaFunction func_internal)
+        private static object[] callInternal(string name, LuaFunction func_internal)
         {
             try
             {
@@ -170,7 +175,7 @@ namespace RogueEssence.Script
         }
 
 
-        public override IEnumerator<YieldInstruction> Apply(params object[] parameters)
+        public override Coroutine Apply(params object[] parameters)
         {
             if (m_luafun == null)
                 throw new Exception("TransientScriptEvent.MakeIterator(): Function is null! Make sure the transientevent isn't being deserialized and run!");

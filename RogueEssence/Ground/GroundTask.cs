@@ -202,7 +202,7 @@ namespace RogueEssence.Ground
 
         protected override IEnumerator<YieldInstruction> CreateTaskEnumerator(GroundEntity ent)
         {
-            return Task.Apply(ent);
+            yield return CoroutineManager.Instance.StartCoroutine(Task.Apply(ent));
         }
 
         public override string TaskName()

@@ -166,12 +166,18 @@ namespace RogueEssence
         {
             LogError(exception, true);
         }
+
+        /// <summary>
+        /// Logs an error to console and output log.  Puts out the entire stack trace including inner exceptions.
+        /// </summary>
+        /// <param name="exception">THe exception to log.</param>
+        /// <param name="signal">Triggers On-Error code if true.  Logs silently if not.</param>
         public void LogError(Exception exception, bool signal)
         {
             lock (lockObj)
             {
                 if (inError)
-                    throw new InvalidOperationException("Attempted to log an error when within an error.", exception);
+                    throw new InvalidOperationException("Attempted to log an error when logging an error.", exception);
                 inError = true;
                 try
                 {
@@ -191,7 +197,9 @@ namespace RogueEssence
                         innerException = innerException.InnerException;
                         depth++;
                     }
-                    
+                    errorMsg.Append("\nCoroutine Trace:\n");
+                    errorMsg.Append(CoroutineManager.Instance.DumpCoroutines());
+
                     Console.WriteLine(errorMsg);
 #if DEBUG
                     System.Diagnostics.Debug.WriteLine(errorMsg);

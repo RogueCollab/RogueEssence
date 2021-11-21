@@ -30,6 +30,22 @@ namespace RogueEssence
         }
     }
 
+    public class LuaCoroutine : Coroutine
+    {
+        string name;
+
+        public LuaCoroutine(string name, IEnumerator<YieldInstruction> enumerator) : base(enumerator)
+        {
+            this.name = name;
+        }
+
+        public override string GetEnumeratorString()
+        {
+            return name;
+        }
+    }
+
+
     public class Coroutine : YieldInstruction
     {
         IEnumerator<YieldInstruction> enumerator;
@@ -81,6 +97,11 @@ namespace RogueEssence
             }
             else
                 MoveNext();
+        }
+
+        public virtual string GetEnumeratorString()
+        {
+            return enumerator.ToString();
         }
     }
 
