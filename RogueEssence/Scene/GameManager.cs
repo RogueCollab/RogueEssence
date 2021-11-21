@@ -388,6 +388,10 @@ namespace RogueEssence
 
             cleanup();
             PathMod.Mod = modPath;
+            Text.Init();
+            if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
+                DiagManager.Instance.CurSettings.Language = "en";
+            Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
             reInit();
             TitleScene.TitleMenuSaveState = null;
             //clean up and reload all caches
