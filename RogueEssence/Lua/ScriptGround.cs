@@ -18,26 +18,34 @@ namespace RogueEssence.Script
     {
         public void Hide(string entityname)
         {
-            GroundEntity found = ZoneManager.Instance.CurrentGround.FindEntity(entityname);
-            if(found == null)
+            try
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGround.Hide({0}): Couldn't find entity to hide!", entityname));
-                return;
+                GroundEntity found = ZoneManager.Instance.CurrentGround.FindEntity(entityname);
+                if (found == null)
+                    throw new ArgumentException(String.Format("ScriptGround.Hide({0}): Couldn't find entity to hide!", entityname));
+                //Hide the entity
+                found.EntEnabled = false;
             }
-            //Hide the entity
-            found.EntEnabled = false;
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
         }
 
         public void Unhide(string entityname)
         {
-            GroundEntity found = ZoneManager.Instance.CurrentGround.FindEntity(entityname);
-            if (found == null)
+            try
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGround.Unhide({0}): Couldn't find entity to un-hide!", entityname));
-                return;
+                GroundEntity found = ZoneManager.Instance.CurrentGround.FindEntity(entityname);
+                if (found == null)
+                    throw new ArgumentException(String.Format("ScriptGround.Unhide({0}): Couldn't find entity to un-hide!", entityname));
+                //Enable the entity
+                found.EntEnabled = true;
             }
-            //Enable the entity
-            found.EntEnabled = true;
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
         }
 
         //===================================
@@ -48,97 +56,104 @@ namespace RogueEssence.Script
         //===================================
         // Objects and Characters
         //===================================
-        public object CreateObject(string objtype, string instancename, int x, int y, int w, int h )
+        public object CreateObject(string objtype, string instancename, int x, int y, int w, int h)
         {
-            GroundMap map = ZoneManager.Instance.CurrentGround;
-
-            if (map == null)
+            try
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGround.CreateObject({0}, {1}, {2}, {3}, {4}, {5}) : No ground map loaded!", objtype, instancename, x, y, w, h) );
-                return null;
+                GroundMap map = ZoneManager.Instance.CurrentGround;
+
+                GroundObject groundobject = null;
+                var template = TemplateManager.Instance.FindTemplate(objtype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
+                if (template == null)
+                    return null;
+
+                groundobject = (GroundObject)template.create(instancename);
+                groundobject.Bounds = new Rect(x, y, w, h);
+                groundobject.ReloadEvents();
+                map.AddObject(groundobject);
+                return groundobject; //Object's properties can be tweaked later on
+
             }
-
-            GroundObject groundobject = null;
-            var template = TemplateManager.Instance.FindTemplate(objtype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
-            if (template == null)
-                return null;
-
-            groundobject = (GroundObject)template.create(instancename);
-            groundobject.Bounds = new Rect(x,y,w,h);
-            groundobject.ReloadEvents();
-            map.AddObject(groundobject);
-            return groundobject; //Object's properties can be tweaked later on
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
         }
 
         public object CreateCharacter(string chartype, string instancename, int x, int y, string actionfun, string thinkfun)
         {
-            GroundMap map = ZoneManager.Instance.CurrentGround;
-
-            if (map == null)
+            try
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGround.CreateCharacter({0},{1},{2},{3})", chartype, instancename, x, y));
-                return null;
+                GroundMap map = ZoneManager.Instance.CurrentGround;
+
+                //Ideally this is how we'd create characters :
+                /*
+                GroundChar groundchar = null;
+                    GroundCharTemplate template = CharacterTemplates.Find(chartype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
+                    if (template == null)
+                        return null;
+
+                    groundchar = template.create(instancename, x, y);
+
+                    groundchar.SetRoutine(thinkfun); //Aka the code that makes the npc wander, or do stuff over and over again
+                    groundchar.SetAction(actionfun);
+
+                    map.AddMapChar(groundChar);
+                    return groundchar; //Object's properties can be tweaked later on
+                */
+                throw new NotImplementedException();
             }
-
-            GroundChar groundchar = null;
-
-
-            //Ideally this is how we'd create characters :
-            /*
-                GroundCharTemplate template = CharacterTemplates.Find(chartype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
-                if (template == null)
-                    return null;
-
-                groundchar = template.create(instancename, x, y);
-
-                groundchar.SetRoutine(thinkfun); //Aka the code that makes the npc wander, or do stuff over and over again
-                groundchar.SetAction(actionfun);
-
-                map.AddMapChar(groundChar);
-                return groundchar; //Object's properties can be tweaked later on
-            */
-            return groundchar;
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
         }
 
         public bool RemoveObject(string instancename)
         {
-            GroundMap map = ZoneManager.Instance.CurrentGround;
-            if (map == null)
+            try
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGround.RemoveObject({0}) : No ground map loaded!", instancename));
-                return false;
-            }
+                GroundMap map = ZoneManager.Instance.CurrentGround;
 
-            DiagManager.Instance.LogInfo("ScriptGround.RemoveObject():FIXME"); //!#FIXME
-            /*
-            map.RemoveObject(instancename); //Removal by instance name, since lua can't do via .NET pointer reliably, and pointers to .NET aren't practical in lua
-            */
-            return true;
+                throw new NotImplementedException();
+                /*
+                map.RemoveObject(instancename); //Removal by instance name, since lua can't do via .NET pointer reliably, and pointers to .NET aren't practical in lua
+                */
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return false;
         }
 
         public bool RemoveCharacter(string instancename)
         {
-            GroundMap map = ZoneManager.Instance.CurrentGround;
-            if (map == null)
+            try
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGround.RemoveObject({0}) : No ground map loaded!", instancename));
-                return false;
-            }
+                GroundMap map = ZoneManager.Instance.CurrentGround;
 
-            //Removal by instance name, since lua can't do via .NET pointer reliably, and pointers to .NET aren't practical in lua
-            GroundChar charToRemove = map.GetMapChar(instancename);
-            if (charToRemove != null)
-            {
-                map.RemoveMapChar(charToRemove);
-                return true;
-            }
-            charToRemove = map.GetTempChar(instancename);
-            if (charToRemove != null)
-            {
-                map.RemoveTempChar(charToRemove);
-                return true;
-            }
+                //Removal by instance name, since lua can't do via .NET pointer reliably, and pointers to .NET aren't practical in lua
+                GroundChar charToRemove = map.GetMapChar(instancename);
+                if (charToRemove != null)
+                {
+                    map.RemoveMapChar(charToRemove);
+                    return true;
+                }
+                charToRemove = map.GetTempChar(instancename);
+                if (charToRemove != null)
+                {
+                    map.RemoveTempChar(charToRemove);
+                    return true;
+                }
 
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
             return false;
         }
 
@@ -164,18 +179,18 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public GroundChar SpawnerDoSpawn(string spawnername)
         {
-            if (ZoneManager.Instance.CurrentGround == null)
-                DiagManager.Instance.LogInfo("[SE]:ScriptGround.SpawnerDoSpawn(): No ground map loaded!!");
-            else
+            try
             {
                 GroundSpawner spwn = ZoneManager.Instance.CurrentGround.GetSpawner(spawnername);
-                if (spwn != null)
-                    return spwn.Spawn(ZoneManager.Instance.CurrentGround);
-                else
-                    DiagManager.Instance.LogInfo(String.Format("[SE]:ScriptGround.SpawnerDoSpawn(): Couldn't find spawner named {0} on map {1}!",
-                                                                spawnername,
-                                                                ZoneManager.Instance.CurrentGround.AssetName));
+                if (spwn == null)
+                    throw new ArgumentException(String.Format("ScriptGround.SpawnerDoSpawn({0}):  Couldn't find spawner!", spawnername));
+                return spwn.Spawn(ZoneManager.Instance.CurrentGround);
             }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+
             return null;
         }
 
@@ -188,17 +203,16 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public void SpawnerSetSpawn(string spawnername, Character spawnChar)
         {
-            if (ZoneManager.Instance.CurrentGround == null)
-                DiagManager.Instance.LogInfo("[SE]:ScriptGround.SpawnerDoSpawn(): No ground map loaded!!");
-            else
+            try
             {
                 GroundSpawner spwn = ZoneManager.Instance.CurrentGround.GetSpawner(spawnername);
-                if (spwn != null)
-                    spwn.NPCChar = spawnChar;
-                else
-                    DiagManager.Instance.LogInfo(String.Format("[SE]:ScriptGround.SpawnerDoSpawn(): Couldn't find spawner named {0} on map {1}!",
-                                                                spawnername,
-                                                                ZoneManager.Instance.CurrentGround.AssetName));
+                if (spwn == null)
+                    throw new ArgumentException(String.Format("ScriptGround.SpawnerSetSpawn({0}):  Couldn't find spawner!", spawnername));
+                spwn.NPCChar = spawnChar;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -244,19 +258,25 @@ namespace RogueEssence.Script
         public LuaFunction CharWaitAnim;
         public YieldInstruction _CharWaitAnim(GroundEntity ent, string anim)
         {
-            if (ent is GroundChar)
+            try
             {
-                GroundChar ch = (GroundChar)ent;
-                int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-                IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
-                ch.StartAction(action);
-                return new WaitUntil(() =>
+                if (ent is GroundChar)
                 {
-                    return action.Complete;
-                });
+                    GroundChar ch = (GroundChar)ent;
+                    int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                    IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
+                    ch.StartAction(action);
+                    return new WaitUntil(() =>
+                    {
+                        return action.Complete;
+                    });
+                }
+                throw new ArgumentException("Entity is not a valid type.");
             }
-            else
-                DiagManager.Instance.LogInfo("ScriptGround._CharWaitAnim(): Got invalid entity!");
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
             return null;
         }
 
@@ -424,7 +444,6 @@ namespace RogueEssence.Script
                         curch.CharDir = (Dir8)((1 + (int)curch.CharDir) % 8);
                     yield return new WaitForFrames(framedur);
                 }
-                Debug.Assert(curch.CharDir != Dir8.None, "ScriptGround._DoAnimatedTurn(): Result of turn was none! Something went wrong!");
                 oldact.MapLoc = curch.MapLoc;
                 oldact.CharDir = curch.CharDir;
                 curch.StartAction(oldact);
@@ -474,18 +493,25 @@ namespace RogueEssence.Script
 
         public void TeleportTo(object ent, int x, int y, Dir8 direction = Dir8.None)
         {
-            if (ent is GroundChar)
+            try
             {
-                GroundChar gent = ent as GroundChar;
-                if (gent != null)
+                if (ent is GroundChar)
                 {
-                    gent.SetMapLoc(new Loc(x, y));
-                    gent.UpdateFrame();
-                    gent.Direction = direction;
+                    GroundChar gent = ent as GroundChar;
+                    if (gent != null)
+                    {
+                        gent.SetMapLoc(new Loc(x, y));
+                        gent.UpdateFrame();
+                        gent.Direction = direction;
+                    }
+                    return;
                 }
+                throw new ArgumentException("Entity is not a valid type.");
             }
-            else
-                DiagManager.Instance.LogInfo("ScriptGround.TeleportTo(): Got invalid entity!");
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
         }
 
 
@@ -499,32 +525,36 @@ namespace RogueEssence.Script
         public LuaFunction AnimateToPosition;
         public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, int speed)
         {
-            if (speed < 1)
+            try
             {
-                DiagManager.Instance.LogInfo("ScriptGround.AnimateToPosition(): Got invalid movement speed!");
-                return null;
-            }
+                if (speed < 1)
+                    throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
-            if (ent is GroundChar)
-            {
-                GroundChar ch = (GroundChar)ent;
-                FrameTick prevTime = new FrameTick();
-                GroundAction prevAction = ch.GetCurrentAction();
-                int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-                if (prevAction is AnimateToPositionGroundAction)
+                if (ent is GroundChar)
                 {
-                    if (animIndex == prevAction.AnimFrameType)
-                        prevTime = prevAction.ActionTime;
+                    GroundChar ch = (GroundChar)ent;
+                    FrameTick prevTime = new FrameTick();
+                    GroundAction prevAction = ch.GetCurrentAction();
+                    int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                    if (prevAction is AnimateToPositionGroundAction)
+                    {
+                        if (animIndex == prevAction.AnimFrameType)
+                            prevTime = prevAction.ActionTime;
+                    }
+                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(animIndex, ch.Position, animDir, animSpeed, speed, prevTime, new Loc(x, y));
+                    ch.StartAction(newAction);
+                    return new WaitUntil(() =>
+                    {
+                        return newAction.Complete;
+                    });
                 }
-                AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(animIndex, ch.Position, animDir, animSpeed, speed, prevTime, new Loc(x, y));
-                ch.StartAction(newAction);
-                return new WaitUntil(() =>
-                {
-                    return newAction.Complete;
-                });
+                throw new ArgumentException("Entity is not a valid type.");
+
             }
-            else
-                DiagManager.Instance.LogInfo("ScriptGround.AnimateToPosition(): Got invalid entity!");
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
             return null;
         }
 
@@ -532,17 +562,24 @@ namespace RogueEssence.Script
         public LuaFunction CharWaitAction;
         public YieldInstruction _CharWaitAction(GroundEntity ent, GroundAction action)
         {
-            if (ent is GroundChar)
+            try
             {
-                GroundChar ch = (GroundChar)ent;
-                ch.StartAction(action);
-                return new WaitUntil(() =>
+                if (ent is GroundChar)
                 {
-                    return action.Complete;
-                });
+                    GroundChar ch = (GroundChar)ent;
+                    ch.StartAction(action);
+                    return new WaitUntil(() =>
+                    {
+                        return action.Complete;
+                    });
+                }
+                throw new ArgumentException("Entity is not a valid type.");
+
             }
-            else
-                DiagManager.Instance.LogInfo("ScriptGround._CharWaitAction(): Got invalid entity!");
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
             return null;
         }
 
@@ -556,33 +593,38 @@ namespace RogueEssence.Script
         public LuaFunction MoveToPosition;
         public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false, int speed = 2)
         {
-            if (speed < 1)
+            try
             {
-                DiagManager.Instance.LogInfo("ScriptGround.MoveToPosition(): Got invalid walk speed!");
-                return null;
-            }
+                if (speed < 1)
+                    throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
-            if (ent is GroundChar)
-            {
-                GroundChar ch = (GroundChar)ent;
-                FrameTick prevTime = new FrameTick();
-                GroundAction prevAction = ch.GetCurrentAction();
-                if (prevAction is AnimateToPositionGroundAction)
-                    prevTime = prevAction.ActionTime;
-                Loc diff = new Loc(x, y) - ch.MapLoc;
-                Dir8 approxDir = diff.ApproximateDir8();
-                if (approxDir == Dir8.None)
-                    approxDir = ch.Direction;
-
-                AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(GraphicsManager.WalkAction, ch.Position, approxDir, run ? 2 : 1, speed, prevTime, new Loc(x, y));
-                ch.StartAction(newAction);
-                return new WaitUntil(() =>
+                if (ent is GroundChar)
                 {
-                    return newAction.Complete;
-                });
+                    GroundChar ch = (GroundChar)ent;
+                    FrameTick prevTime = new FrameTick();
+                    GroundAction prevAction = ch.GetCurrentAction();
+                    if (prevAction is AnimateToPositionGroundAction)
+                        prevTime = prevAction.ActionTime;
+                    Loc diff = new Loc(x, y) - ch.MapLoc;
+                    Dir8 approxDir = diff.ApproximateDir8();
+                    if (approxDir == Dir8.None)
+                        approxDir = ch.Direction;
+
+                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(GraphicsManager.WalkAction, ch.Position, approxDir, run ? 2 : 1, speed, prevTime, new Loc(x, y));
+                    ch.StartAction(newAction);
+                    return new WaitUntil(() =>
+                    {
+                        return newAction.Complete;
+                    });
+                }
+
+                throw new ArgumentException("Entity is not a valid type.");
+
             }
-            else
-                DiagManager.Instance.LogInfo("ScriptGround.MoveToPosition(): Got invalid entity!");
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
             return null;
         }
 
