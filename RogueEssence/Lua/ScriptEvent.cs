@@ -111,7 +111,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogError(new Exception(String.Format("[SE]:ScriptEvent.CallInternal(): Error calling coroutine iterator in {0}:\n{1}", name, e.Message)));
+                DiagManager.Instance.LogError(new Exception(String.Format("[SE]:ScriptEvent.CallInternal(): Error calling coroutine iterator in {0}:\n{1}", name, e.Message), e));
             }
             return new object[] { null }; //Stop the coroutine since we errored
         }
