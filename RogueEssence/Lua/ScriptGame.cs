@@ -12,7 +12,7 @@ namespace RogueEssence.Script
 {
     class ScriptGame : ILuaEngineComponent
     {
-        public ReRandom Rand { get { return MathUtils.Rand; } }
+        public IRandom Rand { get { return MathUtils.Rand; } }
 
         public void GroundSave()
         {

@@ -93,7 +93,7 @@ namespace RogueEssence.Data
         }
 
         public ExplorerTeam ActiveTeam;
-        public ReRandom Rand;
+        public IRandom Rand;
 
         public UnlockState[] Dex;
         public bool[] RogueStarters;

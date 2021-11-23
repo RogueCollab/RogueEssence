@@ -91,7 +91,7 @@ namespace RogueEssence.LevelGen
         {
             Map.LoadRand(new ReRandom(seed));
         }
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             Map.LoadRand(rand);
         }

@@ -15,10 +15,8 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class BaseMap : IMobSpawnMap
     {
-
-
-        protected ReRandom rand;
-        public ReRandom Rand { get { return rand; } }
+        protected IRandom rand;
+        public IRandom Rand { get { return rand; } }
         IRandom IMobSpawnMap.Rand { get { return rand; } }
         public bool Begun { get; set; }
 
@@ -52,7 +50,7 @@ namespace RogueEssence.Dungeon
             AllyTeams = new List<Team>();
         }
         
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             this.rand = rand;
         }

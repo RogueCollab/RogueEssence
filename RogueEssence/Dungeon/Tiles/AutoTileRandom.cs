@@ -16,7 +16,7 @@ namespace RogueEssence.Dungeon
 
         public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
-            ReRandom rand = new ReRandom(randSeed);
+            IRandom rand = new ReRandom(randSeed);
             for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
             {
                 int yy = 0;
@@ -37,7 +37,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        private int GetVariantCode(ReRandom rand, int neighborCode)
+        private int GetVariantCode(IRandom rand, int neighborCode)
         {
             List<TileLayer> tileVars = GetTileVariants(neighborCode);
             return SelectTileVariant(rand, tileVars.Count) << 8 | neighborCode;

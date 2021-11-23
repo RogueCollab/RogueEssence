@@ -126,7 +126,7 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            ReRandom rand = new ReRandom(randSeed);
+            IRandom rand = new ReRandom(randSeed);
             //rand next is called for every tile up to the rectangle involved
             //there exists a jump function for rand, but not for arbitrary length
             //if the rand function changes to allow it, change this code block to jump directly to the correct values.
@@ -189,7 +189,7 @@ namespace RogueEssence.Dungeon
             textureArray[x - rectStart.X][y - rectStart.Y] = texn_um;
         }
 
-        private int GetVariantCode(ReRandom rand, int neighborCode)
+        private int GetVariantCode(IRandom rand, int neighborCode)
         {
             List<List<TileLayer>> tileVars = GetTileVariants(neighborCode);
             return SelectTileVariant(rand, tileVars.Count) << 8 | neighborCode;

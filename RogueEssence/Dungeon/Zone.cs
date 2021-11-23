@@ -31,7 +31,7 @@ namespace RogueEssence.Dungeon
 
         public List<string> GroundMaps;
 
-        private ReRandom rand;
+        private IRandom rand;
 
         protected Dictionary<int, ZoneGenContext> structureContexts;
         protected Dictionary<SegLoc, Map> maps;
@@ -220,19 +220,19 @@ namespace RogueEssence.Dungeon
             {
                 //NOTE: with the way this is currently done, the random numbers used by the maps end up being related to the random numbers used by the postprocs
                 //not that anyone would really notice...
-                ReRandom totalRand = new ReRandom(rand.FirstSeed);
+                IRandom totalRand = new ReRandom(rand.FirstSeed);
                 for (int ii = 0; ii < id.Segment; ii++)
                     totalRand.NextUInt64();
                 ulong structSeed = totalRand.NextUInt64();
                 DiagManager.Instance.LogInfo("Struct Seed: " + structSeed);
-                ReRandom structRand = new ReRandom(structSeed);
+                IRandom structRand = new ReRandom(structSeed);
                 for (int ii = 0; ii < id.ID; ii++)
                     structRand.NextUInt64();
 
                 //load the struct context if it isn't present yet
                 if (!structureContexts.ContainsKey(id.Segment))
                 {
-                    ReRandom initRand = new ReRandom(structSeed);
+                    IRandom initRand = new ReRandom(structSeed);
                     ZoneGenContext newContext = new ZoneGenContext();
                     newContext.CurrentZone = ID;
                     newContext.CurrentSegment = id.Segment;

@@ -357,7 +357,7 @@ namespace RogueEssence.Dungeon
             Assembly.Insert(idx, chara);
         }
 
-        public Character CreatePlayer(ReRandom rand, MonsterID form, int level, int intrinsic, int personality)
+        public Character CreatePlayer(IRandom rand, MonsterID form, int level, int intrinsic, int personality)
         {
             MonsterID formData = form;
             MonsterData dex = DataManager.Instance.GetMonster(formData.Species);

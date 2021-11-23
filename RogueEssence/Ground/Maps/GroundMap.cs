@@ -22,8 +22,8 @@ namespace RogueEssence.Ground
         private GroundWall[][] obstacles;
 
         [OptionalField]
-        protected ReRandom rand;
-        public ReRandom Rand { get { return rand; } }
+        protected IRandom rand;
+        public IRandom Rand { get { return rand; } }
 
         public Dictionary<int, MapStatus> Status;
 
@@ -103,7 +103,7 @@ namespace RogueEssence.Ground
 
         }
 
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             this.rand = rand;
         }

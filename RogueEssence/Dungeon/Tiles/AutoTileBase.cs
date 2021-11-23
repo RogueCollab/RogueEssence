@@ -21,7 +21,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        protected int SelectTileVariant(ReRandom rand, int count)
+        protected int SelectTileVariant(IRandom rand, int count)
         {
             int index = 0;
             for (int ii = 0; ii < count - 1; ii++)
