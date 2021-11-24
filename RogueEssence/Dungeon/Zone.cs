@@ -218,21 +218,16 @@ namespace RogueEssence.Dungeon
         {
             if (!maps.ContainsKey(id))
             {
-                //NOTE: with the way this is currently done, the random numbers used by the maps end up being related to the random numbers used by the postprocs
-                //not that anyone would really notice...
-                IRandom totalRand = new ReRandom(rand.FirstSeed);
-                for (int ii = 0; ii < id.Segment; ii++)
-                    totalRand.NextUInt64();
-                ulong structSeed = totalRand.NextUInt64();
+                ReNoise totalNoise = new ReNoise(rand.FirstSeed);
+                ulong[] doubleSeed = totalNoise.GetTwoUInt64((ulong)id.Segment);
+                ulong structSeed = doubleSeed[0];
                 DiagManager.Instance.LogInfo("Struct Seed: " + structSeed);
-                IRandom structRand = new ReRandom(structSeed);
-                for (int ii = 0; ii < id.ID; ii++)
-                    structRand.NextUInt64();
+                INoise structNoise = new ReNoise(doubleSeed[1]);
+                INoise idNoise = new ReNoise(doubleSeed[1]);
 
                 //load the struct context if it isn't present yet
                 if (!structureContexts.ContainsKey(id.Segment))
                 {
-                    IRandom initRand = new ReRandom(structSeed);
                     ZoneGenContext newContext = new ZoneGenContext();
                     newContext.CurrentZone = ID;
                     newContext.CurrentSegment = id.Segment;
@@ -242,14 +237,14 @@ namespace RogueEssence.Dungeon
                         //Is there a way for them to be stateless?
                         //Additionally, the ZoneSteps themselves sometimes hold IGenSteps that are copied over to the layouts.
                         //Is that really OK? (I would guess yes because there is no chance by design for them to be mutated when generating...)
-                        ZoneStep newStep = zoneStep.Instantiate(initRand.NextUInt64());
+                        ZoneStep newStep = zoneStep.Instantiate(structNoise.GetUInt64((ulong)newContext.ZoneSteps.Count));
                         newContext.ZoneSteps.Add(newStep);
                     }
                     structureContexts[id.Segment] = newContext;
                 }
                 ZoneGenContext zoneContext = structureContexts[id.Segment];
                 zoneContext.CurrentID = id.ID;
-                zoneContext.Seed = structRand.NextUInt64();
+                zoneContext.Seed = idNoise.GetUInt64((ulong)id.ID);
 
                 //TODO: remove the need for this explicit cast
                 //make a parameterized version of zonestructure and then make zonestructure itself put in basemapgencontext as the parameter
@@ -267,8 +262,8 @@ namespace RogueEssence.Dungeon
                     catch (Exception ex)
                     {
                         DiagManager.Instance.LogError(ex);
-                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii));
-                        zoneContext.Seed = structRand.NextUInt64();
+                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii+1));
+                        zoneContext.Seed = structNoise.GetUInt64((ulong)(id.ID + ii));
                     }
                 }
             }
