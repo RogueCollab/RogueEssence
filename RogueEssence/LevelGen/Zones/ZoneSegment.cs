@@ -123,6 +123,45 @@ namespace RogueEssence.LevelGen
 
 
     [Serializable]
+    public class RangeDictSegment : ZoneSegmentBase
+    {
+        public RangeDict<IFloorGen> Floors;
+        public override int FloorCount
+        {
+            get
+            {
+                int total = 0;
+                foreach (IntRange range in Floors.EnumerateRanges())
+                    total += range.Length;
+                return total;
+            }
+        }
+        public override IEnumerable<int> GetFloorIDs()
+        {
+            foreach (IntRange range in Floors.EnumerateRanges())
+            {
+                for(int ii = range.Min; ii < range.Max; ii++)
+                    yield return ii;
+            }
+        }
+
+
+        public RangeDictSegment() : base()
+        {
+            Floors = new RangeDict<IFloorGen>();
+        }
+
+        public override IGenContext GetMap(ZoneGenContext zoneContext)
+        {
+            if (Floors.ContainsItem(zoneContext.CurrentID))
+                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+            else
+                throw new Exception("Requested a map id out of range.");
+        }
+    }
+
+
+    [Serializable]
     public class DictionarySegment : ZoneSegmentBase
     {
         public Dictionary<int, IFloorGen> Floors;
