@@ -694,9 +694,10 @@ namespace RogueEssence.Ground
         }
 
 
-        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos, Loc mapPos)
         {
-            BlankBG.Draw(spriteBatch, drawPos);
+            INoise noise = new ReNoise(rand.FirstSeed);
+            BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
         }
 
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)

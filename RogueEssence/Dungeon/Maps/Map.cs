@@ -431,6 +431,7 @@ namespace RogueEssence.Dungeon
 
         public void CalculateTerrainAutotiles(Loc rectStart, Loc rectSize)
         {
+            ReNoise noise = new ReNoise(rand.FirstSeed);
             //does not calculate floor tiles.
             //in all known use cases, there is no need to autotile floor tiles.
             //if a use case is brought up that does, this can be changed.
@@ -453,7 +454,7 @@ namespace RogueEssence.Dungeon
             foreach (int tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(Rand.FirstSeed, rectStart, rectSize, new Loc(Width, Height),
+                entry.Tiles.AutoTileArea(noise, rectStart, rectSize, new Loc(Width, Height),
                     (int x, int y, int neighborCode) =>
                     {
                         Tiles[x][y].Data.TileTex.NeighborCode = neighborCode;
@@ -653,9 +654,10 @@ namespace RogueEssence.Dungeon
                 distance);
         }
 
-        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos, Loc mapPos)
         {
-            BlankBG.Draw(spriteBatch, drawPos);
+            INoise noise = new ReNoise(rand.FirstSeed);
+            BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
         }
 
         //========================

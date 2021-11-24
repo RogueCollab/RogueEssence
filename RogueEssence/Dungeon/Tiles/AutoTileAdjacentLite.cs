@@ -83,7 +83,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             int[][] mainArray = new int[rectSize.X+2][];
             for (int ii = 0; ii < rectSize.X + 2; ii++)
@@ -118,27 +118,16 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            IRandom rand = new ReRandom(randSeed);
-            for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
+            for (int xx = rectStart.X; xx < rectSize.X; xx++)
             {
-                int yy = 0;
-                for (; yy < rectStart.Y + rectSize.Y; yy++)
+                for (int yy = rectStart.Y; yy < rectSize.Y; yy++)
                 {
-                    ulong subSeed = rand.NextUInt64();
-                    if (xx >= rectStart.X && yy >= rectStart.Y)
-                    {
-                        int neighborCode = mainArray[xx + 1 - rectStart.X][yy + 1 - rectStart.Y];
-                        if (looseArray[xx - rectStart.X][yy - rectStart.Y] != -1)
-                            neighborCode = looseArray[xx - rectStart.X][yy - rectStart.Y];
+                    int neighborCode = mainArray[xx + 1 - rectStart.X][yy + 1 - rectStart.Y];
+                    if (looseArray[xx - rectStart.X][yy - rectStart.Y] != -1)
+                        neighborCode = looseArray[xx - rectStart.X][yy - rectStart.Y];
 
-                        if (neighborCode != -1)
-                            placementMethod(xx, yy, GetVariantCode(new ReRandom(subSeed), neighborCode));
-                    }
-                }
-                while (yy < totalSize.Y)
-                {
-                    rand.NextUInt64();
-                    yy++;
+                    if (neighborCode != -1)
+                        placementMethod(xx, yy, GetVariantCode(noise.Get2DUInt64((ulong)xx, (ulong)yy), neighborCode));
                 }
             }
         }
@@ -226,20 +215,20 @@ namespace RogueEssence.Dungeon
         }
 
 
-        private int GetVariantCode(IRandom rand, int neighborCode)
+        public override int GetVariantCode(ulong randCode, int neighborCode)
         {
             List<TileLayer> tileVars = GetTileVariants(neighborCode);
-            return SelectTileVariant(rand, tileVars.Count) << 8 | neighborCode;
+            return SelectTileVariant(randCode, tileVars.Count) << 8 | (neighborCode & 0xFF);
         }
 
 
-        public override List<TileLayer> GetLayers(int neighborCode)
+        public override List<TileLayer> GetLayers(int variantCode)
         {
-            if (neighborCode == -1)
+            if (variantCode == -1)
                 new List<TileLayer>() { Center[0] };
 
-            int lowerCode = neighborCode & Convert.ToInt32("11111111", 2);
-            int upperCode = neighborCode >> 8 & Convert.ToInt32("11111111", 2);
+            int lowerCode = variantCode & 0xFF;
+            int upperCode = variantCode >> 8 & 0xFF;
 
             List<TileLayer> tileVars = GetTileVariants(lowerCode);
             List<TileLayer> tileList = new List<TileLayer>();

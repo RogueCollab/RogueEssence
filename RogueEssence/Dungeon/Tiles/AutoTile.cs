@@ -68,11 +68,24 @@ namespace RogueEssence.Dungeon
 
         public void Draw(SpriteBatch spriteBatch, Loc pos)
         {
+            draw(spriteBatch, pos, false, 0);
+        }
+
+        public void DrawBlank(SpriteBatch spriteBatch, Loc pos, ulong randCode)
+        {
+            draw(spriteBatch, pos, true, randCode);
+        }
+
+        private void draw(SpriteBatch spriteBatch, Loc pos, bool neighborCodeOverride, ulong randCode)
+        {
             List<TileLayer> layers;
             if (AutoTileset > -1)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(AutoTileset);
-                layers = entry.Tiles.GetLayers(NeighborCode);
+                int neighborCode = NeighborCode;
+                if (neighborCodeOverride)
+                    neighborCode = entry.Tiles.GetVariantCode(randCode, neighborCode);
+                layers = entry.Tiles.GetLayers(neighborCode);
             }
             else
                 layers = Layers;

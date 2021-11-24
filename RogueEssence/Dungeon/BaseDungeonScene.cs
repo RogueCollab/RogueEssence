@@ -242,7 +242,7 @@ namespace RogueEssence.Dungeon
                     if (CanSeeTile(xx, yy))
                     {
                         if (outOfBounds)
-                            ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start);
+                            ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
                         else
                             PrepareTileDraw(spriteBatch, xx, yy);
                     }

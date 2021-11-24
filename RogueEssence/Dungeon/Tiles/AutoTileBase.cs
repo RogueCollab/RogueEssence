@@ -9,10 +9,14 @@ namespace RogueEssence.Dungeon
     {
         public delegate void PlacementMethod(int x, int y, int neighborCode);
         public delegate bool QueryMethod(int x, int y);
-        //TODO: pass a seed instead, and choose variation based on the static aspect of the seed
-        public abstract void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod);
+        public abstract void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod);
 
-        public abstract List<TileLayer> GetLayers(int neighborCode);
+        /// <summary>
+        /// Gets a list of tiles to draw, based on a variant code (neighborcode + variant)
+        /// </summary>
+        /// <param name="variantCode"></param>
+        /// <returns></returns>
+        public abstract List<TileLayer> GetLayers(int variantCode);
         protected bool IsBlocked(QueryMethod queryMethod, int x, int y, Dir8 dir)
         {
             Loc loc = new Loc(x,y) + dir.GetLoc();
@@ -20,14 +24,31 @@ namespace RogueEssence.Dungeon
             return queryMethod(loc.X, loc.Y);
         }
 
+        /// <summary>
+        /// Gets a variant code based on a randomly given code and the base neighborcode.
+        /// If the input is already a variant code (ie, upper bits are nonzero), it recomputes it.
+        /// </summary>
+        /// <param name="rand"></param>
+        /// <param name="neighborCode"></param>
+        /// <returns></returns>
+        public abstract int GetVariantCode(ulong randCode, int neighborCode);
 
-        protected int SelectTileVariant(IRandom rand, int count)
+        /// <summary>
+        /// Every variant is half as likely as the variant before it.
+        /// </summary>
+        /// <param name="rand"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        protected int SelectTileVariant(ulong randCode, int count)
         {
             int index = 0;
             for (int ii = 0; ii < count - 1; ii++)
             {
-                if (rand.Next() % 2 == 0)
+                if (randCode % 2 == 0)
+                {
                     index++;
+                    randCode = randCode >> 1;
+                }
                 else
                     break;
             }

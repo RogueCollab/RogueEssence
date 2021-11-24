@@ -14,43 +14,32 @@ namespace RogueEssence.Dungeon
             Ground = new List<TileLayer>();
         }
 
-        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
-            IRandom rand = new ReRandom(randSeed);
-            for (int xx = 0; xx < rectStart.X + rectSize.X; xx++)
+            for (int xx = rectStart.X; xx < rectSize.X; xx++)
             {
-                int yy = 0;
-                for (; yy < rectStart.Y + rectSize.Y; yy++)
+                for (int yy = rectStart.Y; yy < rectSize.Y; yy++)
                 {
-                    ulong subSeed = rand.NextUInt64();
-                    if (xx >= rectStart.X && yy >= rectStart.Y)
-                    {
-                        if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(xx, yy)) && presenceMethod(xx, yy))
-                            placementMethod(xx, yy, GetVariantCode(new ReRandom(subSeed), 0));
-                    }
-                }
-                while (yy < totalSize.Y)
-                {
-                    rand.NextUInt64();
-                    yy++;
+                    if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(xx, yy)) && presenceMethod(xx, yy))
+                        placementMethod(xx, yy, GetVariantCode(noise.Get2DUInt64((ulong)xx, (ulong)yy), 0));
                 }
             }
         }
 
-        private int GetVariantCode(IRandom rand, int neighborCode)
+        public override int GetVariantCode(ulong randCode, int neighborCode)
         {
             List<TileLayer> tileVars = GetTileVariants(neighborCode);
-            return SelectTileVariant(rand, tileVars.Count) << 8 | neighborCode;
+            return SelectTileVariant(randCode, tileVars.Count) << 8 | (neighborCode & 0xFF);
         }
 
 
-        public override List<TileLayer> GetLayers(int neighborCode)
+        public override List<TileLayer> GetLayers(int variantCode)
         {
-            if (neighborCode == -1)
+            if (variantCode == -1)
                 new List<TileLayer>() { Ground[0] };
 
-            int lowerCode = neighborCode & Convert.ToInt32("11111111", 2);
-            int upperCode = neighborCode >> 8 & Convert.ToInt32("11111111", 2);
+            int lowerCode = variantCode & 0xFF;
+            int upperCode = variantCode >> 8 & 0xFF;
 
             List<TileLayer> tileVars = GetTileVariants(lowerCode);
             List<TileLayer> tileList = new List<TileLayer>();

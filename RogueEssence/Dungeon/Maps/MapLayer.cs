@@ -70,6 +70,7 @@ namespace RogueEssence.Dungeon
 
         public void CalculateAutotiles(ulong randSeed, Loc rectStart, Loc rectSize)
         {
+            ReNoise noise = new ReNoise(randSeed);
             HashSet<int> floortilesets = new HashSet<int>();
             for (int ii = rectStart.X; ii < rectStart.X + rectSize.X; ii++)
             {
@@ -85,7 +86,7 @@ namespace RogueEssence.Dungeon
             foreach (int tileset in floortilesets)
             {
                 Data.AutoTileData entry = Data.DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(randSeed, rectStart, rectSize, new Loc(Width, Height),
+                entry.Tiles.AutoTileArea(noise, rectStart, rectSize, new Loc(Width, Height),
                     (int x, int y, int neighborCode) =>
                     {
                         Tiles[x][y].NeighborCode = neighborCode;

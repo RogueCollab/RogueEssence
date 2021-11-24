@@ -72,7 +72,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public override void AutoTileArea(ulong randSeed, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             for (int xx = 0; xx < rectSize.X; xx++)
             {
@@ -116,75 +116,80 @@ namespace RogueEssence.Dungeon
             return tex_num;
         }
 
-        public override List<TileLayer> GetLayers(int neighborCode)
+        public override int GetVariantCode(ulong randCode, int neighborCode)
         {
-            if (neighborCode == -1)
+            return neighborCode;
+        }
+
+        public override List<TileLayer> GetLayers(int variantCode)
+        {
+            if (variantCode == -1)
                 new List<TileLayer>() { Center };
 
             List<TileLayer> tileList = new List<TileLayer>();
             int mask = Convert.ToInt32("11110000", 2);
-            if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000000", 2))
+            if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000000", 2))
                 tileList.Add(new TileLayer(Surrounded));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000001", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000001", 2))
                 tileList.Add(new TileLayer(ColumnTop));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000010", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000010", 2))
                 tileList.Add(new TileLayer(RowRight));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000100", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000100", 2))
                 tileList.Add(new TileLayer(ColumnBottom));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001000", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001000", 2))
                 tileList.Add(new TileLayer(RowLeft));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000101", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000101", 2))
                 tileList.Add(new TileLayer(ColumnCenter));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001010", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001010", 2))
                 tileList.Add(new TileLayer(RowCenter));
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000011", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000011", 2))
             {
                 tileList.Add(new TileLayer(TopRight));
                 mask &= Convert.ToInt32("11100000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000110", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000110", 2))
             {
                 tileList.Add(new TileLayer(BottomRight));
                 mask &= Convert.ToInt32("11010000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001100", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001100", 2))
             {
                 tileList.Add(new TileLayer(BottomLeft));
                 mask &= Convert.ToInt32("10110000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001001", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001001", 2))
             {
                 tileList.Add(new TileLayer(TopLeft));
                 mask &= Convert.ToInt32("01110000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000111", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00000111", 2))
             {
                 tileList.Add(new TileLayer(Right));
                 mask &= Convert.ToInt32("11000000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001011", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001011", 2))
             {
                 tileList.Add(new TileLayer(Top));
                 mask &= Convert.ToInt32("01100000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001101", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001101", 2))
             {
                 tileList.Add(new TileLayer(Left));
                 mask &= Convert.ToInt32("00110000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001110", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001110", 2))
             {
                 tileList.Add(new TileLayer(Bottom));
                 mask &= Convert.ToInt32("10010000", 2);
             }
-            else if ((neighborCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001111", 2))
+            else if ((variantCode & Convert.ToInt32("00001111", 2)) == Convert.ToInt32("00001111", 2))
             {
                 tileList.Add(new TileLayer(Center));
                 mask &= Convert.ToInt32("00000000", 2);
             }
 
             //add edges
-            int diagonal_map = neighborCode | mask;
+            int diagonal_map = variantCode | mask;
             if ((diagonal_map & Convert.ToInt32("00010000", 2)) == 0)
                 tileList.Add(new TileLayer(TopRightEdge));
 
