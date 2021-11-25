@@ -95,6 +95,33 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        public bool FlipHoriz
+        {
+            get => (SelectedEntity.ObjectAnim.AnimFlip & SpriteFlip.Horiz) != SpriteFlip.None;
+            set
+            {
+                if (value)
+                    SelectedEntity.ObjectAnim.AnimFlip |= SpriteFlip.Horiz;
+                else
+                    SelectedEntity.ObjectAnim.AnimFlip &= ~SpriteFlip.Horiz;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
+        public bool FlipVert
+        {
+            get => (SelectedEntity.ObjectAnim.AnimFlip & SpriteFlip.Vert) != SpriteFlip.None;
+            set
+            {
+                if (value)
+                    SelectedEntity.ObjectAnim.AnimFlip |= SpriteFlip.Vert;
+                else
+                    SelectedEntity.ObjectAnim.AnimFlip &= ~SpriteFlip.Vert;
+                this.RaisePropertyChanged();
+            }
+        }
+
 
 
 
@@ -196,6 +223,8 @@ namespace RogueEssence.Dev.ViewModels
             StartFrame = StartFrame;
             EndFrame = EndFrame;
             FrameLength = FrameLength;
+            FlipHoriz = FlipHoriz;
+            FlipVert = FlipVert;
         }
 
         /// <summary>

@@ -110,6 +110,14 @@ namespace RogueEssence.Content
         }
     }
 
+    [Flags]
+    public enum SpriteFlip
+    {
+        None = 0,
+        Horiz = 1,
+        Vert = 2
+    }
+
     [Serializable]
     public abstract class AnimDataBase
     {
@@ -119,10 +127,11 @@ namespace RogueEssence.Content
         /// </summary>
         public int FrameTime;
         public int StartFrame;
-        [Dev.SharedRow]
+        [SharedRow]
         public int EndFrame;
         public Dir8 AnimDir;
         public byte Alpha;
+        public SpriteFlip AnimFlip;
 
         public AnimDataBase()
             : this("", 1) { }
@@ -151,6 +160,7 @@ namespace RogueEssence.Content
             StartFrame = other.StartFrame;
             EndFrame = other.EndFrame;
             AnimDir = other.AnimDir;
+            AnimFlip = other.AnimFlip;
         }
 
         public int GetTotalFrames(int totalFrames)
@@ -213,6 +223,8 @@ namespace RogueEssence.Content
             if (EndFrame == other.EndFrame)
                 return false;
             if (AnimDir == other.AnimDir)
+                return false;
+            if (AnimFlip == other.AnimFlip)
                 return false;
 
             return true;

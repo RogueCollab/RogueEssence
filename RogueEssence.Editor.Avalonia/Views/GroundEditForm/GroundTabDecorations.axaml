@@ -31,6 +31,7 @@
         <RowDefinition Height="42"/>
         <RowDefinition Height="42"/>
         <RowDefinition Height="42"/>
+        <RowDefinition Height="42"/>
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="80"/>
@@ -48,6 +49,10 @@
       <NumericUpDown Minimum="-1" Value="{Binding EndFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="3"/>
       <TextBlock Margin="4,2" Text="Frame Length:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
       <NumericUpDown Minimum="1" Value="{Binding FrameLength}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <TextBlock Margin="4,2" Text="Flip Horiz:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="0"/>
+      <CheckBox IsChecked="{Binding FlipHoriz}" Margin="4,2" Grid.Row="4" Grid.Column="1"/>
+      <TextBlock Margin="4,2" Text="Flip Vert:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="2"/>
+      <CheckBox IsChecked="{Binding FlipVert}" Margin="4,2" Grid.Row="4" Grid.Column="3"/>
       <!--TextBlock Margin="4,2" Text="Alpha:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4"/>
       <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"/-->
     </Grid>

@@ -246,41 +246,50 @@ namespace RogueEssence.Content
 
         public void DrawDir(SpriteBatch spriteBatch, Vector2 pos, int frame, Dir8 dir, Color color)
         {
+            DrawDir(spriteBatch, pos, frame, dir, color, SpriteFlip.None);
+        }
+
+        public void DrawDir(SpriteBatch spriteBatch, Vector2 pos, int frame, Dir8 dir, Color color, SpriteFlip spriteFlip)
+        {
             if (frame >= TotalFrames)
             {
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
                 return;
             }
+            SpriteEffects flip = (SpriteEffects)((int)spriteFlip);
             switch (Dirs)
             {
                 case RotateType.None:
-                    DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX, color);
+                    DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX, color, flip);
                     break;
                 case RotateType.Dir1:
-                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, 0, color, (float)((int)dir * Math.PI / 4));
+                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, 0, color, (float)((int)dir * Math.PI / 4), flip);
                     break;
                 case RotateType.Dir2:
-                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, (int)dir % 2, color, (float)(((int)dir / 2) * Math.PI / 2));
+                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, (int)dir % 2, color, (float)(((int)dir / 2) * Math.PI / 2), flip);
                     break;
                 case RotateType.Dir5:
                     {
                         int index = (int)dir;
-                        SpriteEffects flip = SpriteEffects.None;
                         if (dir > Dir8.Up)
                         {
                             //flip the sprite for the reverse angles
                             index = 8 - index;
-                            flip = SpriteEffects.FlipHorizontally;
+                            flip ^= SpriteEffects.FlipHorizontally;
                         }
                         DrawTile(spriteBatch, pos, frame, index, color, flip);
                         break;
                     }
                 case RotateType.Dir8:
-                    DrawTile(spriteBatch, pos, frame, (int)dir, color);
+                    DrawTile(spriteBatch, pos, frame, (int)dir, color, flip);
                     break;
                 case RotateType.Flip:
-                    DrawTile(spriteBatch, pos, frame, 0, color, (dir >= Dir8.Up) ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
-                    break;
+                    {
+                        if (dir >= Dir8.Up)
+                            flip ^= SpriteEffects.FlipHorizontally;
+                        DrawTile(spriteBatch, pos, frame, 0, color, flip);
+                        break;
+                    }
             }
         }
     }

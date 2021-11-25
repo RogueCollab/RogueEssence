@@ -115,12 +115,22 @@ namespace RogueEssence.Content
 
         public void Draw(SpriteBatch spriteBatch, Vector2 pos, Rectangle sourceRect, Color color, Vector2 scale, float rotation)
         {
-            Draw(spriteBatch, pos, sourceRect, new Vector2(sourceRect.Width / 2, sourceRect.Height / 2), color, scale, rotation);
+            Draw(spriteBatch, pos, sourceRect, new Vector2(sourceRect.Width / 2, sourceRect.Height / 2), color, scale, rotation, SpriteEffects.None);
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Vector2 pos, Rectangle sourceRect, Color color, Vector2 scale, float rotation, SpriteEffects spriteEffects)
+        {
+            Draw(spriteBatch, pos, sourceRect, new Vector2(sourceRect.Width / 2, sourceRect.Height / 2), color, scale, rotation, spriteEffects);
         }
 
         public void Draw(SpriteBatch spriteBatch, Vector2 pos, Rectangle sourceRect, Vector2 origin, Color color, Vector2 scale, float rotation)
         {
-            spriteBatch.Draw(baseTexture, pos, sourceRect, color, rotation, origin, scale, SpriteEffects.None, 0);
+            Draw(spriteBatch, pos, sourceRect, origin, color, scale, rotation, SpriteEffects.None);
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Vector2 pos, Rectangle sourceRect, Vector2 origin, Color color, Vector2 scale, float rotation, SpriteEffects spriteEffects)
+        {
+            spriteBatch.Draw(baseTexture, pos, sourceRect, color, rotation, origin, scale, spriteEffects, 0);
         }
 
         public void Draw(SpriteBatch spriteBatch, Rectangle destRect, Rectangle? sourceRect, Color color)

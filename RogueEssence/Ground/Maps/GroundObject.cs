@@ -138,14 +138,14 @@ namespace RogueEssence.Ground
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetObject(CurrentAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Dir8.None), Color.White);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Dir8.None), Color.White * ((float)CurrentAnim.Alpha / 255), CurrentAnim.AnimFlip);
             }
             else if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
             }
         }
 
