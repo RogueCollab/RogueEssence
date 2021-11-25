@@ -74,7 +74,7 @@ namespace RogueEssence.Ground
 
         protected GroundObject(GroundObject other) : base(other)
         {
-            ObjectAnim = (ObjAnimData)other.ObjectAnim.Clone();
+            ObjectAnim = (IPlaceableAnimData)other.ObjectAnim.Clone();
             CurrentAnim = new ObjAnimData();
             DrawOffset = other.DrawOffset;
             Solid = other.Solid;
@@ -137,14 +137,14 @@ namespace RogueEssence.Ground
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
-                DirSheet sheet = GraphicsManager.GetObject(CurrentAnim.AnimIndex);
+                DirSheet sheet = GraphicsManager.GetDirSheet(CurrentAnim.AssetType, CurrentAnim.AnimIndex);
                 sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Dir8.None), Color.White * ((float)CurrentAnim.Alpha / 255), CurrentAnim.AnimFlip);
             }
             else if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
-                DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
+                DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
                 sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
             }
         }

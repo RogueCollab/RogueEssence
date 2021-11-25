@@ -135,6 +135,37 @@ namespace RogueEssence.Dev.ViewModels
 
 
 
+        private Type[] assignables;
+        public ObservableCollection<string> AnimTypes { get; }
+
+        public int ChosenAnimType
+        {
+            get
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    return Array.IndexOf(assignables, groundEnt.ObjectAnim.GetType());
+                }
+                return 0;
+            }
+            set
+            {
+                if (value < 0)
+                    return;
+                Type type = assignables[value];
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                    newData.LoadFrom(groundEnt.ObjectAnim);
+                    groundEnt.ObjectAnim = newData;
+                }
+                this.RaisePropertyChanged();
+                animTypeChanged();
+            }
+        }
+
         public ObservableCollection<string> ObjectAnims { get; }
 
         public int ChosenObjectAnim
@@ -455,14 +486,14 @@ namespace RogueEssence.Dev.ViewModels
             SpawnScriptItems = new ObservableCollection<SpawnScriptItem>();
 
 
-            ObjectAnims = new ObservableCollection<string>();
-            ObjectAnims.Add("---");
-            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Object/");
-            for (int ii = 0; ii < dirs.Length; ii++)
+            AnimTypes = new ObservableCollection<string>();
+            assignables = typeof(IPlaceableAnimData).GetAssignableTypes();
+            foreach (Type type in assignables)
             {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                ObjectAnims.Add(filename);
+                IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                AnimTypes.Add(newData.AssetType.ToString());
             }
+            ObjectAnims = new ObservableCollection<string>();
 
             Monsters = new ObservableCollection<string>();
             string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
@@ -479,6 +510,7 @@ namespace RogueEssence.Dev.ViewModels
             Genders = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Gender.Female; ii++)
                 Genders.Add(((Gender)ii).ToLocal());
+
 
             entTypeChanged();
             speciesChanged();
@@ -555,6 +587,7 @@ namespace RogueEssence.Dev.ViewModels
             BoundsY = BoundsY;
 
             EntEnabled = EntEnabled;
+            ChosenAnimType = ChosenAnimType;
             ChosenObjectAnim = ChosenObjectAnim;
             OffsetX = OffsetX;
             OffsetY = OffsetY;
@@ -723,6 +756,27 @@ namespace RogueEssence.Dev.ViewModels
                 ChosenForm = Math.Clamp(tempForm, 0, Forms.Count - 1);
             }
 
+        }
+
+
+
+        private void animTypeChanged()
+        {
+            GroundObject groundEnt = SelectedEntity as GroundObject;
+            string oldIndex = groundEnt.ObjectAnim.AnimIndex;
+            ObjectAnims.Clear();
+            ObjectAnims.Add("---");
+            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + groundEnt.ObjectAnim.AssetType.ToString() + "/");
+            int newAnim = 0;
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                ObjectAnims.Add(filename);
+
+                if (filename == oldIndex)
+                    newAnim = ii + 1;
+            }
+            ChosenObjectAnim = newAnim;
         }
     }
 }

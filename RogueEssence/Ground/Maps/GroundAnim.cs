@@ -43,7 +43,7 @@ namespace RogueEssence.Ground
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
-                DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
+                DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
                 sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
             }
         }

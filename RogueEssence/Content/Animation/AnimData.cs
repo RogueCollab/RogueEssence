@@ -6,6 +6,7 @@ namespace RogueEssence.Content
 {
     public interface IPlaceableAnimData
     {
+        GraphicsManager.AssetType AssetType { get; }
         string AnimIndex { get; set; }
         int FrameTime { get; set; }
         int StartFrame { get; set; }
@@ -22,12 +23,14 @@ namespace RogueEssence.Content
 
         Dir8 GetDrawDir(Dir8 inputDir);
 
-        AnimDataBase Clone();
+        IPlaceableAnimData Clone();
+        void LoadFrom(IPlaceableAnimData other);
     }
 
     [Serializable]
     public class ItemAnimData : AnimDataBase, IPlaceableAnimData
     {
+        public override GraphicsManager.AssetType AssetType { get { return GraphicsManager.AssetType.Item; } }
         [Anim(0, "Item/")]
         public override string AnimIndex { get; set; }
 
@@ -48,6 +51,10 @@ namespace RogueEssence.Content
 
         public override AnimDataBase Clone() { return new ItemAnimData(this); }
 
+        IPlaceableAnimData IPlaceableAnimData.Clone() { return (IPlaceableAnimData)Clone(); }
+
+        void IPlaceableAnimData.LoadFrom(IPlaceableAnimData other) { LoadFrom((AnimDataBase)other); }
+
         public override string ToString()
         {
             return AnimIndex;
@@ -57,6 +64,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class ObjAnimData : AnimDataBase, IPlaceableAnimData
     {
+        public override GraphicsManager.AssetType AssetType { get { return GraphicsManager.AssetType.Object; } }
         [Anim(0, "Object/")]
         public override string AnimIndex { get; set; }
 
@@ -77,6 +85,10 @@ namespace RogueEssence.Content
 
         public override AnimDataBase Clone() { return new ObjAnimData(this); }
 
+        IPlaceableAnimData IPlaceableAnimData.Clone() { return (IPlaceableAnimData)Clone(); }
+
+        void IPlaceableAnimData.LoadFrom(IPlaceableAnimData other) { LoadFrom((AnimDataBase)other); }
+
         public override string ToString()
         {
             return AnimIndex;
@@ -86,6 +98,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class BeamAnimData : AnimDataBase
     {
+        public override GraphicsManager.AssetType AssetType { get { return GraphicsManager.AssetType.Beam; } }
         [Anim(0, "Beam/")]
         public override string AnimIndex { get; set; }
 
@@ -115,6 +128,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class BGAnimData : AnimDataBase
     {
+        public override GraphicsManager.AssetType AssetType { get { return GraphicsManager.AssetType.BG; } }
         [Anim(0, "BG/")]
         public override string AnimIndex { get; set; }
 
@@ -144,6 +158,7 @@ namespace RogueEssence.Content
     [Serializable]
     public class AnimData : AnimDataBase
     {
+        public override GraphicsManager.AssetType AssetType { get { return GraphicsManager.AssetType.Particle; } }
         [Anim(0, "Particle/")]
         public override string AnimIndex { get; set; }
 
@@ -183,6 +198,7 @@ namespace RogueEssence.Content
     [Serializable]
     public abstract class AnimDataBase
     {
+        public abstract GraphicsManager.AssetType AssetType { get; }
         public abstract string AnimIndex { get; set; }
         /// <summary>
         /// Time spent on each frame of animation, in frames (time unit)
@@ -216,6 +232,13 @@ namespace RogueEssence.Content
         }
         public AnimDataBase(AnimDataBase other)
         {
+            LoadFrom(other);
+        }
+
+        public abstract AnimDataBase Clone();
+
+        public virtual void LoadFrom(AnimDataBase other)
+        {
             AnimIndex = other.AnimIndex;
             FrameTime = other.FrameTime;
             Alpha = other.Alpha;
@@ -224,8 +247,6 @@ namespace RogueEssence.Content
             AnimDir = other.AnimDir;
             AnimFlip = other.AnimFlip;
         }
-
-        public abstract AnimDataBase Clone();
 
         public int GetTotalFrames(int totalFrames)
         {

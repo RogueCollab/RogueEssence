@@ -26,14 +26,15 @@ namespace RogueEssence.Dev.ViewModels
             foreach (Dir8 dir in DirExt.VALID_DIR8)
                 Directions.Add(dir.ToLocal());
 
-            ObjectAnims = new ObservableCollection<string>();
-            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Object/");
-            for (int ii = 0; ii < dirs.Length; ii++)
+            AnimTypes = new ObservableCollection<string>();
+            assignables = typeof(IPlaceableAnimData).GetAssignableTypes();
+            foreach (Type type in assignables)
             {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                ObjectAnims.Add(filename);
+                IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                AnimTypes.Add(newData.AssetType.ToString());
             }
-            ChosenObjectAnim = 0;
+            ObjectAnims = new ObservableCollection<string>();
+            ChosenAnimType = ChosenAnimType;
 
             FrameLength = 1;
         }
@@ -49,6 +50,26 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public ILayerBoxViewModel Layers { get; set; }
+
+
+        private Type[] assignables;
+        public ObservableCollection<string> AnimTypes { get; }
+
+        public int ChosenAnimType
+        {
+            get => Array.IndexOf(assignables, SelectedEntity.ObjectAnim.GetType());
+            set
+            {
+                if (value < 0)
+                    return;
+                Type type = assignables[value];
+                IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                newData.LoadFrom(SelectedEntity.ObjectAnim);
+                SelectedEntity.ObjectAnim = newData;
+                this.RaisePropertyChanged();
+                animTypeChanged();
+            }
+        }
 
 
         public ObservableCollection<string> ObjectAnims { get; }
@@ -230,6 +251,7 @@ namespace RogueEssence.Dev.ViewModels
         private void setEntity(GroundAnim ent)
         {
             SelectedEntity = ent;
+            ChosenAnimType = ChosenAnimType;
             ChosenObjectAnim = ChosenObjectAnim;
             ChosenDirection = ChosenDirection;
             StartFrame = StartFrame;
@@ -269,6 +291,22 @@ namespace RogueEssence.Dev.ViewModels
                 SelectEntity(null);
         }
 
+        private void animTypeChanged()
+        {
+            string oldIndex = SelectedEntity.ObjectAnim.AnimIndex;
+            ObjectAnims.Clear();
+            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + SelectedEntity.ObjectAnim.AssetType.ToString() + "/");
+            int newAnim = 0;
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                ObjectAnims.Add(filename);
+
+                if (filename == oldIndex)
+                    newAnim = ii;
+            }
+            ChosenObjectAnim = newAnim;
+        }
     }
 
     public class GroundDecorationStateUndo : StateUndo<AnimLayer>
