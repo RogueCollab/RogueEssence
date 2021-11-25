@@ -139,6 +139,8 @@ namespace RogueEssence
 
         public string DumpCoroutines()
         {
+            if (m_currentcontextidx < 0 || m_currentcontextidx >= m_coroutines.Count)
+                return "";
             Coroutine[] temp = m_coroutines[m_currentcontextidx].ToArray();
             StringBuilder dumpMsg = new StringBuilder();
             foreach (Coroutine co in temp)
