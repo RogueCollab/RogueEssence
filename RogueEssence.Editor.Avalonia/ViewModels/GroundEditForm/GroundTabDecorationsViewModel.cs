@@ -79,19 +79,31 @@ namespace RogueEssence.Dev.ViewModels
         public int StartFrame
         {
             get => SelectedEntity.ObjectAnim.StartFrame;
-            set => this.RaiseAndSet(ref SelectedEntity.ObjectAnim.StartFrame, value);
+            set
+            {
+                SelectedEntity.ObjectAnim.StartFrame = value;
+                this.RaisePropertyChanged();
+            }
         }
 
         public int EndFrame
         {
             get => SelectedEntity.ObjectAnim.EndFrame;
-            set => this.RaiseAndSet(ref SelectedEntity.ObjectAnim.EndFrame, value);
+            set
+            {
+                SelectedEntity.ObjectAnim.EndFrame = value;
+                this.RaisePropertyChanged();
+            }
         }
 
         public int FrameLength
         {
             get => SelectedEntity.ObjectAnim.FrameTime;
-            set => this.RaiseAndSet(ref SelectedEntity.ObjectAnim.FrameTime, value);
+            set
+            {
+                SelectedEntity.ObjectAnim.FrameTime = value;
+                this.RaisePropertyChanged();
+            }
         }
 
 
@@ -196,7 +208,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void PlaceEntity(Loc position)
         {
-            GroundAnim placeableEntity = new GroundAnim(new ObjAnimData(SelectedEntity.ObjectAnim), position);
+            GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), position);
 
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
 

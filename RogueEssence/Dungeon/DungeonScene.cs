@@ -1219,7 +1219,7 @@ namespace RogueEssence.Dungeon
                 DirSheet dirSheet = null;
                 switch (DebugAsset)
                 {
-                    case GraphicsManager.AssetType.VFX:
+                    case GraphicsManager.AssetType.Particle:
                         dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
                         break;
                     case GraphicsManager.AssetType.Icon:

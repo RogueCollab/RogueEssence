@@ -4,9 +4,58 @@ using RogueEssence.Dev;
 
 namespace RogueEssence.Content
 {
+    public interface IPlaceableAnimData
+    {
+        string AnimIndex { get; set; }
+        int FrameTime { get; set; }
+        int StartFrame { get; set; }
+        int EndFrame { get; set; }
+        Dir8 AnimDir { get; set; }
+        byte Alpha { get; set; }
+        SpriteFlip AnimFlip { get; set; }
+
+        int GetTotalFrames(int totalFrames);
+
+        int GetCurrentFrame(FrameTick time, int totalFrames);
+
+        int GetCurrentFrame(ulong time, int totalFrames);
+
+        Dir8 GetDrawDir(Dir8 inputDir);
+
+        AnimDataBase Clone();
+    }
 
     [Serializable]
-    public class ObjAnimData : AnimDataBase
+    public class ItemAnimData : AnimDataBase, IPlaceableAnimData
+    {
+        [Anim(0, "Item/")]
+        public override string AnimIndex { get; set; }
+
+        public ItemAnimData()
+            : this("", 1) { }
+        public ItemAnimData(string animIndex, int frameTime)
+            : this(animIndex, frameTime, -1, -1) { }
+        public ItemAnimData(string animIndex, int frameTime, Dir8 dir)
+            : this(animIndex, frameTime, -1, -1, 255, dir) { }
+        public ItemAnimData(string animIndex, int frameTime, int startFrame, int endFrame)
+            : this(animIndex, frameTime, startFrame, endFrame, 255) { }
+        public ItemAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+        public ItemAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
+            : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
+        public ItemAnimData(ItemAnimData other)
+            : base(other) { }
+
+        public override AnimDataBase Clone() { return new ItemAnimData(this); }
+
+        public override string ToString()
+        {
+            return AnimIndex;
+        }
+    }
+
+    [Serializable]
+    public class ObjAnimData : AnimDataBase, IPlaceableAnimData
     {
         [Anim(0, "Object/")]
         public override string AnimIndex { get; set; }
@@ -25,6 +74,13 @@ namespace RogueEssence.Content
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public ObjAnimData(ObjAnimData other)
             : base(other) { }
+
+        public override AnimDataBase Clone() { return new ObjAnimData(this); }
+
+        public override string ToString()
+        {
+            return AnimIndex;
+        }
     }
 
     [Serializable]
@@ -47,6 +103,8 @@ namespace RogueEssence.Content
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public BeamAnimData(BeamAnimData other)
             : base(other) { }
+
+        public override AnimDataBase Clone() { return new BeamAnimData(this); }
 
         public override string ToString()
         {
@@ -75,6 +133,8 @@ namespace RogueEssence.Content
         public BGAnimData(BGAnimData other)
             : base(other) { }
 
+        public override AnimDataBase Clone() { return new BGAnimData(this); }
+
         public override string ToString()
         {
             return AnimIndex;
@@ -102,6 +162,8 @@ namespace RogueEssence.Content
         public AnimData(AnimData other)
             : base(other) { }
 
+        public override AnimDataBase Clone() { return new AnimData(this); }
+
         public override string ToString()
         {
             if (AnimIndex == "")
@@ -125,13 +187,13 @@ namespace RogueEssence.Content
         /// <summary>
         /// Time spent on each frame of animation, in frames (time unit)
         /// </summary>
-        public int FrameTime;
-        public int StartFrame;
+        public int FrameTime { get; set; }
+        public int StartFrame { get; set; }
         [SharedRow]
-        public int EndFrame;
-        public Dir8 AnimDir;
-        public byte Alpha;
-        public SpriteFlip AnimFlip;
+        public int EndFrame { get; set; }
+        public Dir8 AnimDir { get; set; }
+        public byte Alpha { get; set; }
+        public SpriteFlip AnimFlip { get; set; }
 
         public AnimDataBase()
             : this("", 1) { }
@@ -162,6 +224,8 @@ namespace RogueEssence.Content
             AnimDir = other.AnimDir;
             AnimFlip = other.AnimFlip;
         }
+
+        public abstract AnimDataBase Clone();
 
         public int GetTotalFrames(int totalFrames)
         {

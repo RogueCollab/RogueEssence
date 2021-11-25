@@ -13,10 +13,10 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundObject : BaseTaskUser, IDrawableSprite, IObstacle
     {
-        public ObjAnimData ObjectAnim;
+        public IPlaceableAnimData ObjectAnim;
         public bool Solid;
 
-        public ObjAnimData CurrentAnim;
+        public IPlaceableAnimData CurrentAnim;
         public FrameTick AnimTime;
         public int Cycles;
 
@@ -51,7 +51,7 @@ namespace RogueEssence.Ground
             SetTriggerType(EEntityTriggerTypes.Action);
         }
 
-        public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
+        public GroundObject(IPlaceableAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
         {
             ObjectAnim = anim;
             CurrentAnim = new ObjAnimData();
@@ -74,7 +74,7 @@ namespace RogueEssence.Ground
 
         protected GroundObject(GroundObject other) : base(other)
         {
-            ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            ObjectAnim = (ObjAnimData)other.ObjectAnim.Clone();
             CurrentAnim = new ObjAnimData();
             DrawOffset = other.DrawOffset;
             Solid = other.Solid;

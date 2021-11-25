@@ -495,7 +495,7 @@ namespace RogueEssence.Dev
             {
                 string fileName = Path.GetFileNameWithoutExtension(dir);
                 string asset_name = fileName;
-                using (BeamSheet sheet = BeamSheet.Import(dir + "/"))
+                using (BeamSheet sheet = BeamSheet.Import(dir))
                 {
                     using (FileStream stream = File.OpenWrite(String.Format(cachePattern, asset_name)))
                     {

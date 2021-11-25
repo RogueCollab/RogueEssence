@@ -16,7 +16,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundAnim : IDrawableSprite
     {
-        public ObjAnimData ObjectAnim;
+        public IPlaceableAnimData ObjectAnim;
         
         public Loc MapLoc { get; set; }
         public int LocHeight { get { return 0; } }
@@ -25,14 +25,14 @@ namespace RogueEssence.Ground
         {
             ObjectAnim = new ObjAnimData();
         }
-        public GroundAnim(ObjAnimData anim, Loc loc)
+        public GroundAnim(IPlaceableAnimData anim, Loc loc)
         {
             ObjectAnim = anim;
             MapLoc = loc;
         }
         public GroundAnim(GroundAnim other)
         {
-            ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            ObjectAnim = (IPlaceableAnimData)other.ObjectAnim.Clone();
             MapLoc = other.MapLoc;
         }
 
