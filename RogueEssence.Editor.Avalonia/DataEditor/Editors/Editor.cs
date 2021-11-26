@@ -490,6 +490,7 @@ namespace RogueEssence.Dev
                     var subject = new Subject<List<string>>();
                     cbValue.Bind(ComboBox.ItemsProperty, subject);
                     subject.OnNext(items);
+                    cbValue.KeyDown += ComboBox_ScrollToLetter(items);
                     cbValue.SelectedIndex = selection;
 
                     cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
@@ -557,6 +558,21 @@ namespace RogueEssence.Dev
                     DataEditor.LoadWindowControls(controlParent, parent, name, children[selection], attributes, member, newStack);
                 }
             }
+        }
+
+        private EventHandler<Avalonia.Input.KeyEventArgs> ComboBox_ScrollToLetter(List<string> items)
+        {
+            return (object sender, Avalonia.Input.KeyEventArgs e) =>
+            {
+                if (e.Key >= Avalonia.Input.Key.A && e.Key <= Avalonia.Input.Key.Z)
+                {
+                    char letter = (char)((e.Key - Avalonia.Input.Key.A) + 'A');
+                    ComboBox box = (ComboBox)sender;
+                    int letterIndex = items.FindIndex((c) => c.StartsWith(letter.ToString(), StringComparison.InvariantCultureIgnoreCase));
+                    if (letterIndex > -1)
+                        box.ScrollIntoView(letterIndex);
+                }
+            };
         }
 
         void IEditor.LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
