@@ -116,10 +116,9 @@ namespace RogueEssence.Dev.ViewModels
             get => SelectedEntity.GetTriggerType();
             set
             {
-                GroundEntity.EEntityTriggerTypes chosenTriggerType = SelectedEntity.GetTriggerType();
-                this.RaiseAndSet(ref chosenTriggerType, value);
                 if (!settingEnt)
-                    SelectedEntity.SetTriggerType(chosenTriggerType);
+                    SelectedEntity.SetTriggerType(value);
+                this.RaisePropertyChanged();
                 triggerTypeChanged();
             }
         }
@@ -162,7 +161,8 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.ObjectAnim = newData;
                 }
                 this.RaisePropertyChanged();
-                animTypeChanged();
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                    animTypeChanged();
             }
         }
 
@@ -305,6 +305,28 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     GroundObject groundEnt = SelectedEntity as GroundObject;
                     groundEnt.ObjectAnim.FrameTime = value;
+                }
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public bool Passable
+        {
+            get
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    return groundEnt.Passable;
+                }
+                return false;
+            }
+            set
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    groundEnt.Passable = value;
                 }
                 this.RaisePropertyChanged();
             }
@@ -568,6 +590,7 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         TriggerTypes.Add(GroundEntity.EEntityTriggerTypes.Action);
                         TriggerTypes.Add(GroundEntity.EEntityTriggerTypes.Touch);
+                        TriggerTypes.Add(GroundEntity.EEntityTriggerTypes.TouchOnce);
                         break;
                     }
                 default:
@@ -594,6 +617,7 @@ namespace RogueEssence.Dev.ViewModels
             StartFrame = StartFrame;
             EndFrame = EndFrame;
             FrameLength = FrameLength;
+            Passable = Passable;
 
             ChosenMonster = ChosenMonster;
             ChosenForm = ChosenForm;
@@ -622,6 +646,7 @@ namespace RogueEssence.Dev.ViewModels
                 case GroundEntity.EEntTypes.Object:
                     {
                         retainTab |= TabIndex == 3;
+                        retainTab |= TabIndex == 4;
                         break;
                     }
                 case GroundEntity.EEntTypes.Marker:
@@ -631,7 +656,7 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 case GroundEntity.EEntTypes.Spawner:
                     {
-                        retainTab |= TabIndex == 4;
+                        retainTab |= TabIndex == 5;
                         break;
                     }
             }
@@ -705,6 +730,7 @@ namespace RogueEssence.Dev.ViewModels
                         break;
                     }
                 case GroundEntity.EEntityTriggerTypes.Touch:
+                case GroundEntity.EEntityTriggerTypes.TouchOnce:
                     {
                         ScriptItems.Add(new EntScriptItem(LuaEngine.EEntLuaEventTypes.Touch, SelectedEntity));
                         break;

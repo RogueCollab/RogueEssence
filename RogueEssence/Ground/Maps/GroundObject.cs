@@ -14,7 +14,7 @@ namespace RogueEssence.Ground
     public class GroundObject : BaseTaskUser, IDrawableSprite, IObstacle
     {
         public IPlaceableAnimData ObjectAnim;
-        public bool Solid;
+        public bool Passable;
 
         public IPlaceableAnimData CurrentAnim;
         public FrameTick AnimTime;
@@ -27,12 +27,15 @@ namespace RogueEssence.Ground
                 if (!EntEnabled)
                     return 0u;
 
-                if (TriggerType == EEntityTriggerTypes.Touch)
-                    return 2u;
-                if (TriggerType == EEntityTriggerTypes.Action || Solid)
-                    return 1u;
-
-                return 0u;
+                if (Passable)
+                    return 3u; // cross response
+                else
+                {
+                    if (TriggerType == EEntityTriggerTypes.Touch || TriggerType == EEntityTriggerTypes.TouchOnce)
+                        return 2u; // touch response
+                    else
+                        return 1u; // slide response
+                }
             }
         }
         public int LocHeight { get { return 0; } }
@@ -77,7 +80,7 @@ namespace RogueEssence.Ground
             ObjectAnim = (IPlaceableAnimData)other.ObjectAnim.Clone();
             CurrentAnim = new ObjAnimData();
             DrawOffset = other.DrawOffset;
-            Solid = other.Solid;
+            Passable = other.Passable;
         }
 
         public override GroundEntity Clone() { return new GroundObject(this); }
@@ -92,7 +95,7 @@ namespace RogueEssence.Ground
             //Run script events
             if (GetTriggerType() == EEntityTriggerTypes.Action)
                 yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, result, activator));
-            else if (GetTriggerType() == EEntityTriggerTypes.Touch)
+            else if (GetTriggerType() == EEntityTriggerTypes.Touch || GetTriggerType() == EEntityTriggerTypes.TouchOnce)
                 yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Touch, result, activator));
 
         }

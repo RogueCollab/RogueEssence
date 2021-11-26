@@ -32,6 +32,9 @@ namespace RogueEssence.Ground
         [NonSerialized]
         private GroundAction currentCharAction;
 
+        [NonSerialized]
+        private IEnumerable<IHit> currentHits;
+
         public LuaTable LuaData
         {
             get { return Data.LuaDataTable; }
@@ -258,9 +261,26 @@ namespace RogueEssence.Ground
             //process the collisions and determine if a new action is needed (here, it can be forced)
             if (GroundScene.Instance.FocusedCharacter == this)
             {
-                IHit first = move.Hits.FirstOrDefault((c) => c.Box.Tags == 2);
-                if (first != null)
-                    GroundScene.Instance.PendingLeaderAction = ((GroundObject)first.Box).Interact(this, new TriggerResult());
+                IEnumerable<IHit> touches = move.Hits.Where((c) => c.Box.Tags == 2 || c.Box.Tags == 3);
+                foreach(IHit first in touches)
+                {
+                    GroundObject obj = (GroundObject)first.Box;
+                    if (obj.TriggerType == EEntityTriggerTypes.TouchOnce)
+                    {
+                        //check if already touching
+                        if (currentHits != null)
+                        {
+                            IHit prevHit = currentHits.FirstOrDefault((c) => c.Box == first.Box);
+                            if (prevHit != null)
+                                continue;
+                        }
+                    }
+
+                    GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
+                    break;
+                }
+
+                currentHits = touches;
             }
 
             UpdateFrame();

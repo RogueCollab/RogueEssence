@@ -178,6 +178,20 @@
           <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"/-->
         </Grid>
       </TabItem>
+      <TabItem Header="Object Data" IsVisible="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=0}" >
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Pass-Through:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <CheckBox IsChecked="{Binding Passable}" Margin="4,2" Grid.Column="1" />
+        </Grid>
+      </TabItem>
       <TabItem Header="Spawner Data" IsVisible="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=3}" >
         <Grid>
           <Grid.RowDefinitions>

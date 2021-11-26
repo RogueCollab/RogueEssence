@@ -24,6 +24,7 @@ namespace RogueEssence.Ground
             None = 0,
             Action= 1,
             Touch = 2,
+            TouchOnce = 3,
         }
 
         /// <summary>
