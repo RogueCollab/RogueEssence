@@ -11,6 +11,7 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
+        //TODO: v0.6: remove this
         static int legacy = 0;
 
         public static void ReserializeBase()
@@ -261,6 +262,82 @@ namespace RogueEssence.Dev
                 formatter.Serialize(stream, entry);
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
             }
+        }
+
+        public static void MergeMod(string mod)
+        {
+            DiagManager.Instance.LogInfo(String.Format("Creating standalone from mod {0}...", PathMod.Mod));
+
+            string outputPath = Path.Combine(PathMod.ExePath, "Build", mod);
+
+            if (Directory.Exists(outputPath))
+                Directory.Delete(outputPath, true);
+            Directory.CreateDirectory(outputPath);
+
+            //Exe - direct copy from game
+            File.Copy(Path.Combine(PathMod.ExePath, PathMod.ExeName), Path.Combine(outputPath, PathMod.ExeName));
+            //PNG - direct copy from game
+            string pngName = Path.GetFileNameWithoutExtension(PathMod.ExeName) + ".png";
+            if (File.Exists(Path.Combine(PathMod.ExePath, pngName)))
+                File.Copy(Path.Combine(PathMod.ExePath, pngName), Path.Combine(outputPath, pngName));
+
+            //Base - direct copy from game
+            copyRecursive(GraphicsManager.BASE_PATH, Path.Combine(outputPath, "Base"));
+
+            //Strings - merged copy
+            Directory.CreateDirectory(outputPath);
+            copyRecursive(PathMod.NoMod("Strings"), Path.Combine(outputPath, "Strings"));
+            copyRecursive(PathMod.HardMod("Strings"), Path.Combine(outputPath, "Strings"));
+
+            //Editor - direct copy from game
+            copyRecursive(PathMod.RESOURCE_PATH, Path.Combine(outputPath, "Editor"));
+
+            //Licenses - merged copy
+            copyRecursive(PathMod.NoMod("Licenses"), Path.Combine(outputPath, "Licenses"));
+            copyRecursive(PathMod.HardMod("Licenses"), Path.Combine(outputPath, "Licenses"));
+
+            //Font - direct copy from game
+            copyRecursive(PathMod.NoMod("Font"), Path.Combine(outputPath, "Font"));
+
+            //Content - merged copy
+            //TODO: only copy what is indexed for characters and portraits
+            copyRecursive(PathMod.NoMod(GraphicsManager.CONTENT_PATH), Path.Combine(outputPath, GraphicsManager.CONTENT_PATH));
+            copyRecursive(PathMod.HardMod(GraphicsManager.CONTENT_PATH), Path.Combine(outputPath, GraphicsManager.CONTENT_PATH));
+
+            //Data - merge copy everything except script
+            //TODO: only copy what is indexed for characters and portraits
+            Directory.CreateDirectory(Path.Combine(outputPath, DataManager.DATA_PATH));
+            foreach (string subPath in Directory.GetFiles(PathMod.NoMod(DataManager.DATA_PATH)))
+            {
+                string path = Path.GetFileName(subPath);
+                File.Copy(subPath, Path.Combine(outputPath, DataManager.DATA_PATH, path));
+            }
+            string exPath = PathMod.NoMod(RogueEssence.Script.LuaEngine.SCRIPT_PATH);
+            foreach (string subPath in Directory.GetDirectories(PathMod.NoMod(DataManager.DATA_PATH)))
+            {
+                if (Path.Equals(subPath + "/", exPath))
+                    continue;
+                string path = Path.GetFileName(subPath);
+                copyRecursive(subPath, Path.Combine(outputPath, DataManager.DATA_PATH, path));
+            }
+            copyRecursive(PathMod.HardMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
+
+            DiagManager.Instance.LogInfo(String.Format("Standalone game output to {0}", outputPath));
+        }
+
+        private static void copyRecursive(string srcDir, string destDir)
+        {
+            if (!Directory.Exists(srcDir))
+                return;
+
+            if (!Directory.Exists(destDir))
+                Directory.CreateDirectory(destDir);
+
+            foreach (string directory in Directory.GetDirectories(srcDir))
+                copyRecursive(directory, Path.Combine(destDir, Path.GetFileName(directory)));
+
+            foreach (string file in Directory.GetFiles(srcDir))
+                File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
         }
     }
 }

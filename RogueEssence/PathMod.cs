@@ -11,6 +11,7 @@ namespace RogueEssence
 {
     public static class PathMod
     {
+        public static string ExeName { get; private set; }
         public static string ExePath { get; private set; }
         public static string ASSET_PATH;
         public static string DEV_PATH;
@@ -27,7 +28,8 @@ namespace RogueEssence
 
         public static void InitExePath(string path)
         {
-            ExePath = path + "/";
+            ExeName = Path.GetFileName(path);
+            ExePath = Path.GetDirectoryName(path) + "/";
             ASSET_PATH = ExePath;
             DEV_PATH = ExePath + "RawAsset/";
         }
@@ -45,6 +47,10 @@ namespace RogueEssence
             return hardMod(Mod, basePath);
         }
         public static string NoMod(string basePath)
+        {
+            return Path.Join(ASSET_PATH, basePath);
+        }
+        public static string FromExe(string basePath)
         {
             return Path.Join(ExePath, basePath);
         }
