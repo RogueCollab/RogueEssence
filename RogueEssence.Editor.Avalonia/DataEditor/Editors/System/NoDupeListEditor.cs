@@ -67,7 +67,7 @@ namespace RogueEssence.Dev
 
                     if (itemExists)
                     {
-                        await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                        await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate items.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
                     }
                     else
                     {

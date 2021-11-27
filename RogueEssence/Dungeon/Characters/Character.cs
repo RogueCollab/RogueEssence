@@ -1187,18 +1187,42 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-
             if (owningSlot != -1)
             {
-                SkillData entry = DataManager.Instance.GetSkill(skillNum);
                 Skills[owningSlot] = new BackReference<Skill>(new Skill(skillNum, BaseSkills[newSlot].Charges, enabled), newSlot);
-
-
                 skillIndices[owningSlot] = -1;
-
             }
 
             return skillIndices;
+        }
+
+        /// <summary>
+        /// Editor-side skill changes.
+        /// </summary>
+        /// <param name="skillNum"></param>
+        /// <param name="newSlot"></param>
+        /// <param name="enabled"></param>
+        public void EditSkill(int skillNum, int newSlot, bool enabled)
+        {
+            if (newSlot >= MAX_SKILL_SLOTS)
+                return;
+
+            BaseSkills[newSlot] = new SlotSkill(skillNum);
+            if (skillNum > -1)
+                BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
+
+            int owningSlot = -1;
+            for (int ii = 0; ii < Skills.Count; ii++)
+            {
+                if (Skills[ii].BackRef == newSlot)
+                {
+                    owningSlot = ii;
+                    break;
+                }
+            }
+
+            if (owningSlot != -1)
+                Skills[owningSlot] = new BackReference<Skill>(new Skill(skillNum, BaseSkills[newSlot].Charges, enabled), newSlot);
         }
 
         public void SwitchSkills(int slot)

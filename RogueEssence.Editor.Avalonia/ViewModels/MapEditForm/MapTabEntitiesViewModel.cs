@@ -50,6 +50,7 @@ namespace RogueEssence.Dev.ViewModels
 
             Intrinsics = new ObservableCollection<string>();
             string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+            Intrinsics.Add("---: None");
             for (int ii = 0; ii < intrinsic_names.Length; ii++)
                 Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
 
@@ -110,7 +111,7 @@ namespace RogueEssence.Dev.ViewModels
         public string Nickname
         {
             get { return SelectedEntity.Nickname; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.Nickname, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.Nickname, value); }
         }
 
 
@@ -194,10 +195,10 @@ namespace RogueEssence.Dev.ViewModels
 
         public int ChosenIntrinsic
         {
-            get { return SelectedEntity.Intrinsics[0].Element.ID; }
+            get { return SelectedEntity.Intrinsics[0].Element.ID + 1; }
             set
             {
-                SelectedEntity.LearnIntrinsic(value, 0);
+                SelectedEntity.LearnIntrinsic(value - 1, 0);
                 this.RaisePropertyChanged();
             }
         }
@@ -234,10 +235,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[0].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(0);
+                SelectedEntity.EditSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -247,10 +245,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[1].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(1);
+                SelectedEntity.EditSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -260,10 +255,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[2].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(2);
+                SelectedEntity.EditSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -273,10 +265,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[3].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(3);
+                SelectedEntity.EditSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -547,6 +536,8 @@ namespace RogueEssence.Dev.ViewModels
         private void setEntity(Character ent)
         {
             SelectedEntity = ent;
+
+            Nickname = Nickname;
             ChosenDir = ChosenDir;
             ChosenTactic = ChosenTactic;
             ChosenMonster = ChosenMonster;
