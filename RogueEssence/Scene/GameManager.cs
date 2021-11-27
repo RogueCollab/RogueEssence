@@ -89,7 +89,7 @@ namespace RogueEssence
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
 
-            DiagManager.Instance.SetErrorListener(OnError);
+            DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
         }
 
         public void BattleSE(string newSE)
@@ -1191,6 +1191,17 @@ namespace RogueEssence
                 GameBase.CurrentPhase = GameBase.LoadPhase.Error;
             if (ping)
                 SE("Menu/Error");
+        }
+
+        private string ErrorTrace()
+        {
+            System.Text.StringBuilder str = new System.Text.StringBuilder();
+            str.Append("\nLua Trace:\n");
+            str.Append(LuaEngine.Instance.DumpStack());
+            str.Append("\nCoroutine Trace:\n");
+            str.Append(CoroutineManager.Instance.DumpCoroutines());
+
+            return str.ToString();
         }
 
         public IEnumerator<YieldInstruction> LogSkippableMsg(string msg)

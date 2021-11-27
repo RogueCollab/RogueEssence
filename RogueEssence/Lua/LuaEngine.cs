@@ -386,6 +386,7 @@ namespace RogueEssence.Script
         {
             //init lua
             LuaState = new Lua();
+            //LuaState.UseTraceback = true;
             LuaState.State.Encoding = System.Text.Encoding.UTF8;
             m_nextUpdate = new TimeSpan(-1);
             DiagManager.Instance.LogInfo(String.Format("[SE]:Initialized {0}", LuaState["_VERSION"] as string));
@@ -931,7 +932,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaMemberFun(): Error calling member function :\n" + e.Message);
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaMemberFun(): Error calling member function:\n" + e.Message);
             }
             return null;
         }
@@ -1463,6 +1464,28 @@ namespace RogueEssence.Script
         //    else
         //        return v.GetType();
         //}
+
+        public string DumpStack()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            //int level = 0;
+            //KeraLua.LuaDebug info = new KeraLua.LuaDebug();
+            //while (LuaState.GetStack(level, ref info) != 0)
+            //{
+            //    LuaState.GetInfo("nSl", ref info);
+            //    string name = "<unknown>";
+            //    if (!string.IsNullOrEmpty(info.Name))
+            //        name = info.Name;
+
+            //    sb.AppendFormat("[{0}] {1}:{2} -- {3} [{4}]\n",
+            //        level, info.ShortSource, info.CurrentLine,
+            //        name, info.NameWhat);
+            //    level++;
+            //}
+
+            sb.Append(LuaState.GetDebugTraceback() + "\n");
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Utility function for returning a dummy yield through the lua layer.

@@ -66,13 +66,13 @@ namespace RogueEssence.Script
         public virtual Coroutine Apply(params object[] parameters)
         {
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
-            return new LuaCoroutine(m_luapath, applyFunc(m_luapath, func_iter));
+            return new LuaCoroutine(String.Format("{0}: {1}", typeof(ScriptEvent).Name, m_luapath), applyFunc(m_luapath, func_iter));
         }
 
 
         public static Coroutine ApplyFunc(string name, LuaFunction func_iter)
         {
-            return new LuaCoroutine(name, applyFunc(name, func_iter));
+            return new LuaCoroutine(String.Format("{0}: {1}", typeof(ScriptEvent).Name, name), applyFunc(name, func_iter));
         }
 
         private static IEnumerator<YieldInstruction> applyFunc(string name, LuaFunction func_iter)

@@ -25,9 +25,11 @@ namespace RogueEssence
         object lockObj = new object();
 
         public delegate void LogAdded(string message);
+        public delegate string ErrorTrace();
 
         private bool inError;
         private LogAdded errorAddedEvent;
+        private ErrorTrace errorTraceEvent;
 
         public SerializationBinder UpgradeBinder { get; set; }
         public bool RecordingInput { get { return (ActiveDebugReplay == null && inputWriter != null); } }
@@ -67,9 +69,10 @@ namespace RogueEssence
             CurSettings = new Settings();
         }
 
-        public void SetErrorListener(LogAdded errorAdded)
+        public void SetErrorListener(LogAdded errorAdded, ErrorTrace errorTrace)
         {
             errorAddedEvent = errorAdded;
+            errorTraceEvent = errorTrace;
         }
 
         public void Unload()
@@ -197,8 +200,9 @@ namespace RogueEssence
                         innerException = innerException.InnerException;
                         depth++;
                     }
-                    errorMsg.Append("\nCoroutine Trace:\n");
-                    errorMsg.Append(CoroutineManager.Instance.DumpCoroutines());
+
+                    if (errorTraceEvent != null)
+                        errorMsg.Append(errorTraceEvent());
 
                     Console.WriteLine(errorMsg);
 #if DEBUG
