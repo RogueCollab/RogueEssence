@@ -378,6 +378,9 @@ namespace RogueEssence.Dev.ViewModels
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
+                return;
+
             switch (EntMode)
             {
                 case EntEditMode.PlaceEntity:
