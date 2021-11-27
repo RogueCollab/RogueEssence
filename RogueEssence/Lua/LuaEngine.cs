@@ -466,27 +466,6 @@ namespace RogueEssence.Script
             }
         }
 
-        /// <summary>
-        /// Define some globals for commonly used types from the project
-        /// </summary>
-        private void DefineDotNetTypes()
-        {
-            //!REMOVEME: Probably not needed anymore, beyond just being convenient!
-            DiagManager.Instance.LogInfo("[SE]:Force-exposing dotnet types..");
-            RunString(@"
-            FrameType   = luanet.import_type('RogueEssence.Content.FrameType')
-            DrawLayer   = luanet.import_type('RogueEssence.Content.DrawLayer')
-            MonsterID       = luanet.import_type('RogueEssence.Dungeon.MonsterID')
-            Gender      = luanet.import_type('RogueEssence.Data.Gender')
-            Direction   = luanet.import_type('RogueElements.Dir8')
-            GameTime    = luanet.import_type('Microsoft.Xna.Framework.GameTime')
-            Color       = luanet.import_type('Microsoft.Xna.Framework.Color')
-            ActivityType = luanet.import_type('RogueEssence.Network.ActivityType')
-            TimeSpan    = luanet.import_type('System.TimeSpan')
-            ");
-
-        }
-
 
         /// <summary>
         /// Set lua package paths to the ones in the game's files.
@@ -544,9 +523,6 @@ namespace RogueEssence.Script
 
             //Add the list of available Callbacknames
             FillServiceEventsTable();
-
-            //Add Dotnet types
-            DefineDotNetTypes();
 
             RunString("require 'CLRPackage'");
 
@@ -821,6 +797,27 @@ namespace RogueEssence.Script
             else
                 DiagManager.Instance.LogInfo("LuaEngine.SaveData(): Script var saving failed!");
             save.ActiveTeam.SaveLua();
+        }
+
+
+        /// <summary>
+        /// Creates a deep-copy conversion of the input lua table to a dictionary of objects.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        public Dictionary<object, object> LuaTableToDict(LuaTable table)
+        {
+            Dictionary<object, object> dict = LuaState.GetTableDict(table);
+            foreach (object key in dict.Keys)
+            {
+                object val = dict[key];
+                if (val is LuaTable)
+                {
+                    Dictionary<object, object> subDict = LuaTableToDict(val as LuaTable);
+                    dict[key] = subDict;
+                }
+            }
+            return dict;
         }
 
         /// <summary>
@@ -1435,35 +1432,45 @@ namespace RogueEssence.Script
                 return Activator.CreateInstance(filled_type);
         }
 
-        //public dynamic LuaCast(object val, object t)
-        //{
-        //    if (t.GetType().IsEquivalentTo(typeof(NLua.ProxyType)))
-        //    {
-        //        Type orig = val.GetType();
-        //        var castedorig = Convert.ChangeType(val, orig);
-        //        Type destTy = ((NLua.ProxyType)t).UnderlyingSystemType;
-        //        var result = Convert.ChangeType(castedorig, destTy);
-        //        return result;
-        //    }
-        //    else
-        //    {
-        //        return Convert.ChangeType((object)val, t.GetType());
-        //    }
-        //}
+        public dynamic LuaCast(object val, object t)
+        {
+            Type destTy;
+            if (t.GetType().IsEquivalentTo(typeof(ProxyType)))
+            {
+                //Type orig = val.GetType();
+                //var castedorig = Convert.ChangeType(val, orig);
+                destTy = ((ProxyType)t).UnderlyingSystemType;
+            }
+            else if (t.GetType().IsEquivalentTo(typeof(Type)))
+                destTy = (Type)t;
+            else
+                destTy = t.GetType();
+            
+            if (destTy.IsEnum)
+                return Enum.ToObject(destTy, val);
+            else
+                return Convert.ChangeType(val, destTy);
+        }
 
-        //public Type TypeOf(object v)
-        //{
-        //    if (v.GetType().IsEquivalentTo(typeof(NLua.ProxyType)))
-        //    {
-        //        return ((ProxyType)v).UnderlyingSystemType;
-        //    }
-        //    else if (v.GetType() == typeof(NLua.ProxyType))
-        //    {
-        //        return ((ProxyType)v).UnderlyingSystemType;
-        //    }
-        //    else
-        //        return v.GetType();
-        //}
+        public dynamic EnumToNumeric(object val)
+        {
+            Type underlying = Enum.GetUnderlyingType(val.GetType());
+            return Convert.ChangeType(val, underlying);
+        }
+
+        public Type TypeOf(object v)
+        {
+            if (v.GetType().IsEquivalentTo(typeof(ProxyType)))
+            {
+                return ((ProxyType)v).UnderlyingSystemType;
+            }
+            else if (v.GetType() == typeof(ProxyType))
+            {
+                return ((ProxyType)v).UnderlyingSystemType;
+            }
+            else
+                return v.GetType();
+        }
 
         public string DumpStack()
         {

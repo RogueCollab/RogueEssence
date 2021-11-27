@@ -172,6 +172,13 @@ namespace RogueEssence.Script
             ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader, leaderChar.MapLoc, leaderChar.CharDir, "PLAYER"));
         }
 
+
+        public void SetPlayer(CharData charData)
+        {
+            GroundChar leaderChar = GroundScene.Instance.FocusedCharacter;
+            ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(charData, leaderChar.MapLoc, leaderChar.CharDir, "PLAYER"));
+        }
+
         /// <summary>
         /// Make the specified spawner run its spawn method.
         /// </summary>
@@ -201,7 +208,7 @@ namespace RogueEssence.Script
         /// <param name="spawnername"></param>
         /// <param name="spawnChar"></param>
         /// <returns></returns>
-        public void SpawnerSetSpawn(string spawnername, Character spawnChar)
+        public void SpawnerSetSpawn(string spawnername, CharData spawnChar)
         {
             try
             {

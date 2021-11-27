@@ -215,7 +215,7 @@ namespace RogueEssence.Script
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
-            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Players)
+            foreach (Character ent in DataManager.Instance.Save.ActiveTeam.Players)
                 addfn.Call(tbl, ent);
             return tbl;
         }
