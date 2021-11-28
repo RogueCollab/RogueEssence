@@ -90,7 +90,8 @@ namespace RogueEssence.Dungeon
 
         public List<BattleEvent> ActionEvents;
 
-        public string ScriptVars;
+        [JsonConverter(typeof(Dev.ScriptVarsConverter))]
+        public Script.LuaTableContainer ScriptVars;
         [NonSerialized]
         public LuaTable LuaDataTable;
 
@@ -204,11 +205,7 @@ namespace RogueEssence.Dungeon
 
         public void SaveLua()
         {
-            string serialized = Script.LuaEngine.Instance.SerializeLuaTable(LuaDataTable);
-            if (serialized != null)
-                ScriptVars = serialized;
-            else
-                DiagManager.Instance.LogInfo("CharData.OnSerializing(): Couldn't serialize lua data table!!");
+            ScriptVars = Script.LuaEngine.Instance.LuaTableToDict(LuaDataTable);
         }
 
         public void LoadLua()
@@ -219,7 +216,7 @@ namespace RogueEssence.Dungeon
                 return;
             }
 
-            LuaDataTable = Script.LuaEngine.Instance.DeserializedLuaTable(ScriptVars);
+            LuaDataTable = Script.LuaEngine.Instance.DictToLuaTable(ScriptVars);
             if (LuaDataTable == null)
             {
                 //Make sure thers is at least a table in the data table when done deserializing.

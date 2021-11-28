@@ -10,6 +10,7 @@ using AABB;
 using System.Linq;
 using RogueEssence.Script;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Ground
 {
@@ -21,7 +22,6 @@ namespace RogueEssence.Ground
 
         private GroundWall[][] obstacles;
 
-        [OptionalField]
         protected IRandom rand;
         public IRandom Rand { get { return rand; } }
 

@@ -19,7 +19,7 @@ namespace RogueEssence.Data
 
     public static class Serializer
     {
-        private static readonly JsonSerializerSettings Settings = new()
+        public static readonly JsonSerializerSettings Settings = new()
         {
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,

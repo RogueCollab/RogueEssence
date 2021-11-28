@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using NLua;
 using System.IO;
+using System.Collections;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -754,19 +755,8 @@ namespace RogueEssence.Script
             }
             else
             {
-                DiagManager.Instance.LogInfo("============ Deserialized SV : ============");
-                DiagManager.Instance.LogInfo(loaded.ScriptVars);
-                DiagManager.Instance.LogInfo("===========================================");
-
-                //Deserialize the script variables and put them in the global
-                RunString(String.Format(@"local ok,res = Serpent.load('{0}')
-                    if ok then
-                        {1} = res
-                    else
-                        PrintInfo('LuaEngine.LoadSavedData(): Script var loading failed! Details : ' .. res)
-                    end
-                    ",
-                    loaded.ScriptVars, SCRIPT_VARS_NAME));
+                LuaTable tbl = DictToLuaTable(loaded.ScriptVars);
+                LuaState[SCRIPT_VARS_NAME] = tbl;
             }
             if (loaded != null)
             {
@@ -786,16 +776,8 @@ namespace RogueEssence.Script
 
             //Save script engine stuff here!
             DiagManager.Instance.LogInfo("LuaEngine.SaveData()..");
-            object[] result = RunString(String.Format("return Serpent.dump({0})", SCRIPT_VARS_NAME));
-            if (result != null && result[0] != null)
-            {
-                save.ScriptVars = result[0] as string;
-                DiagManager.Instance.LogInfo("============ Serialized SV : ============");
-                DiagManager.Instance.LogInfo(save.ScriptVars);
-                DiagManager.Instance.LogInfo("=========================================");
-            }
-            else
-                DiagManager.Instance.LogInfo("LuaEngine.SaveData(): Script var saving failed!");
+            LuaTable tbl = LuaState.GetTable(SCRIPT_VARS_NAME);
+            save.ScriptVars = LuaTableToDict(tbl);
             save.ActiveTeam.SaveLua();
         }
 
@@ -805,7 +787,7 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public Dictionary<object, object> LuaTableToDict(LuaTable table)
+        public LuaTableContainer LuaTableToDict(LuaTable table)
         {
             Dictionary<object, object> dict = LuaState.GetTableDict(table);
             foreach (object key in dict.Keys)
@@ -813,11 +795,28 @@ namespace RogueEssence.Script
                 object val = dict[key];
                 if (val is LuaTable)
                 {
-                    Dictionary<object, object> subDict = LuaTableToDict(val as LuaTable);
+                    LuaTableContainer subDict = LuaTableToDict(val as LuaTable);
                     dict[key] = subDict;
                 }
             }
-            return dict;
+            return new LuaTableContainer(dict);
+        }
+
+        public LuaTable DictToLuaTable(LuaTableContainer dict)
+        {
+            if (dict == null)
+                return null;
+
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, itm) tbl[key] = itm end").First() as LuaFunction;
+            foreach (object key in dict.Table.Keys)
+            {
+                object val = dict.Table[key];
+                if (val is LuaTableContainer)
+                    val = DictToLuaTable((LuaTableContainer)val);
+                addfn.Call(tbl, key, val);
+            }
+            return tbl;
         }
 
         /// <summary>
@@ -1704,6 +1703,14 @@ namespace RogueEssence.Script
                 m_nextUpdate = gametime.TotalGameTime + TimeSpan.FromMilliseconds(20); //Schedule next update
             }
         }
+    }
+
+    public class LuaTableContainer
+    {
+        public Dictionary<object, object> Table;
+
+        public LuaTableContainer() { Table = new Dictionary<object, object>(); }
+        public LuaTableContainer(Dictionary<object, object> table) { Table = table; }
     }
 
 }

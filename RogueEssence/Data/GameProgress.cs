@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using RogueEssence.Content;
 using RogueEssence.Script;
 using RogueEssence.Menu;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
@@ -93,7 +94,7 @@ namespace RogueEssence.Data
         }
 
         public ExplorerTeam ActiveTeam;
-        public IRandom Rand;
+        public ReRandom Rand;
 
         public UnlockState[] Dex;
         public bool[] RogueStarters;
@@ -132,7 +133,8 @@ namespace RogueEssence.Data
 
 
         //Added this for storing the serialized ScriptVar table
-        public string ScriptVars;
+        [JsonConverter(typeof(Dev.ScriptVarsConverter))]
+        public LuaTableContainer ScriptVars;
 
         public GameProgress()
         {
