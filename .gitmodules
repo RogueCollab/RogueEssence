@@ -3,4 +3,4 @@
 	url = https://github.com/audinowho/RogueElements.git
 [submodule "FNA"]
 	path = FNA
-	url = https://github.com/theCapypara/FNA.git
+	url = https://github.com/FNA-XNA/FNA
