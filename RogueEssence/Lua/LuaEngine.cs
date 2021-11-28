@@ -1705,6 +1705,7 @@ namespace RogueEssence.Script
         }
     }
 
+    [Serializable]
     public class LuaTableContainer
     {
         public Dictionary<object, object> Table;
