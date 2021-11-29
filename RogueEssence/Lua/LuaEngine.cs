@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using NLua;
 using System.IO;
 using System.Collections;
+using Newtonsoft.Json;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -790,16 +791,20 @@ namespace RogueEssence.Script
         public LuaTableContainer LuaTableToDict(LuaTable table)
         {
             Dictionary<object, object> dict = LuaState.GetTableDict(table);
+            List<object[]> tbl_list = new List<object[]>();
             foreach (object key in dict.Keys)
             {
                 object val = dict[key];
                 if (val is LuaTable)
                 {
                     LuaTableContainer subDict = LuaTableToDict(val as LuaTable);
-                    dict[key] = subDict;
+                    tbl_list.Add(new object[] { key, subDict });
                 }
+                else
+                    tbl_list.Add(new object[] { key, val });
+
             }
-            return new LuaTableContainer(dict);
+            return new LuaTableContainer(tbl_list);
         }
 
         public LuaTable DictToLuaTable(LuaTableContainer dict)
@@ -809,9 +814,10 @@ namespace RogueEssence.Script
 
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, itm) tbl[key] = itm end").First() as LuaFunction;
-            foreach (object key in dict.Table.Keys)
+            foreach (object[] entry in dict.Table)
             {
-                object val = dict.Table[key];
+                object key = entry[0];
+                object val = entry[1];
                 if (val is LuaTableContainer)
                     val = DictToLuaTable((LuaTableContainer)val);
                 addfn.Call(tbl, key, val);
@@ -1708,10 +1714,15 @@ namespace RogueEssence.Script
     [Serializable]
     public class LuaTableContainer
     {
-        public Dictionary<object, object> Table;
+        /// <summary>
+        /// We're using a List<object[]> instead of a dictionary because some quirk in json serialization causes integer keys to be written as strings.
+        /// this data type is the next best thing in terms of internal storage
+        /// </summary>
+        [JsonConverter(typeof(Dev.LuaTableContainerDictConverter))]
+        public List<object[]> Table;
 
-        public LuaTableContainer() { Table = new Dictionary<object, object>(); }
-        public LuaTableContainer(Dictionary<object, object> table) { Table = table; }
+        public LuaTableContainer() { Table = new List<object[]>(); }
+        public LuaTableContainer(List<object[]> table) { Table = table; }
     }
 
 }
