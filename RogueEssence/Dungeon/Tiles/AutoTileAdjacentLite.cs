@@ -117,10 +117,10 @@ namespace RogueEssence.Dungeon
                         textureLooseBlock(looseArray, mainArray, rectStart, rectStart.X + xx, rectStart.Y + yy, queryMethod);
                 }
             }
-
-            for (int xx = rectStart.X; xx < rectSize.X; xx++)
+            
+            for (int xx = rectStart.X; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int yy = rectStart.Y; yy < rectSize.Y; yy++)
+                for (int yy = rectStart.Y; yy < rectStart.Y + rectSize.Y; yy++)
                 {
                     int neighborCode = mainArray[xx + 1 - rectStart.X][yy + 1 - rectStart.Y];
                     if (looseArray[xx - rectStart.X][yy - rectStart.Y] != -1)

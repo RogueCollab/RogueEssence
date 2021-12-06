@@ -126,9 +126,9 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            for (int xx = rectStart.X; xx < rectSize.X; xx++)
+            for (int xx = rectStart.X; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int yy = rectStart.Y; yy < rectSize.Y; yy++)
+                for (int yy = rectStart.Y; yy < rectStart.Y + rectSize.Y; yy++)
                 {
                     int neighborCode = mainArray[xx - rectStart.X][yy - rectStart.Y];
                     if (neighborCode != -1)

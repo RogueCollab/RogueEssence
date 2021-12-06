@@ -66,10 +66,10 @@ namespace RogueEssence.Dungeon
                 for (int jj = 0; jj < rectSize.Y; jj++)
                     pass1Array[ii][jj] = -1;
             }
-
-            for (int xx = rectStart.X; xx < rectSize.X; xx++)
+            
+            for (int xx = rectStart.X; xx < rectStart.X + rectSize.X; xx++)
             {
-                for (int yy = rectStart.Y; yy < rectSize.Y; yy++)
+                for (int yy = rectStart.Y; yy < rectStart.Y + rectSize.Y; yy++)
                 {
                     int neighborCode = -1;
                     if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(xx, yy)) && presenceMethod(xx, yy))
