@@ -236,6 +236,7 @@ namespace RogueEssence.Dungeon
         //position is not visible
         public bool Unlocatable;
         public bool SeeAllChars;
+        public bool SeeItems;
         public bool SeeWallItems;
 
         //miscellaneous traits
@@ -1399,6 +1400,7 @@ namespace RogueEssence.Dungeon
             Unidentifiable = false;
             Unlocatable = false;
             SeeAllChars = false;
+            SeeItems = false;
             SeeWallItems = false;
 
             TileSight = Map.SightRange.Any;

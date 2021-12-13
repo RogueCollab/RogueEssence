@@ -972,10 +972,21 @@ namespace RogueEssence.Dungeon
                         else
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed &&
-                                !(terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block))
+                            if (!(terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block))
                             {
-                                seeItem = true;
+                                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                                    seeItem = true;
+                                else
+                                {
+                                    foreach (Character member in ActiveTeam.Players)
+                                    {
+                                        if (member.SeeItems)
+                                        {
+                                            seeItem = true;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
@@ -983,7 +994,7 @@ namespace RogueEssence.Dungeon
                                 {
                                     if (member.SeeWallItems)
                                     {
-                                        if (member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
+                                        if (member.SeeItems || member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
                                         {
                                             seeItem = true;
                                             break;
