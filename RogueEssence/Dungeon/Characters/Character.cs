@@ -1480,23 +1480,22 @@ namespace RogueEssence.Dungeon
                 activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
             }
             //check bag items
-            if (!ItemDisabled && MemberTeam is ExplorerTeam)
+            if (!ItemDisabled)
             {
-                ExplorerTeam team = (ExplorerTeam)MemberTeam;
-                for (int ii = 0; ii < team.GetInvCount(); ii++)
+                for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(team.GetInv(ii).ID);
+                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
                     if (itemData.BagEffect)
                     {
-                        if (!activeItems.ContainsKey(team.GetInv(ii).ID))
-                            activeItems.Add(team.GetInv(ii).ID, ii);
+                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                            activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
 
                 foreach (int key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
-                        yield return new PassiveContext(team.GetInv(activeItems[key]), team.GetInv(activeItems[key]).GetData(), defaultPortPriority, this);
+                        yield return new PassiveContext(MemberTeam.GetInv(activeItems[key]), MemberTeam.GetInv(activeItems[key]).GetData(), defaultPortPriority, this);
                 }
             }
             //check intrinsic
@@ -1567,23 +1566,26 @@ namespace RogueEssence.Dungeon
             }
 
             // check bag items
-            if (!ItemDisabled && MemberTeam is ExplorerTeam)
+            if (!ItemDisabled)
             {
-                ExplorerTeam team = (ExplorerTeam)MemberTeam;
-                for (int ii = 0; ii < team.GetInvCount(); ii++)
+                for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(team.GetInv(ii).ID);
+                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
                     if (itemData.BagEffect && itemData.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist4() && (DungeonScene.Instance.GetMatchup(character, this) & itemData.ProximityEvent.TargetAlignments) != Alignment.None)
                     {
-                        if (!activeItems.ContainsKey(team.GetInv(ii).ID))
-                            activeItems.Add(team.GetInv(ii).ID, ii);
+                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                            activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
 
                 foreach (int key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
-                        yield return new PassiveContext(team.GetInv(activeItems[key]), team.GetInv(activeItems[key]).GetData(), portPriority, this);
+                    {
+                        InvItem invItem = MemberTeam.GetInv(activeItems[key]);
+                        ItemData itemData = DataManager.Instance.GetItem(invItem.ID);
+                        yield return new PassiveContext(invItem, itemData.ProximityEvent, portPriority, this);
+                    }
                 }
             }
 
