@@ -678,6 +678,22 @@ namespace RogueEssence.Script
         }
 
 
+        public bool CanSwapMenu(LuaTable goods)
+        {
+            List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+            foreach (object key in goods.Keys)
+            {
+                LuaTable entry = goods[key] as LuaTable;
+                int item = (int)((Int64)entry["Item"]);
+                List<int> reqs = new List<int>();
+                LuaTable luaReqs = entry["ReqItem"] as LuaTable;
+                foreach (object tradeIn in luaReqs.Values)
+                    reqs.Add((int)((Int64)tradeIn));
+                goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+            }
+            return SwapShopMenu.CanView(goodsList);
+        }
+
         public void SwapMenu(LuaTable goods, LuaTable prices)
         {
             try

@@ -22,7 +22,6 @@ namespace RogueEssence.Menu
         public int[] PriceList;
         public List<int> AllowedGoods;
         bool[] itemPresence;
-        bool[] tradePresence;
         int presenceCount;
 
         public SwapShopMenu(List<Tuple<int, int[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot)
@@ -33,20 +32,19 @@ namespace RogueEssence.Menu
             AllowedGoods = new List<int>();
 
             itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
-            tradePresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
             for (int ii = 0; ii < itemPresence.Length; ii++)
             {
                 if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
-                    updatePresence(ii);
+                    updatePresence(itemPresence, ref presenceCount, ii);
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
-                updatePresence(DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
+                updatePresence(itemPresence, ref presenceCount, DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 if (activeChar.EquippedItem.ID > -1)
-                    updatePresence(activeChar.EquippedItem.ID);
+                    updatePresence(itemPresence, ref presenceCount, activeChar.EquippedItem.ID);
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
@@ -104,7 +102,54 @@ namespace RogueEssence.Menu
 
         }
 
-        private void updatePresence(int index)
+        public static bool CanView(List<Tuple<int, int[]>> goods)
+        {
+            bool[] itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            int presenceCount = 0;
+
+            for (int ii = 0; ii < itemPresence.Length; ii++)
+            {
+                if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                    updatePresence(itemPresence, ref presenceCount, ii);
+            }
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+                updatePresence(itemPresence, ref presenceCount, DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
+
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                if (activeChar.EquippedItem.ID > -1)
+                    updatePresence(itemPresence, ref presenceCount, activeChar.EquippedItem.ID);
+            }
+
+            for (int ii = 0; ii < goods.Count; ii++)
+            {
+                bool canView = false;
+                int[] reqs = goods[ii].Item2;
+                for (int jj = 0; jj < reqs.Length; jj++)
+                {
+                    if (reqs[jj] > -1)
+                    {
+                        if (!itemPresence[reqs[jj]])
+                        {
+
+                        }
+                        else
+                            canView = true;
+                    }
+                    else
+                    {
+                        canView = true;
+                    }
+                }
+
+                if (canView)
+                    return true;
+            }
+            return false;
+        }
+
+        private static void updatePresence(bool[] itemPresence, ref int presenceCount, int index)
         {
             if (!itemPresence[index])
             {
@@ -112,10 +157,7 @@ namespace RogueEssence.Menu
                 ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
 
                 if (itemEntry.ContainsState<MaterialState>())
-                {
                     presenceCount++;
-                    tradePresence[index] = true;
-                }
             }
         }
 
