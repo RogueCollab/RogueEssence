@@ -123,7 +123,7 @@ namespace RogueEssence.Menu
                 {
                     GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
-                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(false));
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
@@ -167,7 +167,7 @@ namespace RogueEssence.Menu
                 {
                     GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
-                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(false));
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());

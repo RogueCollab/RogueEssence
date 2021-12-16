@@ -176,6 +176,22 @@ namespace RogueEssence.Ground
             LuaEngine.Instance.OnGroundMapInit(AssetName, this);
         }
 
+        public IEnumerator<YieldInstruction> OnGameLoad()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.GameLoad));
+
+            //Notify script engine?
+        }
+
+        public IEnumerator<YieldInstruction> OnGameSave()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.GameSave));
+
+            //Notify script engine?
+        }
+
 
         /// <summary>
         /// Called by the GroundScene when the map is in "Begin" stage.

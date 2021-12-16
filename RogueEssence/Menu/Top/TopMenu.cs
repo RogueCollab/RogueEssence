@@ -221,7 +221,7 @@ namespace RogueEssence.Menu
                 else
                 {
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
-                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(true));
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());

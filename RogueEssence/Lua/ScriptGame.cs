@@ -14,9 +14,11 @@ namespace RogueEssence.Script
     {
         public IRandom Rand { get { return MathUtils.Rand; } }
 
-        public void GroundSave()
+        public LuaFunction GroundSave;
+
+        public Coroutine _GroundSave()
         {
-            DataManager.Instance.SaveMainGameState();
+            return new Coroutine(GroundScene.Instance.SaveGame());
         }
 
 
@@ -822,6 +824,7 @@ namespace RogueEssence.Script
         /// </summary>
         public override void SetupLuaFunctions(LuaEngine state)
         {
+            GroundSave = state.RunString("return function(_) return coroutine.yield(GAME:_GroundSave()) end").First() as LuaFunction;
             CheckLevelSkills = state.RunString("return function(_,chara, oldLevel) return coroutine.yield(GAME:_CheckLevelSkills(chara, oldLevel)) end").First() as LuaFunction;
             TryLearnSkill = state.RunString("return function(_,chara, skill) return coroutine.yield(GAME:_TryLearnSkill(chara, skill)) end").First() as LuaFunction;
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;

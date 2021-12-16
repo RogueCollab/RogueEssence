@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -149,20 +150,35 @@ namespace RogueEssence.Menu
             choices.Add(new DialogueChoice(Text.FormatKey("MENU_SAVE_AND_CONTINUE"), () =>
             {
                 MenuManager.Instance.ClearMenus();
-                DataManager.Instance.SaveMainGameState();
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_SAVE_COMPLETE")), false);
+                MenuManager.Instance.NextAction = processSave(false);
             }));
             choices.Add(new DialogueChoice(Text.FormatKey("MENU_SAVE_AND_QUIT"), () =>
             {
                 MenuManager.Instance.ClearMenus();
-                DataManager.Instance.SaveMainGameState();
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_SAVE_COMPLETE")), false);
-                MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
-                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+                MenuManager.Instance.NextAction = processSave(true);
             }));
             choices.Add(new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () => { }));
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateMultiQuestion(Text.FormatKey("DLG_WHAT_DO"), false, choices, 0, choices.Count - 1), false);
             
+        }
+
+
+
+        public IEnumerator<YieldInstruction> processSave(bool returnToTitle)
+        {
+            Action exitAction;
+            if (!returnToTitle)
+                exitAction = () => { };
+            else
+                exitAction = exitToTitle;
+            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.SaveGame());
+            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(MonsterID.Invalid, null, new EmoteStyle(0), false, exitAction, -1, false, false, false, Text.FormatKey("DLG_SAVE_COMPLETE")), true);
+        }
+
+        private void exitToTitle()
+        {
+            MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
         }
     }
 }

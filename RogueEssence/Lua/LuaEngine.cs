@@ -83,7 +83,8 @@ namespace RogueEssence.Script
             Enter,          //When the map is just being displayed an the game fades-in
             Exit,          //When the map has finished fading out before transition to the next
             Update,         //When the game script engine ticks
-
+            GameSave,
+            GameLoad,
             Invalid
         }
         //Name for common map callback functions

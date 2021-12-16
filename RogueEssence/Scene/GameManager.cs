@@ -537,7 +537,7 @@ namespace RogueEssence
                     yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
                 }
 
-                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround());
+                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
                 //no fade; the script handles that itself
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
             }
@@ -620,7 +620,7 @@ namespace RogueEssence
 
             GroundScene.Instance.EnterGround(entrypoint);
 
-            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround());
+            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
             //no fade; the script handles that itself
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
         }

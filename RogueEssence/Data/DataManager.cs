@@ -893,7 +893,7 @@ namespace RogueEssence.Data
             }
         }
 
-        public void LogGroundsave()
+        public void LogGroundSave()
         {
             if (replayWriter != null)
             {
