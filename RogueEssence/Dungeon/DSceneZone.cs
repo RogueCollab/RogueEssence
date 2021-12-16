@@ -417,7 +417,7 @@ namespace RogueEssence.Dungeon
                     {
                         result.Success = ActionResult.ResultType.Success;
 
-                        yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.EndSegment((GameProgress.ResultType)action[0]));
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.EndSegment((GameProgress.ResultType)action[0]);
                         break;
                     }
                 case GameAction.ActionType.Tactics:

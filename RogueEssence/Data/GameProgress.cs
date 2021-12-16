@@ -565,6 +565,24 @@ namespace RogueEssence.Data
         }
 
 
+        public void FullRestore()
+        {
+            foreach (Character character in ActiveTeam.EnumerateChars())
+            {
+                character.Dead = false;
+                character.FullRestore();
+            }
+            foreach (Character character in ActiveTeam.Assembly)
+            {
+                character.Dead = false;
+                character.FullRestore();
+            }
+            MidAdventure = false;
+            ClearDungeonItems();
+            //clear rescue status
+            Rescue = null;
+        }
+
         public List<int> MergeDexTo(GameProgress destProgress)
         {
             //monster encounters
@@ -747,20 +765,7 @@ namespace RogueEssence.Data
 
             TotalAdventures++;
 
-            foreach (Character character in ActiveTeam.EnumerateChars())
-            {
-                character.Dead = false;
-                character.FullRestore();
-            }
-            foreach (Character character in ActiveTeam.Assembly)
-            {
-                character.Dead = false;
-                character.FullRestore();
-            }
-            MidAdventure = false;
-            ClearDungeonItems();
-            //clear rescue status
-            Rescue = null;
+            FullRestore();
 
             //merge back the team if the dungeon was level-limited
             yield return CoroutineManager.Instance.StartCoroutine(RestoreLevel());

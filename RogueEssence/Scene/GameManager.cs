@@ -856,6 +856,7 @@ namespace RogueEssence
                 NewGamePlus(seed);
             else
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
+            DataManager.Instance.Save.FullRestore();
         }
 
         public IEnumerator<YieldInstruction> DebugWarp(ZoneLoc dest, ulong seed)
