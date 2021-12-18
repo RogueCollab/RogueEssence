@@ -67,7 +67,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuOpen_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -111,7 +111,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         public async Task<bool> mnuSaveAs_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = mapDir;
 
@@ -163,7 +163,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuImportFromPng_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
