@@ -167,9 +167,9 @@ namespace RogueEssence.Dev.ViewModels
         {
             checkSprites = sprites;
             this.parent = parent;
+            OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
             if (sprites)
             {
-                OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
                 foreach (CharSheetOp op in DevGraphicsManager.CharSheetOps)
                     OpList.Add(new SpeciesOpContainer(op, () => applyOpToCharSheet(op)));
             }
@@ -550,7 +550,7 @@ namespace RogueEssence.Dev.ViewModels
             else
             {
                 PortraitSheet sheet = GraphicsManager.GetPortrait(currentForm);
-                PortraitSheet.Export(sheet, currentPath);
+                PortraitSheet.Export(sheet, currentPath, singleSheet);
             }
 
 
