@@ -652,6 +652,7 @@ namespace RogueEssence.Script
             LuaState["_GAME"] = GameManager.Instance;
             LuaState["_DATA"] = DataManager.Instance;
             LuaState["_MENU"] = MenuManager.Instance;
+            LuaState["_DIAG"] = DiagManager.Instance;
 
             DiagManager.Instance.LogInfo("[SE]:Exposing script interface..");
             //Expose script interface  objects

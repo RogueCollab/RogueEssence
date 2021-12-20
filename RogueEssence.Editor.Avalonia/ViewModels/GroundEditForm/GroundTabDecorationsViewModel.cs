@@ -245,7 +245,7 @@ namespace RogueEssence.Dev.ViewModels
                 setEntity(ent);
             }
             else
-                setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1), Loc.Zero));
+                setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1, Dir8.Down), Loc.Zero));
         }
 
         private void setEntity(GroundAnim ent)

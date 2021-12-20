@@ -54,22 +54,26 @@ namespace RogueEssence.Ground
             SetTriggerType(EEntityTriggerTypes.Action);
         }
 
-        public GroundObject(IPlaceableAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
+        public GroundObject(IPlaceableAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, EEntityTriggerTypes triggerty, string entname)
         {
             ObjectAnim = anim;
             CurrentAnim = new ObjAnimData();
             Collider = collider;
             DrawOffset = drawOffset;
+            Direction = dir;
             SetTriggerType(triggerty);
             EntName = entname;
         }
 
         public GroundObject(ObjAnimData anim, Rect collider, EEntityTriggerTypes triggerty, string entname)
-            :this(anim, collider, new Loc(), true, triggerty, entname)
+            :this(anim, Dir8.Down, collider, new Loc(), triggerty, entname)
         {}
 
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool contact, string entname)
-            : this(anim, collider, drawOffset, true, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
+            : this(anim, Dir8.Down, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
+        { }
+        public GroundObject(ObjAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, bool contact, string entname)
+            : this(anim, dir, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
         { }
         public GroundObject(ObjAnimData anim, Rect collider, bool contact, string entname)
             : this(anim, collider, new Loc(), contact, entname)
@@ -141,14 +145,14 @@ namespace RogueEssence.Ground
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetDirSheet(CurrentAnim.AssetType, CurrentAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Dir8.None), Color.White * ((float)CurrentAnim.Alpha / 255), CurrentAnim.AnimFlip);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Direction), Color.White * ((float)CurrentAnim.Alpha / 255), CurrentAnim.AnimFlip);
             }
             else if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Direction), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
             }
         }
 
@@ -193,6 +197,17 @@ namespace RogueEssence.Ground
         internal new void OnDeserializedMethod(StreamingContext context)
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+
+            //TODO: Created v0.5.3, delete on v0.6.1
+            if (ObjectAnim != null)
+            {
+                Dir8 dir = ObjectAnim.AnimDir;
+                if (dir != Dir8.None)
+                {
+                    Direction = dir;
+                    ObjectAnim.AnimDir = Dir8.None;
+                }
+            }
         }
     }
 }

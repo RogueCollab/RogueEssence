@@ -46,7 +46,7 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
       <TextBlock Margin="4,2" Text="Direction:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-      <ComboBox Margin="4,2" Grid.Column="1" Items="{Binding Directions}" SelectedIndex="{Binding ChosenDirection}" IsEnabled="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=1|2|3}"/>
+      <ComboBox Margin="4,2" Grid.Column="1" Items="{Binding Directions}" SelectedIndex="{Binding ChosenDirection}" IsEnabled="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=0|1|2|3}"/>
     </Grid>
     <Grid Grid.Row="3" IsVisible="True">
       <Grid.ColumnDefinitions>

@@ -43,7 +43,7 @@ namespace RogueEssence.Content
         public ItemAnimData(string animIndex, int frameTime, int startFrame, int endFrame)
             : this(animIndex, frameTime, startFrame, endFrame, 255) { }
         public ItemAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
-            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.None) { }
         public ItemAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public ItemAnimData(ItemAnimData other)
@@ -77,7 +77,7 @@ namespace RogueEssence.Content
         public ObjAnimData(string animIndex, int frameTime, int startFrame, int endFrame)
             : this(animIndex, frameTime, startFrame, endFrame, 255) { }
         public ObjAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha)
-            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.Down) { }
+            : this(animIndex, frameTime, startFrame, endFrame, alpha, Dir8.None) { }
         public ObjAnimData(string animIndex, int frameTime, int startFrame, int endFrame, byte alpha, Dir8 dir)
             : base(animIndex, frameTime, startFrame, endFrame, alpha, dir) { }
         public ObjAnimData(ObjAnimData other)
