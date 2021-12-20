@@ -584,6 +584,11 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
         }
 
+        public void GivePlayerItem(InvItem item)
+        {
+            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+        }
+
         public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
         {
             for (int i = 0; i < count; ++i)
@@ -627,6 +632,11 @@ namespace RogueEssence.Script
         public int GetPlayerStorageItemCount(int id)
         {
             return DataManager.Instance.Save.ActiveTeam.Storage[id];
+        }
+
+        public void GivePlayerStorageItem(InvItem item)
+        {
+            DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
         }
 
         public void GivePlayerStorageItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
