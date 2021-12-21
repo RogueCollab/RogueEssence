@@ -43,6 +43,9 @@ namespace RogueEssence.Dev
 
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<bool> BlockInProgress;
+        public GroundAnim DecorationInProgress;
+        public GroundEntity EntityInProgress;
+
         public bool ShowWalls;
         public bool ShowObjectBoxes;
         public bool ShowEntityBoxes;
@@ -214,6 +217,19 @@ namespace RogueEssence.Dev
                     }
                 }
 
+                if (DecorationInProgress != null)
+                {
+                    DecorationInProgress.Draw(spriteBatch, ViewRect.Start);
+                    if (ShowObjectBoxes)
+                    {
+                        Rect bounds = DecorationInProgress.GetBounds();
+                        GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                        dbg.DrawColor = new Color(255, 255, 255, 92);
+                        dbg.LineThickness = 1.0f;
+                        dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
+                    }
+                }
+
                 if (ShowEntityBoxes)
                 {
                     //Draw Entity bounds
@@ -242,6 +258,19 @@ namespace RogueEssence.Dev
                             dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
                         }
                         //And don't draw bounds of entities that have a graphics representation
+                    }
+                }
+
+                if (EntityInProgress != null)
+                {
+                    GroundEntity entity = EntityInProgress;
+                    entity.Draw(spriteBatch, ViewRect.Start);
+                    if (ShowEntityBoxes)
+                    {
+                        GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                        dbg.DrawColor = new Color(255, 255, 255, 92);
+                        dbg.LineThickness = 1.0f;
+                        dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
                     }
                 }
             }

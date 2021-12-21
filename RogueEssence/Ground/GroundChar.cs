@@ -83,7 +83,7 @@ namespace RogueEssence.Ground
             this.Map.Update(this, orig);
         }
 
-        public int LocHeight { get { return currentCharAction.LocHeight; } }
+        public override int LocHeight { get { return currentCharAction.LocHeight; } }
 
         //determining direction
         public Dir8 CharDir
@@ -323,7 +323,7 @@ namespace RogueEssence.Ground
             GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X, loc.Y - 2, 1, 5), null, color);
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        public override void DrawDebug(SpriteBatch spriteBatch, Loc offset)
         {
             if (EntEnabled)
             {
@@ -350,7 +350,7 @@ namespace RogueEssence.Ground
 
             drawCross(spriteBatch, center - offset, centerColor);
         }
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
             currentCharAction.Draw(spriteBatch, offset, sheet);
@@ -372,12 +372,12 @@ namespace RogueEssence.Ground
             currentCharAction.GetCurrentSprite(sheet, out currentAnim, out currentTime, out currentFrame);
         }
 
-        public Loc GetDrawLoc(Loc offset)
+        public override Loc GetDrawLoc(Loc offset)
         {
             return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm));
         }
 
-        public Loc GetDrawSize()
+        public override Loc GetDrawSize()
         {
             return new Loc(GraphicsManager.GetChara(CurrentForm).TileWidth, GraphicsManager.GetChara(CurrentForm).TileHeight);
         }

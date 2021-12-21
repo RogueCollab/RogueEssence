@@ -209,10 +209,21 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                            PlaceEntity(groundCoords);
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                            RemoveEntityAt(groundCoords);
+                        if (GroundEditScene.Instance.DecorationInProgress == null)
+                        {
+                            if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                                PendEntity(groundCoords);
+                            else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
+                                RemoveEntityAt(groundCoords);
+                        }
+                        else
+                        {
+                            GroundEditScene.Instance.DecorationInProgress.MapLoc = groundCoords;
+                            if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                                PlaceEntity();
+                            else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                                GroundEditScene.Instance.DecorationInProgress = null;
+                        }
                         break;
                     }
                 case EntEditMode.SelectEntity:
@@ -259,10 +270,15 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
         }
 
-        public void PlaceEntity(Loc position)
+        public void PendEntity(Loc position)
         {
             GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), position);
-
+            GroundEditScene.Instance.DecorationInProgress = placeableEntity;
+        }
+        public void PlaceEntity()
+        {
+            GroundAnim placeableEntity = GroundEditScene.Instance.DecorationInProgress;
+            GroundEditScene.Instance.DecorationInProgress = null;
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
 
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);

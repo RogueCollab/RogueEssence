@@ -89,10 +89,21 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                            PlaceEntity(groundCoords);
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                            RemoveEntityAt(groundCoords);
+                        if (GroundEditScene.Instance.EntityInProgress == null)
+                        {
+                            if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                                PendEntity(groundCoords);
+                            else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
+                                RemoveEntityAt(groundCoords);
+                        }
+                        else
+                        {
+                            GroundEditScene.Instance.EntityInProgress.Position = groundCoords;
+                            if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                                PlaceEntity();
+                            else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                                GroundEditScene.Instance.EntityInProgress = null;
+                        }
                         break;
                     }
                 case EntEditMode.SelectEntity:
@@ -145,15 +156,17 @@ namespace RogueEssence.Dev.ViewModels
                 ZoneManager.Instance.CurrentGround.RemoveSpawner((GroundSpawner)ent);
         }
 
-        public void PlaceEntity(Loc position)
+        public void PendEntity(Loc position)
         {
             GroundEntity placeableEntity = EntBrowser.CreateEntity();
-
-            if (placeableEntity == null)
-                return;
-
             placeableEntity.Position = position;
+            GroundEditScene.Instance.EntityInProgress = placeableEntity;
+        }
 
+        public void PlaceEntity()
+        {
+            GroundEntity placeableEntity = GroundEditScene.Instance.EntityInProgress;
+            GroundEditScene.Instance.EntityInProgress = null;
 
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
             placeableEntity.ReloadEvents();

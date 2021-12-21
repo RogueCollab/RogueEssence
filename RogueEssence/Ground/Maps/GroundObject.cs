@@ -38,7 +38,6 @@ namespace RogueEssence.Ground
                 }
             }
         }
-        public int LocHeight { get { return 0; } }
         public Loc DrawOffset;
 
         public override Color DevEntColoring => Color.Chartreuse;
@@ -130,7 +129,7 @@ namespace RogueEssence.Ground
             }
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        public override void DrawDebug(SpriteBatch spriteBatch, Loc offset)
         {
             if (EntEnabled)
             {
@@ -138,7 +137,7 @@ namespace RogueEssence.Ground
                 blank.Draw(spriteBatch, new Rectangle(Collider.X - offset.X, Collider.Y - offset.Y, Collider.Width, Collider.Height), null, Color.Cyan * 0.7f);
             }
         }
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             if (CurrentAnim.AnimIndex != "")
             {
@@ -157,12 +156,12 @@ namespace RogueEssence.Ground
         }
 
 
-        public Loc GetDrawLoc(Loc offset)
+        public override Loc GetDrawLoc(Loc offset)
         {
             return MapLoc - offset - DrawOffset;
         }
 
-        public Loc GetDrawSize()
+        public override Loc GetDrawSize()
         {
             DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
 

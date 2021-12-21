@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using RogueEssence.Dungeon;
+using RogueEssence.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Ground
 {
@@ -12,7 +14,7 @@ namespace RogueEssence.Ground
     /// Parent class meant to be used to access things common to all ground entities.
     /// </summary>
     [Serializable]
-    public abstract class GroundEntity
+    public abstract class GroundEntity : IDrawableSprite
     {
 
         /// <summary>
@@ -54,6 +56,8 @@ namespace RogueEssence.Ground
         public virtual int     Width       { get { return Bounds.Width; } }
         public virtual int     X           { get { return Bounds.X; } }
         public virtual int     Y           { get { return Bounds.Y; } }
+
+        public virtual int LocHeight { get { return 0; } }
 
         public virtual void SetMapLoc(Loc loc)
         {
@@ -284,6 +288,12 @@ namespace RogueEssence.Ground
             //default does nothing
             yield break;
         }
+
+        public virtual void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
+        public virtual Loc GetDrawLoc(Loc offset) { return Bounds.Start; }
+        public virtual Loc GetDrawSize() { return Bounds.Size; }
+
 
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
