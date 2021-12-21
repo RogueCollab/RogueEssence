@@ -80,6 +80,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -126,6 +127,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.BaseForm.Species = value;
+                SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
                 speciesChanged();
             }
@@ -145,6 +147,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (value > -1)
                 {
                     SelectedEntity.BaseForm.Form = value;
+                    SelectedEntity.RestoreForm();
                     SelectedEntity.HP = SelectedEntity.MaxHP;
                 }
                 this.RaisePropertyChanged();
@@ -162,6 +165,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.BaseForm.Skin = value;
+                SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
             }
         }
@@ -177,6 +181,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.BaseForm.Gender = (Gender)value;
+                SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
             }
         }
@@ -353,6 +358,22 @@ namespace RogueEssence.Dev.ViewModels
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                MonsterTeam team = new MonsterTeam();
+                Character clone = SelectedEntity.Clone(team);
+                team.Players.Add(clone);
+                setEntity(clone);
+            }
+        }
 
         public void ProcessUndo()
         {

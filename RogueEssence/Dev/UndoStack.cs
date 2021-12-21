@@ -64,20 +64,7 @@ namespace RogueEssence.Dev
         {
             T curState = GetState();
             //serialize, deserialize, assign
-            using (MemoryStream stream = new MemoryStream())
-            {
-                IFormatter formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                formatter.Serialize(stream, curState);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-
-                stream.Flush();
-                stream.Position = 0;
-
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                past = (T)formatter.Deserialize(stream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-            }
+            past = ReflectionExt.SerializeCopy(curState);
         }
 
         public override void Undo()

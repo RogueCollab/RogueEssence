@@ -31,6 +31,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -102,6 +103,19 @@ namespace RogueEssence.Dev.ViewModels
 
         public MapItem SelectedEntity;
 
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                setEntity(new MapItem(SelectedEntity));
+            }
+        }
 
         public void ProcessUndo()
         {

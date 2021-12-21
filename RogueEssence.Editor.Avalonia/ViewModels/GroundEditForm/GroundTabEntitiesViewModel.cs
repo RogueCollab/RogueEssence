@@ -28,7 +28,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
-                EntBrowser.AllowEntTypes = (entMode == EntEditMode.PlaceEntity);
+                EntModeChanged();
             }
         }
 
@@ -51,6 +51,21 @@ namespace RogueEssence.Dev.ViewModels
 
 
         private Loc dragDiff;
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+                EntBrowser.AllowEntTypes = false;
+            else
+            {
+                EntBrowser.AllowEntTypes = true;
+                if (GroundEditScene.Instance.SelectedEntity != null)
+                {
+                    EntBrowser.SelectEntity(GroundEditScene.Instance.SelectedEntity.Clone());
+                    GroundEditScene.Instance.SelectedEntity = null;
+                }
+            }
+        }
 
         public void ProcessUndo()
         {

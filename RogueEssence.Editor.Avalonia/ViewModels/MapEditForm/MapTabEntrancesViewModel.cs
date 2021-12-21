@@ -29,6 +29,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -58,6 +59,21 @@ namespace RogueEssence.Dev.ViewModels
         public void SetupLayerVisibility()
         {
             ShowEntrances = ShowEntrances;
+        }
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                //this is technically redundant since the type is a struct
+                //it's just here in case it changes
+                setEntity(ReflectionExt.SerializeCopy(SelectedEntity));
+            }
         }
 
         public void ProcessUndo()

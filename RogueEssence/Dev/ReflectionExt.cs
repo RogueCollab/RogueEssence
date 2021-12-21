@@ -3,12 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RogueEssence.Dev
 {
     public static class ReflectionExt
     {
         public delegate string TypeStringConv(object member);
+
+        public static T SerializeCopy<T>(T obj)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                IFormatter formatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+                formatter.Serialize(stream, obj);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+
+                stream.Flush();
+                stream.Position = 0;
+
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+                return (T)formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+            }
+        }
 
         public static object CreateMinimalInstance(Type type)
         {

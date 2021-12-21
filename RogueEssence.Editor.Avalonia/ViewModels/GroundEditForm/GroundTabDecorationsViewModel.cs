@@ -46,6 +46,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -173,6 +174,24 @@ namespace RogueEssence.Dev.ViewModels
 
         public GroundAnim SelectedEntity;
         private Loc dragDiff;
+
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                if (GroundEditScene.Instance.SelectedDecoration != null)
+                {
+                    setEntity(new GroundAnim(GroundEditScene.Instance.SelectedDecoration));
+                    GroundEditScene.Instance.SelectedDecoration = null;
+                }
+            }
+        }
 
         public void ProcessInput(InputManager input)
         {
