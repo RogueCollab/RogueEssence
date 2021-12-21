@@ -23,7 +23,8 @@
       <ColumnDefinition Width="180"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <!--views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/-->
+    <CheckBox Margin="4" IsChecked="{Binding ShowBoxes}" Grid.Row="0" Grid.Column="0">Show Boxes</CheckBox>
+    <!--views:LayerBox DataContext="{Binding Layers}" Grid.Row="1" Grid.RowSpan="1" Grid.Column="0"/-->
     <views:EntityBrowser Margin="4" DataContext="{Binding EntBrowser}" Grid.Row="1" Grid.Column="1"/>
     <Grid Grid.Row="0" Grid.Column="1" Margin="4">
       <Grid.RowDefinitions>

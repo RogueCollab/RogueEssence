@@ -885,6 +885,18 @@ namespace RogueEssence.Ground
             }
         }
 
+        public IEnumerable<GroundAnim> IterateDecorations()
+        {
+            foreach (AnimLayer layer in Decorations)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundAnim v in layer.Anims)
+                        yield return v;
+                }
+            }
+        }
+
 
         public void LoadScriptEvents()
         {

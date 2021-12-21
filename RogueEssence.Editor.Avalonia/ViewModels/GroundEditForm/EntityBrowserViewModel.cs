@@ -556,13 +556,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void SelectEntity(GroundEntity ent)
         {
-            SelectedEntity.DevOnEntityUnSelected();
-
             if (ent != null)
-            {
                 setEntity(ent);
-                SelectedEntity.DevOnEntitySelected();
-            }
             else
                 setEntity(new GroundObject(new ObjAnimData(), new Rect(0, 0, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT),
                                 GroundEntity.EEntityTriggerTypes.None, "NewObject"));

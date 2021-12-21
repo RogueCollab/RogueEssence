@@ -51,6 +51,19 @@ namespace RogueEssence.Dev.ViewModels
 
         public ILayerBoxViewModel Layers { get; set; }
 
+        public bool ShowBoxes
+        {
+            get
+            {
+                return GroundEditScene.Instance.ShowObjectBoxes;
+            }
+            set
+            {
+                GroundEditScene.Instance.ShowObjectBoxes = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
 
         private Type[] assignables;
         public ObservableCollection<string> AnimTypes { get; }
@@ -241,11 +254,15 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (ent != null)
             {
-                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundSelectUndo());
+                GroundEditScene.Instance.SelectedDecoration = ent;
                 setEntity(ent);
             }
             else
+            {
+                GroundEditScene.Instance.SelectedDecoration = ent;
                 setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1, Dir8.Down), Loc.Zero));
+            }
         }
 
         private void setEntity(GroundAnim ent)

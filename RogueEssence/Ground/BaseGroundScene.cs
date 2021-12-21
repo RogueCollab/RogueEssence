@@ -19,11 +19,11 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 
-        private List<IDrawableSprite> groundDraw;
+        protected List<IDrawableSprite> groundDraw;
 
-        private List<IDrawableSprite> objectDraw;
+        protected List<IDrawableSprite> objectDraw;
 
-        private List<IDrawableSprite> foregroundDraw;
+        protected List<IDrawableSprite> foregroundDraw;
 
         protected Rect viewTileRect;
         
@@ -175,8 +175,6 @@ namespace RogueEssence.Ground
             while (charIndex < groundDraw.Count)
             {
                 groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                if (GameManager.Instance.ShowDebug)
-                    groundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -240,8 +238,6 @@ namespace RogueEssence.Ground
                     if (charY == j * ZoneManager.Instance.CurrentGround.TileSize)
                     {
                         objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        if (GameManager.Instance.ShowDebug)
-                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -254,8 +250,6 @@ namespace RogueEssence.Ground
                     if (charY < (j + 1) * ZoneManager.Instance.CurrentGround.TileSize)
                     {
                         objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        if (GameManager.Instance.ShowDebug)
-                            objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -266,8 +260,6 @@ namespace RogueEssence.Ground
             while (charIndex < objectDraw.Count)
             {
                 objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                if (GameManager.Instance.ShowDebug)
-                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -281,8 +273,6 @@ namespace RogueEssence.Ground
             while (charIndex < objectDraw.Count)
             {
                 objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                if (GameManager.Instance.ShowDebug)
-                    objectDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -309,8 +299,6 @@ namespace RogueEssence.Ground
             while (charIndex < foregroundDraw.Count)
             {
                 foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                if (GameManager.Instance.ShowDebug)
-                    foregroundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 

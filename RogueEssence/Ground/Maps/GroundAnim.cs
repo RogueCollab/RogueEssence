@@ -24,6 +24,7 @@ namespace RogueEssence.Ground
         public GroundAnim()
         {
             ObjectAnim = new ObjAnimData();
+            ObjectAnim.AnimDir = Dir8.Down;
         }
         public GroundAnim(IPlaceableAnimData anim, Loc loc)
         {
@@ -59,6 +60,12 @@ namespace RogueEssence.Ground
             DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
 
             return new Loc(sheet.TileWidth, sheet.TileHeight);
+        }
+
+        public Rect GetBounds()
+        {
+            Loc drawSize = GetDrawSize();
+            return new Rect(MapLoc, new Loc(Math.Max(drawSize.X, GraphicsManager.TEX_SIZE), Math.Max(drawSize.Y, GraphicsManager.TEX_SIZE)));
         }
     }
 }

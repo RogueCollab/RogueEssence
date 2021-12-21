@@ -329,6 +329,30 @@ namespace RogueEssence.Ground
 
         }
 
+        public override void DrawGame(SpriteBatch spriteBatch)
+        {
+            //
+            //When in editor mode, we want to display an overlay over some entities
+            //
+            base.DrawGame(spriteBatch);
+
+
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+
+                if (GameManager.Instance.ShowDebug)
+                {
+                    foreach (IDrawableSprite sprite in groundDraw)
+                        sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    foreach (IDrawableSprite sprite in objectDraw)
+                        sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    foreach (IDrawableSprite sprite in foregroundDraw)
+                        sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                }
+            }
+
+        }
+
         public override void DrawDebug(SpriteBatch spriteBatch)
         {
             BaseSheet blank = GraphicsManager.Pixel;

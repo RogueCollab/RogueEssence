@@ -91,7 +91,6 @@ namespace RogueEssence.Ground
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             EntEnabled = true;
-            DevEntitySelected = false;
         }
 
         protected GroundEntity(GroundEntity other)
@@ -112,31 +111,9 @@ namespace RogueEssence.Ground
         //==================================================
 
         /// <summary>
-        /// Whether the entity should be drawn in highlights
-        /// </summary>
-        [NonSerialized]
-        public bool DevEntitySelected;
-
-        /// <summary>
         /// The color of the boxes and etc around the entity
         /// </summary>
         public abstract Color DevEntColoring { get; }
-
-        /// <summary>
-        /// When the entity is selected by the map editor, this method is called
-        /// </summary>
-        public virtual void DevOnEntitySelected()
-        {
-            DevEntitySelected = true;
-        }
-
-        /// <summary>
-        /// When the entity is de selected by the map editor, this method is called
-        /// </summary>
-        public virtual void DevOnEntityUnSelected()
-        {
-            DevEntitySelected = false;
-        }
 
         /// <summary>
         /// Whether an entity has graphics that can be drawn. Aka, a marker has no graphics, but a character has.
