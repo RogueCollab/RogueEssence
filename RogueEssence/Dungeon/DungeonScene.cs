@@ -607,7 +607,7 @@ namespace RogueEssence.Dungeon
                         for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                         {
                             Skill skill = FocusedCharacter.Skills[ii].Element;
-                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive);
+                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive, DiagManager.Instance.InvertABXY);
                             if (skill.SkillNum > -1)
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);

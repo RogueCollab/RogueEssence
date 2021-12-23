@@ -212,7 +212,8 @@ namespace RogueEssence
                             
                             if (DiagManager.Instance.ActiveDebugReplay == null)
                                 DiagManager.Instance.LogInput(input);
-                            DiagManager.Instance.GamePadActive = input.HasGamePad;
+                            
+                            DiagManager.Instance.UpdateGamePadActive(input.HasGamePad);
 
                             GameManager.Instance.SetMetaInput(input);
                             GameManager.Instance.UpdateMeta();

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Text;
 using RogueEssence.Dev;
 using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence
 {
@@ -40,7 +41,9 @@ namespace RogueEssence
         public bool DevMode;
         public IRootEditor DevEditor;
 
-        public bool GamePadActive;
+        public bool GamePadActive { get; private set; }
+        public bool InvertABXY { get; private set; }
+
         public Settings CurSettings;
 
         private string loadMessage;
@@ -67,6 +70,9 @@ namespace RogueEssence
                 Directory.CreateDirectory(PathMod.MODS_PATH);
             Settings.InitStatic();
             CurSettings = new Settings();
+            FNALoggerEXT.LogInfo = LogInfo;
+            FNALoggerEXT.LogWarn = LogInfo;
+            FNALoggerEXT.LogError = LogInfo;
         }
 
         public void SetErrorListener(LogAdded errorAdded, ErrorTrace errorTrace)
@@ -508,6 +514,35 @@ namespace RogueEssence
             }
         }
 
+        public void UpdateGamePadActive(bool active)
+        {
+            if (!GamePadActive && active)
+            {
+                string guid = GamePad.GetGUIDEXT(Microsoft.Xna.Framework.PlayerIndex.One);
+
+                if (guid.Equals("4c05c405") || guid.Equals("4c05cc09"))
+                {
+                    //PS4
+                    InvertABXY = false;
+                }
+                if (guid.Equals("4c05e60c"))
+                {
+                    //PS5
+                    InvertABXY = false;
+                }
+                if (guid.Equals("7e050920") || guid.Equals("7e053003"))
+                {
+                    //Nintendo
+                    InvertABXY = true;
+                }
+                else
+                {
+                    //Xbox
+                    InvertABXY = false;
+                }
+            }
+            GamePadActive = active;
+        }
 
         public string GetControlString(FrameInput.InputType inputType)
         {

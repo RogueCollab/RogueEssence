@@ -25,18 +25,21 @@ namespace RogueEssence.Menu
             skillCharges = new MenuText("", Bounds.Center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Right);
         }
 
-        public void SetArrangement(bool diamond)
+        public void SetArrangement(bool diamond, bool reverse)
         {
             Loc center = Loc.Zero;
             if (diamond)
             {
-                if (skillSlot == 0)
+                int resultSlot = skillSlot;
+                if (reverse)
+                    resultSlot = (resultSlot + 1) % 2 + resultSlot / 2 * 2;
+                if (resultSlot == 0)
                     center = new Loc(GraphicsManager.ScreenWidth / 4 - 8, GraphicsManager.ScreenHeight / 2 - 16);
-                else if (skillSlot == 1)
+                else if (resultSlot == 1)
                     center = new Loc(GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 4 - 16);
-                else if (skillSlot == 2)
+                else if (resultSlot == 2)
                     center = new Loc(GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight * 3 / 4 - 16);
-                else if (skillSlot == 3)
+                else if (resultSlot == 3)
                     center = new Loc(GraphicsManager.ScreenWidth * 3 / 4 + 8, GraphicsManager.ScreenHeight / 2 - 16);
             }
             else
