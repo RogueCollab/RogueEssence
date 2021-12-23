@@ -274,6 +274,8 @@ namespace RogueEssence.Ground
                             if (prevHit != null)
                                 continue;
                         }
+                        else//discount the first frame
+                            continue;
                     }
 
                     GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
