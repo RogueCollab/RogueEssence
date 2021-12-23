@@ -18,10 +18,8 @@ namespace RogueEssence.Dev
 
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ITypeDict member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ITypeDict member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ITypeDict<>), member.GetType(), 0);
 
             CollectionBox lbxValue = new CollectionBox();
@@ -43,11 +41,11 @@ namespace RogueEssence.Dev
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
+                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
 
                     bool itemExists = false;
 
@@ -90,9 +88,11 @@ namespace RogueEssence.Dev
         }
 
 
-        public override ITypeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override ITypeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            CollectionBox lbxValue = (CollectionBox)control.Children[1];
+            int controlIndex = 0;
+
+            CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
 
             ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;

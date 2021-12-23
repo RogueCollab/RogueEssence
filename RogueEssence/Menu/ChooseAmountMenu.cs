@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
             //draw cursor
             if (((GraphicsManager.TotalFrameTick - PrevTick) / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0 || Inactive)
             {
-                Loc pos = Digits.GetDigitLoc(CurrentChoice) + new Loc(-2, 2);
+                Loc pos = Bounds.Start + Digits.GetDigitLoc(CurrentChoice) + new Loc(-3, 2);
                 GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(pos.X, pos.Y - DIGIT_SEP), 1, 0, Color.White, SpriteEffects.FlipVertically);
                 GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(pos.X, pos.Y + DIGIT_SEP), 1, 0);
             }

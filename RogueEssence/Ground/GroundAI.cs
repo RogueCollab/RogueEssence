@@ -21,7 +21,8 @@ namespace RogueEssence.Ground
         /// <summary>
         /// Pointer to the GroundEntity that inherits this.
         /// </summary>
-        public virtual GroundEntity EntityPointer { get; set; }
+        [NonSerialized]
+        public GroundEntity EntityPointer;
 
         /// <summary>
         /// This method handles initializing the AI, if needed, when a map is run.

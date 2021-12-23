@@ -14,6 +14,16 @@ namespace RogueEssence.Dev
     //The game engine for Ground Mode, in which the player has free movement
     public partial class GroundEditScene : BaseGroundScene
     {
+        public enum EditorMode
+        {
+            None = -1,
+            Texture,
+            Decoration,
+            Wall,
+            Entity,
+            Other
+        }
+
         private static GroundEditScene instance;
         public static void InitInstance()
         {
@@ -29,10 +39,19 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
+        public EditorMode EditMode;
+
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<bool> BlockInProgress;
-        public bool ShowWalls;
+        public GroundAnim DecorationInProgress;
+        public GroundEntity EntityInProgress;
 
+        public bool ShowWalls;
+        public bool ShowObjectBoxes;
+        public bool ShowEntityBoxes;
+
+        public GroundEntity SelectedEntity;
+        public GroundAnim SelectedDecoration;
 
         public override void UpdateMeta()
         {
@@ -174,34 +193,85 @@ namespace RogueEssence.Dev
                     }
                 }
 
-
-                //DevHasGraphics()
-                //Draw Entity bounds
-                GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
-                foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
+                if (ShowObjectBoxes)
                 {
-                    if (entity.DevEntitySelected)
+                    //Draw Entity bounds
+                    GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
+                    foreach (GroundAnim entity in ZoneManager.Instance.CurrentGround.IterateDecorations())
                     {
-                        //Invert the color of selected entities
-                        dbg.DrawColor = new Color(entity.DevEntColoring.B, entity.DevEntColoring.G, entity.DevEntColoring.R, entity.DevEntColoring.A);
-                        dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 92);
+                        Rect bounds = entity.GetBounds();
+                        if (SelectedDecoration == entity)
+                        {
+                            //Invert the color of selected entities
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawColor = Color.BlueViolet;
+                            dbg.DrawFilledBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1), 92);
+                        }
+                        else
+                        {
+                            //Draw boxes around other entities with graphics using low opacity
+                            dbg.DrawColor = new Color(Color.BlueViolet.R, Color.BlueViolet.G, Color.BlueViolet.B, 92);
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
+                        }
                     }
-                    else if (!entity.DevHasGraphics())
+                }
+
+                if (DecorationInProgress != null)
+                {
+                    DecorationInProgress.Draw(spriteBatch, ViewRect.Start);
+                    if (ShowObjectBoxes)
                     {
-                        //Draw entities with no graphics of their own as a filled box
-                        dbg.DrawColor = entity.DevEntColoring;
+                        Rect bounds = DecorationInProgress.GetBounds();
+                        GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                        dbg.DrawColor = new Color(255, 255, 255, 92);
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 128);
+                        dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
                     }
-                    else
+                }
+
+                if (ShowEntityBoxes)
+                {
+                    //Draw Entity bounds
+                    GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
+                    foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
                     {
-                        //Draw boxes around other entities with graphics using low opacity
-                        dbg.DrawColor = new Color(entity.DevEntColoring.R, entity.DevEntColoring.G, entity.DevEntColoring.B, 92);
+                        if (SelectedEntity == entity)
+                        {
+                            //Invert the color of selected entities
+                            dbg.DrawColor = new Color(entity.DevEntColoring.B, entity.DevEntColoring.G, entity.DevEntColoring.R, entity.DevEntColoring.A);
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 92);
+                        }
+                        else if (!entity.DevHasGraphics())
+                        {
+                            //Draw entities with no graphics of their own as a filled box
+                            dbg.DrawColor = entity.DevEntColoring;
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 128);
+                        }
+                        else
+                        {
+                            //Draw boxes around other entities with graphics using low opacity
+                            dbg.DrawColor = new Color(entity.DevEntColoring.R, entity.DevEntColoring.G, entity.DevEntColoring.B, 92);
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
+                        }
+                        //And don't draw bounds of entities that have a graphics representation
+                    }
+                }
+
+                if (EntityInProgress != null)
+                {
+                    GroundEntity entity = EntityInProgress;
+                    entity.Draw(spriteBatch, ViewRect.Start);
+                    if (ShowEntityBoxes)
+                    {
+                        GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                        dbg.DrawColor = new Color(255, 255, 255, 92);
                         dbg.LineThickness = 1.0f;
                         dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
                     }
-                    //And don't draw bounds of entities that have a graphics representation
                 }
             }
 
@@ -237,15 +307,16 @@ namespace RogueEssence.Dev
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
-                GroundEntity selectedEntity = null;
-                foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
+                if (EditMode == EditorMode.Decoration)
                 {
-                    if (entity.DevEntitySelected)
-                        selectedEntity = entity;
+                    if (SelectedDecoration != null)
+                        GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", SelectedDecoration.MapLoc.X, SelectedDecoration.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
                 }
-
-                if (selectedEntity != null)
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", selectedEntity.MapLoc.X, selectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                else
+                {
+                    if (SelectedEntity != null)
+                        GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", SelectedEntity.MapLoc.X, SelectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                }
             }
         }
 

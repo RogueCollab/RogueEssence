@@ -50,6 +50,7 @@ namespace RogueEssence.Dungeon
         }
 
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
@@ -430,6 +431,7 @@ namespace RogueEssence.Dungeon
 
         public void CalculateTerrainAutotiles(Loc rectStart, Loc rectSize)
         {
+            ReNoise noise = new ReNoise(rand.FirstSeed);
             //does not calculate floor tiles.
             //in all known use cases, there is no need to autotile floor tiles.
             //if a use case is brought up that does, this can be changed.
@@ -452,7 +454,7 @@ namespace RogueEssence.Dungeon
             foreach (int tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(Rand.FirstSeed, rectStart, rectSize, new Loc(Width, Height),
+                entry.Tiles.AutoTileArea(noise, rectStart, rectSize, new Loc(Width, Height),
                     (int x, int y, int neighborCode) =>
                     {
                         Tiles[x][y].Data.TileTex.NeighborCode = neighborCode;
@@ -652,9 +654,10 @@ namespace RogueEssence.Dungeon
                 distance);
         }
 
-        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos, Loc mapPos)
         {
-            BlankBG.Draw(spriteBatch, drawPos);
+            INoise noise = new ReNoise(rand.FirstSeed);
+            BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
         }
 
         //========================
@@ -760,20 +763,6 @@ namespace RogueEssence.Dungeon
                 foreach (Character c in IterateCharacters())
                     c.DoCleanup();
             }
-        }
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //TODO: v0.5: remove this
-            if (ScriptEvents == null)
-                ScriptEvents = new Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent>();
-            if (MapEffect == null)
-                MapEffect = new ActiveEffect();
-            if (AllyTeams == null)
-                AllyTeams = new List<Team>();
-            if (Layers == null)
-                Layers = new List<MapLayer>();
         }
     }
 

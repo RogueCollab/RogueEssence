@@ -22,9 +22,9 @@ namespace RogueEssence.Menu
             Ending = ending;
 
             Title = new MenuText(GetTitle(),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             List<Character> charList = GetChars();
             Stats = new MenuText[charList.Count * 4];
@@ -35,24 +35,24 @@ namespace RogueEssence.Menu
                 MonsterData dexEntry = DataManager.Instance.GetMonster(character.BaseForm.Species);
                 BaseMonsterForm formEntry = dexEntry.Forms[character.BaseForm.Form];
                 Portraits[ii] = new SpeakerPortrait(character.BaseForm, new EmoteStyle(0),
-                    Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), false);
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), false);
                 string speciesText = character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm);
                 Stats[ii * 4] = new MenuText(speciesText,
-                    Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 Stats[ii * 4 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level),
-                    new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2 - 24, Bounds.Y + GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 24, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 if (Ending.UUID == character.OriginalUUID)
                 {
                     Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),
-                    Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 }
                 else
                 {
                     Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", character.OriginalTeam),
-                    Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 }
                 Stats[ii * 4 + 3] = new MenuText((String.IsNullOrEmpty(character.DefeatAt) ? "" : Text.FormatKey("MENU_TEAM_FELL_AT", character.DefeatAt)),
-                    Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 44 * ii + TitledStripMenu.TITLE_OFFSET));
 
                 base.Initialize();
             }

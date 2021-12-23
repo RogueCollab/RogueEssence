@@ -14,6 +14,18 @@ namespace RogueEssence.Dev
     //The game engine for Ground Mode, in which the player has free movement
     public partial class DungeonEditScene : BaseDungeonScene
     {
+        public enum EditorMode
+        {
+            None = -1,
+            Texture,
+            Terrain,
+            Tile,
+            Item,
+            Entity,
+            Entrance,
+            Other
+        }
+
         private static DungeonEditScene instance;
         public static void InitInstance()
         {
@@ -28,6 +40,8 @@ namespace RogueEssence.Dev
 
         public Loc FocusedLoc;
         public Loc DiffLoc;
+
+        public EditorMode EditMode;
 
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<TerrainTile> TerrainInProgress;

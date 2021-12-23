@@ -22,10 +22,8 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(NoDupeAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IList member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IList member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), member.GetType(), 0);
 
             CollectionBox lbxValue = new CollectionBox();
@@ -47,11 +45,11 @@ namespace RogueEssence.Dev
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
+                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
 
                     bool itemExists = false;
 
@@ -69,7 +67,7 @@ namespace RogueEssence.Dev
 
                     if (itemExists)
                     {
-                        await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                        await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate items.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
                     }
                     else
                     {
@@ -94,10 +92,10 @@ namespace RogueEssence.Dev
         }
 
 
-        public override IList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override IList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             IControl lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);

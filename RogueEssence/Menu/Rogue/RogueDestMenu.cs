@@ -41,21 +41,21 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
                 int zone = dungeonIndices[ii];
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii] as ZoneEntrySummary;
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone] as ZoneEntrySummary;
                 flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
-            
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+
             int totalSlots = SLOTS_PER_PAGE;
-            if (box.Count == 1)
+            if (box.Length == 1)
                 totalSlots = box[0].Length;
 
             summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
-            infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             UpdateExtraInfo("");
 
-            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
+            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, 0, 0, totalSlots, false, -1);
         }
 
         protected override void ChoiceChanged()

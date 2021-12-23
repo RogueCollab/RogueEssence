@@ -116,10 +116,9 @@ namespace RogueEssence.Dev.ViewModels
             get => SelectedEntity.GetTriggerType();
             set
             {
-                GroundEntity.EEntityTriggerTypes chosenTriggerType = SelectedEntity.GetTriggerType();
-                this.RaiseAndSet(ref chosenTriggerType, value);
                 if (!settingEnt)
-                    SelectedEntity.SetTriggerType(chosenTriggerType);
+                    SelectedEntity.SetTriggerType(value);
+                this.RaisePropertyChanged();
                 triggerTypeChanged();
             }
         }
@@ -134,6 +133,38 @@ namespace RogueEssence.Dev.ViewModels
 
 
 
+
+        private Type[] assignables;
+        public ObservableCollection<string> AnimTypes { get; }
+
+        public int ChosenAnimType
+        {
+            get
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    return Array.IndexOf(assignables, groundEnt.ObjectAnim.GetType());
+                }
+                return 0;
+            }
+            set
+            {
+                if (value < 0)
+                    return;
+                Type type = assignables[value];
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                    newData.LoadFrom(groundEnt.ObjectAnim);
+                    groundEnt.ObjectAnim = newData;
+                }
+                this.RaisePropertyChanged();
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                    animTypeChanged();
+            }
+        }
 
         public ObservableCollection<string> ObjectAnims { get; }
 
@@ -274,6 +305,28 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     GroundObject groundEnt = SelectedEntity as GroundObject;
                     groundEnt.ObjectAnim.FrameTime = value;
+                }
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public bool Passable
+        {
+            get
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    return groundEnt.Passable;
+                }
+                return false;
+            }
+            set
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
+                {
+                    GroundObject groundEnt = SelectedEntity as GroundObject;
+                    groundEnt.Passable = value;
                 }
                 this.RaisePropertyChanged();
             }
@@ -455,30 +508,31 @@ namespace RogueEssence.Dev.ViewModels
             SpawnScriptItems = new ObservableCollection<SpawnScriptItem>();
 
 
-            ObjectAnims = new ObservableCollection<string>();
-            ObjectAnims.Add("---");
-            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Object/");
-            for (int ii = 0; ii < dirs.Length; ii++)
+            AnimTypes = new ObservableCollection<string>();
+            assignables = typeof(IPlaceableAnimData).GetAssignableTypes();
+            foreach (Type type in assignables)
             {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                ObjectAnims.Add(filename);
+                IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                AnimTypes.Add(newData.AssetType.ToString());
             }
+            ObjectAnims = new ObservableCollection<string>();
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
             for (int ii = 0; ii < monster_names.Length; ii++)
                 Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
                 Skins.Add(skin_names[ii]);
 
             Genders = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Gender.Female; ii++)
                 Genders.Add(((Gender)ii).ToLocal());
+
 
             entTypeChanged();
             speciesChanged();
@@ -502,13 +556,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void SelectEntity(GroundEntity ent)
         {
-            SelectedEntity.DevOnEntityUnSelected();
-
             if (ent != null)
-            {
                 setEntity(ent);
-                SelectedEntity.DevOnEntitySelected();
-            }
             else
                 setEntity(new GroundObject(new ObjAnimData(), new Rect(0, 0, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT),
                                 GroundEntity.EEntityTriggerTypes.None, "NewObject"));
@@ -536,6 +585,7 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         TriggerTypes.Add(GroundEntity.EEntityTriggerTypes.Action);
                         TriggerTypes.Add(GroundEntity.EEntityTriggerTypes.Touch);
+                        TriggerTypes.Add(GroundEntity.EEntityTriggerTypes.TouchOnce);
                         break;
                     }
                 default:
@@ -555,12 +605,14 @@ namespace RogueEssence.Dev.ViewModels
             BoundsY = BoundsY;
 
             EntEnabled = EntEnabled;
+            ChosenAnimType = ChosenAnimType;
             ChosenObjectAnim = ChosenObjectAnim;
             OffsetX = OffsetX;
             OffsetY = OffsetY;
             StartFrame = StartFrame;
             EndFrame = EndFrame;
             FrameLength = FrameLength;
+            Passable = Passable;
 
             ChosenMonster = ChosenMonster;
             ChosenForm = ChosenForm;
@@ -589,6 +641,7 @@ namespace RogueEssence.Dev.ViewModels
                 case GroundEntity.EEntTypes.Object:
                     {
                         retainTab |= TabIndex == 3;
+                        retainTab |= TabIndex == 4;
                         break;
                     }
                 case GroundEntity.EEntTypes.Marker:
@@ -598,7 +651,7 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 case GroundEntity.EEntTypes.Spawner:
                     {
-                        retainTab |= TabIndex == 4;
+                        retainTab |= TabIndex == 5;
                         break;
                     }
             }
@@ -672,6 +725,7 @@ namespace RogueEssence.Dev.ViewModels
                         break;
                     }
                 case GroundEntity.EEntityTriggerTypes.Touch:
+                case GroundEntity.EEntityTriggerTypes.TouchOnce:
                     {
                         ScriptItems.Add(new EntScriptItem(LuaEngine.EEntLuaEventTypes.Touch, SelectedEntity));
                         break;
@@ -723,6 +777,27 @@ namespace RogueEssence.Dev.ViewModels
                 ChosenForm = Math.Clamp(tempForm, 0, Forms.Count - 1);
             }
 
+        }
+
+
+
+        private void animTypeChanged()
+        {
+            GroundObject groundEnt = SelectedEntity as GroundObject;
+            string oldIndex = groundEnt.ObjectAnim.AnimIndex;
+            ObjectAnims.Clear();
+            ObjectAnims.Add("---");
+            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + groundEnt.ObjectAnim.AssetType.ToString() + "/");
+            int newAnim = 0;
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                ObjectAnims.Add(filename);
+
+                if (filename == oldIndex)
+                    newAnim = ii + 1;
+            }
+            ChosenObjectAnim = newAnim;
         }
     }
 }

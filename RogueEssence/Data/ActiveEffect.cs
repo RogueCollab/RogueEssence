@@ -137,13 +137,42 @@ namespace RogueEssence.Data
             }
         }
 
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
+        public int GetTotalCount()
         {
-            //TODO: v0.5: remove this
-            if (OnMapRefresh == null)
-                OnMapRefresh = new PriorityList<RefreshEvent>();
+            int total = 0;
+
+            total += BeforeTryActions.Count;
+            total += BeforeActions.Count;
+            total += OnActions.Count;
+            total += BeforeExplosions.Count;
+            total += BeforeHits.Count;
+            total += OnHits.Count;
+            total += OnHitTiles.Count;
+            total += AfterActions.Count;
+            total += ElementEffects.Count;
+
+            total += BeforeStatusAdds.Count;
+            total += OnStatusAdds.Count;
+            total += OnStatusRemoves.Count;
+            total += OnMapStatusAdds.Count;
+            total += OnMapStatusRemoves.Count;
+
+            total += OnMapStarts.Count;
+            total += OnTurnStarts.Count;
+            total += OnTurnEnds.Count;
+            total += OnMapTurnEnds.Count;
+            total += OnWalks.Count;
+            total += OnDeaths.Count;
+
+            total += OnRefresh.Count;
+            total += OnMapRefresh.Count;
+
+            total += ModifyHPs.Count;
+            total += RestoreHPs.Count;
+
+            total += InitActionData.Count;
+
+            return total;
         }
     }
 }

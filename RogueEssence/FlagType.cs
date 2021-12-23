@@ -18,7 +18,7 @@ namespace RogueEssence
         public FlagType()
         {
             fullType = typeof(object);
-            assembly = fullType.FullName;
+            assembly = fullType.Assembly.FullName;
             this.type = fullType.FullName;
         }
         public FlagType(Type type)
@@ -37,13 +37,7 @@ namespace RogueEssence
                 fullType = Type.GetType(String.Format("{0}, {1}", type, assembly));
                 if (fullType == null)
                 {
-                    fullType = DiagManager.Instance.UpgradeBinder?.BindToType(assembly, type);
-
-                    if (fullType == null)
-                        throw new TypeInitializationException(type, null);
-
-                    assembly = fullType.Assembly.FullName;
-                    type = fullType.FullName;
+                    throw new TypeInitializationException(type, null);
                 }
             }
         }

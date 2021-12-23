@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
                         MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, disabled ? Color.Red : Color.White);
                         if (jj < Character.MAX_SKILL_SLOTS-1)
                         {
-                            MenuDivider div = new MenuDivider(new Loc(0, LINE_SPACE), menuWidth - 8 * 4);
+                            MenuDivider div = new MenuDivider(new Loc(0, LINE_HEIGHT), menuWidth - 8 * 4);
                             char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges, div));
                         }
                         else
@@ -56,7 +56,7 @@ namespace RogueEssence.Menu
                 skillSlot = Math.Min(Math.Max(0, defaultChoice), skills[teamIndex].Length - 1);
 
             summaryMenu = new SkillSummary(Rect.FromPoints(new Loc(16,
-                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_SPACE * 2 - VERT_SPACE * 4),
+                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_HEIGHT * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_SKILLS_TITLE", DataManager.Instance.Save.ActiveTeam.Players[CurrentPage].GetDisplayName(true)), skills, skillSlot, teamIndex, CharData.MAX_SKILL_SLOTS);

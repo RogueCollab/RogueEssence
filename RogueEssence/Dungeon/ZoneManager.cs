@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 
@@ -22,8 +23,7 @@ namespace RogueEssence.Dungeon
             state.Zone.SaveLua();
             using (MemoryStream classStream = new MemoryStream())
             {
-                IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                formatter.Serialize(classStream, state.Zone);
+                Serializer.Serialize(classStream, state.Zone);
                 writer.Write(classStream.Position);
                 classStream.WriteTo(writer.BaseStream);
             }
@@ -41,8 +41,7 @@ namespace RogueEssence.Dungeon
                 long length = reader.ReadInt64();
                 using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
                 {
-                    IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    state.Zone = (ZoneManager)formatter.Deserialize(classStream);
+                    state.Zone = (ZoneManager)Serializer.Deserialize(classStream, typeof(ZoneManager));
                 }
             }
             catch (Exception ex)

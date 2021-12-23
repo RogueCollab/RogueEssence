@@ -33,9 +33,10 @@ namespace RogueEssence.Dungeon
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
             object[] parameters = new object[] { owner, ownerChar, character, status, msg, args };
-            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator("MAP_STATUS_SCRIPT." + Script, parameters);
+            string name = "MAP_STATUS_SCRIPT." + Script;
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
-            return ScriptEvent.ApplyFunc(func_iter);
+            yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));
         }
     }
 }

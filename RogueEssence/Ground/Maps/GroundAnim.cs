@@ -3,6 +3,7 @@ using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 /*
  * GroundAnim.cs
  * 2017/07/03
@@ -15,7 +16,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundAnim : IDrawableSprite
     {
-        public ObjAnimData ObjectAnim;
+        public IPlaceableAnimData ObjectAnim;
         
         public Loc MapLoc { get; set; }
         public int LocHeight { get { return 0; } }
@@ -23,15 +24,16 @@ namespace RogueEssence.Ground
         public GroundAnim()
         {
             ObjectAnim = new ObjAnimData();
+            ObjectAnim.AnimDir = Dir8.Down;
         }
-        public GroundAnim(ObjAnimData anim, Loc loc)
+        public GroundAnim(IPlaceableAnimData anim, Loc loc)
         {
             ObjectAnim = anim;
             MapLoc = loc;
         }
         public GroundAnim(GroundAnim other)
         {
-            ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            ObjectAnim = (IPlaceableAnimData)other.ObjectAnim.Clone();
             MapLoc = other.MapLoc;
         }
 
@@ -42,8 +44,8 @@ namespace RogueEssence.Ground
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
-                DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White);
+                DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
             }
         }
 
@@ -58,6 +60,12 @@ namespace RogueEssence.Ground
             DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
 
             return new Loc(sheet.TileWidth, sheet.TileHeight);
+        }
+
+        public Rect GetBounds()
+        {
+            Loc drawSize = GetDrawSize();
+            return new Rect(MapLoc, new Loc(Math.Max(drawSize.X, GraphicsManager.TEX_SIZE), Math.Max(drawSize.Y, GraphicsManager.TEX_SIZE)));
         }
     }
 }

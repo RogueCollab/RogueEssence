@@ -51,17 +51,17 @@ namespace RogueEssence.Menu
                     flatChoices.Add(new MenuElementChoice(() => { choose(ii); }, true, dexNum, dexName));
                 }
             }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            summaryMenu = new SummaryMenu(new Rect(new Loc(208, 16), new Loc(96, LINE_SPACE * 2 + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText seenText = new MenuText(Text.FormatKey("MENU_DEX_SEEN", seen), summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            summaryMenu = new SummaryMenu(new Rect(new Loc(208, 16), new Loc(96, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2)));
+            MenuText seenText = new MenuText(Text.FormatKey("MENU_DEX_SEEN", seen), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             summaryMenu.Elements.Add(seenText);
-            MenuText befriendedText = new MenuText(Text.FormatKey("MENU_DEX_CAUGHT", befriended), summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + LINE_SPACE));
+            MenuText befriendedText = new MenuText(Text.FormatKey("MENU_DEX_CAUGHT", befriended), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT));
             summaryMenu.Elements.Add(befriendedText);
 
             portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(232, 72), true);
 
-            Initialize(new Loc(0, 0), 208, Text.FormatKey("MENU_DEX_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(0, 0), 208, Text.FormatKey("MENU_DEX_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
 

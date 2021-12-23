@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using RogueElements;
 using RogueEssence.Data;
-using System.IO;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
 using RogueEssence.Content;
@@ -12,6 +13,9 @@ namespace RogueEssence.Menu
     public class TopMenu : SingleStripMenu
     {
         SummaryMenu titleMenu;
+
+        public override bool CanMenu { get { return false; } }
+        public override bool CanCancel { get { return false; } }
 
         public TopMenu()
         {
@@ -31,9 +35,9 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(null); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MainStartingMenu.StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
 
-            if ((DiagManager.Instance.DevMode || DataManager.Instance.Save != null) && !inMod)
+            if (DiagManager.Instance.DevMode || DataManager.Instance.Save != null)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
 
 
@@ -44,7 +48,7 @@ namespace RogueEssence.Menu
             if (!inMod)
             {
                 string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-                if (DataManager.Instance.Save != null && ModsMenu.GetEligibleMods().Count > 0)
+                if (ModsMenu.GetEligibleMods().Count > 0)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
             }
             else
@@ -53,8 +57,8 @@ namespace RogueEssence.Menu
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
-            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(Path.GetFileName(PathMod.Mod), new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
+            MenuText title = new MenuText(Path.GetFileName(PathMod.Mod), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             titleMenu.Elements.Add(title);
 
         }
@@ -217,14 +221,136 @@ namespace RogueEssence.Menu
                 else
                 {
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
-                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround());
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(true));
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
             }
         }
 
+        private static void StartFlow(MonsterID monId, string name, int backPhase)
+        {
+            if (monId.Species == -1 || backPhase == 0)
+            {
+                if (DataManager.Instance.StartChars.Count > 1)
+                {
+                    int startIndex = 0;
+                    if (backPhase == 0)
+                        startIndex = DataManager.Instance.StartChars.FindIndex(start => start.mon == monId);
+                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), DataManager.Instance.StartChars, startIndex, (int index) =>
+                    {
+                        string newName = null;
+                        if (DataManager.Instance.StartChars[index].name != "")
+                            newName = DataManager.Instance.StartChars[index].name;
+                        StartFlow(DataManager.Instance.StartChars[index].mon, newName, -1);
+                    }, () => { }), false);
+                    return;
+                }
+                else if (backPhase == 0)
+                    return;
+                else if (DataManager.Instance.StartChars.Count == 1)
+                {
+                    monId = DataManager.Instance.StartChars[0].mon;
+                    if (DataManager.Instance.StartChars[0].name != "")
+                        name = DataManager.Instance.StartChars[0].name;
+                }
+                else
+                {
+                    MenuManager.Instance.ClearMenus();
+                    GameManager.Instance.SceneOutcome = Begin(new MonsterID(0, 0, 0, Gender.Genderless), "");
+                    return;
+                }
+            }
 
+            if (monId.Gender == Gender.Unknown || backPhase == 1)
+            {
+                MonsterData monEntry = DataManager.Instance.GetMonster(monId.Species);
+                BaseMonsterForm form = monEntry.Forms[monId.Form];
+                List<Gender> genders = form.GetPossibleGenders();
+                if (genders.Count > 1)
+                {
+                    int startIndex = 0;
+                    if (backPhase == 1)
+                        startIndex = monId.Gender == Gender.Female ? 1 : 0;
+                    List<DialogueChoice> choices = new()
+                    {
+                        new DialogueChoice(Text.FormatKey("MENU_BOY"), () =>
+                        {
+                            StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Male), name, -1);
+                        }),
+                        new DialogueChoice(Text.FormatKey("MENU_GIRL"), () =>
+                        {
+                            StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Female), name, -1);
+                        }),
+                        new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () =>
+                        { })
+                    };
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateMultiQuestion(Text.FormatKey("DLG_ASK_GENDER"), false, choices, startIndex, choices.Count - 1), false);
+                    return;
+                }
+                else if (backPhase == 1)
+                {
+                    StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Unknown), name, 0);
+                    return;
+                }
+                else
+                    monId.Gender = genders[0];
+            }
+
+            if (name == null)
+            {
+                MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
+                {
+                    StartFlow(monId, name, -1);
+                }, () =>
+                {
+                    StartFlow(monId, null, 1);
+                }), false);
+                return;
+            }
+
+            //begin
+
+            MenuManager.Instance.ClearMenus();
+            GameManager.Instance.SceneOutcome = Begin(monId, name);
+        }
+
+
+        private static IEnumerator<YieldInstruction> Begin(MonsterID monId, string name)
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
+
+            DataManager.Instance.SetProgress(new MainProgress(MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
+            DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.StartLevel, -1, DataManager.Instance.StartPersonality);
+            newChar.Nickname = name;
+            newChar.IsFounder = true;
+            DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
+
+            try
+            {
+                LuaEngine.Instance.OnNewGame();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid team!");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
+        }
+
+        private static IEnumerator<YieldInstruction> DefaultBegin()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
+
+            GameManager.Instance.NewGamePlus(MathUtils.Rand.NextUInt64());
+
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
+        }
 
     }
 }

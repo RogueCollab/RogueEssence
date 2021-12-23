@@ -26,14 +26,15 @@ namespace RogueEssence.Dev.ViewModels
             foreach (Dir8 dir in DirExt.VALID_DIR8)
                 Directions.Add(dir.ToLocal());
 
-            ObjectAnims = new ObservableCollection<string>();
-            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Object/");
-            for (int ii = 0; ii < dirs.Length; ii++)
+            AnimTypes = new ObservableCollection<string>();
+            assignables = typeof(IPlaceableAnimData).GetAssignableTypes();
+            foreach (Type type in assignables)
             {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                ObjectAnims.Add(filename);
+                IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                AnimTypes.Add(newData.AssetType.ToString());
             }
-            ChosenObjectAnim = 0;
+            ObjectAnims = new ObservableCollection<string>();
+            ChosenAnimType = ChosenAnimType;
 
             FrameLength = 1;
         }
@@ -45,10 +46,44 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
         public ILayerBoxViewModel Layers { get; set; }
+
+        public bool ShowBoxes
+        {
+            get
+            {
+                return GroundEditScene.Instance.ShowObjectBoxes;
+            }
+            set
+            {
+                GroundEditScene.Instance.ShowObjectBoxes = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
+        private Type[] assignables;
+        public ObservableCollection<string> AnimTypes { get; }
+
+        public int ChosenAnimType
+        {
+            get => Array.IndexOf(assignables, SelectedEntity.ObjectAnim.GetType());
+            set
+            {
+                if (value < 0)
+                    return;
+                Type type = assignables[value];
+                IPlaceableAnimData newData = (IPlaceableAnimData)ReflectionExt.CreateMinimalInstance(type);
+                newData.LoadFrom(SelectedEntity.ObjectAnim);
+                SelectedEntity.ObjectAnim = newData;
+                this.RaisePropertyChanged();
+                animTypeChanged();
+            }
+        }
 
 
         public ObservableCollection<string> ObjectAnims { get; }
@@ -79,27 +114,84 @@ namespace RogueEssence.Dev.ViewModels
         public int StartFrame
         {
             get => SelectedEntity.ObjectAnim.StartFrame;
-            set => this.RaiseAndSet(ref SelectedEntity.ObjectAnim.StartFrame, value);
+            set
+            {
+                SelectedEntity.ObjectAnim.StartFrame = value;
+                this.RaisePropertyChanged();
+            }
         }
 
         public int EndFrame
         {
             get => SelectedEntity.ObjectAnim.EndFrame;
-            set => this.RaiseAndSet(ref SelectedEntity.ObjectAnim.EndFrame, value);
+            set
+            {
+                SelectedEntity.ObjectAnim.EndFrame = value;
+                this.RaisePropertyChanged();
+            }
         }
 
         public int FrameLength
         {
             get => SelectedEntity.ObjectAnim.FrameTime;
-            set => this.RaiseAndSet(ref SelectedEntity.ObjectAnim.FrameTime, value);
+            set
+            {
+                SelectedEntity.ObjectAnim.FrameTime = value;
+                this.RaisePropertyChanged();
+            }
         }
 
+
+        public bool FlipHoriz
+        {
+            get => (SelectedEntity.ObjectAnim.AnimFlip & SpriteFlip.Horiz) != SpriteFlip.None;
+            set
+            {
+                if (value)
+                    SelectedEntity.ObjectAnim.AnimFlip |= SpriteFlip.Horiz;
+                else
+                    SelectedEntity.ObjectAnim.AnimFlip &= ~SpriteFlip.Horiz;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
+        public bool FlipVert
+        {
+            get => (SelectedEntity.ObjectAnim.AnimFlip & SpriteFlip.Vert) != SpriteFlip.None;
+            set
+            {
+                if (value)
+                    SelectedEntity.ObjectAnim.AnimFlip |= SpriteFlip.Vert;
+                else
+                    SelectedEntity.ObjectAnim.AnimFlip &= ~SpriteFlip.Vert;
+                this.RaisePropertyChanged();
+            }
+        }
 
 
 
 
         public GroundAnim SelectedEntity;
         private Loc dragDiff;
+
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                if (GroundEditScene.Instance.SelectedDecoration != null)
+                {
+                    setEntity(new GroundAnim(GroundEditScene.Instance.SelectedDecoration));
+                    GroundEditScene.Instance.SelectedDecoration = null;
+                }
+            }
+        }
 
         public void ProcessInput(InputManager input)
         {
@@ -117,10 +209,21 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                            PlaceEntity(groundCoords);
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                            RemoveEntityAt(groundCoords);
+                        if (GroundEditScene.Instance.DecorationInProgress == null)
+                        {
+                            if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                                PendEntity(groundCoords);
+                            else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
+                                RemoveEntityAt(groundCoords);
+                        }
+                        else
+                        {
+                            GroundEditScene.Instance.DecorationInProgress.MapLoc = groundCoords;
+                            if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                                PlaceEntity();
+                            else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                                GroundEditScene.Instance.DecorationInProgress = null;
+                        }
                         break;
                     }
                 case EntEditMode.SelectEntity:
@@ -167,10 +270,15 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
         }
 
-        public void PlaceEntity(Loc position)
+        public void PendEntity(Loc position)
         {
-            GroundAnim placeableEntity = new GroundAnim(new ObjAnimData(SelectedEntity.ObjectAnim), position);
-
+            GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), position);
+            GroundEditScene.Instance.DecorationInProgress = placeableEntity;
+        }
+        public void PlaceEntity()
+        {
+            GroundAnim placeableEntity = GroundEditScene.Instance.DecorationInProgress;
+            GroundEditScene.Instance.DecorationInProgress = null;
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
 
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
@@ -181,21 +289,28 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (ent != null)
             {
-                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundSelectUndo());
+                GroundEditScene.Instance.SelectedDecoration = ent;
                 setEntity(ent);
             }
             else
-                setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1), Loc.Zero));
+            {
+                GroundEditScene.Instance.SelectedDecoration = ent;
+                setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1, Dir8.Down), Loc.Zero));
+            }
         }
 
         private void setEntity(GroundAnim ent)
         {
             SelectedEntity = ent;
+            ChosenAnimType = ChosenAnimType;
             ChosenObjectAnim = ChosenObjectAnim;
             ChosenDirection = ChosenDirection;
             StartFrame = StartFrame;
             EndFrame = EndFrame;
             FrameLength = FrameLength;
+            FlipHoriz = FlipHoriz;
+            FlipVert = FlipVert;
         }
 
         /// <summary>
@@ -228,6 +343,22 @@ namespace RogueEssence.Dev.ViewModels
                 SelectEntity(null);
         }
 
+        private void animTypeChanged()
+        {
+            string oldIndex = SelectedEntity.ObjectAnim.AnimIndex;
+            ObjectAnims.Clear();
+            string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + SelectedEntity.ObjectAnim.AssetType.ToString() + "/");
+            int newAnim = 0;
+            for (int ii = 0; ii < dirs.Length; ii++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                ObjectAnims.Add(filename);
+
+                if (filename == oldIndex)
+                    newAnim = ii;
+            }
+            ChosenObjectAnim = newAnim;
+        }
     }
 
     public class GroundDecorationStateUndo : StateUndo<AnimLayer>

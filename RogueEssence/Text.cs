@@ -30,7 +30,12 @@ namespace RogueEssence
         public static string[] SupportedLangs;
         public static Dictionary<string, LanguageSetting> LangNames;
 
-        public static Regex MsgTags = new Regex("(?<pause>\\[pause=(?<pauseval>\\d+)\\])|(?<colorstart>\\[color=#(?<colorval>[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f])\\])|(?<colorend>\\[color\\])|(?<boxbreak>\\[br\\])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static Regex MsgTags = new Regex(@"(?<pause>\[pause=(?<pauseval>\d+)\])" +
+                                                @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
+                                                @"|(?<boxbreak>\[br\])" +
+                                                @"|(?<scrollbreak>\[scroll\])" +
+                                                @"(?<script>\[script=(?<scriptval>\d+)\])",
+                                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
         {
@@ -133,11 +138,9 @@ namespace RogueEssence
                 for (int ii = 0; ii < Strings.Count; ii++)
                 {
                     if (Text.Strings[ii].TryGetValue(key, out text))
-                        break;
-                    else if (ii == Strings.Count - 1)
-                        throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
+                        return String.Format(Regex.Unescape(text), args);
                 }
-                return String.Format(Regex.Unescape(text), args);
+                throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
             }
             catch (Exception ex)
             {
@@ -237,15 +240,21 @@ namespace RogueEssence
 
         public string ToLocal()
         {
-            string val = "";
-            for (int ii = 0; ii < Text.StringsEx.Count; ii++)
+            try
             {
-                if (Text.StringsEx[ii].TryGetValue(Key, out val))
-                    break;
-                else if (ii == Text.StringsEx.Count - 1)
-                    throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
+                string val = "";
+                for (int ii = 0; ii < Text.StringsEx.Count; ii++)
+                {
+                    if (Text.StringsEx[ii].TryGetValue(Key, out val))
+                        return Regex.Unescape(val);
+                }
+                throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
             }
-            return Regex.Unescape(val);
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            return Key;
         }
 
         public override string ToString()

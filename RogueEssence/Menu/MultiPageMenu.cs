@@ -5,6 +5,39 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
+    public class CustomMultiPageMenu : MultiPageMenu
+    {
+        private readonly Action onCancel;
+        private readonly Action onMenu;
+
+        public override bool CanMenu => onMenu is not null;
+        public override bool CanCancel => onCancel is not null;
+
+
+        public CustomMultiPageMenu(Loc start, int width, string title, IChoosable[] totalChoices, int defaultTotalChoice, int spacesPerPage, Action onCancel, Action onMenu)
+        {
+            this.onCancel = onCancel;
+            this.onMenu = onMenu;
+            IChoosable[][] pagedChoices = SortIntoPages(totalChoices, spacesPerPage);
+            int defaultPage = defaultTotalChoice / spacesPerPage;
+            int defaultChoice = defaultTotalChoice % spacesPerPage;
+            Initialize(start, width, title, pagedChoices, defaultChoice, defaultPage, spacesPerPage);
+        }
+
+        protected override void MenuPressed()
+        {
+            MenuManager.Instance.ClearToCheckpoint();
+            onMenu();
+        }
+
+        protected override void Canceled()
+        {
+            MenuManager.Instance.RemoveMenu();
+            onCancel();
+        }
+
+    }
+
     public abstract class MultiPageMenu : TitledStripMenu
     {
         public MenuText PageText;
@@ -35,21 +68,21 @@ namespace RogueEssence.Menu
 
             IncludeTitle(title);
 
-            PageText = new MenuText("", start + new Loc(width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
+            PageText = new MenuText("", new Loc(width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
             NonChoices.Add(PageText);
 
             SetPage(defaultPage);
             CurrentChoice = defaultChoice;
         }
 
-        protected static List<MenuChoice[]> SortIntoPages(List<MenuChoice> choices, int maxSlots)
+        protected static IChoosable[][] SortIntoPages(IChoosable[] choices, int maxSlots)
         {
-            int pages = (choices.Count - 1) / maxSlots + 1;
+            int pages = (choices.Length - 1) / maxSlots + 1;
             int count = 0;
-            List<MenuChoice[]> box = new List<MenuChoice[]>();
+            List<IChoosable[]> box = new List<IChoosable[]>();
             for (int ii = 0; ii < pages; ii++)
             {
-                box.Add(new MenuChoice[Math.Min(choices.Count - maxSlots * ii, maxSlots)]);
+                box.Add(new IChoosable[Math.Min(choices.Length - maxSlots * ii, maxSlots)]);
                 for (int jj = 0; jj < box[ii].Length; jj++)
                 {
                     box[ii][jj] = choices[count];
@@ -57,7 +90,7 @@ namespace RogueEssence.Menu
                 }
             }
 
-            return box;
+            return box.ToArray();
         }
 
         protected void SetPage(int page)

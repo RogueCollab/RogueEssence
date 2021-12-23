@@ -17,6 +17,8 @@ namespace RogueEssence.Data
 
         public LocalText Name { get; set; }
         public bool Released { get; set; }
+
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new AIEntrySummary(Name, Released, Comment, Assignable); }
@@ -33,7 +35,7 @@ namespace RogueEssence.Data
         [NonSerialized]
         protected BasePlan currentPlan;
         
-        public GameAction GetNextMove(Character controlledChar, bool preThink, ReRandom rand)
+        public GameAction GetNextMove(Character controlledChar, bool preThink, IRandom rand)
         {
             foreach (BasePlan plan in Plans)
             {
@@ -46,7 +48,7 @@ namespace RogueEssence.Data
             return new GameAction(GameAction.ActionType.Wait, Dir8.None);
         }
 
-        protected GameAction AttemptPlan(Character controlledChar, BasePlan plan, bool preThink, ReRandom rand)
+        protected GameAction AttemptPlan(Character controlledChar, BasePlan plan, bool preThink, IRandom rand)
         {
             if ((currentPlan != null) && (currentPlan.GetType() == plan.GetType()))
                 return currentPlan.Think(controlledChar, preThink, rand);
@@ -83,7 +85,7 @@ namespace RogueEssence.Data
                 plan.Initialize(controlledChar);
         }
 
-        public GameAction GetAction(Character controlledChar, ReRandom rand, bool preThink)
+        public GameAction GetAction(Character controlledChar, IRandom rand, bool preThink)
         {
             try
             {

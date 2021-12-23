@@ -13,7 +13,7 @@ namespace RogueEssence.Ground
     {
         public const int HITBOX_WIDTH = 16;
         public const int HITBOX_HEIGHT = 16;
-        protected abstract int AnimFrameType { get; }
+        public abstract int AnimFrameType { get; }
         protected virtual int FrameMethod(List<CharAnimFrame> frames) { return zeroFrame(frames); }
 
         public Loc MapLoc { get { return collider.Start; } set { collider.Start = value; } }
@@ -109,7 +109,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
-        protected override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
+        public override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
         public override bool Complete => true;
 
         public IdleGroundAction(Loc loc, Dir8 dir)
@@ -147,7 +147,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
-        protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
+        public override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
         public override bool Complete => true;
         public WalkGroundAction(Loc loc, Dir8 dir, bool run, int speed, FrameTick prevTime)
         {
@@ -193,7 +193,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, 0, false); //Don't animate
         }
-        protected override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
+        public override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
         public override bool Complete => true;
         public IdleNoAnim(Loc loc, Dir8 dir)
         {
@@ -219,7 +219,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
-        protected override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
+        public override int AnimFrameType { get { return GraphicsManager.WalkAction; } }
         public override bool Complete => true;
         public SkidGroundAction(Loc loc, Dir8 dir, FrameTick prevTime)
         {
@@ -268,7 +268,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, !Loop);
         }
-        protected override int AnimFrameType { get { return AnimID; } }
+        public override int AnimFrameType { get { return AnimID; } }
 
         public override bool Complete { get { return !Loop && ActionTime >= AnimTotalTime; } }
 
@@ -297,7 +297,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, Math.Min(ActionTime.Ticks, FrameTick.FrameToTick(AnimReturnTime)), true);
         }
-        protected override int AnimFrameType { get { return AnimID; } }
+        public override int AnimFrameType { get { return AnimID; } }
         public override bool Complete { get { return ActionTime >= AnimTotalTime; } }
 
         int AnimID;
@@ -330,7 +330,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
-        protected override int AnimFrameType { get { return animType; } }
+        public override int AnimFrameType { get { return animType; } }
 
         public override bool Complete { get { return curDiff == goalDiff; } }
 
@@ -381,7 +381,7 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, 0, true);
         }
-        protected override int AnimFrameType { get { return AnimID; } }
+        public override int AnimFrameType { get { return AnimID; } }
         public override bool Complete { get { return ActionTime >= Duration; } }
 
         int AnimID;

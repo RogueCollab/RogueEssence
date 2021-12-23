@@ -12,7 +12,15 @@ namespace RogueEssence.Script
 {
     class ScriptGame : ILuaEngineComponent
     {
-        public ReRandom Rand { get { return MathUtils.Rand; } }
+        public IRandom Rand { get { return MathUtils.Rand; } }
+
+        public LuaFunction GroundSave;
+
+        public Coroutine _GroundSave()
+        {
+            return new Coroutine(GroundScene.Instance.SaveGame());
+        }
+
 
         //===================================
         // Current Map
@@ -209,7 +217,7 @@ namespace RogueEssence.Script
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
-            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Players)
+            foreach (Character ent in DataManager.Instance.Save.ActiveTeam.Players)
                 addfn.Call(tbl, ent);
             return tbl;
         }
@@ -514,6 +522,7 @@ namespace RogueEssence.Script
             if (bypass)
                 character.DequipItem();
             DataManager.Instance.Save.RegisterMonster(character.BaseForm.Species);
+            DataManager.Instance.Save.RogueUnlockMonster(character.BaseForm.Species);
         }
 
         //===================================
@@ -575,6 +584,11 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
         }
 
+        public void GivePlayerItem(InvItem item)
+        {
+            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+        }
+
         public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
         {
             for (int i = 0; i < count; ++i)
@@ -618,6 +632,11 @@ namespace RogueEssence.Script
         public int GetPlayerStorageItemCount(int id)
         {
             return DataManager.Instance.Save.ActiveTeam.Storage[id];
+        }
+
+        public void GivePlayerStorageItem(InvItem item)
+        {
+            DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
         }
 
         public void GivePlayerStorageItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
@@ -787,7 +806,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGame.VectorToDirection(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
                 return Dir8.None;
             }
         }
@@ -805,7 +824,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGame.RandomDirection(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
                 return Dir8.None;
             }
         }
@@ -815,6 +834,7 @@ namespace RogueEssence.Script
         /// </summary>
         public override void SetupLuaFunctions(LuaEngine state)
         {
+            GroundSave = state.RunString("return function(_) return coroutine.yield(GAME:_GroundSave()) end").First() as LuaFunction;
             CheckLevelSkills = state.RunString("return function(_,chara, oldLevel) return coroutine.yield(GAME:_CheckLevelSkills(chara, oldLevel)) end").First() as LuaFunction;
             TryLearnSkill = state.RunString("return function(_,chara, skill) return coroutine.yield(GAME:_TryLearnSkill(chara, skill)) end").First() as LuaFunction;
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;

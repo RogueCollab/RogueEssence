@@ -33,26 +33,26 @@ namespace RogueEssence.Menu
             this.baseMenu = baseMenu;
 
             Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0),
-                Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), false);
+                new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), false);
 
-            Nickname = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight));
-            Name = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
+            Nickname = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight));
+            Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
 
-            Level = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
+            Level = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
 
-            Elements = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
+            Elements = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
 
-            MainDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 - 2), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 - 2), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Skills = new MenuText[CharData.MAX_SKILL_SLOTS];
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
             {
-                Skills[ii] = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 4)));
+                Skills[ii] = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 4)));
             }
 
-            IntrinsicDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8 - 2), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            IntrinsicDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8 - 2), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            Intrinsic = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8));
+            Intrinsic = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8));
         }
 
         public void SetCurrentChar(CharData chara)
@@ -79,10 +79,12 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
             {
                 SlotSkill skill = CurrentChar.BaseSkills[ii];
-                SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                 string skillString = "-----";
                 if (skill.SkillNum > -1)
+                {
+                    SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                     skillString = data.GetIconName();
+                }
                 Skills[ii].SetText(skillString);
             }
 
@@ -180,6 +182,7 @@ namespace RogueEssence.Menu
 
                         DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = new Character(tradeTeam.OfferedChar, DataManager.Instance.Save.ActiveTeam);
                         DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
+                        DataManager.Instance.Save.RogueUnlockMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
 
                         baseMenu.CurrentState = ExchangeState.PostTradeWait;
                         tradeTeam.SetReady(baseMenu.CurrentState);

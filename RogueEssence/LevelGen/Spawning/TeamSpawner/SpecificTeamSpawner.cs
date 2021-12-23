@@ -9,6 +9,7 @@ namespace RogueEssence.LevelGen
     {
         public List<MobSpawn> Spawns;
 
+        public SpecificTeamSpawner() { Spawns = new List<MobSpawn>(); }
         public SpecificTeamSpawner(params MobSpawn[] spawners)
         {
             Spawns = new List<MobSpawn>();

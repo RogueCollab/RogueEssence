@@ -30,7 +30,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             AnimEditViewModel mv = new AnimEditViewModel();
             Views.AnimEditForm editForm = new Views.AnimEditForm();
-            mv.LoadDataEntries(GraphicsManager.AssetType.VFX, GraphicsManager.PARTICLE_PATTERN, editForm);
+            mv.LoadDataEntries(GraphicsManager.AssetType.Particle, editForm);
             editForm.DataContext = mv;
             editForm.Show();
         }
@@ -39,7 +39,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             BeamEditViewModel mv = new BeamEditViewModel();
             Views.AnimEditForm editForm = new Views.AnimEditForm();
-            mv.LoadDataEntries(GraphicsManager.AssetType.VFX, GraphicsManager.BEAM_PATTERN, editForm);
+            mv.LoadDataEntries(GraphicsManager.AssetType.Beam, editForm);
             editForm.DataContext = mv;
             editForm.Show();
         }
@@ -48,7 +48,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             AnimEditViewModel mv = new AnimEditViewModel();
             Views.AnimEditForm editForm = new Views.AnimEditForm();
-            mv.LoadDataEntries(GraphicsManager.AssetType.BG, GraphicsManager.BG_PATTERN, editForm);
+            mv.LoadDataEntries(GraphicsManager.AssetType.BG, editForm);
             editForm.DataContext = mv;
             editForm.Show();
         }
@@ -58,7 +58,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             AnimEditViewModel mv = new AnimEditViewModel();
             Views.AnimEditForm editForm = new Views.AnimEditForm();
-            mv.LoadDataEntries(GraphicsManager.AssetType.Icon, GraphicsManager.ICON_PATTERN, editForm);
+            mv.LoadDataEntries(GraphicsManager.AssetType.Icon, editForm);
             editForm.DataContext = mv;
             editForm.Show();
         }
@@ -76,7 +76,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             AnimEditViewModel mv = new AnimEditViewModel();
             Views.AnimEditForm editForm = new Views.AnimEditForm();
-            mv.LoadDataEntries(GraphicsManager.AssetType.Item, GraphicsManager.ITEM_PATTERN, editForm);
+            mv.LoadDataEntries(GraphicsManager.AssetType.Item, editForm);
             editForm.DataContext = mv;
             editForm.Show();
         }
@@ -85,7 +85,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             AnimEditViewModel mv = new AnimEditViewModel();
             Views.AnimEditForm editForm = new Views.AnimEditForm();
-            mv.LoadDataEntries(GraphicsManager.AssetType.Object, GraphicsManager.OBJECT_PATTERN, editForm);
+            mv.LoadDataEntries(GraphicsManager.AssetType.Object, editForm);
             editForm.DataContext = mv;
             editForm.Show();
         }

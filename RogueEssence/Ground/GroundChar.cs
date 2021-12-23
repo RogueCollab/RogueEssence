@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using AABB;
 using System.Linq;
 using NLua;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Ground
 {
@@ -30,6 +31,9 @@ namespace RogueEssence.Ground
 
         [NonSerialized]
         private GroundAction currentCharAction;
+
+        [NonSerialized]
+        private IEnumerable<IHit> currentHits;
 
         public LuaTable LuaData
         {
@@ -79,7 +83,7 @@ namespace RogueEssence.Ground
             this.Map.Update(this, orig);
         }
 
-        public int LocHeight { get { return currentCharAction.LocHeight; } }
+        public override int LocHeight { get { return currentCharAction.LocHeight; } }
 
         //determining direction
         public Dir8 CharDir
@@ -105,6 +109,11 @@ namespace RogueEssence.Ground
             //!#FIXME : Give a default unique name please fix this when we have editor/template names!
         }
 
+        [JsonConstructor]
+        public GroundChar(bool populateSlots) : this(new MonsterID(), new Loc(), Dir8.Down, "", "GroundChar", populateSlots)
+        {
+        }
+
         public GroundChar(CharData baseChar, Loc newLoc, Dir8 charDir, string instancename)
         {
             Data = baseChar;
@@ -121,11 +130,17 @@ namespace RogueEssence.Ground
             IsInteracting = false;
         }
 
-        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string instancename) : this(appearance, newLoc, charDir, "", instancename)
+        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string instancename) : this(appearance, newLoc, charDir, "", instancename, true)
         {
 
         }
-        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string nickname, string instancename) : this(new CharData(), newLoc, charDir, instancename)
+
+        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string nickname, string instancename) : this(appearance, newLoc, charDir, nickname, instancename, true)
+        {
+
+        }
+
+        public GroundChar(MonsterID appearance, Loc newLoc, Dir8 charDir, string nickname, string instancename, bool populateSlots) : this(new CharData(populateSlots), newLoc, charDir, instancename)
         {
             Data.BaseForm = appearance;
             Data.Nickname = nickname;
@@ -246,9 +261,28 @@ namespace RogueEssence.Ground
             //process the collisions and determine if a new action is needed (here, it can be forced)
             if (GroundScene.Instance.FocusedCharacter == this)
             {
-                IHit first = move.Hits.FirstOrDefault((c) => c.Box.Tags == 2);
-                if (first != null)
-                    GroundScene.Instance.PendingLeaderAction = ((GroundObject)first.Box).Interact(this);
+                IEnumerable<IHit> touches = move.Hits.Where((c) => c.Box.Tags == 2 || c.Box.Tags == 3);
+                foreach(IHit first in touches)
+                {
+                    GroundObject obj = (GroundObject)first.Box;
+                    if (obj.TriggerType == EEntityTriggerTypes.TouchOnce)
+                    {
+                        //check if already touching
+                        if (currentHits != null)
+                        {
+                            IHit prevHit = currentHits.FirstOrDefault((c) => c.Box == first.Box);
+                            if (prevHit != null)
+                                continue;
+                        }
+                        else//discount the first frame
+                            continue;
+                    }
+
+                    GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
+                    break;
+                }
+
+                currentHits = touches;
             }
 
             UpdateFrame();
@@ -291,7 +325,7 @@ namespace RogueEssence.Ground
             GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(loc.X, loc.Y - 2, 1, 5), null, color);
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        public override void DrawDebug(SpriteBatch spriteBatch, Loc offset)
         {
             if (EntEnabled)
             {
@@ -318,7 +352,7 @@ namespace RogueEssence.Ground
 
             drawCross(spriteBatch, center - offset, centerColor);
         }
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
             currentCharAction.Draw(spriteBatch, offset, sheet);
@@ -340,12 +374,12 @@ namespace RogueEssence.Ground
             currentCharAction.GetCurrentSprite(sheet, out currentAnim, out currentTime, out currentFrame);
         }
 
-        public Loc GetDrawLoc(Loc offset)
+        public override Loc GetDrawLoc(Loc offset)
         {
             return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm));
         }
 
-        public Loc GetDrawSize()
+        public override Loc GetDrawSize()
         {
             return new Loc(GraphicsManager.GetChara(CurrentForm).TileWidth, GraphicsManager.GetChara(CurrentForm).TileHeight);
         }
@@ -418,7 +452,7 @@ namespace RogueEssence.Ground
             //do nothing
         }
 
-        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator)
+        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator, TriggerResult result)
         {
             if (!activator.EntEnabled)
                 yield break;
@@ -431,7 +465,7 @@ namespace RogueEssence.Ground
             if (GetTriggerType() == EEntityTriggerTypes.Action)
             {
                 IsInteracting = true;
-                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, ent));
+                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, result, ent));
                 IsInteracting = false;
             }
         }
@@ -467,10 +501,12 @@ namespace RogueEssence.Ground
         }
 
         [OnDeserialized]
-        internal override void OnDeserializedMethod(StreamingContext context)
+        internal new void OnDeserializedMethod(StreamingContext context)
         {
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
-            base.OnDeserializedMethod(context);
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            if (AI != null)
+                AI.EntityPointer = this;
         }
     }
 }

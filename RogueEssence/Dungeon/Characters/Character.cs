@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
 using NLua;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -235,6 +236,7 @@ namespace RogueEssence.Dungeon
         //position is not visible
         public bool Unlocatable;
         public bool SeeAllChars;
+        public bool SeeItems;
         public bool SeeWallItems;
 
         //miscellaneous traits
@@ -248,18 +250,28 @@ namespace RogueEssence.Dungeon
 
         public TempCharBackRef BackRef;
 
-        public Character()
+        public Character() : this(true)
+        { }
+
+        [JsonConstructor]
+        public Character(bool populateSlots) : base(populateSlots)
         {
             Skills = new List<BackReference<Skill>>();
-            for(int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
-                Skills.Add(new BackReference<Skill>(new Skill()));
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
+                    Skills.Add(new BackReference<Skill>(new Skill()));
+            }
 
             Element1 = 00;
             Element2 = 00;
 
             Intrinsics = new List<BackReference<Intrinsic>>();
-            for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic()));
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
+                    Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic()));
+            }
 
             EquippedItem = new InvItem();
             ProxyName = "";
@@ -571,7 +583,7 @@ namespace RogueEssence.Dungeon
             int recovery = (combat ? 0 : 12);
 
             int residual = 0;
-            if (MemberTeam is ExplorerTeam && MemberTeam.Leader == this)
+            if (MemberTeam == DungeonScene.Instance.ActiveTeam && MemberTeam.Leader == this)
             {
                 residual = 80;
             }
@@ -1176,18 +1188,42 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-
             if (owningSlot != -1)
             {
-                SkillData entry = DataManager.Instance.GetSkill(skillNum);
                 Skills[owningSlot] = new BackReference<Skill>(new Skill(skillNum, BaseSkills[newSlot].Charges, enabled), newSlot);
-
-
                 skillIndices[owningSlot] = -1;
-
             }
 
             return skillIndices;
+        }
+
+        /// <summary>
+        /// Editor-side skill changes.
+        /// </summary>
+        /// <param name="skillNum"></param>
+        /// <param name="newSlot"></param>
+        /// <param name="enabled"></param>
+        public void EditSkill(int skillNum, int newSlot, bool enabled)
+        {
+            if (newSlot >= MAX_SKILL_SLOTS)
+                return;
+
+            BaseSkills[newSlot] = new SlotSkill(skillNum);
+            if (skillNum > -1)
+                BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
+
+            int owningSlot = -1;
+            for (int ii = 0; ii < Skills.Count; ii++)
+            {
+                if (Skills[ii].BackRef == newSlot)
+                {
+                    owningSlot = ii;
+                    break;
+                }
+            }
+
+            if (owningSlot != -1)
+                Skills[owningSlot] = new BackReference<Skill>(new Skill(skillNum, BaseSkills[newSlot].Charges, enabled), newSlot);
         }
 
         public void SwitchSkills(int slot)
@@ -1364,6 +1400,7 @@ namespace RogueEssence.Dungeon
             Unidentifiable = false;
             Unlocatable = false;
             SeeAllChars = false;
+            SeeItems = false;
             SeeWallItems = false;
 
             TileSight = Map.SightRange.Any;
@@ -1445,23 +1482,22 @@ namespace RogueEssence.Dungeon
                 activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
             }
             //check bag items
-            if (!ItemDisabled && MemberTeam is ExplorerTeam)
+            if (!ItemDisabled)
             {
-                ExplorerTeam team = (ExplorerTeam)MemberTeam;
-                for (int ii = 0; ii < team.GetInvCount(); ii++)
+                for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(team.GetInv(ii).ID);
+                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
                     if (itemData.BagEffect)
                     {
-                        if (!activeItems.ContainsKey(team.GetInv(ii).ID))
-                            activeItems.Add(team.GetInv(ii).ID, ii);
+                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                            activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
 
                 foreach (int key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
-                        yield return new PassiveContext(team.GetInv(activeItems[key]), team.GetInv(activeItems[key]).GetData(), defaultPortPriority, this);
+                        yield return new PassiveContext(MemberTeam.GetInv(activeItems[key]), MemberTeam.GetInv(activeItems[key]).GetData(), defaultPortPriority, this);
                 }
             }
             //check intrinsic
@@ -1532,23 +1568,26 @@ namespace RogueEssence.Dungeon
             }
 
             // check bag items
-            if (!ItemDisabled && MemberTeam is ExplorerTeam)
+            if (!ItemDisabled)
             {
-                ExplorerTeam team = (ExplorerTeam)MemberTeam;
-                for (int ii = 0; ii < team.GetInvCount(); ii++)
+                for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(team.GetInv(ii).ID);
+                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
                     if (itemData.BagEffect && itemData.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist4() && (DungeonScene.Instance.GetMatchup(character, this) & itemData.ProximityEvent.TargetAlignments) != Alignment.None)
                     {
-                        if (!activeItems.ContainsKey(team.GetInv(ii).ID))
-                            activeItems.Add(team.GetInv(ii).ID, ii);
+                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                            activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
 
                 foreach (int key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
-                        yield return new PassiveContext(team.GetInv(activeItems[key]), team.GetInv(activeItems[key]).GetData(), portPriority, this);
+                    {
+                        InvItem invItem = MemberTeam.GetInv(activeItems[key]);
+                        ItemData itemData = DataManager.Instance.GetItem(invItem.ID);
+                        yield return new PassiveContext(invItem, itemData.ProximityEvent, portPriority, this);
+                    }
                 }
             }
 
@@ -1965,13 +2004,17 @@ namespace RogueEssence.Dungeon
             List<Character> seenChars = new List<Character>();
             foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if (CanSeeCharacter(target) && DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
+                if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
                     seenChars.Add(target);
             }
             return seenChars;
         }
 
         public bool CanSeeCharacter(Character character)
+        {
+            return CanSeeCharacter(character, GetCharSight());
+        }
+        public bool CanSeeCharacter(Character character, Map.SightRange sight)
         {
             if (character == null)
                 return false;
@@ -1985,7 +2028,7 @@ namespace RogueEssence.Dungeon
             if (character.Unlocatable)
                 return false;
 
-            if (CanSeeLoc(character.CharLoc, GetCharSight()))
+            if (CanSeeLoc(character.CharLoc, sight))
                 return true;
             return false;
         }
@@ -2355,17 +2398,6 @@ namespace RogueEssence.Dungeon
 
             //restore idle position and direction
             currentCharAction = new EmptyCharAction(new CharAnimIdle(serializationLoc, serializationDir));
-
-            //TODO: v0.5: remove this
-            if (EquippedItem.ID == 0)
-                EquippedItem.ID = -1;
-
-            //TODO: v0.5: remove this
-            if (ActionEvents == null)
-            {
-                ActionEvents = new List<BattleEvent>();
-                //ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
-            }
         }
     }
 }

@@ -23,6 +23,13 @@ namespace RogueEssence.Dungeon
         public HashSet<int> Associates { get; private set; }
         public int NeighborCode;
 
+        public AutoTile()
+        {
+            Layers = new List<TileLayer>();
+            AutoTileset = -1;
+            NeighborCode = -1;
+            Associates = new HashSet<int>();
+        }
         public AutoTile(params TileLayer[] layers)
         {
             Layers = new List<TileLayer>();
@@ -61,11 +68,24 @@ namespace RogueEssence.Dungeon
 
         public void Draw(SpriteBatch spriteBatch, Loc pos)
         {
+            draw(spriteBatch, pos, false, 0);
+        }
+
+        public void DrawBlank(SpriteBatch spriteBatch, Loc pos, ulong randCode)
+        {
+            draw(spriteBatch, pos, true, randCode);
+        }
+
+        private void draw(SpriteBatch spriteBatch, Loc pos, bool neighborCodeOverride, ulong randCode)
+        {
             List<TileLayer> layers;
             if (AutoTileset > -1)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(AutoTileset);
-                layers = entry.Tiles.GetLayers(NeighborCode);
+                int neighborCode = NeighborCode;
+                if (neighborCodeOverride)
+                    neighborCode = entry.Tiles.GetVariantCode(randCode, neighborCode);
+                layers = entry.Tiles.GetLayers(neighborCode);
             }
             else
                 layers = Layers;
@@ -128,7 +148,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries.Count)
+            if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count)
                 return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[AutoTileset].Name.ToLocal());
             else
             {

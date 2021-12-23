@@ -4,6 +4,9 @@ using RogueElements;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using RogueEssence.Dungeon;
+using RogueEssence.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Ground
 {
@@ -11,7 +14,7 @@ namespace RogueEssence.Ground
     /// Parent class meant to be used to access things common to all ground entities.
     /// </summary>
     [Serializable]
-    public abstract class GroundEntity
+    public abstract class GroundEntity : IDrawableSprite
     {
 
         /// <summary>
@@ -23,6 +26,7 @@ namespace RogueEssence.Ground
             None = 0,
             Action= 1,
             Touch = 2,
+            TouchOnce = 3,
         }
 
         /// <summary>
@@ -53,6 +57,8 @@ namespace RogueEssence.Ground
         public virtual int     X           { get { return Bounds.X; } }
         public virtual int     Y           { get { return Bounds.Y; } }
 
+        public virtual int LocHeight { get { return 0; } }
+
         public virtual void SetMapLoc(Loc loc)
         {
             MapLoc = loc;
@@ -66,7 +72,7 @@ namespace RogueEssence.Ground
 
         //Moved script events to their own structure, to avoid duplicates and other issues
         [NonSerialized]
-        private Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
+        protected Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> scriptEvents;
 
         /// <summary>
         /// When this property is false, all processing of this entity is disabled.
@@ -89,7 +95,6 @@ namespace RogueEssence.Ground
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
             EntEnabled = true;
-            DevEntitySelected = false;
         }
 
         protected GroundEntity(GroundEntity other)
@@ -110,31 +115,9 @@ namespace RogueEssence.Ground
         //==================================================
 
         /// <summary>
-        /// Whether the entity should be drawn in highlights
-        /// </summary>
-        [NonSerialized]
-        public bool DevEntitySelected;
-
-        /// <summary>
         /// The color of the boxes and etc around the entity
         /// </summary>
         public abstract Color DevEntColoring { get; }
-
-        /// <summary>
-        /// When the entity is selected by the map editor, this method is called
-        /// </summary>
-        public virtual void DevOnEntitySelected()
-        {
-            DevEntitySelected = true;
-        }
-
-        /// <summary>
-        /// When the entity is de selected by the map editor, this method is called
-        /// </summary>
-        public virtual void DevOnEntityUnSelected()
-        {
-            DevEntitySelected = false;
-        }
 
         /// <summary>
         /// Whether an entity has graphics that can be drawn. Aka, a marker has no graphics, but a character has.
@@ -198,9 +181,9 @@ namespace RogueEssence.Ground
         /// Run a lua event by type
         /// </summary>
         /// <param name="ev"></param>
-        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev)
+        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, TriggerResult result)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(RunEvent(ev, this));
+            yield return CoroutineManager.Instance.StartCoroutine(RunEvent(ev, result, this));
         }
 
         /// <summary>
@@ -209,7 +192,7 @@ namespace RogueEssence.Ground
         /// <param name="ev"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] arguments)
+        public virtual IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, TriggerResult result, params object[] arguments)
         {
             if (scriptEvents.ContainsKey(ev))
             {
@@ -220,6 +203,7 @@ namespace RogueEssence.Ground
                 partopass.Add(this);
                 partopass.AddRange(arguments);
                 yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(partopass.ToArray()));
+                result.Success = true;
             }
             else
                 yield break;
@@ -299,14 +283,20 @@ namespace RogueEssence.Ground
         /// When something tries to interact with this entity, this method is called.
         /// </summary>
         /// <param name="activator"></param>
-        public virtual IEnumerator<YieldInstruction> Interact(GroundEntity activator)
+        public virtual IEnumerator<YieldInstruction> Interact(GroundEntity activator, TriggerResult result)
         {
             //default does nothing
             yield break;
         }
 
+        public virtual void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
+        public virtual Loc GetDrawLoc(Loc offset) { return Bounds.Start; }
+        public virtual Loc GetDrawSize() { return Bounds.Size; }
+
+
         [OnDeserialized]
-        internal virtual void OnDeserializedMethod(StreamingContext context)
+        internal void OnDeserializedMethod(StreamingContext context)
         {
             scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }

@@ -37,7 +37,7 @@ namespace RogueEssence.Content
                 doc.Load(path + "BeamData.xml");
                 int totalFrames = Convert.ToInt32(doc.SelectSingleNode("BeamData/TotalFrames").InnerText);
 
-                List<Texture2D> sheets = new List<Texture2D>();
+                List<(Color[] tex, int width, int height)> sheets = new List<(Color[], int, int)>();
                 Rectangle[] rects = new Rectangle[3 * totalFrames];
                 int maxWidth = 0;
                 int maxHeight = 0;
@@ -46,27 +46,30 @@ namespace RogueEssence.Content
                 {
                     using (FileStream fileStream = new FileStream(path + ((BeamFrame)ii).ToString() + ".png", FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        Texture2D newSheet = ImportTex(fileStream);
+                        using (Texture2D newSheet = ImportTex(fileStream))
+                        {
 
-                        for (int jj = 0; jj < totalFrames; jj++)
-                            rects[ii * totalFrames + jj] = new Rectangle(newSheet.Width / totalFrames * jj, maxHeight, newSheet.Width / totalFrames, newSheet.Height);
+                            for (int jj = 0; jj < totalFrames; jj++)
+                                rects[ii * totalFrames + jj] = new Rectangle(newSheet.Width / totalFrames * jj, maxHeight, newSheet.Width / totalFrames, newSheet.Height);
 
-                        maxWidth = Math.Max(maxWidth, newSheet.Width);
-                        maxHeight += newSheet.Height;
-                        sheets.Add(newSheet);
+                            maxWidth = Math.Max(maxWidth, newSheet.Width);
+                            maxHeight += newSheet.Height;
+                            sheets.Add((BaseSheet.GetData(newSheet), newSheet.Width, newSheet.Height));
+                        }
                     }
                 }
                 
-                Texture2D tex = new Texture2D(device, maxWidth, maxHeight);
+                Color[] texColors = new Color[maxWidth * maxHeight];
 
                 int curHeight = 0;
                 for (int ii = 0; ii < sheets.Count; ii++)
                 {
-                    BaseSheet.Blit(sheets[ii], tex, 0, 0, sheets[ii].Width, sheets[ii].Height, 0, curHeight);
-                    curHeight += sheets[ii].Height;
-                    sheets[ii].Dispose();
+                    BaseSheet.Blit(sheets[ii].tex, texColors, new Point(sheets[ii].width, sheets[ii].height), new Point(maxWidth, maxHeight), new Point(0, curHeight), SpriteEffects.None);
+                    curHeight += sheets[ii].height;
                 }
 
+                Texture2D tex = new Texture2D(device, maxWidth, maxHeight);
+                tex.SetData<Color>(0, null, texColors, 0, texColors.Length);
                 return new BeamSheet(tex, rects, totalFrames);
             }
             else

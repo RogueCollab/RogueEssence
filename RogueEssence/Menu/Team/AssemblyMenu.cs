@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
                     DirV.Up, DirH.Right, color);
                 flatChoices.Add(new MenuElementChoice(() => { Choose(index, true); }, true, memberName, memberLv));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
             int startPage = defaultChoice / SLOTS_PER_PAGE;
@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
 
             portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
 
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box.ToArray(), startChoice, startPage, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, startChoice, startPage, SLOTS_PER_PAGE);
 
         }
 

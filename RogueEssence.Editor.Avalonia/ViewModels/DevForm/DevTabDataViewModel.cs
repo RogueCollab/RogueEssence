@@ -267,7 +267,7 @@ namespace RogueEssence.Dev.ViewModels
                             lock (GameBase.lockObj)
                             {
                                 object obj = data;
-                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
                                 DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 
                                 string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
@@ -288,7 +288,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 lock (GameBase.lockObj)
                 {
-                    int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
+                    int entryNum = DataManager.Instance.DataIndices[dataType].Count;
                     IEntryData data = createOp();
 
                     DataEditForm editor = new DataEditForm();
@@ -299,7 +299,7 @@ namespace RogueEssence.Dev.ViewModels
                         lock (GameBase.lockObj)
                         {
                             object obj = data;
-                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
+                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
                             data = (IEntryData)obj;
                             DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 

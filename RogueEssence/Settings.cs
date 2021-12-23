@@ -26,6 +26,8 @@ namespace RogueEssence
         public Keys[] DirKeys;
         public Keys[] ActionKeys;
         public Buttons[] ActionButtons;
+        public bool Enter;
+        public bool NumPad;
         public bool InactiveInput;
 
         public List<ServerInfo> ServerList;
@@ -87,17 +89,12 @@ namespace RogueEssence
             ForbiddenKeys = new HashSet<Keys>();
             for (int ii = 0; ii < 24; ii++)
                 ForbiddenKeys.Add(Keys.F1 + ii);
-            ForbiddenKeys.Add(Keys.Enter);
-            ForbiddenKeys.Add(Keys.LeftShift);
-            ForbiddenKeys.Add(Keys.RightShift);
             ForbiddenKeys.Add(Keys.LeftControl);
             ForbiddenKeys.Add(Keys.RightControl);
             ForbiddenKeys.Add(Keys.LeftAlt);
             ForbiddenKeys.Add(Keys.RightAlt);
             ForbiddenKeys.Add(Keys.LeftWindows);
             ForbiddenKeys.Add(Keys.RightWindows);
-            for (int ii = 0; ii < 10; ii++)
-                ForbiddenKeys.Add(Keys.NumPad0 + ii);
 
             ForbiddenButtons = new HashSet<Buttons>();
 
@@ -134,6 +131,8 @@ namespace RogueEssence
             PeerList = new List<PeerInfo>();
 
             DefaultControls(DirKeys, ActionKeys, ActionButtons);
+            Enter = true;
+            NumPad = true;
             InactiveInput = false;
         }
 

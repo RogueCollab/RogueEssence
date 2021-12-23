@@ -53,7 +53,11 @@ namespace RogueEssence.Dev.ViewModels
         public int SelectedTabIndex
         {
             get => selectedTabIndex;
-            set => this.SetIfChanged(ref selectedTabIndex, value);
+            set
+            {
+                this.SetIfChanged(ref selectedTabIndex, value);
+                TabChanged();
+            }
         }
 
 
@@ -67,7 +71,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuOpen_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -111,7 +115,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         public async Task<bool> mnuSaveAs_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = mapDir;
 
@@ -163,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuImportFromPng_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -511,7 +515,27 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-
+        public void TabChanged()
+        {
+            switch (selectedTabIndex)
+            {
+                case 0://Textures
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Texture;
+                    break;
+                case 1://Decorations
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Decoration;
+                    break;
+                case 2://Walls
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Wall;
+                    break;
+                case 3://Entities
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Entity;
+                    break;
+                default:
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Other;
+                    break;
+            }
+        }
 
         public void ProcessInput(InputManager input)
         {

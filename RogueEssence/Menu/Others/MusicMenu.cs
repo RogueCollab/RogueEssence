@@ -30,13 +30,13 @@ namespace RogueEssence.Menu
 
                 flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(song), () => { choose(Path.GetFileName(song)); }));
             }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new SongSummary(Rect.FromPoints(new Loc(8, GraphicsManager.ScreenHeight - 8 - 5 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 8, GraphicsManager.ScreenHeight - 8)));
 
-            Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_MUSIC_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_MUSIC_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
         private void choose(string dir)

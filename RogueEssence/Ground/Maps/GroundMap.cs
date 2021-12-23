@@ -10,6 +10,7 @@ using AABB;
 using System.Linq;
 using RogueEssence.Script;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Ground
 {
@@ -21,9 +22,8 @@ namespace RogueEssence.Ground
 
         private GroundWall[][] obstacles;
 
-        [OptionalField]
-        protected ReRandom rand;
-        public ReRandom Rand { get { return rand; } }
+        protected IRandom rand;
+        public IRandom Rand { get { return rand; } }
 
         public Dictionary<int, MapStatus> Status;
 
@@ -62,6 +62,7 @@ namespace RogueEssence.Ground
         }
 
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
@@ -102,7 +103,7 @@ namespace RogueEssence.Ground
 
         }
 
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             this.rand = rand;
         }
@@ -173,6 +174,22 @@ namespace RogueEssence.Ground
 
             //Notify script engine
             LuaEngine.Instance.OnGroundMapInit(AssetName, this);
+        }
+
+        public IEnumerator<YieldInstruction> OnGameLoad()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.GameLoad));
+
+            //Notify script engine?
+        }
+
+        public IEnumerator<YieldInstruction> OnGameSave()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.GameSave));
+
+            //Notify script engine?
         }
 
 
@@ -693,9 +710,10 @@ namespace RogueEssence.Ground
         }
 
 
-        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos, Loc mapPos)
         {
-            BlankBG.Draw(spriteBatch, drawPos);
+            INoise noise = new ReNoise(rand.FirstSeed);
+            BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
         }
 
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
@@ -867,6 +885,18 @@ namespace RogueEssence.Ground
             }
         }
 
+        public IEnumerable<GroundAnim> IterateDecorations()
+        {
+            foreach (AnimLayer layer in Decorations)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundAnim v in layer.Anims)
+                        yield return v;
+                }
+            }
+        }
+
 
         public void LoadScriptEvents()
         {
@@ -972,16 +1002,8 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            //DiagManager.Instance.LogInfo(String.Format("GroundMap.OnDeserializedMethod(): Map {0} deserialized!", AssetName));
-
             //recompute the grid
             grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
-
-            //TODO: v0.5: remove this
-            if (Background == null)
-                Background = new MapBG();
-            if (BlankBG == null)
-                BlankBG = new AutoTile();
 
             if (ActiveChar != null)
             {

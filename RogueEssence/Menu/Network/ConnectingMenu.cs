@@ -18,9 +18,9 @@ namespace RogueEssence.Menu
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 80, GraphicsManager.ScreenHeight / 2 - GraphicsManager.MenuBG.TileHeight - VERT_SPACE), new Loc(GraphicsManager.ScreenWidth / 2 + 80, GraphicsManager.ScreenHeight / 2 + GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
 
             ConnectingMsg = new MenuText(Text.FormatKey("MENU_CONNECTING_SERVER"),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             BackMsg = new MenuText(Text.FormatKey("MENU_CONNECTING_CANCEL", DiagManager.Instance.CurSettings.ActionKeys[(int)FrameInput.InputType.Cancel].ToLocal()),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE), DirH.None);
 
             NetworkManager.Instance.Connect();
         }

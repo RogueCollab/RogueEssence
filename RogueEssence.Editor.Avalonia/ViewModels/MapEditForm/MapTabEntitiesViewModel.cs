@@ -28,19 +28,19 @@ namespace RogueEssence.Dev.ViewModels
                 Directions.Add(dir.ToLocal());
 
             Tactics = new ObservableCollection<string>();
-            string[] tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray();
+            string[] tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
             for (int ii = 0; ii < tactic_names.Length; ii++)
                 Tactics.Add(ii.ToString("D2") + ": " + tactic_names[ii]);
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
             for (int ii = 0; ii < monster_names.Length; ii++)
                 Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
                 Skins.Add(skin_names[ii]);
 
@@ -49,19 +49,20 @@ namespace RogueEssence.Dev.ViewModels
                 Genders.Add(((Gender)ii).ToLocal());
 
             Intrinsics = new ObservableCollection<string>();
-            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
+            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+            Intrinsics.Add("---: None");
             for (int ii = 0; ii < intrinsic_names.Length; ii++)
                 Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
 
             Equips = new ObservableCollection<string>();
             Equips.Add("---: None");
-            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             for (int ii = 0; ii < item_names.Length; ii++)
                 Equips.Add(ii.ToString("D3") + ": " + item_names[ii]);
 
             Skills = new ObservableCollection<string>();
             Skills.Add("---: None");
-            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
+            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
             for (int ii = 0; ii < skill_names.Length; ii++)
                 Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
 
@@ -79,6 +80,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -110,7 +112,7 @@ namespace RogueEssence.Dev.ViewModels
         public string Nickname
         {
             get { return SelectedEntity.Nickname; }
-            set { this.RaiseAndSetIfChanged(ref SelectedEntity.Nickname, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.Nickname, value); }
         }
 
 
@@ -125,6 +127,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.BaseForm.Species = value;
+                SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
                 speciesChanged();
             }
@@ -144,6 +147,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (value > -1)
                 {
                     SelectedEntity.BaseForm.Form = value;
+                    SelectedEntity.RestoreForm();
                     SelectedEntity.HP = SelectedEntity.MaxHP;
                 }
                 this.RaisePropertyChanged();
@@ -161,6 +165,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.BaseForm.Skin = value;
+                SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
             }
         }
@@ -176,6 +181,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 SelectedEntity.BaseForm.Gender = (Gender)value;
+                SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
             }
         }
@@ -194,10 +200,10 @@ namespace RogueEssence.Dev.ViewModels
 
         public int ChosenIntrinsic
         {
-            get { return SelectedEntity.Intrinsics[0].Element.ID; }
+            get { return SelectedEntity.Intrinsics[0].Element.ID + 1; }
             set
             {
-                SelectedEntity.LearnIntrinsic(value, 0);
+                SelectedEntity.LearnIntrinsic(value - 1, 0);
                 this.RaisePropertyChanged();
             }
         }
@@ -234,10 +240,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[0].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(0);
+                SelectedEntity.EditSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -247,10 +250,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[1].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(1);
+                SelectedEntity.EditSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -260,10 +260,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[2].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(2);
+                SelectedEntity.EditSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -273,10 +270,7 @@ namespace RogueEssence.Dev.ViewModels
             get { return SelectedEntity.BaseSkills[3].SkillNum + 1; }
             set
             {
-                if (value > 0)
-                    SelectedEntity.ReplaceSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
-                else
-                    SelectedEntity.DeleteSkill(3);
+                SelectedEntity.EditSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -365,6 +359,22 @@ namespace RogueEssence.Dev.ViewModels
 
         public Character SelectedEntity;
 
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                MonsterTeam team = new MonsterTeam();
+                Character clone = SelectedEntity.Clone(team);
+                team.Players.Add(clone);
+                setEntity(clone);
+            }
+        }
+
         public void ProcessUndo()
         {
             if (EntMode == EntEditMode.SelectEntity)
@@ -377,6 +387,9 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
+
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
+                return;
 
             switch (EntMode)
             {
@@ -431,10 +444,12 @@ namespace RogueEssence.Dev.ViewModels
             DataEditForm frmData = new DataEditForm();
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0]);
+
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true, new Type[0]);
 
                 bool itemExists = false;
 
@@ -544,6 +559,8 @@ namespace RogueEssence.Dev.ViewModels
         private void setEntity(Character ent)
         {
             SelectedEntity = ent;
+
+            Nickname = Nickname;
             ChosenDir = ChosenDir;
             ChosenTactic = ChosenTactic;
             ChosenMonster = ChosenMonster;

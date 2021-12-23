@@ -11,9 +11,9 @@ namespace RogueEssence.Menu
     {
         private DialogueChoiceMenu dialogueChoices;
 
-        public QuestionDialog(string message, bool sound, bool centered, DialogueChoice[] choices, int defaultChoice,
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice,
             int cancelChoice)
-            : base(message, sound, centered)
+            : base(message, sound, centerH, centerV)
         {
             dialogueChoices = new DialogueChoiceMenu(choices, defaultChoice, cancelChoice, Bounds.Y);
         }
@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
                 return;
             base.Draw(spriteBatch);
 
-            if (Text.Finished)
+            if (Finished)
                 dialogueChoices.Draw(spriteBatch);
 
         }
@@ -45,6 +45,10 @@ namespace RogueEssence.Menu
         private int cancelChoice;
 
         public const int QUESTION_SPACE = 8;
+
+        public override bool CanMenu { get { return false; } }
+        public override bool CanCancel { get { return cancelChoice > -1; } }
+
 
         public DialogueChoiceMenu(DialogueChoice[] choices, int defaultChoice, int cancelChoice, int startY)
         {
@@ -76,8 +80,7 @@ namespace RogueEssence.Menu
 
         protected override void Canceled()
         {
-            if (cancelChoice > -1)
-                choose(cancelChoice);
+            choose(cancelChoice);
         }
     }
 

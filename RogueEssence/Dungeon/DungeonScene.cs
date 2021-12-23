@@ -501,6 +501,7 @@ namespace RogueEssence.Dungeon
                         }
                         else if (input.Direction != Dir8.None)
                         {
+                            //only move on an empty stomach when the key is pressed, not held
                             bool moveRun = run && (FocusedCharacter.Fullness > 0);
                             GameAction.ActionType cmdType = GameAction.ActionType.None;
                             if (input.Direction.IsDiagonal())
@@ -508,7 +509,9 @@ namespace RogueEssence.Dungeon
                             else if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(2) || input.Direction == Dir8.None)
                                 cmdType = GameAction.ActionType.Dir;
 
-                            if (FrameTick.FromFrames(input.InputTime) > FrameTick.FromFrames(moveRun ? 1 : 5))
+                            int startFrame = moveRun ? 2 : 6;
+                            if (FrameTick.FromFrames(input.InputTime) >= FrameTick.FromFrames(startFrame) &&
+                                (FocusedCharacter.Fullness > 0 || FrameTick.FromFrames(input.InputTime) == FrameTick.FromFrames(startFrame)))
                             {
                                 if (moveRun)
                                 {
@@ -519,15 +522,36 @@ namespace RogueEssence.Dungeon
                                         if (AreTilesDistinct(FocusedCharacter.CharLoc, FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc()) ||
                                             IsRunningHazard(FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc()))
                                         {
+                                            //check against terrain/tile features in the direct front
                                             runCancelling = true;
                                         }
-                                        else if (!IsRunningHall(FocusedCharacter, FocusedCharacter.CharLoc) && IsRunningHall(FocusedCharacter, FocusedCharacter.CharLoc - FocusedCharacter.CharDir.GetLoc()))
+                                        else if (!FocusedCharacter.CharDir.IsDiagonal())
                                         {
-                                            runCancelling = true;
-                                            //AreTilesDistinct(FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.Left).GetLoc(), FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.DownLeft).GetLoc())
-                                            //AreTilesDistinct(FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.Right).GetLoc(), FocusedCharacter.CharLoc + DirExt.AddAngles(FocusedCharacter.CharDir, Dir8.DownRight).GetLoc()))
+                                            bool behindL, behindR, currentL, currentR, aheadL, aheadR, furtherL, furtherR, furtherFront;
+                                            GetSideBlocks(FocusedCharacter, -1, out behindL, out behindR);
+                                            GetSideBlocks(FocusedCharacter, 0, out currentL, out currentR);
+                                            GetSideBlocks(FocusedCharacter, 1, out aheadL, out aheadR);
+                                            GetSideBlocks(FocusedCharacter, 2, out furtherL, out furtherR);
+                                            furtherFront = ZoneManager.Instance.CurrentMap.TileBlocked(FocusedCharacter.CharLoc + FocusedCharacter.CharDir.GetLoc() * 2);
+
+                                            //both sides current are blocked
+                                            //one side ahead + further are not
+                                            //and front even further ahead is not.
+                                            if (currentL && currentR && ((!aheadL && !furtherL) || (!aheadR && !furtherR)) && !furtherFront)
+                                                runCancelling = true;
+                                            //Both sides behind are blocked
+                                            //AND one or more sides current are walkables.
+                                            else if (behindL && behindR && (!currentL || !currentR))
+                                                runCancelling = true;
+                                            //Only one side current is a different tile than the same side behind
+                                            //AND that side current is walkable.
+                                            else if (!currentL && currentL != behindL && currentR == behindR)
+                                                runCancelling = true;
+                                            else if (!currentR && currentR != behindR && currentL == behindL)
+                                                runCancelling = true;
                                         }
-                                        else
+
+                                        if (!runCancelling)
                                         {
                                             newRevealed = new HashSet<Character>();
                                             foreach (Character player in ActiveTeam.Players)
@@ -572,6 +596,7 @@ namespace RogueEssence.Dungeon
                             if (!turn)
                                 diagonal = false;
                         }
+                        
                     }
                     RunMode = runCommand;
                     RunCancel = runCancelling;
@@ -582,7 +607,7 @@ namespace RogueEssence.Dungeon
                         for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                         {
                             Skill skill = FocusedCharacter.Skills[ii].Element;
-                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive);
+                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive, DiagManager.Instance.InvertABXY);
                             if (skill.SkillNum > -1)
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
@@ -947,10 +972,21 @@ namespace RogueEssence.Dungeon
                         else
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed &&
-                                !(terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block))
+                            if (!(terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block))
                             {
-                                seeItem = true;
+                                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
+                                    seeItem = true;
+                                else
+                                {
+                                    foreach (Character member in ActiveTeam.Players)
+                                    {
+                                        if (member.SeeItems)
+                                        {
+                                            seeItem = true;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
@@ -958,7 +994,7 @@ namespace RogueEssence.Dungeon
                                 {
                                     if (member.SeeWallItems)
                                     {
-                                        if (member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
+                                        if (member.SeeItems || member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
                                         {
                                             seeItem = true;
                                             break;
@@ -1194,7 +1230,7 @@ namespace RogueEssence.Dungeon
                 DirSheet dirSheet = null;
                 switch (DebugAsset)
                 {
-                    case GraphicsManager.AssetType.VFX:
+                    case GraphicsManager.AssetType.Particle:
                         dirSheet = GraphicsManager.GetAttackSheet(DebugAnim);
                         break;
                     case GraphicsManager.AssetType.Icon:

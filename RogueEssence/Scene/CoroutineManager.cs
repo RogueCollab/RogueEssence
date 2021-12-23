@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Text;
 
 namespace RogueEssence
 {
@@ -37,7 +37,7 @@ namespace RogueEssence
             return StartCoroutine(new Coroutine(coro), false);
         }
 
-        public Coroutine StartCoroutine(Coroutine coro, bool branch)
+        public Coroutine StartCoroutine(Coroutine coro, bool branch = false)
         {
             int contextidx = branch ? -1 : m_currentcontextidx;
 
@@ -137,6 +137,16 @@ namespace RogueEssence
             } while (wantsAnother);
         }
 
+        public string DumpCoroutines()
+        {
+            if (m_currentcontextidx < 0 || m_currentcontextidx >= m_coroutines.Count)
+                return "";
+            Coroutine[] temp = m_coroutines[m_currentcontextidx].ToArray();
+            StringBuilder dumpMsg = new StringBuilder();
+            foreach (Coroutine co in temp)
+                dumpMsg.Append(co.GetEnumeratorString() + "\n");
+            return dumpMsg.ToString();
+        }
 
         /// <summary>
         /// Simple helper method to allow processing a function as a coroutine.

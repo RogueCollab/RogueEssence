@@ -20,6 +20,9 @@ namespace RogueEssence.Menu
         public IntRange MultiSelect { get; protected set; }
         private int selectedTotal;
 
+        public virtual bool CanMenu { get { return true; } }
+        public virtual bool CanCancel { get { return true; } }
+
         public override Loc PickerPos
         {
             get
@@ -54,8 +57,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < choices.Length; ii++)
             {
                 Choices.Add(choices[ii]);
-                choices[ii].Bounds = Rect.FromPoints(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 16 - 5, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii - 1),
-                    new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth - 4, Bounds.Y + GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * (ii + 1) - 3));
+                choices[ii].Bounds = new Rect(new Loc(GraphicsManager.MenuBG.TileWidth + 16 - 5, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii - 1),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + 5 - 4, VERT_SPACE - 2));
             }
         }
         protected int CalculateChoiceLength(IEnumerable<MenuTextChoice> choices, int minWidth)
@@ -140,13 +143,19 @@ namespace RogueEssence.Menu
             }
             else if (input.JustPressed(FrameInput.InputType.Menu))
             {
-                GameManager.Instance.SE("Menu/Cancel");
-                MenuPressed();
+                if (CanMenu)
+                {
+                    GameManager.Instance.SE("Menu/Cancel");
+                    MenuPressed();
+                }
             }
             else if (input.JustPressed(FrameInput.InputType.Cancel))
             {
-                GameManager.Instance.SE("Menu/Cancel");
-                Canceled();
+                if (CanCancel)
+                {
+                    GameManager.Instance.SE("Menu/Cancel");
+                    Canceled();
+                }
             }
             else if (MultiSelect.Max > 0 && input.JustPressed(FrameInput.InputType.SelectItems))
             {
@@ -190,7 +199,7 @@ namespace RogueEssence.Menu
         {
             for (int ii = Choices.Count - 1; ii >= 0; ii--)
             {
-                if (Collision.InBounds(Choices[ii].Bounds, input.MouseLoc / GraphicsManager.WindowZoom))
+                if (Collision.InBounds(Choices[ii].Bounds, input.MouseLoc / GraphicsManager.WindowZoom - Bounds.Start))
                     return ii;
             }
             return -1;

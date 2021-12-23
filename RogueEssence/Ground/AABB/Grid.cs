@@ -130,8 +130,7 @@
 				removed |= cell.Remove(box);
 			}
 
-			if(removed)
-				this.Add(box);
+			this.Add(box);
 		}
 
 		public bool Remove(IObstacle box)

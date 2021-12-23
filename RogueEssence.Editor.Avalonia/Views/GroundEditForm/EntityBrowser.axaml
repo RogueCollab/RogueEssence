@@ -46,7 +46,7 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
       <TextBlock Margin="4,2" Text="Direction:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-      <ComboBox Margin="4,2" Grid.Column="1" Items="{Binding Directions}" SelectedIndex="{Binding ChosenDirection}" IsEnabled="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=1|2|3}"/>
+      <ComboBox Margin="4,2" Grid.Column="1" Items="{Binding Directions}" SelectedIndex="{Binding ChosenDirection}" IsEnabled="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=0|1|2|3}"/>
     </Grid>
     <Grid Grid.Row="3" IsVisible="True">
       <Grid.ColumnDefinitions>
@@ -148,6 +148,7 @@
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
             <RowDefinition Height="42"/>
             <RowDefinition Height="42"/>
             <RowDefinition Height="42"/>
@@ -159,20 +160,36 @@
             <ColumnDefinition Width="80"/>
             <ColumnDefinition/>
           </Grid.ColumnDefinitions>
-          <TextBlock Margin="4,2" Text="Sprite:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-          <ComboBox Items="{Binding ObjectAnims}" SelectedIndex="{Binding ChosenObjectAnim}" VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"/>
-          <TextBlock Margin="4,2" Text="X Offset:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
-          <NumericUpDown Value="{Binding OffsetX}" VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="1"/>
-          <TextBlock Margin="4,2" Text="Y Offset:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="2"/>
-          <NumericUpDown Value="{Binding OffsetY}" VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="3"/>
-          <TextBlock Margin="4,2" Text="Start Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
-          <NumericUpDown Minimum="-1" Value="{Binding StartFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1"/>
-          <TextBlock Margin="4,2" Text="End Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="2"/>
-          <NumericUpDown Minimum="-1" Value="{Binding EndFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="3"/>
-          <TextBlock Margin="4,2" Text="Frame Length:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
-          <NumericUpDown Minimum="1" Value="{Binding FrameLength}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"/>
-          <!--TextBlock Margin="4,2" Text="Alpha:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4"/>
-          <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"/-->
+          <TextBlock Margin="4,2" Text="Type:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <ComboBox Items="{Binding AnimTypes}" SelectedIndex="{Binding ChosenAnimType}" VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"/>
+          <TextBlock Margin="4,2" Text="Sprite:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
+          <ComboBox Items="{Binding ObjectAnims}" SelectedIndex="{Binding ChosenObjectAnim}" VerticalAlignment="Center" VirtualizationMode="Simple" Margin="4,2" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"/>
+          <TextBlock Margin="4,2" Text="X Offset:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
+          <NumericUpDown Value="{Binding OffsetX}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="Y Offset:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="2"/>
+          <NumericUpDown Value="{Binding OffsetY}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="3"/>
+          <TextBlock Margin="4,2" Text="Start Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
+          <NumericUpDown Minimum="-1" Value="{Binding StartFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1"/>
+          <TextBlock Margin="4,2" Text="End Frame:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3" Grid.Column="2"/>
+          <NumericUpDown Minimum="-1" Value="{Binding EndFrame}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="3"/>
+          <TextBlock Margin="4,2" Text="Frame Length:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4"/>
+          <NumericUpDown Minimum="1" Value="{Binding FrameLength}" VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"/>
+          <!--TextBlock Margin="4,2" Text="Alpha:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="5"/>
+          <NumericUpDown VerticalAlignment="Center" Margin="4,2" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"/-->
+        </Grid>
+      </TabItem>
+      <TabItem Header="Object Data" IsVisible="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=0}" >
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Margin="4,2" Text="Pass-Through:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+          <CheckBox IsChecked="{Binding Passable}" Margin="4,2" Grid.Column="1" />
         </Grid>
       </TabItem>
       <TabItem Header="Spawner Data" IsVisible="{Binding Path=ChosenEntityType, Converter={StaticResource IntInSetConverter}, ConverterParameter=3}" >

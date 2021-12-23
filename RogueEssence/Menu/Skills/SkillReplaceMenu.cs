@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
                     int index = ii;
                     MenuText menuText = new MenuText(skillString, new Loc(2, 1));
                     MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirH.Right);
-                    MenuDivider div = new MenuDivider(new Loc(0, LINE_SPACE), menuWidth - 8 * 4);
+                    MenuDivider div = new MenuDivider(new Loc(0, LINE_HEIGHT), menuWidth - 8 * 4);
                     char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges, div));
                 }
             }
@@ -49,7 +49,7 @@ namespace RogueEssence.Menu
             char_skills.Add(new MenuElementChoice(() => { choose(CharData.MAX_SKILL_SLOTS); }, true, newMenuText, newMenuCharges));
 
             summaryMenu = new SkillSummary(Rect.FromPoints(new Loc(16,
-                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_SPACE * 2 - VERT_SPACE * 4),
+                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_HEIGHT * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_SKILLS_TITLE", player.GetDisplayName(true)), char_skills.ToArray(), 0);

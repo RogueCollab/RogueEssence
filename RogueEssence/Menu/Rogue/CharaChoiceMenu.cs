@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
             {
                 if (DiagManager.Instance.DevMode)
                     startChars.Add(ii);
-                else if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
+                else if (DataManager.Instance.Save.RogueStarters[ii] && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
                     startChars.Add(ii);
                 else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
@@ -51,10 +51,10 @@ namespace RogueEssence.Menu
                 int startChar = startChars[ii];
                 flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar].GetColoredName(), () => { choose(startChar); }));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
-            
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+
             int totalSlots = SLOTS_PER_PAGE;
-            if (box.Count == 1)
+            if (box.Length == 1)
                 totalSlots = box[0].Length;
 
             team = teamName;
@@ -63,12 +63,12 @@ namespace RogueEssence.Menu
 
             Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 64), true);
 
-            infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+            infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
 
-            Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box.ToArray(), 0, 0, totalSlots, false, -1);
+            Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box, 0, 0, totalSlots, false, -1);
 
-            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc((titleMenu.Bounds.X + titleMenu.Bounds.End.X) / 2, titleMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
+            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             title.Color = TextTan;
             titleMenu.Elements.Add(title);
 
@@ -112,10 +112,15 @@ namespace RogueEssence.Menu
             //however, when switching between species, the settings are kept even if invalid for new species, just display legal substitutes in those cases
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
-                GameManager.Instance.SE("Menu/Confirm");
                 int totalChoice = CurrentChoiceTotal;
-                CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : -1, this);
-                MenuManager.Instance.AddMenu(menu, true);
+                if (totalChoice > 0)
+                {
+                    GameManager.Instance.SE("Menu/Confirm");
+                    CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : -1, this);
+                    MenuManager.Instance.AddMenu(menu, true);
+                }
+                else//TODO: allow editing on the random spot
+                    GameManager.Instance.SE("Menu/Cancel");
             }
             else
                 base.UpdateKeys(input);
@@ -220,7 +225,6 @@ namespace RogueEssence.Menu
             Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(choice, formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
             newChar.Nickname = name;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
-            DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Players[0].BaseForm.Species);
 
             try
             {

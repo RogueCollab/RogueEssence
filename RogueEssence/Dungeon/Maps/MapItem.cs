@@ -4,6 +4,7 @@ using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dungeon
 {
@@ -84,6 +85,18 @@ namespace RogueEssence.Dungeon
         public InvItem MakeInvItem()
         {
             return new InvItem(Value, Cursed, HiddenValue, Price);
+        }
+
+        public int GetSellValue()
+        {
+            if (IsMoney)
+                return 0;
+
+            ItemData entry = DataManager.Instance.GetItem(Value);
+            if (entry.MaxStack > 1)
+                return entry.Price * HiddenValue;
+            else
+                return entry.Price;
         }
 
         public string GetPriceString()

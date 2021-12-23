@@ -43,11 +43,11 @@ namespace RogueEssence.Dev.ViewModels
             DataEditForm frmData = new DataEditForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(ActiveEffect), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(ActiveEffect), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true, new Type[0]);
                 op(element);
                 frmData.Close();
             };
@@ -77,12 +77,12 @@ namespace RogueEssence.Dev.ViewModels
             DataEditForm frmData = new DataEditForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapStatus), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapStatus), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapStatus), new object[0], element, true, new Type[0]);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapStatus), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapStatus), new object[0], true, new Type[0]);
 
                 bool itemExists = false;
 
@@ -119,11 +119,11 @@ namespace RogueEssence.Dev.ViewModels
             DataEditForm frmData = new DataEditForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(SingleCharEvent), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(SingleCharEvent), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true, new Type[0]);
                 op(index, element);
                 frmData.Close();
             };

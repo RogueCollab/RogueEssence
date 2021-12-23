@@ -36,10 +36,8 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IRangeDict member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IRangeDict member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type keyType = typeof(IntRange);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IRangeDict<>), type, 0);
 
@@ -72,11 +70,11 @@ namespace RogueEssence.Dev
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
                     op(key, element);
                     frmData.Close();
                 };
@@ -99,11 +97,11 @@ namespace RogueEssence.Dev
                     attrList.Add(rangeAtt);
                 frmKey.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, attrList.ToArray());
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, parent, elementName, keyType, attrList.ToArray(), key, true);
+                DataEditor.LoadClassControls(frmKey.ControlPanel, parent, elementName, keyType, attrList.ToArray(), key, true, new Type[0]);
 
                 frmKey.SelectedOKEvent += () =>
                 {
-                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true);
+                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true, new Type[0]);
                     op(key, element);
                     frmKey.Close();
                 };
@@ -121,10 +119,10 @@ namespace RogueEssence.Dev
         }
 
 
-        public override IRangeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override IRangeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             RangeDictBox lbxValue = (RangeDictBox)control.Children[controlIndex];
             RangeDictBoxViewModel mv = (RangeDictBoxViewModel)lbxValue.DataContext;
             return mv.GetDict(type);

@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Network;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Script
 {
@@ -26,7 +27,8 @@ namespace RogueEssence.Script
         private object                 m_choiceresult = -1;
         private MonsterID       m_curspeakerID = new MonsterID();
         private string              m_curspeakerName= "";
-        private bool m_curcenter = false;
+        private bool m_curcenter_h = false;
+        private bool m_curcenter_v = false;
         private bool m_curautoFinish = false;
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
@@ -68,7 +70,7 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter, new string[] { text });
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, new string[] { text });
                 else
                 {
                     if (!String.IsNullOrEmpty(m_curspeakerName))
@@ -79,7 +81,28 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextDialogue({0}): Encountered exception:\n{1}", text, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextDialogue({0}): Encountered exception.", text), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        public void TextDialogue(string text, LuaTable callbacks, int waitTime)
+        {
+            //TODO: support mid-menu script callbacks
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, new string[] { text });
+                else
+                {
+                    if (!String.IsNullOrEmpty(m_curspeakerName))
+                        DungeonScene.Instance.LogMsg(String.Format("{0}: {1}", m_curspeakerName, text));
+                    else
+                        DungeonScene.Instance.LogMsg(text);
+                }
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextDialogue({0}): Encountered exception.", text), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -89,11 +112,11 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, m_curautoFinish, expireTime, () => { }));
+                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, () => { }, text);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception:\n{2}", text, expireTime, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -106,7 +129,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextWaitMenu({0}): Encountered exception:\n{1}", anyInput, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextWaitMenu({0}): Encountered exception", anyInput), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -119,7 +142,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowTitle({0}, {1}): Encountered exception:\n{2}", text, time, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextWaitMenu({0}, {1}): Encountered exception", text, time), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -132,21 +155,21 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextFadeTitle({0}): Encountered exception:\n{1}", time, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextFadeTitle({0}, {1}): Encountered exception", time), e), DiagManager.Instance.DevMode);
             }
         }
 
 
 
-        public void ShowBG(string bg, int frameTime, int time)
+        public void ShowBG(string bg, int frameTime, int fadeInTime)
         {
             try
             {
-                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), time);
+                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), fadeInTime);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception:\n{2}", bg, frameTime, time, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception", bg, frameTime, fadeInTime), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -159,7 +182,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowBG({0}): Encountered exception:\n{1}", time, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowBG({0}): Encountered exception", time), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -173,7 +196,8 @@ namespace RogueEssence.Script
             m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
             m_curautoFinish = false;
-            m_curcenter = false;
+            m_curcenter_h = false;
+            m_curcenter_v = false;
         }
 
 
@@ -208,9 +232,8 @@ namespace RogueEssence.Script
             }
             else
             {
-                DiagManager.Instance.LogInfo("ScriptUI.SetSpeaker(): The speaker was null!!");
-                m_curspeakerID = new MonsterID(0, 0, 0, Data.Gender.Unknown);
-                m_curspeakerName = "NULL";
+                m_curspeakerID = MonsterID.Invalid;
+                m_curspeakerName = null;
             }
 
             m_curspeakerEmo.Emote = 0;
@@ -225,9 +248,8 @@ namespace RogueEssence.Script
             }
             else
             {
-                DiagManager.Instance.LogInfo("ScriptUI.SetSpeaker(): The speaker was null!!");
-                m_curspeakerID = new MonsterID(0, 0, 0, Data.Gender.Unknown);
-                m_curspeakerName = "NULL";
+                m_curspeakerID = MonsterID.Invalid;
+                m_curspeakerName = null;
             }
 
             m_curspeakerEmo.Emote = 0;
@@ -244,9 +266,10 @@ namespace RogueEssence.Script
             m_curspeakerEmo.Emote = emoteIndex;
         }
 
-        public void SetCenter(bool centered)
+        public void SetCenter(bool centerH, bool centerV = false)
         {
-            m_curcenter = centered;
+            m_curcenter_h = centerH;
+            m_curcenter_v = centerV;
         }
 
         public void SetAutoFinish(bool autoFinish)
@@ -289,7 +312,7 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="message">Question to be asked to the user.</param>
         /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
-        public void ChoiceMenuYesNo( string message, bool bdefaultstono = false )
+        public void ChoiceMenuYesNo( string message, bool bdefaultstono = false)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -310,7 +333,7 @@ namespace RogueEssence.Script
                                                                       m_curspeakerName,
                                                                       m_curspeakerEmo,
                                                                       message,
-                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter,
+                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v,
                                                                       () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                                                                       () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
@@ -320,12 +343,12 @@ namespace RogueEssence.Script
                     m_curchoice = MenuManager.Instance.CreateQuestion(message,
                         m_curspeakerSnd,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
-                        () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); });
+                        () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ChoiceMenuYesNo({0}): Encountered exception:\n{1}", message, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChoiceMenuYesNo({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -338,17 +361,17 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="title"></param>
         /// <param name="desc"></param>
-        public void NameMenu(string title, string desc)
+        public void NameMenu(string title, string desc, int maxLength = 116)
         {
             try
             {
                 m_choiceresult = "";
                 //TODO: allow this to work in dungeon mode by skipping replays
-                m_curchoice = new TeamNameMenu(title, desc, (string name) => { m_choiceresult = name; });
+                m_curchoice = new TeamNameMenu(title, desc, maxLength, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.NameMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.NameMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -362,7 +385,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.AssemblyMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.AssemblyMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -397,7 +420,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShopMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShopMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -424,7 +447,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SellMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SellMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -438,7 +461,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.StorageMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.StorageMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -452,7 +475,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.WithdrawMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.WithdrawMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -497,7 +520,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.BankMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BankMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -524,7 +547,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SpoilsMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SpoilsMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -543,7 +566,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.AppraiseMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.AppraiseMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -566,7 +589,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TutorTeamMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TutorTeamMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -589,7 +612,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.RelearnMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.RelearnMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -611,7 +634,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.LearnMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.LearnMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -633,7 +656,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ForgetMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ForgetMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -650,10 +673,26 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowPromoteMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowPromoteMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
+
+        public bool CanSwapMenu(LuaTable goods)
+        {
+            List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+            foreach (object key in goods.Keys)
+            {
+                LuaTable entry = goods[key] as LuaTable;
+                int item = (int)((Int64)entry["Item"]);
+                List<int> reqs = new List<int>();
+                LuaTable luaReqs = entry["ReqItem"] as LuaTable;
+                foreach (object tradeIn in luaReqs.Values)
+                    reqs.Add((int)((Int64)tradeIn));
+                goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+            }
+            return SwapShopMenu.CanView(goodsList);
+        }
 
         public void SwapMenu(LuaTable goods, LuaTable prices)
         {
@@ -685,7 +724,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SwapMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SwapMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -703,7 +742,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TributeMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TributeMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -717,7 +756,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowMusicMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowMusicMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -734,7 +773,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.DungeonMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.DungeonMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -771,7 +810,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.DungeonMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.DungeonMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -786,7 +825,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ServersMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ServersMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -799,7 +838,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ContactsMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ContactsMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -812,7 +851,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SOSMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SOSMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -825,7 +864,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.AOKMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.AOKMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -838,7 +877,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.PeersMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.PeersMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -851,7 +890,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ConnnectMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ConnnectMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -875,7 +914,59 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.CurrentActivityMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.CurrentActivityMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        public void ChooseMonsterMenu(string title, LuaTable choices, bool canMenu = false, bool canCancel = false)
+        {
+            try
+            {
+                m_choiceresult = null;
+
+                List<(MonsterID mon, string name)> monsters = new();
+
+                for (int ii = 1; choices[ii] is not null; ii++)
+                {
+                    var choice = choices[ii];
+                    if (choice is MonsterID monster)
+                        monsters.Add((monster, ""));
+                    else
+                        throw new ArgumentException($"Table must be array of '{nameof(MonsterID)}'", nameof(choices));
+                }
+
+                if (monsters.Count == 0)
+                    throw new ArgumentException($"Table must be array of one or more '{nameof(MonsterID)}'", nameof(choices));
+
+                void chooseAction(int slot)
+                {
+                    m_choiceresult = monsters[slot].mon;
+                    MenuManager.Instance.RemoveMenu();
+                }
+
+                void cancelAction() { }
+
+                m_curchoice = new ChooseMonsterMenu(title, monsters, 0, chooseAction, canCancel ? cancelAction : null, canMenu);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChooseMonsterMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+
+
+        public void ChooseCustomMenu(ChoiceMenu menu)
+        {
+            try
+            {
+                m_choiceresult = null;
+
+                m_curchoice = menu;
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChooseCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -898,8 +989,8 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
-                int mappedDefault = 0;
-                int mappedCancel = 0;
+                int? mappedDefault = null;
+                int? mappedCancel = null;
                 //Intepret the choices from lua
                 List<DialogueChoice> choices = new List<DialogueChoice>();
                 IDictionaryEnumerator dict = choicespairs.GetEnumerator();
@@ -924,20 +1015,25 @@ namespace RogueEssence.Script
                     choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
 
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+                if (mappedCancel == null)
+                    mappedCancel = -1;
+
                 //Make a choice menu, and check if we display a speaker or not
                 if (m_curspeakerName != null)
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo,
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter, choices.ToArray(), mappedDefault, mappedCancel);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
                 else
                 {
-                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault, mappedCancel);
+                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.BeginChoiceMenu({0}): Encountered exception:\n{1}", message, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BeginChoiceMenu({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -950,6 +1046,14 @@ namespace RogueEssence.Script
             return m_choiceresult;
         }
 
+        public Action GetChoiceAction(object obj)
+        {
+            return () =>
+            {
+                MenuManager.Instance.RemoveMenu();
+                m_choiceresult = obj;
+            };
+        }
 
 
         /// <summary>
@@ -976,11 +1080,11 @@ namespace RogueEssence.Script
             try
             {
                 IInteractable imenu = (IInteractable)menu;
-                return new Coroutine(Menu.MenuManager.Instance.ProcessMenuCoroutine(imenu));
+                return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(imenu));
             }
             catch(Exception ex)
             {
-                DiagManager.Instance.LogInfo("ScriptUI.ProcessMenuCoroutine(): Exception caught: \n" + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                DiagManager.Instance.LogError(ex);
                 return null;
             }
         }
@@ -1037,8 +1141,8 @@ namespace RogueEssence.Script
             end", "WaitHideTitle").First() as LuaFunction;
 
             WaitShowBG = state.RunString(@"
-            return function(_, text, frameTime, time)
-                UI:ShowBG(text, frameTime, time)
+            return function(_, text, frameTime, fadeInTime)
+                UI:ShowBG(text, frameTime, fadeInTime)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowBG").First() as LuaFunction;
 

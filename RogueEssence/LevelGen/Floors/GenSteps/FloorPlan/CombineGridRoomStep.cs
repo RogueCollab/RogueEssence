@@ -5,26 +5,47 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
+    public class GridCombo<T> where T : class, IFloorPlanGenContext
+    {
+        public Loc Size;
+        public RoomGen<T> GiantRoom;
+
+        public GridCombo()
+        {
+
+        }
+        public GridCombo(Loc size, RoomGen<T> giantRoom)
+        {
+            Size = size;
+            GiantRoom = giantRoom;
+        }
+    }
+
+    /// <summary>
+    /// Merges single-cell rooms together into larger rooms, specified in Combos
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
     public class CombineGridRoomStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
     {
         //just combine simple squares for now
-        public SpawnList<RoomGen<T>> GiantRooms;
+        public SpawnList<GridCombo<T>> Combos;
         public ComponentCollection RoomComponents { get; set; }
-        public int CombineChance;
+        public RandRange MergeRate;
 
         public List<BaseRoomFilter> Filters { get; set; }
 
         public CombineGridRoomStep()
         {
-            GiantRooms = new SpawnList<RoomGen<T>>();
+            Combos = new SpawnList<GridCombo<T>>();
             RoomComponents = new ComponentCollection();
             Filters = new List<BaseRoomFilter>();
         }
 
-        public CombineGridRoomStep(int combineChance, List<BaseRoomFilter> filters)
+        public CombineGridRoomStep(RandRange mergeRate, List<BaseRoomFilter> filters)
         {
-            CombineChance = combineChance;
-            GiantRooms = new SpawnList<RoomGen<T>>();
+            MergeRate = mergeRate;
+            Combos = new SpawnList<GridCombo<T>>();
             RoomComponents = new ComponentCollection();
             Filters = filters;
         }
@@ -32,49 +53,63 @@ namespace RogueEssence.LevelGen
 
         public override void ApplyToPath(IRandom rand, GridPlan floorPlan)
         {
-            for(int xx = 0; xx < floorPlan.GridWidth-1; xx++)
+            int merges = MergeRate.Pick(rand);
+            for (int ii = 0; ii < merges; ii++)
             {
-                for (int yy = 0; yy < floorPlan.GridHeight-1; yy++)
+                //roll a merge
+                GridCombo<T> combo = Combos.Pick(rand);
+                List<Loc> viableLocs = new List<Loc>();
+                //attempt to place it
+                for (int xx = 0; xx < floorPlan.GridWidth - (combo.Size.X - 1); xx++)
                 {
-                    //check for room presence in all rooms (must be SINGLE and immutable)
-                    if (!roomViable(floorPlan, xx, yy))
-                        continue;
-                    if (!roomViable(floorPlan, xx, yy+1))
-                        continue;
-                    if (!roomViable(floorPlan, xx+1, yy))
-                        continue;
-                    if (!roomViable(floorPlan, xx+1, yy+1))
-                        continue;
-
-                    //check for hall connectivity in all constituent halls
-                    if (floorPlan.GetHall(new LocRay4(xx, yy, Dir4.Down)) == null)
-                        continue;
-                    if (floorPlan.GetHall(new LocRay4(xx, yy, Dir4.Right)) == null)
-                        continue;
-                    if (floorPlan.GetHall(new LocRay4(xx+1, yy, Dir4.Down)) == null)
-                        continue;
-                    if (floorPlan.GetHall(new LocRay4(xx, yy+1, Dir4.Right)) == null)
-                        continue;
-
-                    if (rand.Next(100) < CombineChance)
+                    for (int yy = 0; yy < floorPlan.GridHeight - (combo.Size.Y - 1); yy++)
                     {
-                        //erase the constituent rooms
-                        floorPlan.EraseRoom(new Loc(xx, yy));
-                        floorPlan.EraseRoom(new Loc(xx + 1, yy));
-                        floorPlan.EraseRoom(new Loc(xx, yy + 1));
-                        floorPlan.EraseRoom(new Loc(xx + 1, yy + 1));
+                        bool viable = true;
+                        //check for room presence in all rooms (must be SINGLE and immutable)
 
-                        //erase the constituent halls
-                        floorPlan.SetHall(new LocRay4(xx, yy, Dir4.Down), null, new ComponentCollection());
-                        floorPlan.SetHall(new LocRay4(xx, yy, Dir4.Right), null, new ComponentCollection());
-                        floorPlan.SetHall(new LocRay4(xx + 1, yy, Dir4.Down), null, new ComponentCollection());
-                        floorPlan.SetHall(new LocRay4(xx, yy + 1, Dir4.Right), null, new ComponentCollection());
+                        for (int x2 = xx; x2 < xx + combo.Size.X; x2++)
+                        {
+                            for (int y2 = yy; y2 < yy + combo.Size.Y; y2++)
+                            {
+                                if (!roomViable(floorPlan, x2, y2))
+                                {
+                                    viable = false;
+                                    break;
+                                }
+                            }
+                            if (!viable)
+                                break;
+                        }
+                        if (!viable)
+                            continue;
 
-                        //place the room
-                        RoomGen<T> gen = GiantRooms.Pick(rand);
-                        floorPlan.AddRoom(new Rect(xx, yy, 2, 2), gen.Copy(), this.RoomComponents.Clone(), false);
+
+                        //TODO: check for connectivity: all constituent rooms must be connected to each other somehow
+                        //Check for connectivity within the whole map.
+
+                        viableLocs.Add(new Loc(xx, yy));
                     }
                 }
+
+                if (viableLocs.Count == 0)
+                    continue;
+
+                Loc destLoc = viableLocs[rand.Next(viableLocs.Count)];
+                //erase the constituent rooms
+                for (int x2 = destLoc.X; x2 < destLoc.X + combo.Size.X; x2++)
+                {
+                    for (int y2 = destLoc.Y; y2 < destLoc.Y + combo.Size.Y; y2++)
+                    {
+                        floorPlan.EraseRoom(new Loc(x2, y2));
+                        if (x2 > destLoc.X)
+                            floorPlan.SetHall(new LocRay4(x2, y2, Dir4.Left), null, new ComponentCollection());
+                        if (y2 > destLoc.Y)
+                            floorPlan.SetHall(new LocRay4(x2, y2, Dir4.Up), null, new ComponentCollection());
+                    }
+                }
+
+                //place the room
+                floorPlan.AddRoom(new Rect(destLoc.X, destLoc.Y, combo.Size.X, combo.Size.Y), combo.GiantRoom.Copy(), this.RoomComponents.Clone(), false);
             }
         }
 
@@ -93,5 +128,9 @@ namespace RogueEssence.LevelGen
         }
 
 
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]: Amount:{2}", this.GetType().Name, Combos.Count, MergeRate.ToString());
+        }
     }
 }

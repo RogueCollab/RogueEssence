@@ -23,7 +23,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.SetCharacterAI(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -39,7 +39,7 @@ namespace RogueEssence.Script
             }
             catch(Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.DisableCharacterAI(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -55,7 +55,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.DisableCharacterAI(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -71,7 +71,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.SetAIState(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 

@@ -57,7 +57,11 @@ namespace RogueEssence.Dev.ViewModels
         public int SelectedTabIndex
         {
             get => selectedTabIndex;
-            set => this.SetIfChanged(ref selectedTabIndex, value);
+            set
+            {
+                this.SetIfChanged(ref selectedTabIndex, value);
+                TabChanged();
+            }
         }
 
 
@@ -71,7 +75,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuOpen_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -115,7 +119,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         public async Task<bool> mnuSaveAs_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = mapDir;
 
@@ -167,7 +171,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuImportFromPng_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.MAP_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -385,6 +389,34 @@ namespace RogueEssence.Dev.ViewModels
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
+
+        public void TabChanged()
+        {
+            switch (selectedTabIndex)
+            {
+                case 0://Textures
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Texture;
+                    break;
+                case 1://Terrain
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Terrain;
+                    break;
+                case 2://Tiles
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Tile;
+                    break;
+                case 3://Items
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Item;
+                    break;
+                case 4://Entities
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entity;
+                    break;
+                case 5://Entrances
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entrance;
+                    break;
+                default:
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Other;
+                    break;
+            }
+        }
 
         public void ProcessInput(InputManager input)
         {

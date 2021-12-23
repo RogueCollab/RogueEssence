@@ -13,9 +13,8 @@ namespace RogueEssence.Dev
     public class ItemDataEditor : Editor<ItemData>
     {
         public override bool DefaultSubgroup => false;
-        public override bool DefaultDecoration => true;
 
-        public override void LoadMemberControl(string parent, ItemData obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public override void LoadMemberControl(string parent, ItemData obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             //if (name == "Sprite")
             //{
@@ -28,11 +27,11 @@ namespace RogueEssence.Dev
             //}
             //else
             //{
-                base.LoadMemberControl(parent, obj, control, name, type, attributes, member, isWindow);
+                base.LoadMemberControl(parent, obj, control, name, type, attributes, member, isWindow, subGroupStack);
             //}
         }
 
-        public override object SaveMemberControl(ItemData obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        public override object SaveMemberControl(ItemData obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
             //Here, we can just inject an attribute and now it's as if that member had an attribute assigned to it,
             //even when we didn't have access to the member itself! (via it being a part of another library, etc)
@@ -48,7 +47,7 @@ namespace RogueEssence.Dev
             //}
             //else
             //{
-            return base.SaveMemberControl(obj, control, name, type, attributes, isWindow);
+            return base.SaveMemberControl(obj, control, name, type, attributes, isWindow, subGroupStack);
             //}
         }
     }

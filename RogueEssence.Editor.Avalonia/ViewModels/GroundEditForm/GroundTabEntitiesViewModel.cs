@@ -1,4 +1,5 @@
-﻿using RogueElements;
+﻿using ReactiveUI;
+using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using RogueEssence.Ground;
@@ -27,7 +28,20 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
-                EntBrowser.AllowEntTypes = (entMode == EntEditMode.PlaceEntity);
+                EntModeChanged();
+            }
+        }
+
+        public bool ShowBoxes
+        {
+            get
+            {
+                return GroundEditScene.Instance.ShowEntityBoxes;
+            }
+            set
+            {
+                GroundEditScene.Instance.ShowEntityBoxes = value;
+                this.RaisePropertyChanged();
             }
         }
 
@@ -37,6 +51,21 @@ namespace RogueEssence.Dev.ViewModels
 
 
         private Loc dragDiff;
+
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+                EntBrowser.AllowEntTypes = false;
+            else
+            {
+                EntBrowser.AllowEntTypes = true;
+                if (GroundEditScene.Instance.SelectedEntity != null)
+                {
+                    EntBrowser.SelectEntity(GroundEditScene.Instance.SelectedEntity.Clone());
+                    GroundEditScene.Instance.SelectedEntity = null;
+                }
+            }
+        }
 
         public void ProcessUndo()
         {
@@ -60,10 +89,21 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                            PlaceEntity(groundCoords);
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                            RemoveEntityAt(groundCoords);
+                        if (GroundEditScene.Instance.EntityInProgress == null)
+                        {
+                            if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                                PendEntity(groundCoords);
+                            else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
+                                RemoveEntityAt(groundCoords);
+                        }
+                        else
+                        {
+                            GroundEditScene.Instance.EntityInProgress.Position = groundCoords;
+                            if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                                PlaceEntity();
+                            else if (input.JustPressed(FrameInput.InputType.RightMouse))
+                                GroundEditScene.Instance.EntityInProgress = null;
+                        }
                         break;
                     }
                 case EntEditMode.SelectEntity:
@@ -116,15 +156,17 @@ namespace RogueEssence.Dev.ViewModels
                 ZoneManager.Instance.CurrentGround.RemoveSpawner((GroundSpawner)ent);
         }
 
-        public void PlaceEntity(Loc position)
+        public void PendEntity(Loc position)
         {
             GroundEntity placeableEntity = EntBrowser.CreateEntity();
-
-            if (placeableEntity == null)
-                return;
-
             placeableEntity.Position = position;
+            GroundEditScene.Instance.EntityInProgress = placeableEntity;
+        }
 
+        public void PlaceEntity()
+        {
+            GroundEntity placeableEntity = GroundEditScene.Instance.EntityInProgress;
+            GroundEditScene.Instance.EntityInProgress = null;
 
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
             placeableEntity.ReloadEvents();
@@ -155,8 +197,9 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(GroundEntity ent)
         {
             if (ent != null)
-                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundEntityStateUndo(0));
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundSelectUndo());
 
+            GroundEditScene.Instance.SelectedEntity = ent;
             EntBrowser.SelectEntity(ent);
         }
 
@@ -201,6 +244,89 @@ namespace RogueEssence.Dev.ViewModels
         {
             ZoneManager.Instance.CurrentGround.Entities[layer] = state;
             ZoneManager.Instance.CurrentGround.ReloadEntLayer(layer);
+        }
+    }
+
+    public class GroundSelectUndo : Undoable
+    {
+        private Loc oldEntIdx;
+        private Loc oldDecIdx;
+        private Loc newEntIdx;
+        private Loc newDecIdx;
+        public GroundSelectUndo()
+        { }
+
+        private Loc selectEntityIdx(GroundEditScene editScene, GroundMap map)
+        {
+            for (int ii = 0; ii < map.Entities.Count; ii++)
+            {
+                int jj = 0;
+                foreach (GroundEntity entity in map.Entities[ii].IterateEntities())
+                {
+                    if (entity == editScene.SelectedEntity)
+                        return new Loc(ii, jj);
+                    jj++;
+                }
+            }
+            return new Loc(-1, -1);
+        }
+
+        private Loc selectDecorationIdx(GroundEditScene editScene, GroundMap map)
+        {
+            for (int ii = 0; ii < map.Decorations.Count; ii++)
+            {
+                for (int jj = 0; jj < map.Decorations[ii].Anims.Count; jj++)
+                {
+                    if (map.Decorations[ii].Anims[jj] == editScene.SelectedDecoration)
+                        return new Loc(ii, jj);
+                }
+            }
+            return new Loc(-1, -1);
+        }
+
+        public override void Apply()
+        {
+            oldEntIdx = selectEntityIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround);
+            oldDecIdx = selectDecorationIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround);
+        }
+        public override void Undo()
+        {
+            newEntIdx = selectEntityIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround);
+            newDecIdx = selectDecorationIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround);
+            setEntityIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround, oldEntIdx);
+            setDecorationIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround, oldDecIdx);
+        }
+        public override void Redo()
+        {
+            setEntityIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround, newEntIdx);
+            setDecorationIdx(GroundEditScene.Instance, ZoneManager.Instance.CurrentGround, newDecIdx);
+        }
+
+        private void setEntityIdx(GroundEditScene editScene, GroundMap map, Loc entIdx)
+        {
+            if (entIdx.X < 0)
+                editScene.SelectedEntity = null;
+            else
+            {
+                int jj = 0;
+                foreach (GroundEntity entity in map.Entities[entIdx.X].IterateEntities())
+                {
+                    if (jj == entIdx.Y)
+                    {
+                        editScene.SelectedEntity = entity;
+                        return;
+                    }
+                    jj++;
+                }
+            }
+        }
+
+        private void setDecorationIdx(GroundEditScene editScene, GroundMap map, Loc decIdx)
+        {
+            if (decIdx.X < 0)
+                editScene.SelectedDecoration = null;
+            else
+                editScene.SelectedDecoration = map.Decorations[decIdx.X].Anims[decIdx.Y];
         }
     }
 }

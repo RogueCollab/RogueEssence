@@ -27,8 +27,8 @@ namespace RogueEssence.Menu
             entries = new List<MenuText>();
             dividers = new List<MenuDivider>();
             Bounds = Rect.FromPoints(new Loc(LiveMsgLog.SIDE_BUFFER, 24), new Loc(GraphicsManager.ScreenWidth - LiveMsgLog.SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
-            Title = new MenuText(Text.FormatKey("MENU_MSG_LOG_TITLE"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Title = new MenuText(Text.FormatKey("MENU_MSG_LOG_TITLE"), new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
             LoadMsgs();
         }
 
@@ -91,7 +91,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < coveredLines.Count; ii++)
             {
                 for (int jj = (ii == 0 ? lineIndex : 0); jj <= (ii == coveredLines.Count - 1 ? lineEndIndex : coveredLines[ii].Length - 1); jj++)
-                    LiveMsgLog.LogAdded(entries, dividers, Bounds.Y + GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET, SIDE_BUFFER, coveredLines[ii][jj]);
+                    LiveMsgLog.LogAdded(entries, dividers, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET, coveredLines[ii][jj]);
             }
         }
 

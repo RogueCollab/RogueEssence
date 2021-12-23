@@ -18,7 +18,6 @@ namespace RogueEssence.Dev.ViewModels
     public class AnimEditViewModel : ViewModelBase
     {
         private GraphicsManager.AssetType assetType;
-        private string assetPattern;
         private Window parent;
 
 
@@ -46,10 +45,9 @@ namespace RogueEssence.Dev.ViewModels
 
         }
 
-        public void LoadDataEntries(GraphicsManager.AssetType assetType, string assetPattern, Window parent)
+        public void LoadDataEntries(GraphicsManager.AssetType assetType, Window parent)
         {
             this.assetType = assetType;
-            this.assetPattern = assetPattern;
             this.parent = parent;
 
             //Anims.DataName = assetType.ToString() + ":";
@@ -62,6 +60,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 anims.Clear();
                 Anims.Clear();
+                string assetPattern = GraphicsManager.GetPattern(assetType);
                 string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
                 for (int ii = 0; ii < dirs.Length; ii++)
                 {
@@ -143,10 +142,18 @@ namespace RogueEssence.Dev.ViewModels
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = folderName;
 
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "PNG Files";
-            filter.Extensions.Add("png");
-            openFileDialog.Filters.Add(filter);
+            {
+                FileDialogFilter filter = new FileDialogFilter();
+                filter.Name = "PNG Files";
+                filter.Extensions.Add("png");
+                openFileDialog.Filters.Add(filter);
+            }
+            {
+                FileDialogFilter filter = new FileDialogFilter();
+                filter.Name = "DirData XML";
+                filter.Extensions.Add("xml");
+                openFileDialog.Filters.Add(filter);
+            }
 
             string[] results = await openFileDialog.ShowAsync(parent);
 
@@ -163,7 +170,10 @@ namespace RogueEssence.Dev.ViewModels
                 }
 
                 DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(results[0]));
-                CachedPath = results[0];
+                if (Path.GetExtension(results[0]) == ".xml")
+                    CachedPath = Path.GetDirectoryName(results[0]);
+                else
+                    CachedPath = results[0];
 
                 try
                 {
@@ -216,8 +226,18 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
                 //CachedPath = folder;
-                lock (GameBase.lockObj)
-                    Export(folder, animData);
+
+                try
+                {
+                    lock (GameBase.lockObj)
+                        Export(folder, animData);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
             }
         }
 
@@ -241,6 +261,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void MassImport(string currentPath)
         {
+            string assetPattern = GraphicsManager.GetPattern(assetType);
             if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(assetPattern))))
                 Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(assetPattern)));
             ImportHelper.ImportAllNameDirs(currentPath, PathMod.HardMod(assetPattern));
@@ -257,9 +278,17 @@ namespace RogueEssence.Dev.ViewModels
 
         private void Import(string currentPath)
         {
+            string assetPattern = GraphicsManager.GetPattern(assetType);
+            string destFile;
             string animName = Path.GetFileNameWithoutExtension(currentPath);
-            string[] components = animName.Split('.');
-            string destFile = PathMod.HardMod(String.Format(assetPattern, components[0]));
+            if (Directory.Exists(currentPath))
+                destFile = PathMod.HardMod(String.Format(assetPattern, animName));
+            else
+            {
+                string[] components = animName.Split('.');
+                destFile = PathMod.HardMod(String.Format(assetPattern, components[0]));
+            }
+
             if (!Directory.Exists(Path.GetDirectoryName(destFile)))
                 Directory.CreateDirectory(Path.GetDirectoryName(destFile));
 
@@ -286,6 +315,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void MassExport(string currentPath)
         {
+            string assetPattern = GraphicsManager.GetPattern(assetType);
             string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
             for (int ii = 0; ii < dirs.Length; ii++)
             {
@@ -296,7 +326,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void Export(string currentPath, string anim)
         {
-            string animPath = PathMod.ModPath(String.Format(assetPattern, anim));
+            string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
             if (File.Exists(animPath))
             {
                 //read file and read binary data
@@ -322,8 +352,7 @@ namespace RogueEssence.Dev.ViewModels
         private void Delete(int animIdx)
         {
             string anim = anims[animIdx];
-
-            string animPath = PathMod.ModPath(String.Format(assetPattern, anim));
+            string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
             if (File.Exists(animPath))
                 File.Delete(animPath);
 

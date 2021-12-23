@@ -61,8 +61,8 @@ namespace RogueEssence.Ground
 
             foreach (GroundAnim c in Anims)
             {
-                Loc drawSize = c.GetDrawSize();
-                if (RogueElements.Collision.InBounds(c.MapLoc, new Loc(Math.Max(drawSize.X, GraphicsManager.TEX_SIZE), Math.Max(drawSize.Y, GraphicsManager.TEX_SIZE)), pos))
+                Rect bounds = c.GetBounds();
+                if (RogueElements.Collision.InBounds(bounds, pos))
                     found.Add(c);
             }
 

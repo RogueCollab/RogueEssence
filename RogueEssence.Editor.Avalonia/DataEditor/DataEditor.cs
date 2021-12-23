@@ -54,7 +54,7 @@ namespace RogueEssence.Dev
 
         public static void LoadDataControls(object obj, StackPanel control)
         {
-            LoadClassControls(control, "Test", obj.ToString(), obj.GetType(), new object[0], obj, true);
+            LoadClassControls(control, "Test", obj.ToString(), obj.GetType(), new object[0], obj, true, new Type[0]);
         }
 
         private static IEditor findEditor(Type objType, object[] attributes)
@@ -80,47 +80,47 @@ namespace RogueEssence.Dev
             throw new ArgumentException("Unhandled type!");
         }
 
-        public static void LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            converter.LoadClassControls(control, parent, name, type, attributes, member, isWindow);
+            converter.LoadClassControls(control, parent, name, type, attributes, member, isWindow, subGroupStack);
         }
 
-        public static void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj)
+        public static void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            converter.LoadWindowControls(control, parent, name, type, attributes, obj);
+            converter.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
         }
 
-        public static void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public static void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             IEditor converter = findEditor(obj.GetType(), attributes);
-            converter.LoadMemberControl(parent, obj, control, name, type, attributes, member, isWindow);
+            converter.LoadMemberControl(parent, obj, control, name, type, attributes, member, isWindow, subGroupStack);
         }
 
-        public static void SaveDataControls(ref object obj, StackPanel control)
+        public static void SaveDataControls(ref object obj, StackPanel control, Type[] subGroupStack)
         {
-            obj = SaveClassControls(control, obj.ToString(), obj.GetType(), new object[0], true);
+            obj = SaveClassControls(control, obj.ToString(), obj.GetType(), new object[0], true, subGroupStack);
         }
 
-        public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
-        {
-            IEditor converter = findEditor(type, attributes);
-            return converter.SaveClassControls(control, name, type, attributes, isWindow);
-        }
-
-
-        public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            return converter.SaveWindowControls(control, name, type, attributes);
+            return converter.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack);
         }
 
 
-        public static object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
+        {
+            IEditor converter = findEditor(type, attributes);
+            return converter.SaveWindowControls(control, name, type, attributes, subGroupStack);
+        }
+
+
+        public static object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
             IEditor converter = findEditor(obj.GetType(), attributes);
-            return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow);
+            return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow, subGroupStack);
         }
 
         public static string GetString(object obj, Type type, object[] attributes)
@@ -171,20 +171,7 @@ namespace RogueEssence.Dev
 
         public static void SetClipboardObj(object obj)
         {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                IFormatter formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                formatter.Serialize(stream, obj);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-
-                stream.Flush();
-                stream.Position = 0;
-
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                clipboardObj = formatter.Deserialize(stream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-            }
+            clipboardObj = ReflectionExt.SerializeCopy(obj);
         }
     }
 }

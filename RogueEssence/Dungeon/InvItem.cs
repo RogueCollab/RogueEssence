@@ -94,7 +94,7 @@ namespace RogueEssence.Dungeon
 
         public int GetSellValue()
         {
-            ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
                 return entry.Price * HiddenValue;
             else

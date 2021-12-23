@@ -8,6 +8,8 @@ using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using NLua;
 using System.IO;
+using System.Collections;
+using Newtonsoft.Json;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -81,7 +83,8 @@ namespace RogueEssence.Script
             Enter,          //When the map is just being displayed an the game fades-in
             Exit,          //When the map has finished fading out before transition to the next
             Update,         //When the game script engine ticks
-
+            GameSave,
+            GameLoad,
             Invalid
         }
         //Name for common map callback functions
@@ -386,6 +389,7 @@ namespace RogueEssence.Script
         {
             //init lua
             LuaState = new Lua();
+            //LuaState.UseTraceback = true;
             LuaState.State.Encoding = System.Text.Encoding.UTF8;
             m_nextUpdate = new TimeSpan(-1);
             DiagManager.Instance.LogInfo(String.Format("[SE]:Initialized {0}", LuaState["_VERSION"] as string));
@@ -420,6 +424,11 @@ namespace RogueEssence.Script
         public void BreakScripts()
         {
             Breaking = true;
+        }
+
+        public void SceneOver()
+        {
+            Breaking = false;
         }
 
         /// <summary>
@@ -458,27 +467,6 @@ namespace RogueEssence.Script
                 //!#FIXME : We'll need to call the method on map entry too if a map is running!
                 //OnDungeonFloorInit();
             }
-        }
-
-        /// <summary>
-        /// Define some globals for commonly used types from the project
-        /// </summary>
-        private void DefineDotNetTypes()
-        {
-            //!REMOVEME: Probably not needed anymore, beyond just being convenient!
-            DiagManager.Instance.LogInfo("[SE]:Force-exposing dotnet types..");
-            RunString(@"
-            FrameType   = luanet.import_type('RogueEssence.Content.FrameType')
-            DrawLayer   = luanet.import_type('RogueEssence.Content.DrawLayer')
-            MonsterID       = luanet.import_type('RogueEssence.Dungeon.MonsterID')
-            Gender      = luanet.import_type('RogueEssence.Data.Gender')
-            Direction   = luanet.import_type('RogueElements.Dir8')
-            GameTime    = luanet.import_type('Microsoft.Xna.Framework.GameTime')
-            Color       = luanet.import_type('Microsoft.Xna.Framework.Color')
-            ActivityType = luanet.import_type('RogueEssence.Network.ActivityType')
-            TimeSpan    = luanet.import_type('System.TimeSpan')
-            ");
-
         }
 
 
@@ -538,9 +526,6 @@ namespace RogueEssence.Script
 
             //Add the list of available Callbacknames
             FillServiceEventsTable();
-
-            //Add Dotnet types
-            DefineDotNetTypes();
 
             RunString("require 'CLRPackage'");
 
@@ -667,6 +652,7 @@ namespace RogueEssence.Script
             LuaState["_GAME"] = GameManager.Instance;
             LuaState["_DATA"] = DataManager.Instance;
             LuaState["_MENU"] = MenuManager.Instance;
+            LuaState["_DIAG"] = DiagManager.Instance;
 
             DiagManager.Instance.LogInfo("[SE]:Exposing script interface..");
             //Expose script interface  objects
@@ -772,19 +758,8 @@ namespace RogueEssence.Script
             }
             else
             {
-                DiagManager.Instance.LogInfo("============ Deserialized SV : ============");
-                DiagManager.Instance.LogInfo(loaded.ScriptVars);
-                DiagManager.Instance.LogInfo("===========================================");
-
-                //Deserialize the script variables and put them in the global
-                RunString(String.Format(@"local ok,res = Serpent.load('{0}')
-                    if ok then
-                        {1} = res
-                    else
-                        PrintInfo('LuaEngine.LoadSavedData(): Script var loading failed! Details : ' .. res)
-                    end
-                    ",
-                    loaded.ScriptVars, SCRIPT_VARS_NAME));
+                LuaTable tbl = DictToLuaTable(loaded.ScriptVars);
+                LuaState[SCRIPT_VARS_NAME] = tbl;
             }
             if (loaded != null)
             {
@@ -804,17 +779,52 @@ namespace RogueEssence.Script
 
             //Save script engine stuff here!
             DiagManager.Instance.LogInfo("LuaEngine.SaveData()..");
-            object[] result = RunString(String.Format("return Serpent.dump({0})", SCRIPT_VARS_NAME));
-            if (result != null && result[0] != null)
-            {
-                save.ScriptVars = result[0] as string;
-                DiagManager.Instance.LogInfo("============ Serialized SV : ============");
-                DiagManager.Instance.LogInfo(save.ScriptVars);
-                DiagManager.Instance.LogInfo("=========================================");
-            }
-            else
-                DiagManager.Instance.LogInfo("LuaEngine.SaveData(): Script var saving failed!");
+            LuaTable tbl = LuaState.GetTable(SCRIPT_VARS_NAME);
+            save.ScriptVars = LuaTableToDict(tbl);
             save.ActiveTeam.SaveLua();
+        }
+
+
+        /// <summary>
+        /// Creates a deep-copy conversion of the input lua table to a dictionary of objects.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        public LuaTableContainer LuaTableToDict(LuaTable table)
+        {
+            Dictionary<object, object> dict = LuaState.GetTableDict(table);
+            List<object[]> tbl_list = new List<object[]>();
+            foreach (object key in dict.Keys)
+            {
+                object val = dict[key];
+                if (val is LuaTable)
+                {
+                    LuaTableContainer subDict = LuaTableToDict(val as LuaTable);
+                    tbl_list.Add(new object[] { key, subDict });
+                }
+                else
+                    tbl_list.Add(new object[] { key, val });
+
+            }
+            return new LuaTableContainer(tbl_list);
+        }
+
+        public LuaTable DictToLuaTable(LuaTableContainer dict)
+        {
+            if (dict == null)
+                return null;
+
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, itm) tbl[key] = itm end").First() as LuaFunction;
+            foreach (object[] entry in dict.Table)
+            {
+                object key = entry[0];
+                object val = entry[1];
+                if (val is LuaTableContainer)
+                    val = DictToLuaTable((LuaTableContainer)val);
+                addfn.Call(tbl, key, val);
+            }
+            return tbl;
         }
 
         /// <summary>
@@ -926,7 +936,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaMemberFun(): Error calling member function :\n" + e.Message);
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.CallLuaMemberFun(): Error calling member function:\n" + e.Message);
             }
             return null;
         }
@@ -1429,35 +1439,67 @@ namespace RogueEssence.Script
                 return Activator.CreateInstance(filled_type);
         }
 
-        //public dynamic LuaCast(object val, object t)
-        //{
-        //    if (t.GetType().IsEquivalentTo(typeof(NLua.ProxyType)))
-        //    {
-        //        Type orig = val.GetType();
-        //        var castedorig = Convert.ChangeType(val, orig);
-        //        Type destTy = ((NLua.ProxyType)t).UnderlyingSystemType;
-        //        var result = Convert.ChangeType(castedorig, destTy);
-        //        return result;
-        //    }
-        //    else
-        //    {
-        //        return Convert.ChangeType((object)val, t.GetType());
-        //    }
-        //}
+        public dynamic LuaCast(object val, object t)
+        {
+            Type destTy;
+            if (t.GetType().IsEquivalentTo(typeof(ProxyType)))
+            {
+                //Type orig = val.GetType();
+                //var castedorig = Convert.ChangeType(val, orig);
+                destTy = ((ProxyType)t).UnderlyingSystemType;
+            }
+            else if (t.GetType().IsEquivalentTo(typeof(Type)))
+                destTy = (Type)t;
+            else
+                destTy = t.GetType();
+            
+            if (destTy.IsEnum)
+                return Enum.ToObject(destTy, val);
+            else
+                return Convert.ChangeType(val, destTy);
+        }
 
-        //public Type TypeOf(object v)
-        //{
-        //    if (v.GetType().IsEquivalentTo(typeof(NLua.ProxyType)))
-        //    {
-        //        return ((ProxyType)v).UnderlyingSystemType;
-        //    }
-        //    else if (v.GetType() == typeof(NLua.ProxyType))
-        //    {
-        //        return ((ProxyType)v).UnderlyingSystemType;
-        //    }
-        //    else
-        //        return v.GetType();
-        //}
+        public dynamic EnumToNumeric(object val)
+        {
+            Type underlying = Enum.GetUnderlyingType(val.GetType());
+            return Convert.ChangeType(val, underlying);
+        }
+
+        public Type TypeOf(object v)
+        {
+            if (v.GetType().IsEquivalentTo(typeof(ProxyType)))
+            {
+                return ((ProxyType)v).UnderlyingSystemType;
+            }
+            else if (v.GetType() == typeof(ProxyType))
+            {
+                return ((ProxyType)v).UnderlyingSystemType;
+            }
+            else
+                return v.GetType();
+        }
+
+        public string DumpStack()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            //int level = 0;
+            //KeraLua.LuaDebug info = new KeraLua.LuaDebug();
+            //while (LuaState.GetStack(level, ref info) != 0)
+            //{
+            //    LuaState.GetInfo("nSl", ref info);
+            //    string name = "<unknown>";
+            //    if (!string.IsNullOrEmpty(info.Name))
+            //        name = info.Name;
+
+            //    sb.AppendFormat("[{0}] {1}:{2} -- {3} [{4}]\n",
+            //        level, info.ShortSource, info.CurrentLine,
+            //        name, info.NameWhat);
+            //    level++;
+            //}
+
+            sb.Append(LuaState.GetDebugTraceback() + "\n");
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Utility function for returning a dummy yield through the lua layer.
@@ -1668,8 +1710,21 @@ namespace RogueEssence.Script
 
                 m_nextUpdate = gametime.TotalGameTime + TimeSpan.FromMilliseconds(20); //Schedule next update
             }
-            Breaking = false;
         }
+    }
+
+    [Serializable]
+    public class LuaTableContainer
+    {
+        /// <summary>
+        /// We're using a List<object[]> instead of a dictionary because some quirk in json serialization causes integer keys to be written as strings.
+        /// this data type is the next best thing in terms of internal storage
+        /// </summary>
+        [JsonConverter(typeof(Dev.LuaTableContainerDictConverter))]
+        public List<object[]> Table;
+
+        public LuaTableContainer() { Table = new List<object[]>(); }
+        public LuaTableContainer(List<object[]> table) { Table = table; }
     }
 
 }

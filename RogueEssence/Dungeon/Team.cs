@@ -175,24 +175,7 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            //TODO: v0.5: remove this
-            if (inventory == null)
-                inventory = new List<InvItem>();
-            if (Guests == null)
-                Guests = new List<Character>();
             ReconnectTeamReference();
-
-            //TODO: v0.5: remove this
-            foreach (Character player in Players)
-            {
-                if (player.ActionEvents.Count == 0)
-                    player.ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
-            }
-            foreach (Character player in Guests)
-            {
-                if (player.ActionEvents.Count == 0)
-                    player.ActionEvents.Add(new BattleScriptEvent("AllyInteract"));
-            }
         }
 
         protected virtual void ReconnectTeamReference()
@@ -249,7 +232,7 @@ namespace RogueEssence.Dungeon
             Name = "";
             Assembly = new List<Character>();
             BoxStorage = new List<InvItem>();
-            Storage = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            Storage = new int[10000];//TODO: remove this magic number and make it an adjustable value
         }
 
         public void SetRank(int rank)
@@ -374,7 +357,7 @@ namespace RogueEssence.Dungeon
             Assembly.Insert(idx, chara);
         }
 
-        public Character CreatePlayer(ReRandom rand, MonsterID form, int level, int intrinsic, int personality)
+        public Character CreatePlayer(IRandom rand, MonsterID form, int level, int intrinsic, int personality)
         {
             MonsterID formData = form;
             MonsterData dex = DataManager.Instance.GetMonster(formData.Species);

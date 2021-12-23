@@ -84,12 +84,12 @@ namespace RogueEssence.Menu
         {
             //draw the highlight
             if (Selected)
-                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X, Bounds.Y, Bounds.Size.X, Bounds.Size.Y), null, Color.Cyan * 0.5f);
+                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X + offset.X, Bounds.Y + offset.Y, Bounds.Size.X, Bounds.Size.Y), null, Color.Cyan * 0.5f);
             if (hover && Enabled)
-                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X, Bounds.Y, Bounds.Size.X, Bounds.Size.Y), null, Color.White * (click ? 0.5f : 0.2f));
+                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X + offset.X, Bounds.Y + offset.Y, Bounds.Size.X, Bounds.Size.Y), null, Color.White * (click ? 0.5f : 0.2f));
             //draw all elements with offset added
             foreach (IMenuElement element in GetElements())
-                element.Draw(spriteBatch, Bounds.Start);
+                element.Draw(spriteBatch, Bounds.Start + offset);
         }
     }
 

@@ -64,16 +64,7 @@ namespace RogueEssence.Dev
         {
             T curState = GetState();
             //serialize, deserialize, assign
-            using (MemoryStream stream = new MemoryStream())
-            {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(stream, curState);
-
-                stream.Flush();
-                stream.Position = 0;
-
-                past = (T)formatter.Deserialize(stream);
-            }
+            past = ReflectionExt.SerializeCopy(curState);
         }
 
         public override void Undo()

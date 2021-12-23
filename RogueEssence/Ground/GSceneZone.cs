@@ -64,7 +64,7 @@ namespace RogueEssence.Ground
             ZoneManager.Instance.CurrentGround.ViewOffset = new Loc();
         }
 
-        public IEnumerator<YieldInstruction> InitGround()
+        public IEnumerator<YieldInstruction> InitGround(bool saveLoad)
         {
             //start emitters for existing map status
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentGround.Status.Values)
@@ -73,6 +73,8 @@ namespace RogueEssence.Ground
             GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
+            if (saveLoad)
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnGameLoad());
         }
 
         public IEnumerator<YieldInstruction> BeginGround()
@@ -89,12 +91,20 @@ namespace RogueEssence.Ground
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
-            DataManager.Instance.LogGroundsave();
+            //TODO: call OnGameSave?
+            //where does it load the game in a suspend scenario?
+            DataManager.Instance.LogGroundSave();
             DataManager.Instance.SuspendPlay();
 
             MenuBase.Transparent = false;
 
             GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+        }
+
+        public IEnumerator<YieldInstruction> SaveGame()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnGameSave());
+            DataManager.Instance.SaveMainGameState();
         }
 
         public IEnumerator<YieldInstruction> ProcessInput(GameAction action)

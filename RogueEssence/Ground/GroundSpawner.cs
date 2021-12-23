@@ -89,7 +89,7 @@ namespace RogueEssence.Ground
             CurrentNPC.OnMapInit();
 
             //Run our script callback after we spawned
-            CoroutineManager.Instance.StartCoroutine( RunEvent(LuaEngine.EEntLuaEventTypes.EntSpawned, CurrentNPC) );
+            CoroutineManager.Instance.StartCoroutine( RunEvent(LuaEngine.EEntLuaEventTypes.EntSpawned, new TriggerResult(), CurrentNPC) );
 
             return CurrentNPC;
         }

@@ -17,10 +17,8 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ISpawnList member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ISpawnList member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), type, 0);
 
             SpawnListBox lbxValue = new SpawnListBox();
@@ -42,11 +40,11 @@ namespace RogueEssence.Dev
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
                     op(index, element);
                     frmData.Close();
                 };
@@ -63,10 +61,10 @@ namespace RogueEssence.Dev
             control.Children.Add(lbxValue);
         }
 
-        public override ISpawnList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override ISpawnList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             SpawnListBox lbxValue = (SpawnListBox)control.Children[controlIndex];
             SpawnListBoxViewModel mv = (SpawnListBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);

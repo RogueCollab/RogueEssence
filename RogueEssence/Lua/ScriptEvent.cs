@@ -63,20 +63,25 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo(String.Format("ScriptEvent.DoCleanup(): Doing cleanup on {0}!", m_luapath));
         }
 
-        public virtual IEnumerator<YieldInstruction> Apply(params object[] parameters)
+        public virtual Coroutine Apply(params object[] parameters)
         {
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luapath, parameters);
-            return ApplyFunc(func_iter);
+            return new LuaCoroutine(String.Format("{0}: {1}", typeof(ScriptEvent).Name, m_luapath), applyFunc(m_luapath, func_iter));
         }
 
 
-        public static IEnumerator<YieldInstruction> ApplyFunc(LuaFunction func_iter)
+        public static Coroutine ApplyFunc(string name, LuaFunction func_iter)
+        {
+            return new LuaCoroutine(String.Format("{0}: {1}", typeof(ScriptEvent).Name, name), applyFunc(name, func_iter));
+        }
+
+        private static IEnumerator<YieldInstruction> applyFunc(string name, LuaFunction func_iter)
         {
             if (func_iter == null)
                 yield break;
 
             //Then call it until it returns null!
-            object[] allres = CallInternal(func_iter);
+            object[] allres = callInternal(name, func_iter);
             object res = allres.First();
             while (res != null)
             {
@@ -94,7 +99,7 @@ namespace RogueEssence.Script
                 }
 
                 //Pick another yield from the lua coroutine
-                allres = CallInternal(func_iter);
+                allres = callInternal(name, func_iter);
                 res = allres.First();
             }
         }
@@ -103,7 +108,7 @@ namespace RogueEssence.Script
         /// Wrapper around the lua iterator to catch and print any possible script errors.
         /// </summary>
         /// <returns></returns>
-        private static object[] CallInternal(LuaFunction func_internal)
+        private static object[] callInternal(string name, LuaFunction func_internal)
         {
             try
             {
@@ -111,7 +116,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("[SE]:ScriptEvent.CallInternal(): Error calling coroutine iterator :\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("[SE]:ScriptEvent.CallInternal(): Error calling coroutine iterator in {0}:\n{1}", name, e.Message), e));
             }
             return new object[] { null }; //Stop the coroutine since we errored
         }
@@ -170,13 +175,13 @@ namespace RogueEssence.Script
         }
 
 
-        public override IEnumerator<YieldInstruction> Apply(params object[] parameters)
+        public override Coroutine Apply(params object[] parameters)
         {
             if (m_luafun == null)
                 throw new Exception("TransientScriptEvent.MakeIterator(): Function is null! Make sure the transientevent isn't being deserialized and run!");
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(m_luafun, parameters);
 
-            return ApplyFunc(func_iter);
+            return ApplyFunc(m_luapath, func_iter);
         }
     }
 

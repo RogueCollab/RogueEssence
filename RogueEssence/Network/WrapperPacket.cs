@@ -3,6 +3,7 @@ using LiteNetLib.Utils;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using RogueEssence.Data;
 
 namespace RogueEssence.Network
 {
@@ -25,8 +26,7 @@ namespace RogueEssence.Network
                 StringBuilder builder = new StringBuilder();
                 stream.Write(arr, 0, arr.Length);
                 stream.Position = 0;
-                IFormatter formatter = new BinaryFormatter();
-                State = (T)formatter.Deserialize(stream);
+                State = (T)Serializer.Deserialize(stream, typeof(T));
             }
         }
 
@@ -41,8 +41,7 @@ namespace RogueEssence.Network
 
             using (MemoryStream stream = new MemoryStream())
             {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(stream, State);
+                Serializer.Serialize(stream, State);
                 netWriter.PutBytesWithLength(stream.ToArray());
             }
         }

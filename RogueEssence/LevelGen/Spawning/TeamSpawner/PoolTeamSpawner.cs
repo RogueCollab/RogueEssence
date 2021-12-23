@@ -97,6 +97,9 @@ namespace RogueEssence.LevelGen
             for (int ii = 0; ii < Spawns.Count; ii++)
             {
                 TeamMemberSpawn spawn = Spawns.GetSpawn(ii);
+                if (!spawn.Spawn.CanSpawn())
+                    continue;
+
                 bool add = false;
                 switch (spawn.Role)
                 {
@@ -133,6 +136,8 @@ namespace RogueEssence.LevelGen
                 for (int ii = 0; ii < Spawns.Count; ii++)
                 {
                     TeamMemberSpawn spawn = Spawns.GetSpawn(ii);
+                    if (!spawn.Spawn.CanSpawn())
+                        continue;
                     bool add = false;
                     switch (spawn.Role)
                     {

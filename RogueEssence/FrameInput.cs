@@ -133,7 +133,7 @@ namespace RogueEssence
                     }
                 }
 
-                if (dirLoc == Loc.Zero)
+                if (dirLoc == Loc.Zero && DiagManager.Instance.CurSettings.NumPad)
                 {
                     if (keyboard.IsKeyDown(Keys.NumPad2))
                         dirLoc = dirLoc + Dir8.Down.GetLoc();
@@ -160,7 +160,7 @@ namespace RogueEssence
 
             Direction = dirLoc.GetDir();
 
-            if (gamePad.IsConnected)
+            if (controllerActive)
             {
                 for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionButtons.Length; ii++)
                     inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurSettings.ActionButtons[ii]);
@@ -171,7 +171,8 @@ namespace RogueEssence
                 for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionKeys.Length; ii++)
                     inputStates[ii] |= Settings.UsedByKeyboard((InputType)ii) && keyboard.IsKeyDown(DiagManager.Instance.CurSettings.ActionKeys[ii]);
 
-                inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
+                if (DiagManager.Instance.CurSettings.Enter)
+                    inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
                 inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
             }
 
@@ -197,7 +198,7 @@ namespace RogueEssence
 
                 if (keyActive)
                 {
-                    inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
+                    inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
 
                     inputStates[(int)InputType.Pause] |= keyboard.IsKeyDown(Keys.F2);
                     inputStates[(int)InputType.AdvanceFrame] |= keyboard.IsKeyDown(Keys.F3);

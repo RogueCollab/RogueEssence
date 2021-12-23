@@ -69,13 +69,16 @@ namespace RogueEssence
             
             LuaEngine.InitInstance();
             GraphicsManager.InitStatic();
-
+            
+#if NO_THREADING
+            LoadInBackground();
+#else
             Thread thread = new Thread(LoadInBackground);
             thread.IsBackground = true;
             //thread.CurrentCulture = Thread.CurrentThread.CurrentCulture;
             //thread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture;
             thread.Start();
-
+#endif
             base.Initialize();
         }
 
@@ -209,7 +212,8 @@ namespace RogueEssence
                             
                             if (DiagManager.Instance.ActiveDebugReplay == null)
                                 DiagManager.Instance.LogInput(input);
-                            DiagManager.Instance.GamePadActive = input.HasGamePad;
+                            
+                            DiagManager.Instance.UpdateGamePadActive(input.HasGamePad);
 
                             GameManager.Instance.SetMetaInput(input);
                             GameManager.Instance.UpdateMeta();

@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         public MenuDivider Div;
         public MenuText MoneyTally;
         public MenuText InvValueTally;
-        public MenuText StorageValueTally;
+        public MenuText BankValueTally;
         public MenuText TotalTally;
         public MenuText TotalTurns;
         public MenuText Seed;
@@ -28,11 +28,11 @@ namespace RogueEssence.Menu
             Ending = ending;
 
             Title = new MenuText(Text.FormatKey("MENU_RESULTS_TITLE"),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            Team = new MenuText(Ending.ActiveTeam.GetDisplayName(), new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            Team = new MenuText(Ending.ActiveTeam.GetDisplayName(), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + TitledStripMenu.TITLE_OFFSET), DirH.None);
             string message = "";
             switch (Ending.Outcome)
             {
@@ -65,34 +65,34 @@ namespace RogueEssence.Menu
                     }
             }
 
-            Description = new MenuText(message, new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            Description = new MenuText(message, new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
             MoneyTally = new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.Money)),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             InvValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_INV_VALUE", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.GetInvValue())),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             TotalTurns = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_TURNS", Ending.TotalTurns),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
             Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
-                new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
             RogueProgress rogue = Ending as RogueProgress;
 
             if (rogue != null)
             {
-                StorageValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
-                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                BankValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
+                    new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_SCORE", Ending.ActiveTeam.GetTotalScore()),
-                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                    new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 Seed.Color = rogue.Seeded ? TextBlue : Color.White;
             }
             else
             {
-                StorageValueTally = new MenuText("",
-                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                BankValueTally = new MenuText("",
+                    new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText("",
-                    new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+                    new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             }
 
             base.Initialize();
@@ -106,7 +106,7 @@ namespace RogueEssence.Menu
             yield return Div;
             yield return MoneyTally;
             yield return InvValueTally;
-            yield return StorageValueTally;
+            yield return BankValueTally;
             yield return TotalTally;
             yield return TotalTurns;
             yield return Seed;

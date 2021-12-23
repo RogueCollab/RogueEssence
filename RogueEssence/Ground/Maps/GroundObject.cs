@@ -13,10 +13,10 @@ namespace RogueEssence.Ground
     [Serializable]
     public class GroundObject : BaseTaskUser, IDrawableSprite, IObstacle
     {
-        public ObjAnimData ObjectAnim;
-        public bool Solid;
+        public IPlaceableAnimData ObjectAnim;
+        public bool Passable;
 
-        public ObjAnimData CurrentAnim;
+        public IPlaceableAnimData CurrentAnim;
         public FrameTick AnimTime;
         public int Cycles;
 
@@ -27,15 +27,17 @@ namespace RogueEssence.Ground
                 if (!EntEnabled)
                     return 0u;
 
-                if (TriggerType == EEntityTriggerTypes.Touch)
-                    return 2u;
-                if (TriggerType == EEntityTriggerTypes.Action || Solid)
-                    return 1u;
-
-                return 0u;
+                if (Passable)
+                    return 3u; // cross response
+                else
+                {
+                    if (TriggerType == EEntityTriggerTypes.Touch || TriggerType == EEntityTriggerTypes.TouchOnce)
+                        return 2u; // touch response
+                    else
+                        return 1u; // slide response
+                }
             }
         }
-        public int LocHeight { get { return 0; } }
         public Loc DrawOffset;
 
         public override Color DevEntColoring => Color.Chartreuse;
@@ -51,22 +53,26 @@ namespace RogueEssence.Ground
             SetTriggerType(EEntityTriggerTypes.Action);
         }
 
-        public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool solid, EEntityTriggerTypes triggerty, string entname)
+        public GroundObject(IPlaceableAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, EEntityTriggerTypes triggerty, string entname)
         {
             ObjectAnim = anim;
             CurrentAnim = new ObjAnimData();
             Collider = collider;
             DrawOffset = drawOffset;
+            Direction = dir;
             SetTriggerType(triggerty);
             EntName = entname;
         }
 
         public GroundObject(ObjAnimData anim, Rect collider, EEntityTriggerTypes triggerty, string entname)
-            :this(anim, collider, new Loc(), true, triggerty, entname)
+            :this(anim, Dir8.Down, collider, new Loc(), triggerty, entname)
         {}
 
         public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool contact, string entname)
-            : this(anim, collider, drawOffset, true, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
+            : this(anim, Dir8.Down, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
+        { }
+        public GroundObject(ObjAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, bool contact, string entname)
+            : this(anim, dir, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
         { }
         public GroundObject(ObjAnimData anim, Rect collider, bool contact, string entname)
             : this(anim, collider, new Loc(), contact, entname)
@@ -74,26 +80,26 @@ namespace RogueEssence.Ground
 
         protected GroundObject(GroundObject other) : base(other)
         {
-            ObjectAnim = new ObjAnimData(other.ObjectAnim);
+            ObjectAnim = (IPlaceableAnimData)other.ObjectAnim.Clone();
             CurrentAnim = new ObjAnimData();
             DrawOffset = other.DrawOffset;
-            Solid = other.Solid;
+            Passable = other.Passable;
         }
 
         public override GroundEntity Clone() { return new GroundObject(this); }
 
 
 
-        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator) //PSY: Set this value to get the entity that touched us/activated us
+        public override IEnumerator<YieldInstruction> Interact(GroundEntity activator, TriggerResult result) //PSY: Set this value to get the entity that touched us/activated us
         {
             if (!EntEnabled)
                 yield break;
 
             //Run script events
             if (GetTriggerType() == EEntityTriggerTypes.Action)
-                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, activator));
-            else if (GetTriggerType() == EEntityTriggerTypes.Touch)
-                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Touch, activator));
+                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Action, result, activator));
+            else if (GetTriggerType() == EEntityTriggerTypes.Touch || GetTriggerType() == EEntityTriggerTypes.TouchOnce)
+                yield return CoroutineManager.Instance.StartCoroutine(RunEvent(LuaEngine.EEntLuaEventTypes.Touch, result, activator));
 
         }
 
@@ -123,7 +129,7 @@ namespace RogueEssence.Ground
             }
         }
 
-        public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
+        public override void DrawDebug(SpriteBatch spriteBatch, Loc offset)
         {
             if (EntEnabled)
             {
@@ -131,31 +137,31 @@ namespace RogueEssence.Ground
                 blank.Draw(spriteBatch, new Rectangle(Collider.X - offset.X, Collider.Y - offset.Y, Collider.Width, Collider.Height), null, Color.Cyan * 0.7f);
             }
         }
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             if (CurrentAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
-                DirSheet sheet = GraphicsManager.GetObject(CurrentAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Dir8.None), Color.White);
+                DirSheet sheet = GraphicsManager.GetDirSheet(CurrentAnim.AssetType, CurrentAnim.AnimIndex);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Direction), Color.White * ((float)CurrentAnim.Alpha / 255), CurrentAnim.AnimFlip);
             }
             else if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
-                DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White);
+                DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Direction), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
             }
         }
 
 
-        public Loc GetDrawLoc(Loc offset)
+        public override Loc GetDrawLoc(Loc offset)
         {
             return MapLoc - offset - DrawOffset;
         }
 
-        public Loc GetDrawSize()
+        public override Loc GetDrawSize()
         {
             DirSheet sheet = GraphicsManager.GetObject(ObjectAnim.AnimIndex);
 
@@ -187,12 +193,20 @@ namespace RogueEssence.Ground
 
 
         [OnDeserialized]
-        internal override void OnDeserializedMethod(StreamingContext context)
+        internal new void OnDeserializedMethod(StreamingContext context)
         {
-            base.OnDeserializedMethod(context);
-            //TODO: v0.5: remove this
-            if (CurrentAnim == null)
-                CurrentAnim = new ObjAnimData();
+            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+
+            //TODO: Created v0.5.3, delete on v0.6.1
+            if (ObjectAnim != null)
+            {
+                Dir8 dir = ObjectAnim.AnimDir;
+                if (dir != Dir8.None)
+                {
+                    Direction = dir;
+                    ObjectAnim.AnimDir = Dir8.None;
+                }
+            }
         }
     }
 }

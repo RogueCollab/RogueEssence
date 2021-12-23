@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using RogueEssence.Content;
 using RogueEssence.Script;
 using RogueEssence.Menu;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
@@ -96,6 +97,7 @@ namespace RogueEssence.Data
         public ReRandom Rand;
 
         public UnlockState[] Dex;
+        public bool[] RogueStarters;
         public UnlockState[] DungeonUnlocks;
 
         //TODO: set dungeon unlocks and event flags to save variables
@@ -131,14 +133,16 @@ namespace RogueEssence.Data
 
 
         //Added this for storing the serialized ScriptVar table
-        public string ScriptVars;
+        [JsonConverter(typeof(Dev.ScriptVarsConverter))]
+        public LuaTableContainer ScriptVars;
 
         public GameProgress()
         {
             ActiveTeam = new ExplorerTeam();
 
-            Dex = new UnlockState[DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count];
-            DungeonUnlocks = new UnlockState[DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count];
+            Dex = new UnlockState[10000];//TODO: remove this magic number and make it an adjustable value
+            RogueStarters = new bool[10000];//TODO: remove this magic number and make it an adjustable value
+            DungeonUnlocks = new UnlockState[10000];//TODO: remove this magic number and make it an adjustable value
 
             NextDest = ZoneLoc.Invalid;
 
@@ -185,14 +189,44 @@ namespace RogueEssence.Data
             ProfilePics = teamProfile.ToArray();
         }
 
+        public UnlockState GetMonsterUnlock(int index)
+        {
+            return Dex[index];
+        }
+
+        public int GetTotalMonsterUnlock(UnlockState state)
+        {
+            int total = 0;
+            for (int ii = 0; ii < Dex.Length; ii++)
+            {
+                if (Dex[ii] == state)
+                    total++;
+            }
+            return total;
+        }
+
+        public virtual void RegisterMonster(int index)
+        {
+            Dex[index] = UnlockState.Completed;
+        }
+
         public virtual void SeenMonster(int index)
         {
             if (Dex[index] == UnlockState.None)
                 Dex[index] = UnlockState.Discovered;
         }
-        public virtual void RegisterMonster(int index)
+
+        public virtual void RogueUnlockMonster(int index)
         {
-            Dex[index] = UnlockState.Completed;
+            RogueStarters[index] = true;
+        }
+        public bool GetRogueUnlock(int index)
+        {
+            return RogueStarters[index];
+        }
+        public UnlockState GetDungeonUnlock(int index)
+        {
+            return DungeonUnlocks[index];
         }
         public abstract IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
@@ -476,8 +510,7 @@ namespace RogueEssence.Data
         {
             using (MemoryStream classStream = new MemoryStream())
             {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(classStream, save);
+                Serializer.Serialize(classStream, save);
                 writer.Write(classStream.Position);
                 classStream.WriteTo(writer.BaseStream);
             }
@@ -485,13 +518,35 @@ namespace RogueEssence.Data
 
         public static GameProgress LoadMainData(BinaryReader reader)
         {
+            long oldOffset = reader.BaseStream.Position;
+            long length = reader.ReadInt64();
+            try
+            {
+                using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
+                {
+                    return (GameProgress)Serializer.Deserialize(classStream, typeof(GameProgress));
+                }
+            }
+            catch (Exception)
+            {
+                reader.BaseStream.Seek(oldOffset, SeekOrigin.Begin);
+                return LegacyLoadMainData(reader);
+            }
+
+        }
+
+        //TODO: v0.6 Delete this
+        public static GameProgress LegacyLoadMainData(BinaryReader reader)
+        {
             long length = reader.ReadInt64();
             using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
             {
                 IFormatter formatter = new BinaryFormatter();
                 if (DiagManager.Instance.UpgradeBinder != null)
                     formatter.Binder = DiagManager.Instance.UpgradeBinder;
-                GameProgress outsave = (GameProgress)formatter.Deserialize(classStream); //Had to tweak this around a bit, so I could notify the script engine to load the script save data
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+                GameProgress outsave = (GameProgress)formatter.Deserialize(classStream);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 return outsave;
             }
 
@@ -509,6 +564,24 @@ namespace RogueEssence.Data
             DataManager.Instance.MsgLog.Clear();
         }
 
+
+        public void FullRestore()
+        {
+            foreach (Character character in ActiveTeam.EnumerateChars())
+            {
+                character.Dead = false;
+                character.FullRestore();
+            }
+            foreach (Character character in ActiveTeam.Assembly)
+            {
+                character.Dead = false;
+                character.FullRestore();
+            }
+            MidAdventure = false;
+            ClearDungeonItems();
+            //clear rescue status
+            Rescue = null;
+        }
 
         public List<int> MergeDexTo(GameProgress destProgress)
         {
@@ -531,6 +604,7 @@ namespace RogueEssence.Data
                             newRecruits.Add(ii);
                     }
                     destProgress.Dex[ii] = UnlockState.Completed;
+                    destProgress.RogueStarters[ii] = true;
                 }
                 if (Dex[ii] == UnlockState.Discovered && destProgress.Dex[ii] == UnlockState.None)
                     destProgress.Dex[ii] = UnlockState.Discovered;
@@ -691,20 +765,7 @@ namespace RogueEssence.Data
 
             TotalAdventures++;
 
-            foreach (Character character in ActiveTeam.EnumerateChars())
-            {
-                character.Dead = false;
-                character.FullRestore();
-            }
-            foreach (Character character in ActiveTeam.Assembly)
-            {
-                character.Dead = false;
-                character.FullRestore();
-            }
-            MidAdventure = false;
-            ClearDungeonItems();
-            //clear rescue status
-            Rescue = null;
+            FullRestore();
 
             //merge back the team if the dungeon was level-limited
             yield return CoroutineManager.Instance.StartCoroutine(RestoreLevel());
@@ -807,7 +868,11 @@ namespace RogueEssence.Data
             Stakes = stakes;
 
             if (recorded)
-                DataManager.Instance.BeginPlay(PathMod.NoMod(DataManager.ROGUE_PATH + DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
+            {
+                if (!Directory.Exists(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
+                    Directory.CreateDirectory(PathMod.ModSavePath(DataManager.ROGUE_PATH));
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
+            }
 
             yield break;
         }

@@ -36,8 +36,7 @@ namespace RogueEssence.Script
             {
                 if (ent == null || fn == null)
                 {
-                    DiagManager.Instance.LogInfo(String.Format("ScriptTask.StartEntityTask(): Got null entity or function pointer!"));
-                    return null;
+                    throw new ArgumentNullException("ScriptTask.StartEntityTask(): Got null entity or function pointer!");
                 }
                 if (ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
                 {
@@ -49,7 +48,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask.StartEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
             return null;
         }
@@ -64,7 +63,7 @@ namespace RogueEssence.Script
             try
             {
                 if (ent == null || fn == null)
-                    DiagManager.Instance.LogInfo(String.Format("ScriptTask._WaitStartEntityTask(): Got null entity or function pointer!"));
+                    throw new ArgumentNullException("ScriptTask._WaitStartEntityTask(): Got null entity or function pointer!");
                 if (ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
                 {
                     BaseTaskUser tu = (BaseTaskUser)ent;
@@ -73,7 +72,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask._WaitStartEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
             return new Coroutine(LuaEngine._DummyWait());
         }
@@ -96,7 +95,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask.StopEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -118,7 +117,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask._WaitEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
             return new Coroutine(LuaEngine._DummyWait());
         }
@@ -157,19 +156,9 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask.StartScriptLocalCoroutine(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
                 return null;
             }
-        }
-
-        public object GetArrayValue(object arr, int index)
-        {
-            if (arr is Array)
-            {
-                Array array = arr as Array;
-                return array.GetValue(index);
-            }
-            return null;
         }
 
         public Coroutine BranchCoroutine(object obj)

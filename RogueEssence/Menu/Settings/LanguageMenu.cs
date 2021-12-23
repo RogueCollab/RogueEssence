@@ -5,6 +5,9 @@ namespace RogueEssence.Menu
 {
     public class LanguageMenu : SingleStripMenu
     {
+        public override bool CanMenu { get { return false; } }
+        public override bool CanCancel { get { return false; } }
+
         public LanguageMenu()
         {
             List<MenuTextChoice> choices = new List<MenuTextChoice>();

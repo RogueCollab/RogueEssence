@@ -15,6 +15,12 @@ namespace RogueEssence.LevelGen
         [NonSerialized]
         public List<int> DropPoints;
 
+
+        public SpreadPlanBase()
+        {
+            DropPoints = new List<int>();
+        }
+
         public SpreadPlanBase(IntRange floorRange)
         {
             FloorRange = floorRange;
@@ -71,6 +77,7 @@ namespace RogueEssence.LevelGen
     {
         public RandRange FloorSpacing;
 
+        public SpreadPlanSpaced() { }
         public SpreadPlanSpaced(RandRange spacing, IntRange floorRange) : base(floorRange)
         {
             FloorSpacing = spacing;
@@ -103,6 +110,8 @@ namespace RogueEssence.LevelGen
     {
         public IRandPicker<int> Quota;
         public bool Replaceable;
+
+        public SpreadPlanQuota() { Quota = new RandRange(); }
 
         public SpreadPlanQuota(IRandPicker<int> quota, IntRange floorRange) : base(floorRange)
         {

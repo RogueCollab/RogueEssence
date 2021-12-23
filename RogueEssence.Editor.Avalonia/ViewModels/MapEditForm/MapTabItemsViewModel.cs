@@ -18,7 +18,7 @@ namespace RogueEssence.Dev.ViewModels
 
             ItemTypes = new ObservableCollection<string>();
             ItemTypes.Add("---: Money");
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             for (int ii = 0; ii < monster_names.Length; ii++)
                 ItemTypes.Add(ii.ToString("D3") + ": " + monster_names[ii]);
 
@@ -31,6 +31,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -103,6 +104,19 @@ namespace RogueEssence.Dev.ViewModels
         public MapItem SelectedEntity;
 
 
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                setEntity(new MapItem(SelectedEntity));
+            }
+        }
+
         public void ProcessUndo()
         {
             if (EntMode == EntEditMode.SelectEntity)
@@ -115,6 +129,9 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
+
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
+                return;
 
             switch (EntMode)
             {

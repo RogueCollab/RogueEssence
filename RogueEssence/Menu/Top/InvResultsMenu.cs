@@ -20,9 +20,9 @@ namespace RogueEssence.Menu
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             Ending = ending;
 
-            Title = new MenuText(Text.FormatKey("MENU_RESULTS_INVENTORY_TITLE"), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            Title = new MenuText(Text.FormatKey("MENU_RESULTS_INVENTORY_TITLE"), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Div = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Items = new MenuText[ending.ActiveTeam.MaxInv];
             List<string> flatChoices = new List<string>();
@@ -43,11 +43,11 @@ namespace RogueEssence.Menu
                 {
                     int itemIndex = ii + ending.ActiveTeam.MaxInv / 2 * jj;
                     string itemName = (flatChoices.Count > itemIndex) ? flatChoices[itemIndex] : "---";
-                    Items[itemIndex] = new MenuText(itemName, Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2 + (Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 4) / 2 * jj, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
+                    Items[itemIndex] = new MenuText(itemName, new Loc(GraphicsManager.MenuBG.TileWidth * 2 + (Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4) / 2 * jj, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
                 }
             }
 
-            Money = new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.Money)), Bounds.Start + new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 12 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            Money = new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.Money)), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 12 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             
             base.Initialize();
         }

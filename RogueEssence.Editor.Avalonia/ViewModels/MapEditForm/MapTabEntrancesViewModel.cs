@@ -29,6 +29,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -60,6 +61,21 @@ namespace RogueEssence.Dev.ViewModels
             ShowEntrances = ShowEntrances;
         }
 
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                //this is technically redundant since the type is a struct
+                //it's just here in case it changes
+                setEntity(ReflectionExt.SerializeCopy(SelectedEntity));
+            }
+        }
+
         public void ProcessUndo()
         {
             if (EntMode == EntEditMode.SelectEntity)
@@ -72,6 +88,9 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
+
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
+                return;
 
             switch (EntMode)
             {

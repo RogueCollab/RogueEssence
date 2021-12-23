@@ -17,7 +17,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabTilesViewModel()
         {
             TileTypes = new ObservableCollection<string>();
-            string[] tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray();
+            string[] tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray(true);
             for (int ii = 0; ii < tile_names.Length; ii++)
                 TileTypes.Add(ii.ToString("D3") + ": " + tile_names[ii]);
 
@@ -94,12 +94,12 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle("Tile", elementName, element, typeof(TileState), new object[0]);
 
             //TODO: make this a member and reference it that way
-            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", elementName, typeof(TileState), new object[0], element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", elementName, typeof(TileState), new object[0], element, true, new Type[0]);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(TileState), new object[0], true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(TileState), new object[0], true, new Type[0]);
 
                 bool itemExists = false;
 

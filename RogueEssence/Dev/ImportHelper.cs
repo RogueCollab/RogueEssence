@@ -529,6 +529,20 @@ namespace RogueEssence.Dev
                     }
                 }
             }
+            dirs = Directory.GetDirectories(sourceDir);
+            foreach (string dir in dirs)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string asset_name = fileName;
+                using (DirSheet sheet = DirSheet.Import(dir + "/"))
+                {
+                    using (FileStream stream = File.OpenWrite(String.Format(cachePattern, asset_name)))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            sheet.Save(writer);
+                    }
+                }
+            }
         }
 
         public static void ImportAllFonts(string sourceDir, string cachePattern)

@@ -4,9 +4,9 @@ using System.IO;
 using System.Xml;
 using Microsoft.Xna.Framework.Input;
 using System.Text;
-using System.Diagnostics;
 using RogueEssence.Dev;
 using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence
 {
@@ -26,9 +26,11 @@ namespace RogueEssence
         object lockObj = new object();
 
         public delegate void LogAdded(string message);
+        public delegate string ErrorTrace();
 
         private bool inError;
         private LogAdded errorAddedEvent;
+        private ErrorTrace errorTraceEvent;
 
         public SerializationBinder UpgradeBinder { get; set; }
         public bool RecordingInput { get { return (ActiveDebugReplay == null && inputWriter != null); } }
@@ -39,7 +41,9 @@ namespace RogueEssence
         public bool DevMode;
         public IRootEditor DevEditor;
 
-        public bool GamePadActive;
+        public bool GamePadActive { get; private set; }
+        public bool InvertABXY { get; private set; }
+
         public Settings CurSettings;
 
         private string loadMessage;
@@ -66,11 +70,15 @@ namespace RogueEssence
                 Directory.CreateDirectory(PathMod.MODS_PATH);
             Settings.InitStatic();
             CurSettings = new Settings();
+            FNALoggerEXT.LogInfo = LogInfo;
+            FNALoggerEXT.LogWarn = LogInfo;
+            FNALoggerEXT.LogError = LogInfo;
         }
 
-        public void SetErrorListener(LogAdded errorAdded)
+        public void SetErrorListener(LogAdded errorAdded, ErrorTrace errorTrace)
         {
             errorAddedEvent = errorAdded;
+            errorTraceEvent = errorTrace;
         }
 
         public void Unload()
@@ -167,12 +175,18 @@ namespace RogueEssence
         {
             LogError(exception, true);
         }
+
+        /// <summary>
+        /// Logs an error to console and output log.  Puts out the entire stack trace including inner exceptions.
+        /// </summary>
+        /// <param name="exception">THe exception to log.</param>
+        /// <param name="signal">Triggers On-Error code if true.  Logs silently if not.</param>
         public void LogError(Exception exception, bool signal)
         {
             lock (lockObj)
             {
                 if (inError)
-                    throw new InvalidOperationException("Attempted to log an error when within an error.", exception);
+                    throw new InvalidOperationException("Attempted to log an error when logging an error.", exception);
                 inError = true;
                 try
                 {
@@ -193,11 +207,12 @@ namespace RogueEssence
                         depth++;
                     }
 
+                    if (errorTraceEvent != null)
+                        errorMsg.Append(errorTraceEvent());
 
-#if DEBUG
-                    Debug.WriteLine(errorMsg);
-#else
                     Console.WriteLine(errorMsg);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
 #endif
 
                     if (errorAddedEvent != null && signal)
@@ -211,7 +226,7 @@ namespace RogueEssence
                 }
                 catch (Exception ex)
                 {
-                    Debug.Write(ex.ToString());
+                    Console.Write(ex.ToString());
                 }
                 inError = false;
             }
@@ -224,10 +239,9 @@ namespace RogueEssence
                 string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), diagInfo);
                 if (DevMode)
                 {
-#if DEBUG
-                    Debug.WriteLine(fullMsg);
-#else
                     Console.WriteLine(fullMsg);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine(fullMsg);
 #endif
                 }
 
@@ -243,7 +257,7 @@ namespace RogueEssence
                 }
                 catch (Exception ex)
                 {
-                    Debug.Write(ex.ToString());
+                    Console.Write(ex.ToString());
                 }
             }
         }
@@ -252,12 +266,12 @@ namespace RogueEssence
         {
             //try to load from file
 
-            try
-            {
-                Settings settings = new Settings();
+            Settings settings = new Settings();
 
-                string path = PathMod.NoMod("Config.xml");
-                if (File.Exists(path))
+            string path = PathMod.FromExe("Config.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -265,16 +279,23 @@ namespace RogueEssence
                     settings.BGMBalance = Int32.Parse(xmldoc.SelectSingleNode("Config/BGM").InnerText);
                     settings.SEBalance = Int32.Parse(xmldoc.SelectSingleNode("Config/SE").InnerText);
 
-                    settings.BattleFlow = (Settings.BattleSpeed)Enum.Parse(typeof(Settings.BattleSpeed), xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
+                    settings.BattleFlow = Enum.Parse<Settings.BattleSpeed>(xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
 
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
 
                 }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
 
-                path = PathMod.NoMod("Keyboard.xml");
-                if (File.Exists(path))
+            path = PathMod.FromExe("Keyboard.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -283,7 +304,7 @@ namespace RogueEssence
                     XmlNode keys = xmldoc.SelectSingleNode("Config/DirKeys");
                     foreach (XmlNode key in keys.SelectNodes("DirKey"))
                     {
-                        settings.DirKeys[index] = (Keys)Enum.Parse(typeof(Keys), key.InnerText);
+                        settings.DirKeys[index] = Enum.Parse<Keys>(key.InnerText);
                         index++;
                     }
 
@@ -293,13 +314,23 @@ namespace RogueEssence
                     {
                         while (!Settings.UsedByKeyboard((FrameInput.InputType)index) && index < settings.ActionKeys.Length)
                             index++;
-                        settings.ActionKeys[index] = (Keys)Enum.Parse(typeof(Keys), key.InnerText);
+                        settings.ActionKeys[index] = Enum.Parse<Keys>(key.InnerText);
                         index++;
                     }
-                }
 
-                path = PathMod.NoMod("Gamepad.xml");
-                if (File.Exists(path))
+                    settings.Enter = Boolean.Parse(xmldoc.SelectSingleNode("Config/Enter").InnerText);
+                    settings.NumPad = Boolean.Parse(xmldoc.SelectSingleNode("Config/NumPad").InnerText);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+
+            path = PathMod.FromExe("Gamepad.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -310,14 +341,22 @@ namespace RogueEssence
                     {
                         while (!Settings.UsedByGamepad((FrameInput.InputType)index) && index < settings.ActionButtons.Length)
                             index++;
-                        settings.ActionButtons[index] = (Buttons)Enum.Parse(typeof(Buttons), key.InnerText);
+                        settings.ActionButtons[index] = Enum.Parse<Buttons>(key.InnerText);
                         index++;
                     }
                     settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);
-                }
 
-                path = PathMod.NoMod("Contacts.xml");
-                if (File.Exists(path))
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+
+            path = PathMod.FromExe("Contacts.xml");
+            if (File.Exists(path))
+            {
+                try
                 {
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -355,14 +394,12 @@ namespace RogueEssence
                     }
 
                 }
-                return settings;
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
             }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            return new Settings();
+            return settings;
         }
 
         public void SaveSettings(Settings settings)
@@ -382,7 +419,7 @@ namespace RogueEssence
                 appendConfigNode(xmldoc, docNode, "Border", settings.Border.ToString());
                 appendConfigNode(xmldoc, docNode, "Language", settings.Language.ToString());
 
-                xmldoc.Save(PathMod.NoMod("Config.xml"));
+                xmldoc.Save(PathMod.FromExe("Config.xml"));
             }
 
             {
@@ -405,8 +442,10 @@ namespace RogueEssence
                     appendConfigNode(xmldoc, actionKeys, "ActionKey", key.ToString());
                 }
                 docNode.AppendChild(actionKeys);
+                appendConfigNode(xmldoc, docNode, "Enter", settings.Enter.ToString());
+                appendConfigNode(xmldoc, docNode, "NumPad", settings.NumPad.ToString());
 
-                xmldoc.Save(PathMod.NoMod("Keyboard.xml"));
+                xmldoc.Save(PathMod.FromExe("Keyboard.xml"));
             }
 
             {
@@ -426,7 +465,7 @@ namespace RogueEssence
                 docNode.AppendChild(actionButtons);
                 appendConfigNode(xmldoc, docNode, "InactiveInput", settings.InactiveInput.ToString());
 
-                xmldoc.Save(PathMod.NoMod("Gamepad.xml"));
+                xmldoc.Save(PathMod.FromExe("Gamepad.xml"));
             }
 
             {
@@ -471,10 +510,39 @@ namespace RogueEssence
                 docNode.AppendChild(peers);
 
 
-                xmldoc.Save(PathMod.NoMod("Contacts.xml"));
+                xmldoc.Save(PathMod.FromExe("Contacts.xml"));
             }
         }
 
+        public void UpdateGamePadActive(bool active)
+        {
+            if (!GamePadActive && active)
+            {
+                string guid = GamePad.GetGUIDEXT(Microsoft.Xna.Framework.PlayerIndex.One);
+
+                if (guid.Equals("4c05c405") || guid.Equals("4c05cc09"))
+                {
+                    //PS4
+                    InvertABXY = false;
+                }
+                if (guid.Equals("4c05e60c"))
+                {
+                    //PS5
+                    InvertABXY = false;
+                }
+                if (guid.Equals("7e050920") || guid.Equals("7e053003"))
+                {
+                    //Nintendo
+                    InvertABXY = true;
+                }
+                else
+                {
+                    //Xbox
+                    InvertABXY = false;
+                }
+            }
+            GamePadActive = active;
+        }
 
         public string GetControlString(FrameInput.InputType inputType)
         {

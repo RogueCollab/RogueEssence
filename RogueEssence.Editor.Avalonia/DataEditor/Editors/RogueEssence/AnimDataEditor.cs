@@ -23,10 +23,8 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(AnimAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
             ComboBox cbValue = new ComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
@@ -54,10 +52,10 @@ namespace RogueEssence.Dev
         }
 
 
-        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             ComboBox cbValue = (ComboBox)control.Children[controlIndex];
             if (cbValue.SelectedIndex == 0)
                 return "";
