@@ -14,6 +14,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using SDL2;
+using RogueEssence.Ground;
+using RogueElements;
+using System.IO;
 #endregion
 
 namespace RogueEssence.Examples
@@ -34,13 +37,11 @@ namespace RogueEssence.Examples
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.SerializationGuard.AllowFileWrites", true);
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-
-            string[] args = System.Environment.GetCommandLineArgs();
-            PathMod.InitExePath(System.IO.Path.GetDirectoryName(args[0]));
+            
+            string[] args = Environment.GetCommandLineArgs();
+            PathMod.InitExePath(args[0]);
             DiagManager.InitInstance();
             DiagManager.Instance.CurSettings = DiagManager.Instance.LoadSettings();
-            //DiagManager.Instance.UpgradeBinder = new UpgradeBinder();
-
 
             try
             {
@@ -54,30 +55,18 @@ namespace RogueEssence.Examples
                 GraphicsManager.AssetType convertAssets = GraphicsManager.AssetType.None;
                 DataManager.DataType convertIndices = DataManager.DataType.None;
                 DataManager.DataType reserializeIndices = DataManager.DataType.None;
-                DataManager.DataType dump = DataManager.DataType.None;
                 string langArgs = "";
+                bool dev = false;
+                string mod = "";
+                bool buildMod = false;
+                string playInputs = null;
                 for (int ii = 1; ii < args.Length; ii++)
                 {
-                    if (args[ii] == "-asset")
-                    {
-                        PathMod.ASSET_PATH = System.IO.Path.GetFullPath(PathMod.ExePath + args[ii + 1]);
-                        ii++;
-                    }
-                    else if (args[ii] == "-raw")
-                    {
-                        PathMod.DEV_PATH = System.IO.Path.GetFullPath(PathMod.ExePath + args[ii + 1]);
-                        ii++;
-                    }
-                    else if (args[ii] == "-mod")
-                    {
-                        PathMod.Mod = PathMod.MODS_FOLDER + args[ii + 1];
-                        ii++;
-                    }
-                    else if (args[ii] == "-dev")
-                        DiagManager.Instance.DevMode = true;
+                    if (args[ii] == "-dev")
+                        dev = true;
                     else if (args[ii] == "-play" && args.Length > ii + 1)
                     {
-                        DiagManager.Instance.LoadInputs(args[ii + 1]);
+                        playInputs = args[ii + 1];
                         ii++;
                     }
                     else if (args[ii] == "-lang" && args.Length > ii + 1)
@@ -87,6 +76,26 @@ namespace RogueEssence.Examples
                     }
                     else if (args[ii] == "-nolog")
                         logInput = false;
+                    else if (args[ii] == "-asset")
+                    {
+                        PathMod.ASSET_PATH = Path.GetFullPath(args[ii + 1]);
+                        ii++;
+                    }
+                    else if (args[ii] == "-raw")
+                    {
+                        PathMod.DEV_PATH = Path.GetFullPath(args[ii + 1]);
+                        ii++;
+                    }
+                    else if (args[ii] == "-mod")
+                    {
+                        mod = args[ii + 1];
+                        ii++;
+                    }
+                    else if (args[ii] == "-build")
+                    {
+                        buildMod = true;
+                        ii++;
+                    }
                     else if (args[ii] == "-convert")
                     {
                         int jj = 1;
@@ -131,28 +140,6 @@ namespace RogueEssence.Examples
                         }
                         ii += jj - 1;
                     }
-                    else if (args[ii] == "-dump")
-                    {
-                        int jj = 1;
-                        while (args.Length > ii + jj)
-                        {
-                            DataManager.DataType conv = DataManager.DataType.None;
-                            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
-                            {
-                                if (args[ii + jj].ToLower() == type.ToString().ToLower())
-                                {
-                                    conv = type;
-                                    break;
-                                }
-                            }
-                            if (conv != DataManager.DataType.None)
-                                dump |= conv;
-                            else
-                                break;
-                            jj++;
-                        }
-                        ii += jj - 1;
-                    }
                     else if (args[ii] == "-reserialize")
                     {
                         int jj = 1;
@@ -177,10 +164,51 @@ namespace RogueEssence.Examples
                     }
                 }
 
-
                 GraphicsManager.InitParams();
+
+                DiagManager.Instance.DevMode = dev;
+
+                if (mod != "")
+                {
+                    if (Directory.Exists(Path.Combine(PathMod.MODS_PATH, mod)))
+                    {
+                        PathMod.Mod = PathMod.MODS_FOLDER + mod;
+
+                        DiagManager.Instance.LogInfo(String.Format("Loaded mod \"{0}\".", mod));
+                    }
+                    else
+                        DiagManager.Instance.LogInfo(String.Format("Cannot find mod \"{0}\" in {1}. Falling back to base game.", mod, PathMod.MODS_PATH));
+                }
+
+
+                if (playInputs != null)
+                    DiagManager.Instance.LoadInputs(playInputs);
+
                 Text.Init();
-                Text.SetCultureCode("");
+                if (langArgs != "" && DiagManager.Instance.CurSettings.Language == "")
+                {
+                    if (langArgs.Length > 0)
+                    {
+                        DiagManager.Instance.CurSettings.Language = langArgs.ToLower();
+                        Text.SetCultureCode(langArgs.ToLower());
+                    }
+                    else
+                        DiagManager.Instance.CurSettings.Language = "en";
+                }
+                Text.SetCultureCode(DiagManager.Instance.CurSettings.Language == "" ? "" : DiagManager.Instance.CurSettings.Language.ToString());
+
+                if (buildMod)
+                {
+                    if (PathMod.Mod == "")
+                    {
+                        DiagManager.Instance.LogInfo("No mod specified to build.");
+                        return;
+                    }
+                    RogueEssence.Dev.DevHelper.MergeMod(mod);
+
+                    return;
+                }
+
 
                 if (convertAssets != GraphicsManager.AssetType.None)
                 {
@@ -198,14 +226,22 @@ namespace RogueEssence.Examples
                 {
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
-                    DevHelper.ReserializeBase();
-                    DevHelper.Reserialize(reserializeIndices);
-                    DevHelper.ReserializeData(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT);
-                    DevHelper.ReserializeData(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT);
-                    DevHelper.RunIndexing(reserializeIndices);
 
-                    DataManager.Instance.InitData();
-                    DevHelper.RunExtraIndexing(reserializeIndices);
+                    DataManager.InitDataDirs(PathMod.ModPath(""));
+                    RogueEssence.Dev.DevHelper.ReserializeBase();
+                    DiagManager.Instance.LogInfo("Reserializing main data");
+                    RogueEssence.Dev.DevHelper.Reserialize(reserializeIndices);
+                    DiagManager.Instance.LogInfo("Reserializing map data");
+                    if ((reserializeIndices & DataManager.DataType.Zone) != DataManager.DataType.None)
+                    {
+                        RogueEssence.Dev.DevHelper.ReserializeData<Map>(DataManager.DATA_PATH + "Map/", DataManager.MAP_EXT);
+                        RogueEssence.Dev.DevHelper.ReserializeData<GroundMap>(DataManager.DATA_PATH + "Ground/", DataManager.GROUND_EXT);
+                    }
+                    DiagManager.Instance.LogInfo("Reserializing indices");
+                    RogueEssence.Dev.DevHelper.RunIndexing(reserializeIndices);
+
+                    DataManager.Instance.UniversalData = (TypeDict<BaseData>)RogueEssence.Dev.DevHelper.LoadWithLegacySupport(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), typeof(TypeDict<BaseData>));
+                    RogueEssence.Dev.DevHelper.RunExtraIndexing(reserializeIndices);
                     return;
                 }
 
@@ -213,73 +249,14 @@ namespace RogueEssence.Examples
                 {
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
-                    DevHelper.RunIndexing(convertIndices);
+                    DataManager.InitDataDirs(PathMod.ModPath(""));
+                    RogueEssence.Dev.DevHelper.RunIndexing(convertIndices);
 
-                    DataManager.Instance.InitData();
-                    DevHelper.RunExtraIndexing(reserializeIndices);
+                    DataManager.Instance.UniversalData = (TypeDict<BaseData>)RogueEssence.Dev.DevHelper.LoadWithLegacySupport(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), typeof(TypeDict<BaseData>));
+                    RogueEssence.Dev.DevHelper.RunExtraIndexing(convertIndices);
                     return;
                 }
 
-                //For exporting to data
-                if (dump > DataManager.DataType.None)
-                {
-                    LuaEngine.InitInstance();
-
-                    {
-                        DataManager.InitInstance();
-                        DataInfo.AddEditorOps();
-                        DataInfo.AddSystemFX();
-                        DataInfo.AddUniversalEvent();
-                        DataInfo.AddUniversalData();
-
-                        if ((dump & DataManager.DataType.Element) != DataManager.DataType.None)
-                            DataInfo.AddElementData();
-                        if ((dump & DataManager.DataType.GrowthGroup) != DataManager.DataType.None)
-                            DataInfo.AddGrowthGroupData();
-                        if ((dump & DataManager.DataType.SkillGroup) != DataManager.DataType.None)
-                            DataInfo.AddSkillGroupData();
-                        if ((dump & DataManager.DataType.Emote) != DataManager.DataType.None)
-                            DataInfo.AddEmoteData();
-                        if ((dump & DataManager.DataType.AI) != DataManager.DataType.None)
-                            DataInfo.AddAIData();
-                        if ((dump & DataManager.DataType.Tile) != DataManager.DataType.None)
-                            DataInfo.AddTileData();
-                        if ((dump & DataManager.DataType.Terrain) != DataManager.DataType.None)
-                            DataInfo.AddTerrainData();
-                        if ((dump & DataManager.DataType.Rank) != DataManager.DataType.None)
-                            DataInfo.AddRankData();
-                        if ((dump & DataManager.DataType.Skin) != DataManager.DataType.None)
-                            DataInfo.AddSkinData();
-
-                        if ((dump & DataManager.DataType.Monster) != DataManager.DataType.None)
-                            DataInfo.AddMonsterData();
-
-                        if ((dump & DataManager.DataType.Skill) != DataManager.DataType.None)
-                            DataInfo.AddSkillData();
-
-                        if ((dump & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
-                            DataInfo.AddIntrinsicData();
-                        if ((dump & DataManager.DataType.Status) != DataManager.DataType.None)
-                            DataInfo.AddStatusData();
-                        if ((dump & DataManager.DataType.MapStatus) != DataManager.DataType.None)
-                            DataInfo.AddMapStatusData();
-
-                        if ((dump & DataManager.DataType.Item) != DataManager.DataType.None)
-                            DataInfo.AddItemData();
-
-                        if ((dump & DataManager.DataType.Zone) != DataManager.DataType.None)
-                        {
-                            DataInfo.AddMapData();
-                            DataInfo.AddGroundData();
-                            DataInfo.AddZoneData();
-                        }
-
-                        DevHelper.RunIndexing(dump);
-
-                        DevHelper.RunExtraIndexing(reserializeIndices);
-                    }
-                    return;
-                }
 
                 if (langArgs != "" && DiagManager.Instance.CurSettings.Language == "")
                 {
@@ -333,6 +310,9 @@ namespace RogueEssence.Examples
         {
             DataEditor.Init();
 
+            DataEditor.AddEditor(new StatusEffectEditor());
+            DataEditor.AddEditor(new MapStatusEditor());
+
             DataEditor.AddEditor(new MoneySpawnZoneStepEditor());
 
             //DataEditor.AddConverter(new AutoTileBaseConverter());
@@ -360,6 +340,8 @@ namespace RogueEssence.Examples
 
             DataEditor.AddEditor(new RoomGenCrossEditor());
             DataEditor.AddEditor(new SizedRoomGenEditor());
+
+            DataEditor.AddEditor(new PromoteBranchEditor());
 
             DataEditor.AddEditor(new MonsterIDEditor());
 
@@ -394,6 +376,8 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new FlagTypeEditor());
             DataEditor.AddEditor(new ColorEditor());
             DataEditor.AddEditor(new TypeEditor());
+
+            DataEditor.AddEditor(new HashSetEditor<int>());
             DataEditor.AddEditor(new ArrayEditor());
             DataEditor.AddEditor(new DictionaryEditor());
             DataEditor.AddEditor(new NoDupeListEditor());
