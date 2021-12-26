@@ -154,6 +154,7 @@ namespace RogueEssence.Ground
 
             //from base
             EntEnabled = other.EntEnabled;
+            AIEnabled = other.AIEnabled;
             Collider = other.Collider;
             EntName = other.EntName;
             Direction = other.Direction;

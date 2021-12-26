@@ -461,6 +461,28 @@ namespace RogueEssence.Dev.ViewModels
                 this.RaisePropertyChanged();
             }
         }
+        public bool AIEnabled
+        {
+            get
+            {
+                bool feature = false;
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
+                {
+                    GroundChar charEnt = SelectedEntity as GroundChar;
+                    feature = charEnt.AIEnabled;
+                }
+                return feature;
+            }
+            set
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
+                {
+                    GroundChar charEnt = SelectedEntity as GroundChar;
+                    charEnt.AIEnabled = value;
+                }
+                this.RaisePropertyChanged();
+            }
+        }
 
 
 
@@ -620,6 +642,7 @@ namespace RogueEssence.Dev.ViewModels
             ChosenGender = ChosenGender;
 
             Nickname = Nickname;
+            AIEnabled = AIEnabled;
 
             SpawnName = SpawnName;
 

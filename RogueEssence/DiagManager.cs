@@ -533,7 +533,7 @@ namespace RogueEssence
                 if (guid.Equals("7e050920") || guid.Equals("7e053003"))
                 {
                     //Nintendo
-                    InvertABXY = true;
+                    //InvertABXY = true;
                 }
                 else
                 {
