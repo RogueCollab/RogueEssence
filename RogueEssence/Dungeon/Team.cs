@@ -389,6 +389,7 @@ namespace RogueEssence.Dungeon
             character.OriginalUUID = DataManager.Instance.Save.UUID;
             character.OriginalTeam = DataManager.Instance.Save.ActiveTeam.Name;
             character.MetAt = Text.FormatKey("MET_AT_START");
+            character.MetLoc = ZoneLoc.Invalid;
 
             return CreatePlayer(character);
         }

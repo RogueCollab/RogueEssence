@@ -70,11 +70,9 @@ namespace RogueEssence.Dungeon
         public int Discriminator;
 
         public string MetAt;
-        //public int MetDungeon;
-        //public StructMap MetFloor;
+        public ZoneLoc MetLoc;
         public string DefeatAt;
-        //public int DefeatDungeon;
-        //public StructMap DefeatFloor;
+        public ZoneLoc DefeatLoc;
 
         /// <summary>
         /// Cannot be removed from assembly.
@@ -120,11 +118,9 @@ namespace RogueEssence.Dungeon
             Relearnables = new List<bool>();
 
             MetAt = "";
-            //MetDungeon = -1;
-            //MetFloor = new StructMap(-1, -1);
+            MetLoc = ZoneLoc.Invalid;
             DefeatAt = "";
-            //DefeatedDungeon = -1;
-            //DefeatedFloor = new StructMap(-1,-1);
+            DefeatLoc = ZoneLoc.Invalid;
             ActionEvents = new List<BattleEvent>();
             LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
         }
@@ -154,11 +150,9 @@ namespace RogueEssence.Dungeon
             OriginalUUID = other.OriginalUUID;
             OriginalTeam = other.OriginalTeam;
             MetAt = other.MetAt;
-            //MetDungeon = other.MetDungeon;
-            //MetFloor = other.MetFloor;
+            MetLoc = other.MetLoc;
             DefeatAt = other.DefeatAt;
-            //FaintDungeon = other.FaintDungeon;
-            //FaintFloor = other.FaintFloor;
+            DefeatLoc = other.DefeatLoc;
             IsFounder = other.IsFounder;
             IsFavorite = other.IsFavorite;
             Discriminator = other.Discriminator;
