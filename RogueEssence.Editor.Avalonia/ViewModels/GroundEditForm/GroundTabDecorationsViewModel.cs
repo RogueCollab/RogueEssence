@@ -289,7 +289,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (ent != null)
             {
-                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundSelectUndo());
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
                 GroundEditScene.Instance.SelectedDecoration = ent;
                 setEntity(ent);
             }
