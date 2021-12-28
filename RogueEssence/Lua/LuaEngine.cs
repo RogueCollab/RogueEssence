@@ -1246,7 +1246,7 @@ namespace RogueEssence.Script
                                 "  -- currently in. You can use the MapStrings table after this line!\n" +
                                 "  MapStrings = COMMON.AutoLoadLocalizedStrings()");
                             }
-                            else if (fn == EMapCallbacks.Enter)
+                            else if (fn == EMapCallbacks.Enter || fn == EMapCallbacks.GameLoad)
                             {
                                 fstream.WriteLine(
                                 "  GAME:FadeIn(20)");
