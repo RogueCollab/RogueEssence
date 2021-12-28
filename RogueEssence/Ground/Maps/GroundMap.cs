@@ -199,9 +199,6 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerator<YieldInstruction> OnEnter()
         {
-            //Ensure the AI is enabled
-            GroundAI.GlobalAIEnabled = true;
-
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.Enter));
 

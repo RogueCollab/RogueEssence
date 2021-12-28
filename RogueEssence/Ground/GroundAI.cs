@@ -9,11 +9,6 @@ namespace RogueEssence.Ground
     public abstract class GroundAI
     {
         /// <summary>
-        /// AI Master switch. Turns AI off or on globally for all entities using this AI class.
-        /// </summary>
-        public static bool GlobalAIEnabled { get; set; }
-
-        /// <summary>
         /// State index the AI is currently in
         /// </summary>
         public virtual string CurrentState { get; protected set; }

@@ -63,7 +63,7 @@ namespace RogueEssence.Ground
 
         public virtual bool ShouldAIRun()
         {
-            return AIEnabled && GroundAI.GlobalAIEnabled;
+            return AIEnabled/* && GroundAI.GlobalAIDisabled*/;
         }
 
         /// <summary>
