@@ -326,12 +326,21 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="chara"></param>
         /// <param name="anim"></param>
-        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir = Dir8.Down, int xTo = -1, int yTo = -1)
+        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir = Dir8.Down)
         {
             FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
-            Loc endLoc = (x > -1) ? new Loc(x, y) : Loc.Zero;
-            endEmitter.SetupEmit(new Loc(x, y), endLoc, dir);
+            endEmitter.SetupEmit(new Loc(x, y), new Loc(x, y), dir);
             GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
+        }
+        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir, int xTo, int yTo)
+        {
+            FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
+            endEmitter.SetupEmit(new Loc(x, y), new Loc(xTo, yTo), dir);
+            GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
+        }
+        public void PlayVFXAnim(BaseAnim anim, DrawLayer layer)
+        {
+            GroundScene.Instance.CreateAnim(anim, layer);
         }
 
         public void MoveScreen(ScreenMover mover)
