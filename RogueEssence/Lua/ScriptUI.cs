@@ -747,12 +747,19 @@ namespace RogueEssence.Script
         }
 
 
-        public void ShowMusicMenu()
+        public void ShowMusicMenu(LuaTable spoilerUnlocks)
         {
             try
             {
+                List<string> unlockedTags = new List<string>();
+                foreach (object key in spoilerUnlocks.Keys)
+                {
+                    string entry = (string)spoilerUnlocks[key];
+                    unlockedTags.Add(entry);
+                }
+
                 m_choiceresult = null;
-                m_curchoice = new MusicMenu((string dir) => { m_choiceresult = dir; });
+                m_curchoice = new MusicMenu(unlockedTags, (string dir) => { m_choiceresult = dir; });
             }
             catch (Exception e)
             {
