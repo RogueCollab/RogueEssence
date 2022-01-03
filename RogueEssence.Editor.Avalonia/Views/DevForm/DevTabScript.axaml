@@ -19,6 +19,7 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <Button Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Reload Scripts</Button>
+    <Button Name="btnTextTest" Command="{Binding btnTextTest_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Text Test</Button>
     <TextBox Name="txtScriptOutput" Text="{Binding ScriptLog}" CaretIndex="{Binding ScriptCaret}" Margin="4" IsReadOnly="True" Grid.Row="1" Grid.ColumnSpan="2"/>
     <TextBox Name="txtScriptInput" Text="{Binding ScriptLine}" Margin="4" TextWrapping="Wrap" Grid.Row="2" Grid.ColumnSpan="2" KeyDown="txtScriptInput_KeyDown"></TextBox>
   </Grid>

@@ -53,6 +53,14 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void btnTextTest_Click()
+        {
+            TextTestViewModel mv = new TextTestViewModel();
+            Views.TextTestForm editForm = new Views.TextTestForm();
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
+
         public void SendScript()
         {
             lock (GameBase.lockObj)
