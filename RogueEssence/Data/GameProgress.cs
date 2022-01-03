@@ -320,6 +320,24 @@ namespace RogueEssence.Data
             }
         }
 
+        public void ClearDefeatDest()
+        {
+            for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
+            {
+                ActiveTeam.Players[ii].DefeatAt = "";
+                ActiveTeam.Players[ii].DefeatLoc = ZoneLoc.Invalid;
+            }
+            for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
+            {
+                ActiveTeam.Guests[ii].DefeatAt = "";
+                ActiveTeam.Guests[ii].DefeatLoc = ZoneLoc.Invalid;
+            }
+            for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
+            {
+                ActiveTeam.Assembly[ii].DefeatAt = "";
+                ActiveTeam.Assembly[ii].DefeatLoc = ZoneLoc.Invalid;
+            }
+        }
 
         public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool silent)
         {
@@ -675,6 +693,10 @@ namespace RogueEssence.Data
 
             MidAdventure = true;
             Stakes = stakes;
+
+            //reset location defeated
+            ClearDefeatDest();
+
             //create a copy (from save and load) of the current state and mark it with loss
             DataManager.Instance.SaveMainGameState();
 
