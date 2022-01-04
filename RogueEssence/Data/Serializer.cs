@@ -25,8 +25,25 @@ namespace RogueEssence.Data
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             TypeNameHandling = TypeNameHandling.Auto,
         };
-        
+
         public static object Deserialize(Stream stream, Type type)
+        {
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+            {
+                return JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
+            }
+        }
+
+        public static void Serialize(Stream stream, object entry)
+        {
+            using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
+            {
+                string val = JsonConvert.SerializeObject(entry, Settings);
+                writer.Write(val);
+            }
+        }
+
+        public static object DeserializeData(Stream stream)
         {
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
             {
@@ -35,7 +52,7 @@ namespace RogueEssence.Data
             }
         }
 
-        public static void Serialize(Stream stream, object entry)
+        public static void SerializeData(Stream stream, object entry)
         {
             using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
             {

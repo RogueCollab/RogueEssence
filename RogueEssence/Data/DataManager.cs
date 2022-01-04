@@ -389,7 +389,7 @@ namespace RogueEssence.Data
             {
                 using (Stream stream = new FileStream(PathMod.ModPath(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    EntryDataIndex result = (EntryDataIndex)Serializer.Deserialize(stream, typeof(EntryDataIndex));
+                    EntryDataIndex result = (EntryDataIndex)Serializer.DeserializeData(stream);
                     DataIndices[type] = result;
                 }
             }
@@ -420,7 +420,7 @@ namespace RogueEssence.Data
         {
             using (Stream stream = new FileStream(PathMod.HardMod(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                Serializer.Serialize(stream, DataIndices[type]);
+                Serializer.SerializeData(stream, DataIndices[type]);
             }
         }
 
@@ -468,7 +468,7 @@ namespace RogueEssence.Data
             {
                 //using (BinaryReader reader = new BinaryReader(stream))
                 //{
-                    return Serializer.Deserialize(stream, t);
+                    return Serializer.DeserializeData(stream);
                 //}
             }
         }
@@ -488,7 +488,7 @@ namespace RogueEssence.Data
             {
                 //using (BinaryWriter writer = new BinaryWriter(stream))
                 //{
-                Serializer.Serialize(stream, entry);
+                Serializer.SerializeData(stream, entry);
                 //}
             }
         }
@@ -1337,7 +1337,7 @@ namespace RogueEssence.Data
                         string dateDefeated = reader.ReadString();
                         ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-                        return (BaseRescueMail)Serializer.Deserialize(stream, typeof(BaseRescueMail));
+                        return (BaseRescueMail)Serializer.DeserializeData(stream);
                     }
                 }
             }
@@ -1384,7 +1384,7 @@ namespace RogueEssence.Data
                     writer.Write(mail.DefeatedVersion.Minor);
                     writer.Write(mail.DefeatedVersion.Build);
                     writer.Write(mail.DefeatedVersion.Revision);
-                    Serializer.Serialize(stream, mail);
+                    Serializer.SerializeData(stream, mail);
                 }
             }
         }

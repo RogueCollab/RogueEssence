@@ -23,7 +23,7 @@ namespace RogueEssence.Dungeon
             state.Zone.SaveLua();
             using (MemoryStream classStream = new MemoryStream())
             {
-                Serializer.Serialize(classStream, state.Zone);
+                Serializer.SerializeData(classStream, state.Zone);
                 writer.Write(classStream.Position);
                 classStream.WriteTo(writer.BaseStream);
             }
@@ -41,7 +41,7 @@ namespace RogueEssence.Dungeon
                 long length = reader.ReadInt64();
                 using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
                 {
-                    state.Zone = (ZoneManager)Serializer.Deserialize(classStream, typeof(ZoneManager));
+                    state.Zone = (ZoneManager)Serializer.DeserializeData(classStream);
                 }
             }
             catch (Exception ex)

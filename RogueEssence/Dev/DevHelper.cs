@@ -182,7 +182,7 @@ namespace RogueEssence.Dev
 
                 using (Stream stream = new FileStream(PathMod.HardMod(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    Serializer.Serialize(stream, fullGuide);
+                    Serializer.SerializeData(stream, fullGuide);
                 }
             }
             catch (Exception ex)

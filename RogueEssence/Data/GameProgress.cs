@@ -528,7 +528,7 @@ namespace RogueEssence.Data
         {
             using (MemoryStream classStream = new MemoryStream())
             {
-                Serializer.Serialize(classStream, save);
+                Serializer.SerializeData(classStream, save);
                 writer.Write(classStream.Position);
                 classStream.WriteTo(writer.BaseStream);
             }
@@ -542,7 +542,7 @@ namespace RogueEssence.Data
             {
                 using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
                 {
-                    return (GameProgress)Serializer.Deserialize(classStream, typeof(GameProgress));
+                    return (GameProgress)Serializer.DeserializeData(classStream);
                 }
             }
             catch (Exception)
