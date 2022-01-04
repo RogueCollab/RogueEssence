@@ -39,6 +39,8 @@ namespace RogueEssence
 
         public static void Init()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             Strings = new List<Dictionary<string, string>>();
             StringsEx = new List<Dictionary<string, string>>();
 

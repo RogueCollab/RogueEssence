@@ -10,6 +10,7 @@ using NLua;
 using System.IO;
 using System.Collections;
 using Newtonsoft.Json;
+using System.Text;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -390,7 +391,7 @@ namespace RogueEssence.Script
             //init lua
             LuaState = new Lua();
             //LuaState.UseTraceback = true;
-            LuaState.State.Encoding = System.Text.Encoding.UTF8;
+            LuaState.State.Encoding = Encoding.UTF8;
             m_nextUpdate = new TimeSpan(-1);
             DiagManager.Instance.LogInfo(String.Format("[SE]:Initialized {0}", LuaState["_VERSION"] as string));
 
@@ -476,6 +477,13 @@ namespace RogueEssence.Script
         private void SetLuaPaths()
         {
             DiagManager.Instance.LogInfo("[SE]:Setting up lua paths..");
+            
+            //windows-specific: set the encoding to code page 1252, just for this block
+            //This is because the filesystem uses cp1252, and if the search paths arent passed in with cp1252 encoding,
+            //then searching for lua includes will fail when paths contain unicode letters.
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                LuaState.State.Encoding = Encoding.GetEncoding(1252);
+            
             //Add the current script directory to the lua searchpath for loading modules!
             LuaState["package.path"] = LuaState["package.path"] + ";" +
                                         Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "lib/?.lua;" +
@@ -489,6 +497,9 @@ namespace RogueEssence.Script
             else
                 cpath += "?.so";
             LuaState["package.cpath"] = cpath;
+
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                LuaState.State.Encoding = Encoding.UTF8;
         }
 
         /// <summary>
