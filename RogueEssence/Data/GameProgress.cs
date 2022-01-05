@@ -601,7 +601,7 @@ namespace RogueEssence.Data
             Rescue = null;
         }
 
-        public List<int> MergeDexTo(GameProgress destProgress)
+        public List<int> MergeDexTo(GameProgress destProgress, bool completion)
         {
             //monster encounters
             List<int> newRecruits = new List<int>();
@@ -621,11 +621,15 @@ namespace RogueEssence.Data
                         if (!isOriginal)
                             newRecruits.Add(ii);
                     }
-                    destProgress.Dex[ii] = UnlockState.Completed;
+                    if (completion)
+                        destProgress.Dex[ii] = UnlockState.Completed;
                     destProgress.RogueStarters[ii] = true;
                 }
                 if (Dex[ii] == UnlockState.Discovered && destProgress.Dex[ii] == UnlockState.None)
-                    destProgress.Dex[ii] = UnlockState.Discovered;
+                {
+                    if (completion)
+                        destProgress.Dex[ii] = UnlockState.Discovered;
+                }
             }
             return newRecruits;
         }
@@ -835,7 +839,7 @@ namespace RogueEssence.Data
         public void MergeDataTo(MainProgress destProgress)
         {
             if (this != destProgress)
-                MergeDexTo(destProgress);
+                MergeDexTo(destProgress, true);
 
             foreach (CharData charData in CharsToStore)
             {
@@ -922,7 +926,7 @@ namespace RogueEssence.Data
                 List<int> newRecruits = new List<int>();
                 if (state != null)
                 {
-                    newRecruits = MergeDexTo(state.Save);
+                    newRecruits = MergeDexTo(state.Save, false);
                     DataManager.Instance.SaveGameState(state);
                 }
 
@@ -983,7 +987,7 @@ namespace RogueEssence.Data
                 GameState state = DataManager.Instance.LoadMainGameState();
                 if (state != null)
                 {
-                    MergeDexTo(state.Save);
+                    MergeDexTo(state.Save, true);
                     state.Save.DungeonUnlocks[completedZone] = UnlockState.Completed;
                     DataManager.Instance.SaveGameState(state);
                 }
