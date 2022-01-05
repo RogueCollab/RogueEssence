@@ -274,7 +274,7 @@ namespace RogueEssence.Dungeon
         public List<Character> RespawnMob()
         {
             List<Character> respawns = new List<Character>();
-            if (TeamSpawns.Count > 0)
+            if (TeamSpawns.CanPick)
             {
                 List<Loc> freeTiles = GetFreeToSpawnTiles();
                 if (freeTiles.Count > 0)
