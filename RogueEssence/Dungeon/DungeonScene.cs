@@ -382,12 +382,12 @@ namespace RogueEssence.Dungeon
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
                 }
-                else if (input.JustPressed(FrameInput.InputType.MsgLog))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.MsgLog))
                 {
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MsgLogMenu()));
                 }
-                else if (input.JustPressed(FrameInput.InputType.SkillMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.SkillMenu))
                 {
                     ShowActions = false;
                     GameManager.Instance.SE("Menu/Skip");
@@ -396,7 +396,7 @@ namespace RogueEssence.Dungeon
                     if (turnChar.Faction == Faction.Player)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
                 }
-                else if (input.JustPressed(FrameInput.InputType.ItemMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.ItemMenu))
                 {
                     bool heldItems = false;
                     foreach (Character character in ActiveTeam.Players)
@@ -415,7 +415,7 @@ namespace RogueEssence.Dungeon
                     else
                         GameManager.Instance.SE("Menu/Cancel");
                 }
-                else if (input.JustPressed(FrameInput.InputType.TacticMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.TacticMenu))
                 {
                     if (ActiveTeam.Players.Count > 1)
                     {
@@ -425,7 +425,7 @@ namespace RogueEssence.Dungeon
                     else
                         GameManager.Instance.SE("Menu/Cancel");
                 }
-                else if (input.JustPressed(FrameInput.InputType.TeamMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.TeamMenu))
                 {
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(false)));
