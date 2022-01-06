@@ -177,10 +177,10 @@ namespace RogueEssence
 
             if (actionButtons != null)
             {
-                actionButtons[(int)FrameInput.InputType.Confirm] = Buttons.B;
-                actionButtons[(int)FrameInput.InputType.Cancel] = Buttons.A;
-                actionButtons[(int)FrameInput.InputType.Attack] = Buttons.B;
-                actionButtons[(int)FrameInput.InputType.Run] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Confirm] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Cancel] = Buttons.B;
+                actionButtons[(int)FrameInput.InputType.Attack] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Run] = Buttons.B;
                 actionButtons[(int)FrameInput.InputType.Skills] = Buttons.LeftTrigger;
                 actionButtons[(int)FrameInput.InputType.Turn] = Buttons.X;
                 actionButtons[(int)FrameInput.InputType.Diagonal] = Buttons.RightTrigger;

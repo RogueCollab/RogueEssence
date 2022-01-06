@@ -7,6 +7,7 @@ using System.Text;
 using RogueEssence.Dev;
 using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
+using System.Text.RegularExpressions;
 
 namespace RogueEssence
 {
@@ -19,6 +20,7 @@ namespace RogueEssence
         }
         public static DiagManager Instance { get { return instance; } }
 
+        public static string CONTROLS_PATH { get => PathMod.ASSET_PATH + "Controls/"; }
         public static string LOG_PATH { get => PathMod.ExePath + "LOG/"; }
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
@@ -42,7 +44,9 @@ namespace RogueEssence
         public IRootEditor DevEditor;
 
         public bool GamePadActive { get; private set; }
-        public bool InvertABXY { get; private set; }
+
+        private string gamepadMap;
+        public Dictionary<string, Dictionary<Buttons, string>> ButtonToLabel { get; private set; }
 
         public Settings CurSettings;
 
@@ -70,6 +74,8 @@ namespace RogueEssence
                 Directory.CreateDirectory(PathMod.MODS_PATH);
             Settings.InitStatic();
             CurSettings = new Settings();
+            gamepadMap = "";
+            ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
             FNALoggerEXT.LogInfo = LogInfo;
             FNALoggerEXT.LogWarn = LogInfo;
             FNALoggerEXT.LogError = LogInfo;
@@ -259,6 +265,29 @@ namespace RogueEssence
                 {
                     Console.Write(ex.ToString());
                 }
+            }
+        }
+
+        public void SetupGamepad()
+        {
+            ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
+            //try to load from file
+            string[] filePaths = Directory.GetFiles(CONTROLS_PATH, "*.xml");
+            foreach (string filePath in filePaths)
+            {
+                Dictionary<Buttons, string> mapping = new Dictionary<Buttons, string>();
+
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(filePath);
+
+                foreach (XmlNode button in xmldoc.SelectNodes("root/Button"))
+                {
+                    Buttons btn = Enum.Parse<Buttons>(button.Attributes["name"].Value);
+                    mapping[btn] = button.InnerText;
+                }
+
+                string fileName = Path.GetFileNameWithoutExtension(filePath);
+                ButtonToLabel[fileName] = mapping;
             }
         }
 
@@ -518,37 +547,46 @@ namespace RogueEssence
         {
             if (!GamePadActive && active)
             {
-                string guid = GamePad.GetGUIDEXT(Microsoft.Xna.Framework.PlayerIndex.One);
+                string guid = GamePad.GetGUIDEXT(PlayerIndex.One);
 
-                if (guid.Equals("4c05c405") || guid.Equals("4c05cc09"))
-                {
-                    //PS4
-                    InvertABXY = false;
-                }
-                if (guid.Equals("4c05e60c"))
-                {
-                    //PS5
-                    InvertABXY = false;
-                }
-                if (guid.Equals("7e050920") || guid.Equals("7e053003"))
-                {
-                    //Nintendo
-                    //InvertABXY = true;
-                }
+                //if (guid.Equals("4c05c405") || guid.Equals("4c05cc09"))//PS4
+                //else if (guid.Equals("4c05e60c"))//PS5
+                //else if (guid.Equals("7e050920") || guid.Equals("7e053003"))//Nintendo
+                //else if (guid.Equals("5e04ff02"))//Xbox
+                if (ButtonToLabel.ContainsKey(guid))
+                    gamepadMap = guid;
                 else
-                {
-                    //Xbox
-                    InvertABXY = false;
-                }
+                    gamepadMap = "default";
+
             }
+            else if (GamePadActive && !active)
+                gamepadMap = "default";
             GamePadActive = active;
         }
 
         public string GetControlString(FrameInput.InputType inputType)
         {
             if (GamePadActive)
-                return "(" + CurSettings.ActionButtons[(int)inputType].ToLocal() + ")";
-            return "[" + CurSettings.ActionKeys[(int)inputType].ToLocal() + "]";
+                return GetButtonString(CurSettings.ActionButtons[(int)inputType]);
+            return GetKeyboardString(CurSettings.ActionKeys[(int)inputType]);
+        }
+
+        public string GetButtonString(Buttons button)
+        {
+            Dictionary<Buttons, string> dict;
+            if (ButtonToLabel.TryGetValue(gamepadMap, out dict))
+            {
+                string mappedString;
+                if (dict.TryGetValue(button, out mappedString))
+                    return Regex.Unescape(mappedString);
+            }
+
+            return "(" + button.ToLocal() + ")";
+        }
+
+        public string GetKeyboardString(Keys key)
+        {
+            return "[" + key.ToLocal() + "]";
         }
 
 
