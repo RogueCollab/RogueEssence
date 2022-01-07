@@ -162,8 +162,8 @@ namespace RogueEssence
 
             if (controllerActive)
             {
-                for (int ii = 0; ii < DiagManager.Instance.CurSettings.ActionButtons.Length; ii++)
-                    inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurSettings.ActionButtons[ii]);
+                for (int ii = 0; ii < DiagManager.Instance.CurActionButtons.Length; ii++)
+                    inputStates[ii] |= Settings.UsedByGamepad((InputType)ii) && gamePad.IsButtonDown(DiagManager.Instance.CurActionButtons[ii]);
             }
 
             if (keyActive)

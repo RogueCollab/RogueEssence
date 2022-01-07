@@ -2,6 +2,7 @@
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -14,8 +15,8 @@ namespace RogueEssence.Menu
 
         public GamepadControlsMenu()
         {
-            actionButtons = new Buttons[DiagManager.Instance.CurSettings.ActionButtons.Length];
-            DiagManager.Instance.CurSettings.ActionButtons.CopyTo(actionButtons, 0);
+            actionButtons = new Buttons[DiagManager.Instance.CurActionButtons.Length];
+            DiagManager.Instance.CurActionButtons.CopyTo(actionButtons, 0);
             inactiveInput = DiagManager.Instance.CurSettings.InactiveInput;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
@@ -39,7 +40,7 @@ namespace RogueEssence.Menu
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_CONTROLS_CONFIRM"), confirm));
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_GAMEPAD_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), 232, String.Format("{0}: {1}", Text.FormatKey("MENU_GAMEPAD_TITLE"), DiagManager.Instance.CurGamePadName), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
 
@@ -75,7 +76,7 @@ namespace RogueEssence.Menu
                     ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Red;
                     conflicted = true;
                 }
-                else if (actionButtons[index] != DiagManager.Instance.CurSettings.ActionButtons[index])
+                else if (actionButtons[index] != DiagManager.Instance.CurActionButtons[index])
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Yellow;
                     ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Yellow;
@@ -165,7 +166,7 @@ namespace RogueEssence.Menu
 
         private void confirm()
         {
-            actionButtons.CopyTo(DiagManager.Instance.CurSettings.ActionButtons, 0);
+            actionButtons.CopyTo(DiagManager.Instance.CurActionButtons, 0);
             DiagManager.Instance.CurSettings.InactiveInput = inactiveInput;
 
             DiagManager.Instance.SaveSettings(DiagManager.Instance.CurSettings);

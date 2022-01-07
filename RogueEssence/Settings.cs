@@ -5,6 +5,26 @@ using System.Collections.Generic;
 namespace RogueEssence
 {
     [Serializable]
+    public class GamePadMap
+    {
+        public string Name;
+        public Buttons[] ActionButtons;
+
+        public GamePadMap()
+        {
+            Name = "";
+            ActionButtons = new Buttons[(int)FrameInput.InputType.Wait];
+        }
+
+        public GamePadMap(GamePadMap other)
+        {
+            Name = other.Name;
+            ActionButtons = new Buttons[(int)FrameInput.InputType.Wait];
+            Array.Copy(other.ActionButtons, ActionButtons, ActionButtons.Length);
+        }
+    }
+
+    [Serializable]
     public class Settings
     {
         public enum BattleSpeed
@@ -25,7 +45,7 @@ namespace RogueEssence
 
         public Keys[] DirKeys;
         public Keys[] ActionKeys;
-        public Buttons[] ActionButtons;
+        public Dictionary<string, GamePadMap> GamepadMaps;
         public bool Enter;
         public bool NumPad;
         public bool InactiveInput;
@@ -125,12 +145,15 @@ namespace RogueEssence
 
             DirKeys = new Keys[4];
             ActionKeys = new Keys[(int)FrameInput.InputType.Wait];
-            ActionButtons = new Buttons[(int)FrameInput.InputType.Wait];
+            GamepadMaps = new Dictionary<string, GamePadMap>();
             ServerList = new List<ServerInfo>();
             ContactList = new List<ContactInfo>();
             PeerList = new List<PeerInfo>();
 
-            DefaultControls(DirKeys, ActionKeys, ActionButtons);
+            GamePadMap defaultMap = new GamePadMap();
+            defaultMap.Name = "Unknown";
+            DefaultControls(DirKeys, ActionKeys, defaultMap.ActionButtons);
+            GamepadMaps["default"] = defaultMap;
             Enter = true;
             NumPad = true;
             InactiveInput = false;

@@ -20,7 +20,10 @@ namespace RogueEssence
         }
         public static DiagManager Instance { get { return instance; } }
 
-        public static string CONTROLS_PATH { get => PathMod.ASSET_PATH + "Controls/"; }
+        public static string CONTROLS_LABEL_PATH { get => PathMod.ASSET_PATH + "Controls/Label/"; }
+        public static string CONTROLS_DEFAULT_PATH { get => PathMod.ASSET_PATH + "Controls/Default/"; }
+        public static string CONFIG_PATH { get => PathMod.ExePath + "CONFIG/"; }
+        public static string CONFIG_GAMEPAD_PATH { get => CONFIG_PATH + "GAMEPAD/"; }
         public static string LOG_PATH { get => PathMod.ExePath + "LOG/"; }
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
@@ -45,8 +48,11 @@ namespace RogueEssence
 
         public bool GamePadActive { get; private set; }
 
-        private string gamepadMap;
+        private string gamePadID;
         public Dictionary<string, Dictionary<Buttons, string>> ButtonToLabel { get; private set; }
+        public Dictionary<string, GamePadMap> GamepadDefaults { get; set; }
+        public Buttons[] CurActionButtons { get { return CurSettings.GamepadMaps[gamePadID].ActionButtons; } }
+        public string CurGamePadName { get { return CurSettings.GamepadMaps[gamePadID].Name; } }
 
         public Settings CurSettings;
 
@@ -72,10 +78,16 @@ namespace RogueEssence
                 Directory.CreateDirectory(LOG_PATH);
             if (!Directory.Exists(PathMod.MODS_PATH))
                 Directory.CreateDirectory(PathMod.MODS_PATH);
+            if (!Directory.Exists(CONFIG_PATH))
+                Directory.CreateDirectory(CONFIG_PATH);
+            if (!Directory.Exists(CONFIG_GAMEPAD_PATH))
+                Directory.CreateDirectory(CONFIG_GAMEPAD_PATH);
+
             Settings.InitStatic();
             CurSettings = new Settings();
-            gamepadMap = "";
+            gamePadID = "default";
             ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
+            GamepadDefaults = new Dictionary<string, GamePadMap>();
             FNALoggerEXT.LogInfo = LogInfo;
             FNALoggerEXT.LogWarn = LogInfo;
             FNALoggerEXT.LogError = LogInfo;
@@ -272,7 +284,7 @@ namespace RogueEssence
         {
             ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
             //try to load from file
-            string[] filePaths = Directory.GetFiles(CONTROLS_PATH, "*.xml");
+            string[] filePaths = Directory.GetFiles(CONTROLS_LABEL_PATH, "*.xml");
             foreach (string filePath in filePaths)
             {
                 Dictionary<Buttons, string> mapping = new Dictionary<Buttons, string>();
@@ -289,6 +301,29 @@ namespace RogueEssence
                 string fileName = Path.GetFileNameWithoutExtension(filePath);
                 ButtonToLabel[fileName] = mapping;
             }
+
+            filePaths = Directory.GetFiles(CONTROLS_DEFAULT_PATH, "*.xml");
+            foreach (string filePath in filePaths)
+            {
+                GamePadMap mapping = new GamePadMap();
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(filePath);
+
+                mapping.Name = xmldoc.SelectSingleNode("Config/Name").InnerText;
+
+                int index = 0;
+                XmlNode keys = xmldoc.SelectSingleNode("Config/ActionButtons");
+                foreach (XmlNode key in keys.SelectNodes("ActionButton"))
+                {
+                    while (!Settings.UsedByGamepad((FrameInput.InputType)index) && index < mapping.ActionButtons.Length)
+                        index++;
+                    mapping.ActionButtons[index] = Enum.Parse<Buttons>(key.InnerText);
+                    index++;
+                }
+
+                string fileName = Path.GetFileNameWithoutExtension(filePath);
+                GamepadDefaults[fileName] = mapping;
+            }
         }
 
         public Settings LoadSettings()
@@ -297,7 +332,7 @@ namespace RogueEssence
 
             Settings settings = new Settings();
 
-            string path = PathMod.FromExe("Config.xml");
+            string path = CONFIG_PATH + "Config.xml";
             if (File.Exists(path))
             {
                 try
@@ -313,7 +348,7 @@ namespace RogueEssence
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
-
+                    settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);
                 }
                 catch (Exception ex)
                 {
@@ -321,7 +356,7 @@ namespace RogueEssence
                 }
             }
 
-            path = PathMod.FromExe("Keyboard.xml");
+            path = CONFIG_PATH + "Keyboard.xml";
             if (File.Exists(path))
             {
                 try
@@ -356,25 +391,30 @@ namespace RogueEssence
                 }
             }
 
-            path = PathMod.FromExe("Gamepad.xml");
-            if (File.Exists(path))
+
+            string[] filePaths = Directory.GetFiles(CONFIG_GAMEPAD_PATH, "*.xml");
+            foreach (string filePath in filePaths)
             {
                 try
                 {
+                    GamePadMap mapping = new GamePadMap();
                     XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
+                    xmldoc.Load(filePath);
+
+                    mapping.Name = xmldoc.SelectSingleNode("Config/Name").InnerText;
 
                     int index = 0;
                     XmlNode keys = xmldoc.SelectSingleNode("Config/ActionButtons");
                     foreach (XmlNode key in keys.SelectNodes("ActionButton"))
                     {
-                        while (!Settings.UsedByGamepad((FrameInput.InputType)index) && index < settings.ActionButtons.Length)
+                        while (!Settings.UsedByGamepad((FrameInput.InputType)index) && index < mapping.ActionButtons.Length)
                             index++;
-                        settings.ActionButtons[index] = Enum.Parse<Buttons>(key.InnerText);
+                        mapping.ActionButtons[index] = Enum.Parse<Buttons>(key.InnerText);
                         index++;
                     }
-                    settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);
 
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    settings.GamepadMaps[fileName] = mapping;
                 }
                 catch (Exception ex)
                 {
@@ -382,7 +422,7 @@ namespace RogueEssence
                 }
             }
 
-            path = PathMod.FromExe("Contacts.xml");
+            path = CONFIG_PATH + "Contacts.xml";
             if (File.Exists(path))
             {
                 try
@@ -447,8 +487,9 @@ namespace RogueEssence
                 appendConfigNode(xmldoc, docNode, "Window", settings.Window.ToString());
                 appendConfigNode(xmldoc, docNode, "Border", settings.Border.ToString());
                 appendConfigNode(xmldoc, docNode, "Language", settings.Language.ToString());
+                appendConfigNode(xmldoc, docNode, "InactiveInput", settings.InactiveInput.ToString());
 
-                xmldoc.Save(PathMod.FromExe("Config.xml"));
+                xmldoc.Save(CONFIG_PATH + "Config.xml");
             }
 
             {
@@ -474,27 +515,34 @@ namespace RogueEssence
                 appendConfigNode(xmldoc, docNode, "Enter", settings.Enter.ToString());
                 appendConfigNode(xmldoc, docNode, "NumPad", settings.NumPad.ToString());
 
-                xmldoc.Save(PathMod.FromExe("Keyboard.xml"));
+                xmldoc.Save(CONFIG_PATH + "Keyboard.xml");
             }
 
+            foreach(string guid in settings.GamepadMaps.Keys)
             {
+                if (guid == "default")
+                    continue;
+
+                GamePadMap gamePadMap = settings.GamepadMaps[guid];
+
                 XmlDocument xmldoc = new XmlDocument();
 
                 XmlNode docNode = xmldoc.CreateElement("Config");
                 xmldoc.AppendChild(docNode);
 
+                appendConfigNode(xmldoc, docNode, "Name", gamePadMap.Name);
+
                 XmlNode actionButtons = xmldoc.CreateElement("ActionButtons");
-                for (int ii = 0; ii < settings.ActionButtons.Length; ii++)
+                for (int ii = 0; ii < gamePadMap.ActionButtons.Length; ii++)
                 {
                     if (!Settings.UsedByGamepad((FrameInput.InputType)ii))
                         continue;
-                    Buttons button = settings.ActionButtons[ii];
+                    Buttons button = gamePadMap.ActionButtons[ii];
                     appendConfigNode(xmldoc, actionButtons, "ActionButton", button.ToString());
                 }
                 docNode.AppendChild(actionButtons);
-                appendConfigNode(xmldoc, docNode, "InactiveInput", settings.InactiveInput.ToString());
 
-                xmldoc.Save(PathMod.FromExe("Gamepad.xml"));
+                xmldoc.Save(CONFIG_GAMEPAD_PATH + guid + ".xml");
             }
 
             {
@@ -539,7 +587,7 @@ namespace RogueEssence
                 docNode.AppendChild(peers);
 
 
-                xmldoc.Save(PathMod.FromExe("Contacts.xml"));
+                xmldoc.Save(CONFIG_PATH + "Contacts.xml");
             }
         }
 
@@ -553,28 +601,37 @@ namespace RogueEssence
                 //else if (guid.Equals("4c05e60c"))//PS5
                 //else if (guid.Equals("7e050920") || guid.Equals("7e053003"))//Nintendo
                 //else if (guid.Equals("5e04ff02"))//Xbox
-                if (ButtonToLabel.ContainsKey(guid))
-                    gamepadMap = guid;
-                else
-                    gamepadMap = "default";
-
+                gamePadID = guid;
+                if (!CurSettings.GamepadMaps.ContainsKey(guid))
+                {
+                    GamePadMap defaultMap;
+                    if (GamepadDefaults.TryGetValue(guid, out defaultMap))
+                        CurSettings.GamepadMaps[guid] = new GamePadMap(defaultMap);
+                    else
+                        CurSettings.GamepadMaps[guid] = new GamePadMap(CurSettings.GamepadMaps["default"]);
+                }
             }
             else if (GamePadActive && !active)
-                gamepadMap = "default";
+            {
+                gamePadID = "default";
+            }
             GamePadActive = active;
         }
 
         public string GetControlString(FrameInput.InputType inputType)
         {
             if (GamePadActive)
-                return GetButtonString(CurSettings.ActionButtons[(int)inputType]);
+            {
+                GamePadMap gamePadMap = CurSettings.GamepadMaps[gamePadID];
+                return GetButtonString(gamePadMap.ActionButtons[(int)inputType]);
+            }
             return GetKeyboardString(CurSettings.ActionKeys[(int)inputType]);
         }
 
         public string GetButtonString(Buttons button)
         {
             Dictionary<Buttons, string> dict;
-            if (ButtonToLabel.TryGetValue(gamepadMap, out dict))
+            if (ButtonToLabel.TryGetValue(gamePadID, out dict) || ButtonToLabel.TryGetValue("default", out dict))
             {
                 string mappedString;
                 if (dict.TryGetValue(button, out mappedString))
