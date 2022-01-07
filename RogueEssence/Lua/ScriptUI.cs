@@ -767,16 +767,16 @@ namespace RogueEssence.Script
             }
         }
 
-        public void DungeonChoice(int dungeonid)
+        public void DungeonChoice(string name, ZoneLoc dest)
         {
             try
             {
                 m_choiceresult = null;
-                ZoneData zoneEntry = DataManager.Instance.GetZone(dungeonid);
+                ZoneData zoneEntry = DataManager.Instance.GetZone(dest.ID);
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { m_choiceresult = true; });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { m_choiceresult = false; });
-                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.GetColoredName()), dungeonid, false, choices, 0, 1);
+                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", name), dest, false, choices, 0, 1);
             }
             catch (Exception e)
             {
@@ -784,36 +784,25 @@ namespace RogueEssence.Script
             }
         }
 
-        public void DungeonMenu(LuaTable dungeons, LuaTable grounds)
+        public void DestinationMenu(LuaTable destinations)
         {
             try
             {
-                List<int> availableDungeons = new List<int>();
-                List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
-                foreach (object key in dungeons.Keys)
+                List<string> names = new List<string>();
+                List<ZoneLoc> dests = new List<ZoneLoc>();
+                foreach (object key in destinations.Keys)
                 {
-                    int entry = (int)(Int64)dungeons[key];
-                    availableDungeons.Add(entry);
-                }
-
-                List<ZoneLoc> availableGrounds = new List<ZoneLoc>();
-                foreach (object key in grounds.Keys)
-                {
-                    LuaTable entry = grounds[key] as LuaTable;
-                    int zone = (int)(Int64)entry["Zone"];
-                    int id = (int)(Int64)entry["ID"];
-                    int entryPoint = (int)(Int64)entry["Entry"];
-                    availableGrounds.Add(new ZoneLoc(zone, new SegLoc(-1, id), entryPoint));
+                    LuaTable entry = destinations[key] as LuaTable;
+                    string name = (string)entry["Name"];
+                    ZoneLoc item = (ZoneLoc)entry["Dest"];
+                    names.Add(name);
+                    dests.Add(item);
                 }
 
                 //give the player the choice between all the possible dungeons
                 m_choiceresult = ZoneLoc.Invalid;
-                m_curchoice = new DungeonsMenu(availableDungeons, availableGrounds,
-                    (int choice) => { m_choiceresult = new ZoneLoc(availableDungeons[choice], new SegLoc(0, 0)); },
-                    (int choice) => {
-                        m_choiceresult = new ZoneLoc(availableGrounds[choice].ID,
-          new SegLoc(-1, availableGrounds[choice].StructID.ID), availableGrounds[choice].EntryPoint);
-                    });
+                m_curchoice = new DungeonsMenu(names, dests,
+                    (int choice) => { m_choiceresult = dests[choice]; });
             }
             catch (Exception e)
             {

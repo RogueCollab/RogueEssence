@@ -9,11 +9,11 @@ namespace RogueEssence.Dungeon
         public SegLoc StructID;
         public int EntryPoint;
         
-        public ZoneLoc(int structure, int id)
+        public ZoneLoc(int id, int structure, int structId, int entryPoint)
         {
-            ID = -1;
-            StructID = new SegLoc(structure, id);
-            EntryPoint = 0;
+            ID = id;
+            StructID = new SegLoc(structure, structId);
+            EntryPoint = entryPoint;
         }
 
         public ZoneLoc(int id, SegLoc structId)
