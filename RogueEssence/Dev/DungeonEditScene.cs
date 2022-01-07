@@ -232,15 +232,22 @@ namespace RogueEssence.Dev
                 }
             }
 
-            if (TileInProgress != null)
+            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
-                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                 {
-                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                    Loc testLoc = new Loc(ii, jj);
+                    if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
                     {
-                        Loc testLoc = new Loc(ii, jj);
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc) &&
-                            TileInProgress.IncludesLoc(testLoc))
+                        EffectTile existingEffect = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Effect;
+                        //draw normally invisible tiles
+                        if (existingEffect.ID >= 0)
+                        {
+                            TileData entry = DataManager.Instance.GetTile(existingEffect.ID);
+                            if (entry.Anim.AnimIndex == "")
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.White * 0.5f);
+                        }
+                        if (TileInProgress != null && TileInProgress.IncludesLoc(testLoc))
                         {
                             EffectTile tile = TileInProgress.GetBrush(testLoc);
                             if (tile.ID < 0)
