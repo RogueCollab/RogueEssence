@@ -379,7 +379,9 @@ namespace RogueEssence.Data
         {
             //Notify script engine
             LuaEngine.Instance.OnDataUnload();
-            EndPlay(null, null);
+            //close the file gracefully
+            if (replayWriter != null)
+                replayWriter.Close();
         }
 
 
