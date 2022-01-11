@@ -45,7 +45,14 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public string GetDisplayName(bool trueName)
         {
-            string name = trueName ? BaseName : Name;
+            string name = Name;
+            if (trueName)
+            {
+                if (MemberTeam is MonsterTeam)
+                    name = GetFullFormName(CurrentForm);
+                else
+                    name = BaseName;
+            }
 
             Team team = MemberTeam;
             if (Unidentifiable && team != DataManager.Instance.Save.ActiveTeam)
