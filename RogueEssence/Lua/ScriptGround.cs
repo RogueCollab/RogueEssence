@@ -643,6 +643,34 @@ namespace RogueEssence.Script
             }
             return null;
         }
+        
+        /// <summary>
+        /// Teleports an entity to the selected position.
+        /// </summary>
+        /// <param name="ent"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public LuaFunction TeleportToPosition;
+        public void _TeleportToPosition(GroundEntity ent, int x, int y)
+        {
+            try
+            {
+                if (ent is GroundChar)
+                {
+                    GroundChar ch = (GroundChar)ent;
+                    ch.Position = Loc(x,y)
+                }
+
+                throw new ArgumentException("Entity is not a valid type.");
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
+        }
 
         /// <summary>
         /// Makes an entity move to a marker.
@@ -674,6 +702,7 @@ namespace RogueEssence.Script
 
             MoveToMarker = state.RunString("return function(_, ent, mark, shouldrun, speed) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun, speed)) end", "MoveToMarker").First() as LuaFunction;
             MoveToPosition = state.RunString("return function(_, ent, x, y, shouldrun, speed) return coroutine.yield(GROUND:_MoveToPosition(ent, x, y, shouldrun, speed)) end", "MoveToPosition").First() as LuaFunction;
+            TeleportToPosition = state.RunString("return function(_, ent, x, y) return GROUND:_TeleportToPosition(ent, x, y) end", "TeleportToPosition").First() as LuaFunction;
             AnimateToPosition = state.RunString("return function(_, ent, anim, animdir, x, y, animspeed, speed) return coroutine.yield(GROUND:_AnimateToPosition(ent, anim, animdir, x, y, animspeed, speed)) end", "AnimateToPosition").First() as LuaFunction;
             CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
         }
