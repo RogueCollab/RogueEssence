@@ -498,7 +498,7 @@ namespace RogueEssence.Content
                 }
 
                 CharSheet charSheet = new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
-                charSheet.Collapse(false);
+                charSheet.Collapse(false, false);
                 return charSheet;
             }
             else if (File.Exists(path + "AnimData.xml"))
@@ -691,7 +691,7 @@ namespace RogueEssence.Content
                 Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
                 Color[] texColors = new Color[texSize.X * texSize.Y];
 
-                List <OffsetData> offsetData = new List<OffsetData>();
+                List<OffsetData> offsetData = new List<OffsetData>();
                 for (int ii = 0; ii < finalFrames.Count; ii++)
                 {
                     int diffX = maxWidth / 2 - finalFrames[ii].rect.Width / 2;
@@ -746,7 +746,8 @@ namespace RogueEssence.Content
         /// Collapses duplicate frames together, and removes extra whitespace.
         /// </summary>
         /// <param name="ignoreOffsets">If turned on, frames with identical graphics and different offsets are treated as duplicates.</param>
-        public void Collapse(bool ignoreOffsets)
+        /// <param name="recenter">If turned on, frames will be recentered to center of actual sprite, and it will affect the animations.  Otherwise, leaves animations alone.</param>
+        public void Collapse(bool ignoreOffsets, bool recenter)
         {
             int[] usedFrames = new int[OffsetData.Count];
             foreach (int key in AnimData.Keys)
@@ -769,6 +770,7 @@ namespace RogueEssence.Content
             Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
             //load all available tilesets
             List<(Color[] img, Rectangle rect, OffsetData offsets)> frames = new List<(Color[], Rectangle, OffsetData)>();
+            List<Loc> centerOffsets = new List<Loc>();
             //get all frames
             for (int kk = 0; kk < OffsetData.Count; kk++)
             {
@@ -800,6 +802,10 @@ namespace RogueEssence.Content
                     maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
 
                     frames.Add((frameTex, imgCoveredRect, offsets));
+
+                    //the texture may not be centered; treat it as a texture that considered the center of the tile the center of the sprite
+                    Point centerDiff = imgCoveredRect.Center - (tileRect.Center - tileRect.Location);
+                    centerOffsets.Add(new Loc(centerDiff.X, centerDiff.Y));
                 }
                 else
                     usedFrames[kk] = -1;
@@ -812,6 +818,14 @@ namespace RogueEssence.Content
             CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
             List<(Color[] img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Color[], Rectangle, OffsetData)>();
             mapDuplicates(frames, finalFrames, frameMap, !ignoreOffsets);
+            for (int ii = 0; ii < frameMap.Length; ii++)
+            {
+                if (frameMap[ii].Flip)
+                    frameMap[ii].Offset.X -= centerOffsets[ii].X;
+                else
+                    frameMap[ii].Offset.X += centerOffsets[ii].X;
+                frameMap[ii].Offset.Y += centerOffsets[ii].Y;
+            }
 
             int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
             Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
@@ -847,6 +861,14 @@ namespace RogueEssence.Content
                                 frame.Offset = frame.Offset + Loc.UnitX;
                             else
                                 frame.Offset = frame.Offset - Loc.UnitX;
+                        }
+                        if (!recenter)
+                        {
+                            if (frame.Flip)
+                                frame.Offset.X -= mapFrame.Offset.X;
+                            else
+                                frame.Offset.X += mapFrame.Offset.X;
+                            frame.Offset.Y += mapFrame.Offset.Y;
                         }
                         frame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
                     }
