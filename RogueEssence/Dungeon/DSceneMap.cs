@@ -243,6 +243,7 @@ namespace RogueEssence.Dungeon
                         character.WarpHistory.Add(character.CharLoc);
                         //check for tile property
                         yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
+                        yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
                         character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
                     }
                 }
@@ -257,11 +258,28 @@ namespace RogueEssence.Dungeon
                         character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
                     }
                 }
-
-
-                //if (ZoneManager.Instance.CurrentMap.TileBlocked(character.CharLoc, character.Mobility))
-                //    WarpNear(character, character.CharLoc, true);
             }
+        }
+
+        public void QueueTrap(Loc loc)
+        {
+            //order matters
+            if (!PendingTraps.Contains(loc))
+                PendingTraps.Add(loc);
+        }
+
+        public IEnumerator<YieldInstruction> ActivateTraps(Character activator)
+        {
+            List<Loc> runningTraps = new List<Loc>();
+            runningTraps.AddRange(PendingTraps);
+            PendingTraps.Clear();
+            foreach (Loc pendingLoc in runningTraps)
+            {
+                Tile tile = ZoneManager.Instance.CurrentMap.Tiles[pendingLoc.X][pendingLoc.Y];
+                if (tile.Effect.ID > -1)
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(activator));
+            }
+            yield break;
         }
 
         public IEnumerator<YieldInstruction> PromptFloorItem()
@@ -507,6 +525,7 @@ namespace RogueEssence.Dungeon
                         if (entry.StepType == TileData.TriggerType.Blocker || entry.StepType == TileData.TriggerType.Unlockable)
                         {
                             yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
+                            yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
                             yield break;
                         }
                     }

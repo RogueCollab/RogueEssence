@@ -260,6 +260,8 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(PerformAction(context));
             if (context.CancelState.Cancel) yield break;
             yield return CoroutineManager.Instance.StartCoroutine(context.User.AfterActionTaken(context));
+            //activate any traps that may have been queued from the action
+            yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(context.User));
         }
 
         public IEnumerator<YieldInstruction> RepeatActions(BattleContext context)

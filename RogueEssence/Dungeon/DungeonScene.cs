@@ -87,6 +87,7 @@ namespace RogueEssence.Dungeon
         
         HotkeyMenu[] ShownHotkeys;
 
+        public List<Loc> PendingTraps;
         
         public List<PickupItem> PickupItems;
         
@@ -113,6 +114,7 @@ namespace RogueEssence.Dungeon
         {
 
             LevelGains = new List<CharIndex>();
+            PendingTraps = new List<Loc>();
             PickupItems = new List<PickupItem>();
             Hitboxes = new List<Hitbox>();
 
