@@ -423,6 +423,19 @@ namespace RogueEssence.Data
                 }
                 StartLevel = -1;
             }
+            //also, restore default hunger values
+            {
+                for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
+                {
+                    ActiveTeam.Players[ii].MaxFullness = Character.MAX_FULLNESS;
+                    ActiveTeam.Players[ii].Fullness = Character.MAX_FULLNESS;
+                }
+                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
+                {
+                    ActiveTeam.Assembly[ii].MaxFullness = Character.MAX_FULLNESS;
+                    ActiveTeam.Assembly[ii].Fullness = Character.MAX_FULLNESS;
+                }
+            }
         }
 
         private void restoreCharLevel(Character character, Character charFrom, int level)

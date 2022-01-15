@@ -625,13 +625,9 @@ namespace RogueEssence.Dungeon
                 Fullness = 0;
                 FullnessRemainder = 0;
 
-                if (MemberTeam == DungeonScene.Instance.ActiveTeam && MemberTeam.Leader == this)
-                {
+                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
                     GameManager.Instance.SE(GraphicsManager.HungerSE);
-                    recovery = -60;
-                }
-                else
-                    recovery = 0;
+                recovery = -60;
             }
 
             yield return CoroutineManager.Instance.StartCoroutine(ModifyHP(MaxHP * recovery));
