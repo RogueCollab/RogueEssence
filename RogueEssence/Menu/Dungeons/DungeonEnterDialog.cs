@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
             : base(message, sound, false, false, choices, defaultChoice, cancelChoice)
         {
             summaryMenu = new DungeonSummary(new Rect(new Loc(8, 8), new Loc(128, GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
-            summaryMenu.SetDungeon(dest.ID, DataManager.Instance.Save.DungeonUnlocks[dest.ID] == GameProgress.UnlockState.Completed);
+            summaryMenu.SetDungeon(dest.ID, DataManager.Instance.Save.GetDungeonUnlock(dest.ID) == GameProgress.UnlockState.Completed);
         }
         
         public override void Draw(SpriteBatch spriteBatch)

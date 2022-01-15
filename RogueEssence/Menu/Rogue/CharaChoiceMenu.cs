@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
             {
                 if (DiagManager.Instance.DevMode)
                     startChars.Add(ii);
-                else if (DataManager.Instance.Save.RogueStarters[ii] && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
+                else if (DataManager.Instance.Save.GetRogueUnlock(ii) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
                     startChars.Add(ii);
                 else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
@@ -190,7 +190,7 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
-            save.DungeonUnlocks[chosenDest] = GameProgress.UnlockState.Discovered;
+            save.UnlockDungeon(chosenDest);
             DataManager.Instance.SetProgress(save);
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();

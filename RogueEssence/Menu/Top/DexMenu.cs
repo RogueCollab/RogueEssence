@@ -20,13 +20,13 @@ namespace RogueEssence.Menu
             int lastEntry = -1;
             int seen = 0;
             int befriended = 0;
-            for (int ii = 1; ii < DataManager.Instance.Save.Dex.Length; ii++)
+            for (int ii = 1; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                if (DataManager.Instance.Save.Dex[ii] > 0)
+                if (DataManager.Instance.Save.GetMonsterUnlock(ii) > GameProgress.UnlockState.None)
                 {
                     lastEntry = ii;
                     seen++;
-                    if (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed)
+                    if (DataManager.Instance.Save.GetMonsterUnlock(ii) == GameProgress.UnlockState.Completed)
                         befriended++;
                 }
             }
@@ -34,9 +34,9 @@ namespace RogueEssence.Menu
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 1; ii <= lastEntry; ii++)
             {
-                if (DataManager.Instance.Save.Dex[ii] > 0)
+                if (DataManager.Instance.Save.GetMonsterUnlock(ii) > GameProgress.UnlockState.None)
                 {
-                    Color color = (DataManager.Instance.Save.Dex[ii] == GameProgress.UnlockState.Completed) ? Color.White : Color.Gray;
+                    Color color = (DataManager.Instance.Save.GetMonsterUnlock(ii) == GameProgress.UnlockState.Completed) ? Color.White : Color.Gray;
                     
                     //name
                     MenuText dexNum = new MenuText(ii.ToString("D3"), new Loc(2, 1), color);
@@ -81,7 +81,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             int totalChoice = CurrentChoiceTotal + 1;
-            if (DataManager.Instance.Save.Dex[totalChoice] > 0)
+            if (DataManager.Instance.Save.GetMonsterUnlock(totalChoice) > GameProgress.UnlockState.None)
                 portrait.Speaker = new MonsterID(totalChoice, 0, -1, Gender.Unknown);
             else
                 portrait.Speaker = new MonsterID();

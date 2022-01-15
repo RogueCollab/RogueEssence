@@ -96,9 +96,9 @@ namespace RogueEssence.Data
         public ExplorerTeam ActiveTeam;
         public ReRandom Rand;
 
-        public UnlockState[] Dex;
-        public bool[] RogueStarters;
-        public UnlockState[] DungeonUnlocks;
+        public List<UnlockState> Dex;
+        public List<bool> RogueStarters;
+        public List<UnlockState> DungeonUnlocks;
 
         //TODO: set dungeon unlocks and event flags to save variables
 
@@ -140,9 +140,9 @@ namespace RogueEssence.Data
         {
             ActiveTeam = new ExplorerTeam();
 
-            Dex = new UnlockState[10000];//TODO: remove this magic number and make it an adjustable value
-            RogueStarters = new bool[10000];//TODO: remove this magic number and make it an adjustable value
-            DungeonUnlocks = new UnlockState[10000];//TODO: remove this magic number and make it an adjustable value
+            Dex = new List<UnlockState>();
+            RogueStarters = new List<bool>();
+            DungeonUnlocks = new List<UnlockState>();
 
             NextDest = ZoneLoc.Invalid;
 
@@ -191,13 +191,13 @@ namespace RogueEssence.Data
 
         public UnlockState GetMonsterUnlock(int index)
         {
-            return Dex[index];
+            return CollectionExt.GetExtendList(Dex, index);
         }
 
         public int GetTotalMonsterUnlock(UnlockState state)
         {
             int total = 0;
-            for (int ii = 0; ii < Dex.Length; ii++)
+            for (int ii = 0; ii < Dex.Count; ii++)
             {
                 if (Dex[ii] == state)
                     total++;
@@ -207,27 +207,37 @@ namespace RogueEssence.Data
 
         public virtual void RegisterMonster(int index)
         {
-            Dex[index] = UnlockState.Completed;
+            CollectionExt.AssignExtendList(Dex, index, UnlockState.Completed);
         }
 
         public virtual void SeenMonster(int index)
         {
-            if (Dex[index] == UnlockState.None)
-                Dex[index] = UnlockState.Discovered;
+            if (CollectionExt.GetExtendList(Dex, index) == UnlockState.None)
+                CollectionExt.AssignExtendList(Dex, index, UnlockState.Discovered);
         }
 
         public virtual void RogueUnlockMonster(int index)
         {
-            RogueStarters[index] = true;
+            CollectionExt.AssignExtendList(RogueStarters, index, true);
         }
         public bool GetRogueUnlock(int index)
         {
-            return RogueStarters[index];
+            return CollectionExt.GetExtendList(RogueStarters, index);
         }
         public UnlockState GetDungeonUnlock(int index)
         {
-            return DungeonUnlocks[index];
+            return CollectionExt.GetExtendList(DungeonUnlocks, index);
         }
+        public void UnlockDungeon(int index)
+        {
+            if (CollectionExt.GetExtendList(DungeonUnlocks, index) == UnlockState.None)
+                CollectionExt.AssignExtendList(DungeonUnlocks, index, UnlockState.Discovered);
+        }
+        public void CompleteDungeon(int index)
+        {
+            CollectionExt.AssignExtendList(DungeonUnlocks, index, UnlockState.Completed);
+        }
+
         public abstract IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
 
@@ -620,7 +630,7 @@ namespace RogueEssence.Data
             List<int> newRecruits = new List<int>();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                if (Dex[ii] == UnlockState.Completed && destProgress.Dex[ii] != UnlockState.Completed)
+                if (GetMonsterUnlock(ii) == UnlockState.Completed && destProgress.GetMonsterUnlock(ii) != UnlockState.Completed)
                 {
                     MonsterData entry = DataManager.Instance.GetMonster(ii);
                     if (entry.PromoteFrom == -1)
@@ -635,13 +645,13 @@ namespace RogueEssence.Data
                             newRecruits.Add(ii);
                     }
                     if (completion)
-                        destProgress.Dex[ii] = UnlockState.Completed;
-                    destProgress.RogueStarters[ii] = true;
+                        destProgress.RegisterMonster(ii);
+                    destProgress.RogueUnlockMonster(ii);
                 }
-                if (Dex[ii] == UnlockState.Discovered && destProgress.Dex[ii] == UnlockState.None)
+                if (GetMonsterUnlock(ii) == UnlockState.Discovered && destProgress.GetMonsterUnlock(ii) == UnlockState.None)
                 {
                     if (completion)
-                        destProgress.Dex[ii] = UnlockState.Discovered;
+                        destProgress.SeenMonster(ii);
                 }
             }
             return newRecruits;
@@ -787,7 +797,7 @@ namespace RogueEssence.Data
             else
             {
                 int completedZone = ZoneManager.Instance.CurrentZoneID;
-                DungeonUnlocks[completedZone] = UnlockState.Completed;
+                CompleteDungeon(completedZone);
 
                 Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -1001,7 +1011,7 @@ namespace RogueEssence.Data
                 if (state != null)
                 {
                     MergeDexTo(state.Save, true);
-                    state.Save.DungeonUnlocks[completedZone] = UnlockState.Completed;
+                    state.Save.CompleteDungeon(completedZone);
                     DataManager.Instance.SaveGameState(state);
                 }
 

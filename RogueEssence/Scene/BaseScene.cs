@@ -107,7 +107,7 @@ namespace RogueEssence
 
         public void AddToDraw(List<IDrawableSprite> sprites, IDrawableSprite sprite)
         {
-            MathUtils.AddToSortedList(sprites, sprite, CompareSpriteCoords);
+            CollectionExt.AddToSortedList(sprites, sprite, CompareSpriteCoords);
         }
 
 

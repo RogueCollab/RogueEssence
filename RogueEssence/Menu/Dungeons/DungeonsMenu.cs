@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
                     flatChoices.Add(new MenuTextChoice(names[ii], () => { chooseDungeon(dungeonIndex); }));
                 else
                     flatChoices.Add(new MenuTextChoice(names[ii], () => { chooseDungeon(dungeonIndex); }, true,
-                        (DataManager.Instance.Save.DungeonUnlocks[dests[ii].ID] == GameProgress.UnlockState.Completed) ? Color.White : Color.Cyan));
+                        (DataManager.Instance.Save.GetDungeonUnlock(dests[ii].ID) == GameProgress.UnlockState.Completed) ? Color.White : Color.Cyan));
             }
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
@@ -53,7 +53,7 @@ namespace RogueEssence.Menu
             else
             {
                 summaryMenu.Visible = true;
-                summaryMenu.SetDungeon(dests[choice].ID, DataManager.Instance.Save.DungeonUnlocks[dests[choice].ID] == GameProgress.UnlockState.Completed);
+                summaryMenu.SetDungeon(dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed);
             }
             base.ChoiceChanged();
         }

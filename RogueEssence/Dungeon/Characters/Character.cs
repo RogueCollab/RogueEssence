@@ -1177,9 +1177,7 @@ namespace RogueEssence.Dungeon
 
             BaseSkills[newSlot] = new SlotSkill(skillNum);
             BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
-            while (Relearnables.Count <= skillNum)
-                Relearnables.Add(false);
-            Relearnables[skillNum] = true;
+            CollectionExt.AssignExtendList(Relearnables, skillNum, true);
 
             int owningSlot = -1;
             for(int ii = 0; ii < Skills.Count; ii++)

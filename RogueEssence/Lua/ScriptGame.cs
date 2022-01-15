@@ -714,12 +714,12 @@ namespace RogueEssence.Script
 
         public void UnlockDungeon(int dungeonid)
         {
-            DataManager.Instance.UnlockDungeon(dungeonid);
+            DataManager.Instance.Save.UnlockDungeon(dungeonid);
         }
 
         public bool DungeonUnlocked(int dungeonid)
         {
-            return DataManager.Instance.GetDungeonUnlockStatus(dungeonid) != GameProgress.UnlockState.None;
+            return DataManager.Instance.Save.GetDungeonUnlock(dungeonid) != GameProgress.UnlockState.None;
         }
 
         public bool InRogueMode()

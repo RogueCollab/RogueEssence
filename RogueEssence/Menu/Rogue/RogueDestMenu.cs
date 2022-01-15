@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
                 ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii] as ZoneEntrySummary;
                 if (!DiagManager.Instance.DevMode)
                 {
-                    if (DataManager.Instance.Save.DungeonUnlocks[ii] == GameProgress.UnlockState.None)
+                    if (DataManager.Instance.Save.GetDungeonUnlock(ii) == GameProgress.UnlockState.None)
                         continue;
                     if (summary == null)
                         continue;
@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
                 summaryMenu.Visible = true;
                 bool isComplete = false;
                 if (DataManager.Instance.Save != null)
-                    isComplete = DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[choice]] == GameProgress.UnlockState.Completed;
+                    isComplete = DataManager.Instance.Save.GetDungeonUnlock(dungeonIndices[choice]) == GameProgress.UnlockState.Completed;
                 summaryMenu.SetDungeon(dungeonIndices[choice], isComplete);
             }
             else

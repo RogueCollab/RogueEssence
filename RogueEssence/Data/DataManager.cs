@@ -1581,19 +1581,6 @@ namespace RogueEssence.Data
                     player.Tactic = new AITactic(ai);
                 }
 
-                //update unlocks
-                GameProgress.UnlockState[] unlocks = new GameProgress.UnlockState[DataIndices[DataType.Monster].Count];
-                Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
-                state.Save.Dex = unlocks;
-
-                bool[] starterUnlocks = new bool[DataIndices[DataType.Monster].Count];
-                Array.Copy(state.Save.RogueStarters, starterUnlocks, Math.Min(starterUnlocks.Length, state.Save.Dex.Length));
-                state.Save.RogueStarters = starterUnlocks;
-
-                unlocks = new GameProgress.UnlockState[DataIndices[DataType.Zone].Count];
-                Array.Copy(state.Save.DungeonUnlocks, unlocks, Math.Min(unlocks.Length, state.Save.DungeonUnlocks.Length));
-                state.Save.DungeonUnlocks = unlocks;
-
                 ZoneManager.LoadDefaultState(state);
             }
             else
@@ -1699,22 +1686,5 @@ namespace RogueEssence.Data
             for (int ii = entriesStart; ii < entriesEnd; ii++)
                 yield return MsgLog[ii];
         }
-
-
-        /// <summary>
-        /// Allows querying the unlock status of a dungeon.
-        /// </summary>
-        /// <param name="dungeonid"></param>
-        /// <returns></returns>
-        public GameProgress.UnlockState GetDungeonUnlockStatus(int dungeonid)
-        {
-            return DataManager.Instance.Save.DungeonUnlocks[dungeonid];
-        }
-        public void UnlockDungeon(int dungeonid)
-        {
-            if (DataManager.Instance.Save.DungeonUnlocks[dungeonid] == GameProgress.UnlockState.None)
-                DataManager.Instance.Save.DungeonUnlocks[dungeonid] = GameProgress.UnlockState.Discovered;
-        }
-
     }
 }
