@@ -222,7 +222,7 @@ namespace RogueEssence.Dungeon
                 ulong[] doubleSeed = totalNoise.GetTwoUInt64((ulong)id.Segment);
                 ulong structSeed = doubleSeed[0];
                 DiagManager.Instance.LogInfo("Struct Seed: " + structSeed);
-                INoise structNoise = new ReNoise(doubleSeed[1]);
+                INoise structNoise = new ReNoise(structSeed);
                 INoise idNoise = new ReNoise(doubleSeed[1]);
 
                 //load the struct context if it isn't present yet
