@@ -56,7 +56,7 @@ namespace RogueEssence.Dev
             InputManager input = GameManager.Instance.MetaInputManager;
             var mapEditor = DiagManager.Instance.DevEditor.MapEditor;
 
-            if (mapEditor.Active)
+            if (mapEditor != null && mapEditor.Active)
                 mapEditor.ProcessInput(input);
         }
 
@@ -147,7 +147,7 @@ namespace RogueEssence.Dev
             //When in editor mode, we want to display an overlay over some entities
             //
 
-            if (DiagManager.Instance.DevEditor.MapEditor.Active && ZoneManager.Instance.CurrentMap != null)
+            if (DiagManager.Instance.DevEditor.MapEditor != null && DiagManager.Instance.DevEditor.MapEditor.Active && ZoneManager.Instance.CurrentMap != null)
                 DrawGame(spriteBatch);
         }
         protected override void PostDraw(SpriteBatch spriteBatch)
