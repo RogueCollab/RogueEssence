@@ -157,16 +157,15 @@ namespace RogueEssence.Dev.ViewModels
         {
             bool saved = await mnuSave_Click();
             if (saved)
-                GameManager.Instance.SceneOutcome = exitAndTest();
-        }
-
-        private IEnumerator<YieldInstruction> exitAndTest()
-        {
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.SilentClose();
-            form.MapEditForm = null;
-
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64()));
+            {
+                lock (GameBase.lockObj)
+                {
+                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                    form.MapEditForm.SilentClose();
+                    form.MapEditForm = null;
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64());
+                }
+            }
         }
 
         public async void mnuImportFromPng_Click()
@@ -392,8 +391,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private static bool comparePaths(string path1, string path2)
         {
-            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\'),
-                Path.GetFullPath(path2).TrimEnd('\\'),
+            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\').TrimEnd('/'),
+                Path.GetFullPath(path2).TrimEnd('\\').TrimEnd('/'),
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
