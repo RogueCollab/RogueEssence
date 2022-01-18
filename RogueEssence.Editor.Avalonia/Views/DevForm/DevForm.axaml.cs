@@ -24,6 +24,9 @@ namespace RogueEssence.Dev.Views
         public MapEditForm MapEditForm;
         public GroundEditForm GroundEditForm;
 
+        private Action pendingEditorAction;
+        private Exception pendingException;
+
         public IMapEditor MapEditor { get { return MapEditForm; } }
         public IGroundEditor GroundEditor { get { return GroundEditForm; } }
         public bool AteMouse { get { return false; } }
@@ -193,6 +196,19 @@ namespace RogueEssence.Dev.Views
 
         public void Update(GameTime gameTime)
         {
+            if (pendingEditorAction != null)
+            {
+                try
+                {
+                    pendingEditorAction();
+                }
+                catch (Exception ex)
+                {
+                    pendingException = ex;
+                }
+                pendingEditorAction = null;
+            }
+
             ExecuteOrInvoke(update);
         }
 
@@ -300,6 +316,29 @@ namespace RogueEssence.Dev.Views
                 Thread thread = new Thread(LoadGameDelegate);
                 thread.IsBackground = true;
                 thread.Start();
+            }
+        }
+
+        /// <summary>
+        /// This call cannot be performed within a lock!!
+        /// </summary>
+        /// <param name="action"></param>
+        public static void ExecuteOrPend(Action action)
+        {
+            if (!OperatingSystem.IsLinux())
+                action();
+            else
+            {
+                DevForm editor = (DevForm)DiagManager.Instance.DevEditor;
+                editor.pendingEditorAction = action;
+
+                SpinWait.SpinUntil(() => editor.pendingEditorAction == null);
+
+                if (editor.pendingException != null)
+                {
+                    Exception ex = editor.pendingException;
+                    throw ex;
+                }
             }
         }
 

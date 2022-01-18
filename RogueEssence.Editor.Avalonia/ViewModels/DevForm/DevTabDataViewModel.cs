@@ -63,87 +63,12 @@ namespace RogueEssence.Dev.ViewModels
                 DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
                 DataOpContainer reindexOp = createReindexOp(dataType, choices);
 
-                DataOpContainer.TaskAction importAction = async () =>
-                {
-                    //remember addresses in registry
-                    string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
-
-                    //open window to choose directory
-                    OpenFolderDialog openFileDialog = new OpenFolderDialog();
-                    openFileDialog.Directory = folderName;
-
-                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                    string folder = await openFileDialog.ShowAsync(form);
-
-                    if (folder != "")
-                    {
-                        string animName = Path.GetFileNameWithoutExtension(folder);
-
-                        bool conflict = false;
-                        foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
-                        {
-                            if (name.ToLower() == animName.ToLower())
-                            {
-                                conflict = true;
-                                break;
-                            }
-                        }
-
-                        if (conflict)
-                        {
-                            MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Tileset already exists.",
-                                MessageBox.MessageBoxButtons.YesNo);
-                            if (result == MessageBox.MessageBoxResult.No)
-                                return;
-                        }
-
-                        DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
-
-                        try
-                        {
-                            lock (GameBase.lockObj)
-                            {
-                                string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
-                                DtefImportHelper.ImportDtef(folder, destFile);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            DiagManager.Instance.LogError(ex, false);
-                            await MessageBox.Show(form, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                            return;
-                        }
-                    }
-                };
+                DataOpContainer.TaskAction importAction = importDtef;
                 DataOpContainer importOp = new DataOpContainer("Import DTEF", importAction);
 
 
-                DataOpContainer.TaskAction exportAction = async () =>
-                {
-                    if (choices.SearchList.InternalIndex > -1)
-                    {
-                        //remember addresses in registry
-                        string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
-
-                        //open window to choose directory
-                        OpenFolderDialog openFileDialog = new OpenFolderDialog();
-                        openFileDialog.Directory = folderName;
-
-                        DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                        string folder = await openFileDialog.ShowAsync(form);
-
-                        if (folder != "")
-                        {
-                            DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
-
-                            lock (GameBase.lockObj)
-                            {
-                                int entryIndex = choices.SearchList.InternalIndex;
-                                DtefImportHelper.ExportDtefTile(entryIndex, folder);
-                            }
-                        }
-                    }
-                };
+                DataOpContainer.TaskAction exportAction = async () => { await exportDtef(choices.SearchList.InternalIndex); };
+                
                 DataOpContainer exportOp = new DataOpContainer("Export as DTEF", exportAction);
                 choices.SetOps(reindexOp/*, importOp, exportOp*/);
 
@@ -152,6 +77,94 @@ namespace RogueEssence.Dev.ViewModels
                     DataContext = choices,
                 };
                 dataListForm.Show();
+            }
+        }
+
+        private async Task importDtef()
+        {
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            string folder = await openFileDialog.ShowAsync(form);
+
+            if (folder != "")
+            {
+                string animName = Path.GetFileNameWithoutExtension(folder);
+
+                bool conflict = false;
+                foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+                {
+                    if (name.ToLower() == animName.ToLower())
+                    {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                if (conflict)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Tileset already exists.",
+                        MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
+                DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+                try
+                {
+                    DevForm.ExecuteOrPend(() => { tryImportDtef(folder, animName); });
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(form, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
+        private void tryImportDtef(string folder, string animName)
+        {
+            lock (GameBase.lockObj)
+            {
+                string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
+                DtefImportHelper.ImportDtef(folder, destFile);
+            }
+        }
+
+        private async Task exportDtef(int entryIndex)
+        {
+            if (entryIndex > -1)
+            {
+                //remember addresses in registry
+                string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+                //open window to choose directory
+                OpenFolderDialog openFileDialog = new OpenFolderDialog();
+                openFileDialog.Directory = folderName;
+
+                DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                string folder = await openFileDialog.ShowAsync(form);
+
+                if (folder != "")
+                {
+                    DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+                    DevForm.ExecuteOrPend(() => { tryExportDtef(entryIndex, folder); });
+                }
+            }
+        }
+        private void tryExportDtef(int entryIndex, string folder)
+        {
+            lock (GameBase.lockObj)
+            {
+                DtefImportHelper.ExportDtefTile(entryIndex, folder);
             }
         }
 

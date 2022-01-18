@@ -122,8 +122,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        MassExport(CachedPath);
+                    MassExport(CachedPath);
                 }
                 catch (Exception ex)
                 {
@@ -162,8 +161,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        Import(CachedPath);
+                    Import(CachedPath);
                 }
                 catch (Exception ex)
                 {
@@ -178,8 +176,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             try
             {
-                lock (GameBase.lockObj)
-                    Import(CachedPath);
+                Import(CachedPath);
             }
             catch (Exception ex)
             {
@@ -210,8 +207,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        Export(folder, animData);
+                    DevForm.ExecuteOrPend(() => { Export(folder, animData); });
                 }
                 catch (Exception ex)
                 {
@@ -232,10 +228,7 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
-
-            lock (GameBase.lockObj)
-                Delete(animIdx);
-
+            Delete(animIdx);
         }
 
 
@@ -259,29 +252,37 @@ namespace RogueEssence.Dev.ViewModels
 
         private void Import(string currentPath)
         {
-            string animName = Path.GetFileNameWithoutExtension(currentPath);
-            string destFile = PathMod.HardMod(String.Format(GraphicsManager.GetPattern(assetType), animName));
-            if (!Directory.Exists(Path.GetDirectoryName(destFile)))
-                Directory.CreateDirectory(Path.GetDirectoryName(destFile));
-
-            //write sprite data
-            using (BeamSheet sheet = BeamSheet.Import(currentPath + "/"))
-            {
-                using (FileStream stream = File.OpenWrite(destFile))
-                {
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                        sheet.Save(writer);
-                }
-            }
-
-            GraphicsManager.RebuildIndices(assetType);
-            GraphicsManager.ClearCaches(assetType);
-
-            DiagManager.Instance.LogInfo("Frames from:\n" +
-                currentPath + "\nhave been imported.");
+            DevForm.ExecuteOrPend(() => { tryImport(currentPath); });
 
             //recompute
             recomputeAnimList();
+        }
+
+        private void tryImport(string currentPath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string animName = Path.GetFileNameWithoutExtension(currentPath);
+                string destFile = PathMod.HardMod(String.Format(GraphicsManager.GetPattern(assetType), animName));
+                if (!Directory.Exists(Path.GetDirectoryName(destFile)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+
+                //write sprite data
+                using (BeamSheet sheet = BeamSheet.Import(currentPath + "/"))
+                {
+                    using (FileStream stream = File.OpenWrite(destFile))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            sheet.Save(writer);
+                    }
+                }
+
+                GraphicsManager.RebuildIndices(assetType);
+                GraphicsManager.ClearCaches(assetType);
+
+                DiagManager.Instance.LogInfo("Frames from:\n" +
+                    currentPath + "\nhave been imported.");
+            }
         }
 
 
@@ -292,48 +293,53 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                Export(currentPath + filename, filename);
+                DevForm.ExecuteOrPend(() => { Export(currentPath + filename, filename); });
             }
         }
 
         private void Export(string currentPath, string anim)
         {
-            string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
-            if (File.Exists(animPath))
+            lock (GameBase.lockObj)
             {
-                //read file and read binary data
-                using (FileStream fileStream = File.OpenRead(animPath))
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
+                if (File.Exists(animPath))
                 {
-                    using (BinaryReader reader = new BinaryReader(fileStream))
+                    //read file and read binary data
+                    using (FileStream fileStream = File.OpenRead(animPath))
                     {
-                        BeamSheet sheet = BeamSheet.Load(reader);
-                        BeamSheet.Export(sheet, currentPath + "/");
+                        using (BinaryReader reader = new BinaryReader(fileStream))
+                        {
+                            BeamSheet sheet = BeamSheet.Load(reader);
+                            BeamSheet.Export(sheet, currentPath + "/");
+                        }
                     }
                 }
-            }
 
-            DiagManager.Instance.LogInfo("Frames from:\n" +
-                anim +
-                "\nhave been exported to:" + currentPath);
+                DiagManager.Instance.LogInfo("Frames from:\n" +
+                    anim +
+                    "\nhave been exported to:" + currentPath);
+            }
         }
 
 
         private void Delete(int animIdx)
         {
-            string anim = anims[animIdx];
+            lock (GameBase.lockObj)
+            {
+                string anim = anims[animIdx];
 
-            string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
-            if (File.Exists(animPath))
-                File.Delete(animPath);
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
+                if (File.Exists(animPath))
+                    File.Delete(animPath);
 
-            GraphicsManager.RebuildIndices(assetType);
-            GraphicsManager.ClearCaches(assetType);
+                GraphicsManager.RebuildIndices(assetType);
+                GraphicsManager.ClearCaches(assetType);
 
-            DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
+                DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
 
-            anims.RemoveAt(animIdx);
-            Anims.RemoveInternalAt(animIdx);
-
+                anims.RemoveAt(animIdx);
+                Anims.RemoveInternalAt(animIdx);
+            }
         }
 
 

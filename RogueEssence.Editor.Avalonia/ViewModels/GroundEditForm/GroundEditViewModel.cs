@@ -180,11 +180,8 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            lock (GameBase.lockObj)
-            {
-                if (results.Length > 0)
-                    DoImportPng(results[0]);
-            }
+            if (results.Length > 0)
+                DoImportPng(results[0]);
         }
 
 
@@ -342,24 +339,35 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoImportPng(string filePath)
         {
-            string sheetName = Path.GetFileNameWithoutExtension(filePath);
-            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+            DevForm.ExecuteOrPend(() => { tryImportPng(filePath); });
 
-
-            //load into tilesets
-            using (BaseSheet tileset = BaseSheet.Import(filePath))
+            lock (GameBase.lockObj)
             {
-                List<BaseSheet> tileList = new List<BaseSheet>();
-                tileList.Add(tileset);
-                ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+                string sheetName = Path.GetFileNameWithoutExtension(filePath);
+                Textures.TileBrowser.UpdateTilesList();
+                Textures.TileBrowser.SelectTileset(sheetName);
             }
+        }
 
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevGraphicsManager.ClearCaches();
+        private void tryImportPng(string filePath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string sheetName = Path.GetFileNameWithoutExtension(filePath);
+                string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
 
-            Textures.TileBrowser.UpdateTilesList();
-            Textures.TileBrowser.SelectTileset(sheetName);
+                //load into tilesets
+                using (BaseSheet tileset = BaseSheet.Import(filePath))
+                {
+                    List<BaseSheet> tileList = new List<BaseSheet>();
+                    tileList.Add(tileset);
+                    ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+                }
+
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                DevGraphicsManager.ClearCaches();
+            }
         }
 
         private void DoClearLayer()
