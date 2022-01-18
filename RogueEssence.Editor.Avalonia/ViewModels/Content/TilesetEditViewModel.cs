@@ -95,8 +95,7 @@ namespace RogueEssence.Dev.ViewModels
 
             try
             {
-                lock (GameBase.lockObj)
-                    MassImport(CachedPath, cachedSize);
+                MassImport(CachedPath, cachedSize);
             }
             catch (Exception ex)
             {
@@ -125,8 +124,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        MassExport(CachedPath);
+                    MassExport(CachedPath);
                 }
                 catch (Exception ex)
                 {
@@ -141,8 +139,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             try
             {
-                lock (GameBase.lockObj)
-                    ReIndex();
+                ReIndex();
             }
             catch (Exception ex)
             {
@@ -198,8 +195,7 @@ namespace RogueEssence.Dev.ViewModels
 
             try
             {
-                lock (GameBase.lockObj)
-                    Import(CachedPath, cachedSize);
+                Import(CachedPath, cachedSize);
             }
             catch (Exception ex)
             {
@@ -214,8 +210,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             try
             {
-                lock (GameBase.lockObj)
-                    Import(CachedPath, cachedSize);
+                Import(CachedPath, cachedSize);
             }
             catch (Exception ex)
             {
@@ -250,8 +245,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        Export(folder, animData);
+                    DevForm.ExecuteOrPend(() => { Export(folder, animData); });
                 }
                 catch (Exception ex)
                 {
@@ -273,69 +267,85 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
-
-            lock (GameBase.lockObj)
-                Delete(animIdx);
-
+            DevForm.ExecuteOrPend(() => { Delete(animIdx); });
         }
 
 
 
         private void MassImport(string currentPath, int tileSize)
         {
-            if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN))))
-                Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN)));
-
-            ImportHelper.ImportAllTiles(currentPath, PathMod.HardMod(GraphicsManager.TILE_PATTERN), true, true, tileSize);
-
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-
-            DiagManager.Instance.LogInfo("Mass import complete.");
+            DevForm.ExecuteOrPend(() => { tryMassImport(currentPath, tileSize); });
 
             //recompute
             reloadFullList();
         }
+        private void tryMassImport(string currentPath, int tileSize)
+        {
+            lock (GameBase.lockObj)
+            {
+                if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN))))
+                    Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN)));
 
+                ImportHelper.ImportAllTiles(currentPath, PathMod.HardMod(GraphicsManager.TILE_PATTERN), true, true, tileSize);
 
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+                DiagManager.Instance.LogInfo("Mass import complete.");
+            }
+        }
 
         private void ReIndex()
         {
-
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-
-            DiagManager.Instance.LogInfo("All files re-indexed.");
+            DevForm.ExecuteOrPend(() => { tryReIndex(); });
 
             reloadFullList();
         }
 
+        private void tryReIndex()
+        {
+            lock (GameBase.lockObj)
+            {
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+                DiagManager.Instance.LogInfo("All files re-indexed.");
+            }
+        }
 
         private void Import(string currentPath, int tileSize)
         {
-            string sheetName = Path.GetFileNameWithoutExtension(currentPath);
-            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
-
-            if (!Directory.Exists(Path.GetDirectoryName(outputFile)))
-                Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
-
-            //load into tilesets
-            using (BaseSheet tileset = BaseSheet.Import(currentPath))
-            {
-                List<BaseSheet> tileList = new List<BaseSheet>();
-                tileList.Add(tileset);
-                ImportHelper.SaveTileSheet(tileList, outputFile, tileSize);
-            }
-
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevGraphicsManager.ClearCaches();
-
-            DiagManager.Instance.LogInfo("Tiles from:\n" +
-                currentPath + "\nhave been imported.");
+            DevForm.ExecuteOrPend(() => { tryImport(currentPath, tileSize); });
 
             //recompute
             reloadFullList();
+        }
+
+        private void tryImport(string currentPath, int tileSize)
+        {
+            lock (GameBase.lockObj)
+            {
+                string sheetName = Path.GetFileNameWithoutExtension(currentPath);
+                string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+
+                if (!Directory.Exists(Path.GetDirectoryName(outputFile)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
+
+                //load into tilesets
+                using (BaseSheet tileset = BaseSheet.Import(currentPath))
+                {
+                    List<BaseSheet> tileList = new List<BaseSheet>();
+                    tileList.Add(tileset);
+                    ImportHelper.SaveTileSheet(tileList, outputFile, tileSize);
+                }
+
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                DevGraphicsManager.ClearCaches();
+
+                DiagManager.Instance.LogInfo("Tiles from:\n" +
+                    currentPath + "\nhave been imported.");
+            }
         }
 
         private void MassExport(string currentPath)
@@ -344,37 +354,42 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                Export(currentPath + filename, filename);
+                DevForm.ExecuteOrPend(() => { Export(currentPath + filename, filename); });
             }
         }
 
         private void Export(string currentPath, string anim)
         {
-            string animPath = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, anim));
-            ImportHelper.ExportTileSheet(animPath, currentPath);
+            lock (GameBase.lockObj)
+            {
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, anim));
+                ImportHelper.ExportTileSheet(animPath, currentPath);
 
-            DiagManager.Instance.LogInfo("Frames from:\n" +
-                anim + "\nhave been exported to:" + currentPath);
+                DiagManager.Instance.LogInfo("Frames from:\n" +
+                    anim + "\nhave been exported to:" + currentPath);
+            }
         }
 
 
 
         private void Delete(int animIdx)
         {
-            string anim = tileIndices[animIdx];
+            lock (GameBase.lockObj)
+            {
+                string anim = tileIndices[animIdx];
 
-            string animPath = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, anim));
-            if (File.Exists(animPath))
-                File.Delete(animPath);
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, anim));
+                if (File.Exists(animPath))
+                    File.Delete(animPath);
 
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
 
-            DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
+                DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
 
-            tileIndices.RemoveAt(animIdx);
-            Tilesets.RemoveInternalAt(animIdx);
-
+                tileIndices.RemoveAt(animIdx);
+                Tilesets.RemoveInternalAt(animIdx);
+            }
         }
 
     }

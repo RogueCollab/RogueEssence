@@ -91,8 +91,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        MassImport(CachedPath);
+                    MassImport(CachedPath);
                 }
                 catch (Exception ex)
                 {
@@ -121,8 +120,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        MassExport(CachedPath);
+                    MassExport(CachedPath);
                 }
                 catch (Exception ex)
                 {
@@ -177,8 +175,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        Import(CachedPath);
+                    Import(CachedPath);
                 }
                 catch (Exception ex)
                 {
@@ -193,8 +190,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             try
             {
-                lock (GameBase.lockObj)
-                    Import(CachedPath);
+                Import(CachedPath);
             }
             catch (Exception ex)
             {
@@ -229,8 +225,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    lock (GameBase.lockObj)
-                        Export(folder, animData);
+                    DevForm.ExecuteOrPend(() => { Export(folder, animData); });
                 }
                 catch (Exception ex)
                 {
@@ -251,65 +246,79 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
-
-            lock (GameBase.lockObj)
-                Delete(animIdx);
-
+            Delete(animIdx);
         }
 
 
 
         private void MassImport(string currentPath)
         {
-            string assetPattern = GraphicsManager.GetPattern(assetType);
-            if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(assetPattern))))
-                Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(assetPattern)));
-            ImportHelper.ImportAllNameDirs(currentPath, PathMod.HardMod(assetPattern));
-
-            GraphicsManager.RebuildIndices(assetType);
-            GraphicsManager.ClearCaches(assetType);
-
-            DiagManager.Instance.LogInfo("Mass import complete.");
-
+            DevForm.ExecuteOrPend(() => { tryMassImport(currentPath); });
             //recompute
             recomputeAnimList();
+        }
+
+        private void tryMassImport(string currentPath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string assetPattern = GraphicsManager.GetPattern(assetType);
+                if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(assetPattern))))
+                    Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(assetPattern)));
+                ImportHelper.ImportAllNameDirs(currentPath, PathMod.HardMod(assetPattern));
+
+                GraphicsManager.RebuildIndices(assetType);
+                GraphicsManager.ClearCaches(assetType);
+
+                DiagManager.Instance.LogInfo("Mass import complete.");
+            }
         }
 
 
         private void Import(string currentPath)
         {
-            string assetPattern = GraphicsManager.GetPattern(assetType);
-            string destFile;
-            string animName = Path.GetFileNameWithoutExtension(currentPath);
-            if (Directory.Exists(currentPath))
-                destFile = PathMod.HardMod(String.Format(assetPattern, animName));
-            else
-            {
-                string[] components = animName.Split('.');
-                destFile = PathMod.HardMod(String.Format(assetPattern, components[0]));
-            }
-
-            if (!Directory.Exists(Path.GetDirectoryName(destFile)))
-                Directory.CreateDirectory(Path.GetDirectoryName(destFile));
-
-            //write sprite data
-            using (DirSheet sheet = DirSheet.Import(currentPath))
-            {
-                using (FileStream stream = File.OpenWrite(destFile))
-                {
-                    //save data
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                        sheet.Save(writer);
-                }
-            }
-            GraphicsManager.RebuildIndices(assetType);
-            GraphicsManager.ClearCaches(assetType);
-
-            DiagManager.Instance.LogInfo("Frames from:\n" +
-                currentPath + "\nhave been imported.");
+            DevForm.ExecuteOrPend(() => { tryImport(currentPath); });
 
             //recompute
             recomputeAnimList();
+        }
+
+        private void tryImport(string currentPath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string assetPattern = GraphicsManager.GetPattern(assetType);
+                string destFile;
+                string animName = Path.GetFileNameWithoutExtension(currentPath);
+                if (Directory.Exists(currentPath))
+                    destFile = PathMod.HardMod(String.Format(assetPattern, animName));
+                else
+                {
+                    string[] components = animName.Split('.');
+                    if (components.Length != 2)
+                        throw new ArgumentException("The input filename does not fit the convention of \"<Anim Name>.<Anim Type>.png\"!");
+                    destFile = PathMod.HardMod(String.Format(assetPattern, components[0]));
+                }
+
+                if (!Directory.Exists(Path.GetDirectoryName(destFile)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+
+                //write sprite data
+                using (DirSheet sheet = DirSheet.Import(currentPath))
+                {
+                    using (FileStream stream = File.OpenWrite(destFile))
+                    {
+                        //save data
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            sheet.Save(writer);
+                    }
+                }
+                GraphicsManager.RebuildIndices(assetType);
+                GraphicsManager.ClearCaches(assetType);
+
+                DiagManager.Instance.LogInfo("Frames from:\n" +
+                    currentPath + "\nhave been imported.");
+            }
         }
 
 
@@ -320,50 +329,55 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                Export(currentPath + filename, filename);
+                DevForm.ExecuteOrPend(() => { Export(currentPath + filename, filename); });
             }
         }
 
         private void Export(string currentPath, string anim)
         {
-            string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
-            if (File.Exists(animPath))
+            lock (GameBase.lockObj)
             {
-                //read file and read binary data
-                using (FileStream fileStream = File.OpenRead(animPath))
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
+                if (File.Exists(animPath))
                 {
-                    using (BinaryReader reader = new BinaryReader(fileStream))
+                    //read file and read binary data
+                    using (FileStream fileStream = File.OpenRead(animPath))
                     {
-                        DirSheet sheet = DirSheet.Load(reader);
+                        using (BinaryReader reader = new BinaryReader(fileStream))
+                        {
+                            DirSheet sheet = DirSheet.Load(reader);
 
-                        string filename = DirSheet.GetExportString(sheet, Path.GetFileNameWithoutExtension(currentPath));
-                        string dirname = Path.GetDirectoryName(currentPath);
-                        DirSheet.Export(sheet, Path.Combine(dirname, filename + ".png"));
+                            string filename = DirSheet.GetExportString(sheet, Path.GetFileNameWithoutExtension(currentPath));
+                            string dirname = Path.GetDirectoryName(currentPath);
+                            DirSheet.Export(sheet, Path.Combine(dirname, filename + ".png"));
+                        }
                     }
                 }
-            }
 
-            DiagManager.Instance.LogInfo("Frames from:\n" +
-                anim +
-                "\nhave been exported to:" + currentPath);
+                DiagManager.Instance.LogInfo("Frames from:\n" +
+                    anim +
+                    "\nhave been exported to:" + currentPath);
+            }
         }
 
 
         private void Delete(int animIdx)
         {
-            string anim = anims[animIdx];
-            string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
-            if (File.Exists(animPath))
-                File.Delete(animPath);
+            lock (GameBase.lockObj)
+            {
+                string anim = anims[animIdx];
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.GetPattern(assetType), anim));
+                if (File.Exists(animPath))
+                    File.Delete(animPath);
 
-            GraphicsManager.RebuildIndices(assetType);
-            GraphicsManager.ClearCaches(assetType);
+                GraphicsManager.RebuildIndices(assetType);
+                GraphicsManager.ClearCaches(assetType);
 
-            DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
+                DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
 
-            anims.RemoveAt(animIdx);
-            Anims.RemoveInternalAt(animIdx);
-
+                anims.RemoveAt(animIdx);
+                Anims.RemoveInternalAt(animIdx);
+            }
         }
 
 
