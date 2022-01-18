@@ -85,7 +85,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string folder = await openFileDialog.ShowAsync(parent);
 
-            if (folder != "")
+            if (!String.IsNullOrEmpty(folder))
             {
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
@@ -115,7 +115,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string folder = await openFileDialog.ShowAsync(parent);
 
-            if (folder != "")
+            if (!String.IsNullOrEmpty(folder))
             {
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
@@ -144,7 +144,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string folder = await openFileDialog.ShowAsync(parent);
 
-            if (folder != "")
+            if (!String.IsNullOrEmpty(folder))
             {
                 string animName = Path.GetFileNameWithoutExtension(folder);
 
@@ -200,7 +200,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string folder = await openFileDialog.ShowAsync(parent);
 
-            if (folder != null)
+            if (!String.IsNullOrEmpty(folder))
             {
                 DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
                 //CachedPath = folder;

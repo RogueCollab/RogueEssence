@@ -92,7 +92,7 @@ namespace RogueEssence.Dev.ViewModels
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             string folder = await openFileDialog.ShowAsync(form);
 
-            if (folder != "")
+            if (!String.IsNullOrEmpty(folder))
             {
                 string animName = Path.GetFileNameWithoutExtension(folder);
 
@@ -152,7 +152,7 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm form = (DevForm)DiagManager.Instance.DevEditor;
                 string folder = await openFileDialog.ShowAsync(form);
 
-                if (folder != "")
+                if (!String.IsNullOrEmpty(folder))
                 {
                     DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
 

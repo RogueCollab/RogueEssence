@@ -84,7 +84,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (results.Length > 0)
+            if (results != null && results.Length > 0)
             {
                 bool legalPath = false;
                 foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
@@ -128,7 +128,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string result = await saveFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (result != null)
+            if (!String.IsNullOrEmpty(result))
             {
                 string reqDir = PathMod.ModPath(DataManager.GROUND_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
@@ -179,7 +179,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (results.Length > 0)
+            if (results != null && results.Length > 0)
                 DoImportPng(results[0]);
         }
 
