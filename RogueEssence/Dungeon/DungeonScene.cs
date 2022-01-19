@@ -266,8 +266,7 @@ namespace RogueEssence.Dungeon
                 yield return new WaitUntil(AnimationsOver);
 
                 GameManager.Instance.FrameProcessed = false;
-
-                focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                ReloadFocusedPlayer();
 
                 if (IsPlayerLeaderTurn() && PendingLeaderAction != null)
                 {

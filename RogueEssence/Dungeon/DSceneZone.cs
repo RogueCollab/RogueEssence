@@ -65,8 +65,8 @@ namespace RogueEssence.Dungeon
         {
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
-
-            focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+            
+            ReloadFocusedPlayer();
 
             //refresh everyone's traits
             ZoneManager.Instance.CurrentMap.RefreshTraits();
@@ -646,8 +646,7 @@ namespace RogueEssence.Dungeon
 
                     //re-order map order as well
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, charIndex);
-
-                    focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                    ReloadFocusedPlayer();
 
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.GetDisplayName(true)));
 
@@ -695,8 +694,7 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex + 1, ActiveTeam.LeaderIndex);
                 }
 
-
-                focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                ReloadFocusedPlayer();
             }
         }
 
@@ -885,6 +883,11 @@ namespace RogueEssence.Dungeon
             //silently reset turn map
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
+            ReloadFocusedPlayer();
+        }
+
+        public void ReloadFocusedPlayer()
+        {
             focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
         }
 

@@ -187,12 +187,21 @@ namespace RogueEssence.Script
         public void SetTeamLeaderIndex(int idx)
         {
             //make leader
+            int oldIdx = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
             DataManager.Instance.Save.ActiveTeam.LeaderIndex = idx;
 
             //update team
-            ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader,
-                ZoneManager.Instance.CurrentGround.ActiveChar.MapLoc,
-                ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader,
+                    ZoneManager.Instance.CurrentGround.ActiveChar.MapLoc,
+                    ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldIdx, idx);
+                DungeonScene.Instance.ReloadFocusedPlayer();
+            }
         }
 
         public void SetCanSwitch(bool canSwitch)
