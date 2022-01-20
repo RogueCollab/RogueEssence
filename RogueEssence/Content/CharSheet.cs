@@ -463,7 +463,7 @@ namespace RogueEssence.Content
                     Rectangle tileRect = new Rectangle(tileLoc.X * tileWidth, tileLoc.Y * tileHeight, tileWidth, tileHeight);
                     Loc?[] frameOffset = getOffsetFromRGB(offsetTex, tileRect, true, true, true, true, false);
                     OffsetData offsets = new OffsetData(tileCenter, tileCenter, tileCenter, tileCenter);
-                    if (frameOffset[2].HasValue)
+                    if (frameOffset[1].HasValue && frameOffset[2].HasValue && frameOffset[3].HasValue)
                     {
                         Loc center = frameOffset[2].Value;
                         Loc head = center;
@@ -473,6 +473,8 @@ namespace RogueEssence.Content
                         Loc rightHand = frameOffset[3].Value;
                         offsets = new OffsetData(center, head, leftHand, rightHand);
                     }
+                    else if (frameOffset[0].HasValue || frameOffset[1].HasValue || frameOffset[2].HasValue || frameOffset[3].HasValue)
+                        throw new InvalidDataException(String.Format("Offsets at row {0}, col {1} are invalid!", tileLoc.Y + 1, tileLoc.X + 1));
                     //center the offsets to the center of the frametex
                     offsets.AddLoc(-tileCenter);
 
@@ -633,7 +635,8 @@ namespace RogueEssence.Content
 
                             Loc?[] frameOffset = getOffsetFromRGB(offsetSheet, tileRect, true, true, true, true, false);
                             OffsetData offsets = new OffsetData(boundsCenter, boundsCenter, boundsCenter, boundsCenter);
-                            if (frameOffset[2].HasValue)
+
+                            if (frameOffset[1].HasValue && frameOffset[2].HasValue && frameOffset[3].HasValue)
                             {
                                 Loc center = frameOffset[2].Value;
                                 Loc head = center;
@@ -643,6 +646,8 @@ namespace RogueEssence.Content
                                 Loc rightHand = frameOffset[3].Value;
                                 offsets = new OffsetData(center, head, leftHand, rightHand);
                             }
+                            else if (frameOffset[0].HasValue || frameOffset[1].HasValue || frameOffset[2].HasValue || frameOffset[3].HasValue)
+                                throw new InvalidDataException(String.Format("Offsets for {0} at row {1}, col {2} are invalid!", frameType.Name, sheetIndex+1, jj+1));
                             //center the offsets to the center of the frametex
                             offsets.AddLoc(-boundsCenter);
 
