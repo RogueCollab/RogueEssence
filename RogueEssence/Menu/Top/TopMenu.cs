@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
 
         public TopMenu()
         {
-            bool inMod = PathMod.Mod != "";
+            bool inQuest = PathMod.Quest != "";
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
             if (DataManager.Instance.Save != null)
@@ -45,22 +45,37 @@ namespace RogueEssence.Menu
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_RECORD"), () => { MenuManager.Instance.AddMenu(new RecordsMenu(), false); }));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OPTIONS_TITLE"), () => { MenuManager.Instance.AddMenu(new OptionsMenu(), false); }));
 
-            if (!inMod)
+            if (!inQuest)
             {
-                string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-                if (ModsMenu.GetEligibleMods().Count > 0)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
+                string[] questsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+                if (QuestsMenu.GetEligibleQuests().Count > 0)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_TITLE"), () => { MenuManager.Instance.AddMenu(new QuestsMenu(), false); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_EXIT"), exitMod));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_EXIT"), exitMod));
+
+            string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+            if (ModsMenu.GetEligibleMods().Count > 0)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
+
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUIT_GAME"), exitGame));
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(Path.GetFileName(PathMod.Mod), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            MenuText title = new MenuText(getModName(PathMod.Quest), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             titleMenu.Elements.Add(title);
 
+        }
+
+
+        private string getModName(string path)
+        {
+            ModHeader header = PathMod.GetModDetails(path);
+            if (header.IsValid())
+                return header.Name;
+
+            return Path.GetFileName(path);
         }
 
         protected override void MenuPressed()
@@ -80,14 +95,14 @@ namespace RogueEssence.Menu
             base.Draw(spriteBatch);
 
             //draw other windows
-            if (PathMod.Mod != "")
+            if (PathMod.Quest != "")
                 titleMenu.Draw(spriteBatch);
         }
 
         private void exitMod()
         {
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod("", true);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.SetQuest("", PathMod.Mod, true);
         }
 
 

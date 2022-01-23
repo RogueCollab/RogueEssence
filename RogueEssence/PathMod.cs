@@ -11,6 +11,13 @@ namespace RogueEssence
 {
     public static class PathMod
     {
+        public enum ModType
+        {
+            None=-1,
+            Quest,
+            Mod
+        }
+
         public static string ExeName { get; private set; }
         public static string ExePath { get; private set; }
         public static string ASSET_PATH;
@@ -18,13 +25,14 @@ namespace RogueEssence
         public static string RESOURCE_PATH { get => ASSET_PATH + "Editor/"; }
 
         public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
-
         public static string MODS_FOLDER = "MODS/";
 
         /// <summary>
         /// Filename of mod relative to executable
         /// </summary>
-        public static string Mod = "";
+        public static string[] Mod = new string[0];
+
+        public static string Quest = "";
 
         public static void InitExePath(string path)
         {
@@ -36,15 +44,17 @@ namespace RogueEssence
 
         public static string ModSavePath(string baseFolder)
         {
-            return Path.Join(ExePath, baseFolder, Mod);
+            return Path.Join(ExePath, baseFolder, Quest);
         }
+
         public static string ModSavePath(string baseFolder, string basePath)
         {
-            return Path.Join(ExePath, baseFolder, Mod, basePath);
+            return Path.Join(ExePath, baseFolder, Quest, basePath);
         }
+
         public static string HardMod(string basePath)
         {
-            return hardMod(Mod, basePath);
+            return hardMod(Quest, basePath);
         }
         public static string NoMod(string basePath)
         {
@@ -64,7 +74,7 @@ namespace RogueEssence
 
         public static IEnumerable<string> FallbackPaths(string basePath)
         {
-            string mod = Mod;
+            string mod = Quest;
             while (mod != "")
             {
                 string fullPath = hardMod(mod, basePath);
@@ -77,7 +87,7 @@ namespace RogueEssence
 
         public static string ModPath(string basePath)
         {
-            string mod = Mod;
+            string mod = Quest;
             while (mod != "")
             {
                 string fullPath = hardMod(mod, basePath);
@@ -90,7 +100,7 @@ namespace RogueEssence
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
-            string mod = Mod;
+            string mod = Quest;
             while (mod != "")
             {
                 string fullPath = hardMod(mod, baseFolder);
@@ -128,6 +138,48 @@ namespace RogueEssence
             if (result == ".")
                 result = "";
             return result;
+        }
+
+        public static ModHeader GetModDetails(string path)
+        {
+            ModHeader header = ModHeader.Invalid;
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(Path.Join(path, "Mod.xml"));
+                header.Name = xmldoc.DocumentElement.SelectSingleNode("Name").InnerText;
+                header.UUID = xmldoc.DocumentElement.SelectSingleNode("UUID").InnerText;
+                header.Version = Version.Parse(xmldoc.DocumentElement.SelectSingleNode("Version").InnerText);
+                header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.DocumentElement.SelectSingleNode("ModType").InnerText);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+            }
+            return header;
+        }
+    }
+
+    public struct ModHeader
+    {
+        public string Name;
+        public string UUID;
+        public Version Version;
+        public PathMod.ModType ModType;
+
+        public static readonly ModHeader Invalid = new ModHeader("", "", new Version(), PathMod.ModType.None);
+
+        public ModHeader(string name, string uuid, Version version, PathMod.ModType modType)
+        {
+            Name = name;
+            UUID = uuid;
+            Version = version;
+            ModType = modType;
+        }
+
+        public bool IsValid()
+        {
+            return !String.IsNullOrEmpty(Name) && !String.IsNullOrEmpty(UUID) && ModType != PathMod.ModType.None;
         }
     }
 }

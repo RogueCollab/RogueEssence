@@ -381,13 +381,14 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> SetMod(string modPath, bool fade)
+        public IEnumerator<YieldInstruction> SetQuest(string questPath, string[] modsPath, bool fade)
         {
             if (fade)
                 yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
 
             cleanup();
-            PathMod.Mod = modPath;
+            PathMod.Quest = questPath;
+            PathMod.Mod = modsPath;
             Text.Init();
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";

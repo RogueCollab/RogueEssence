@@ -264,11 +264,11 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void MergeMod(string mod)
+        public static void MergeQuest(string quest)
         {
-            DiagManager.Instance.LogInfo(String.Format("Creating standalone from mod {0}...", PathMod.Mod));
+            DiagManager.Instance.LogInfo(String.Format("Creating standalone from quest: {0}", String.Join(", ", quest)));
 
-            string outputPath = Path.Combine(PathMod.ExePath, "Build", mod);
+            string outputPath = Path.Combine(PathMod.ExePath, "Build", quest);
 
             if (Directory.Exists(outputPath))
                 Directory.Delete(outputPath, true);

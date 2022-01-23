@@ -72,13 +72,13 @@ namespace RogueEssence.Dev.ViewModels
 
         public void UpdateMod()
         {
-            CurrentMod = "Current Mod: " + getModName(PathMod.Mod);
+            CurrentMod = "Current Mod: " + getModName(PathMod.Quest);
         }
 
         public async void btnSwitch_Click()
         {
             //check to be sure it isn't the current mod
-            if (chosenMod.FullPath == PathMod.Mod)
+            if (chosenMod.FullPath == PathMod.Quest)
                 return;
 
             //give a pop up warning that the game will be reloaded and wait for confirmation
@@ -92,7 +92,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(chosenMod.FullPath, false);
+                GameManager.Instance.SceneOutcome = GameManager.Instance.SetQuest(chosenMod.FullPath, new string[0] { }, false);
             }
         }
 
@@ -168,6 +168,10 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (path == "")
                 return "[None]";
+
+            ModHeader header = PathMod.GetModDetails(path);
+            if (header.IsValid())
+                return header.Name;
 
             //TODO: allow for multi-tiered mods
             return Path.GetFileName(path);
