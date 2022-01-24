@@ -446,7 +446,8 @@ namespace RogueEssence.Script
             if (ZoneManager.Instance != null)
             {
                 ZoneManager.Instance.LuaEngineReload();
-                if (ZoneManager.Instance.CurrentZone != null)
+                if (ZoneManager.Instance.CurrentZone != null && 
+                    (GameManager.Instance.CurrentScene == GroundScene.Instance || GameManager.Instance.CurrentScene == DungeonScene.Instance))
                     GameManager.Instance.SceneOutcome = ReInitZone();
             }
 
