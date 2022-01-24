@@ -101,7 +101,7 @@ namespace RogueEssence.Dungeon
         public bool ShowActions;
         
         public MinimapState ShowMap;
-
+        public Loc MinimapOffset;
         
         /// <summary>
         /// Rectangle of the tiles that are relevant to sight computation.
@@ -318,13 +318,14 @@ namespace RogueEssence.Dungeon
                 if (DataManager.Instance.CurrentReplay.Paused)
                 {
                     if (input.JustPressed(FrameInput.InputType.Minimap))
+                    {
                         ShowMap = (MinimapState)((int)(ShowMap + 1) % 3);
+                        MinimapOffset = Loc.Zero;
+                    }
 
                     //multi-button presses
                     if (ShowMap == MinimapState.Detail)
-                    {
-
-                    }
+                        ProcessMinimapInput(input);
                     else if (DataManager.Instance.CurrentReplay.OpenMenu)
                     {
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
@@ -434,13 +435,14 @@ namespace RogueEssence.Dungeon
                 else
                 {
                     if (input.JustPressed(FrameInput.InputType.Minimap) && !input[FrameInput.InputType.Skills])
+                    {
                         ShowMap = (MinimapState)((int)(ShowMap + 1) % 3);
+                        MinimapOffset = Loc.Zero;
+                    }
 
                     //multi-button presses
                     if (ShowMap == MinimapState.Detail)
-                    {
-
-                    }
+                        ProcessMinimapInput(input);
                     else if (input[FrameInput.InputType.Skills])
                     {
                         int skillIndex = -1;
@@ -660,6 +662,28 @@ namespace RogueEssence.Dungeon
 
                 if (action.Type != GameAction.ActionType.None)
                     yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(action));
+            }
+        }
+
+        private void ProcessMinimapInput(InputManager input)
+        {
+            if (input.Direction != Dir8.None)
+            {
+                int input_gap = 2;
+                if ((input.InputTime - input.AddedInputTime) / input_gap < input.InputTime / input_gap)
+                {
+                    MinimapOffset += input.Direction.GetLoc();
+
+                    Loc centerLoc = new Loc();
+                    if (FocusedCharacter != null)
+                        centerLoc = FocusedCharacter.CharLoc;
+                    Loc startLoc = new Loc(Math.Max(0, Math.Min(centerLoc.X - MAX_MINIMAP_WIDTH / 2, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
+                        Math.Max(0, Math.Min(centerLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                    Loc endLoc = startLoc + MinimapOffset;
+                    endLoc = new Loc(Math.Max(0, Math.Min(endLoc.X, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
+                        Math.Max(0, Math.Min(endLoc.Y, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                    MinimapOffset = endLoc - startLoc;
+                }
             }
         }
 
@@ -911,11 +935,12 @@ namespace RogueEssence.Dungeon
                         mobility |= (1U << (int)TerrainData.Mobility.Abyss);
                     }
 
-                    Loc startLoc = new Loc();
+                    Loc centerLoc = new Loc();
                     if (FocusedCharacter != null)
-                        startLoc = FocusedCharacter.CharLoc;
-                    startLoc = new Loc(Math.Max(0, Math.Min(startLoc.X - MAX_MINIMAP_WIDTH / 2, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
-                        Math.Max(0, Math.Min(startLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                        centerLoc = FocusedCharacter.CharLoc;
+                    Loc startLoc = new Loc(Math.Max(0, Math.Min(centerLoc.X - MAX_MINIMAP_WIDTH / 2, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
+                        Math.Max(0, Math.Min(centerLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                    startLoc += MinimapOffset;
 
                     for (int ii = startLoc.X; ii < ZoneManager.Instance.CurrentMap.Width && ii - startLoc.X < MAX_MINIMAP_WIDTH; ii++)
                     {
