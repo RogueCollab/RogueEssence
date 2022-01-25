@@ -381,11 +381,18 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> SetQuest(string questPath, string[] modsPath, bool fade)
+        public IEnumerator<YieldInstruction> MoveToQuest(string questPath, string[] modsPath)
         {
-            if (fade)
-                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+            yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
 
+            SetQuest(questPath, modsPath);
+
+            DiagManager.Instance.SaveModSettings();
+
+            yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
+        }
+        public void SetQuest(string questPath, string[] modsPath)
+        {
             cleanup();
             PathMod.Quest = questPath;
             PathMod.Mod = modsPath;
@@ -404,8 +411,6 @@ namespace RogueEssence
             DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.All);
             MoveToScene(new TitleScene(false));
 
-            if (fade)
-                yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
         private void cleanup()

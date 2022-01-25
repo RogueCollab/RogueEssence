@@ -88,7 +88,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.SetQuest(chosenMod.FullPath, new string[0] { }, false);
+                GameManager.Instance.SetQuest(chosenMod.FullPath, new string[0] { });
             }
         }
 

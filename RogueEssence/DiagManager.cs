@@ -591,6 +591,50 @@ namespace RogueEssence
             }
         }
 
+        public void LoadModSettings()
+        {
+            string path = CONFIG_PATH + "ModConfig.xml";
+            if (File.Exists(path))
+            {
+                try
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+
+                    PathMod.Quest = xmldoc.SelectSingleNode("Config/Quest").InnerText;
+
+                    List<string> modList = new List<string>();
+                    XmlNode modsNode = xmldoc.SelectSingleNode("Config/Mods");
+                    foreach (XmlNode modNode in modsNode.SelectNodes("Mod"))
+                        modList.Add(modNode.InnerText);
+
+                    PathMod.Mod = modList.ToArray();
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+
+        }
+
+        public void SaveModSettings()
+        {
+            XmlDocument xmldoc = new XmlDocument();
+
+            XmlNode docNode = xmldoc.CreateElement("Config");
+            xmldoc.AppendChild(docNode);
+
+            docNode.AppendInnerTextChild(xmldoc, "Quest", PathMod.Quest);
+
+            XmlNode modsMode = xmldoc.CreateElement("Mods");
+            foreach (string mod in PathMod.Mod)
+                modsMode.AppendInnerTextChild(xmldoc, "Mod", mod);
+            docNode.AppendChild(modsMode);
+
+            xmldoc.Save(CONFIG_PATH + "ModConfig.xml");
+        }
+
 
         public void UpdateGamePadActive(bool active)
         {

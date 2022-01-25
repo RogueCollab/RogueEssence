@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
                 if (modStatus[ii])
                     chosenMods.Add(modDirs[ii]);
             }
-            GameManager.Instance.SceneOutcome = GameManager.Instance.SetQuest(PathMod.Quest, chosenMods.ToArray(), true);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.Quest, chosenMods.ToArray());
         }
     }
 }

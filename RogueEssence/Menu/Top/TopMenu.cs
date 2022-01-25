@@ -102,7 +102,7 @@ namespace RogueEssence.Menu
         private void exitMod()
         {
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.SetQuest("", PathMod.Mod, true);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest("", PathMod.Mod);
         }
 
 
