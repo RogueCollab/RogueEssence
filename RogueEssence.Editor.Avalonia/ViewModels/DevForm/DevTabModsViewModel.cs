@@ -44,14 +44,10 @@ namespace RogueEssence.Dev.ViewModels
     {
         public DevTabModsViewModel()
         {
-            currentMod = "";
+            currentMod = null;
 
             Mods = new ObservableCollection<ModsNodeViewModel>();
-            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, getModName(""), "");
-            string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-            foreach (string modPath in modsPath)
-                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(modPath), Path.Combine(PathMod.MODS_FOLDER, getModName(modPath))));
-            Mods.Add(baseNode);
+            reloadMods();
         }
 
         private string currentMod;
@@ -72,7 +68,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void UpdateMod()
         {
-            CurrentMod = "Current Mod: " + getModName(PathMod.Quest);
+            CurrentMod = getModName(PathMod.Quest);
         }
 
         public async void btnSwitch_Click()
@@ -98,14 +94,13 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnAdd_Click()
         {
-            //pop up a name input
-            RenameViewModel vm = new RenameViewModel();
-            RenameWindow window = new RenameWindow()
-            {
-                DataContext = vm
-            };
+            ModConfigWindow window = new ModConfigWindow();
+            ModHeader header = new ModHeader("", Guid.NewGuid(), new Version(), PathMod.ModType.Mod);
+            ModConfigViewModel vm = new ModConfigViewModel(header);
+            window.DataContext = vm;
 
-            bool result = await window.ShowDialog<bool>((DevForm)DiagManager.Instance.DevEditor);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            bool result = await window.ShowDialog<bool>(form);
             if (!result)
                 return;
             
@@ -130,6 +125,10 @@ namespace RogueEssence.Dev.ViewModels
             ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(chosenNode.FullPath, PathMod.MODS_FOLDER, newName));
             //add all asset folders
             Directory.CreateDirectory(newNode.FullPath);
+            //create the mod xml
+            ModHeader newHeader = new ModHeader(vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
+            PathMod.SaveModDetails(newNode.FullPath, newHeader);
+
             //add Strings
             Directory.CreateDirectory(Path.Join(newNode.FullPath, "Strings"));
             //Content
@@ -164,10 +163,40 @@ namespace RogueEssence.Dev.ViewModels
             chosenMod.Parent.Nodes.Remove(chosenMod);
         }
 
+        public async void btnEdit_Click()
+        {
+            ModConfigWindow window = new ModConfigWindow();
+            ModHeader header = PathMod.GetModDetails(PathMod.Quest);
+            ModConfigViewModel viewModel = new ModConfigViewModel(header);
+            window.DataContext = viewModel;
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            bool result = await window.ShowDialog<bool>(form);
+
+            if (result)
+            {
+                //save the mod data
+                ModHeader resultHeader = new ModHeader(viewModel.Name.Trim(), Guid.Parse(viewModel.UUID), Version.Parse(viewModel.Version), (PathMod.ModType)viewModel.ChosenModType);
+                PathMod.SaveModDetails(PathMod.Quest, resultHeader);
+
+                reloadMods();
+            }
+        }
+
+        private void reloadMods()
+        {
+            Mods.Clear();
+            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, getModName(""), "");
+            string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+            foreach (string modPath in modsPath)
+                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(modPath), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+            Mods.Add(baseNode);
+        }
+
         private static string getModName(string path)
         {
             if (path == "")
-                return "[None]";
+                return null;
 
             ModHeader header = PathMod.GetModDetails(path);
             if (header.IsValid())

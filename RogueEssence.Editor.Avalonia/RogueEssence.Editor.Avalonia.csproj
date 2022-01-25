@@ -64,6 +64,9 @@
     <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\DialogBoxes\ModConfigWindow.axaml.cs">
+      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Testing\TextTestForm.axaml.cs">
       <DependentUpon>TextTestForm.axaml</DependentUpon>
     </Compile>

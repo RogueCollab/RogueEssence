@@ -479,15 +479,15 @@ namespace RogueEssence
                 XmlNode docNode = xmldoc.CreateElement("Config");
                 xmldoc.AppendChild(docNode);
 
-                appendConfigNode(xmldoc, docNode, "BGM", settings.BGMBalance.ToString());
-                appendConfigNode(xmldoc, docNode, "SE", settings.SEBalance.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "BGM", settings.BGMBalance.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "SE", settings.SEBalance.ToString());
 
-                appendConfigNode(xmldoc, docNode, "BattleFlow", settings.BattleFlow.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "BattleFlow", settings.BattleFlow.ToString());
 
-                appendConfigNode(xmldoc, docNode, "Window", settings.Window.ToString());
-                appendConfigNode(xmldoc, docNode, "Border", settings.Border.ToString());
-                appendConfigNode(xmldoc, docNode, "Language", settings.Language.ToString());
-                appendConfigNode(xmldoc, docNode, "InactiveInput", settings.InactiveInput.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "Window", settings.Window.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "Border", settings.Border.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "Language", settings.Language.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "InactiveInput", settings.InactiveInput.ToString());
 
                 xmldoc.Save(CONFIG_PATH + "Config.xml");
             }
@@ -500,7 +500,7 @@ namespace RogueEssence
 
                 XmlNode dirKeys = xmldoc.CreateElement("DirKeys");
                 foreach (Keys key in settings.DirKeys)
-                    appendConfigNode(xmldoc, dirKeys, "DirKey", key.ToString());
+                    dirKeys.AppendInnerTextChild(xmldoc, "DirKey", key.ToString());
                 docNode.AppendChild(dirKeys);
 
                 XmlNode actionKeys = xmldoc.CreateElement("ActionKeys");
@@ -509,11 +509,11 @@ namespace RogueEssence
                     if (!Settings.UsedByKeyboard((FrameInput.InputType)ii))
                         continue;
                     Keys key = settings.ActionKeys[ii];
-                    appendConfigNode(xmldoc, actionKeys, "ActionKey", key.ToString());
+                    actionKeys.AppendInnerTextChild(xmldoc, "ActionKey", key.ToString());
                 }
                 docNode.AppendChild(actionKeys);
-                appendConfigNode(xmldoc, docNode, "Enter", settings.Enter.ToString());
-                appendConfigNode(xmldoc, docNode, "NumPad", settings.NumPad.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "Enter", settings.Enter.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "NumPad", settings.NumPad.ToString());
 
                 xmldoc.Save(CONFIG_PATH + "Keyboard.xml");
             }
@@ -530,7 +530,7 @@ namespace RogueEssence
                 XmlNode docNode = xmldoc.CreateElement("Config");
                 xmldoc.AppendChild(docNode);
 
-                appendConfigNode(xmldoc, docNode, "Name", gamePadMap.Name);
+                docNode.AppendInnerTextChild(xmldoc, "Name", gamePadMap.Name);
 
                 XmlNode actionButtons = xmldoc.CreateElement("ActionButtons");
                 for (int ii = 0; ii < gamePadMap.ActionButtons.Length; ii++)
@@ -538,7 +538,7 @@ namespace RogueEssence
                     if (!Settings.UsedByGamepad((FrameInput.InputType)ii))
                         continue;
                     Buttons button = gamePadMap.ActionButtons[ii];
-                    appendConfigNode(xmldoc, actionButtons, "ActionButton", button.ToString());
+                    actionButtons.AppendInnerTextChild(xmldoc, "ActionButton", button.ToString());
                 }
                 docNode.AppendChild(actionButtons);
 
@@ -555,9 +555,9 @@ namespace RogueEssence
                 foreach (ServerInfo contact in settings.ServerList)
                 {
                     XmlNode node = xmldoc.CreateElement("Server");
-                    appendConfigNode(xmldoc, node, "Name", contact.ServerName);
-                    appendConfigNode(xmldoc, node, "IP", contact.IP);
-                    appendConfigNode(xmldoc, node, "Port", contact.Port.ToString());
+                    node.AppendInnerTextChild(xmldoc, "Name", contact.ServerName);
+                    node.AppendInnerTextChild(xmldoc, "IP", contact.IP);
+                    node.AppendInnerTextChild(xmldoc, "Port", contact.Port.ToString());
                     servers.AppendChild(node);
                 }
                 docNode.AppendChild(servers);
@@ -566,8 +566,8 @@ namespace RogueEssence
                 foreach (ContactInfo contact in settings.ContactList)
                 {
                     XmlNode node = xmldoc.CreateElement("Contact");
-                    appendConfigNode(xmldoc, node, "UUID", contact.UUID);
-                    appendConfigNode(xmldoc, node, "LastSeen", contact.LastContact);
+                    node.AppendInnerTextChild(xmldoc, "UUID", contact.UUID);
+                    node.AppendInnerTextChild(xmldoc, "LastSeen", contact.LastContact);
                     appendContactNode(xmldoc, node, contact);
                     contacts.AppendChild(node);
                 }
@@ -577,11 +577,11 @@ namespace RogueEssence
                 foreach (PeerInfo contact in settings.PeerList)
                 {
                     XmlNode node = xmldoc.CreateElement("Peer");
-                    appendConfigNode(xmldoc, node, "UUID", contact.UUID);
-                    appendConfigNode(xmldoc, node, "LastSeen", contact.LastContact);
+                    node.AppendInnerTextChild(xmldoc, "UUID", contact.UUID);
+                    node.AppendInnerTextChild(xmldoc, "LastSeen", contact.LastContact);
                     appendContactNode(xmldoc, node, contact);
-                    appendConfigNode(xmldoc, node, "IP", contact.IP);
-                    appendConfigNode(xmldoc, node, "Port", contact.Port.ToString());
+                    node.AppendInnerTextChild(xmldoc, "IP", contact.IP);
+                    node.AppendInnerTextChild(xmldoc, "Port", contact.Port.ToString());
                     peers.AppendChild(node);
                 }
                 docNode.AppendChild(peers);
@@ -590,6 +590,7 @@ namespace RogueEssence
                 xmldoc.Save(CONFIG_PATH + "Contacts.xml");
             }
         }
+
 
         public void UpdateGamePadActive(bool active)
         {
@@ -665,14 +666,7 @@ namespace RogueEssence
             foreach (byte b in ba)
                 hex.AppendFormat("{0:x2}", b);
             hex.ToString();
-            appendConfigNode(xmldoc, node, "Data", hex.ToString());
-        }
-
-        private static void appendConfigNode(XmlDocument doc, XmlNode parentNode, string name, string text)
-        {
-            XmlNode node = doc.CreateElement(name);
-            node.InnerText = text;
-            parentNode.AppendChild(node);
+            node.AppendInnerTextChild(xmldoc, "Data", hex.ToString());
         }
 
     }
