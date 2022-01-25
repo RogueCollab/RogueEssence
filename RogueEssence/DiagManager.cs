@@ -601,14 +601,22 @@ namespace RogueEssence
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
 
-                    PathMod.Quest = xmldoc.SelectSingleNode("Config/Quest").InnerText;
+                    string quest = xmldoc.SelectSingleNode("Config/Quest").InnerText;
+                    ModHeader questHeader = PathMod.GetModDetails(quest);
+                    if (questHeader.IsValid())
+                        PathMod.Quest = quest;
 
                     List<string> modList = new List<string>();
                     XmlNode modsNode = xmldoc.SelectSingleNode("Config/Mods");
                     foreach (XmlNode modNode in modsNode.SelectNodes("Mod"))
-                        modList.Add(modNode.InnerText);
+                    {
+                        string mod = modNode.InnerText;
+                        ModHeader modHeader = PathMod.GetModDetails(mod);
+                        if (modHeader.IsValid())
+                            modList.Add(mod);
+                    }
 
-                    PathMod.Mod = modList.ToArray();
+                    PathMod.Mods = modList.ToArray();
                 }
                 catch (Exception ex)
                 {
@@ -628,7 +636,7 @@ namespace RogueEssence
             docNode.AppendInnerTextChild(xmldoc, "Quest", PathMod.Quest);
 
             XmlNode modsMode = xmldoc.CreateElement("Mods");
-            foreach (string mod in PathMod.Mod)
+            foreach (string mod in PathMod.Mods)
                 modsMode.AppendInnerTextChild(xmldoc, "Mod", mod);
             docNode.AppendChild(modsMode);
 

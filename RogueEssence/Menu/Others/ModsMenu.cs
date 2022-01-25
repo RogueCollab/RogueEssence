@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
             {
                 int index = ii;
                 modDirs[ii] = mods[ii].dir;
-                modStatus[ii] = PathMod.Mod.Contains(modDirs[ii]);
+                modStatus[ii] = PathMod.Mods.Contains(modDirs[ii]);
 
                 MenuText modName = new MenuText(mods[ii].name, new Loc(10, 1), Color.White);
                 MenuText modChecked = new MenuText(modStatus[ii] ? "\uE10A" : "", new Loc(2, 1), Color.White);

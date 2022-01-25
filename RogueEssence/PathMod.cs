@@ -31,7 +31,7 @@ namespace RogueEssence
         /// <summary>
         /// Filename of mod relative to executable
         /// </summary>
-        public static string[] Mod = new string[0];
+        public static string[] Mods = new string[0];
 
         public static string Quest = "";
 
@@ -147,12 +147,16 @@ namespace RogueEssence
             ModHeader header = ModHeader.Invalid;
             try
             {
-                XmlDocument xmldoc = new XmlDocument();
-                xmldoc.Load(Path.Join(path, "Mod.xml"));
-                header.Name = xmldoc.SelectSingleNode("Header/Name").InnerText;
-                header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
-                header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
-                header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
+                string filePath = Path.Join(path, "Mod.xml");
+                if (File.Exists(filePath))
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(filePath);
+                    header.Name = xmldoc.SelectSingleNode("Header/Name").InnerText;
+                    header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
+                    header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
+                    header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
+                }
             }
             catch (Exception ex)
             {
