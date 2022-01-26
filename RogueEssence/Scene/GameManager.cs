@@ -1194,7 +1194,7 @@ namespace RogueEssence
             if (!thisFrameErrored)
                 framesErrored++;
             thisFrameErrored = true;
-            if (framesErrored > 300)
+            if (framesErrored > 180)
                 GameBase.CurrentPhase = GameBase.LoadPhase.Error;
             if (ping)
                 SE("Menu/Error");
