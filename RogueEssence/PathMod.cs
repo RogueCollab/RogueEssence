@@ -73,43 +73,58 @@ namespace RogueEssence
                 return Path.Join(ExePath, mod, basePath);
         }
 
+        public static IEnumerable<string> FallforthPaths(string basePath)
+        {
+            Stack<string> paths = new Stack<string>();
+            foreach (string path in FallbackPaths(basePath))
+                paths.Push(path);
+
+            while (paths.Count > 0)
+                yield return paths.Pop();
+        }
+
         public static IEnumerable<string> FallbackPaths(string basePath)
         {
-            string mod = Quest;
-            while (mod != "")
+            foreach(string mod in Mods)
             {
                 string fullPath = hardMod(mod, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
-                mod = GetModParentPath(mod);
             }
-            yield return hardMod(mod, basePath);
+            if (Quest != "")
+            {
+                string mod = Quest;
+                string fullPath = hardMod(mod, basePath);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                    yield return fullPath;
+            }
+            yield return hardMod("", basePath);
         }
 
         public static string ModPath(string basePath)
         {
-            string mod = Quest;
-            while (mod != "")
-            {
-                string fullPath = hardMod(mod, basePath);
-                if (File.Exists(fullPath) || Directory.Exists(fullPath))
-                    return fullPath;
-                mod = GetModParentPath(mod);
-            }
-            return hardMod(mod, basePath);
+            foreach (string modPath in FallbackPaths(basePath))
+                return modPath;
+
+            return hardMod("", basePath);
         }
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
-            string mod = Quest;
-            while (mod != "")
+            foreach (string mod in Mods)
             {
                 string fullPath = hardMod(mod, baseFolder);
                 if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
-                mod = GetModParentPath(mod);
             }
-            files.Add(Directory.GetFiles(hardMod(mod, baseFolder), search));
+            if (Quest != "")
+            {
+                string mod = Quest;
+                string fullPath = hardMod(mod, baseFolder);
+                if (Directory.Exists(fullPath))
+                    files.Add(Directory.GetFiles(fullPath, search));
+            }
+            files.Add(Directory.GetFiles(hardMod("", baseFolder), search));
 
             Dictionary<string, string> file_mappings = new Dictionary<string, string>();
             for (int ii = files.Count-1; ii >= 0; ii--)
@@ -129,16 +144,6 @@ namespace RogueEssence
             for (int ii = 0; ii < result_files.Count; ii++)
                 result_files[ii] = file_mappings[result_files[ii]];
             return result_files.ToArray();
-        }
-
-        public static string GetModParentPath(string mod)
-        {
-            string relativeTo = Path.GetFullPath(".");
-            string parent = Path.Join(Path.GetFullPath(mod), "..", "..");
-            string result = Path.GetRelativePath(relativeTo, parent);
-            if (result == ".")
-                result = "";
-            return result;
         }
 
 

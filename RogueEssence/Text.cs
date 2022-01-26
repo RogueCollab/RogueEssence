@@ -44,36 +44,39 @@ namespace RogueEssence
             Strings = new List<Dictionary<string, string>>();
             StringsEx = new List<Dictionary<string, string>>();
 
-            string path = PathMod.ModPath("Strings/Languages.xml");
             List<string> codes = new List<string>();
             Dictionary<string, LanguageSetting> translations = new Dictionary<string, LanguageSetting>();
             try
             {
-                if (File.Exists(path))
+                foreach (string path in PathMod.FallforthPaths("Strings/Languages.xml"))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    if (File.Exists(path))
                     {
-                        if (xnode.Name == "data")
+                        XmlDocument xmldoc = new XmlDocument();
+                        xmldoc.Load(path);
+                        foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
                         {
-                            string value = null;
-                            string name = null;
-                            var atname = xnode.Attributes["name"];
-                            if (atname != null)
-                                name = atname.Value;
+                            if (xnode.Name == "data")
+                            {
+                                string value = null;
+                                string name = null;
+                                var atname = xnode.Attributes["name"];
+                                if (atname != null)
+                                    name = atname.Value;
 
-                            //Get value
-                            XmlNode valnode = xnode.SelectSingleNode("value");
-                            if (valnode != null)
-                                value = valnode.InnerText;
+                                //Get value
+                                XmlNode valnode = xnode.SelectSingleNode("value");
+                                if (valnode != null)
+                                    value = valnode.InnerText;
 
-                            List<string> fallbacks = new List<string>();
-                            foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
-                                fallbacks.Add(fallbacknode.InnerText);
+                                List<string> fallbacks = new List<string>();
+                                foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
+                                    fallbacks.Add(fallbacknode.InnerText);
 
-                            codes.Add(name);
-                            translations[name] = new LanguageSetting(value, fallbacks);
+                                if (!codes.Contains(name))
+                                    codes.Add(name);
+                                translations[name] = new LanguageSetting(value, fallbacks);
+                            }
                         }
                     }
                 }
@@ -207,24 +210,31 @@ namespace RogueEssence
         {
             Culture = new CultureInfo(code);
 
-            Strings.Clear();
-            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + code + ".resx")));
+            loadCulture(Strings, code, "strings");
+
+            loadCulture(StringsEx, code, "stringsEx");
+        }
+
+        private static void loadCulture(List<Dictionary<string, string>> strings, string code, string fileName)
+        {
+            strings.Clear();
+            //order of string fallbacks:
+            //first go through all mods of the original language
+            foreach(string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
+                strings.Add(LoadXmlDoc(path));
+
+            //then go through all mods of the official fallbacks
             if (LangNames.ContainsKey(code))
             {
                 foreach (string fallback in LangNames[code].Fallbacks)
-                    Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + fallback + ".resx")));
+                {
+                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
+                        strings.Add(LoadXmlDoc(path));
+                }
             }
-            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings.resx")));
-
-            StringsEx.Clear();
-
-            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + code + ".resx")));
-            if (LangNames.ContainsKey(code))
-            {
-                foreach (string fallback in LangNames[code].Fallbacks)
-                    StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + fallback + ".resx")));
-            }
-            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx.resx")));
+            //then go through all mods of the default language
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
+                strings.Add(LoadXmlDoc(path));
         }
     }
 
