@@ -148,28 +148,9 @@ namespace RogueEssence
             return dumpMsg.ToString();
         }
 
-        /// <summary>
-        /// Simple helper method to allow processing a function as a coroutine.
-        /// </summary>
-        /// <param name="fun"></param>
-        /// <returns></returns>
-        public static IEnumerator<YieldInstruction> FunAsCoroutine(Action fun)
+        public IEnumerator<YieldInstruction> YieldCoroutine(Coroutine coroutine)
         {
-            fun();
-            yield break;
-        }
-
-
-        /// <summary>
-        /// Simple helper method to allow processing a coroutine with an end action.
-        /// </summary>
-        /// <param name="coroutine"></param>
-        /// <param name="fun"></param>
-        /// <returns></returns>
-        public static IEnumerator<YieldInstruction> CoroutineWithEndAction(IEnumerator<YieldInstruction> coroutine, Action fun)
-        {
-            yield return CoroutineManager.Instance.StartCoroutine(coroutine);
-            fun();
+            yield return StartCoroutine(coroutine);
         }
     }
 }

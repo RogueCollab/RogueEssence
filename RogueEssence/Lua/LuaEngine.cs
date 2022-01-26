@@ -1288,6 +1288,28 @@ namespace RogueEssence.Script
             }
         }
 
+
+        public IEnumerator<YieldInstruction> CallScriptFunction(LuaFunction luaFun)
+        {
+            //Create a lua iterator function for the lua coroutine
+            LuaFunction iter = CreateCoroutineIterator(luaFun);
+
+            //Then call it until it returns null!
+            object[] allres = iter.Call();
+            object res = allres.First();
+            while (res != null)
+            {
+                if (res.GetType() == typeof(Coroutine)) //This handles waiting on coroutines
+                    yield return CoroutineManager.Instance.StartCoroutine(res as Coroutine, false);
+                else if (res.GetType().IsSubclassOf(typeof(YieldInstruction)))
+                    yield return res as YieldInstruction;
+
+                //Pick another yield from the lua coroutine
+                allres = iter.Call();
+                res = allres.First();
+            }
+        }
+
         /// <summary>
         /// Creates a wrapped coroutine that works like a lua iterator.
         /// Each call to the returned function will call resume on the wrapped coroutine, and resume from where it left off.
