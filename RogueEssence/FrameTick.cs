@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RogueEssence.Content
+namespace RogueEssence
 {
     [Serializable]
     public struct FrameTick
