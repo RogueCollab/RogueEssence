@@ -60,27 +60,25 @@ namespace RogueEssence.Dev.ViewModels
 
             lock (GameBase.lockObj)
             {
+                DataListForm dataListForm = new DataListForm();
                 DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
                 DataOpContainer reindexOp = createReindexOp(dataType, choices);
 
-                DataOpContainer.TaskAction importAction = importDtef;
+                DataOpContainer.TaskAction importAction = async () => { await importDtef(dataListForm, choices); }; ;
                 DataOpContainer importOp = new DataOpContainer("Import DTEF", importAction);
 
 
-                DataOpContainer.TaskAction exportAction = async () => { await exportDtef(choices.SearchList.InternalIndex); };
+                DataOpContainer.TaskAction exportAction = async () => { await exportDtef(dataListForm, choices.SearchList.InternalIndex); };
                 
                 DataOpContainer exportOp = new DataOpContainer("Export as DTEF", exportAction);
-                choices.SetOps(reindexOp/*, importOp, exportOp*/);
+                choices.SetOps(reindexOp, importOp/*, exportOp*/);
 
-                DataListForm dataListForm = new DataListForm
-                {
-                    DataContext = choices,
-                };
+                dataListForm.DataContext = choices;
                 dataListForm.Show();
             }
         }
 
-        private async Task importDtef()
+        private async Task importDtef(DataListForm listForm, DataListFormViewModel choices)
         {
             //remember addresses in registry
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
@@ -89,8 +87,7 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            string folder = await openFileDialog.ShowAsync(form);
+            string folder = await openFileDialog.ShowAsync(listForm);
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -108,7 +105,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 if (conflict)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Tileset already exists.",
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(listForm, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Tileset already exists.",
                         MessageBox.MessageBoxButtons.YesNo);
                     if (result == MessageBox.MessageBoxResult.No)
                         return;
@@ -118,27 +115,37 @@ namespace RogueEssence.Dev.ViewModels
 
                 try
                 {
-                    DevForm.ExecuteOrPend(() => { tryImportDtef(folder, animName); });
+                    DevForm.ExecuteOrPend(() => { tryImportDtef(choices, folder, animName); });
                 }
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(form, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBox.Show(listForm, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
             }
         }
 
-        private void tryImportDtef(string folder, string animName)
+        private void tryImportDtef(DataListFormViewModel choices, string folder, string animName)
         {
             lock (GameBase.lockObj)
             {
                 string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
                 DtefImportHelper.ImportDtef(folder, destFile);
+
+                //reindex all
+                DevHelper.RunIndexing(DataManager.DataType.AutoTile);
+                DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
+                DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);
+                DataManager.Instance.LoadUniversalData();
+                DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
+                DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
+                string[] entries = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetLocalStringArray(true);
+                choices.SetEntries(entries);
             }
         }
 
-        private async Task exportDtef(int entryIndex)
+        private async Task exportDtef(DataListForm listForm, int entryIndex)
         {
             if (entryIndex > -1)
             {
@@ -149,8 +156,7 @@ namespace RogueEssence.Dev.ViewModels
                 OpenFolderDialog openFileDialog = new OpenFolderDialog();
                 openFileDialog.Directory = folderName;
 
-                DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                string folder = await openFileDialog.ShowAsync(form);
+                string folder = await openFileDialog.ShowAsync(listForm);
 
                 if (!String.IsNullOrEmpty(folder))
                 {
