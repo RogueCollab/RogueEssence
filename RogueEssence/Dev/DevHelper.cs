@@ -169,21 +169,26 @@ namespace RogueEssence.Dev
             {
                 EntryDataIndex fullGuide = new EntryDataIndex();
                 List<EntrySummary> entries = new List<EntrySummary>();
-                foreach (string dir in PathMod.GetModFiles(dataPath, "*"+DataManager.DATA_EXT))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file);
                     IEntryData data = (IEntryData)LoadWithLegacySupport(dir, t);
                     while (entries.Count <= num)
-                        entries.Add(new EntrySummary());
+                        entries.Add(null);
                     entries[num] = data.GenerateEntrySummary();
                 }
                 fullGuide.Entries = entries.ToArray();
 
-                using (Stream stream = new FileStream(PathMod.HardMod(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
+                if (entries.Count > 0)
                 {
-                    Serializer.SerializeData(stream, fullGuide);
+                    using (Stream stream = new FileStream(PathMod.HardMod(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        Serializer.SerializeData(stream, fullGuide);
+                    }
                 }
+                else
+                    File.Delete(PathMod.HardMod(dataPath + "index.idx"));
             }
             catch (Exception ex)
             {

@@ -385,15 +385,35 @@ namespace RogueEssence.Data
         }
 
 
+        /// <summary>
+        /// Index paths are modified like mods.  However, if multiple mods have conflicting indices, a combined index must be generated.
+        /// </summary>
+        /// <param name="basePath"></param>
+        /// <returns></returns>
         public void LoadIndex(DataType type)
         {
             try
             {
-                using (Stream stream = new FileStream(PathMod.ModPath(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Open, FileAccess.Read, FileShare.Read))
+                List<EntrySummary> summaries = new List<EntrySummary>();
+                foreach (string modPath in PathMod.FallforthPaths(DATA_PATH + type.ToString() + "/index.idx"))
                 {
-                    EntryDataIndex result = (EntryDataIndex)Serializer.DeserializeData(stream);
-                    DataIndices[type] = result;
+                    using (Stream stream = new FileStream(modPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        EntryDataIndex result = (EntryDataIndex)Serializer.DeserializeData(stream);
+                        for (int ii = 0; ii < result.Entries.Length; ii++)
+                        {
+                            if (result.Entries[ii] != null)
+                            {
+                                if (ii >= summaries.Count)
+                                    summaries.Add(null);
+                                summaries[ii] = result.Entries[ii];
+                            }
+                        }
+                    }
                 }
+                EntryDataIndex compositeIndex = new EntryDataIndex();
+                compositeIndex.Entries = summaries.ToArray();
+                DataIndices[type] = compositeIndex;
             }
             catch
             {

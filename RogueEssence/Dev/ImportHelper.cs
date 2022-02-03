@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in PathMod.GetModFiles(search, pattern))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(search), pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file);
@@ -37,11 +37,16 @@ namespace RogueEssence.Dev
 
                 }
 
-                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                if (fullGuide.Nodes.Count > 0)
                 {
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                        fullGuide.Save(writer);
+                    using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            fullGuide.Save(writer);
+                    }
                 }
+                else
+                    File.Delete(PathMod.HardMod(search + "/index.idx"));
             }
             catch (Exception ex)
             {
@@ -56,7 +61,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in PathMod.GetModFiles(search, pattern))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(search), pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     using (FileStream stream = File.OpenRead(dir))
@@ -69,11 +74,16 @@ namespace RogueEssence.Dev
                     }
                 }
 
-                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                if (fullGuide.Nodes.Count > 0)
                 {
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                        fullGuide.Save(writer);
+                    using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            fullGuide.Save(writer);
+                    }
                 }
+                else
+                    File.Delete(PathMod.HardMod(search + "/index.idx"));
             }
             catch (Exception ex)
             {

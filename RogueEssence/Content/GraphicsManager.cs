@@ -717,11 +717,21 @@ namespace RogueEssence.Content
             CharaIndexNode fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(PathMod.ModPath(charaDir + "index.idx")))
+                Dictionary<int, CharaIndexNode> nodes = new Dictionary<int, CharaIndexNode>();
+                foreach (string modPath in PathMod.FallforthPaths(charaDir + "index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                        fullGuide = CharaIndexNode.Load(reader);
+                    using (FileStream stream = File.OpenRead(modPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            CharaIndexNode guide = CharaIndexNode.Load(reader);
+                            foreach (int key in guide.Nodes.Keys)
+                                nodes[key] = guide.Nodes[key];
+                        }
+                    }
                 }
+                fullGuide = new CharaIndexNode();
+                fullGuide.Nodes = nodes;
             }
             catch (Exception ex)
             {
@@ -1010,12 +1020,21 @@ namespace RogueEssence.Content
             TileGuide fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(PathMod.ModPath(tileDir + "index.idx")))
+                Dictionary<string, TileIndexNode> nodes = new Dictionary<string, TileIndexNode>();
+                foreach (string modPath in PathMod.FallforthPaths(tileDir + "index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                        fullGuide = TileGuide.Load(reader);
+                    using (FileStream stream = File.OpenRead(modPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            TileGuide guide = TileGuide.Load(reader);
+                            foreach (string key in guide.Nodes.Keys)
+                                nodes[key] = guide.Nodes[key];
+                        }
+                    }
                 }
-
+                fullGuide = new TileGuide();
+                fullGuide.Nodes = nodes;
             }
             catch (Exception ex)
             {

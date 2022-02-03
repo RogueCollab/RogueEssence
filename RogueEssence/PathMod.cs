@@ -108,6 +108,7 @@ namespace RogueEssence
 
             return hardMod("", basePath);
         }
+
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
