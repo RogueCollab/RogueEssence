@@ -108,8 +108,13 @@ namespace RogueEssence.Dev.ViewModels
                 return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+                string result = Path.Join(reqDir, Path.GetFileName(CurrentFile));
                 lock (GameBase.lockObj)
-                    DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
+                {
+                    string oldFilename = CurrentFile;
+                    DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
+                }
                 return true;
             }
         }
@@ -130,7 +135,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!String.IsNullOrEmpty(result))
             {
-                string reqDir = PathMod.ModPath(DataManager.GROUND_PATH);
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
@@ -494,17 +499,17 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="newfilepath"></param>
         private void createOrCopyScriptData(string oldfilepath, string newfilepath)
         {
-            string oldmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
-            string newmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+            string oldmapscriptdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, Path.GetFileNameWithoutExtension(oldfilepath), "/init.lua"));
+            string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
 
             //Check if we have anything to copy at all!
-            if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))
+            if (oldmapscriptdir != newmapscriptdir && !String.IsNullOrEmpty(oldmapscriptdir))
             {
                 Directory.CreateDirectory(newmapscriptdir);
                 foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
                 {
                     //Path to the sub-directory within the script folder containing this file
-                    string subdirpath = f.Remove(oldmapscriptdir.Count()); //Not Count - 1 because of the last path separator!
+                    string subdirpath = f.Substring(oldmapscriptdir.Length + 1); //Count + 1 because of the last path separator!
                     //Path to the sub-directory within the new script folder where we'll copy this file!
                     string destpath = Path.Combine(newmapscriptdir, subdirpath);
 
@@ -512,13 +517,14 @@ namespace RogueEssence.Dev.ViewModels
                     Directory.CreateDirectory(Path.GetDirectoryName(destpath));
 
                     //Copy the file itself
-                    File.Copy(f, destpath, false);
+                    if (File.Exists(f))
+                        File.Copy(f, destpath, false);
                 }
             }
             else
             {
                 //We just create a new one straight away!
-                LuaEngine.Instance.CreateNewMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
+                LuaEngine.Instance.CreateGroundMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
             }
         }
 

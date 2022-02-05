@@ -288,7 +288,7 @@ namespace RogueEssence.Script
         /// <returns>The path to the script file.</returns>
         private string PathToScript(string script)
         {
-            return String.Format("{0}{1}", PathMod.ModPath(SCRIPT_PATH), script);
+            return PathMod.QuestPath(String.Format("{0}{1}", SCRIPT_PATH, script));
         }
         #endregion
 
@@ -359,15 +359,7 @@ namespace RogueEssence.Script
 
         public static void InitScriptFolders(string baseFolder)
         {
-            string sourcePath = Path.Join(PathMod.ASSET_PATH, SCRIPT_PATH);
-            string destPath = Path.Join(baseFolder, SCRIPT_PATH);
-            //TODO: do we need scripts to be in their own folder?
-            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-                Directory.CreateDirectory(dirPath.Replace(sourcePath, destPath));
-
-            //Copy all the files & Replaces any files with the same name
-            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-                File.Copy(newPath, newPath.Replace(sourcePath, destPath), true);
+            Directory.CreateDirectory(Path.Join(baseFolder, SCRIPT_PATH));
         }
 
         /// <summary>
@@ -484,15 +476,19 @@ namespace RogueEssence.Script
             //then searching for lua includes will fail when paths contain unicode letters.
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 LuaState.State.Encoding = Encoding.GetEncoding(1252);
-            
-            //Add the current script directory to the lua searchpath for loading modules!
-            LuaState["package.path"] = LuaState["package.path"] + ";" +
-                                        Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "lib/?.lua;" +
-                                        Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "?.lua;" +
-                                        Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) + "?/init.lua";
 
-            //Add lua binary path
-            string cpath = LuaState["package.cpath"] + ";" + Path.GetFullPath(PathMod.ModPath(SCRIPT_CPATH));
+            //Add the current script directory to the lua searchpath for loading modules!
+            string buildPath = (string)(LuaState["package.path"]);
+            foreach (string pathMod in PathMod.FallbackPaths(SCRIPT_PATH))
+            {
+                buildPath += ";" + pathMod + "lib/?.lua";
+                buildPath += ";" + pathMod + "?.lua";
+                buildPath += ";" + pathMod + "?/init.lua";
+            }
+            LuaState["package.path"] = buildPath;
+
+            //Add lua binary path. No mods
+            string cpath = LuaState["package.cpath"] + ";" + Path.GetFullPath(PathMod.NoMod(SCRIPT_CPATH));
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 cpath += "?.dll";
             else
@@ -526,7 +522,7 @@ namespace RogueEssence.Script
             SetLuaPaths();
 
             //Setup some globabl vars
-            LuaState["_SCRIPT_PATH"] = Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)); //Share with the script engine the path to the root of the script files
+            LuaState["_SCRIPT_PATH"] = Path.GetFullPath(PathMod.QuestPath(SCRIPT_PATH)); //Share with the script engine the path to the root of the script files
 
             RunString(ZoneCurrentScriptSym + " = nil");
             RunString(MapCurrentScriptSym + " = nil");
@@ -1007,10 +1003,13 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public static string MakeZoneScriptPath(string zonename)
+        public static string MakeZoneScriptPath(bool hard, string zonename, string file)
         {
-            return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
-                   string.Format(ZONE_SCRIPT_PATTERN, zonename).Replace('.', '/'); //The physical path to the map's script dir
+            string basePath = Path.Join(SCRIPT_PATH, string.Format(ZONE_SCRIPT_PATTERN, zonename).Replace('.', '/'), file);
+            if (hard)
+                return Path.GetFullPath(PathMod.HardMod(basePath));
+            else
+                return Path.GetFullPath(PathMod.ModPath(basePath));
         }
 
         /// <summary>
@@ -1019,17 +1018,16 @@ namespace RogueEssence.Script
         /// <param name="zoneassetname">The AssetName of the zone for which we have to load the script of</param>
         public void RunZoneScript(string zoneassetname)
         {
-            string zonepath = MakeZoneScriptPath(zoneassetname);
+            string abspath = MakeZoneScriptPath(false, zoneassetname, "/init.lua");
             try
             {
-                string abspath = Path.GetFullPath(zonepath + "/init.lua");
                 LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZONE_SCRIPT_PATTERN, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
                           abspath);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunZoneScript(): Error running zone script!:\n" + e.Message + "\npath:\n" + zonepath);
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunZoneScript(): Error running zone script!:\n" + e.Message + "\npath:\n" + abspath);
             }
         }
 
@@ -1076,10 +1074,13 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public static string MakeDungeonMapScriptPath(string mapname)
+        public static string MakeDungeonMapScriptPath(bool hard, string mapname, string file)
         {
-            return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
-                   string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'); //The physical path to the map's script dir
+            string basePath = Path.Join(SCRIPT_PATH, string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'), file);
+            if (hard)
+                return Path.GetFullPath(PathMod.HardMod(basePath));
+            else
+                return Path.GetFullPath(PathMod.ModPath(basePath));
         }
 
         /// <summary>
@@ -1088,17 +1089,16 @@ namespace RogueEssence.Script
         /// <param name="mapassetname">The AssetName of the zone for which we have to load the script of</param>
         public void RunDungeonMapScript(string mapassetname)
         {
-            string mappath = MakeDungeonMapScriptPath(mapassetname);
+            string abspath = MakeDungeonMapScriptPath(false, mapassetname, "/init.lua");
             try
             {
-                string abspath = Path.GetFullPath(mappath + "/init.lua");
                 LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapassetname), DungeonMapCurrentScriptSym, mapassetname),
                           abspath);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunDungeonMapScript(): Error running dungeon map script!:\n" + e.Message + "\npath:\n" + mappath);
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunDungeonMapScript(): Error running dungeon map script!:\n" + e.Message + "\npath:\n" + abspath);
             }
         }
 
@@ -1142,29 +1142,31 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public static string MakeMapScriptPath(string mapname)
+        public static string MakeGroundMapScriptPath(bool hard, string mapname, string file)
         {
-            return Path.GetFullPath(PathMod.ModPath(SCRIPT_PATH)) +
-                   string.Format(MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'); //The physical path to the map's script dir
+            string basePath = Path.Join(SCRIPT_PATH, string.Format(MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'), file);
+            if (hard)
+                return Path.GetFullPath(PathMod.HardMod(basePath));
+            else
+                return Path.GetFullPath(PathMod.ModPath(basePath));
         }
 
         /// <summary>
         /// Load and execute the script of a map.
         /// </summary>
         /// <param name="mapassetname">The AssetName of the map for which we have to load the script of</param>
-        public void RunMapScript(string mapassetname)
+        public void RunGroundMapScript(string mapassetname)
         {
-            string mappath = MakeMapScriptPath(mapassetname);
+            string abspath = MakeGroundMapScriptPath(false, mapassetname, "/init.lua");
             try
             {
-                string abspath = Path.GetFullPath(mappath + "/init.lua");
                 LuaState.LoadFile(abspath);
                 RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(MAP_SCRIPT_PATTERN, mapassetname), MapCurrentScriptSym, mapassetname),
                           abspath);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunMapScript(): Error running map script!:\n" + e.Message + "\npath:\n" + mappath);
+                DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunMapScript(): Error running map script!:\n" + e.Message + "\npath:\n" + abspath);
             }
         }
 
@@ -1207,16 +1209,17 @@ namespace RogueEssence.Script
         /// Creates the bare minimum script and map folder for a ground map.
         /// </summary>
         /// <param name="mapassetname"></param>
-        public void CreateNewMapScriptDir(string mapassetname)
+        public void CreateGroundMapScriptDir(string mapassetname)
         {
-            string mappath = MakeMapScriptPath(mapassetname);
+            string mappath = MakeGroundMapScriptPath(true, mapassetname, "");
+
             try
             {
                 //Check if files exists already
                 if (!Directory.Exists(mappath))
                     Directory.CreateDirectory(mappath);
 
-                string packageentry = String.Format("{1}/{0}.lua", MAP_SCRIPT_ENTRY_POINT, mappath);
+                string packageentry = String.Format("{0}/{1}.lua", mappath, MAP_SCRIPT_ENTRY_POINT);
                 if (!File.Exists(packageentry))
                 {
                     using (var fstream = File.CreateText(packageentry))

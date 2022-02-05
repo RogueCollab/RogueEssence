@@ -61,7 +61,7 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="stringsdir">Directory in which string resx files are stored!</param>
         public void LoadStrings()
         {
-            string stringsdir = MakeCurrentStringsPath();
+            string stringsdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, ZoneManager.Instance.CurrentGround.AssetName, "/init.lua"));
             //Clear old strings
             Dictionary<string, Dictionary<string, string>> rawStrings = new Dictionary<string, Dictionary<string, string>>();
 
@@ -119,7 +119,7 @@ namespace RogueEssence.Dev.ViewModels
         /// </summary>
         public void SaveStrings()
         {
-            string stringsdir = MakeCurrentStringsPath();
+            string stringsdir = LuaEngine.MakeGroundMapScriptPath(true, ZoneManager.Instance.CurrentGround.AssetName, "");
 
             string FMTStr = String.Format("{0}{1}.{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)
@@ -141,11 +141,6 @@ namespace RogueEssence.Dev.ViewModels
                     resx.Close();
                 }
             }
-        }
-
-        private string MakeCurrentStringsPath()
-        {
-            return String.Format("{0}{1}", PathMod.ModPath(LuaEngine.MAP_SCRIPT_DIR), ZoneManager.Instance.CurrentGround.AssetName);
         }
 
     }

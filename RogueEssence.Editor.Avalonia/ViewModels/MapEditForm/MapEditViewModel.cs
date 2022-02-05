@@ -112,8 +112,13 @@ namespace RogueEssence.Dev.ViewModels
                 return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
+                string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
+                string result = Path.Join(reqDir, Path.GetFileName(CurrentFile));
                 lock (GameBase.lockObj)
-                    DoSave(ZoneManager.Instance.CurrentMap, CurrentFile, CurrentFile);
+                {
+                    string oldFilename = CurrentFile;
+                    DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
+                }
                 return true;
             }
         }
@@ -134,7 +139,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!String.IsNullOrEmpty(result))
             {
-                string reqDir = PathMod.ModPath(DataManager.MAP_PATH);
+                string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
                 else

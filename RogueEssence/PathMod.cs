@@ -101,6 +101,28 @@ namespace RogueEssence
             yield return hardMod("", basePath);
         }
 
+        //Temporary fix specifically for lua: check quest path then mod path
+        public static string QuestPath(string basePath)
+        {
+            if (Quest != "")
+            {
+                string mod = Quest;
+                string fullPath = hardMod(mod, basePath);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                    return fullPath;
+            }
+
+            foreach (string mod in Mods)
+            {
+                string fullPath = hardMod(mod, basePath);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                    return fullPath;
+                break;
+            }
+
+            return hardMod("", basePath);
+        }
+
         public static string ModPath(string basePath)
         {
             foreach (string modPath in FallbackPaths(basePath))
