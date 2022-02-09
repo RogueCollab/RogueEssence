@@ -360,6 +360,9 @@ namespace RogueEssence.Script
         public static void InitScriptFolders(string baseFolder)
         {
             Directory.CreateDirectory(Path.Join(baseFolder, SCRIPT_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, MAP_SCRIPT_DIR));
+            Directory.CreateDirectory(Path.Join(baseFolder, DUNGEON_MAP_SCRIPT_DIR));
+            Directory.CreateDirectory(Path.Join(baseFolder, ZONE_SCRIPT_DIR));
         }
 
         /// <summary>
