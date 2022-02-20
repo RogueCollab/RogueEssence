@@ -2206,7 +2206,11 @@ namespace RogueEssence.Dungeon
             currentCharAction.OnUpdate(elapsedTime, Appearance, MovementSpeed);
 
             if (currentCharAction.WantsToEnd())
-                currentCharAction = new EmptyCharAction(new CharAnimIdle(CharLoc, CharDir));
+            {
+                EmptyCharAction action = new EmptyCharAction(new CharAnimIdle(CharLoc, CharDir));
+                action.PickUpFrom(Appearance, currentCharAction);
+                currentCharAction = action;
+            }
 
             UpdateFrame();
 
