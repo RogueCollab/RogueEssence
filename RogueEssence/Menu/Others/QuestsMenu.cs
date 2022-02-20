@@ -50,7 +50,7 @@ namespace RogueEssence.Menu
         private void choose(string dir)
         {
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(dir, PathMod.Mods);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.GetModDetails(dir), PathMod.Mods);
         }
     }
 }

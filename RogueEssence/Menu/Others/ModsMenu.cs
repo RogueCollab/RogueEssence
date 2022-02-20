@@ -29,7 +29,15 @@ namespace RogueEssence.Menu
             {
                 int index = ii;
                 modDirs[ii] = mods[ii].dir;
-                modStatus[ii] = PathMod.Mods.Contains(modDirs[ii]);
+                modStatus[ii] = false;
+                foreach (ModHeader header in PathMod.Mods)
+                {
+                    if (header.Path == modDirs[ii])
+                    {
+                        modStatus[ii] = true;
+                        break;
+                    }
+                }
 
                 MenuText modName = new MenuText(mods[ii].name, new Loc(10, 1), Color.White);
                 MenuText modChecked = new MenuText(modStatus[ii] ? "\uE10A" : "", new Loc(2, 1), Color.White);
@@ -71,11 +79,11 @@ namespace RogueEssence.Menu
         private void confirm()
         {
             MenuManager.Instance.ClearMenus();
-            List<string> chosenMods = new List<string>();
+            List<ModHeader> chosenMods = new List<ModHeader>();
             for (int ii = 0; ii < modStatus.Length; ii++)
             {
                 if (modStatus[ii])
-                    chosenMods.Add(modDirs[ii]);
+                    chosenMods.Add(PathMod.GetModDetails(modDirs[ii]));
             }
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.Quest, chosenMods.ToArray());
         }

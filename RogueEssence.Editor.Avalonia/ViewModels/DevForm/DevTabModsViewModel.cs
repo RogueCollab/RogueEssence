@@ -74,7 +74,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnSwitch_Click()
         {
             //check to be sure it isn't the current mod
-            if (chosenMod.FullPath == PathMod.Quest)
+            if (chosenMod.FullPath == PathMod.Quest.Path)
                 return;
 
             //give a pop up warning that the game will be reloaded and wait for confirmation
@@ -88,14 +88,14 @@ namespace RogueEssence.Dev.ViewModels
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SetQuest(chosenMod.FullPath, new string[0] { });
+                GameManager.Instance.SetQuest(PathMod.GetModDetails(chosenMod.FullPath), new ModHeader[0] { });
             }
         }
 
         public async void btnAdd_Click()
         {
             ModConfigWindow window = new ModConfigWindow();
-            ModHeader header = new ModHeader("", Guid.NewGuid(), new Version(), PathMod.ModType.Mod);
+            ModHeader header = new ModHeader("", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod);
             ModConfigViewModel vm = new ModConfigViewModel(header);
             window.DataContext = vm;
 
@@ -126,7 +126,7 @@ namespace RogueEssence.Dev.ViewModels
             //add all asset folders
             Directory.CreateDirectory(newNode.FullPath);
             //create the mod xml
-            ModHeader newHeader = new ModHeader(vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
+            ModHeader newHeader = new ModHeader(newNode.FullPath, vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
             PathMod.SaveModDetails(newNode.FullPath, newHeader);
 
             //add Strings
@@ -166,7 +166,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnEdit_Click()
         {
             ModConfigWindow window = new ModConfigWindow();
-            ModHeader header = PathMod.GetModDetails(PathMod.Quest);
+            ModHeader header = PathMod.Quest;
             ModConfigViewModel viewModel = new ModConfigViewModel(header);
             window.DataContext = viewModel;
 
@@ -176,8 +176,8 @@ namespace RogueEssence.Dev.ViewModels
             if (result)
             {
                 //save the mod data
-                ModHeader resultHeader = new ModHeader(viewModel.Name.Trim(), Guid.Parse(viewModel.UUID), Version.Parse(viewModel.Version), (PathMod.ModType)viewModel.ChosenModType);
-                PathMod.SaveModDetails(PathMod.Quest, resultHeader);
+                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, viewModel.Name.Trim(), Guid.Parse(viewModel.UUID), Version.Parse(viewModel.Version), (PathMod.ModType)viewModel.ChosenModType);
+                PathMod.SaveModDetails(PathMod.Quest.Path, resultHeader);
 
                 reloadMods();
             }
@@ -186,24 +186,18 @@ namespace RogueEssence.Dev.ViewModels
         private void reloadMods()
         {
             Mods.Clear();
-            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, getModName(""), "");
+            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, null, "");
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             foreach (string modPath in modsPath)
-                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(modPath), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(PathMod.GetModDetails(modPath)), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
             Mods.Add(baseNode);
         }
 
-        private static string getModName(string path)
+        private static string getModName(ModHeader mod)
         {
-            if (path == "")
+            if (!mod.IsValid())
                 return null;
-
-            ModHeader header = PathMod.GetModDetails(path);
-            if (header.IsValid())
-                return header.Name;
-
-            //TODO: allow for multi-tiered mods
-            return Path.GetFileName(path);
+            return mod.GetMenuName();
         }
     }
 }

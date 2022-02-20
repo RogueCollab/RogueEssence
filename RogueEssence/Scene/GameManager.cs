@@ -381,21 +381,21 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> MoveToQuest(string questPath, string[] modsPath)
+        public IEnumerator<YieldInstruction> MoveToQuest(ModHeader quest, ModHeader[] mods)
         {
             yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
 
-            SetQuest(questPath, modsPath);
+            SetQuest(quest, mods);
 
             DiagManager.Instance.SaveModSettings();
 
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
-        public void SetQuest(string questPath, string[] modsPath)
+        public void SetQuest(ModHeader quest, ModHeader[] mods)
         {
             cleanup();
-            PathMod.Quest = questPath;
-            PathMod.Mods = modsPath;
+            PathMod.Quest = quest;
+            PathMod.Mods = mods;
             Text.Init();
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";

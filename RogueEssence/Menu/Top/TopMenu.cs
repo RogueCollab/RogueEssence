@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
 
         public TopMenu()
         {
-            bool inQuest = PathMod.Quest != "";
+            bool inQuest = PathMod.Quest.IsValid();
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
             if (DataManager.Instance.Save != null)
@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_TITLE"), () => { MenuManager.Instance.AddMenu(new QuestsMenu(), false); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_EXIT"), exitMod));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_EXIT"), exitQuest));
 
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             if (ModsMenu.GetEligibleMods().Count > 0)
@@ -63,19 +63,9 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(getModName(PathMod.Quest), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            MenuText title = new MenuText(PathMod.Quest.GetMenuName(), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             titleMenu.Elements.Add(title);
 
-        }
-
-
-        private string getModName(string path)
-        {
-            ModHeader header = PathMod.GetModDetails(path);
-            if (header.IsValid())
-                return header.Name;
-
-            return Path.GetFileName(path);
         }
 
         protected override void MenuPressed()
@@ -95,14 +85,14 @@ namespace RogueEssence.Menu
             base.Draw(spriteBatch);
 
             //draw other windows
-            if (PathMod.Quest != "")
+            if (PathMod.Quest.IsValid())
                 titleMenu.Draw(spriteBatch);
         }
 
-        private void exitMod()
+        private void exitQuest()
         {
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest("", PathMod.Mods);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(ModHeader.Invalid, PathMod.Mods);
         }
 
 

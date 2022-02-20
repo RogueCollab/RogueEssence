@@ -14,8 +14,8 @@ namespace RogueEssence
         public enum ModType
         {
             None=-1,
-            Quest,
             Mod,
+            Quest,
             Count
         }
 
@@ -31,9 +31,9 @@ namespace RogueEssence
         /// <summary>
         /// Filename of mod relative to executable
         /// </summary>
-        public static string[] Mods = new string[0];
+        public static ModHeader[] Mods = new ModHeader[0];
 
-        public static string Quest = "";
+        public static ModHeader Quest = ModHeader.Invalid;
 
         public static void InitExePath(string path)
         {
@@ -45,17 +45,17 @@ namespace RogueEssence
 
         public static string ModSavePath(string baseFolder)
         {
-            return Path.Join(ExePath, baseFolder, Quest);
+            return Path.Join(ExePath, baseFolder, Quest.Path);
         }
 
         public static string ModSavePath(string baseFolder, string basePath)
         {
-            return Path.Join(ExePath, baseFolder, Quest, basePath);
+            return Path.Join(ExePath, baseFolder, Quest.Path, basePath);
         }
 
         public static string HardMod(string basePath)
         {
-            return hardMod(Quest, basePath);
+            return hardMod(Quest.Path, basePath);
         }
         public static string NoMod(string basePath)
         {
@@ -85,15 +85,15 @@ namespace RogueEssence
 
         public static IEnumerable<string> FallbackPaths(string basePath)
         {
-            foreach(string mod in Mods)
+            foreach(ModHeader mod in Mods)
             {
-                string fullPath = hardMod(mod, basePath);
+                string fullPath = hardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
             }
-            if (Quest != "")
+            if (Quest.IsValid())
             {
-                string mod = Quest;
+                string mod = Quest.Path;
                 string fullPath = hardMod(mod, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
@@ -102,19 +102,20 @@ namespace RogueEssence
         }
 
         //Temporary fix specifically for lua: check quest path then mod path
+        //remove when: loading strings the proper way in script
         public static string QuestPath(string basePath)
         {
-            if (Quest != "")
+            if (Quest.IsValid())
             {
-                string mod = Quest;
+                string mod = Quest.Path;
                 string fullPath = hardMod(mod, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
             }
 
-            foreach (string mod in Mods)
+            foreach (ModHeader mod in Mods)
             {
-                string fullPath = hardMod(mod, basePath);
+                string fullPath = hardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
                 break;
@@ -134,15 +135,15 @@ namespace RogueEssence
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
-            foreach (string mod in Mods)
+            foreach (ModHeader mod in Mods)
             {
-                string fullPath = hardMod(mod, baseFolder);
+                string fullPath = hardMod(mod.Path, baseFolder);
                 if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
             }
-            if (Quest != "")
+            if (Quest.IsValid())
             {
-                string mod = Quest;
+                string mod = Quest.Path;
                 string fullPath = hardMod(mod, baseFolder);
                 if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
@@ -175,21 +176,30 @@ namespace RogueEssence
             ModHeader header = ModHeader.Invalid;
             try
             {
-                string filePath = Path.Join(path, "Mod.xml");
-                if (File.Exists(filePath))
+                if (!String.IsNullOrEmpty(path))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(filePath);
-                    header.Name = xmldoc.SelectSingleNode("Header/Name").InnerText;
-                    header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
-                    header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
-                    header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
+                    if (Directory.Exists(path))
+                    {
+                        header.Path = Path.Join(MODS_FOLDER, Path.GetFileName(path));
+
+                        string filePath = Path.Join(path, "Mod.xml");
+                        if (File.Exists(filePath))
+                        {
+                            XmlDocument xmldoc = new XmlDocument();
+                            xmldoc.Load(filePath);
+                            header.Name = xmldoc.SelectSingleNode("Header/Name").InnerText;
+                            header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
+                            header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
+                            header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
             }
+
             return header;
         }
 
@@ -211,15 +221,20 @@ namespace RogueEssence
 
     public struct ModHeader
     {
+        /// <summary>
+        /// Must always be a relative path
+        /// </summary>
+        public string Path;
         public string Name;
         public Guid UUID;
         public Version Version;
         public PathMod.ModType ModType;
 
-        public static readonly ModHeader Invalid = new ModHeader("", Guid.Empty, new Version(), PathMod.ModType.None);
+        public static readonly ModHeader Invalid = new ModHeader("", "", Guid.Empty, new Version(), PathMod.ModType.None);
 
-        public ModHeader(string name, Guid uuid, Version version, PathMod.ModType modType)
+        public ModHeader(string path, string name, Guid uuid, Version version, PathMod.ModType modType)
         {
+            Path = path;
             Name = name;
             UUID = uuid;
             Version = version;
@@ -228,7 +243,23 @@ namespace RogueEssence
 
         public bool IsValid()
         {
-            return !String.IsNullOrEmpty(Name) && !UUID.Equals(Guid.Empty) && ModType != PathMod.ModType.None;
+            return !String.IsNullOrEmpty(Path);
+        }
+
+        public bool IsFilled()
+        {
+            return !String.IsNullOrEmpty(Path) && !String.IsNullOrEmpty(Name) && !UUID.Equals(Guid.Empty) && ModType != PathMod.ModType.None;
+        }
+
+        public string GetMenuName()
+        {
+            if (!IsValid())
+                return "";
+
+            if (!String.IsNullOrEmpty(Name))
+                return Name;
+
+            return System.IO.Path.GetFileName(Path);
         }
     }
 }
