@@ -113,12 +113,13 @@ namespace RogueEssence.Dungeon
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character, true, false, true));
-
             //NOTE: this is a one-time hack for the moment, where player walks will not take a frame of delay
             //so as to stay in sync with everyone else.
             if (charSpeed > 0)
                 GameManager.Instance.FrameProcessed = true;
+
+            //FrameProcessed must be set before FinishTurn because processes in FinishTurn, such as menus, may want to set FrameProcessed to false again
+            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character, true, false, true));
         }
         public IEnumerator<YieldInstruction> FinishTurn(Character character, bool advanceTurn = true)
         {
