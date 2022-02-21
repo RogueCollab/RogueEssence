@@ -127,7 +127,7 @@ namespace RogueEssence.Menu
             else
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(true, amount);
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -141,7 +141,7 @@ namespace RogueEssence.Menu
             else
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(items[0]);
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -151,7 +151,7 @@ namespace RogueEssence.Menu
         {
             DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem();
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -227,7 +227,7 @@ namespace RogueEssence.Menu
             //notify if it is found and working
             //notify if it failed to work
             //delete the mail either way
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue.SOS.RescuedBy = testingMail.RescuingTeam;
             state.Save.Rescue.SOS.RescuingNames = testingMail.RescuingNames;
             state.Save.Rescue.SOS.RescuingTeam = testingMail.RescuingProfile;

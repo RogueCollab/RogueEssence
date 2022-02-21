@@ -130,7 +130,7 @@ namespace RogueEssence.Menu
             }
 
             //then, we should load a main save instead
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(true);
             if (state == null)
             {
                 cannotRead(DataManager.SAVE_PATH + DataManager.SAVE_FILE_PATH);
@@ -207,6 +207,10 @@ namespace RogueEssence.Menu
             mainSave.MergeDataTo(mainSave);
             ZoneManager.LoadFromState(mainState.Zone);
             LuaEngine.Instance.UpdateZoneInstance();
+
+            //upgrade here
+            if (DataManager.Instance.Save.IsOldVersion())
+                LuaEngine.Instance.OnUpgrade();
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentMapID.Segment > -1)

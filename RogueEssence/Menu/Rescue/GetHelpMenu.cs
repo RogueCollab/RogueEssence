@@ -140,7 +140,7 @@ namespace RogueEssence.Menu
                         if (getHelp.OfferedMail.OfferedItem.Value > -1)
                         {
                             //deduct your reward and save it to the base file
-                            GameState state = DataManager.Instance.LoadMainGameState();
+                            GameState state = DataManager.Instance.LoadMainGameState(false);
                             state.Save.Rescue.SOS.OfferedItem = getHelp.OfferedMail.OfferedItem;
                             DataManager.Instance.SaveGameState(state);
 

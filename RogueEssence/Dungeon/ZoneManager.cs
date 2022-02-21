@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
+using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 
@@ -52,12 +53,21 @@ namespace RogueEssence.Dungeon
         }
         public static void LoadDefaultState(GameState state)
         {
-            state.Save.NextDest = DataManager.Instance.StartMap;
-
             ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.StartMap.ID);
             state.Zone = new ZoneManager();
             state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.StartMap.ID);
             state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.StartMap.StructID);
+
+            //if it's a ground map, need to set the player
+            if (state.Zone.CurrentGround != null)
+            {
+                LocRay8 entry = state.Zone.CurrentGround.GetEntryPoint(0);
+
+                if (entry.Dir == Dir8.None)
+                    entry.Dir = state.Save.ActiveTeam.Leader.CharDir;
+
+                state.Zone.CurrentGround.SetPlayerChar(new GroundChar(state.Save.ActiveTeam.Leader, entry.Loc, entry.Dir, "PLAYER"));
+            }
         }
 
         public Zone CurrentZone { get; private set; }

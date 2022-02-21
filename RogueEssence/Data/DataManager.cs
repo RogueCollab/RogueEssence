@@ -1259,7 +1259,7 @@ namespace RogueEssence.Data
                                         replay.UICodes.Clear();
                                     }
                                     //read team info
-                                    GameState gameState = ReadGameState(reader);
+                                    GameState gameState = ReadGameState(reader, false);
                                     replay.States.Add(gameState);
 
                                     if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
@@ -1550,7 +1550,7 @@ namespace RogueEssence.Data
         /// Returns game progress and current zone.
         /// </summary>
         /// <returns></returns>
-        public GameState LoadMainGameState()
+        public GameState LoadMainGameState(bool allowUpgrade)
         {
             if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
             {
@@ -1560,7 +1560,7 @@ namespace RogueEssence.Data
                     {
                         //loads dungeon, zone, and ground, if there will be one...
                         using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader);
+                            return ReadGameState(reader, allowUpgrade);
                     }
                 }
                 catch (Exception ex)
@@ -1572,15 +1572,19 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public GameState ReadGameState(BinaryReader reader)
+        public GameState ReadGameState(BinaryReader reader, bool allowUpgrade)
         {
             GameState state = new GameState();
 
             Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
 
             state.Save = GameProgress.LoadMainData(reader);
-            if (version < Versioning.GetVersion())
+
+            ZoneManager.LoadToState(reader, state);
+            if (allowUpgrade && state.Save.IsOldVersion())
             {
+                //ZoneManager.LoadDefaultState(state);
+
                 //reload AI
                 foreach (Character player in state.Save.ActiveTeam.Players)
                 {
@@ -1600,13 +1604,7 @@ namespace RogueEssence.Data
                         ai = GetAITactic(0);
                     player.Tactic = new AITactic(ai);
                 }
-
-                ZoneManager.LoadDefaultState(state);
             }
-            else
-                ZoneManager.LoadToState(reader, state);
-
-            LuaEngine.Instance.UpdateZoneInstance();
 
 
             if (state.Zone.CurrentMap != null)

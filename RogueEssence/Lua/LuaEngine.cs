@@ -239,6 +239,7 @@ namespace RogueEssence.Script
             GraphicsLoad,
             GraphicsUnload,
             NewGame,
+            UpgradeSave,
             Restart,
             Update,
 
@@ -1613,6 +1614,11 @@ namespace RogueEssence.Script
         public void OnNewGame()
         {
             m_scrsvc.Publish(EServiceEvents.NewGame.ToString());
+        }
+
+        public void OnUpgrade()
+        {
+            m_scrsvc.Publish(EServiceEvents.UpgradeSave.ToString());
         }
 
         /// <summary>

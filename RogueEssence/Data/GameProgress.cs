@@ -93,6 +93,8 @@ namespace RogueEssence.Data
             Completed
         }
 
+        public Version GameVersion;
+
         public ExplorerTeam ActiveTeam;
         public ReRandom Rand;
 
@@ -138,6 +140,7 @@ namespace RogueEssence.Data
 
         public GameProgress()
         {
+
             ActiveTeam = new ExplorerTeam();
 
             Dex = new List<UnlockState>();
@@ -410,7 +413,7 @@ namespace RogueEssence.Data
         {
             if (StartLevel > -1)
             {
-                GameState state = DataManager.Instance.LoadMainGameState();
+                GameState state = DataManager.Instance.LoadMainGameState(false);
                 if (state == null)
                 {
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_ERR_READ_SAVE")));
@@ -656,6 +659,15 @@ namespace RogueEssence.Data
             }
             return newRecruits;
         }
+
+
+        public bool IsOldVersion()
+        {
+            if (GameVersion < Versioning.GetVersion())
+                return true;
+
+            return false;
+        }
     }
 
     [Serializable]
@@ -727,7 +739,7 @@ namespace RogueEssence.Data
             //create a copy (from save and load) of the current state and mark it with loss
             DataManager.Instance.SaveMainGameState();
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             if (state != null)
             {
                 if (Stakes == DungeonStakes.Risk)
@@ -819,7 +831,7 @@ namespace RogueEssence.Data
             //merge back the team if the dungeon was level-limited
             yield return CoroutineManager.Instance.StartCoroutine(RestoreLevel());
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             MainProgress mainSave = state?.Save as MainProgress;
 
             //save the result to the main file
@@ -945,7 +957,7 @@ namespace RogueEssence.Data
 
                 MenuBase.Transparent = false;
                 //save to the main file
-                GameState state = DataManager.Instance.LoadMainGameState();
+                GameState state = DataManager.Instance.LoadMainGameState(false);
                 List<int> newRecruits = new List<int>();
                 if (state != null)
                 {
@@ -1007,7 +1019,7 @@ namespace RogueEssence.Data
                 MenuBase.Transparent = false;
 
                 //save to the main file
-                GameState state = DataManager.Instance.LoadMainGameState();
+                GameState state = DataManager.Instance.LoadMainGameState(false);
                 if (state != null)
                 {
                     MergeDexTo(state.Save, true);
