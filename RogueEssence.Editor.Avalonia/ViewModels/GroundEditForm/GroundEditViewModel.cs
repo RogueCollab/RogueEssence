@@ -503,7 +503,7 @@ namespace RogueEssence.Dev.ViewModels
             string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
 
             //Check if we have anything to copy at all!
-            if (oldmapscriptdir != newmapscriptdir && !String.IsNullOrEmpty(oldmapscriptdir))
+            if (oldmapscriptdir != newmapscriptdir && !String.IsNullOrEmpty(oldfilepath))
             {
                 Directory.CreateDirectory(newmapscriptdir);
                 foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
