@@ -270,6 +270,13 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    public class IdleAnimAction : CharAnimIdle
+    {
+        public int BaseFrameType { get; set; }
+        protected override int AnimFrameType { get { return BaseFrameType; } }
+        public IdleAnimAction(Loc loc, Dir8 dir, int frameType) : base(loc, dir) { AnimLoc = loc; CharDir = dir; BaseFrameType = frameType; }
+    }
+
     public class CharAnimPose : StaticCharAnimation
     {
         protected override int FrameMethod(List<CharAnimFrame> frames)

@@ -195,7 +195,7 @@ namespace RogueEssence.Dungeon
         {
             //this is where the delays between target hits are managed
             context.HitboxAction.Distance += Math.Min(Math.Max(-3, context.RangeMod), 3);
-            yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformCharAction(context.HitboxAction.Clone(), context));
+            yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformBattleAction(context.HitboxAction.Clone(), context));
             //if (context.User.CharLoc == context.StrikeEndTile && context.StrikeEndTile != context.StrikeStartTile)
             //    yield return CoroutinesManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
 

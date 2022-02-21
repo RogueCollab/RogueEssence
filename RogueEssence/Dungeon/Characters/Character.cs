@@ -2131,7 +2131,6 @@ namespace RogueEssence.Dungeon
                     yield return new WaitWhile(OccupiedwithAction);
                 else
                     yield break;
-                
             }
 
             CharAction prevAction = currentCharAction;
@@ -2142,7 +2141,7 @@ namespace RogueEssence.Dungeon
             UpdateFrame();
         }
 
-        public IEnumerator<YieldInstruction> PerformCharAction(CombatAction action, BattleContext context)
+        public IEnumerator<YieldInstruction> PerformBattleAction(CombatAction action, BattleContext context)
         {
             yield return new WaitUntil(DungeonScene.Instance.AnimationsOver);
             yield return new WaitWhile(OccupiedwithAction);
