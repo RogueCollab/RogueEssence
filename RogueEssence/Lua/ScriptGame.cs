@@ -21,6 +21,17 @@ namespace RogueEssence.Script
             return new Coroutine(GroundScene.Instance.SaveGame());
         }
 
+        public ModDiff GetModDiff(string uuidStr)
+        {
+            Guid uuid = new Guid(uuidStr);
+            List<ModDiff> diffs = DataManager.Instance.Save.GetModDiffs();
+            foreach (ModDiff diff in diffs)
+            {
+                if (diff.UUID == uuid)
+                    return diff;
+            }
+            return new ModDiff("", uuid, null, null);
+        }
 
         //===================================
         // Current Map

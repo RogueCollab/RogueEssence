@@ -94,6 +94,8 @@ namespace RogueEssence.Data
         }
 
         public Version GameVersion;
+        public ModHeader Quest;
+        public List<ModHeader> Mods;
 
         public ExplorerTeam ActiveTeam;
         public ReRandom Rand;
@@ -140,6 +142,8 @@ namespace RogueEssence.Data
 
         public GameProgress()
         {
+            Quest = ModHeader.Invalid;
+            Mods = new List<ModHeader>();
 
             ActiveTeam = new ExplorerTeam();
 
@@ -661,12 +665,112 @@ namespace RogueEssence.Data
         }
 
 
+        public List<ModDiff> GetModDiffs()
+        {
+            List<ModDiff> result = new List<ModDiff>();
+
+            if (GameVersion != Versioning.GetVersion())
+                result.Add(new ModDiff("[Game]", Guid.Empty, GameVersion, Versioning.GetVersion()));
+
+            if (Quest.UUID != PathMod.Quest.UUID)
+            {
+                result.Add(new ModDiff(Quest.GetMenuName(), Quest.UUID, Quest.Version, null));
+                result.Add(new ModDiff(PathMod.Quest.GetMenuName(), PathMod.Quest.UUID, null, PathMod.Quest.Version));
+            }
+            else if (Quest.Version != PathMod.Quest.Version)
+                result.Add(new ModDiff(PathMod.Quest.GetMenuName(), PathMod.Quest.UUID, Quest.Version, PathMod.Quest.Version));
+
+            bool[] foundNewMod = new bool[PathMod.Mods.Length];
+            foreach (ModHeader oldMod in Mods)
+            {
+                bool found = false;
+                for (int ii = 0; ii < PathMod.Mods.Length; ii++)
+                {
+                    ModHeader newMod = PathMod.Mods[ii];
+                    if (oldMod.UUID == newMod.UUID)
+                    {
+                        found = true;
+                        foundNewMod[ii] = true;
+                        if (oldMod.Version != newMod.Version)
+                            result.Add(new ModDiff(newMod.GetMenuName(), newMod.UUID, oldMod.Version, newMod.Version));
+                        break;
+                    }
+                }
+                if (!found)
+                    result.Add(new ModDiff(oldMod.GetMenuName(), oldMod.UUID, oldMod.Version, null));
+            }
+            for (int ii = 0; ii < foundNewMod.Length; ii++)
+            {
+                if (!foundNewMod[ii])
+                    result.Add(new ModDiff(PathMod.Mods[ii].GetMenuName(), PathMod.Mods[ii].UUID, null, PathMod.Mods[ii].Version));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns true if
+        /// Game version is higher than save's game version
+        /// Quest is different
+        /// Quest version is higher than save's quest version
+        /// Mods are added or removed
+        /// Mod version is higher than the save's mod version
+        /// </summary>
+        /// <returns></returns>
         public bool IsOldVersion()
         {
             if (GameVersion < Versioning.GetVersion())
                 return true;
 
+            if (Quest.UUID != PathMod.Quest.UUID || Quest.Version < PathMod.Quest.Version)
+                return true;
+
+            bool[] foundNewMod = new bool[PathMod.Mods.Length];
+            foreach (ModHeader oldMod in Mods)
+            {
+                bool found = false;
+                for (int ii = 0; ii < PathMod.Mods.Length; ii++)
+                {
+                    ModHeader newMod = PathMod.Mods[ii];
+                    if (oldMod.UUID == newMod.UUID)
+                    {
+                        found = true;
+                        foundNewMod[ii] = true;
+                        if (oldMod.Version != newMod.Version)
+                            return true;
+                        break;
+                    }
+                }
+                if (!found)
+                    return true;
+            }
+            for (int ii = 0; ii < foundNewMod.Length; ii++)
+            {
+                if (!foundNewMod[ii])
+                    return true;
+            }
             return false;
+        }
+
+
+        public void UpdateVersion()
+        {
+            GameVersion = Versioning.GetVersion();
+            Quest = PathMod.Quest;
+            Mods.Clear();
+            foreach (ModHeader curMod in PathMod.Mods)
+                Mods.Add(curMod);
+        }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: v0.6 delete this
+            if (!Quest.IsValid())
+                Quest = ModHeader.Invalid;
+            //TODO: v0.6 delete this
+            if (Mods == null)
+                Mods = new List<ModHeader>();
         }
     }
 

@@ -219,6 +219,22 @@ namespace RogueEssence
         }
     }
 
+    public struct ModDiff
+    {
+        public string Name;
+        public Guid UUID;
+        public Version OldVersion;
+        public Version NewVersion;
+
+        public ModDiff(string name, Guid uuid, Version oldVersion, Version newVersion)
+        {
+            Name = name;
+            UUID = uuid;
+            OldVersion = oldVersion;
+            NewVersion = newVersion;
+        }
+    }
+
     public struct ModHeader
     {
         /// <summary>

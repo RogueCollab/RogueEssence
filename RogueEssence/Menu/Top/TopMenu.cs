@@ -110,16 +110,22 @@ namespace RogueEssence.Menu
 
         public static void Continue(SOSMail rescueMail)
         {
+            List<ModDiff> modDiffs = DataManager.Instance.Save.GetModDiffs();
             //check for presence of a main save-quicksave
             ReplayData replay = null;
             string recordDir = PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH);
             if (File.Exists(recordDir))
             {
-                replay = DataManager.Instance.LoadReplay(recordDir, true);
-                if (replay == null)
-                {
+                if (modDiffs.Count > 0)
                     cannotRead(recordDir);
-                    return;
+                else
+                {
+                    replay = DataManager.Instance.LoadReplay(recordDir, true);
+                    if (replay == null)
+                    {
+                        cannotRead(recordDir);
+                        return;
+                    }
                 }
             }
             if (replay != null)
@@ -129,6 +135,31 @@ namespace RogueEssence.Menu
                 return;
             }
 
+            if (modDiffs.Count > 0)
+                DiagManager.Instance.LogInfo("Loading with version diffs:");
+
+
+            List<ModDiff> removedMods = new List<ModDiff>();
+            foreach (ModDiff diff in modDiffs)
+            {
+                DiagManager.Instance.LogInfo(String.Format("{0}\t{1}\t{2}->{3}", diff.UUID, diff.Name, diff.OldVersion == null ? "Added" : diff.OldVersion.ToString(), diff.NewVersion == null ? "Removed" : diff.NewVersion.ToString()));
+                if (diff.NewVersion == null)
+                    removedMods.Add(diff);
+            }
+
+            if (removedMods.Count > 0)
+            {
+                DialogueChoice[] choices = new DialogueChoice[2];
+                choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { attemptLoadMain(); });
+                choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => {  });
+                MenuManager.Instance.AddMenu(new ModDiffDialog(Text.FormatKey("DLG_ASK_LOAD_UPGRADE"), removedMods, false, choices, 0, 1), false);
+            }
+            else
+                attemptLoadMain();
+        }
+
+        private static void attemptLoadMain()
+        {
             //then, we should load a main save instead
             GameState state = DataManager.Instance.LoadMainGameState(true);
             if (state == null)
@@ -211,6 +242,8 @@ namespace RogueEssence.Menu
             //upgrade here
             if (DataManager.Instance.Save.IsOldVersion())
                 LuaEngine.Instance.OnUpgrade();
+
+            DataManager.Instance.Save.UpdateVersion();
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentMapID.Segment > -1)
