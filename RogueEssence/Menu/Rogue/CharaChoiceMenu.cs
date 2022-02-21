@@ -136,7 +136,7 @@ namespace RogueEssence.Menu
                 MonsterData monsterData = DataManager.Instance.GetMonster(species);
                 int formSlot = FormSetting;
                 List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
-                if (formSlot > forms.Count)
+                if (formSlot >= forms.Count)
                     formSlot = forms.Count - 1;
                 int formIndex = formSlot > -1 ? forms[formSlot] : -1;
                 int genderFormIndex = CharaDetailMenu.GetGenderFormIndex(monsterData, formSlot, forms);
