@@ -62,53 +62,54 @@ namespace RogueEssence.Dev
             try
             {
                 List<BaseSheet> tileList = new List<BaseSheet>();
+
+                for (int vi = 0; vi < VariantTitles.Length; vi++)
+                {
+                    variationStarts[vi] = tileList.Count;
+                    string variantFn = VariantTitles[vi];
+                    Regex reg = VariantTitlesFrames[vi];
+                    string path = Path.Join(sourceDir, variantFn);
+                    if (!File.Exists(path))
+                    {
+                        if (variantFn != VAR0_FN)
+                            throw new KeyNotFoundException($"Base variant missing for {fileName}.");
+                        continue;
+                    }
+
+                    // Import main frame
+                    var tileset = BaseSheet.Import(path);
+                    tileList.Add(tileset);
+
+                    // List additional layers and their frames - We do it this way in two steps to make sure it's sorted
+                    foreach (var frameFn in Directory.GetFiles(sourceDir, "*.png"))
+                    {
+                        if (!reg.IsMatch(frameFn))
+                            continue;
+                        Match match = reg.Match(frameFn);
+                        int layerIdx = int.Parse(match.Groups[1].ToString());
+                        int frameIdx = int.Parse(match.Groups[2].ToString());
+                        int durationIdx = int.Parse(match.Groups[3].ToString());
+                        if (!frameSpecs[vi].ContainsKey(layerIdx))
+                            frameSpecs[vi].Add(layerIdx, new SortedDictionary<int, Tuple<string, int>>());
+                        // GetFiles lists some files twice??
+                        if (!frameSpecs[vi][layerIdx].ContainsKey(frameIdx))
+                            frameSpecs[vi][layerIdx].Add(frameIdx, new Tuple<string, int>(frameFn, durationIdx));
+                    }
+
+                    // Import additional frames
+                    foreach (var layerFn in frameSpecs[vi].Values)
+                    {
+                        foreach (var frameFn in layerFn.Values)
+                        {
+                            // Import frame 
+                            tileset = BaseSheet.Import(frameFn.Item1);
+                            tileList.Add(tileset);
+                        }
+                    }
+                }
+
                 foreach (var tileTitle in TileTitles)
                 {
-                    for (int vi = 0; vi < VariantTitles.Length; vi++)
-                    {
-                        variationStarts[vi] = tileList.Count;
-                        string variantFn = VariantTitles[vi];
-                        Regex reg = VariantTitlesFrames[vi];
-                        string path = Path.Join(sourceDir, variantFn);
-                        if (!File.Exists(path))
-                        {
-                            if (variantFn != VAR0_FN)
-                                throw new KeyNotFoundException($"Base variant missing for {fileName}.");
-                            continue;
-                        }
-
-                        // Import main frame
-                        var tileset = BaseSheet.Import(path);
-                        tileList.Add(tileset);
-
-                        // List additional layers and their frames - We do it this way in two steps to make sure it's sorted
-                        foreach (var frameFn in Directory.GetFiles(sourceDir, "*.png"))
-                        {
-                            if (!reg.IsMatch(frameFn))
-                                continue;
-                            Match match = reg.Match(frameFn);
-                            int layerIdx = int.Parse(match.Groups[1].ToString());
-                            int frameIdx = int.Parse(match.Groups[2].ToString());
-                            int durationIdx = int.Parse(match.Groups[3].ToString());
-                            if (!frameSpecs[vi].ContainsKey(layerIdx))
-                                frameSpecs[vi].Add(layerIdx, new SortedDictionary<int, Tuple<string, int>>());
-                            // GetFiles lists some files twice??
-                            if (!frameSpecs[vi][layerIdx].ContainsKey(frameIdx))
-                                frameSpecs[vi][layerIdx].Add(frameIdx, new Tuple<string, int>(frameFn, durationIdx));
-                        }
-
-                        // Import additional frames
-                        foreach (var layerFn in frameSpecs[vi].Values)
-                        {
-                            foreach (var frameFn in layerFn.Values)
-                            {
-                                // Import frame 
-                                tileset = BaseSheet.Import(frameFn.Item1);
-                                tileList.Add(tileset);
-                            }
-                        }
-
-                    }
 
                     var node = document.SelectSingleNode("//DungeonTileset/RogueEssence/" + tileTitle);
                     int index = -1;
