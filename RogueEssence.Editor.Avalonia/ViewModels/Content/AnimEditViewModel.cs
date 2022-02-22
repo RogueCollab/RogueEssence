@@ -118,16 +118,9 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
-                try
-                {
-                    MassExport(CachedPath);
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
+                bool success = MassExport(CachedPath);
+                if (!success)
+                    await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
             }
         }
 
@@ -322,15 +315,25 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void MassExport(string currentPath)
+        private bool MassExport(string currentPath)
         {
+            bool success = true;
             string assetPattern = GraphicsManager.GetPattern(assetType);
             string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
             for (int ii = 0; ii < dirs.Length; ii++)
             {
-                string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                DevForm.ExecuteOrPend(() => { Export(currentPath + filename, filename); });
+                try
+                {
+                    string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                    DevForm.ExecuteOrPend(() => { Export(currentPath + filename, filename); });
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    success = false;
+                }
             }
+            return success;
         }
 
         private void Export(string currentPath, string anim)

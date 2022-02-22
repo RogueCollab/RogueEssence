@@ -242,16 +242,9 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
-                try
-                {
-                    MassExport(CachedPath, singleSheet);
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
+                bool success = MassExport(CachedPath, singleSheet);
+                if (!success)
+                    await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
             }
         }
 
@@ -527,8 +520,9 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void MassExport(string currentPath, bool singleSheet)
+        private bool MassExport(string currentPath, bool singleSheet)
         {
+            bool success = true;
             CharaIndexNode charaNode = GetIndexNode();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
@@ -536,12 +530,32 @@ namespace RogueEssence.Dev.ViewModels
 
                 MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
                 if (hasSprite(charaNode, dexID))
-                    DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/", dexID, singleSheet); });
+                {
+                    try
+                    {
+                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/", dexID, singleSheet); });
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex, false);
+                        success = false;
+                    }
+                }
                 for (int jj = 0; jj < dex.Forms.Count; jj++)
                 {
                     MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
                     if (hasSprite(charaNode, formID))
-                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID, singleSheet); });
+                    {
+                        try
+                        {
+                            DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID, singleSheet); });
+                        }
+                        catch (Exception ex)
+                        {
+                            DiagManager.Instance.LogError(ex, false);
+                            success = false;
+                        }
+                    }
                     for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
                     {
                         SkinData skinData = DataManager.Instance.GetSkin(kk);
@@ -549,17 +563,38 @@ namespace RogueEssence.Dev.ViewModels
                         {
                             MonsterID skinID = new MonsterID(ii, jj, kk, Gender.Unknown);
                             if (hasSprite(charaNode, skinID))
-                                DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/", skinID, singleSheet); });
+                            {
+                                try
+                                {
+                                    DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/", skinID, singleSheet); });
+                                }
+                                catch (Exception ex)
+                                {
+                                    DiagManager.Instance.LogError(ex, false);
+                                    success = false;
+                                }
+                            }
                             for (int mm = 0; mm < 3; mm++)
                             {
                                 MonsterID genderID = new MonsterID(ii, jj, kk, (Gender)mm);
                                 if (hasSprite(charaNode, genderID))
-                                    DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet); });
+                                {
+                                    try
+                                    {
+                                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet); });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        DiagManager.Instance.LogError(ex, false);
+                                        success = false;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+            return success;
         }
 
         private void Export(string currentPath, MonsterID currentForm, bool singleSheet)
