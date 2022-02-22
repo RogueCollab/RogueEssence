@@ -335,8 +335,8 @@ namespace RogueEssence.Dev.ViewModels
                 //load into tilesets
                 using (BaseSheet tileset = BaseSheet.Import(filePath))
                 {
-                    List<BaseSheet> tileList = new List<BaseSheet>();
-                    tileList.Add(tileset);
+                    List<BaseSheet[]> tileList = new List<BaseSheet[]>();
+                    tileList.Add(new BaseSheet[] { tileset });
                     ImportHelper.SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
                 }
 

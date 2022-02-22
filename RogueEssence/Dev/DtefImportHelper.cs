@@ -49,9 +49,6 @@ namespace RogueEssence.Dev
             document.Load(Path.Join(sourceDir, XML_FN));
             int tileSize = int.Parse(document.DocumentElement.GetAttribute("dimensions"));
 
-            // The tile index inside the tile sheet where the first frame of animation for this variation is.
-            int[] variationStarts = new int[] { 0, 0, 0 };
-
             // Outer dict: Layer num; inner dict: frame num; tuple: (file name, frame length)
             var frameSpecs = new[] {
                     new SortedDictionary<int, SortedDictionary<int, Tuple<string, int>>>(),
@@ -61,11 +58,11 @@ namespace RogueEssence.Dev
 
             try
             {
-                List<BaseSheet> tileList = new List<BaseSheet>();
+                List<BaseSheet[]> tileList = new List<BaseSheet[]>();
 
                 for (int vi = 0; vi < VariantTitles.Length; vi++)
                 {
-                    variationStarts[vi] = tileList.Count;
+                    List<BaseSheet> tileArr = new List<BaseSheet>();
                     string variantFn = VariantTitles[vi];
                     Regex reg = VariantTitlesFrames[vi];
                     string path = Path.Join(sourceDir, variantFn);
@@ -77,8 +74,8 @@ namespace RogueEssence.Dev
                     }
 
                     // Import main frame
-                    var tileset = BaseSheet.Import(path);
-                    tileList.Add(tileset);
+                    BaseSheet tileset = BaseSheet.Import(path);
+                    tileArr.Add(tileset);
 
                     // List additional layers and their frames - We do it this way in two steps to make sure it's sorted
                     foreach (var frameFn in Directory.GetFiles(sourceDir, "*.png"))
@@ -103,9 +100,10 @@ namespace RogueEssence.Dev
                         {
                             // Import frame 
                             tileset = BaseSheet.Import(frameFn.Item1);
-                            tileList.Add(tileset);
+                            tileArr.Add(tileset);
                         }
                     }
+                    tileList.Add(tileArr.ToArray());
                 }
 
                 foreach (var tileTitle in TileTitles)
@@ -140,37 +138,34 @@ namespace RogueEssence.Dev
                                 "Floor" => 2,
                                 _ => 0
                             };
-                            var tileX = 6 * offIndex + jj % 6;
-                            var tileY = (int)Math.Floor(jj / 6.0);
+                            int tileX = 6 * offIndex + jj % 6;
+                            int tileY = jj / 6;
 
                             // Base Layer
-                            var baseLayer = new TileLayer { FrameLength = 999 };
-                            var idx = variationStarts[kk];
-                            var tileset = tileList[idx];
+                            TileLayer baseLayer = new TileLayer { FrameLength = 999 };
+                            BaseSheet tileset = tileList[kk][0];
                             //keep adding more tiles to the anim until end of blank spot is found
                             if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
-                                baseLayer.Frames.Add(new TileFrame(new Loc(tileX, tileY + idx * 8), fileName));
+                                baseLayer.Frames.Add(new TileFrame(new Loc(tileX + kk * 18, tileY), fileName));
                             if (baseLayer.Frames.Count < 1) continue;
                             totalArray[jj][kk].Add(baseLayer);
 
                             // Additional layers
-                            var processedLayerFrames = 1;
+                            int curFrame = 1;
                             foreach (var layer in frameSpecs[kk].Values)
                             {
                                 if (layer.Count < 1)
                                     continue;
-                                var anim = new TileLayer { FrameLength = layer[0].Item2 };
+                                TileLayer anim = new TileLayer { FrameLength = layer[0].Item2 };
 
-                                for (var mm = 0; mm < layer.Count; mm++)
+                                for (int mm = 0; mm < layer.Count; mm++)
                                 {
-                                    idx = variationStarts[kk] + processedLayerFrames;
-                                    processedLayerFrames += 1;
-                                    if (tileList.Count <= idx)
-                                        continue;
-                                    tileset = tileList[idx];
+                                    tileset = tileList[kk][curFrame];
                                     //keep adding more tiles to the anim until end of blank spot is found
                                     if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
-                                        anim.Frames.Add(new TileFrame(new Loc(tileX, tileY + idx * 8), fileName));
+                                        anim.Frames.Add(new TileFrame(new Loc(tileX + kk * 18, tileY + curFrame * 8), fileName));
+
+                                    curFrame += 1;
                                 }
 
                                 if (anim.Frames.Count > 0)
@@ -205,8 +200,9 @@ namespace RogueEssence.Dev
                     Debug.WriteLine($"{index:D3}: {autoTile.Name}");
                 }
                 ImportHelper.SaveTileSheet(tileList, destFile, tileSize);
-                foreach (var tex in tileList)
-                    tex.Dispose();
+                foreach (BaseSheet[] arr in tileList)
+                    foreach(BaseSheet tex in arr)
+                        tex.Dispose();
             }
             catch (Exception ex)
             {

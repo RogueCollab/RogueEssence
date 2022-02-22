@@ -305,8 +305,8 @@ namespace RogueEssence.Dev
                         DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
                         using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
                         {
-                            List<BaseSheet> tileList = new List<BaseSheet>();
-                            tileList.Add(tileset);
+                            List<BaseSheet[]> tileList = new List<BaseSheet[]>();
+                            tileList.Add(new BaseSheet[] { tileset });
                             SaveTileSheet(tileList, outputFile, tileSize);
                         }
                     }
@@ -330,7 +330,7 @@ namespace RogueEssence.Dev
 
                     try
                     {
-                        List<BaseSheet> tileList = new List<BaseSheet>();
+                        List<BaseSheet[]> tileList = new List<BaseSheet[]>();
                         foreach (string tileTitle in TILE_TITLES)
                         {
                             int layerIndex = 0;
@@ -340,7 +340,7 @@ namespace RogueEssence.Dev
                                 if (layers.Length == 1)
                                 {
                                     BaseSheet tileset = BaseSheet.Import(layers[0]);
-                                    tileList.Add(tileset);
+                                    tileList.Add(new BaseSheet[]{ tileset });
                                 }
                                 else if (layers.Length > 1)
                                 {
@@ -354,8 +354,9 @@ namespace RogueEssence.Dev
                             }
                         }
                         SaveTileSheet(tileList, outputFile, tileSize);
-                        foreach (BaseSheet tex in tileList)
-                            tex.Dispose();
+                        foreach (BaseSheet[] arr in tileList)
+                            foreach(BaseSheet tex in arr)
+                                tex.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -365,71 +366,79 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void SaveTileSheet(List<BaseSheet> tileList, string destFile, int tileSize)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tileList">A list of arrays of Basesheets.  Array members will be arranged vertically.  List members horizontally.</param>
+        /// <param name="destFile"></param>
+        /// <param name="tileSize"></param>
+        public static void SaveTileSheet(List<BaseSheet[]> tileList, string destFile, int tileSize)
         {
-            int imgWidth = 0;
-            int imgHeight = 0;
-
-            foreach (BaseSheet sheet in tileList)
-                imgWidth = Math.Max(sheet.Width, imgWidth);
-
             Dictionary<Loc, int> tileData = new Dictionary<Loc, int>();
             List<byte[]> tileBytes = new List<byte[]>();
             List<long> positions = new List<long>();
             long currentPosition = 0;
 
-            foreach (BaseSheet sheet in tileList)
+            int curTileWidth = 0;
+            foreach (BaseSheet[] arr in tileList)
             {
-                int count = (imgWidth / tileSize) * (sheet.Height / tileSize);
-
-                // Write header information about each tile, skip blanks
-                for (int ii = 0; ii < count; ii++)
+                int maxTileWidth = 0;
+                int totalTileHeight = 0;
+                foreach (BaseSheet sheet in arr)
                 {
-                    int x = ii % (imgWidth / tileSize);
-                    int y = ii / (imgWidth / tileSize);
-                    //check if blank
-                    if (x >= sheet.Width / tileSize || sheet.IsBlank(x * tileSize, y * tileSize, tileSize, tileSize))
+                    int count = (sheet.Width / tileSize) * (sheet.Height / tileSize);
+
+                    // Write header information about each tile, skip blanks
+                    for (int ii = 0; ii < count; ii++)
                     {
-                        //don't add
-                    }
-                    else
-                    {
-                        //cut off the corresponding piece
-                        using (BaseSheet tileTex = new BaseSheet(tileSize, tileSize))
+                        int x = ii % (sheet.Width / tileSize);
+                        int y = ii / (sheet.Width / tileSize);
+                        //check if blank
+                        if (sheet.IsBlank(x * tileSize, y * tileSize, tileSize, tileSize))
                         {
-                            tileTex.Blit(sheet, x * tileSize, y * tileSize, tileSize, tileSize, 0, 0);
-
-                            //save as a PNG to a stream
-                            using (MemoryStream ms = new MemoryStream())
+                            //don't add
+                        }
+                        else
+                        {
+                            //cut off the corresponding piece
+                            using (BaseSheet tileTex = new BaseSheet(tileSize, tileSize))
                             {
-                                using (BinaryWriter mw = new BinaryWriter(ms))
-                                    tileTex.Save(mw);
-                                byte[] bytes = ms.ToArray();
+                                tileTex.Blit(sheet, x * tileSize, y * tileSize, tileSize, tileSize, 0, 0);
 
-                                int existingData = -1;
-                                for (int nn = 0; nn < tileBytes.Count; nn++)
+                                //save as a PNG to a stream
+                                using (MemoryStream ms = new MemoryStream())
                                 {
-                                    if (bytes.Length == tileBytes[nn].Length && bytes.SequenceEqual(tileBytes[nn]))
+                                    using (BinaryWriter mw = new BinaryWriter(ms))
+                                        tileTex.Save(mw);
+                                    byte[] bytes = ms.ToArray();
+
+                                    int existingData = -1;
+                                    for (int nn = 0; nn < tileBytes.Count; nn++)
                                     {
-                                        existingData = nn;
-                                        break;
+                                        if (bytes.Length == tileBytes[nn].Length && bytes.SequenceEqual(tileBytes[nn]))
+                                        {
+                                            existingData = nn;
+                                            break;
+                                        }
                                     }
-                                }
 
-                                if (existingData == -1)
-                                {
-                                    tileData.Add(new Loc(x, y + imgHeight / tileSize), tileBytes.Count);
-                                    positions.Add(currentPosition);
-                                    tileBytes.Add(bytes);
-                                    currentPosition += bytes.LongLength;
+                                    if (existingData == -1)
+                                    {
+                                        tileData.Add(new Loc(x + curTileWidth, y + totalTileHeight), tileBytes.Count);
+                                        positions.Add(currentPosition);
+                                        tileBytes.Add(bytes);
+                                        currentPosition += bytes.LongLength;
+                                    }
+                                    else
+                                        tileData.Add(new Loc(x + curTileWidth, y + totalTileHeight), existingData);
                                 }
-                                else
-                                    tileData.Add(new Loc(x, y + imgHeight / tileSize), existingData);
                             }
                         }
                     }
+                    maxTileWidth = Math.Max(maxTileWidth, (sheet.Width / tileSize));
+                    totalTileHeight += (sheet.Height / tileSize);
                 }
-                imgHeight += sheet.Height;
+                curTileWidth += maxTileWidth;
             }
 
             //generate tileguide
@@ -621,7 +630,7 @@ namespace RogueEssence.Dev
 
                     try
                     {
-                        int currentTier = 0;
+                        int curTileWidth = 0;
                         for (int nn = 0; nn < TILE_TITLES.Length; nn++)
                         {
                             string tileTitle = TILE_TITLES[nn];
@@ -674,13 +683,14 @@ namespace RogueEssence.Dev
                                                 {
                                                     //keep adding more tiles to the anim until end of blank spot is found
                                                     if (!tileset.IsBlank((kk * maxFrames + mm) * tileSize, jj * tileSize, tileSize, tileSize))
-                                                        anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm, jj + currentTier * 47), outputName));
+                                                        anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm, jj), outputName));
                                                 }
 
                                                 if (anim.Frames.Count > 0)
                                                     totalArray[jj][kk].Add(anim);
                                             }
                                         }
+                                        curTileWidth += (tileset.Width / tileSize);
                                     }
                                 }
                                 else if (layers.Length > 1)
@@ -692,7 +702,6 @@ namespace RogueEssence.Dev
                                     break;
                                 }
                                 layerIndex++;
-                                currentTier++;
                             }
 
                             if (layerIndex > 0)
