@@ -123,10 +123,8 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Ending.ActiveTeam.Assembly.Count > 0)
-                    MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, (Ending.ActiveTeam.Assembly.Count - 1) / 4));
-                else
-                    MenuManager.Instance.ReplaceMenu(new PartyResultsMenu(Ending));
+
+                MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, (VersionResultsMenu.GetVersionsList(Ending).Count - 1) / VersionResultsMenu.MAX_LINES));
             }
             else if (IsInputting(input, Dir8.Right))
             {
