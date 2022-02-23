@@ -683,7 +683,7 @@ namespace RogueEssence.Dev
                                                 {
                                                     //keep adding more tiles to the anim until end of blank spot is found
                                                     if (!tileset.IsBlank((kk * maxFrames + mm) * tileSize, jj * tileSize, tileSize, tileSize))
-                                                        anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm, jj), outputName));
+                                                        anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm + curTileWidth, jj), outputName));
                                                 }
 
                                                 if (anim.Frames.Count > 0)
