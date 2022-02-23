@@ -898,6 +898,7 @@ namespace RogueEssence
             try
             {
                 DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+                DataManager.Instance.Save.UpdateVersion();
                 DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
                 DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
                 LuaEngine.Instance.OnNewGame();
@@ -910,6 +911,7 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.UpdateVersion();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);

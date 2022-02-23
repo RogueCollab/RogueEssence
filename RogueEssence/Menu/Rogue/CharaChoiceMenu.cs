@@ -192,6 +192,7 @@ namespace RogueEssence.Menu
             GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
             save.UnlockDungeon(chosenDest);
             DataManager.Instance.SetProgress(save);
+            DataManager.Instance.Save.UpdateVersion();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.Name = team;

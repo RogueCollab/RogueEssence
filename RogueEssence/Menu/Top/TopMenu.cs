@@ -363,6 +363,7 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             DataManager.Instance.SetProgress(new MainProgress(MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.UpdateVersion();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
 

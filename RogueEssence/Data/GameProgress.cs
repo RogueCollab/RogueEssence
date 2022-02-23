@@ -142,6 +142,7 @@ namespace RogueEssence.Data
 
         public GameProgress()
         {
+            GameVersion = new Version();
             Quest = ModHeader.Invalid;
             Mods = new List<ModHeader>();
 
@@ -765,6 +766,9 @@ namespace RogueEssence.Data
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
+            //TODO: v0.6 delete this
+            if (GameVersion == null)
+                GameVersion = new Version();
             //TODO: v0.6 delete this
             if (!Quest.IsValid())
                 Quest = ModHeader.Invalid;
