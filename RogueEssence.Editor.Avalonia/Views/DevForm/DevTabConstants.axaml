@@ -1,0 +1,39 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.DevTabConstants">
+  <Design.DataContext>
+    <vm:DevTabConstantsViewModel/>
+  </Design.DataContext>
+  <Grid Margin="4" >
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Button Name="btnEditUniversal" Command="{Binding btnEditUniversal_Click}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" >Universal</Button>
+    <Button Name="btnEditHeal" Command="{Binding btnEditHeal_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Heal FX</Button>
+    <Button Name="btnEditRestoreCharge" Command="{Binding btnEditRestoreCharge_Click}" Margin="4" Grid.Row="1" Grid.Column="1" >+Charge FX</Button>
+    <Button Name="btnEditLoseCharge" Command="{Binding btnEditLoseCharge_Click}" Margin="4" Grid.Row="2" Grid.Column="0" >-Charge FX</Button>
+    <Button Name="btnEditNoCharge" Command="{Binding btnEditNoCharge_Click}" Margin="4" Grid.Row="2" Grid.Column="1" >No Charge FX</Button>
+    <Button Name="btnEditElement" Command="{Binding btnEditElement_Click}" Margin="4" Grid.Row="3" Grid.Column="0" >Element FX</Button>
+    <Button Name="btnEditIntrinsic" Command="{Binding btnEditIntrinsic_Click}" Margin="4" Grid.Row="3" Grid.Column="1" >Intrinsic FX</Button>
+    <Button Name="btnEditSendHome" Command="{Binding btnEditSendHome_Click}" Margin="4" Grid.Row="4" Grid.Column="0" >Send Home FX</Button>
+    <Button Name="btnEditItemLost" Command="{Binding btnEditItemLost_Click}" Margin="4" Grid.Row="4" Grid.Column="1" >Item Lost FX</Button>
+    <Button Name="btnEditWarp" Command="{Binding btnEditWarp_Click}" Margin="4" Grid.Row="5" Grid.Column="0" >Warp FX</Button>
+    <Button Name="btnEditKnockback" Command="{Binding btnEditKnockback_Click}" Margin="4" Grid.Row="5" Grid.Column="1" >Knockback FX</Button>
+    <Button Name="btnEditJump" Command="{Binding btnEditJump_Click}" Margin="4" Grid.Row="6" Grid.Column="0" >Jump FX</Button>
+    <Button Name="btnEditThrow" Command="{Binding btnEditThrow_Click}" Margin="4" Grid.Row="6" Grid.Column="1" >Throw FX</Button>
+  </Grid>
+</UserControl>

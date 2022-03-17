@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
         private void QuitAction()
         {
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid,
-                null, new EmoteStyle(0), Text.FormatKey("DLG_QUIT_ASK"), true, () =>
+                null, new EmoteStyle(0), Text.FormatKey("DLG_QUIT_ASK"), true, false, false, false, () =>
                 {
                     MenuManager.Instance.ClearMenus();
                     //give up

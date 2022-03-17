@@ -7,24 +7,9 @@ using RogueEssence.Data;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
-    public class CheckEventStep<T> : GenStep<T> where T : BaseMapGenContext
-    {
-        public List<SingleCharEvent> CheckEvents;
-
-        public CheckEventStep()
-        {
-            CheckEvents = new List<SingleCharEvent>();
-        }
-
-        public override void Apply(T map)
-        {
-            foreach (SingleCharEvent effect in CheckEvents)
-                map.Map.CheckEvents.Add((SingleCharEvent)effect.Clone());
-        }
-    }
-    [Serializable]
     public class MapEffectStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        [Dev.SubGroup]
         public ActiveEffect Effect;
 
         public MapEffectStep()
@@ -34,12 +19,17 @@ namespace RogueEssence.LevelGen
 
         public MapEffectStep(ActiveEffect effect)
         {
-            Effect = new ActiveEffect();
+            Effect = effect;
         }
 
         public override void Apply(T map)
         {
-            map.Map.MapEffect = Effect;
+            map.Map.MapEffect.AddOther(Effect);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]", this.GetType().Name, this.Effect.GetTotalCount());
         }
     }
 }

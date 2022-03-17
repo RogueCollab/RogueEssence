@@ -14,29 +14,29 @@ namespace RogueEssence.Menu
         public ItemSummary(Rect bounds)
             : base(bounds)
         {
-            Description = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE, false);
+            Description = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             Elements.Add(Description);
-            SalePrice = new MenuText("", new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + 4 * LINE_SPACE), DirH.Right);
+            SalePrice = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 4 * LINE_HEIGHT), DirH.Right);
             Elements.Add(SalePrice);
-            Rarity = new MenuText("", new Loc(Bounds.Start.X + GraphicsManager.MenuBG.TileWidth * 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight + 4 * LINE_SPACE), DirH.Left);
+            Rarity = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 4 * LINE_HEIGHT), DirH.Left);
             Elements.Add(Rarity);
         }
 
         public void SetItem(InvItem item)
         {
             Data.ItemData entry = Data.DataManager.Instance.GetItem(item.ID);
-            Description.Text = entry.Desc.ToLocal();
-            SalePrice.Text = Text.FormatKey("MENU_ITEM_VALUE", Text.FormatKey("MONEY_AMOUNT", item.GetSellValue()));
+            Description.SetFormattedText(entry.Desc.ToLocal());
+            SalePrice.SetText(Text.FormatKey("MENU_ITEM_VALUE", Text.FormatKey("MONEY_AMOUNT", item.GetSellValue())));
             if (entry.Rarity > 0)
             {
                 string rarityStr = "";
                 for (int ii = 0; ii < entry.Rarity; ii++)
                     rarityStr += "\uE10C";
-                Rarity.Text = Text.FormatKey("MENU_ITEM_RARITY", rarityStr);
+                Rarity.SetText(Text.FormatKey("MENU_ITEM_RARITY", rarityStr));
             }
             else
-                Rarity.Text = "";
+                Rarity.SetText("");
         }
     }
 }

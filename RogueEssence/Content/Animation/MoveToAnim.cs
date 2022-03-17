@@ -4,7 +4,7 @@ namespace RogueEssence.Content
 {
     public class MoveToAnim : LoopingAnim
     {
-        public MoveToAnim(AnimData anim, int moveTime, Loc startLoc, Loc newEndPos, int startHeight, int endHeight, int lingerStart, int lingerEnd, Dir8 dir)
+        public MoveToAnim(AnimData anim, IEmittable emittable, DrawLayer layer, int moveTime, Loc startLoc, Loc newEndPos, int startHeight, int endHeight, int lingerStart, int lingerEnd, Dir8 dir)
             : base(anim, moveTime + lingerStart + lingerEnd)
         {
             MovingTime = moveTime;
@@ -18,6 +18,9 @@ namespace RogueEssence.Content
 
             locHeight = StartHeight;
             mapLoc = StartLoc;
+            
+            ResultAnim = emittable;
+            Layer = layer;
         }
 
         public int LingerStart;
@@ -30,6 +33,9 @@ namespace RogueEssence.Content
 
         public int StartHeight;
         public int EndHeight;
+
+        public IEmittable ResultAnim;
+        public DrawLayer Layer;
 
 
         public override void Update(BaseScene scene, FrameTick elapsedTime)
@@ -51,6 +57,9 @@ namespace RogueEssence.Content
                 locHeight = StartHeight + (int)midTime.FractionOf((EndHeight - StartHeight), MovingTime);
                 mapLoc = StartLoc + (EndLoc - StartLoc) * midTime.ToFrames() / MovingTime;
             }
+
+            if (Finished)
+                scene.Anims[(int)Layer].Add(ResultAnim.CreateStatic(MapLoc, LocHeight, Direction));
         }
     }
 }

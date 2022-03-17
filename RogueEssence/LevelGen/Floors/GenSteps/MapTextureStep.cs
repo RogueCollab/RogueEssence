@@ -47,7 +47,7 @@ namespace RogueEssence.LevelGen
                 for (int xx = 0; xx < map.Width; xx++)
                 {
                     for (int yy = 0; yy < map.Height; yy++)
-                        map.Tiles[xx][yy].FloorTile = new AutoTile(GroundTileset);
+                        map.Floor.Tiles[xx][yy] = new AutoTile(GroundTileset);
                 }
             }
         }

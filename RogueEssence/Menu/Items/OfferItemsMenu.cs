@@ -22,8 +22,8 @@ namespace RogueEssence.Menu
             Bounds = bounds;
             this.baseMenu = baseMenu;
 
-            Title = new MenuText(Text.FormatKey("MENU_TRADE_ITEM_OFFER"), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            MainDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            Title = new MenuText(Text.FormatKey("MENU_TRADE_ITEM_OFFER"), new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Items = new MenuText[0];
         }
@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
             List<MenuText> validItems = new List<MenuText>();
 
             for (int ii = 0; ii < offer.Count; ii++)
-                validItems.Add(new MenuText(offer[ii].GetName(), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET)));
+                validItems.Add(new MenuText(offer[ii].GetDisplayName(), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET)));
             
             if (validItems.Count > 0)
                 Items = validItems.ToArray();
@@ -93,7 +93,7 @@ namespace RogueEssence.Menu
                 {
                     if (tradeItem.CurrentState == ExchangeState.Ready)
                     {
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRADE_ITEM_ASK"), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRADE_ITEM_ASK"), () =>
                         {
                             baseMenu.CurrentState = ExchangeState.Exchange;
                             tradeItem.SetReady(baseMenu.CurrentState);

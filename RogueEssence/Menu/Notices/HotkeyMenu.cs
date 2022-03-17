@@ -17,17 +17,17 @@ namespace RogueEssence.Menu
         public HotkeyMenu(int skillSlot)
         {
             this.skillSlot = skillSlot;
-            Loc center = new Loc();
+            Loc center = Loc.Zero;
 
-            Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_SPACE * 2 + GraphicsManager.MenuBG.TileHeight * 2));
-            skillText = new MenuText("", center + new Loc(-48, GraphicsManager.MenuBG.TileHeight), DirH.Left);
-            skillElement = new MenuText("", center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), DirH.Left);
-            skillCharges = new MenuText("", center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), DirH.Right);
+            Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2));
+            skillText = new MenuText("", Bounds.Center + new Loc(-48, GraphicsManager.MenuBG.TileHeight), DirH.Left);
+            skillElement = new MenuText("", Bounds.Center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Left);
+            skillCharges = new MenuText("", Bounds.Center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Right);
         }
 
         public void SetArrangement(bool diamond)
         {
-            Loc center = new Loc();
+            Loc center = Loc.Zero;
             if (diamond)
             {
                 if (skillSlot == 0)
@@ -51,10 +51,10 @@ namespace RogueEssence.Menu
                     center = new Loc(GraphicsManager.ScreenWidth * 3 / 4, GraphicsManager.ScreenHeight * 3 / 4 - 32);
             }
 
-            Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_SPACE * 2 + GraphicsManager.MenuBG.TileHeight * 2));
-            skillText.Loc =center + new Loc(-48, GraphicsManager.MenuBG.TileHeight);
-            skillElement.Loc = center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_SPACE);
-            skillCharges.Loc = center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_SPACE);
+            Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2));
+            skillText.Loc = new Loc(Bounds.Size.X / 2 - 48, GraphicsManager.MenuBG.TileHeight);
+            skillElement.Loc = new Loc(Bounds.Size.X / 2 - 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
+            skillCharges.Loc = new Loc(Bounds.Size.X / 2 + 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
         }
 
         public void SetSkill(string skillName, int element, int charges, int max, bool skillSealed)
@@ -62,21 +62,21 @@ namespace RogueEssence.Menu
             if (!String.IsNullOrWhiteSpace(skillName))
             {
                 Color color = (skillSealed || charges == 0) ? Color.Red : Color.White;
-                skillText.Text = DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1)) + ": " + skillName;
+                skillText.SetText(DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1)) + ": " + skillName);
                 skillText.Color = color;
-                skillCharges.Text = charges + "/" + max;
+                skillCharges.SetText(charges + "/" + max);
                 skillCharges.Color = color;
                 ElementData elementData = DataManager.Instance.GetElement(element);
-                skillElement.Text = String.Format("{0}\u2060{1}", elementData.Symbol, elementData.Name.ToLocal());
+                skillElement.SetText(elementData.GetIconName());
                 skillElement.Color = color;
             }
             else
             {
-                skillText.Text = DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1));
+                skillText.SetText(DiagManager.Instance.GetControlString((FrameInput.InputType)(skillSlot + (int)FrameInput.InputType.Skill1)));
                 skillText.Color = Color.Gray;
-                skillCharges.Text = "";
+                skillCharges.SetText("");
                 skillCharges.Color = Color.Gray;
-                skillElement.Text = "";
+                skillElement.SetText("");
                 skillElement.Color = Color.Gray;
             }
         }

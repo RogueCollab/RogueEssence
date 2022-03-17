@@ -6,19 +6,19 @@ namespace RogueEssence.Data
     [Serializable]
     public class EntryDataIndex
     {
-        public int Count { get { return Entries.Count; } }
+        public int Count { get { return Entries.Length; } }
 
-        public List<EntrySummary> Entries;
+        public EntrySummary[] Entries;
 
         public EntryDataIndex()
         {
-            Entries = new List<EntrySummary>();
+
         }
 
         public string[] GetLocalStringArray(bool verbose = false)
         {
-            string[] names = new string[Entries.Count];
-            for (int ii = 0; ii < Entries.Count; ii++)
+            string[] names = new string[Entries.Length];
+            for (int ii = 0; ii < Entries.Length; ii++)
                 names[ii] = Entries[ii].GetLocalString(verbose);
             return names;
         }
@@ -45,6 +45,11 @@ namespace RogueEssence.Data
             Comment = comment;
         }
 
+        public virtual string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
+
         public string GetLocalString(bool verbose)
         {
             string result = Name.ToLocal();
@@ -53,7 +58,8 @@ namespace RogueEssence.Data
             if (verbose && Comment != "")
             {
                 result += "  #";
-                result += Comment.ToString();
+                string[] lines = Comment.Split('\n', StringSplitOptions.None);
+                result += lines[0];
             }
 
             return result;

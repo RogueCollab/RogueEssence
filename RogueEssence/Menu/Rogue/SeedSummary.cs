@@ -12,10 +12,10 @@ namespace RogueEssence.Menu
 
         public SeedSummary(Rect bounds) : base(bounds)
         {
-            Details = new MenuText(Text.FormatKey("MENU_SEED_CUSTOMIZE", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            Details = new MenuText(Text.FormatKey("MENU_SEED_CUSTOMIZE", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Details);
-            MenuDiv = new MenuDivider(Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE),
-                Bounds.End.X - Bounds.X - GraphicsManager.MenuBG.TileWidth * 2);
+            MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
+                Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
 
         }
@@ -28,13 +28,13 @@ namespace RogueEssence.Menu
             List<MenuText> rules = new List<MenuText>();
 
             if (seed.HasValue)
-                rules.Add(new MenuText(seed.Value.ToString("X"), new Loc()));
+                rules.Add(new MenuText(seed.Value.ToString("X"), Loc.Zero));
             else
-                rules.Add(new MenuText(Text.FormatKey("MENU_NONE"), new Loc()));
+                rules.Add(new MenuText(Text.FormatKey("MENU_NONE"), Loc.Zero));
 
             for (int ii = 0; ii < rules.Count; ii++)
             {
-                rules[ii].Loc = Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * ii);
+                rules[ii].Loc = new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * ii);
                 Elements.Add(rules[ii]);
             }
 

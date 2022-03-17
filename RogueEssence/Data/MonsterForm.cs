@@ -21,11 +21,6 @@ namespace RogueEssence.Data
         [Dev.SharedRow, Dev.DataType(0, DataManager.DataType.Element, false)]
         public int Element2;
 
-        public double Height;
-
-        [Dev.SharedRow]
-        public double Weight;
-
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
         public int Intrinsic1;
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
@@ -34,24 +29,15 @@ namespace RogueEssence.Data
         public int Intrinsic3;
 
 
-        public int BaseHP;
-
-        public int BaseAtk;
-
-        [Dev.SharedRow]
-        public int BaseDef;
-
-        public int BaseMAtk;
-
-        [Dev.SharedRow]
-        public int BaseMDef;
-
-        public int BaseSpeed;
-
-        public int ExpYield;
-
-
         public List<LevelUpSkill> LevelSkills;
+
+
+
+        public BaseFormSummary GenerateEntrySummary()
+        {
+            return new BaseFormSummary(FormName, Released, Temporary);
+        }
+
 
         public BaseMonsterForm()
         {
@@ -67,32 +53,11 @@ namespace RogueEssence.Data
             return FormName.DefaultText;
         }
 
-        public int GetBaseStat(Stat stat)
-        {
-            switch (stat)
-            {
-                case Stat.HP:
-                    return BaseHP;
-                case Stat.Speed:
-                    return BaseSpeed;
-                case Stat.Attack:
-                    return BaseAtk;
-                case Stat.Defense:
-                    return BaseDef;
-                case Stat.MAtk:
-                    return BaseMAtk;
-                case Stat.MDef:
-                    return BaseMDef;
-                default:
-                    return 0;
-            }
-        }
 
         public abstract int GetStat(int level, Stat stat, int bonus);
         public abstract int GetMaxStat(Stat stat);
         public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
-        public abstract int GetExp(int level, int recipientLv);
         public abstract bool CanLearnSkill(int skill);
 
         public abstract int RollSkin(IRandom rand);
@@ -140,18 +105,22 @@ namespace RogueEssence.Data
 
 
     [Serializable]
-    public class FormEntrySummary : EntrySummary
+    public class BaseFormSummary
     {
-        public List<LocalText> FormTexts;
+        public LocalText Name;
+        public bool Released;
+        public bool Temporary;
 
-        public FormEntrySummary() : base()
+        public BaseFormSummary() : base()
         {
-            FormTexts = new List<LocalText>();
+            Name = new LocalText();
         }
 
-        public FormEntrySummary(LocalText name, bool released, string comment) : base(name, released, comment)
+        public BaseFormSummary(LocalText name, bool released, bool temporary)
         {
-            FormTexts = new List<LocalText>();
+            Name = name;
+            Released = released;
+            Temporary = temporary;
         }
     }
 
@@ -166,16 +135,16 @@ namespace RogueEssence.Data
 
     public enum Stat
     {
-        None,
-        HP,
-        Attack,
-        Defense,
-        MAtk,
-        MDef,
-        Speed,
-        HitRate,
-        DodgeRate,
-        Range
+        None = -1,
+        HP = 0,
+        Attack = 1,
+        Defense = 2,
+        MAtk = 3,
+        MDef = 4,
+        Speed = 5,
+        HitRate = 6,
+        DodgeRate = 7,
+        Range = 8
     };
 
 

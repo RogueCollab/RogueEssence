@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -29,8 +30,17 @@ namespace RogueEssence.Menu
             }
             else if (!baseMenu.ChoosingLeader(teamSlot))
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction));
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
+                bool canSwitch = true;
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance && ZoneManager.Instance.CurrentMap.NoSwitching)
+                    canSwitch = false;
+                if (GameManager.Instance.CurrentScene == GroundScene.Instance && ZoneManager.Instance.CurrentGround.NoSwitching)
+                    canSwitch = false;
+                if (DataManager.Instance.Save.NoSwitching)
+                    canSwitch = false;
+                if (canSwitch)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAKE_LEADER"), MakeLeaderAction));
+                if (!baseMenu.ChoosingStuckMember(teamSlot))
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));
@@ -92,11 +102,11 @@ namespace RogueEssence.Menu
         {
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid,
-                null, new EmoteStyle(0), Text.FormatKey("DLG_ASSEMBLY_RELEASE_ASK", player.BaseName), true, () =>
+                null, new EmoteStyle(0), Text.FormatKey("DLG_ASSEMBLY_RELEASE_ASK", player.GetDisplayName(true)), true, false, false, false, () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 baseMenu.ReleaseAssembly(teamSlot);
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ASSEMBLY_RELEASE", player.BaseName)), false);
+                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ASSEMBLY_RELEASE", player.GetDisplayName(true))), false);
             }, () => { }, true), false);
         }
 

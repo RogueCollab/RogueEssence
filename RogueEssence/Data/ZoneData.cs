@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueEssence.LevelGen;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Data
 {
@@ -31,9 +32,14 @@ namespace RogueEssence.Data
     [Serializable]
     public class ZoneData : IEntryData
     {
+        public override string ToString()
+        {
+            return Name.ToLocal();
+        }
 
         public LocalText Name { get; set; }
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public bool NoEXP { get; set; }
@@ -50,7 +56,7 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary()
         {
             int totalFloors = 0;
-            foreach (ZoneSegmentBase structure in Structures)
+            foreach (ZoneSegmentBase structure in Segments)
             {
                 if (structure.IsRelevant)
                     totalFloors += structure.FloorCount;
@@ -59,10 +65,9 @@ namespace RogueEssence.Data
         }
 
 
-        public List<ZoneSegmentBase> Structures;
+        public List<ZoneSegmentBase> Segments;
+        [Dev.DataFolder(1, "Ground/")]
         public List<string> GroundMaps;
-
-        private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> ScriptEvents;
 
 
         public ZoneData()
@@ -75,26 +80,15 @@ namespace RogueEssence.Data
             BagRestrict = -1;
             BagSize = -1;
 
-            Structures = new List<ZoneSegmentBase>();
+            Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
-
-            ScriptEvents = new Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent>();
         }
 
-        public void AddZoneScriptEvent(int idx, LuaEngine.EZoneCallbacks ev)
+        public string GetColoredName()
         {
-            string assetName = "zone_" + idx;
-            DiagManager.Instance.LogInfo(String.Format("Zone.AddZoneScriptEvent(): Added event {0} to zone {1}!", ev.ToString(), assetName));
-            ScriptEvents[ev] = new ScriptEvent(LuaEngine.MakeZoneScriptCallbackName(assetName, ev));
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
 
-        public void RemoveZoneScriptEvent(int idx, LuaEngine.EZoneCallbacks ev)
-        {
-            string assetName = "zone_" + idx;
-            DiagManager.Instance.LogInfo(String.Format("Zone.RemoveZoneScriptEvent(): Removed event {0} from zone {1}!", ev.ToString(), assetName));
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
-        }
 
         public Zone CreateActiveZone(ulong seed, int zoneIndex)
         {
@@ -111,9 +105,8 @@ namespace RogueEssence.Data
             zone.BagSize = BagSize;
 
             //NOTE: these are not deep copies!
-            zone.Structures = Structures;
+            zone.Segments = Segments;
             zone.GroundMaps = GroundMaps;
-            zone.LoadScriptEvents(ScriptEvents);
             return zone;
         }
 
@@ -154,6 +147,12 @@ namespace RogueEssence.Data
             Rescues = rescues;
             CountedFloors = countedFloors;
             Rogue = rogue;
+        }
+
+
+        public override string GetColoredName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal());
         }
     }
 

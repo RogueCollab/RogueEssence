@@ -20,31 +20,58 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Array member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Array member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
+            RankedListAttribute rangeAtt = ReflectionExt.FindAttribute<RankedListAttribute>(attributes);
 
-            CollectionBox lbxValue = new CollectionBox();
-            lbxValue.MaxHeight = 180;
-            CollectionBoxViewModel mv = new CollectionBoxViewModel();
-            lbxValue.DataContext = mv;
+            if (rangeAtt != null)
+            {
+                RankedCollectionBox lbxValue = new RankedCollectionBox();
 
+                EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+                if (heightAtt != null)
+                    lbxValue.MaxHeight = heightAtt.Height;
+                else
+                    lbxValue.MaxHeight = 180;
+
+                lbxValue.DataContext = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
+                lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
+                control.Children.Add(lbxValue);
+            }
+            else
+            {
+                CollectionBox lbxValue = new CollectionBox();
+
+                EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+                if (heightAtt != null)
+                    lbxValue.MaxHeight = heightAtt.Height;
+                else
+                    lbxValue.MaxHeight = 180;
+
+                lbxValue.DataContext = createViewModel(control, parent, name, type, attributes, member, false);
+                control.Children.Add(lbxValue);
+            }
+
+        }
+
+        private CollectionBoxViewModel createViewModel(StackPanel control, string parent, string name, Type type, object[] attributes, Array member, bool index1)
+        {
             Type elementType = type.GetElementType();
-            //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(1, attributes));
+
+            CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            mv.Index1 = index1;
             //add lambda expression for editing a single element
             mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = name + "/" + "New " + elementType.Name;
-                else
-                    frmData.Title = name + "/" + element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(0, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(Array) " + name + "[" + index + "]", elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(0, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0]);
                     op(index, element);
                     frmData.Close();
                 };
@@ -62,18 +89,16 @@ namespace RogueEssence.Dev
                 objList.Add(member.GetValue(ii));
 
             mv.LoadFromList(objList);
-            control.Children.Add(lbxValue);
+            return mv;
         }
 
-
-        public override Array SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override Array SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
             //TODO: 2D array grid support
             //if (type.GetElementType().IsArray)
 
-            controlIndex++;
-            CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
+            IControl lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             List<object> objList = (List<object>)mv.GetList(typeof(List<object>));
 

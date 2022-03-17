@@ -16,6 +16,7 @@ using System.Linq;
 using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -52,7 +53,11 @@ namespace RogueEssence.Dev.ViewModels
         public int SelectedTabIndex
         {
             get => selectedTabIndex;
-            set => this.SetIfChanged(ref selectedTabIndex, value);
+            set
+            {
+                this.SetIfChanged(ref selectedTabIndex, value);
+                TabChanged();
+            }
         }
 
 
@@ -66,7 +71,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuOpen_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -79,7 +84,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (results.Length > 0)
+            if (results != null && results.Length > 0)
             {
                 bool legalPath = false;
                 foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
@@ -97,19 +102,25 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void mnuSave_Click()
+        public async Task<bool> mnuSave_Click()
         {
             if (CurrentFile == "")
-                mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
+                return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+                string result = Path.Join(reqDir, Path.GetFileName(CurrentFile));
                 lock (GameBase.lockObj)
-                    DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
+                {
+                    string oldFilename = CurrentFile;
+                    DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
+                }
+                return true;
             }
         }
-        public async void mnuSaveAs_Click()
+        public async Task<bool> mnuSaveAs_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Directory = mapDir;
 
@@ -122,10 +133,11 @@ namespace RogueEssence.Dev.ViewModels
 
             string result = await saveFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (result != null)
+            if (!String.IsNullOrEmpty(result))
             {
-                if (!comparePaths(PathMod.ModPath(DataManager.GROUND_PATH), Path.GetDirectoryName(result)))
-                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", Directory.GetCurrentDirectory() + "/" + DataManager.GROUND_PATH), "Error", MessageBox.MessageBoxButtons.Ok);
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
@@ -136,13 +148,30 @@ namespace RogueEssence.Dev.ViewModels
                         //Schedule saving the map
                         DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
                     }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public async void mnuTest_Click()
+        {
+            bool saved = await mnuSave_Click();
+            if (saved)
+            {
+                lock (GameBase.lockObj)
+                {
+                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                    form.GroundEditForm.SilentClose();
+                    form.GroundEditForm = null;
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentGround.AssetName, true, MathUtils.Rand.NextUInt64());
                 }
             }
         }
 
         public async void mnuImportFromPng_Click()
         {
-            string mapDir = PathMod.ModPath(DataManager.GROUND_PATH);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Directory = mapDir;
 
@@ -155,11 +184,8 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            lock (GameBase.lockObj)
-            {
-                if (results.Length > 0)
-                    DoImportPng(results[0]);
-            }
+            if (results != null && results.Length > 0)
+                DoImportPng(results[0]);
         }
 
 
@@ -199,6 +225,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (result)
                 {
+                    //TODO: support undo for this
+                    DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
                     DiagManager.Instance.LoadMsg = "Resizing Map...";
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
@@ -224,6 +253,9 @@ namespace RogueEssence.Dev.ViewModels
                 bool sizeChanged = viewModel.TileSize != ZoneManager.Instance.CurrentGround.TileSize;
                 if (result && sizeChanged)
                 {
+                    //TODO: support undo for this
+                    DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
                     DiagManager.Instance.LoadMsg = "Retiling Map...";
                     DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
@@ -239,18 +271,24 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        //public void mnuUndo_Click()
-        //{
+        public void mnuUndo_Click()
+        {
+            if (DiagManager.Instance.DevEditor.GroundEditor.Edits.CanUndo)
+            {
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Undo();
+                ProcessUndo();
+            }
+        }
 
-        //}
-
-        //public void mnuRedo_Click()
-        //{
-
-        //}
+        public void mnuRedo_Click()
+        {
+            if (DiagManager.Instance.DevEditor.GroundEditor.Edits.CanRedo)
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Redo();
+        }
 
         private void DoNew()
         {
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
             //take all the necessary steps before and after moving to the map
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -264,6 +302,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         private void DoLoad(string mapName)
         {
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
             //take all the necessary steps before and after moving to the map
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -304,28 +343,42 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoImportPng(string filePath)
         {
-            string sheetName = Path.GetFileNameWithoutExtension(filePath);
-            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+            DevForm.ExecuteOrPend(() => { tryImportPng(filePath); });
 
-
-            //load into tilesets
-            using (BaseSheet tileset = BaseSheet.Import(filePath))
+            lock (GameBase.lockObj)
             {
-                List<BaseSheet> tileList = new List<BaseSheet>();
-                tileList.Add(tileset);
-                ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+                string sheetName = Path.GetFileNameWithoutExtension(filePath);
+                Textures.TileBrowser.UpdateTilesList();
+                Textures.TileBrowser.SelectTileset(sheetName);
             }
+        }
 
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevGraphicsManager.ClearCaches();
+        private void tryImportPng(string filePath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string sheetName = Path.GetFileNameWithoutExtension(filePath);
+                string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
 
-            Textures.TileBrowser.UpdateTilesList();
-            Textures.TileBrowser.SelectTileset(sheetName);
+                //load into tilesets
+                using (BaseSheet tileset = BaseSheet.Import(filePath))
+                {
+                    List<BaseSheet[]> tileList = new List<BaseSheet[]>();
+                    tileList.Add(new BaseSheet[] { tileset });
+                    ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+                }
+
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                DevGraphicsManager.ClearCaches();
+            }
         }
 
         private void DoClearLayer()
         {
+            //TODO: support undo for this
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
             DiagManager.Instance.LoadMsg = "Loading Map...";
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
 
@@ -341,6 +394,9 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoImportTileset(string sheetName)
         {
+            //TODO: support undo for this
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -370,6 +426,9 @@ namespace RogueEssence.Dev.ViewModels
         //TODO: standardize adding of frames
         private void DoImportTilesetToFrames(string sheetName)
         {
+            //TODO: support undo for this
+            DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+
             Loc newSize = GraphicsManager.TileIndex.GetTileDims(sheetName);
 
             DiagManager.Instance.LoadMsg = "Loading Map...";
@@ -414,7 +473,6 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
-            Script.SaveScripts();
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.
@@ -428,8 +486,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private static bool comparePaths(string path1, string path2)
         {
-            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\'),
-                Path.GetFullPath(path2).TrimEnd('\\'),
+            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\').TrimEnd('/'),
+                Path.GetFullPath(path2).TrimEnd('\\').TrimEnd('/'),
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
@@ -441,17 +499,17 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="newfilepath"></param>
         private void createOrCopyScriptData(string oldfilepath, string newfilepath)
         {
-            string oldmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
-            string newmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+            string oldmapscriptdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, Path.GetFileNameWithoutExtension(oldfilepath), "/init.lua"));
+            string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
 
             //Check if we have anything to copy at all!
-            if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))
+            if (oldmapscriptdir != newmapscriptdir && !String.IsNullOrEmpty(oldfilepath))
             {
                 Directory.CreateDirectory(newmapscriptdir);
                 foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
                 {
                     //Path to the sub-directory within the script folder containing this file
-                    string subdirpath = f.Remove(oldmapscriptdir.Count()); //Not Count - 1 because of the last path separator!
+                    string subdirpath = f.Substring(oldmapscriptdir.Length + 1); //Count + 1 because of the last path separator!
                     //Path to the sub-directory within the new script folder where we'll copy this file!
                     string destpath = Path.Combine(newmapscriptdir, subdirpath);
 
@@ -459,22 +517,56 @@ namespace RogueEssence.Dev.ViewModels
                     Directory.CreateDirectory(Path.GetDirectoryName(destpath));
 
                     //Copy the file itself
-                    File.Copy(f, destpath, false);
+                    if (File.Exists(f))
+                        File.Copy(f, destpath, false);
                 }
             }
             else
             {
                 //We just create a new one straight away!
-                LuaEngine.Instance.CreateNewMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
+                LuaEngine.Instance.CreateGroundMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
             }
         }
 
-
+        public void TabChanged()
+        {
+            switch (selectedTabIndex)
+            {
+                case 0://Textures
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Texture;
+                    break;
+                case 1://Decorations
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Decoration;
+                    break;
+                case 2://Walls
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Wall;
+                    break;
+                case 3://Entities
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Entity;
+                    break;
+                default:
+                    GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Other;
+                    break;
+            }
+        }
 
         public void ProcessInput(InputManager input)
         {
             lock (GameBase.lockObj)
             {
+                if (input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+                {
+                    if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z) && input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift))
+                    {
+                        mnuRedo_Click();
+                        return;
+                    }
+                    else if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z))
+                    {
+                        mnuUndo_Click();
+                        return;
+                    }
+                }
                 switch (selectedTabIndex)
                 {
                     case 0://Textures
@@ -488,6 +580,19 @@ namespace RogueEssence.Dev.ViewModels
                         break;
                     case 3://Entities
                         Entities.ProcessInput(input);
+                        break;
+                }
+            }
+        }
+
+        public void ProcessUndo()
+        {
+            lock (GameBase.lockObj)
+            {
+                switch (selectedTabIndex)
+                {
+                    case 3://Entities
+                        Entities.ProcessUndo();
                         break;
                 }
             }

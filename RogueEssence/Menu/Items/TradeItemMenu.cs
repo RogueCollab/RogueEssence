@@ -45,13 +45,13 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (itemPresence[index] > 0)
                 {
-                    ItemData itemEntry = DataManager.Instance.GetItem(index);
-                    if (itemEntry.ItemStates.Contains<MaterialState>())
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                    if (itemEntry.ContainsState<MaterialState>())
                     {
                         AllowedGoods.Add(index);
                         int slot = flatChoices.Count;
 
-                        MenuText menuText = new MenuText((itemEntry.Icon > -1 ? ((char)(itemEntry.Icon + 0xE0A0)).ToString() : "") + DataManager.Instance.GetItem(ii).Name.ToLocal(), new Loc(2, 1));
+                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                         MenuText menuCount = new MenuText("(" + itemPresence[index] + ")", new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                     }
@@ -61,23 +61,23 @@ namespace RogueEssence.Menu
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
             int startPage = defaultChoice / SLOTS_PER_PAGE;
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
-            Initialize(new Loc(0, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2), menuWidth, Text.FormatKey("MENU_STORAGE_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, 8);
+            Initialize(new Loc(0, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2), menuWidth, Text.FormatKey("MENU_STORAGE_TITLE"), inv, startChoice, startPage, SLOTS_PER_PAGE, false, 8);
 
-            theirInfo = new OfferItemsMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
+            theirInfo = new OfferItemsMenu(new Rect(GraphicsManager.ScreenWidth - 0 - menuWidth, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2, Bounds.Width, Bounds.Height), null);
 
-            yourTitle = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.Start.Y - LINE_SPACE - GraphicsManager.MenuBG.TileHeight * 2), new Loc(Bounds.End.X, Bounds.Start.Y)));
-            MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.Name,
-                new Loc((yourTitle.Bounds.X + yourTitle.Bounds.End.X) / 2, yourTitle.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            yourTitle = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.Start.Y - LINE_HEIGHT - GraphicsManager.MenuBG.TileHeight * 2), new Loc(Bounds.End.X, Bounds.Start.Y)));
+            MenuText yourText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetDisplayName(),
+                new Loc(yourTitle.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourText.Color = TextTan;
             yourTitle.Elements.Add(yourText);
 
             yourSummary = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.End.Y),
-                new Loc(Bounds.End.X, Bounds.End.Y + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+                new Loc(Bounds.End.X, Bounds.End.Y + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             yourStatus = new MenuText("",
-                new Loc((yourSummary.Bounds.X + yourSummary.Bounds.End.X) / 2, yourSummary.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(yourSummary.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourStatus.Color = TextTan;
             yourSummary.Elements.Add(yourStatus);
 
@@ -85,20 +85,20 @@ namespace RogueEssence.Menu
 
             
 
-            theirTitle = new SummaryMenu(Rect.FromPoints(new Loc(theirInfo.Bounds.Start.X, theirInfo.Bounds.Start.Y - LINE_SPACE - GraphicsManager.MenuBG.TileHeight * 2), new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.Start.Y)));
+            theirTitle = new SummaryMenu(Rect.FromPoints(new Loc(theirInfo.Bounds.Start.X, theirInfo.Bounds.Start.Y - LINE_HEIGHT - GraphicsManager.MenuBG.TileHeight * 2), new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.Start.Y)));
             MenuText theirText = new MenuText("",
-                new Loc((theirTitle.Bounds.X + theirTitle.Bounds.End.X) / 2, theirTitle.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(theirTitle.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             theirText.Color = TextTan;
             theirTitle.Elements.Add(theirText);
 
             theirSummary = new SummaryMenu(Rect.FromPoints(new Loc(theirInfo.Bounds.Start.X, theirInfo.Bounds.End.Y),
-                new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.End.Y + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+                new Loc(theirInfo.Bounds.End.X, theirInfo.Bounds.End.Y + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             theirStatus = new MenuText("",
-                new Loc((theirSummary.Bounds.X + theirSummary.Bounds.End.X) / 2, theirSummary.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(theirSummary.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             theirStatus.Color = TextTan;
             theirSummary.Elements.Add(theirStatus);
 
-            theirText.Text = NetworkManager.Instance.Activity.TargetInfo.Data.TeamName;
+            theirText.SetText(NetworkManager.Instance.Activity.TargetInfo.Data.TeamName);
 
             CurrentState = ExchangeState.Selecting;
         }
@@ -141,7 +141,7 @@ namespace RogueEssence.Menu
 
         private void attemptCancel()
         {
-            QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_ONLINE_TRADE_END_ASK"), () =>
+            DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_ONLINE_TRADE_END_ASK"), () =>
             {
                 MenuManager.Instance.RemoveMenu();
                 NetworkManager.Instance.Disconnect();
@@ -191,8 +191,8 @@ namespace RogueEssence.Menu
                 theirInfo.SetCurrentItems(tradeTeam.OfferedItems);
 
             //set status
-            yourStatus.Text = CurrentState.ToLocal("msg");
-            theirStatus.Text = tradeTeam.CurrentState.ToLocal("msg");
+            yourStatus.SetText(CurrentState.ToLocal("msg"));
+            theirStatus.SetText(tradeTeam.CurrentState.ToLocal("msg"));
         }
     }
 }

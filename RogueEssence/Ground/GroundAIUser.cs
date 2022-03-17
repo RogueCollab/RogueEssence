@@ -44,6 +44,15 @@ namespace RogueEssence.Ground
         }
 
         /// <summary>
+        /// Sets the AI state.
+        /// </summary>
+        /// <param name="ai"></param>
+        public virtual void SetAIState(string state)
+        {
+            AI.ForceState(state);
+        }
+
+        /// <summary>
         /// Whether the entity has currently an AI set!
         /// </summary>
         /// <returns></returns>
@@ -54,7 +63,7 @@ namespace RogueEssence.Ground
 
         public virtual bool ShouldAIRun()
         {
-            return AIEnabled && GroundAI.GlobalAIEnabled;
+            return AIEnabled/* && GroundAI.GlobalAIDisabled*/;
         }
 
         /// <summary>

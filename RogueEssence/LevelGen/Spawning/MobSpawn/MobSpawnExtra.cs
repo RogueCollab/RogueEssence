@@ -13,6 +13,9 @@ namespace RogueEssence.LevelGen
     }
 
 
+    /// <summary>
+    /// Spawns the mob with a status problem.
+    /// </summary>
     [Serializable]
     public class MobSpawnStatus : MobSpawnExtra
     {
@@ -38,6 +41,17 @@ namespace RogueEssence.LevelGen
             {
                 //need to also add the additional status states
                 newChar.StatusEffects.Add(status.ID, status);
+            }
+        }
+
+        public override string ToString()
+        {
+            if (Statuses.Count != 1)
+                return string.Format("{0}[{1}]", this.GetType().Name, Statuses.Count.ToString());
+            else
+            {
+                EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Status].Entries[Statuses.GetSpawn(0).ID];
+                return string.Format("{0}: {1}", this.GetType().Name, summary.Name.ToLocal());
             }
         }
     }

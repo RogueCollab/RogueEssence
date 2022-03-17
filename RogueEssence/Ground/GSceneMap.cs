@@ -5,6 +5,7 @@ using RogueEssence.Data;
 using RogueEssence.Menu;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
+using RogueEssence.Script;
 
 namespace RogueEssence.Ground
 {
@@ -84,13 +85,13 @@ namespace RogueEssence.Ground
                 memberTeam.RemoveFromInv(invSlot);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetName())));
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, String.Format("Threw away the {0}.", invItem.GetDisplayName())));
         }
 
         public IEnumerator<YieldInstruction> ProcessObjectInteract(GroundChar character)
         {
             //check to see if we're colliding with anyone
-
+            TriggerResult result = new TriggerResult();
             if (character == FocusedCharacter)
             {
                 //Loc front = character.GetFront() + character.CharDir.GetLoc();
@@ -107,8 +108,9 @@ namespace RogueEssence.Ground
                         if (talkTo.EntEnabled)
                         {
                             character.CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
-                            yield return CoroutineManager.Instance.StartCoroutine(talkTo.Interact(character));
-                            yield break;
+                            yield return CoroutineManager.Instance.StartCoroutine(talkTo.Interact(character, result));
+                            if (result.Success)
+                                yield break;
                         }
                     }
                     else if (obstacle is GroundObject)
@@ -117,8 +119,9 @@ namespace RogueEssence.Ground
                         if (groundObj.EntEnabled && groundObj.GetTriggerType() == GroundObject.EEntityTriggerTypes.Action)
                         {
                             character.CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
-                            yield return CoroutineManager.Instance.StartCoroutine(groundObj.Interact(character));
-                            yield break;
+                            yield return CoroutineManager.Instance.StartCoroutine(groundObj.Interact(character, result));
+                            if (result.Success)
+                                yield break;
                         }
                     }
                 }
@@ -142,12 +145,12 @@ namespace RogueEssence.Ground
 
             if (itemChar.EquippedItem.ID > -1)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.Name, item.GetName(), itemChar.EquippedItem.GetName())));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.GetDisplayName(false), item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName())));
                 //put item in inv
                 memberTeam.AddToInv(new InvItem(itemChar.EquippedItem));
             }
             else
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.Name, item.GetName())));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
 
             itemChar.EquipItem(item);
@@ -164,7 +167,7 @@ namespace RogueEssence.Ground
             memberTeam.AddToInv(item);
             itemChar.DequipItem();
             GameManager.Instance.SE(GraphicsManager.EquipSE);
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.Name, item.GetName())));
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
         }
 

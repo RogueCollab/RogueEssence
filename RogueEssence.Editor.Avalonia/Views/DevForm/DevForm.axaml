@@ -19,6 +19,9 @@
       <TabItem Header="Game" >
         <views:DevTabGame DataContext="{Binding Game}"/>
       </TabItem>
+      <TabItem Header="Constants" >
+        <views:DevTabConstants DataContext="{Binding Constants}"/>
+      </TabItem>
     </TabControl>
   </Grid>
 </Window>

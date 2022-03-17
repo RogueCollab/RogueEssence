@@ -12,7 +12,10 @@ namespace RogueEssence.Dungeon
     {
         public void EnterFloor(int entryPointIndex)
         {
-            EnterFloor(ZoneManager.Instance.CurrentMap.EntryPoints[entryPointIndex]);
+            LocRay8 entry = new LocRay8(Loc.Zero, Dir8.Down);
+            if (entryPointIndex < ZoneManager.Instance.CurrentMap.EntryPoints.Count)
+                entry = ZoneManager.Instance.CurrentMap.EntryPoints[entryPointIndex];
+            EnterFloor(entry);
         }
         public void EnterFloor(LocRay8 entryPoint)
         {
@@ -62,14 +65,13 @@ namespace RogueEssence.Dungeon
         {
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
-
-            focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+            
+            ReloadFocusedPlayer();
 
             //refresh everyone's traits
+            ZoneManager.Instance.CurrentMap.RefreshTraits();
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.RefreshTraits();
-
-            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
 
         }
 
@@ -79,14 +81,16 @@ namespace RogueEssence.Dungeon
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentMap.Status.Values)
                 mapStatus.StartEmitter(Anims);
 
+            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
+
             //Notify script engine
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
         }
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentMap.GetSingleLineName()), true, false);
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetColoredName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentMap.GetColoredName()), true, false);
 
             ZoneManager.Instance.CurrentMap.Begun = true;
 
@@ -112,6 +116,9 @@ namespace RogueEssence.Dungeon
                 {
                     if (!character.Dead)
                     {
+                        DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts, character);
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnMapStarts, character);
+
                         foreach (PassiveContext effectContext in character.IteratePassives(new Priority(portPriority)))
                             effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStarts, character);
                     }
@@ -122,6 +129,8 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
+
+            LogMsg(Text.DIVIDER_STR);
         }
 
 
@@ -170,6 +179,8 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            //TODO: resolve all Nonserialized variables (such as in mapgen, AI) being inconsistent before enabling this.
+            //DataManager.Instance.LogQuicksave();
             DataManager.Instance.SuspendPlay();
 
             MenuBase.Transparent = false;
@@ -207,10 +218,7 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex = 0;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction = Faction.Player;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.SkipAll = false;
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0, false);
             RegenerateTurnMap();
 
             RemoveDeadTeams();
@@ -260,27 +268,12 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            if (DataManager.Instance.CurrentReplay == null)
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(mail));
+            int nameLength = action[3];
+            string name = "";
+            for (int ii = 0; ii < nameLength; ii++)
+                name += (char)action[4 + ii];
 
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_RESCUES_LEFT", DataManager.Instance.Save.RescuesLeft)));
-                yield return new WaitForFrames(1);
-            }
-            else
-            {
-                GameManager.Instance.SE(GraphicsManager.ReviveSE);
-                GameManager.Instance.SetFade(true, true);
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
-
-                int nameLength = action[3];
-                string name = "";
-                for (int ii = 0; ii < nameLength; ii++)
-                    name += (char)action[4+ii];
-                LogMsg(Text.FormatKey("MSG_RESCUED_BY", name));
-            }
-
-            ZoneManager.Instance.CurrentMap.NoRescue = true;
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(name, mail));
 
             yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
 
@@ -327,7 +320,7 @@ namespace RogueEssence.Dungeon
                         //if it's a team character and it's team mode, wait a little while
                         if (DataManager.Instance.Save.TeamMode && character.MemberTeam == ActiveTeam)
                         {
-                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_SKIP_TURN", character.BaseName), false, true);
+                            DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_SKIP_TURN", character.GetDisplayName(false)), false, true);
                             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
                         }
                         else if (character == FocusedCharacter)//add just one little wait to slow down the turn-passing when no enemies are in view
@@ -424,7 +417,7 @@ namespace RogueEssence.Dungeon
                     {
                         result.Success = ActionResult.ResultType.Success;
 
-                        yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.EndSegment((GameProgress.ResultType)action[0]));
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.EndSegment((GameProgress.ResultType)action[0]);
                         break;
                     }
                 case GameAction.ActionType.Tactics:
@@ -439,6 +432,7 @@ namespace RogueEssence.Dungeon
                             AITactic tactic = DataManager.Instance.GetAITactic(choice);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
+                            target.Tactic.Initialize(target);
                         }
                         break;
                     }
@@ -526,6 +520,7 @@ namespace RogueEssence.Dungeon
         public void OnCharAdd(Character newChar)
         {
             newChar.TurnWait = 0;
+            newChar.TiersUsed = 0;
             newChar.TurnUsed = false;
         }
 
@@ -547,7 +542,7 @@ namespace RogueEssence.Dungeon
             Character character = playerList[charIndex.Char];
 
             character.OnRemove();
-            team.Players.RemoveAt(charIndex.Char);
+            playerList.RemoveAt(charIndex.Char);
 
             //update leader
             if (!charIndex.Guest)
@@ -560,7 +555,7 @@ namespace RogueEssence.Dungeon
                     team.LeaderIndex = 0;
             }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex.Faction, charIndex.Team, charIndex.Char);
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex);
 
             if (charIndex.Faction == Faction.Player && focusedPlayerIndex > charIndex.Char)
                 focusedPlayerIndex--;
@@ -631,10 +626,10 @@ namespace RogueEssence.Dungeon
                 GameManager.Instance.SE("Menu/Cancel");
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
             }
-            else if (ZoneManager.Instance.CurrentMap.NoSwitching)
+            else if (ZoneManager.Instance.CurrentMap.NoSwitching || DataManager.Instance.Save.NoSwitching)
             {
                 GameManager.Instance.SE("Menu/Cancel");
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CANT_SWAP_LEADER", CurrentCharacter.BaseName), false, true);
+                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CANT_SWAP_LEADER", CurrentCharacter.GetDisplayName(true)), false, true);
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
             }
             else
@@ -651,10 +646,9 @@ namespace RogueEssence.Dungeon
 
                     //re-order map order as well
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, charIndex);
+                    ReloadFocusedPlayer();
 
-                    focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
-
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.BaseName));
+                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.GetDisplayName(true)));
 
                     GameManager.Instance.SE(GraphicsManager.LeaderSE);
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));
@@ -700,8 +694,7 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex + 1, ActiveTeam.LeaderIndex);
                 }
 
-
-                focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                ReloadFocusedPlayer();
             }
         }
 
@@ -747,7 +740,7 @@ namespace RogueEssence.Dungeon
                     //re-order map order as well
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, liveIndex);
 
-                    LogMsg(Text.FormatKey("MSG_LEADER_SWAP", team.Leader.BaseName));
+                    LogMsg(Text.FormatKey("MSG_LEADER_SWAP", team.Leader.GetDisplayName(true)));
                 }
             }
 
@@ -825,6 +818,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> MoveToUsableTurn(bool action, bool walked)
         {
             CurrentCharacter.TurnWait = (walked ? -CurrentCharacter.MovementSpeed : 0) + 1;
+            CurrentCharacter.TiersUsed++;
             CurrentCharacter.TurnUsed = action;
 
             if (!IsGameOver())
@@ -849,9 +843,9 @@ namespace RogueEssence.Dungeon
 
                             if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier >= 6)
                             {
-                                yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
                                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
                                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.SkipAll = false;
+                                yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
                             }
                         }
 
@@ -889,6 +883,11 @@ namespace RogueEssence.Dungeon
             //silently reset turn map
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
+            ReloadFocusedPlayer();
+        }
+
+        public void ReloadFocusedPlayer()
+        {
             focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
         }
 

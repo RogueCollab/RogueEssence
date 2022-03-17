@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace RogueEssence.Dev.ViewModels
 
             ItemTypes = new ObservableCollection<string>();
             ItemTypes.Add("---: Money");
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             for (int ii = 0; ii < monster_names.Length; ii++)
                 ItemTypes.Add(ii.ToString("D3") + ": " + monster_names[ii]);
 
@@ -30,6 +31,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref entMode, value);
+                EntModeChanged();
             }
         }
 
@@ -102,10 +104,34 @@ namespace RogueEssence.Dev.ViewModels
         public MapItem SelectedEntity;
 
 
+        private void EntModeChanged()
+        {
+            if (entMode == EntEditMode.SelectEntity)
+            {
+                //do nothing
+            }
+            else
+            {
+                //copy the selection
+                setEntity(new MapItem(SelectedEntity));
+            }
+        }
+
+        public void ProcessUndo()
+        {
+            if (EntMode == EntEditMode.SelectEntity)
+                SelectEntity(null);
+        }
 
         public void ProcessInput(InputManager input)
         {
+            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
+                return;
+
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
+
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
+                return;
 
             switch (EntMode)
             {
@@ -146,6 +172,7 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.Items.Remove(ent);
         }
 
@@ -156,6 +183,8 @@ namespace RogueEssence.Dev.ViewModels
             MapItem placeableEntity = new MapItem(SelectedEntity);
 
             placeableEntity.TileLoc = position;
+
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.Items.Add(placeableEntity);
         }
 
@@ -164,7 +193,10 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(MapItem ent)
         {
             if (ent != null)
+            {
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
                 setEntity(ent);
+            }
             else
                 setEntity(new MapItem());
         }
@@ -199,6 +231,23 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (SelectedEntity != null)
                 SelectedEntity.TileLoc = loc;
+        }
+    }
+
+    public class MapItemStateUndo : StateUndo<List<MapItem>>
+    {
+        public MapItemStateUndo()
+        {
+        }
+
+        public override List<MapItem> GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.Items;
+        }
+
+        public override void SetState(List<MapItem> state)
+        {
+            ZoneManager.Instance.CurrentMap.Items = state;
         }
     }
 }

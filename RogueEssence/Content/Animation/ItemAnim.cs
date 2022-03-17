@@ -42,14 +42,14 @@ namespace RogueEssence.Content
                 if (Time >= ITEM_ACTION_TIME + WaitTime)
                     finished = true;
                 locHeight = 0;
-                mapLoc = EndLoc * GraphicsManager.TileSize;
+                mapLoc = EndLoc;
             }
             else
             {
                 locHeight = AnimMath.GetArc(MaxHeight, FrameTick.FrameToTick(ITEM_ACTION_TIME), Time.Ticks);
-                Loc mapDiff = (EndLoc - StartLoc) * GraphicsManager.TileSize;
+                Loc mapDiff = EndLoc - StartLoc;
                 mapDiff = new Loc((int)(mapDiff.X * Time.FractionOf(ITEM_ACTION_TIME)), (int)(mapDiff.Y * Time.FractionOf(ITEM_ACTION_TIME)));
-                mapLoc = mapDiff + StartLoc * GraphicsManager.TileSize;
+                mapLoc = mapDiff + StartLoc;
             }
         }
 

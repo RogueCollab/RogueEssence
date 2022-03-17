@@ -60,24 +60,27 @@ namespace RogueEssence.Ground
 
         public void ResetGround()
         {
-            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
             ZoneManager.Instance.CurrentGround.ViewCenter = null;
             ZoneManager.Instance.CurrentGround.ViewOffset = new Loc();
         }
 
-        public IEnumerator<YieldInstruction> InitGround()
+        public IEnumerator<YieldInstruction> InitGround(bool saveLoad)
         {
             //start emitters for existing map status
             foreach (MapStatus mapStatus in ZoneManager.Instance.CurrentGround.Status.Values)
                 mapStatus.StartEmitter(Anims);
 
+            GraphicsManager.GlobalIdle = GraphicsManager.IdleAction;
+
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
+            if (saveLoad)
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnGameLoad());
         }
 
         public IEnumerator<YieldInstruction> BeginGround()
         {
-            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetSingleLineName());
-            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetReferenceName(), ZoneManager.Instance.CurrentGround.GetSingleLineName()));
+            DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetColoredName());
+            LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
             //psy's note: might as well help encapsulate map stuff
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnEnter());
         }
@@ -88,12 +91,20 @@ namespace RogueEssence.Ground
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
-            DataManager.Instance.LogQuicksave();
+            //TODO: call OnGameSave?
+            //where does it load the game in a suspend scenario?
+            DataManager.Instance.LogGroundSave();
             DataManager.Instance.SuspendPlay();
 
             MenuBase.Transparent = false;
 
             GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+        }
+
+        public IEnumerator<YieldInstruction> SaveGame()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnGameSave());
+            DataManager.Instance.SaveMainGameState();
         }
 
         public IEnumerator<YieldInstruction> ProcessInput(GameAction action)
@@ -184,6 +195,7 @@ namespace RogueEssence.Ground
                             AITactic tactic = DataManager.Instance.GetAITactic(choice);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
+                            target.Tactic.Initialize(target);
                         }
                         break;
                     }
@@ -235,6 +247,8 @@ namespace RogueEssence.Ground
         {
             if (charIndex >= DataManager.Instance.Save.ActiveTeam.Players.Count || charIndex == DataManager.Instance.Save.ActiveTeam.LeaderIndex)
                 GameManager.Instance.SE("Menu/Cancel");
+            else if (ZoneManager.Instance.CurrentGround.NoSwitching || DataManager.Instance.Save.NoSwitching)
+                GameManager.Instance.SE("Menu/Cancel");
             else
             {
                 if (!canSwitchToChar(charIndex))
@@ -251,7 +265,7 @@ namespace RogueEssence.Ground
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
 
                     if (!silent)
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_LEADER_SWAP", DataManager.Instance.Save.ActiveTeam.Leader.BaseName)));
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_LEADER_SWAP", DataManager.Instance.Save.ActiveTeam.Leader.GetDisplayName(true))));
                 }
             }
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(10));

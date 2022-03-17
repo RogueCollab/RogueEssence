@@ -10,6 +10,7 @@ using AABB;
 using System.Linq;
 using RogueEssence.Script;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Ground
 {
@@ -21,14 +22,15 @@ namespace RogueEssence.Ground
 
         private GroundWall[][] obstacles;
 
-        [OptionalField]
-        protected ReRandom rand;
-        public ReRandom Rand { get { return rand; } }
+        protected IRandom rand;
+        public IRandom Rand { get { return rand; } }
 
         public Dictionary<int, MapStatus> Status;
-        private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> ScriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
 
-        public MapBG Background;
+        [NonSerialized]
+        private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> scriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
+
+        public IBackgroundSprite Background;
         public AutoTile BlankBG;
 
         public List<MapLayer> Layers;
@@ -54,16 +56,20 @@ namespace RogueEssence.Ground
         public string AssetName { get; set; }
 
         public LocalText Name { get; set; }
-        public string GetSingleLineName() { return Name.ToLocal().Replace('\n', ' '); }
+        public string GetColoredName()
+        {
+            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal().Replace('\n', ' '));
+        }
 
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
         public string Music;
         public Map.ScrollEdge EdgeView;
-
+        public bool NoSwitching;
 
         public Loc? ViewCenter;
         public Loc ViewOffset;
@@ -78,7 +84,7 @@ namespace RogueEssence.Ground
         {
             AssetName = "";
             rand = new ReRandom(0);
-            ScriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
+            scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
 
             Entities = new List<EntityLayer>();
 
@@ -97,7 +103,7 @@ namespace RogueEssence.Ground
 
         }
 
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             this.rand = rand;
         }
@@ -110,9 +116,9 @@ namespace RogueEssence.Ground
         {
             DiagManager.Instance.LogInfo(String.Format("GroundMap.~GroundMap(): Finalizing {0}..", AssetName));
 
-            foreach (var e in ScriptEvents)
+            foreach (var e in scriptEvents)
                 e.Value.DoCleanup();
-            ScriptEvents.Clear();
+            scriptEvents.Clear();
 
             foreach (GroundEntity ent in IterateEntities())
             {
@@ -120,7 +126,8 @@ namespace RogueEssence.Ground
                     ent.DoCleanup();
             }
 
-            LuaEngine.Instance.CleanMapScript(AssetName);
+            if (AssetName != "")
+                LuaEngine.Instance.CleanMapScript(AssetName);
         }
 
         /// <summary>
@@ -130,8 +137,20 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerator<YieldInstruction> RunScriptEvent(LuaEngine.EMapCallbacks ev)
         {
-            if (ScriptEvents.ContainsKey(ev))
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(this));
+            if (scriptEvents.ContainsKey(ev))
+                yield return CoroutineManager.Instance.StartCoroutine(scriptEvents[ev].Apply(this));
+        }
+
+        public void OnEditorInit()
+        {
+            if (AssetName != "")
+                LuaEngine.Instance.RunGroundMapScript(AssetName);
+
+            //Reload the map events
+            LoadScriptEvents();
+
+            foreach (GroundEntity entity in IterateEntities())
+                entity.ReloadEvents();
         }
 
         /// <summary>
@@ -142,11 +161,10 @@ namespace RogueEssence.Ground
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
             if (AssetName != "")
-                LuaEngine.Instance.RunMapScript(AssetName);
+                LuaEngine.Instance.RunGroundMapScript(AssetName);
 
             //Reload the map events
-            foreach (var ev in ScriptEvents)
-                ev.Value.ReloadEvent();
+            LoadScriptEvents();
 
             foreach (GroundEntity entity in IterateEntities())
                 entity.OnMapInit();
@@ -158,19 +176,22 @@ namespace RogueEssence.Ground
             LuaEngine.Instance.OnGroundMapInit(AssetName, this);
         }
 
-
-        /// <summary>
-        /// Called when resuming a savegame on this map.
-        /// Handles setting everything back in place.
-        /// </summary>
-        /// <returns></returns>
-        public void OnResume()
+        public IEnumerator<YieldInstruction> OnGameLoad()
         {
-            //Load the map's script
-            //LuaEngine.Instance.RunMapScript(AssetName);
-            var iter = OnInit();
-            while (iter.MoveNext());
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.GameLoad));
+
+            //Notify script engine?
         }
+
+        public IEnumerator<YieldInstruction> OnGameSave()
+        {
+            //Do script event
+            yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.GameSave));
+
+            //Notify script engine?
+        }
+
 
         /// <summary>
         /// Called by the GroundScene when the map is in "Begin" stage.
@@ -178,9 +199,6 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerator<YieldInstruction> OnEnter()
         {
-            //Ensure the AI is enabled
-            GroundAI.GlobalAIEnabled = true;
-
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.Enter));
 
@@ -492,7 +510,7 @@ namespace RogueEssence.Ground
 
         public void AddLayer(string name)
         {
-            MapLayer layer = new MapLayer("");
+            MapLayer layer = new MapLayer(name);
             layer.CreateNew(Width, Height);
             Layers.Add(layer);
         }
@@ -689,9 +707,10 @@ namespace RogueEssence.Ground
         }
 
 
-        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos)
+        public void DrawDefaultTile(SpriteBatch spriteBatch, Loc drawPos, Loc mapPos)
         {
-            BlankBG.Draw(spriteBatch, drawPos);
+            INoise noise = new ReNoise(rand.FirstSeed);
+            BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
         }
 
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
@@ -736,6 +755,8 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public LocRay8 GetEntryPoint(int index)
         {
+            if (index >= Entities[0].Markers.Count)
+                return new LocRay8(Loc.Zero, Dir8.Down);
             GroundMarker mark = Entities[0].Markers[index];
             return new LocRay8(mark.Position, mark.Direction);
         }
@@ -832,7 +853,10 @@ namespace RogueEssence.Ground
 
         public GroundEntity FindEntity(string name)
         {
-            foreach(GroundEntity entity in IterateEntities())
+            if (name == "PLAYER")
+                return this.ActiveChar;
+
+            foreach (GroundEntity entity in IterateEntities())
             {
                 if (entity.EntName == name)
                     return entity;
@@ -858,16 +882,39 @@ namespace RogueEssence.Ground
             }
         }
 
-        public void AddMapScriptEvent(LuaEngine.EMapCallbacks ev)
+        public IEnumerable<GroundAnim> IterateDecorations()
         {
-            DiagManager.Instance.LogInfo(String.Format("GroundMap.AddMapScriptEvent(): Added event {0} to map {1}!", ev.ToString(), AssetName) );
-            ScriptEvents[ev] = new ScriptEvent(LuaEngine.MakeMapScriptCallbackName(AssetName,ev));
+            foreach (AnimLayer layer in Decorations)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundAnim v in layer.Anims)
+                        yield return v;
+                }
+            }
+        }
+
+
+        public void LoadScriptEvents()
+        {
+            scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
+            if (!String.IsNullOrEmpty(AssetName))
+            {
+                for (int ii = 0; ii < (int)LuaEngine.EMapCallbacks.Invalid; ii++)
+                {
+                    LuaEngine.EMapCallbacks ev = (LuaEngine.EMapCallbacks)ii;
+                    string callback = LuaEngine.MakeMapScriptCallbackName(AssetName, ev);
+                    if (!LuaEngine.Instance.DoesFunctionExists(callback))
+                        continue;
+                    DiagManager.Instance.LogInfo(String.Format("GroundMap.LoadScriptEvents(): Added event {0} to map {1}!", ev.ToString(), AssetName));
+                    scriptEvents[ev] = new ScriptEvent(callback);
+                }
+            }
         }
 
         public void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
+            LoadScriptEvents();
 
             foreach (GroundEntity ent in IterateEntities())
             {
@@ -900,56 +947,21 @@ namespace RogueEssence.Ground
                 }
             }
         }
-
-        public void RemoveMapScriptEvent(LuaEngine.EMapCallbacks ev)
-        {
-            DiagManager.Instance.LogInfo(String.Format("GroundMap.RemoveMapScriptEvent(): Removed event {0} from map {1}!", ev.ToString(), AssetName));
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
-        }
-
         public List<LuaEngine.EMapCallbacks> ActiveScriptEvent()
         {
             List<LuaEngine.EMapCallbacks> list = new List<LuaEngine.EMapCallbacks>();
 
-            foreach( var e in ScriptEvents )
+            foreach (var e in scriptEvents)
                 list.Add(e.Key);
 
             return list;
         }
 
-        
-        [OnSerializing]
-        internal void OnSerializingMethod(StreamingContext context)
+        public void ReloadEntLayer(int layer)
         {
-            
-            
-        }
-
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            //DiagManager.Instance.LogInfo(String.Format("GroundMap.OnDeserializedMethod(): Map {0} deserialized!", AssetName));
-
-            //recompute the grid
-            grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
-
-            //TODO: v0.5: remove this
-            if (Background == null)
-                Background = new MapBG();
-            if (BlankBG == null)
-                BlankBG = new AutoTile();
-
-
-            if (ActiveChar != null)
-            {
-                ActiveChar.OnDeserializeMap(this);
-                signCharToMap(ActiveChar);
-            }
 
             //reconnect characters and objects references
-            foreach (GroundChar player in Entities[0].MapChars)
+            foreach (GroundChar player in Entities[layer].MapChars)
             {
                 if (player != null)
                 {
@@ -957,12 +969,48 @@ namespace RogueEssence.Ground
                     signCharToMap(player);
                 }
             }
-            foreach (GroundObject groundObj in Entities[0].GroundObjects)
+            foreach (GroundObject groundObj in Entities[layer].GroundObjects)
             {
                 groundObj.OnDeserializeMap(this);
                 grid.Add(groundObj);
             }
+        }
 
+        public void PreSaveEntLayer(int layer)
+        {
+            //reconnect characters and objects references
+            foreach (GroundChar player in Entities[layer].MapChars)
+            {
+                if (player != null)
+                    player.OnSerializeMap(this);
+            }
+            foreach (GroundObject groundObj in Entities[layer].GroundObjects)
+                groundObj.OnSerializeMap(this);
+        }
+
+
+        [OnSerializing]
+        internal void OnSerializingMethod(StreamingContext context)
+        {
+            PreSaveEntLayer(0);
+        }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //recompute the grid
+            grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
+
+            if (ActiveChar != null)
+            {
+                ActiveChar.OnDeserializeMap(this);
+                signCharToMap(ActiveChar);
+            }
+
+            ReloadEntLayer(0);
+
+            scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
         }
     }
 }

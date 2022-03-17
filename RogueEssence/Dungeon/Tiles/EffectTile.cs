@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -24,20 +25,25 @@ namespace RogueEssence.Dungeon
         }
 
         public override int GetID() { return ID; }
-        public override string GetName() { return DataManager.Instance.GetTile(ID).Name.ToLocal(); }
+        public TileData GetData() { return DataManager.Instance.GetTile(ID); }
+        public override string GetDisplayName() { return GetData().GetColoredName(); }
 
+
+        [DataType(0, DataManager.DataType.Tile, true)]
+        public int ID;
 
         public bool Exposed { get { return true; } }
         public bool Revealed;
+
+        [Dev.Multiline(0)]
         public bool Danger;
         public TileOwner Owner;
-
-        public int ID;
 
         public StateCollection<TileState> TileStates;
 
         //[NonSerialized]
         //redundant, but no need to remove from serialization...
+        [Dev.NonEdited]
         public Loc TileLoc { get; private set; }
         public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
         public int LocHeight { get { return 0; } }
@@ -119,7 +125,7 @@ namespace RogueEssence.Dungeon
             if (entry.Anim.AnimIndex != "")
             {
                 DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.AnimDir, Color.White * ((Owner == TileOwner.Player) ? 0.70f : 1f));
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.GetDrawDir(Dir8.None), Color.White * ((Owner == TileOwner.Player) ? 0.70f : 1f));
             }
         }
         

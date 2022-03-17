@@ -7,9 +7,8 @@
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
   <UserControl.Resources>
-    <converters:ClassEntryConverter x:Key="ClassEntryConverter"/>
   </UserControl.Resources>
-  <Grid MaxHeight="180">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
       <RowDefinition Height="40"/>
@@ -21,18 +20,18 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50">
+    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Priority"
                       Binding="{Binding PriorityObj}" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=Value, Converter={StaticResource ClassEntryConverter}}" />
+                            Binding="{Binding Path=DisplayValue}" />
       </DataGrid.Columns>
     </DataGrid>
-    <Button Click="btnAdd_Click" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>
-    <Button Click="btnDelete_Click" Margin="4" Grid.Row="3" Grid.Column="1">Delete</Button>
-    <Button Click="btnUp_Click" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
-    <Button Click="btnEditKey_Click" Margin="4" Grid.Row="1" Grid.Column="2">~</Button>
-    <Button Click="btnDown_Click" Margin="4" Grid.Row="2" Grid.Column="2">v</Button>
+    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>
+    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="3" Grid.Column="1">Delete</Button>
+    <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
+    <Button Command="{Binding btnEditKey_Click}" Margin="4" Grid.Row="1" Grid.Column="2">~</Button>
+    <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="2" Grid.Column="2">v</Button>
   </Grid>
 </UserControl>

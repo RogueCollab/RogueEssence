@@ -23,32 +23,33 @@ namespace RogueEssence.Menu
         {
             this.slot = slot;
             this.held = held;
+            int width = 144;
 
             List<MenuTextChoice> team = new List<MenuTextChoice>();
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 bool canLearn = CanLearnSkill(character, DataManager.Instance.Save.ActiveTeam.Leader, slot, held) && !character.Dead;
                 int teamIndex = team.Count;
-                team.Add(new MenuTextChoice(character.BaseName, () => { choose(teamIndex); }, canLearn, canLearn ? Color.White : Color.Red));
+                team.Add(new MenuTextChoice(character.GetDisplayName(true), () => { choose(teamIndex); }, canLearn, canLearn ? Color.White : Color.Red));
             }
 
             Loc summaryStart = new Loc(16, 16 + team.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset);
             summaryMenu = new SummaryMenu(new Rect(summaryStart, new Loc(144, CharData.MAX_SKILL_SLOTS * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset)));
 
-            SummaryTitle = new MenuText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            SummaryTitle = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             summaryMenu.Elements.Add(SummaryTitle);
-            summaryMenu.Elements.Add(new MenuDivider(summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_SPACE), 144 - GraphicsManager.MenuBG.TileWidth * 2));
+            summaryMenu.Elements.Add(new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), width - GraphicsManager.MenuBG.TileWidth * 2));
             Skills = new MenuText[CharData.MAX_SKILL_SLOTS];
             SkillCharges = new MenuText[CharData.MAX_SKILL_SLOTS];
             for (int ii = 0; ii < Skills.Length; ii++)
             {
-                Skills[ii] = new MenuText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii));
+                Skills[ii] = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii));
                 summaryMenu.Elements.Add(Skills[ii]);
-                SkillCharges[ii] = new MenuText("", new Loc(summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth, summaryMenu.Bounds.Y + GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii), DirH.Right);
+                SkillCharges[ii] = new MenuText("", new Loc(summaryMenu.Bounds.Width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + ContentOffset + VERT_SPACE * ii), DirH.Right);
                 summaryMenu.Elements.Add(SkillCharges[ii]);
             }
 
-            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_TEACH_TITLE"), team.ToArray(), 0);
+            Initialize(new Loc(16, 16), width, Text.FormatKey("MENU_TEACH_TITLE"), team.ToArray(), 0);
         }
 
         public static bool CanLearnSkill(Character character, Character user, int slot, bool held)
@@ -89,19 +90,19 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Character character = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice];
-            SummaryTitle.Text = Text.FormatKey("MENU_SKILLS_TITLE", character.BaseName);
+            SummaryTitle.SetText(Text.FormatKey("MENU_SKILLS_TITLE", character.GetDisplayName(true)));
             for (int ii = 0; ii < Skills.Length; ii++)
             {
                 if (character.BaseSkills[ii].SkillNum > -1)
                 {
                     SkillData data = DataManager.Instance.GetSkill(character.BaseSkills[ii].SkillNum);
-                    Skills[ii].Text = data.Name.ToLocal();
-                    SkillCharges[ii].Text = character.BaseSkills[ii].Charges + "/" + (data.BaseCharges + character.ChargeBoost);
+                    Skills[ii].SetText(data.GetColoredName());
+                    SkillCharges[ii].SetText(character.BaseSkills[ii].Charges + "/" + (data.BaseCharges + character.ChargeBoost));
                 }
                 else
                 {
-                    Skills[ii].Text = "";
-                    SkillCharges[ii].Text = "";
+                    Skills[ii].SetText("");
+                    SkillCharges[ii].SetText("");
                 }
             }
             base.ChoiceChanged();

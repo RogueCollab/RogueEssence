@@ -6,15 +6,15 @@ namespace RogueEssence.LevelGen
 {
     [Serializable]
     public abstract class PlaceMobsStep<T> : GenStep<T>
-        where T : class, IGroupPlaceableGenContext<Team>
+        where T : class, IGroupPlaceableGenContext<TeamSpawn>
     {
-        public ITeamStepSpawner<T> Spawn;
+        public IMultiTeamSpawner<T> Spawn;
+        public bool Ally;
 
         public PlaceMobsStep() { }
-        public PlaceMobsStep(ITeamStepSpawner<T> spawn)
+        public PlaceMobsStep(IMultiTeamSpawner<T> spawn)
         {
             Spawn = spawn;
         }
-
     }
 }

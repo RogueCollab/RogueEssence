@@ -15,23 +15,21 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class BaseMap : IMobSpawnMap
     {
-
-        //includes all start points
-        public List<LocRay8> EntryPoints;
-
-        protected ReRandom rand;
-        public ReRandom Rand { get { return rand; } }
+        protected IRandom rand;
+        public IRandom Rand { get { return rand; } }
         IRandom IMobSpawnMap.Rand { get { return rand; } }
         public bool Begun { get; set; }
 
         public int ID { get; set; }
 
-        public bool NoRescue;
-        public bool NoSwitching;
         public bool DropTitle;
 
-        public Tile[][] Tiles;
+        public List<MapLayer> Layers;
 
+        public Tile[][] Tiles;
+        
+        //includes all start points
+        public List<LocRay8> EntryPoints;
         public int Width { get { return Tiles.Length; } }
         public int Height { get { return Tiles[0].Length; } }
 
@@ -45,12 +43,14 @@ namespace RogueEssence.Dungeon
             rand = new ReRandom(0);
             EntryPoints = new List<LocRay8>();
 
+            Layers = new List<MapLayer>();
+
             Items = new List<MapItem>();
             MapTeams = new List<Team>();
             AllyTeams = new List<Team>();
         }
         
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             this.rand = rand;
         }
@@ -64,6 +64,11 @@ namespace RogueEssence.Dungeon
                 for (int jj = 0; jj < height; jj++)
                     Tiles[ii][jj] = new Tile(0, new Loc(ii, jj));
             }
+
+            Layers.Clear();
+            MapLayer layer = new MapLayer("New Layer");
+            layer.CreateNew(width, height);
+            Layers.Add(layer);
         }
 
         public Tile GetTile(Loc loc)
@@ -168,7 +173,11 @@ namespace RogueEssence.Dungeon
             if (TileBlocked(loc, mobility, false))
                 return false;
             if (Tiles[loc.X][loc.Y].Effect.ID > -1)
-                return false;
+            {
+                TileData tileData = DataManager.Instance.GetTile(Tiles[loc.X][loc.Y].Effect.ID);
+                if (tileData.BlockItem)
+                    return false;
+            }
 
             if (ignoreItem)
                 return true;
@@ -216,11 +225,24 @@ namespace RogueEssence.Dungeon
                 origin);
         }
 
-
-        public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc)
+        public void AddLayer(string name)
         {
-            Tiles[loc.X][loc.Y].FloorTile.Draw(spriteBatch, drawPos);
-            Tiles[loc.X][loc.Y].Data.TileTex.Draw(spriteBatch, drawPos);
+            MapLayer layer = new MapLayer(name);
+            layer.CreateNew(Width, Height);
+            Layers.Add(layer);
+        }
+
+
+        public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
+        {
+            foreach (MapLayer layer in Layers)
+            {
+                if ((layer.Layer == DrawLayer.Top) == front && layer.Visible)
+                    layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
+            }
+
+            if (!front)
+                Tiles[loc.X][loc.Y].Data.TileTex.Draw(spriteBatch, drawPos);
         }  
     }
 

@@ -5,6 +5,7 @@ using RogueEssence.Dev.ViewModels;
 using RogueEssence.Dev.Views;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Text;
@@ -15,26 +16,29 @@ namespace RogueEssence.Dev
     {
         protected delegate void CreateMethod();
 
+        /// <summary>
+        /// Determines if the editor contents should be shown in the containing panel.
+        /// If not, they will show up as a classbox that needs to be clicked on to show the contents.
+        /// </summary>
         public virtual bool DefaultSubgroup => false;
+        /// <summary>
+        /// Detemines if the editor contents should be enclosed in a box.
+        /// </summary>
         public virtual bool DefaultDecoration => true;
+
+        /// <summary>
+        /// Determines whether a label should be put above the object editor contents.
+        /// </summary>
+        public virtual bool DefaultLabel => true;
         public virtual bool DefaultType => false;
 
         public static void LoadLabelControl(StackPanel control, string name)
         {
             TextBlock lblName = new TextBlock();
             lblName.Margin = new Thickness(0, 4, 0, 0);
-            //StringBuilder separatedName = new StringBuilder();
-            //for (int ii = 0; ii < name.Length; ii++)
-            //{
-            //    if (ii > 0 && (char.IsUpper(name[ii]) && !char.IsLower(name[ii-1]) || char.IsDigit(name[ii])))
-            //        separatedName.Append(' ');
-            //    separatedName.Append(name[ii]);
-            //}
-            //separatedName.Append(":");
-            lblName.Text = name + ":";
+            lblName.Text = DataEditor.GetMemberTitle(name) + ":";
             control.Children.Add(lblName);
         }
-
 
         protected static Grid getSharedRowPanel(int cols)
         {
@@ -48,7 +52,7 @@ namespace RogueEssence.Dev
         public virtual Type GetAttributeType() { return null; }
         public Type GetConvertingType() { return typeof(T); }
 
-        public virtual void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, T obj)
+        public virtual void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, T obj, Type[] subGroupStack)
         {
             //go through all members and add for them
             //control starts off clean; this is the control that will have all member controls on it
@@ -80,7 +84,7 @@ namespace RogueEssence.Dev
                         MemberInfo myInfo = tieredFields[ii][0];
                         StackPanel stack = new StackPanel();
                         control.Children.Add(stack);
-                        DataEditor.LoadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
+                        DataEditor.LoadMemberControl(name, obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false, subGroupStack);
                     }
                     else
                     {
@@ -92,7 +96,7 @@ namespace RogueEssence.Dev
                             StackPanel stack = new StackPanel();
                             sharedRowPanel.Children.Add(stack);
                             stack.SetValue(Grid.ColumnProperty, jj);
-                            DataEditor.LoadMemberControl(obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false);
+                            DataEditor.LoadMemberControl(name, obj, stack, myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), myInfo.GetValue(obj), false, subGroupStack);
                         }
                     }
                 }
@@ -104,12 +108,12 @@ namespace RogueEssence.Dev
         }
 
         //TODO: add the ability to tag- using attributes- a specific member with a specific editor
-        public virtual void LoadMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        public virtual void LoadMemberControl(string parent, T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
-            DataEditor.LoadClassControls(control, name, type, attributes, member, isWindow);
+            DataEditor.LoadClassControls(control, parent, name, type, attributes, member, isWindow, subGroupStack);
         }
 
-        public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             try
             {
@@ -142,7 +146,7 @@ namespace RogueEssence.Dev
                     if (tieredFields[ii].Count == 1)
                     {
                         MemberInfo myInfo = tieredFields[ii][0];
-                        object member = DataEditor.SaveMemberControl(obj, (StackPanel)control.Children[controlIndex], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false);
+                        object member = DataEditor.SaveMemberControl(obj, (StackPanel)control.Children[controlIndex], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false, subGroupStack);
                         myInfo.SetValue(obj, member);
                         controlIndex++;
                     }
@@ -153,7 +157,7 @@ namespace RogueEssence.Dev
                         for (int jj = 0; jj < tieredFields[ii].Count; jj++)
                         {
                             MemberInfo myInfo = tieredFields[ii][jj];
-                            object member = DataEditor.SaveMemberControl(obj, (StackPanel)sharedRowControl.Children[jj], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false);
+                            object member = DataEditor.SaveMemberControl(obj, (StackPanel)sharedRowControl.Children[jj], myInfo.Name, myInfo.GetMemberInfoType(), myInfo.GetCustomAttributes(false), false, subGroupStack);
                             myInfo.SetValue(obj, member);
                             sharedRowControlIndex++;
                         }
@@ -169,12 +173,18 @@ namespace RogueEssence.Dev
             }
         }
 
-        public virtual object SaveMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        public virtual object SaveMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
-            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow);
+            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack);
         }
 
-        void IEditor.LoadClassControls(StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+
+        public virtual string GetString(T obj, Type type, object[] attributes)
+        {
+            return obj == null ? "NULL" : obj.ToString();
+        }
+
+        void IEditor.LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             //if you want a class that is by default isolated to a classbox but has a custom UI when opened on its own/overridden to render,
             //override LoadWindowControls, which is called by those methods.
@@ -192,6 +202,10 @@ namespace RogueEssence.Dev
                 subGroup = true;
             if (isWindow)
                 subGroup = true;
+            //force subgroup to be false if this type has appeared in window subgroup stack before
+            //prevents infinite recursion from loading a subgroup for a type that has its own type in a subgroup
+            if (subGroupStack.Contains(type))
+                subGroup = false;
 
             if (!subGroup)
             {
@@ -211,13 +225,12 @@ namespace RogueEssence.Dev
                 MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
                 if (attribute != null)
                 {
-                    //txtValue.Multiline = true;
                     cbxValue.Height = 80;
-                    //txtValue.Size = new Size(0, 80);
+                    //cbxValue.Size = new Size(0, 80);
                 }
                 //else
-                //    txtValue.Size = new Size(0, 20);
-                ClassBoxViewModel mv = new ClassBoxViewModel();
+                //    cbxValue.Size = new Size(0, 20);
+                ClassBoxViewModel mv = new ClassBoxViewModel(new StringConv(type, ReflectionExt.GetPassableAttributes(0, attributes)));
                 mv.LoadFromSource(member);
                 cbxValue.DataContext = mv;
                 control.Children.Add(cbxValue);
@@ -226,13 +239,13 @@ namespace RogueEssence.Dev
                 mv.OnEditItem += (object element, ClassBoxViewModel.EditElementOp op) =>
                 {
                     DataEditForm frmData = new DataEditForm();
-                    frmData.Title = name + "/" + type.Name;
+                    frmData.Title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
 
-                    DataEditor.LoadClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true);
+                    DataEditor.LoadClassControls(frmData.ControlPanel, parent, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0]);
 
                     frmData.SelectedOKEvent += () =>
                     {
-                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true);
+                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0]);
                         op(element);
                         frmData.Close();
                     };
@@ -244,6 +257,37 @@ namespace RogueEssence.Dev
                     control.GetOwningForm().RegisterChild(frmData);
                     frmData.Show();
                 };
+
+                {
+                    ContextMenu copyPasteStrip = new ContextMenu();
+
+                    MenuItem copyToolStripMenuItem = new MenuItem();
+                    MenuItem pasteToolStripMenuItem = new MenuItem();
+
+                    Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+                    list.AddRange(new MenuItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+
+                    copyToolStripMenuItem.Header = "Copy " + type.Name;
+                    pasteToolStripMenuItem.Header = "Paste " + type.Name;
+
+                    copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
+                    {
+                        DataEditor.SetClipboardObj(mv.Object);
+                    };
+                    pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+                    {
+                        Type type1 = DataEditor.clipboardObj.GetType();
+                        Type type2 = type;
+                        if (type2.IsAssignableFrom(type1))
+                            mv.LoadFromSource(DataEditor.clipboardObj);
+                        else
+                            await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    };
+
+                    control.ContextMenu = copyPasteStrip;
+                }
             }
             else
             {
@@ -259,8 +303,12 @@ namespace RogueEssence.Dev
                 //when isWindow is false, (which means either subgroup or defaultsubgroup is active) it's up to the editor itself to decide 
 
                 bool includeDecoration = DefaultDecoration;
+                bool includeLabel = DefaultLabel;
                 if (isWindow)
+                {
                     includeDecoration = false;
+                    includeLabel = false;
+                }
 
 
                 //if it's a class of its own, create a new panel
@@ -285,11 +333,13 @@ namespace RogueEssence.Dev
                     if (children[0] != memberType)
                         throw new TargetException("Types do not match.");
 
-                    StackPanel chosenParent = control;
-                    if (includeDecoration)
-                    {
+                    StackPanel controlParent = control;
+
+                    if (includeLabel)
                         LoadLabelControl(control, name);
 
+                    if (includeDecoration)
+                    {
                         Border border = new Border();
                         border.BorderThickness = new Thickness(1);
                         border.BorderBrush = Avalonia.Media.Brushes.LightGray;
@@ -300,7 +350,13 @@ namespace RogueEssence.Dev
                         groupBoxPanel.Margin = new Thickness(2);
                         border.Child = groupBoxPanel;
 
-                        chosenParent = groupBoxPanel;
+                        controlParent = groupBoxPanel;
+                    }
+                    else
+                    {
+                        StackPanel groupBoxPanel = new StackPanel();
+                        control.Children.Add(groupBoxPanel);
+                        controlParent = groupBoxPanel;
                     }
 
                     {
@@ -319,7 +375,10 @@ namespace RogueEssence.Dev
 
                         copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                         {
-                            object obj = DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes);
+                            Type[] newStack = new Type[subGroupStack.Length + 1];
+                            subGroupStack.CopyTo(newStack, 0);
+                            newStack[newStack.Length-1] = type;
+                            object obj = DataEditor.SaveWindowControls(controlParent, name, children[0], attributes, newStack);
                             DataEditor.SetClipboardObj(obj);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
@@ -328,17 +387,23 @@ namespace RogueEssence.Dev
                             Type type2 = type;
                             if (type2.IsAssignableFrom(type1))
                             {
-                                chosenParent.Children.Clear();
-                                DataEditor.LoadWindowControls(chosenParent, name, type1, attributes, DataEditor.clipboardObj);
+                                controlParent.Children.Clear();
+                                Type[] newStack = new Type[subGroupStack.Length + 1];
+                                subGroupStack.CopyTo(newStack, 0);
+                                newStack[newStack.Length - 1] = type;
+                                DataEditor.LoadWindowControls(controlParent, parent, name, type1, attributes, DataEditor.clipboardObj, newStack);
                             }
                             else
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                         };
 
-                        chosenParent.ContextMenu = copyPasteStrip;
+                        control.ContextMenu = copyPasteStrip;
                     }
-                    chosenParent.Background = Avalonia.Media.Brushes.Transparent;
-                    DataEditor.LoadWindowControls(chosenParent, name, children[0], attributes, member);
+                    controlParent.Background = Avalonia.Media.Brushes.Transparent;
+                    Type[] newStack = new Type[subGroupStack.Length + 1];
+                    subGroupStack.CopyTo(newStack, 0);
+                    newStack[newStack.Length - 1] = type;
+                    DataEditor.LoadWindowControls(controlParent, parent, name, children[0], attributes, member, newStack);
 
                 }
                 else
@@ -349,8 +414,8 @@ namespace RogueEssence.Dev
                     //show the one that is active right now
                     //include a combobox for switching children
 
-                    StackPanel chosenParent = null;
-                    if (includeDecoration)
+                    StackPanel controlParent = null;
+                    if (includeLabel)
                         LoadLabelControl(control, name);
 
                     Grid sharedRowPanel = getSharedRowPanel(2);
@@ -383,13 +448,13 @@ namespace RogueEssence.Dev
                         groupBoxPanel.Margin = new Thickness(2);
                         border.Child = groupBoxPanel;
 
-                        chosenParent = groupBoxPanel;
+                        controlParent = groupBoxPanel;
                     }
                     else
                     {
                         StackPanel groupBoxPanel = new StackPanel();
                         control.Children.Add(groupBoxPanel);
-                        chosenParent = groupBoxPanel;
+                        controlParent = groupBoxPanel;
                     }
 
 
@@ -408,9 +473,12 @@ namespace RogueEssence.Dev
                         {
                             if (refreshPanel)
                             {
-                                chosenParent.Children.Clear();
+                                controlParent.Children.Clear();
                                 object emptyMember = ReflectionExt.CreateMinimalInstance(childType);
-                                DataEditor.LoadWindowControls(chosenParent, name, childType, attributes, emptyMember);//TODO: POTENTIAL INFINITE RECURSION?
+                                Type[] newStack = new Type[subGroupStack.Length + 1];
+                                subGroupStack.CopyTo(newStack, 0);
+                                newStack[newStack.Length - 1] = type;
+                                DataEditor.LoadWindowControls(controlParent, parent, name, childType, attributes, emptyMember, newStack);
                             }
                         });
                         if (childType == member.GetType())
@@ -422,6 +490,7 @@ namespace RogueEssence.Dev
                     var subject = new Subject<List<string>>();
                     cbValue.Bind(ComboBox.ItemsProperty, subject);
                     subject.OnNext(items);
+                    cbValue.KeyDown += ComboBox_ScrollToLetter(items);
                     cbValue.SelectedIndex = selection;
 
                     cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
@@ -445,7 +514,10 @@ namespace RogueEssence.Dev
 
                         copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                         {
-                            object obj = DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes);
+                            Type[] newStack = new Type[subGroupStack.Length + 1];
+                            subGroupStack.CopyTo(newStack, 0);
+                            newStack[newStack.Length - 1] = type;
+                            object obj = DataEditor.SaveWindowControls(controlParent, name, children[cbValue.SelectedIndex], attributes, newStack);
                             DataEditor.SetClipboardObj(obj);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
@@ -467,31 +539,52 @@ namespace RogueEssence.Dev
                                 cbValue.SelectedIndex = type_idx;
                                 refreshPanel = true;
 
-                                chosenParent.Children.Clear();
-                                DataEditor.LoadWindowControls(chosenParent, name, type1, attributes, DataEditor.clipboardObj);
+                                controlParent.Children.Clear();
+                                Type[] newStack = new Type[subGroupStack.Length + 1];
+                                subGroupStack.CopyTo(newStack, 0);
+                                newStack[newStack.Length - 1] = type;
+                                DataEditor.LoadWindowControls(controlParent, parent, name, type1, attributes, DataEditor.clipboardObj, newStack);
                             }
                             else
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
                         };
 
-                        chosenParent.ContextMenu = copyPasteStrip;
+                        control.ContextMenu = copyPasteStrip;
                     }
-                    chosenParent.Background = Avalonia.Media.Brushes.Transparent;
-                    DataEditor.LoadWindowControls(chosenParent, name, children[selection], attributes, member);
+                    controlParent.Background = Avalonia.Media.Brushes.Transparent;
+                    Type[] newStack = new Type[subGroupStack.Length + 1];
+                    subGroupStack.CopyTo(newStack, 0);
+                    newStack[newStack.Length - 1] = type;
+                    DataEditor.LoadWindowControls(controlParent, parent, name, children[selection], attributes, member, newStack);
                 }
             }
         }
 
-        void IEditor.LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, object obj)
+        private EventHandler<Avalonia.Input.KeyEventArgs> ComboBox_ScrollToLetter(List<string> items)
         {
-            LoadWindowControls(control, name, type, attributes, (T)obj);
+            return (object sender, Avalonia.Input.KeyEventArgs e) =>
+            {
+                if (e.Key >= Avalonia.Input.Key.A && e.Key <= Avalonia.Input.Key.Z)
+                {
+                    char letter = (char)((e.Key - Avalonia.Input.Key.A) + 'A');
+                    ComboBox box = (ComboBox)sender;
+                    int letterIndex = items.FindIndex((c) => c.StartsWith(letter.ToString(), StringComparison.InvariantCultureIgnoreCase));
+                    if (letterIndex > -1)
+                        box.ScrollIntoView(letterIndex);
+                }
+            };
         }
 
-        void IEditor.LoadMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow)
+        void IEditor.LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
         {
-            LoadMemberControl((T)obj, control, name, type, attributes, member, isWindow);
+            LoadWindowControls(control, parent, name, type, attributes, (T)obj, subGroupStack);
         }
-        object IEditor.SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+
+        void IEditor.LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
+        {
+            LoadMemberControl(parent, (T)obj, control, name, type, attributes, member, isWindow, subGroupStack);
+        }
+        object IEditor.SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
             int controlIndex = 0;
 
@@ -502,6 +595,9 @@ namespace RogueEssence.Dev
                 subGroup = true;
             if (isWindow)
                 subGroup = true;
+            //force subgroup to be false if this type has appeared in window subgroup stack before
+            if (subGroupStack.Contains(type))
+                subGroup = false;
 
             if (!subGroup)
             {
@@ -528,26 +624,38 @@ namespace RogueEssence.Dev
                 //save using THAT panel
 
                 bool includeDecoration = DefaultDecoration;
+                bool includeLabel = DefaultLabel;
                 if (isWindow)
+                {
                     includeDecoration = false;
+                    includeLabel = false;
+                }
 
 
                 if (children.Length == 1)
                 {
                     StackPanel chosenParent = control;
+                    
+                    if (includeLabel)
+                        controlIndex++;
                     if (includeDecoration)
                     {
-                        controlIndex++;
-
                         Border border = (Border)control.Children[controlIndex];
                         chosenParent = (StackPanel)border.Child;
                     }
-                    return DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes);
+                    else
+                        chosenParent = (StackPanel)control.Children[controlIndex];
+
+                    Type[] newStack = new Type[subGroupStack.Length + 1];
+                    subGroupStack.CopyTo(newStack, 0);
+                    newStack[newStack.Length - 1] = type;
+                    return DataEditor.SaveWindowControls(chosenParent, name, children[0], attributes, newStack);
                 }
                 else
                 {
                     StackPanel chosenParent = null;
-                    if (includeDecoration)
+
+                    if (includeLabel)
                         controlIndex++;
 
                     Grid subGrid = (Grid)control.Children[controlIndex];
@@ -563,20 +671,28 @@ namespace RogueEssence.Dev
                     else
                         chosenParent = (StackPanel)control.Children[controlIndex];
 
-                    return DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes);
+                    Type[] newStack = new Type[subGroupStack.Length + 1];
+                    subGroupStack.CopyTo(newStack, 0);
+                    newStack[newStack.Length - 1] = type;
+                    return DataEditor.SaveWindowControls(chosenParent, name, children[cbValue.SelectedIndex], attributes, newStack);
                 }
 
             }
         }
 
-        object IEditor.SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        object IEditor.SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            return SaveWindowControls(control, name, type, attributes);
+            return SaveWindowControls(control, name, type, attributes, subGroupStack);
         }
 
-        object IEditor.SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow)
+        object IEditor.SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
-            return SaveMemberControl((T)obj, control, name, type, attributes, isWindow);
+            return SaveMemberControl((T)obj, control, name, type, attributes, isWindow, subGroupStack);
+        }
+
+        string IEditor.GetString(object obj, Type type, object[] attributes)
+        {
+            return GetString((T)obj, type, attributes);
         }
     }
 }

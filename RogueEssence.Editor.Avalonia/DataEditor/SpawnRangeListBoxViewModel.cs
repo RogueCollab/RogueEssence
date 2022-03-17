@@ -15,14 +15,35 @@ namespace RogueEssence.Dev.ViewModels
         public int Start
         {
             get { return start; }
-            set { this.SetIfChanged(ref start, value); }
+            set
+            {
+                start = value;
+                DisplayStart = DisplayStart;
+            }
         }
         private int end;
         public int End
         {
             get { return end; }
-            set { this.SetIfChanged(ref end, value); }
+            set
+            {
+                end = value;
+                DisplayEnd = DisplayEnd;
+            }
         }
+
+
+        public int DisplayStart
+        {
+            get { return start + addMin; }
+            set { this.RaisePropertyChanged(); }
+        }
+        public int DisplayEnd
+        {
+            get { return end + addMax; }
+            set { this.RaisePropertyChanged(); }
+        }
+
         private int weight;
         public int Weight
         {
@@ -35,8 +56,21 @@ namespace RogueEssence.Dev.ViewModels
             get { return val; }
         }
 
-        public SpawnRangeListElement(int start, int end, int weight, object val)
+        private int addMin;
+        private int addMax;
+
+        public string DisplayValue
         {
+            get { return conv.GetString(val); }
+        }
+
+        private StringConv conv;
+
+        public SpawnRangeListElement(StringConv conv, int addMin, int addMax, int start, int end, int weight, object val)
+        {
+            this.conv = conv;
+            this.addMin = addMin;
+            this.addMax = addMax;
             this.start = start;
             this.end = end;
             this.weight = weight;
@@ -49,11 +83,31 @@ namespace RogueEssence.Dev.ViewModels
         public delegate void EditElementOp(int index, object element);
         public delegate void ElementOp(int index, object element, EditElementOp op);
 
+        public StringConv StringConv;
+
         public event ElementOp OnEditItem;
 
+        public bool Index1;
+        public bool Inclusive;
 
-        public SpawnRangeListBoxViewModel()
+        public int AddMin
         {
+            get { return Index1 ? 1 : 0; }
+        }
+        public int AddMax
+        {
+            get
+            {
+                int result = Index1 ? 1 : 0;
+                if (Inclusive)
+                    result -= 1;
+                return result;
+            }
+        }
+
+        public SpawnRangeListBoxViewModel(StringConv conv)
+        {
+            StringConv = conv;
             Collection = new ObservableCollection<SpawnRangeListElement>();
         }
 
@@ -69,14 +123,14 @@ namespace RogueEssence.Dev.ViewModels
                 if (currentElement > -1)
                 {
                     CurrentWeight = Collection[currentElement].Weight;
-                    CurrentStart = Collection[currentElement].Start;
-                    CurrentEnd = Collection[currentElement].End;
+                    CurrentStart = Collection[currentElement].DisplayStart;
+                    CurrentEnd = Collection[currentElement].DisplayEnd;
                 }
                 else
                 {
                     CurrentWeight = 1;
-                    CurrentStart = 0;
-                    CurrentEnd = 1;
+                    CurrentStart = 0 + AddMin;
+                    CurrentEnd = 1 + AddMax;
                 }
             }
         }
@@ -101,7 +155,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.SetIfChanged(ref currentStart, value);
                 if (currentElement > -1)
-                    Collection[currentElement].Start = currentStart;
+                    Collection[currentElement].Start = currentStart - AddMin;
             }
         }
 
@@ -113,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.SetIfChanged(ref currentEnd, value);
                 if (currentElement > -1)
-                    Collection[currentElement].End = currentEnd;
+                    Collection[currentElement].End = currentEnd - AddMax;
             }
         }
 
@@ -133,7 +187,7 @@ namespace RogueEssence.Dev.ViewModels
                 object obj = source.GetSpawn(ii);
                 IntRange range = source.GetSpawnRange(ii);
                 int rate = source.GetSpawnRate(ii);
-                Collection.Add(new SpawnRangeListElement(range.Min, range.Max, rate, obj));
+                Collection.Add(new SpawnRangeListElement(StringConv, AddMin, AddMax, range.Min, range.Max, rate, obj));
             }
         }
 
@@ -141,13 +195,13 @@ namespace RogueEssence.Dev.ViewModels
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
-            Collection[index] = new SpawnRangeListElement(Collection[index].Start, Collection[index].End, Collection[index].Weight, element);
+            Collection[index] = new SpawnRangeListElement(StringConv, AddMin, AddMax, Collection[index].Start, Collection[index].End, Collection[index].Weight, element);
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
-            Collection.Insert(index, new SpawnRangeListElement(0, 1, 10, element));
+            Collection.Insert(index, new SpawnRangeListElement(StringConv, AddMin, AddMax, 0, 1, 10, element));
         }
 
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)

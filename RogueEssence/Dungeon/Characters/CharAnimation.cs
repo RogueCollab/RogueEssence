@@ -126,6 +126,8 @@ namespace RogueEssence.Dungeon
 
             if (drawEffects.Contains(DrawEffect.Absent))
                 opacity = 0;
+            else if (drawEffects.Contains(DrawEffect.Transparent))
+                opacity = 128;
 
             if (drawEffects.Contains(DrawEffect.Shaking))
             {
@@ -266,6 +268,13 @@ namespace RogueEssence.Dungeon
             Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
             return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, false, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
         }
+    }
+
+    public class IdleAnimAction : CharAnimIdle
+    {
+        public int BaseFrameType { get; set; }
+        protected override int AnimFrameType { get { return BaseFrameType; } }
+        public IdleAnimAction(Loc loc, Dir8 dir, int frameType) : base(loc, dir) { AnimLoc = loc; CharDir = dir; BaseFrameType = frameType; }
     }
 
     public class CharAnimPose : StaticCharAnimation

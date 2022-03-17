@@ -23,9 +23,16 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return value; }
         }
-
-        public DictionaryElement(object key, object value)
+        public string DisplayValue
         {
+            get { return conv.GetString(value); }
+        }
+
+        private StringConv conv;
+
+        public DictionaryElement(StringConv conv, object key, object value)
+        {
+            this.conv = conv;
             this.key = key;
             this.value = value;
         }
@@ -49,10 +56,13 @@ namespace RogueEssence.Dev.ViewModels
         public event ElementOp OnEditItem;
         public event Action OnMemberChanged;
 
+        public StringConv StringConv;
+
         private Window parent;
 
-        public DictionaryBoxViewModel(Window parent)
+        public DictionaryBoxViewModel(Window parent, StringConv conv)
         {
+            StringConv = conv;
             this.parent = parent;
             Collection = new ObservableCollection<DictionaryElement>();
         }
@@ -74,7 +84,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             Collection.Clear();
             foreach (object obj in source.Keys)
-                Collection.Add(new DictionaryElement(obj, source[obj]));
+                Collection.Add(new DictionaryElement(StringConv, obj, source[obj]));
         }
 
 
@@ -82,7 +92,7 @@ namespace RogueEssence.Dev.ViewModels
         private void editItem(object key, object element)
         {
             int index = getIndexFromKey(key);
-            Collection[index] = new DictionaryElement(Collection[index].Key, element);
+            Collection[index] = new DictionaryElement(StringConv, Collection[index].Key, element);
             OnMemberChanged?.Invoke();
         }
 
@@ -99,7 +109,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void insertItem(object key, object element)
         {
-            Collection.Add(new DictionaryElement(key, element));
+            Collection.Add(new DictionaryElement(StringConv, key, element));
             OnMemberChanged?.Invoke();
         }
 

@@ -85,7 +85,7 @@ namespace RogueEssence.Menu
                 changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[5].CurrentChoice];
                 DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[5].CurrentChoice];
 
-                Text.SetCultureCode(DiagManager.Instance.CurSettings.Language.ToString());
+                Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
             }
 
             DiagManager.Instance.SaveSettings(DiagManager.Instance.CurSettings);

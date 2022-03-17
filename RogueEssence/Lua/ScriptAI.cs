@@ -23,7 +23,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.SetCharacterAI(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -39,7 +39,7 @@ namespace RogueEssence.Script
             }
             catch(Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.DisableCharacterAI(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -55,7 +55,23 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptAI.DisableCharacterAI(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+        }
+
+        /// <summary>
+        /// Enable a given groundchar's AI processing if its currently disabled
+        /// </summary>
+        /// <param name="ch"></param>
+        public void SetAIState(GroundChar ch, string state)
+        {
+            try
+            {
+                ch.SetAIState(state);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 

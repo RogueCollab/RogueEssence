@@ -21,17 +21,15 @@ namespace RogueEssence.Dev
 
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, String member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             //for strings, use an edit textbox
             TextBox txtValue = new TextBox();
             //txtValue.Dock = DockStyle.Fill;
             MultilineAttribute attribute = ReflectionExt.FindAttribute<MultilineAttribute>(attributes);
             if (attribute != null)
             {
-                //txtValue.Multiline = true;
+                txtValue.AcceptsReturn = true;
                 txtValue.Height = 80;
                 //txtValue.Size = new Size(0, 80);
             }
@@ -42,10 +40,9 @@ namespace RogueEssence.Dev
         }
 
 
-        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override String SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
 
             TextBox txtValue = (TextBox)control.Children[controlIndex];
             return txtValue.Text;

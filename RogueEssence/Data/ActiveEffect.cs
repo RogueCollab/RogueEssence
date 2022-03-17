@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueElements;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Data
 {
@@ -15,11 +16,12 @@ namespace RogueEssence.Data
 
         public override int GetID() { return -1; }
 
-        public override string GetName()
+        public override string GetDisplayName()
         {
             return null;
         }
 
+        public StateCollection<UniversalState> UniversalStates;
         public PriorityList<BattleEvent> BeforeTryActions;
         public PriorityList<BattleEvent> BeforeActions;
         public PriorityList<BattleEvent> OnActions;
@@ -46,7 +48,8 @@ namespace RogueEssence.Data
         public PriorityList<SingleCharEvent> OnDeaths;
 
         public PriorityList<RefreshEvent> OnRefresh;
-        
+        public PriorityList<RefreshEvent> OnMapRefresh;
+
         public PriorityList<HPChangeEvent> ModifyHPs;
         public PriorityList<HPChangeEvent> RestoreHPs;
 
@@ -54,6 +57,8 @@ namespace RogueEssence.Data
 
         public ActiveEffect()
         {
+            UniversalStates = new StateCollection<UniversalState>();
+
             BeforeTryActions = new PriorityList<BattleEvent>();
             BeforeActions = new PriorityList<BattleEvent>();
             OnActions = new PriorityList<BattleEvent>();
@@ -78,6 +83,7 @@ namespace RogueEssence.Data
             OnDeaths = new PriorityList<SingleCharEvent>();
 
             OnRefresh = new PriorityList<RefreshEvent>();
+            OnMapRefresh = new PriorityList<RefreshEvent>();
 
             ModifyHPs = new PriorityList<HPChangeEvent>();
             RestoreHPs = new PriorityList<HPChangeEvent>();
@@ -85,5 +91,88 @@ namespace RogueEssence.Data
             InitActionData = new PriorityList<BattleEvent>();
         }
 
+        public void AddOther(ActiveEffect other)
+        {
+            foreach (UniversalState state in other.UniversalStates)
+                UniversalStates.Set(state);
+
+            addOtherPriorityList(BeforeTryActions, other.BeforeTryActions);
+            addOtherPriorityList(BeforeActions, other.BeforeActions);
+            addOtherPriorityList(OnActions, other.OnActions);
+            addOtherPriorityList(BeforeExplosions, other.BeforeExplosions);
+            addOtherPriorityList(BeforeHits, other.BeforeHits);
+            addOtherPriorityList(OnHits, other.OnHits);
+            addOtherPriorityList(OnHitTiles, other.OnHitTiles);
+            addOtherPriorityList(AfterActions, other.AfterActions);
+            addOtherPriorityList(ElementEffects, other.ElementEffects);
+
+            addOtherPriorityList(BeforeStatusAdds, other.BeforeStatusAdds);
+            addOtherPriorityList(OnStatusAdds, other.OnStatusAdds);
+            addOtherPriorityList(OnStatusRemoves, other.OnStatusRemoves);
+            addOtherPriorityList(OnMapStatusAdds, other.OnMapStatusAdds);
+            addOtherPriorityList(OnMapStatusRemoves, other.OnMapStatusRemoves);
+
+            addOtherPriorityList(OnMapStarts, other.OnMapStarts);
+            addOtherPriorityList(OnTurnStarts, other.OnTurnStarts);
+            addOtherPriorityList(OnTurnEnds, other.OnTurnEnds);
+            addOtherPriorityList(OnMapTurnEnds, other.OnMapTurnEnds);
+            addOtherPriorityList(OnWalks, other.OnWalks);
+            addOtherPriorityList(OnDeaths, other.OnDeaths);
+
+            addOtherPriorityList(OnRefresh, other.OnRefresh);
+            addOtherPriorityList(OnMapRefresh, other.OnMapRefresh);
+
+            addOtherPriorityList(ModifyHPs, other.ModifyHPs);
+            addOtherPriorityList(RestoreHPs, other.RestoreHPs);
+
+            addOtherPriorityList(InitActionData, other.InitActionData);
+        }
+
+        private void addOtherPriorityList<T>(PriorityList<T> list, PriorityList<T> other)
+        {
+            foreach (Priority priority in other.GetPriorities())
+            {
+                foreach (T step in other.GetItems(priority))
+                    list.Add(priority, step);
+            }
+        }
+
+        public int GetTotalCount()
+        {
+            int total = 0;
+
+            total += BeforeTryActions.Count;
+            total += BeforeActions.Count;
+            total += OnActions.Count;
+            total += BeforeExplosions.Count;
+            total += BeforeHits.Count;
+            total += OnHits.Count;
+            total += OnHitTiles.Count;
+            total += AfterActions.Count;
+            total += ElementEffects.Count;
+
+            total += BeforeStatusAdds.Count;
+            total += OnStatusAdds.Count;
+            total += OnStatusRemoves.Count;
+            total += OnMapStatusAdds.Count;
+            total += OnMapStatusRemoves.Count;
+
+            total += OnMapStarts.Count;
+            total += OnTurnStarts.Count;
+            total += OnTurnEnds.Count;
+            total += OnMapTurnEnds.Count;
+            total += OnWalks.Count;
+            total += OnDeaths.Count;
+
+            total += OnRefresh.Count;
+            total += OnMapRefresh.Count;
+
+            total += ModifyHPs.Count;
+            total += RestoreHPs.Count;
+
+            total += InitActionData.Count;
+
+            return total;
+        }
     }
 }

@@ -21,11 +21,7 @@ namespace RogueEssence.Ground
             EntName = name;
             Position = pos;
             Direction = dir;
-            Bounds = new Rect(Position.X, Position.Y, 8, 8); //Static size, so its easier to click on it!
-            if (pos == null)
-                pos = new Loc(-1,-1);
-            if (name == null)
-                name = "";
+            Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
         }
         protected GroundMarker(GroundMarker other) : base(other)
         { }
@@ -42,13 +38,11 @@ namespace RogueEssence.Ground
             return false;
         }
 
-        /// <summary>
-        /// For markers this doesn't do anything
-        /// </summary>
-        /// <returns></returns>
-        public override IEnumerable<LuaEngine.EEntLuaEventTypes> ActiveLuaCallbacks()
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext cntxt)
         {
-            return new List<LuaEngine.EEntLuaEventTypes>();
+            Collider.Width = GroundAction.HITBOX_WIDTH;
+            Collider.Height = GroundAction.HITBOX_HEIGHT;
         }
     }
 }

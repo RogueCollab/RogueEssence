@@ -168,22 +168,28 @@ namespace RogueEssence.Dungeon
                 //play sound
                 GameManager.Instance.BattleSE(fx.Sound);
                 //the animation
-                FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
-                fxEmitter.SetupEmit(owner.MapLoc, owner.MapLoc, owner.CharDir);
-                DungeonScene.Instance.CreateAnim(fxEmitter, DrawLayer.NoDraw);
-                DungeonScene.Instance.SetScreenShake(new ScreenMover(fx.ScreenMovement));
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, owner.CharLoc));
+                if (!owner.Unidentifiable)
+                {
+                    FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
+                    fxEmitter.SetupEmit(owner.MapLoc, owner.MapLoc, owner.CharDir);
+                    DungeonScene.Instance.CreateAnim(fxEmitter, DrawLayer.NoDraw);
+                    DungeonScene.Instance.SetScreenShake(new ScreenMover(fx.ScreenMovement));
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, owner.CharLoc));
+                }
             }
         }
         protected IEnumerator<YieldInstruction> PassEmitter(Character owner)
         {
             GameManager.Instance.BattleSE(ActionFX.Sound);
-            FiniteEmitter emitter = (FiniteEmitter)ActionFX.Emitter.Clone();
-            Loc origin = owner.MapLoc + HitOffset * GraphicsManager.TileSize;
-            emitter.SetupEmit(origin, origin, owner.CharDir);
-            DungeonScene.Instance.CreateAnim(emitter, DrawLayer.NoDraw);
-            DungeonScene.Instance.SetScreenShake(new ScreenMover(ActionFX.ScreenMovement));
-            yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(ActionFX.Delay, owner.CharLoc));
+            if (!owner.Unidentifiable)
+            {
+                FiniteEmitter emitter = (FiniteEmitter)ActionFX.Emitter.Clone();
+                Loc origin = owner.MapLoc + HitOffset * GraphicsManager.TileSize;
+                emitter.SetupEmit(origin, origin, owner.CharDir);
+                DungeonScene.Instance.CreateAnim(emitter, DrawLayer.NoDraw);
+                DungeonScene.Instance.SetScreenShake(new ScreenMover(ActionFX.ScreenMovement));
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(ActionFX.Delay, owner.CharLoc));
+            }
         }
         public abstract IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect);
 
@@ -888,7 +894,7 @@ namespace RogueEssence.Dungeon
         private void CreateHitbox(IActionContext actionContext, Dir8 testDir, List<Hitbox> hitboxes)
         {
             int modRange = GetRangeBlock(actionContext.User, actionContext.User.CharLoc + HitOffset, TargetAlignments, testDir, 0, actionContext.ActionType == BattleActionType.Throw);
-            if (Speed > 0)
+            if (Speed > 0 && !actionContext.User.Unidentifiable)
             {
                 ShootingEmitter shotEmitter = (ShootingEmitter)StreamEmitter.Clone();
                 shotEmitter.SetupEmit(actionContext.User.MapLoc + HitOffset * GraphicsManager.TileSize, testDir, modRange * GraphicsManager.TileSize, Speed * GraphicsManager.TileSize);

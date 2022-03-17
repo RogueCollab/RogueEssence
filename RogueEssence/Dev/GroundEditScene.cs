@@ -14,6 +14,16 @@ namespace RogueEssence.Dev
     //The game engine for Ground Mode, in which the player has free movement
     public partial class GroundEditScene : BaseGroundScene
     {
+        public enum EditorMode
+        {
+            None = -1,
+            Texture,
+            Decoration,
+            Wall,
+            Entity,
+            Other
+        }
+
         private static GroundEditScene instance;
         public static void InitInstance()
         {
@@ -29,40 +39,19 @@ namespace RogueEssence.Dev
         public Loc FocusedLoc;
         public Loc DiffLoc;
 
-        public AutoTile AutoTileInProgress;
-        public bool? BlockInProgress;
-        public Rect RectInProgress;
+        public EditorMode EditMode;
+
+        public CanvasStroke<AutoTile> AutoTileInProgress;
+        public CanvasStroke<bool> BlockInProgress;
+        public GroundAnim DecorationInProgress;
+        public GroundEntity EntityInProgress;
+
         public bool ShowWalls;
+        public bool ShowObjectBoxes;
+        public bool ShowEntityBoxes;
 
-        public Rect TileRectPreview()
-        {
-            return RectPreview(ZoneManager.Instance.CurrentGround.TileSize);
-        }
-        public Rect BlockRectPreview()
-        {
-            return RectPreview(GraphicsManager.TEX_SIZE);
-        }
-        public Rect RectPreview(int size)
-        {
-            Rect resultRect = new Rect(RectInProgress.Start / size, RectInProgress.Size / size);
-            if (resultRect.Size.X <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X + resultRect.Size.X, resultRect.Start.Y);
-                resultRect.Size = new Loc(-resultRect.Size.X + 1, resultRect.Size.Y);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X + 1, resultRect.Size.Y);
-
-            if (resultRect.Size.Y <= 0)
-            {
-                resultRect.Start = new Loc(resultRect.Start.X, resultRect.Start.Y + resultRect.Size.Y);
-                resultRect.Size = new Loc(resultRect.Size.X, -resultRect.Size.Y + 1);
-            }
-            else
-                resultRect.Size = new Loc(resultRect.Size.X, resultRect.Size.Y + 1);
-
-            return resultRect;
-        }
+        public GroundEntity SelectedEntity;
+        public GroundAnim SelectedDecoration;
 
         public override void UpdateMeta()
         {
@@ -71,7 +60,7 @@ namespace RogueEssence.Dev
             InputManager input = GameManager.Instance.MetaInputManager;
             var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
 
-            if (groundEditor.Active)
+            if (groundEditor != null && groundEditor.Active)
                 groundEditor.ProcessInput(input);
         }
 
@@ -95,7 +84,6 @@ namespace RogueEssence.Dev
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)
         {
             Loc dirLoc = Loc.Zero;
-            bool fast = !input.BaseKeyDown(Keys.LeftShift);
 
             for (int ii = 0; ii < DirKeys.Length; ii++)
             {
@@ -103,7 +91,27 @@ namespace RogueEssence.Dev
                     dirLoc = dirLoc + ((Dir4)ii).GetLoc();
             }
 
-            DiffLoc = dirLoc * (fast ? 8 : 1);
+            bool slow = input.BaseKeyDown(Keys.LeftShift);
+            int speed = 8;
+            if (slow)
+                speed = 1;
+            else
+            {
+                switch (GraphicsManager.Zoom)
+                {
+                    case GraphicsManager.GameZoom.x8Near:
+                        speed = 1;
+                        break;
+                    case GraphicsManager.GameZoom.x4Near:
+                        speed = 2;
+                        break;
+                    case GraphicsManager.GameZoom.x2Near:
+                        speed = 4;
+                        break;
+                }
+            }
+
+            DiffLoc = dirLoc * speed;
 
             yield break;
         }
@@ -125,15 +133,7 @@ namespace RogueEssence.Dev
                 FocusedLoc += DiffLoc;
                 DiffLoc = new Loc();
 
-
-                if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                    FocusedLoc = new Loc(Math.Max(GraphicsManager.ScreenWidth / 2, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth - GraphicsManager.ScreenWidth / 2)),
-                        Math.Max(GraphicsManager.ScreenHeight / 2, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight - GraphicsManager.ScreenHeight / 2)));
-                else
-                    FocusedLoc = new Loc(Math.Max(0, Math.Min(FocusedLoc.X, ZoneManager.Instance.CurrentGround.GroundWidth)),
-                        Math.Max(0, Math.Min(FocusedLoc.Y, ZoneManager.Instance.CurrentGround.GroundHeight)));
-
-                UpdateCam(FocusedLoc);
+                UpdateCam(ref FocusedLoc);
 
                 base.Update(elapsedTime);
             }
@@ -149,7 +149,7 @@ namespace RogueEssence.Dev
             base.DrawGame(spriteBatch);
 
 
-            if (DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
+            if (DiagManager.Instance.DevEditor.GroundEditor != null && DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
             {
                 if (AutoTileInProgress != null)
                 {
@@ -157,13 +157,15 @@ namespace RogueEssence.Dev
                     {
                         for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                         {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)) &&
-                                Collision.InBounds(TileRectPreview(), new Loc(ii, jj)))
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, testLoc) &&
+                                AutoTileInProgress.IncludesLoc(testLoc))
                             {
-                                if (AutoTileInProgress.Equals(new AutoTile(new TileLayer())))
+                                AutoTile brush = AutoTileInProgress.GetBrush(testLoc);
+                                if (brush.IsEmpty())
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.X, jj * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize, ZoneManager.Instance.CurrentGround.TileSize), null, Color.Black);
                                 else
-                                    AutoTileInProgress.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
+                                    brush.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
                             }
                         }
                     }
@@ -177,11 +179,12 @@ namespace RogueEssence.Dev
                     {
                         for (int ii = viewTileRect.X * texSize; ii < viewTileRect.End.X * texSize; ii++)
                         {
-                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, new Loc(ii, jj)))
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width * texSize, ZoneManager.Instance.CurrentGround.Height * texSize, testLoc))
                             {
                                 bool blocked = ZoneManager.Instance.CurrentGround.GetObstacle(ii, jj) == 1u;
-                                if (BlockInProgress != null && Collision.InBounds(BlockRectPreview(), new Loc(ii, jj)))
-                                    blocked = BlockInProgress.Value;
+                                if (BlockInProgress != null && BlockInProgress.IncludesLoc(testLoc))
+                                    blocked = BlockInProgress.GetBrush(testLoc);
 
                                 if (blocked)
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TEX_SIZE - ViewRect.X, jj * GraphicsManager.TEX_SIZE - ViewRect.Y, GraphicsManager.TEX_SIZE, GraphicsManager.TEX_SIZE), null, Color.Red * 0.6f);
@@ -190,34 +193,85 @@ namespace RogueEssence.Dev
                     }
                 }
 
-
-                //DevHasGraphics()
-                //Draw Entity bounds
-                GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
-                foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
+                if (ShowObjectBoxes)
                 {
-                    if (entity.DevEntitySelected)
+                    //Draw Entity bounds
+                    GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
+                    foreach (GroundAnim entity in ZoneManager.Instance.CurrentGround.IterateDecorations())
                     {
-                        //Invert the color of selected entities
-                        dbg.DrawColor = new Color(entity.DevEntColoring.B, entity.DevEntColoring.G, entity.DevEntColoring.R, entity.DevEntColoring.A);
-                        dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(entity.Bounds, 92);
+                        Rect bounds = entity.GetBounds();
+                        if (SelectedDecoration == entity)
+                        {
+                            //Invert the color of selected entities
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawColor = Color.BlueViolet;
+                            dbg.DrawFilledBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1), 92);
+                        }
+                        else
+                        {
+                            //Draw boxes around other entities with graphics using low opacity
+                            dbg.DrawColor = new Color(Color.BlueViolet.R, Color.BlueViolet.G, Color.BlueViolet.B, 92);
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
+                        }
                     }
-                    else if (!entity.DevHasGraphics())
+                }
+
+                if (DecorationInProgress != null)
+                {
+                    DecorationInProgress.Draw(spriteBatch, ViewRect.Start);
+                    if (ShowObjectBoxes)
                     {
-                        //Draw entities with no graphics of their own as a filled box
-                        dbg.DrawColor = entity.DevEntColoring;
+                        Rect bounds = DecorationInProgress.GetBounds();
+                        GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                        dbg.DrawColor = new Color(255, 255, 255, 92);
                         dbg.LineThickness = 1.0f;
-                        dbg.DrawFilledBox(entity.Bounds, 128);
+                        dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
                     }
-                    else
+                }
+
+                if (ShowEntityBoxes)
+                {
+                    //Draw Entity bounds
+                    GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
+                    foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
                     {
-                        //Draw boxes around other entities with graphics using low opacity
-                        dbg.DrawColor = new Color(entity.DevEntColoring.R, entity.DevEntColoring.G, entity.DevEntColoring.B, 92);
-                        dbg.LineThickness = 1.0f;
-                        dbg.DrawBox(entity.Bounds);
+                        if (SelectedEntity == entity)
+                        {
+                            //Invert the color of selected entities
+                            dbg.DrawColor = new Color(entity.DevEntColoring.B, entity.DevEntColoring.G, entity.DevEntColoring.R, entity.DevEntColoring.A);
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 92);
+                        }
+                        else if (!entity.DevHasGraphics())
+                        {
+                            //Draw entities with no graphics of their own as a filled box
+                            dbg.DrawColor = entity.DevEntColoring;
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawFilledBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1), 128);
+                        }
+                        else
+                        {
+                            //Draw boxes around other entities with graphics using low opacity
+                            dbg.DrawColor = new Color(entity.DevEntColoring.R, entity.DevEntColoring.G, entity.DevEntColoring.B, 92);
+                            dbg.LineThickness = 1.0f;
+                            dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
+                        }
+                        //And don't draw bounds of entities that have a graphics representation
                     }
-                    //And don't draw bounds of entities that have a graphics representation
+                }
+
+                if (EntityInProgress != null)
+                {
+                    GroundEntity entity = EntityInProgress;
+                    entity.Draw(spriteBatch, ViewRect.Start);
+                    if (ShowEntityBoxes)
+                    {
+                        GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                        dbg.DrawColor = new Color(255, 255, 255, 92);
+                        dbg.LineThickness = 1.0f;
+                        dbg.DrawBox(new Rect(entity.Bounds.X, entity.Bounds.Y, entity.Width - 1, entity.Height - 1));
+                    }
                 }
             }
 
@@ -247,6 +301,24 @@ namespace RogueEssence.Dev
             base.DrawDev(spriteBatch);
         }
 
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                if (EditMode == EditorMode.Decoration)
+                {
+                    if (SelectedDecoration != null)
+                        GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", SelectedDecoration.MapLoc.X, SelectedDecoration.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                }
+                else
+                {
+                    if (SelectedEntity != null)
+                        GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", SelectedEntity.MapLoc.X, SelectedEntity.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                }
+            }
+        }
 
         public void EnterGroundEdit(int entryPoint)
         {

@@ -4,13 +4,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.DevTabMods">
   <Design.DataContext>
     <vm:DevTabModsViewModel/>
   </Design.DataContext>
+  <UserControl.Resources>
+    <converters:NullableToStringConverter x:Key="NullableToStringConverter"/>
+  </UserControl.Resources>
   <Grid Margin="4">
     <Grid.RowDefinitions>
-      <RowDefinition Height="20"/>
+      <RowDefinition Height="32"/>
       <RowDefinition Height="*"/>
       <RowDefinition Height="40"/>
     </Grid.RowDefinitions>
@@ -19,11 +23,12 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <TextBlock VerticalAlignment="Bottom" Text="{Binding CurrentMod}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"></TextBlock>
+    <TextBlock VerticalAlignment="Bottom" Text="{Binding CurrentMod, Converter={StaticResource NullableToStringConverter}, StringFormat=Currently Editing Mod: {0}}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"></TextBlock>
+    <Button Command="{Binding btnEdit_Click}" IsEnabled="{Binding CurrentMod, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="4" Grid.Row="0" Grid.Column="2">Edit</Button>
     <TreeView Items="{Binding Mods}" SelectedItem="{Binding ChosenMod}" SelectionMode="AlwaysSelected" Margin="4" Grid.Row="1" Grid.ColumnSpan="3">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:ModsNodeViewModel" ItemsSource="{Binding Nodes}">
-          <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding Name, Converter={StaticResource NullableToStringConverter}}" VerticalAlignment="Center"/>
         </TreeDataTemplate>
       </TreeView.DataTemplates>
     </TreeView>

@@ -19,6 +19,9 @@ namespace RogueEssence.Data
         public int FinalStatement;
         public ReplayData RescueReplay;
 
+        public AOKMail()
+        { }
+
         public AOKMail(SOSMail sos, GameProgress progress, string dateTime, ReplayData replay)
         {
             TeamName = sos.TeamName;

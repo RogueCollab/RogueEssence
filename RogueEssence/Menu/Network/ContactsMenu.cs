@@ -48,7 +48,7 @@ namespace RogueEssence.Menu
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.Name, () => { chooseSelf(DataManager.Instance.Save.UUID); }, true, TextIndigo));
+            flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetDisplayName(), () => { chooseSelf(DataManager.Instance.Save.UUID); }, true, TextIndigo));
             for (int ii = 0; ii < DiagManager.Instance.CurSettings.ContactList.Count; ii++)
             {
                 int index = ii;
@@ -61,14 +61,14 @@ namespace RogueEssence.Menu
                 flatChoices.Add(new MenuTextChoice(entryText, () => { choose(index); }));
             }
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_ADD_NEW"), startAddNew, true, Color.Yellow));
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ContactMiniSummary(Rect.FromPoints(new Loc(8,
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 8, GraphicsManager.ScreenHeight - 8)));
 
-            Initialize(new Loc(8, 8), 196, Text.FormatKey("MENU_CONTACTS_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(8, 8), 196, Text.FormatKey("MENU_CONTACTS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
 
         }
 
@@ -77,10 +77,9 @@ namespace RogueEssence.Menu
         {
             if (!itemPresence[index])
             {
-                //TODO: make this calculation not require item loading.
                 itemPresence[index] = true;
-                ItemData entry = DataManager.Instance.GetItem(index);
-                if (entry.ItemStates.Contains<MaterialState>())
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                if (itemEntry.ContainsState<MaterialState>())
                     return true;
             }
             return false;

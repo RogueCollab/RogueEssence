@@ -32,7 +32,7 @@ namespace RogueEssence.Dungeon
             if (context.SkillUsedUp > -1 && !context.User.Dead)
             {
                 SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
-                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.Name, entry.Name.ToLocal()));
+                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
             }
@@ -50,13 +50,13 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
             Character target = teamSlot == -1 ? character : character.MemberTeam.Players[teamSlot];
             if (target.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", target.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", target.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -84,7 +84,7 @@ namespace RogueEssence.Dungeon
         {
             if (character.AttackOnly)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.Name), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -133,8 +133,7 @@ namespace RogueEssence.Dungeon
             }
             yield return new WaitUntil(AnimationsOver);
 
-            if (!String.IsNullOrEmpty(context.actionMsg))
-                LogMsg(context.actionMsg);
+            context.PrintActionMsg();
 
             yield break;
         }
@@ -148,6 +147,10 @@ namespace RogueEssence.Dungeon
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
+                else if (entry.MaxStack < 0)
+                {
+                    //reusable, do nothing.
+                }
                 else
                     ((ExplorerTeam)context.User.MemberTeam).RemoveFromInv(context.UsageSlot);
             }
@@ -157,6 +160,10 @@ namespace RogueEssence.Dungeon
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
+                else if (entry.MaxStack < 0)
+                {
+                    //reusable, do nothing.
+                }
                 else
                     context.User.DequipItem();
             }
@@ -167,14 +174,17 @@ namespace RogueEssence.Dungeon
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
                 if (entry.MaxStack > 1 && item.HiddenValue > 1)
                     item.HiddenValue--;
+                else if (entry.MaxStack < 0)
+                {
+                    //reusable, do nothing.
+                }
                 else
                     ZoneManager.Instance.CurrentMap.Items.RemoveAt(mapSlot);
             }
 
             yield return new WaitUntil(AnimationsOver);
 
-            if (!String.IsNullOrEmpty(context.actionMsg))
-                LogMsg(context.actionMsg);
+            context.PrintActionMsg();
 
             yield break;
         }
@@ -185,7 +195,7 @@ namespace RogueEssence.Dungeon
         {
             //this is where the delays between target hits are managed
             context.HitboxAction.Distance += Math.Min(Math.Max(-3, context.RangeMod), 3);
-            yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformCharAction(context.HitboxAction.Clone(), context));
+            yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformBattleAction(context.HitboxAction.Clone(), context));
             //if (context.User.CharLoc == context.StrikeEndTile && context.StrikeEndTile != context.StrikeStartTile)
             //    yield return CoroutinesManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
 
@@ -250,6 +260,8 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(PerformAction(context));
             if (context.CancelState.Cancel) yield break;
             yield return CoroutineManager.Instance.StartCoroutine(context.User.AfterActionTaken(context));
+            //activate any traps that may have been queued from the action
+            yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(context.User));
         }
 
         public IEnumerator<YieldInstruction> RepeatActions(BattleContext context)
@@ -429,12 +441,15 @@ namespace RogueEssence.Dungeon
 
             //play sound
             GameManager.Instance.BattleSE(data.HitFX.Sound);
-            //the animation
-            FiniteEmitter endEmitter = (FiniteEmitter)data.HitFX.Emitter.Clone();
-            endEmitter.SetupEmit(target.MapLoc, user.MapLoc, target.CharDir);
-            CreateAnim(endEmitter, DrawLayer.NoDraw);
-            SetScreenShake(new ScreenMover(data.HitFX.ScreenMovement));
-            yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(data.HitFX.Delay, target.CharLoc));
+            if (CanIdentifyCharOnScreen(user) && CanIdentifyCharOnScreen(target))
+            {
+                //the animation
+                FiniteEmitter endEmitter = (FiniteEmitter)data.HitFX.Emitter.Clone();
+                endEmitter.SetupEmit(target.MapLoc, user.MapLoc, target.CharDir);
+                CreateAnim(endEmitter, DrawLayer.NoDraw);
+                SetScreenShake(new ScreenMover(data.HitFX.ScreenMovement));
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(data.HitFX.Delay, target.CharLoc));
+            }
         }
 
 
@@ -449,7 +464,17 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessBattleFX(Character user, Character target, BattleFX fx)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(user.CharLoc, target.CharLoc, target.CharDir, fx));
+            //play sound
+            GameManager.Instance.BattleSE(fx.Sound);
+            if (CanIdentifyCharOnScreen(user) && CanIdentifyCharOnScreen(target))
+            {
+                //the animation
+                FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
+                fxEmitter.SetupEmit(target.CharLoc * GraphicsManager.TileSize, user.CharLoc * GraphicsManager.TileSize, user.CharDir);
+                CreateAnim(fxEmitter, DrawLayer.NoDraw);
+                SetScreenShake(new ScreenMover(fx.ScreenMovement));
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, target.CharLoc));
+            }
         }
         public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx)
         {
@@ -595,7 +620,6 @@ namespace RogueEssence.Dungeon
             }
         }
 
-
         public Alignment GetMatchup(Character attacker, Character target)
         {
             return GetMatchup(attacker, target, true);
@@ -616,19 +640,38 @@ namespace RogueEssence.Dungeon
 
             CharIndex attackerIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(attacker);
             CharIndex targetIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(target);
-            if ((attackerIndex.Faction == Faction.Foe) == (targetIndex.Faction == Faction.Foe))
+            //members of the same faction are friends
+            if (attackerIndex.Faction == targetIndex.Faction)
                 return Alignment.Friend;
-            
+            //if any faction is friend, then the matchup might be friend.
+            if (attackerIndex.Faction == Faction.Friend || targetIndex.Faction == Faction.Friend)
+            {
+                bool foeTruce = true; // allies and foes won't attack each other, unless this is set to false
+                if (attackerIndex.Faction == Faction.Foe || targetIndex.Faction == Faction.Foe)
+                {
+                    foeTruce &= !attacker.MemberTeam.FoeConflict;
+                    foeTruce &= !target.MemberTeam.FoeConflict;
+                }
+                if (foeTruce)
+                    return Alignment.Friend;
+            }
+
+            //at this point, the entities are confirmed to be of different factions and neither is of faction Friend.  Or one of them is, but the other is foe and neutralFoeConflict is true.
             return Alignment.Foe;
         }
 
         public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets)
         {
+            return IsTargeted(attacker, target, acceptedTargets, true);
+        }
+
+        public bool IsTargeted(Character attacker, Character target, Alignment acceptedTargets, bool action)
+        {
             if (attacker == null || target == null)
                 return true;
             if (target.Dead)
                 return false;
-            Alignment alignment = GetMatchup(attacker, target);
+            Alignment alignment = GetMatchup(attacker, target, action);
             return (acceptedTargets & alignment) != 0;
         }
 

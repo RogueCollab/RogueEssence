@@ -121,7 +121,7 @@ namespace RogueEssence.Content
         [NonSerialized]
         protected int Speed;
 
-        public void SetupEmit(Loc origin, Dir8 dir, Dungeon.Hitbox.AreaLimit areaLimit, int range, int speed)
+        public virtual void SetupEmit(Loc origin, Dir8 dir, Dungeon.Hitbox.AreaLimit areaLimit, int range, int speed)
         {
             SetupEmit(origin, origin, dir);
             AreaLimit = areaLimit;
@@ -140,6 +140,55 @@ namespace RogueEssence.Content
         public override string ToString()
         {
             return "---";
+        }
+    }
+
+    [Serializable]
+    public class MultiCircleSquareEmitter : CircleSquareEmitter
+    {
+        private bool finished;
+        public override bool Finished { get { return finished; } }
+
+        public MultiCircleSquareEmitter()
+        {
+            Emitters = new List<CircleSquareEmitter>();
+        }
+        public MultiCircleSquareEmitter(MultiCircleSquareEmitter other)
+        {
+            Emitters = new List<CircleSquareEmitter>();
+            foreach (CircleSquareEmitter emittable in other.Emitters)
+                Emitters.Add((CircleSquareEmitter)emittable.Clone());
+        }
+
+        public List<CircleSquareEmitter> Emitters;
+
+        public override BaseEmitter Clone() { return new MultiCircleSquareEmitter(this); }
+
+        public override void Update(BaseScene scene, FrameTick elapsedTime)
+        {
+            bool allFinished = true;
+            foreach (CircleSquareEmitter emitter in Emitters)
+            {
+                if (!emitter.Finished)
+                {
+                    emitter.Update(scene, elapsedTime);
+                    allFinished = false;
+                }
+            }
+            finished = allFinished;
+        }
+
+        public override string ToString()
+        {
+            return "[Multiple]";
+        }
+
+        public override void SetupEmit(Loc origin, Dir8 dir, Dungeon.Hitbox.AreaLimit areaLimit, int range, int speed)
+        {
+            base.SetupEmit(origin, dir, areaLimit, range, speed);
+
+            foreach (CircleSquareEmitter emitter in Emitters)
+                emitter.SetupEmit(origin, dir, areaLimit, range, speed);
         }
     }
 

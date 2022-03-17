@@ -23,47 +23,60 @@ namespace RogueEssence
     }
     public static class Text
     {
+        public const string DIVIDER_STR = "\n";
         public static List<Dictionary<string, string>> Strings;
         public static List<Dictionary<string, string>> StringsEx;
         public static CultureInfo Culture;
         public static string[] SupportedLangs;
         public static Dictionary<string, LanguageSetting> LangNames;
 
+        public static Regex MsgTags = new Regex(@"(?<pause>\[pause=(?<pauseval>\d+)\])" +
+                                                @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
+                                                @"|(?<boxbreak>\[br\])" +
+                                                @"|(?<scrollbreak>\[scroll\])" +
+                                                @"(?<script>\[script=(?<scriptval>\d+)\])",
+                                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         public static void Init()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             Strings = new List<Dictionary<string, string>>();
             StringsEx = new List<Dictionary<string, string>>();
 
-            string path = PathMod.ModPath("Strings/Languages.xml");
             List<string> codes = new List<string>();
             Dictionary<string, LanguageSetting> translations = new Dictionary<string, LanguageSetting>();
             try
             {
-                if (File.Exists(path))
+                foreach (string path in PathMod.FallforthPaths("Strings/Languages.xml"))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    if (File.Exists(path))
                     {
-                        if (xnode.Name == "data")
+                        XmlDocument xmldoc = new XmlDocument();
+                        xmldoc.Load(path);
+                        foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
                         {
-                            string value = null;
-                            string name = null;
-                            var atname = xnode.Attributes["name"];
-                            if (atname != null)
-                                name = atname.Value;
+                            if (xnode.Name == "data")
+                            {
+                                string value = null;
+                                string name = null;
+                                var atname = xnode.Attributes["name"];
+                                if (atname != null)
+                                    name = atname.Value;
 
-                            //Get value
-                            XmlNode valnode = xnode.SelectSingleNode("value");
-                            if (valnode != null)
-                                value = valnode.InnerText;
+                                //Get value
+                                XmlNode valnode = xnode.SelectSingleNode("value");
+                                if (valnode != null)
+                                    value = valnode.InnerText;
 
-                            List<string> fallbacks = new List<string>();
-                            foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
-                                fallbacks.Add(fallbacknode.InnerText);
+                                List<string> fallbacks = new List<string>();
+                                foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
+                                    fallbacks.Add(fallbacknode.InnerText);
 
-                            codes.Add(name);
-                            translations[name] = new LanguageSetting(value, fallbacks);
+                                if (!codes.Contains(name))
+                                    codes.Add(name);
+                                translations[name] = new LanguageSetting(value, fallbacks);
+                            }
                         }
                     }
                 }
@@ -130,11 +143,9 @@ namespace RogueEssence
                 for (int ii = 0; ii < Strings.Count; ii++)
                 {
                     if (Text.Strings[ii].TryGetValue(key, out text))
-                        break;
-                    else if (ii == Strings.Count - 1)
-                        throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
+                        return String.Format(Regex.Unescape(text), args);
                 }
-                return String.Format(Regex.Unescape(text), args);
+                throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
             }
             catch (Exception ex)
             {
@@ -142,9 +153,9 @@ namespace RogueEssence
             }
             return key;
         }
-        public static string ToLocal<T>(this T value, string extra) where T : Enum
+        public static string ToLocal(this Enum value, string extra)
         {
-            string key = "_ENUM_" + typeof(T).Name + "_" + value;
+            string key = "_ENUM_" + value.GetType().Name + "_" + value;
             if (extra != null)
                 key += "_" + extra;
 
@@ -159,7 +170,7 @@ namespace RogueEssence
                 return Regex.Unescape(text);
             return value.ToString();
         }
-        public static string ToLocal<T>(this T value) where T : Enum
+        public static string ToLocal(this Enum value)
         {
             return value.ToLocal(null);
         }
@@ -199,24 +210,31 @@ namespace RogueEssence
         {
             Culture = new CultureInfo(code);
 
-            Strings.Clear();
-            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + code + ".resx")));
+            loadCulture(Strings, code, "strings");
+
+            loadCulture(StringsEx, code, "stringsEx");
+        }
+
+        private static void loadCulture(List<Dictionary<string, string>> strings, string code, string fileName)
+        {
+            strings.Clear();
+            //order of string fallbacks:
+            //first go through all mods of the original language
+            foreach(string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
+                strings.Add(LoadXmlDoc(path));
+
+            //then go through all mods of the official fallbacks
             if (LangNames.ContainsKey(code))
             {
                 foreach (string fallback in LangNames[code].Fallbacks)
-                    Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + fallback + ".resx")));
+                {
+                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
+                        strings.Add(LoadXmlDoc(path));
+                }
             }
-            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings.resx")));
-
-            StringsEx.Clear();
-
-            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + code + ".resx")));
-            if (LangNames.ContainsKey(code))
-            {
-                foreach (string fallback in LangNames[code].Fallbacks)
-                    StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + fallback + ".resx")));
-            }
-            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx.resx")));
+            //then go through all mods of the default language
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
+                strings.Add(LoadXmlDoc(path));
         }
     }
 
@@ -234,15 +252,21 @@ namespace RogueEssence
 
         public string ToLocal()
         {
-            string val = "";
-            for (int ii = 0; ii < Text.StringsEx.Count; ii++)
+            try
             {
-                if (Text.StringsEx[ii].TryGetValue(Key, out val))
-                    break;
-                else if (ii == Text.StringsEx.Count - 1)
-                    throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
+                string val = "";
+                for (int ii = 0; ii < Text.StringsEx.Count; ii++)
+                {
+                    if (Text.StringsEx[ii].TryGetValue(Key, out val))
+                        return Regex.Unescape(val);
+                }
+                throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
             }
-            return Regex.Unescape(val);
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            return Key;
         }
 
         public override string ToString()

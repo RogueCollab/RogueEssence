@@ -12,13 +12,15 @@ namespace RogueEssence.Data
             StateLog = 0,
             GameLog,
             UILog,
-            QuicksaveLog
+            QuicksaveLog,
+            GroundsaveLog
         }
         
         public string RecordDir;
         public Version RecordVersion;
         public string RecordLang;
         public long QuicksavePos;
+        public long GroundsavePos;
         public int CurrentState;
         public int CurrentAction;
         public int CurrentUI;

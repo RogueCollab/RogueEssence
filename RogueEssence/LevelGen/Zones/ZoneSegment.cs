@@ -9,9 +9,10 @@ namespace RogueEssence.LevelGen
     public class LayeredSegment : ZoneSegmentBase
     {
         //TODO: make this class generic:
-        // LayeredStructure<T> where T : IFloorGen
+        // LayeredSegment<T> where T : IFloorGen
         //Implementations in this project can use IProjectSegmentBase where the LayeredSegment uses IProjectFloorGen as a base
         //IProjectFloorGen will be implemented via a ProjectFloorGen that is like FloorGen but has the constraint of BaseMapGenContext
+        [Dev.RankedList(0, true)]
         public List<IFloorGen> Floors;
 
         public override int FloorCount { get { return Floors.Count; } }
@@ -122,6 +123,45 @@ namespace RogueEssence.LevelGen
 
 
     [Serializable]
+    public class RangeDictSegment : ZoneSegmentBase
+    {
+        public RangeDict<IFloorGen> Floors;
+        public override int FloorCount
+        {
+            get
+            {
+                int total = 0;
+                foreach (IntRange range in Floors.EnumerateRanges())
+                    total += range.Length;
+                return total;
+            }
+        }
+        public override IEnumerable<int> GetFloorIDs()
+        {
+            foreach (IntRange range in Floors.EnumerateRanges())
+            {
+                for(int ii = range.Min; ii < range.Max; ii++)
+                    yield return ii;
+            }
+        }
+
+
+        public RangeDictSegment() : base()
+        {
+            Floors = new RangeDict<IFloorGen>();
+        }
+
+        public override IGenContext GetMap(ZoneGenContext zoneContext)
+        {
+            if (Floors.ContainsItem(zoneContext.CurrentID))
+                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+            else
+                throw new Exception("Requested a map id out of range.");
+        }
+    }
+
+
+    [Serializable]
     public class DictionarySegment : ZoneSegmentBase
     {
         public Dictionary<int, IFloorGen> Floors;
@@ -151,25 +191,25 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public abstract class ZoneSegmentBase
     {
-        public bool IsRelevant;
         public abstract int FloorCount { get; }
         public abstract IEnumerable<int> GetFloorIDs();
 
         //for now, post-processing must be handled here
-        public List<ZonePostProc> PostProcessingSteps;
+        public List<ZoneStep> ZoneSteps;
+        public bool IsRelevant;
 
         public ZoneSegmentBase()
         {
-            PostProcessingSteps = new List<ZonePostProc>();
+            ZoneSteps = new List<ZoneStep>();
         }
 
         public abstract IGenContext GetMap(ZoneGenContext zoneContext);
 
         public override string ToString()
         {
-            foreach (ZonePostProc step in PostProcessingSteps)
+            foreach (ZoneStep step in ZoneSteps)
             {
-                var startStep = step as FloorNameIDPostProc;
+                var startStep = step as FloorNameIDZoneStep;
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, FloorCount.ToString()).ToLocal().Replace('\n', ' ');
             }
@@ -184,11 +224,11 @@ namespace RogueEssence.LevelGen
         public int CurrentZone;
         public int CurrentSegment;
         public int CurrentID;
-        public List<ZonePostProc> ZoneSteps;
+        public List<ZoneStep> ZoneSteps;
 
         public ZoneGenContext()
         {
-            ZoneSteps = new List<ZonePostProc>();
+            ZoneSteps = new List<ZoneStep>();
         }
     }
 }

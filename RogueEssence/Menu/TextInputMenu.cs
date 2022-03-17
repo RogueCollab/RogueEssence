@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Input;
 using SDL2;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -45,14 +46,14 @@ namespace RogueEssence.Menu
 
         protected void Initialize(string title, string notes, int boxLength)
         {
-            Bounds = new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - boxLength / 2, 50), new Loc(boxLength, TitledStripMenu.TITLE_OFFSET + LINE_SPACE * 5 + GraphicsManager.MenuBG.TileHeight * 2));
+            Bounds = new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - boxLength / 2, 50), new Loc(boxLength, TitledStripMenu.TITLE_OFFSET + LINE_HEIGHT * 5 + GraphicsManager.MenuBG.TileHeight * 2));
 
-            Title = new MenuText(title, new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+            Title = new MenuText(title, new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Text = new MenuText("", new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2));
-            NameLine = new MenuDivider(new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_SPACE), MaxLength);
+            Text = new MenuText("", new Loc(Bounds.Width / 2 - MaxLength / 2, TitledStripMenu.TITLE_OFFSET * 2));
+            NameLine = new MenuDivider(new Loc(Bounds.Width / 2 - MaxLength / 2, TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT), MaxLength);
 
-            Notes = new MenuText(notes, new Loc(GraphicsManager.ScreenWidth / 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_SPACE * 7 / 2), DirV.None, DirH.None, Color.White);
+            Notes = new MenuText(notes, new Loc(Bounds.Width / 2, TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT * 7 / 2), DirV.None, DirH.None, Color.White);
 
             AddAltWheel('.', '·');
             AddAltWheel('!', '¡');
@@ -201,7 +202,7 @@ namespace RogueEssence.Menu
                     if (AltChar.ContainsKey(checkChar))
                     {
                         GameManager.Instance.SE("Menu/Confirm");
-                        Text.Text = Text.Text.Substring(0, Text.Text.Length - 1) + AltChar[checkChar];
+                        Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1) + AltChar[checkChar]);
                     }
                     else
                         GameManager.Instance.SE("Menu/Cancel");
@@ -214,7 +215,7 @@ namespace RogueEssence.Menu
             {
                 //backspace will erase (if there's something there)
                 if (Text.Text != "")
-                    Text.Text = Text.Text.Substring(0, Text.Text.Length - 1);
+                    Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1));
                 GameManager.Instance.SE("Menu/Cancel");
                 UpdatePickerPos();
             }
@@ -245,10 +246,10 @@ namespace RogueEssence.Menu
                 int ii;
                 for (ii = 0; ii < inputChars.Length; ii++)
                 {
-                    Text.Text += inputChars[ii];
+                    Text.SetText(Text.Text + inputChars[ii]);
                     if (MaxCharLength > 0 && Text.Text.Length > MaxCharLength || Text.GetTextLength() > MaxLength)
                     {
-                        Text.Text = Text.Text.Substring(0, Text.Text.Length - 1);
+                        Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1));
                         break;
                     }
                 }
@@ -267,7 +268,7 @@ namespace RogueEssence.Menu
         protected void UpdatePickerPos()
         {
             PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
-            cursorPos = new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2 + Text.GetTextLength() - 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_SPACE);
+            cursorPos = new Loc(GraphicsManager.ScreenWidth / 2 - MaxLength / 2 + Text.GetTextLength() - 2, Bounds.Y + TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -293,7 +294,7 @@ namespace RogueEssence.Menu
         protected bool PressedPaste(InputManager input)
         {
             bool holdCtrl = false;
-            if (CoreDllMap.OS == "osx")
+            if (OperatingSystem.IsMacOS())
                 holdCtrl = (input.BaseKeyDown(Keys.LeftWindows) || input.BaseKeyDown(Keys.RightWindows));
             else
                 holdCtrl = (input.BaseKeyDown(Keys.LeftControl) || input.BaseKeyDown(Keys.RightControl));

@@ -463,7 +463,7 @@ namespace RogueEssence.Content
                     Rectangle tileRect = new Rectangle(tileLoc.X * tileWidth, tileLoc.Y * tileHeight, tileWidth, tileHeight);
                     Loc?[] frameOffset = getOffsetFromRGB(offsetTex, tileRect, true, true, true, true, false);
                     OffsetData offsets = new OffsetData(tileCenter, tileCenter, tileCenter, tileCenter);
-                    if (frameOffset[2].HasValue)
+                    if (frameOffset[1].HasValue && frameOffset[2].HasValue && frameOffset[3].HasValue)
                     {
                         Loc center = frameOffset[2].Value;
                         Loc head = center;
@@ -473,6 +473,8 @@ namespace RogueEssence.Content
                         Loc rightHand = frameOffset[3].Value;
                         offsets = new OffsetData(center, head, leftHand, rightHand);
                     }
+                    else if (frameOffset[0].HasValue || frameOffset[1].HasValue || frameOffset[2].HasValue || frameOffset[3].HasValue)
+                        throw new InvalidDataException(String.Format("Offsets at row {0}, col {1} are invalid!", tileLoc.Y + 1, tileLoc.X + 1));
                     //center the offsets to the center of the frametex
                     offsets.AddLoc(-tileCenter);
 
@@ -480,8 +482,25 @@ namespace RogueEssence.Content
                 }
                 offsetTex.Dispose();
 
+                // automatically add default animation
+                {
+                    CharAnimGroup anim = new CharAnimGroup();
+                    CharAnimGroup parentGroup = animData[GraphicsManager.IdleAction];
+                    while (parentGroup.CopyOf > -1)
+                        parentGroup = animData[parentGroup.CopyOf];
+                    foreach (CharAnimSequence sequence in parentGroup.Sequences)
+                    {
+                        CharAnimSequence newSequence = new CharAnimSequence();
+                        CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
+                        frame.EndTime = 1;
+                        newSequence.Frames.Add(frame);
+                        anim.Sequences.Add(newSequence);
+                    }
+                    animData[0] = anim;
+                }
+
                 CharSheet charSheet = new CharSheet(tex, tileWidth, tileHeight, shadowSize, animData, offsetData);
-                charSheet.Collapse(false);
+                charSheet.Collapse(false, false);
                 return charSheet;
             }
             else if (File.Exists(path + "AnimData.xml"))
@@ -616,7 +635,8 @@ namespace RogueEssence.Content
 
                             Loc?[] frameOffset = getOffsetFromRGB(offsetSheet, tileRect, true, true, true, true, false);
                             OffsetData offsets = new OffsetData(boundsCenter, boundsCenter, boundsCenter, boundsCenter);
-                            if (frameOffset[2].HasValue)
+
+                            if (frameOffset[1].HasValue && frameOffset[2].HasValue && frameOffset[3].HasValue)
                             {
                                 Loc center = frameOffset[2].Value;
                                 Loc head = center;
@@ -626,6 +646,8 @@ namespace RogueEssence.Content
                                 Loc rightHand = frameOffset[3].Value;
                                 offsets = new OffsetData(center, head, leftHand, rightHand);
                             }
+                            else if (frameOffset[0].HasValue || frameOffset[1].HasValue || frameOffset[2].HasValue || frameOffset[3].HasValue)
+                                throw new InvalidDataException(String.Format("Offsets for {0} at row {1}, col {2} are invalid!", frameType.Name, sheetIndex+1, jj+1));
                             //center the offsets to the center of the frametex
                             offsets.AddLoc(-boundsCenter);
 
@@ -674,7 +696,7 @@ namespace RogueEssence.Content
                 Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
                 Color[] texColors = new Color[texSize.X * texSize.Y];
 
-                List <OffsetData> offsetData = new List<OffsetData>();
+                List<OffsetData> offsetData = new List<OffsetData>();
                 for (int ii = 0; ii < finalFrames.Count; ii++)
                 {
                     int diffX = maxWidth / 2 - finalFrames[ii].rect.Width / 2;
@@ -729,7 +751,8 @@ namespace RogueEssence.Content
         /// Collapses duplicate frames together, and removes extra whitespace.
         /// </summary>
         /// <param name="ignoreOffsets">If turned on, frames with identical graphics and different offsets are treated as duplicates.</param>
-        public void Collapse(bool ignoreOffsets)
+        /// <param name="recenter">If turned on, frames will be recentered to center of actual sprite, and it will affect the animations.  Otherwise, leaves animations alone.</param>
+        public void Collapse(bool ignoreOffsets, bool recenter)
         {
             int[] usedFrames = new int[OffsetData.Count];
             foreach (int key in AnimData.Keys)
@@ -752,6 +775,7 @@ namespace RogueEssence.Content
             Dictionary<int, CharAnimGroup> animData = new Dictionary<int, CharAnimGroup>();
             //load all available tilesets
             List<(Color[] img, Rectangle rect, OffsetData offsets)> frames = new List<(Color[], Rectangle, OffsetData)>();
+            List<Loc> centerOffsets = new List<Loc>();
             //get all frames
             for (int kk = 0; kk < OffsetData.Count; kk++)
             {
@@ -783,6 +807,10 @@ namespace RogueEssence.Content
                     maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
 
                     frames.Add((frameTex, imgCoveredRect, offsets));
+
+                    //the texture may not be centered; treat it as a texture that considered the center of the tile the center of the sprite
+                    Point centerDiff = imgCoveredRect.Center - (tileRect.Center - tileRect.Location);
+                    centerOffsets.Add(new Loc(centerDiff.X, centerDiff.Y));
                 }
                 else
                     usedFrames[kk] = -1;
@@ -795,6 +823,14 @@ namespace RogueEssence.Content
             CharAnimFrame[] frameMap = new CharAnimFrame[frames.Count];
             List<(Color[] img, Rectangle rect, OffsetData offsets)> finalFrames = new List<(Color[], Rectangle, OffsetData)>();
             mapDuplicates(frames, finalFrames, frameMap, !ignoreOffsets);
+            for (int ii = 0; ii < frameMap.Length; ii++)
+            {
+                if (frameMap[ii].Flip)
+                    frameMap[ii].Offset.X -= centerOffsets[ii].X;
+                else
+                    frameMap[ii].Offset.X += centerOffsets[ii].X;
+                frameMap[ii].Offset.Y += centerOffsets[ii].Y;
+            }
 
             int maxSize = (int)Math.Ceiling(Math.Sqrt(finalFrames.Count));
             Point texSize = new Point(maxSize * maxWidth, maxSize * maxHeight);
@@ -830,6 +866,14 @@ namespace RogueEssence.Content
                                 frame.Offset = frame.Offset + Loc.UnitX;
                             else
                                 frame.Offset = frame.Offset - Loc.UnitX;
+                        }
+                        if (!recenter)
+                        {
+                            if (frame.Flip)
+                                frame.Offset.X -= mapFrame.Offset.X;
+                            else
+                                frame.Offset.X += mapFrame.Offset.X;
+                            frame.Offset.Y += mapFrame.Offset.Y;
                         }
                         frame.Frame = new Loc(finalIndex % maxSize, finalIndex / maxSize);
                     }
@@ -914,7 +958,7 @@ namespace RogueEssence.Content
                     setOffsetsToRGB(particleColors, imgSize.X, tilePos + offsets.RightHand, new Color(0, 0, 255, 255));
                 }
 
-                exportColors(baseDirectory + "Offsets.png", particleColors, imgSize);
+                ExportColors(baseDirectory + "Offsets.png", particleColors, imgSize);
 
                 XmlDocument doc = new XmlDocument();
                 XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
@@ -1115,9 +1159,9 @@ namespace RogueEssence.Content
                     }
                     string name = GraphicsManager.Actions[key].Name;
 
-                    exportColors(baseDirectory + name + "-Anim.png", animColors, imgSize);
-                    exportColors(baseDirectory + name + "-Offsets.png", particleColors, imgSize);
-                    exportColors(baseDirectory + name + "-Shadow.png", shadowColors, imgSize);
+                    ExportColors(baseDirectory + name + "-Anim.png", animColors, imgSize);
+                    ExportColors(baseDirectory + name + "-Offsets.png", particleColors, imgSize);
+                    ExportColors(baseDirectory + name + "-Shadow.png", shadowColors, imgSize);
 
                 }
 
@@ -1173,15 +1217,6 @@ namespace RogueEssence.Content
 
                 doc.Save(baseDirectory + "AnimData.xml");
             }
-        }
-
-        private static void exportColors(string fileName, Color[] colors, Point imgSize)
-        {
-            Texture2D animImg = new Texture2D(device, imgSize.X, imgSize.Y);
-            animImg.SetData<Color>(0, null, colors, 0, colors.Length);
-            using (Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                ExportTex(stream, animImg);
-            animImg.Dispose();
         }
 
 
@@ -1322,6 +1357,7 @@ namespace RogueEssence.Content
         //however, also need a way to determine frame for an animation playing at the true specified speed
         public void DrawChar(SpriteBatch spriteBatch, int type, bool truncateDash, Dir8 dir, Vector2 pos, DetermineFrame frameMethod, Color color)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1342,6 +1378,7 @@ namespace RogueEssence.Content
         }
         public Loc GetActionPoint(int type, bool truncateDash, Dir8 dir, ActionPointType pointType, DetermineFrame frameMethod)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1376,6 +1413,7 @@ namespace RogueEssence.Content
 
         public void DrawCharFrame(SpriteBatch spriteBatch, int type, bool truncateDash , Dir8 dir, Vector2 pos, int frameNum, Color color)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1409,6 +1447,7 @@ namespace RogueEssence.Content
 
         public int GetCurrentFrame(int type, Dir8 dir, DetermineFrame frameMethod)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
                 return frameMethod(group.SeqAtDir(dir).Frames);
@@ -1437,7 +1476,6 @@ namespace RogueEssence.Content
 
         private CharAnimGroup getReferencedAnim(int type)
         {
-            type = GetReferencedAnimIndex(type);
             if (type > -1)
                 return AnimData[type];
             else
@@ -1446,6 +1484,7 @@ namespace RogueEssence.Content
 
         public int GetTotalTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1459,6 +1498,7 @@ namespace RogueEssence.Content
 
         public int GetReturnTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1474,6 +1514,7 @@ namespace RogueEssence.Content
 
         public int GetHitTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {
@@ -1489,6 +1530,7 @@ namespace RogueEssence.Content
 
         public int GetRushTime(int type, Dir8 dir)
         {
+            type = GetReferencedAnimIndex(type);
             CharAnimGroup group = getReferencedAnim(type);
             if (group != null)
             {

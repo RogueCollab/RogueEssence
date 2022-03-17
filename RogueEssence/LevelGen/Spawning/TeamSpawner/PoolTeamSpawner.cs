@@ -6,59 +6,66 @@ using RogueEssence.Dev;
 namespace RogueEssence.LevelGen
 {
     [Serializable]
+    public class TeamMemberSpawn
+    {
+        public enum MemberRole
+        {
+            Normal, // Can be put in teams of any size at any quantity.
+            Support, // Only one can spawn in a team.  Team size > 1.
+            Leader, // Only one can spawn in a team.  Any size team.
+            Loner // Only one can spawn in a team.  Team of 1.
+        }
+
+        [SubGroup]
+        public MobSpawn Spawn;
+
+        public MemberRole Role;
+
+        public TeamMemberSpawn()
+        {
+
+        }
+
+        public TeamMemberSpawn(MobSpawn spawn, MemberRole role)
+        {
+            Spawn = spawn;
+            Role = role;
+        }
+
+        public TeamMemberSpawn(TeamMemberSpawn other)
+        {
+            Spawn = other.Spawn.Copy();
+            Role = other.Role;
+        }
+
+        public override string ToString()
+        {
+            return Spawn.ToString();
+        }
+    }
+
+    [Serializable]
     public class PoolTeamSpawner : TeamSpawner
     {
         /// <summary>
         /// Normal spawns.  Can be put in teams of any size at any quantity.
         /// </summary>
         [SubGroup]
-        public SpawnList<MobSpawn> NormalSpawns;
-
-        /// <summary>
-        /// Only one can spawn in a team.  Any size team.
-        /// </summary>
-        [SubGroup]
-        public SpawnList<MobSpawn> LeaderSpawns;
-
-        /// <summary>
-        /// Only one can spawn in a team.  Team of 1.
-        /// </summary>
-        [SubGroup]
-        public SpawnList<MobSpawn> LonerSpawns;
-
-        /// <summary>
-        /// Only one can spawn in a team.  Team size > 1.
-        /// </summary>
-        [SubGroup]
-        public SpawnList<MobSpawn> SupportSpawns;
-
-
+        public SpawnList<TeamMemberSpawn> Spawns;
 
         [SubGroup]
         public SpawnList<int> TeamSizes;
 
         public PoolTeamSpawner()
         {
-            NormalSpawns = new SpawnList<MobSpawn>();
-            LeaderSpawns = new SpawnList<MobSpawn>();
-            LonerSpawns = new SpawnList<MobSpawn>();
-            SupportSpawns = new SpawnList<MobSpawn>();
+            Spawns = new SpawnList<TeamMemberSpawn>();
             TeamSizes = new SpawnList<int>();
         }
         protected PoolTeamSpawner(PoolTeamSpawner other)
         {
-            NormalSpawns = new SpawnList<MobSpawn>();
-            for(int ii = 0; ii < other.NormalSpawns.Count; ii++)
-                NormalSpawns.Add(other.NormalSpawns.GetSpawn(ii).Copy(), other.NormalSpawns.GetSpawnRate(ii));
-            LeaderSpawns = new SpawnList<MobSpawn>();
-            for (int ii = 0; ii < other.LeaderSpawns.Count; ii++)
-                LeaderSpawns.Add(other.LeaderSpawns.GetSpawn(ii).Copy(), other.LeaderSpawns.GetSpawnRate(ii));
-            LonerSpawns = new SpawnList<MobSpawn>();
-            for (int ii = 0; ii < other.LonerSpawns.Count; ii++)
-                LonerSpawns.Add(other.LonerSpawns.GetSpawn(ii).Copy(), other.LonerSpawns.GetSpawnRate(ii));
-            SupportSpawns = new SpawnList<MobSpawn>();
-            for (int ii = 0; ii < other.SupportSpawns.Count; ii++)
-                SupportSpawns.Add(other.SupportSpawns.GetSpawn(ii).Copy(), other.SupportSpawns.GetSpawnRate(ii));
+            Spawns = new SpawnList<TeamMemberSpawn>();
+            for(int ii = 0; ii < other.Spawns.Count; ii++)
+                Spawns.Add(new TeamMemberSpawn(other.Spawns.GetSpawn(ii)), other.Spawns.GetSpawnRate(ii));
             TeamSizes = new SpawnList<int>();
             for (int ii = 0; ii < other.TeamSizes.Count; ii++)
                 TeamSizes.Add(other.TeamSizes.GetSpawn(ii), other.TeamSizes.GetSpawnRate(ii));
@@ -69,14 +76,8 @@ namespace RogueEssence.LevelGen
         {
             SpawnList<MobSpawn> spawnerList = new SpawnList<MobSpawn>();
 
-            for (int ii = 0; ii < NormalSpawns.Count; ii++)
-                spawnerList.Add(NormalSpawns.GetSpawn(ii), NormalSpawns.GetSpawnRate(ii));
-            for (int ii = 0; ii < LeaderSpawns.Count; ii++)
-                spawnerList.Add(LeaderSpawns.GetSpawn(ii), LeaderSpawns.GetSpawnRate(ii));
-            for (int ii = 0; ii < LonerSpawns.Count; ii++)
-                spawnerList.Add(LonerSpawns.GetSpawn(ii), LonerSpawns.GetSpawnRate(ii));
-            for (int ii = 0; ii < SupportSpawns.Count; ii++)
-                spawnerList.Add(SupportSpawns.GetSpawn(ii), SupportSpawns.GetSpawnRate(ii));
+            for (int ii = 0; ii < Spawns.Count; ii++)
+                spawnerList.Add(Spawns.GetSpawn(ii).Spawn, Spawns.GetSpawnRate(ii));
 
             return spawnerList;
         }
@@ -89,66 +90,83 @@ namespace RogueEssence.LevelGen
             int teamSize = TeamSizes.Pick(rand);
 
             bool selectedLeader = false;
-            bool selectedSupport = false;
+            bool selectedNonSupport = false;
 
             //pick first team member
-            List<SpawnList<MobSpawn>> eligibleSpawns = new List<SpawnList<MobSpawn>>
+            SpawnList<TeamMemberSpawn> eligibleSpawns = new SpawnList<TeamMemberSpawn>();
+            for (int ii = 0; ii < Spawns.Count; ii++)
             {
-                NormalSpawns, LeaderSpawns,
-            };
+                TeamMemberSpawn spawn = Spawns.GetSpawn(ii);
+                if (!spawn.Spawn.CanSpawn())
+                    continue;
 
-            if (teamSize > 1)
-                eligibleSpawns.Add(SupportSpawns);
-            else
-                eligibleSpawns.Add(LonerSpawns);
+                bool add = false;
+                switch (spawn.Role)
+                {
+                    case TeamMemberSpawn.MemberRole.Normal:
+                    case TeamMemberSpawn.MemberRole.Leader:
+                        add = true;
+                        break;
+                    case TeamMemberSpawn.MemberRole.Support:
+                        add = (teamSize > 1);
+                        break;
+                    case TeamMemberSpawn.MemberRole.Loner:
+                        add = (teamSize == 1);
+                        break;
+                }
+                if (add)
+                    eligibleSpawns.Add(spawn, Spawns.GetSpawnRate(ii));
+            }
 
-            SpawnList<MobSpawn> chosenList = chooseSpawnList(eligibleSpawns, rand);
-            if (chosenList == LeaderSpawns)
+            if (!eligibleSpawns.CanPick)
+                return chosenSpawns;
+            TeamMemberSpawn chosenSpawn = eligibleSpawns.Pick(rand);
+            if (chosenSpawn.Role == TeamMemberSpawn.MemberRole.Leader)
                 selectedLeader = true;
-            else if (chosenList == SupportSpawns)
-                selectedSupport = true;
+            if (chosenSpawn.Role != TeamMemberSpawn.MemberRole.Support)
+                selectedNonSupport = true;
 
-            chosenSpawns.Add(chosenList.Pick(rand));
+            chosenSpawns.Add(chosenSpawn.Spawn);
 
             //pick remaining team members
-            for (int ii = 1; ii < teamSize; ii++)
+            for (int jj = 1; jj < teamSize; jj++)
             {
-                eligibleSpawns = new List<SpawnList<MobSpawn>>();
-                eligibleSpawns.Add(NormalSpawns);
-                if (!selectedLeader)
-                    eligibleSpawns.Add(LeaderSpawns);
-                if (!selectedSupport)
-                    eligibleSpawns.Add(SupportSpawns);
+                eligibleSpawns.Clear();
 
+                for (int ii = 0; ii < Spawns.Count; ii++)
+                {
+                    TeamMemberSpawn spawn = Spawns.GetSpawn(ii);
+                    if (!spawn.Spawn.CanSpawn())
+                        continue;
+                    bool add = false;
+                    switch (spawn.Role)
+                    {
+                        case TeamMemberSpawn.MemberRole.Normal:
+                            add = true;
+                            break;
+                        case TeamMemberSpawn.MemberRole.Leader:
+                            add = !selectedLeader;
+                            break;
+                        case TeamMemberSpawn.MemberRole.Support:
+                            add = selectedNonSupport;
+                            break;
+                    }
+                    if (add)
+                        eligibleSpawns.Add(spawn, Spawns.GetSpawnRate(ii));
+                }
 
-                chosenList = chooseSpawnList(eligibleSpawns, rand);
-                if (chosenList == LeaderSpawns)
+                if (!eligibleSpawns.CanPick)
+                    return chosenSpawns;
+                chosenSpawn = eligibleSpawns.Pick(rand);
+                if (chosenSpawn.Role == TeamMemberSpawn.MemberRole.Leader)
                     selectedLeader = true;
-                else if (chosenList == SupportSpawns)
-                    selectedSupport = true;
+                if (chosenSpawn.Role != TeamMemberSpawn.MemberRole.Support)
+                    selectedNonSupport = true;
 
-                chosenSpawns.Add(chosenList.Pick(rand));
+                chosenSpawns.Add(chosenSpawn.Spawn);
             }
 
             return chosenSpawns;
-        }
-
-        private SpawnList<MobSpawn> chooseSpawnList(List<SpawnList<MobSpawn>> eligibleSpawns, IRandom rand)
-        {
-            int totalSpawn = 0;
-            foreach (SpawnList<MobSpawn> spawn in eligibleSpawns)
-                totalSpawn += spawn.SpawnTotal;
-
-            int pickedSpawn = rand.Next(totalSpawn);
-
-            totalSpawn = 0;
-            foreach (SpawnList<MobSpawn> spawn in eligibleSpawns)
-            {
-                totalSpawn += spawn.SpawnTotal;
-                if (totalSpawn > pickedSpawn)
-                    return spawn;
-            }
-            return null;
         }
     }
 }

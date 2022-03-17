@@ -2,6 +2,7 @@
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
+using System.Collections.Generic;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -9,6 +10,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public MapTabTexturesViewModel()
         {
+            Layers = new TextureLayerBoxViewModel(false);
             TileBrowser = new TileBrowserViewModel();
             TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();
@@ -24,6 +26,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public ILayerBoxViewModel Layers { get; set; }
         public TileBrowserViewModel TileBrowser { get; set; }
         public AutotileBrowserViewModel AutotileBrowser { get; set; }
 
@@ -42,51 +45,44 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
+
             Loc tileCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
             switch (TexMode)
             {
                 case TileEditMode.Draw:
                     {
-                        if (input[FrameInput.InputType.LeftMouse])
-                            paintTile(tileCoords, getBrush());
-                        else if (input[FrameInput.InputType.RightMouse])
-                            paintTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
+                        TileBrush brush = getBrush();
+                        if (brush.MultiSelect == Loc.One)
+                        {
+                            CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                                () => new DrawStroke<AutoTile>(tileCoords, brush.GetSanitizedTile()),
+                                () => new DrawStroke<AutoTile>(tileCoords, new AutoTile()),
+                                paintStroke, ref DungeonEditScene.Instance.AutoTileInProgress);
+                        }
+                        else
+                        {
+                            CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                                () => new ClusterStroke<AutoTile>(tileCoords, getCluster(brush)),
+                                () => new DrawStroke<AutoTile>(tileCoords, new AutoTile()),
+                                paintStroke, ref DungeonEditScene.Instance.AutoTileInProgress);
+                        }
                     }
                     break;
                 case TileEditMode.Rectangle:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                        {
-                            DungeonEditScene.Instance.AutoTileInProgress = getBrush().GetSanitizedTile();
-                            DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.LeftMouse])
-                            DungeonEditScene.Instance.RectInProgress.Size = (tileCoords - DungeonEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                        {
-                            rectTile(DungeonEditScene.Instance.RectPreview(), getBrush());
-                            DungeonEditScene.Instance.AutoTileInProgress = null;
-                        }
-                        else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                        {
-                            DungeonEditScene.Instance.AutoTileInProgress = new AutoTile(new TileLayer());
-                            DungeonEditScene.Instance.RectInProgress = new Rect(tileCoords, Loc.Zero);
-                        }
-                        else if (input[FrameInput.InputType.RightMouse])
-                            DungeonEditScene.Instance.RectInProgress.Size = (tileCoords - DungeonEditScene.Instance.RectInProgress.Start);
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                        {
-                            rectTile(DungeonEditScene.Instance.RectPreview(), new TileBrush(new TileLayer(), Loc.One));
-                            DungeonEditScene.Instance.AutoTileInProgress = null;
-                        }
+                        CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new RectStroke<AutoTile>(tileCoords, getBrush().GetSanitizedTile()),
+                            () => new RectStroke<AutoTile>(tileCoords, new AutoTile()),
+                            paintStroke, ref DungeonEditScene.Instance.AutoTileInProgress);
                     }
                     break;
                 case TileEditMode.Fill:
                     {
-                        if (input.JustReleased(FrameInput.InputType.LeftMouse))
-                            fillTile(tileCoords, getBrush());
-                        else if (input.JustReleased(FrameInput.InputType.RightMouse))
-                            fillTile(tileCoords, new TileBrush(new TileLayer(), Loc.One));
+                        CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new FillStroke<AutoTile>(tileCoords, getBrush().GetSanitizedTile()),
+                            () => new FillStroke<AutoTile>(tileCoords, new AutoTile()),
+                            fillStroke, ref DungeonEditScene.Instance.AutoTileInProgress);
                     }
                     break;
                 case TileEditMode.Eyedrop:
@@ -107,50 +103,32 @@ namespace RogueEssence.Dev.ViewModels
                 return AutotileBrowser.GetBrush();
         }
 
-        private void paintTile(Loc loc, TileBrush brush)
+
+
+        private AutoTile[][] getCluster(TileBrush brush)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
-                return;
-
-            if (brush.MultiSelect == Loc.One)
-                ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile = brush.GetSanitizedTile();
-            else
+            AutoTile[][] tiles = new AutoTile[brush.MultiSelect.X][];
+            for (int xx = 0; xx < brush.MultiSelect.X; xx++)
             {
-                for (int xx = 0; xx < brush.MultiSelect.X; xx++)
-                {
-                    for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
-                    {
-                        Loc offset = new Loc(xx, yy);
-                        if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc + offset))
-                            continue;
-                        ZoneManager.Instance.CurrentMap.Tiles[loc.X + xx][loc.Y + yy].FloorTile = brush.GetSanitizedTile(offset);
-                    }
-                }
+                tiles[xx] = new AutoTile[brush.MultiSelect.Y];
+                for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
+                    tiles[xx][yy] = brush.GetSanitizedTile(new Loc(xx, yy));
             }
-
-            Rect bounds = new Rect(loc, brush.MultiSelect);
-            //now recompute all tiles within the multiselect rectangle + 1
-            bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
+            return tiles;
         }
 
-        private void rectTile(Rect rect, TileBrush brush)
+        private void paintStroke(CanvasStroke<AutoTile> stroke)
         {
-            for (int xx = rect.X; xx < rect.End.X; xx++)
+            Dictionary<Loc, AutoTile> brush = new Dictionary<Loc, AutoTile>();
+            foreach (Loc loc in stroke.GetLocs())
             {
-                for (int yy = rect.Y; yy < rect.End.Y; yy++)
-                {
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
-                        continue;
+                if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+                    continue;
 
-                    ZoneManager.Instance.CurrentMap.Tiles[xx][yy].FloorTile = brush.GetSanitizedTile();
-                }
+                brush[loc] = stroke.GetBrush(loc).Copy();
             }
 
-            Rect bounds = rect;
-            //now recompute all tiles within the multiselect rectangle + 1
-            bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawMapTexUndo(Layers.ChosenLayer, brush, stroke.CoveredRect));
         }
 
         private void eyedropTile(Loc loc)
@@ -158,7 +136,7 @@ namespace RogueEssence.Dev.ViewModels
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                 return;
 
-            AutoTile autoTile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile;
+            AutoTile autoTile = ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y];
 
             if (autoTile.AutoTileset > -1)
             {
@@ -173,17 +151,23 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void fillTile(Loc loc, TileBrush brush)
+
+        private void fillStroke(CanvasStroke<AutoTile> stroke)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, stroke.CoveredRect.Start))
                 return;
 
-            AutoTile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].FloorTile.Copy();
-            Rect bounds = new Rect(loc, Loc.One);
+            AutoTile tile = ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[stroke.CoveredRect.Start.X][stroke.CoveredRect.Start.Y].Copy();
+            Rect bounds = new Rect(stroke.CoveredRect.Start, Loc.One);
+
+            Dictionary<Loc, AutoTile> brush = new Dictionary<Loc, AutoTile>();
+            AutoTile brushTile = stroke.GetBrush(stroke.CoveredRect.Start);
             Grid.FloodFill(new Rect(0, 0, ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height),
                     (Loc testLoc) =>
                     {
-                        return !tile.Equals(ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].FloorTile);
+                        if (brush.ContainsKey(testLoc))
+                            return true;
+                        return !tile.Equals(ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[testLoc.X][testLoc.Y]);
                     },
                     (Loc testLoc) =>
                     {
@@ -192,14 +176,60 @@ namespace RogueEssence.Dev.ViewModels
                     (Loc testLoc) =>
                     {
                         bounds = Rect.FromPoints(new Loc(Math.Min(bounds.X, testLoc.X), Math.Min(bounds.Y, testLoc.Y)),
-                            new Loc(Math.Max(bounds.End.X, testLoc.X+1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
-                        ZoneManager.Instance.CurrentMap.Tiles[testLoc.X][testLoc.Y].FloorTile = brush.GetSanitizedTile();
+                            new Loc(Math.Max(bounds.End.X, testLoc.X + 1), Math.Max(bounds.End.Y, testLoc.Y + 1)));
+                        brush[testLoc] = brushTile.Copy();
                     },
-                loc);
+                stroke.CoveredRect.Start);
 
-            //now recompute all autotiles within the rectangle
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new DrawMapTexUndo(Layers.ChosenLayer, brush, bounds));
+        }
+    }
+
+    public class DrawMapTexUndo : DrawUndo<AutoTile>
+    {
+        private int layer;
+        private Rect coveredRect;
+
+        public DrawMapTexUndo(int layer, Dictionary<Loc, AutoTile> brush, Rect coveredRect) : base(brush)
+        {
+            this.layer = layer;
+            this.coveredRect = coveredRect;
+        }
+
+        protected override AutoTile GetValue(Loc loc)
+        {
+            return ZoneManager.Instance.CurrentMap.Layers[layer].Tiles[loc.X][loc.Y];
+        }
+        protected override void SetValue(Loc loc, AutoTile val)
+        {
+            ZoneManager.Instance.CurrentMap.Layers[layer].Tiles[loc.X][loc.Y] = val;
+        }
+        protected override void ValuesFinished()
+        {
+            //now recompute all tiles within the multiselect rectangle + 1
+            Rect bounds = coveredRect;
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentMap.CalculateAutotiles(bounds.Start, bounds.Size);
+            ZoneManager.Instance.CurrentMap.Layers[layer].CalculateAutotiles(ZoneManager.Instance.CurrentMap.Rand.FirstSeed, bounds.Start, bounds.Size);
+        }
+    }
+
+
+    public class MapTextureStateUndo : StateUndo<MapLayer>
+    {
+        private int layer;
+        public MapTextureStateUndo(int layer)
+        {
+            this.layer = layer;
+        }
+
+        public override MapLayer GetState()
+        {
+            return ZoneManager.Instance.CurrentMap.Layers[layer];
+        }
+
+        public override void SetState(MapLayer state)
+        {
+            ZoneManager.Instance.CurrentMap.Layers[layer] = state;
         }
     }
 }

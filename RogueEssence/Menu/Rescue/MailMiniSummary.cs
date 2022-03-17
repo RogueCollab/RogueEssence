@@ -16,13 +16,13 @@ namespace RogueEssence.Menu
         public MailMiniSummary(Rect bounds)
             : base(bounds)
         {
-            Name = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
+            Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
-            Reward = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
+            Reward = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
             Elements.Add(Reward);
-            LastSeen = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
+            LastSeen = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
             Elements.Add(LastSeen);
-            Goal = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2));
+            Goal = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2));
             Elements.Add(Goal);
             Portraits = new SpeakerPortrait[0];
         }
@@ -43,15 +43,15 @@ namespace RogueEssence.Menu
         {
             if (mail != null)
             {
-                Name.Text = mail.TeamName;
-                Reward.Text = Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---");
-                LastSeen.Text = Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated);
-                Goal.Text = Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' '));
+                Name.SetText(mail.TeamName);
+                Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---"));
+                LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated));
+                Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' ')));
                 Portraits = new SpeakerPortrait[mail.TeamProfile.Length];
                 for (int ii = 0; ii < mail.TeamProfile.Length; ii++)
                     Portraits[ii] = new SpeakerPortrait(mail.TeamProfile[ii], new EmoteStyle(GraphicsManager.SOSEmotion, true),
-                        new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth + (GraphicsManager.PortraitSize + 2) * (ii - mail.TeamProfile.Length),
-                        Bounds.Y + GraphicsManager.MenuBG.TileHeight), false);
+                        new Loc(GraphicsManager.MenuBG.TileWidth + (GraphicsManager.PortraitSize + 2) * (ii - mail.TeamProfile.Length),
+                        GraphicsManager.MenuBG.TileHeight), false);
             }
             else
                 setError();
@@ -61,15 +61,15 @@ namespace RogueEssence.Menu
         {
             if (mail != null)
             {
-                Name.Text = mail.TeamName;
-                Reward.Text = Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---");
-                LastSeen.Text = Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated);
-                Goal.Text = Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' '));
+                Name.SetText(mail.TeamName);
+                Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---"));
+                LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated));
+                Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' ')));
                 Portraits = new SpeakerPortrait[mail.TeamProfile.Length];
                 for (int ii = 0; ii < mail.TeamProfile.Length; ii++)
                     Portraits[ii] = new SpeakerPortrait(mail.TeamProfile[ii], new EmoteStyle(0, true),
-                        new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth + (GraphicsManager.PortraitSize + 2) * (ii - mail.TeamProfile.Length),
-                        Bounds.Y + GraphicsManager.MenuBG.TileHeight), false);
+                        new Loc(GraphicsManager.MenuBG.TileWidth + (GraphicsManager.PortraitSize + 2) * (ii - mail.TeamProfile.Length),
+                        GraphicsManager.MenuBG.TileHeight), false);
             }
             else
                 setError();
@@ -77,10 +77,10 @@ namespace RogueEssence.Menu
 
         private void setError()
         {
-            Name.Text = "[" + Text.FormatKey("MENU_MAIL_ERROR") + "]";
-            Reward.Text = Text.FormatKey("MENU_SOS_REWARD", "---");
-            LastSeen.Text = Text.FormatKey("MENU_SOS_DATE", "---");
-            Goal.Text = Text.FormatKey("MENU_SOS_GOAL", "---");
+            Name.SetText("[" + Text.FormatKey("MENU_MAIL_ERROR") + "]");
+            Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", "---"));
+            LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", "---"));
+            Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", "---"));
             Portraits = new SpeakerPortrait[0];
         }
     }

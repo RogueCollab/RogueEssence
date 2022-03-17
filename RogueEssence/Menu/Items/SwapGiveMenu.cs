@@ -42,12 +42,13 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (itemPresence[index] > 0)
                 {
-                    ItemData itemEntry = DataManager.Instance.GetItem(index);
-                    if (itemEntry.ItemStates.Contains<MaterialState>())
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[ii] as ItemEntrySummary;
+
+                    if (itemEntry.ContainsState<MaterialState>())
                     {
                         AllowedGoods.Add(index);
 
-                        MenuText menuText = new MenuText((itemEntry.Icon > -1 ? ((char)(itemEntry.Icon + 0xE0A0)).ToString() : "") + DataManager.Instance.GetItem(ii).Name.ToLocal(), new Loc(2, 1));
+                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                         MenuText menuCount = new MenuText("(" + itemPresence[index] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { }, true, menuText, menuCount));
                     }
@@ -56,14 +57,14 @@ namespace RogueEssence.Menu
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
             int startPage = defaultChoice / SLOTS_PER_PAGE;
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
-            Initialize(new Loc(16, 16), ItemMenu.ITEM_MENU_WIDTH, Text.FormatKey("MENU_SHOP_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, new IntRange(openSpaces));
+            Initialize(new Loc(16, 16), ItemMenu.ITEM_MENU_WIDTH, Text.FormatKey("MENU_SHOP_TITLE"), inv, startChoice, startPage, SLOTS_PER_PAGE, false, new IntRange(openSpaces));
 
         }
 

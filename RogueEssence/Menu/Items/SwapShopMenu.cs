@@ -22,7 +22,6 @@ namespace RogueEssence.Menu
         public int[] PriceList;
         public List<int> AllowedGoods;
         bool[] itemPresence;
-        bool[] tradePresence;
         int presenceCount;
 
         public SwapShopMenu(List<Tuple<int, int[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot)
@@ -33,20 +32,19 @@ namespace RogueEssence.Menu
             AllowedGoods = new List<int>();
 
             itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
-            tradePresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
             for (int ii = 0; ii < itemPresence.Length; ii++)
             {
                 if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
-                    updatePresence(ii);
+                    updatePresence(itemPresence, ref presenceCount, ii);
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
-                updatePresence(DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
+                updatePresence(itemPresence, ref presenceCount, DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 if (activeChar.EquippedItem.ID > -1)
-                    updatePresence(activeChar.EquippedItem.ID);
+                    updatePresence(itemPresence, ref presenceCount, activeChar.EquippedItem.ID);
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
@@ -82,39 +80,84 @@ namespace RogueEssence.Menu
                     ItemData itemEntry = DataManager.Instance.GetItem(goods[ii].Item1);
                     if (PriceList[itemEntry.Rarity] > DataManager.Instance.Save.ActiveTeam.Money || wildcards > presenceCount)
                         canTrade = false;
-                    flatChoices.Add(new MenuTextChoice((itemEntry.Icon > -1 ? ((char)(itemEntry.Icon + 0xE0A0)).ToString() : "") + itemEntry.Name.ToLocal(), () => { choose(index); }, canTrade, canTrade ? Color.White : Color.Red));
+                    flatChoices.Add(new MenuTextChoice(itemEntry.GetIconName(), () => { choose(index); }, canTrade, canTrade ? Color.White : Color.Red));
                 }
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
             int startPage = defaultChoice / SLOTS_PER_PAGE;
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            tradeSummary = new TradeSummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_SPACE * 7 - GraphicsManager.MenuBG.TileHeight * 2),
+            tradeSummary = new TradeSummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_HEIGHT * 7 - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, summaryMenu.Bounds.Top)));
-            moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, tradeSummary.Bounds.Top - LINE_SPACE * 2 - GraphicsManager.MenuBG.TileHeight * 2),
+            moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + SWAP_MENU_WIDTH, tradeSummary.Bounds.Top - LINE_HEIGHT * 2 - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, tradeSummary.Bounds.Top)));
 
             int buyLimit = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
-            Initialize(new Loc(16, 16), SWAP_MENU_WIDTH, Text.FormatKey("MENU_SHOP_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), SWAP_MENU_WIDTH, Text.FormatKey("MENU_SHOP_TITLE"), inv, startChoice, startPage, SLOTS_PER_PAGE);
 
         }
 
-        private void updatePresence(int index)
+        public static bool CanView(List<Tuple<int, int[]>> goods)
+        {
+            bool[] itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            int presenceCount = 0;
+
+            for (int ii = 0; ii < itemPresence.Length; ii++)
+            {
+                if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                    updatePresence(itemPresence, ref presenceCount, ii);
+            }
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+                updatePresence(itemPresence, ref presenceCount, DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
+
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                if (activeChar.EquippedItem.ID > -1)
+                    updatePresence(itemPresence, ref presenceCount, activeChar.EquippedItem.ID);
+            }
+
+            for (int ii = 0; ii < goods.Count; ii++)
+            {
+                bool canView = false;
+                int[] reqs = goods[ii].Item2;
+                for (int jj = 0; jj < reqs.Length; jj++)
+                {
+                    if (reqs[jj] > -1)
+                    {
+                        if (!itemPresence[reqs[jj]])
+                        {
+
+                        }
+                        else
+                            canView = true;
+                    }
+                    else
+                    {
+                        canView = true;
+                    }
+                }
+
+                if (canView)
+                    return true;
+            }
+            return false;
+        }
+
+        private static void updatePresence(bool[] itemPresence, ref int presenceCount, int index)
         {
             if (!itemPresence[index])
             {
                 itemPresence[index] = true;
-                ItemData entry = DataManager.Instance.GetItem(index);
-                if (entry.ItemStates.Contains<MaterialState>())
-                {
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+
+                if (itemEntry.ContainsState<MaterialState>())
                     presenceCount++;
-                    tradePresence[index] = true;
-                }
             }
         }
 

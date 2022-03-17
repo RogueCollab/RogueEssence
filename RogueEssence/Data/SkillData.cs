@@ -8,7 +8,7 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
@@ -17,6 +17,8 @@ namespace RogueEssence.Data
         public LocalText Desc { get; set; }
 
         public bool Released { get; set; }
+
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
@@ -43,6 +45,18 @@ namespace RogueEssence.Data
 
             Strikes = 1;
             HitboxAction = new AttackAction();
+        }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
+
+        public string GetIconName()
+        {
+            ElementData element = DataManager.Instance.GetElement(Data.Element);
+            return String.Format("{0}\u2060{1}", element.Symbol, GetColoredName());
         }
     }
 }

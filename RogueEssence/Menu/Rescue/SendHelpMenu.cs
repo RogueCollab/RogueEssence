@@ -23,9 +23,9 @@ namespace RogueEssence.Menu
             : base()
         {
             yourSummary = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.End.Y),
-                new Loc(Bounds.End.X, Bounds.End.Y + LINE_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+                new Loc(Bounds.End.X, Bounds.End.Y + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             yourStatus = new MenuText("",
-                new Loc((yourSummary.Bounds.X + yourSummary.Bounds.End.X) / 2, yourSummary.Bounds.Y + GraphicsManager.MenuBG.TileHeight), DirH.None);
+                new Loc(yourSummary.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             yourStatus.Color = TextTan;
             yourSummary.Elements.Add(yourStatus);
 
@@ -78,7 +78,7 @@ namespace RogueEssence.Menu
                             CurrentState = ExchangeRescueState.SOSReady;
                             sendHelp.SetReady(CurrentState);
 
-                            QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_RESCUE_RECEIVE_SOS_ASK", sendHelp.TargetInfo.Data.TeamName), () =>
+                            DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_RESCUE_RECEIVE_SOS_ASK", sendHelp.TargetInfo.Data.TeamName), () =>
                             {
                                 CurrentState = ExchangeRescueState.SOSTrading;
                                 sendHelp.SetReady(CurrentState);
@@ -129,7 +129,7 @@ namespace RogueEssence.Menu
                     {
                         //ready to receive SOS
                         string baseAskString = (aok.OfferedItem.Value > -1) ? "DLG_RESCUE_SEND_AOK_ASK_REWARD" : "DLG_RESCUE_SEND_AOK_ASK";
-                        QuestionDialog dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, sendHelp.TargetInfo.Data.TeamName), () =>
+                        DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, sendHelp.TargetInfo.Data.TeamName), () =>
                         {
                             CurrentState = ExchangeRescueState.AOKTrading;
                             sendHelp.SetReady(CurrentState);
@@ -197,22 +197,22 @@ namespace RogueEssence.Menu
             switch (CurrentState)
             {
                 case ExchangeRescueState.Communicating:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_COMMUNICATING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_COMMUNICATING"));
                     break;
                 case ExchangeRescueState.SOSReady:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_SOS_CONFIRMING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_SOS_CONFIRMING"));
                     break;
                 case ExchangeRescueState.SOSTrading:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_SOS_RECEIVING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_SOS_RECEIVING"));
                     break;
                 case ExchangeRescueState.AOKReady:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_AOK_CONFIRMING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_AOK_CONFIRMING"));
                     break;
                 case ExchangeRescueState.AOKTrading:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_AOK_SENDING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_AOK_SENDING"));
                     break;
                 case ExchangeRescueState.Completed:
-                    yourStatus.Text = Text.FormatKey("MENU_RESCUE_STATUS_WAITING");
+                    yourStatus.SetText(Text.FormatKey("MENU_RESCUE_STATUS_WAITING"));
                     break;
             }
         }

@@ -16,13 +16,13 @@ namespace RogueEssence.Menu
         public ContactMiniSummary(Rect bounds)
             : base(bounds)
         {
-            Name = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
+            Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
-            Stats = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
+            Stats = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
             Elements.Add(Stats);
-            LastSeen = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
+            LastSeen = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
             Elements.Add(LastSeen);
-            ID = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2));
+            ID = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2));
             Elements.Add(ID);
             Portraits = new SpeakerPortrait[0];
         }
@@ -41,15 +41,15 @@ namespace RogueEssence.Menu
 
         public void SetContact(string name, string stats, string lastSeen, string id, ProfilePic[] portraits)
         {
-            Name.Text = name;
-            Stats.Text = stats;
-            LastSeen.Text = lastSeen;
-            ID.Text = id;
+            Name.SetText(name);
+            Stats.SetText(stats);
+            LastSeen.SetText(lastSeen);
+            ID.SetText(id);
             Portraits = new SpeakerPortrait[portraits.Length];
             for (int ii = 0; ii < portraits.Length; ii++)
                 Portraits[ii] = new SpeakerPortrait(portraits[ii].ID, new EmoteStyle(portraits[ii].Emote, true),
-                    new Loc(Bounds.End.X - GraphicsManager.MenuBG.TileWidth + (GraphicsManager.PortraitSize + 2) * (ii - portraits.Length),
-                    Bounds.Y + GraphicsManager.MenuBG.TileHeight), false);
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth + (GraphicsManager.PortraitSize + 2) * (ii - portraits.Length),
+                    GraphicsManager.MenuBG.TileHeight), false);
             
         }
     }

@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
-            BG = new ClassBoxViewModel();
+            BG = new ClassBoxViewModel(new StringConv(typeof(IBackgroundSprite), new object[0]));
             BG.OnMemberChanged += BG_Changed;
             BG.OnEditItem += MapBG_Edit;
             BlankBG = new TileBoxViewModel();
@@ -66,6 +66,17 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        public bool NoSwitch
+        {
+            get { return ZoneManager.Instance.CurrentGround.NoSwitching; }
+            set
+            {
+                ZoneManager.Instance.CurrentGround.NoSwitching = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+
         public ClassBoxViewModel BG { get; set; }
         public TileBoxViewModel BlankBG { get; set; }
 
@@ -85,19 +96,21 @@ namespace RogueEssence.Dev.ViewModels
 
         public void BG_Changed()
         {
-            ZoneManager.Instance.CurrentGround.Background = BG.GetObject<MapBG>();
+            ZoneManager.Instance.CurrentGround.Background = BG.GetObject<IBackgroundSprite>();
         }
 
         public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
+            Type type = typeof(IBackgroundSprite);
+            string elementName = type.Name;
             DataEditForm frmData = new DataEditForm();
-            frmData.Title = element.ToString();
+            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, element, true);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, elementName, type, new object[0], element, true, new Type[0]);
 
             frmData.SelectedOKEvent += () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, "MapBG", typeof(MapBG), new object[0] { }, true);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0]);
                 op(element);
                 frmData.Close();
             };
@@ -191,6 +204,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             MapName = MapName;
             ChosenScroll = ChosenScroll;
+            NoSwitch = NoSwitch;
             
             BG.LoadFromSource(ZoneManager.Instance.CurrentGround.Background);
             BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);

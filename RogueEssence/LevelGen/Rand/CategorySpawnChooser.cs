@@ -36,16 +36,14 @@ namespace RogueElements
             }
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerable<T> EnumerateOutcomes()
         {
-            foreach (SpawnList<T> element in Spawns)
+            foreach (SpawnList<T> element in Spawns.EnumerateOutcomes())
             {
-                foreach (T item in element)
+                foreach (T item in element.EnumerateOutcomes())
                     yield return item;
             }
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         public T Pick(IRandom rand)
         {
@@ -68,7 +66,7 @@ namespace RogueElements
             {
                 if (!Spawns.CanPick)
                     return false;
-                foreach (SpawnList<T> spawn in Spawns)
+                foreach (SpawnList<T> spawn in Spawns.EnumerateOutcomes())
                 {
                     if (spawn.CanPick)
                         return true;

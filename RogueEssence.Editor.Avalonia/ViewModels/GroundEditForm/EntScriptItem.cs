@@ -23,10 +23,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             set
             {
-                if (value)
-                    baseEnt.AddScriptEvent(EventType);
-                else
-                    baseEnt.RemoveScriptEvent(EventType);
+
             }
         }
 

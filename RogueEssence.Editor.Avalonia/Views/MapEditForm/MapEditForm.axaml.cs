@@ -21,14 +21,14 @@ namespace RogueEssence.Dev.Views
     {
 
         public bool Active { get; private set; }
-
+        public UndoStack Edits { get; }
         public MapEditForm()
         {
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
 #endif
-
+            Edits = new UndoStack();
 
         }
 
@@ -40,8 +40,7 @@ namespace RogueEssence.Dev.Views
 
         public void ProcessInput(InputManager input)
         {
-            MapEditViewModel vm = (MapEditViewModel)DataContext;
-            DevForm.ExecuteOrInvoke(() => vm.ProcessInput(input));
+            DevForm.ExecuteOrInvoke(() => ((MapEditViewModel)DataContext).ProcessInput(input));
         }
 
 
@@ -52,11 +51,19 @@ namespace RogueEssence.Dev.Views
             Active = true;
         }
 
+        private bool silentClose;
+        public void SilentClose()
+        {
+            silentClose = true;
+            Close();
+        }
+
         public void Window_Closed(object sender, EventArgs e)
         {
             Active = false;
             CloseChildren();
-            GameManager.Instance.SceneOutcome = exitMapEdit();
+            if (!silentClose)
+                GameManager.Instance.SceneOutcome = exitMapEdit();
         }
 
 

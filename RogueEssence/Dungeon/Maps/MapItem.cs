@@ -3,6 +3,8 @@ using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Text;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,6 +15,7 @@ namespace RogueEssence.Dungeon
         public bool Cursed;
         public int Value;
         public int HiddenValue;
+        public int Price;
 
         public string SpriteIndex
         {
@@ -52,12 +55,19 @@ namespace RogueEssence.Dungeon
             HiddenValue = hiddenValue;
         }
 
+        public MapItem(int value, int hiddenValue, int price)
+            : this(value, hiddenValue)
+        {
+            Price = price;
+        }
+
         public MapItem(MapItem other)
         {
             IsMoney = other.IsMoney;
             Cursed = other.Cursed;
             Value = other.Value;
             HiddenValue = other.HiddenValue;
+            Price = other.Price;
         }
         public ISpawnable Copy() { return new MapItem(this); }
 
@@ -68,14 +78,59 @@ namespace RogueEssence.Dungeon
             Value = item.ID;
             Cursed = item.Cursed;
             HiddenValue = item.HiddenValue;
+            Price = item.Price;
             TileLoc = loc;
         }
 
         public InvItem MakeInvItem()
         {
-            return new InvItem(Value, Cursed, HiddenValue);
+            return new InvItem(Value, Cursed, HiddenValue, Price);
         }
 
+        public int GetSellValue()
+        {
+            if (IsMoney)
+                return 0;
+
+            ItemData entry = DataManager.Instance.GetItem(Value);
+            if (entry.MaxStack > 1)
+                return entry.Price * HiddenValue;
+            else
+                return entry.Price;
+        }
+
+        public string GetPriceString()
+        {
+            if (Price > 0)
+            {
+                string baseStr = Price.ToString();
+                StringBuilder resultStr = new StringBuilder();
+                for (int ii = 0; ii < baseStr.Length; ii++)
+                {
+                    int en = (int)baseStr[ii] - 0x30;
+                    int un = en + 0xE100;
+                    resultStr.Append((char)un);
+                }
+                return resultStr.ToString();
+            }
+            return null;
+        }
+        public static string GetPriceString(int price)
+        {
+            if (price > 0)
+            {
+                string baseStr = price.ToString();
+                StringBuilder resultStr = new StringBuilder();
+                for (int ii = 0; ii < baseStr.Length; ii++)
+                {
+                    int en = (int)baseStr[ii] - 0x30;
+                    int un = en + 0xE100;
+                    resultStr.Append((char)un);
+                }
+                return resultStr.ToString();
+            }
+            return "";
+        }
 
         public string GetDungeonName()
         {
@@ -84,10 +139,18 @@ namespace RogueEssence.Dungeon
             else
             {
                 Data.ItemData entry = Data.DataManager.Instance.GetItem(Value);
+
+                string prefix = "";
+                if (entry.Icon > -1)
+                    prefix += ((char)(entry.Icon + 0xE0A0)).ToString();
+                if (Cursed)
+                    prefix += "\uE10B";
+
+                string nameStr = entry.Name.ToLocal();
                 if (entry.MaxStack > 1)
-                    return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
-                else
-                    return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal();
+                    nameStr += " (" + HiddenValue + ")";
+
+                return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
             }
         }
 

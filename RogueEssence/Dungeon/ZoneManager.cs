@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Xml.Serialization;
+using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 
@@ -22,8 +24,7 @@ namespace RogueEssence.Dungeon
             state.Zone.SaveLua();
             using (MemoryStream classStream = new MemoryStream())
             {
-                IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                formatter.Serialize(classStream, state.Zone);
+                Serializer.SerializeData(classStream, state.Zone);
                 writer.Write(classStream.Position);
                 classStream.WriteTo(writer.BaseStream);
             }
@@ -41,8 +42,7 @@ namespace RogueEssence.Dungeon
                 long length = reader.ReadInt64();
                 using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
                 {
-                    IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    state.Zone = (ZoneManager)formatter.Deserialize(classStream);
+                    state.Zone = (ZoneManager)Serializer.DeserializeData(classStream);
                 }
             }
             catch (Exception ex)
@@ -53,12 +53,21 @@ namespace RogueEssence.Dungeon
         }
         public static void LoadDefaultState(GameState state)
         {
-            state.Save.NextDest = DataManager.Instance.StartMap;
-
             ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.StartMap.ID);
             state.Zone = new ZoneManager();
             state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.StartMap.ID);
             state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.StartMap.StructID);
+
+            //if it's a ground map, need to set the player
+            if (state.Zone.CurrentGround != null)
+            {
+                LocRay8 entry = state.Zone.CurrentGround.GetEntryPoint(0);
+
+                if (entry.Dir == Dir8.None)
+                    entry.Dir = state.Save.ActiveTeam.Leader.CharDir;
+
+                state.Zone.CurrentGround.SetPlayerChar(new GroundChar(state.Save.ActiveTeam.Leader, entry.Loc, entry.Dir, "PLAYER"));
+            }
         }
 
         public Zone CurrentZone { get; private set; }
@@ -73,6 +82,19 @@ namespace RogueEssence.Dungeon
         }
 
         //include a current groundmap, with moveto methods included
+
+        public void MoveToZone(int zoneIndex, string mapname, ulong seed)
+        {
+            if (CurrentZone != null)
+                CurrentZone.DoCleanup();
+            CurrentZoneID = zoneIndex;
+            ZoneData zone = DataManager.Instance.GetZone(zoneIndex);
+            if (zone != null)
+            {
+                CurrentZone = zone.CreateActiveZone(seed, zoneIndex);
+                CurrentZone.SetCurrentGround(mapname);
+            }
+        }
 
         public void MoveToZone(int zoneIndex, SegLoc mapId, ulong seed)
         {
@@ -114,7 +136,17 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentZone.DevNewMap();
             }
         }
-
+        public bool InDevZone
+        {
+            get
+            {
+                if (CurrentZoneID > -1)
+                    return false;
+                if (CurrentZone == null)
+                    return false;
+                return CurrentZone.CurrentMapID.ID == 0;
+            }
+        }
 
         public void LuaEngineReload()
         {

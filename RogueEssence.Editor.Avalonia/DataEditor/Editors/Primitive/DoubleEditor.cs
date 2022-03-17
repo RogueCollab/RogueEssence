@@ -20,10 +20,8 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, Double member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Double member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
             NumericUpDown nudValue = new NumericUpDown();
             nudValue.Minimum = Int32.MinValue;
             nudValue.Maximum = Int32.MaxValue;
@@ -38,10 +36,9 @@ namespace RogueEssence.Dev
         }
 
 
-        public override Double SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override Double SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
             NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
             return (Double)nudValue.Value;
         }

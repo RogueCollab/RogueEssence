@@ -7,10 +7,23 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    public class TeamSpawn : IGroupSpawnable
+    {
+        public Team Team;
+        public bool AllyFaction;
+
+        public TeamSpawn(Team team, bool ally)
+        {
+            Team = team;
+            AllyFaction = ally;
+        }
+    }
+
+
     public abstract class BaseMapGenContext : IPostProcGenContext, IUnbreakableGenContext, IMobSpawnMap,
-        ISpawningGenContext<InvItem>, ISpawningGenContext<MoneySpawn>,
+        ISpawningGenContext<InvItem>, ISpawningGenContext<MoneySpawn>, ISpawningGenContext<EffectTile>,
         IPlaceableGenContext<InvItem>, IPlaceableGenContext<MoneySpawn>, IPlaceableGenContext<MapItem>, IPlaceableGenContext<EffectTile>,
-        IGroupPlaceableGenContext<Team>
+        IGroupPlaceableGenContext<TeamSpawn>
     {
         public Map Map { get; set; }
 
@@ -23,11 +36,12 @@ namespace RogueEssence.LevelGen
         public int Width { get { return Map.Width; } }
         public int Height { get { return Map.Height; } }
 
-        public List<SingleCharEvent> CheckEvents { get { return Map.CheckEvents; } }
         public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
         public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
         public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
 
+        public SpawnList<EffectTile> TileSpawns { get; set; }
+        IRandPicker<EffectTile> ISpawningGenContext<EffectTile>.Spawner { get { return TileSpawns; } }
         public MoneySpawnRange MoneyAmount { get { return Map.MoneyAmount; } set { Map.MoneyAmount = value; } }
         IRandPicker<MoneySpawn> ISpawningGenContext<MoneySpawn>.Spawner { get { return Map.MoneyAmount; } }
         public CategorySpawnChooser<InvItem> ItemSpawns { get { return Map.ItemSpawns; } }
@@ -36,10 +50,10 @@ namespace RogueEssence.LevelGen
 
         public IRandom Rand { get { return Map.Rand; } }
         public bool Begun { get { return Map.Begun; } }
-        public bool NoRescue { get { return Map.NoRescue; } set { Map.NoRescue = value; } }
         public bool DropTitle { get { return Map.DropTitle; } set { Map.DropTitle = value; } }
 
         public Tile[][] Tiles { get { return Map.Tiles; } }
+        public MapLayer Floor { get { return Map.Layers[0]; } }
 
         public ITile GetTile(Loc loc) { return Map.Tiles[loc.X][loc.Y]; }
         public virtual bool CanSetTile(Loc loc, ITile tile)
@@ -70,13 +84,14 @@ namespace RogueEssence.LevelGen
         public BaseMapGenContext()
         {
             Map = new Map();
+            TileSpawns = new SpawnList<EffectTile>();
         }
 
         public void InitSeed(ulong seed)
         {
             Map.LoadRand(new ReRandom(seed));
         }
-        public void LoadRand(ReRandom rand)
+        public void LoadRand(IRandom rand)
         {
             Map.LoadRand(rand);
         }
@@ -191,7 +206,7 @@ namespace RogueEssence.LevelGen
 
 
 
-        List<Loc> IGroupPlaceableGenContext<Team>.GetFreeTiles(Rect rect)
+        List<Loc> IGroupPlaceableGenContext<TeamSpawn>.GetFreeTiles(Rect rect)
         {
             Grid.LocTest checkOp = (Loc testLoc) =>
             {
@@ -201,7 +216,7 @@ namespace RogueEssence.LevelGen
             return Grid.FindTilesInBox(rect.Start, rect.Size, checkOp);
         }
 
-        bool IGroupPlaceableGenContext<Team>.CanPlaceItem(Loc loc) { return canPlaceTeam(loc); }
+        bool IGroupPlaceableGenContext<TeamSpawn>.CanPlaceItem(Loc loc) { return canPlaceTeam(loc); }
 
         protected virtual bool canPlaceTeam(Loc loc)
         {
@@ -227,19 +242,46 @@ namespace RogueEssence.LevelGen
             return true;
         }
 
-        void IGroupPlaceableGenContext<Team>.PlaceItems(Team itemBatch, Loc[] locs)
+        public bool BaseCanPlaceTeam(Loc loc)
+        {
+            if (TileBlocked(loc))
+                return false;
+
+            foreach (Team team in AllyTeams)
+            {
+                foreach (Character character in team.EnumerateChars())
+                {
+                    if (!character.Dead && character.CharLoc == loc)
+                        return false;
+                }
+            }
+            foreach (Team team in MapTeams)
+            {
+                foreach (Character character in team.EnumerateChars())
+                {
+                    if (!character.Dead && character.CharLoc == loc)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        void IGroupPlaceableGenContext<TeamSpawn>.PlaceItems(TeamSpawn itemBatch, Loc[] locs)
         {
             if (locs != null)
             {
-                if (locs.Length != itemBatch.MemberGuestCount)
+                if (locs.Length != itemBatch.Team.MemberGuestCount)
                     throw new Exception("Team members not matching locations!");
-                for (int ii = 0; ii < itemBatch.Players.Count; ii++)
-                    itemBatch.Players[ii].CharLoc = locs[ii];
-                for (int ii = 0; ii < itemBatch.Guests.Count; ii++)
-                    itemBatch.Guests[ii].CharLoc = locs[itemBatch.Players.Count + ii];
+                for (int ii = 0; ii < itemBatch.Team.Players.Count; ii++)
+                    itemBatch.Team.Players[ii].CharLoc = locs[ii];
+                for (int ii = 0; ii < itemBatch.Team.Guests.Count; ii++)
+                    itemBatch.Team.Guests[ii].CharLoc = locs[itemBatch.Team.Players.Count + ii];
             }
 
-            MapTeams.Add(itemBatch);
+            if (itemBatch.AllyFaction)
+                AllyTeams.Add(itemBatch.Team);
+            else
+                MapTeams.Add(itemBatch.Team);
         }
 
         public virtual void FinishGen()
@@ -251,6 +293,7 @@ namespace RogueEssence.LevelGen
             }
 
             Map.CalculateAutotiles(new Loc(), new Loc(Width, Height));
+            Map.CalculateTerrainAutotiles(new Loc(), new Loc(Width, Height));
         }
 
     }

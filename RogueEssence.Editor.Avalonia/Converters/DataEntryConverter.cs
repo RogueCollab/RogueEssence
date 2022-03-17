@@ -18,7 +18,10 @@ namespace RogueEssence.Dev.Converters
             if (value is int idx)
             {
                 DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
-                return DataManager.Instance.DataIndices[dataType].Entries[idx].Name.ToLocal();
+                EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataType];
+                if (idx >= 0 && idx < nameIndex.Count)
+                    return nameIndex.Entries[idx].Name.ToLocal();
+                return "---";
             }
             return value;
         }

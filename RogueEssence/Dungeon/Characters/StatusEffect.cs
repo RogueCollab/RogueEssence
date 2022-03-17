@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,7 +14,8 @@ namespace RogueEssence.Dungeon
         Charging,
         Absent,
         Spinning,
-        Hurt
+        Hurt,
+        Transparent
     }
 
     
@@ -25,7 +27,10 @@ namespace RogueEssence.Dungeon
             return GameEventPriority.EventCause.Status;
         }
         public override PassiveData GetData() { return DataManager.Instance.GetStatus(ID); }
-        public override string GetName() { return DataManager.Instance.GetStatus(ID).Name.ToLocal(); }
+        public override string GetDisplayName() { return DataManager.Instance.GetStatus(ID).GetColoredName(); }
+
+        [DataType(0, DataManager.DataType.Status, false)]
+        public override int ID { get; set; }
         //handles stuff like stacking, sealing, movement speed, etc.
         public StateCollection<StatusState> StatusStates;
 

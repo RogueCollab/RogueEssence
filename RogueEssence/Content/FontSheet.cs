@@ -9,6 +9,18 @@ using RectPacker;
 
 namespace RogueEssence.Content
 {
+    public struct GlyphData
+    {
+        public int RectIdx;
+        public bool Colorless;
+
+        public GlyphData(int rectIdx, bool colorless)
+        {
+            RectIdx = rectIdx;
+            Colorless = colorless;
+        }
+    }
+
     public class FontSheet : SpriteSheet
     {
         const string NON_STARTERS = "";//lines cannot start with
@@ -20,9 +32,9 @@ namespace RogueEssence.Content
         public int LineSpace { get; private set; }
         public int CharSpace { get; private set; }
 
-        private Dictionary<int, int> charMap;
+        private Dictionary<int, GlyphData> charMap;
 
-        public FontSheet(Texture2D tex, Rectangle[] rects, int space, int charHeight, int charSpace, int charLine, Dictionary<int, int> charMap)
+        public FontSheet(Texture2D tex, Rectangle[] rects, int space, int charHeight, int charSpace, int charLine, Dictionary<int, GlyphData> charMap)
             :base(tex, rects)
         {
 
@@ -54,6 +66,14 @@ namespace RogueEssence.Content
                 int charSpace = Convert.ToInt32(doc.SelectSingleNode("FontData/CharSpace").InnerText);
                 int lineSpace = Convert.ToInt32(doc.SelectSingleNode("FontData/LineSpace").InnerText);
 
+                HashSet<int> colorlessGlyphs = new HashSet<int>();
+                XmlNode glyphNodes = doc.SelectSingleNode("FontData/Colorless");
+                foreach (XmlNode glyphNode in glyphNodes.SelectNodes("Glyph"))
+                {
+                    int glyphIdx = Convert.ToInt32(glyphNode.InnerText, 16);
+                    colorlessGlyphs.Add(glyphIdx);
+                }
+
                 string[] pngs = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
                 List<ImageInfo> sheets = new List<ImageInfo>();
                 foreach (string dir in pngs)
@@ -74,14 +94,14 @@ namespace RogueEssence.Content
                 Atlas atlas = mapper.Mapping(sheets);
 
                 Rectangle[] rects = new Rectangle[sheets.Count];
-                Dictionary<int, int> chars = new Dictionary<int, int>();
+                Dictionary<int, GlyphData> chars = new Dictionary<int, GlyphData>();
                 Texture2D tex = new Texture2D(device, atlas.Width, atlas.Height);
                 for (int ii = 0; ii < atlas.MappedImages.Count; ii++)
                 {
                     MappedImageInfo info = atlas.MappedImages[ii];
                     BaseSheet.Blit(info.ImageInfo.Texture, tex, 0, 0, info.ImageInfo.Width, info.ImageInfo.Height, info.X, info.Y);
                     rects[ii] = new Rectangle(info.X, info.Y, info.ImageInfo.Width, info.ImageInfo.Height);
-                    chars[info.ImageInfo.ID] = ii;
+                    chars[info.ImageInfo.ID] = new GlyphData(ii, colorlessGlyphs.Contains(info.ImageInfo.ID));
                     info.ImageInfo.Texture.Dispose();
                 }
 
@@ -104,7 +124,7 @@ namespace RogueEssence.Content
 
             int rectCount = reader.ReadInt32();
             Rectangle[] rects = new Rectangle[rectCount];
-            Dictionary<int, int> chars = new Dictionary<int, int>();
+            Dictionary<int, GlyphData> chars = new Dictionary<int, GlyphData>();
             for (int ii = 0; ii < rectCount; ii++)
                 rects[ii] = new Rectangle(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
 
@@ -117,7 +137,8 @@ namespace RogueEssence.Content
             {
                 int charCode = reader.ReadInt32();
                 int index = reader.ReadInt32();
-                chars.Add(charCode, index);
+                bool colorless = reader.ReadBoolean();
+                chars.Add(charCode, new GlyphData(index, colorless));
             }
             return new FontSheet(tex, rects, space, charHeight, charSpace, charLine, chars);
             
@@ -126,7 +147,7 @@ namespace RogueEssence.Content
         public static new FontSheet LoadError()
         {
             Rectangle[] rects = new Rectangle[0];
-            Dictionary<int, int> chars = new Dictionary<int, int>();
+            Dictionary<int, GlyphData> chars = new Dictionary<int, GlyphData>();
             return new FontSheet(defaultTex, rects, 8, 8, 1, 1, chars);
         }
 
@@ -141,7 +162,8 @@ namespace RogueEssence.Content
             foreach(int key in charMap.Keys)
             {
                 writer.Write(key);
-                writer.Write(charMap[key]);
+                writer.Write(charMap[key].RectIdx);
+                writer.Write(charMap[key].Colorless);
             }
         }
 
@@ -152,10 +174,15 @@ namespace RogueEssence.Content
 
         public void DrawText(SpriteBatch spriteBatch, int x, int y, string text, Rectangle? area, DirV vOrigin, DirH hOrigin, Color color)
         {
+            DrawText(spriteBatch, x, y, text, area, vOrigin, hOrigin, color, 0, text.Length);
+        }
+
+        public void DrawText(SpriteBatch spriteBatch, int x, int y, string text, Rectangle? area, DirV vOrigin, DirH hOrigin, Color color, int start, int length)
+        {
             if (String.IsNullOrWhiteSpace(text))
                 return;
 
-            int lineSpace = CharHeight + LineSpace;
+            int lineHeight = CharHeight + LineSpace;
 
             //Draw positions
             int dX = x;
@@ -194,7 +221,7 @@ namespace RogueEssence.Content
             int startDX = dX;
 
             //Go through string
-            for (int ii = 0; ii < text.Length; ii++)
+            for (int ii = 0; ii < start + length; ii++)
             {
                 //Space
                 if (text[ii] == ' ' || text[ii] == '　')
@@ -218,23 +245,29 @@ namespace RogueEssence.Content
                             targetX = (area.Value.Left + area.Value.Right - SubstringWidth(text.Substring(ii + 1).ToString())) / 2;
                             break;
                     }
-                    dY += lineSpace;
+                    dY += lineHeight;
                     dX = targetX;
                 }
                 //Character
                 else
                 {
-                    int texture_char = charMap[0];//default null
+                    int texture_char = charMap[0].RectIdx;//default null
+                    Color curColor = color;
 
                     if (dX > startDX)
                         dX += CharSpace;
 
                     //Get corresponding texture
                     if (charMap.ContainsKey(text[ii]))
-                        texture_char = charMap[text[ii]];
+                    {
+                        texture_char = charMap[text[ii]].RectIdx;
+                        if (charMap[text[ii]].Colorless)
+                            curColor = Color.White;
+                    }
 
                     Rectangle char_rect = spriteRects[texture_char];
-                    DrawSprite(spriteBatch, new Vector2(dX, dY), texture_char, color);
+                    if (ii >= start)
+                        DrawSprite(spriteBatch, new Vector2(dX, dY), texture_char, curColor);
 
                     //Move over
                     dX += char_rect.Width;
@@ -273,9 +306,9 @@ namespace RogueEssence.Content
                 {
                     if (subWidth > 0)
                         subWidth += CharSpace;
-                    int texture_char = charMap[0];
+                    int texture_char = charMap[0].RectIdx;
                     if (charMap.ContainsKey(text[ii])) //Get texture
-                        texture_char = charMap[text[ii]];
+                        texture_char = charMap[text[ii]].RectIdx;
 
                     Rectangle char_rect = spriteRects[texture_char];
                     subWidth += char_rect.Width;
@@ -319,9 +352,9 @@ namespace RogueEssence.Content
                 {
                     if (subWidth > 0)
                         subWidth += CharSpace;
-                    int texture_char = charMap[0];
+                    int texture_char = charMap[0].RectIdx;
                     if (charMap.ContainsKey(substring[ii])) //Get texture
-                        texture_char = charMap[substring[ii]];
+                        texture_char = charMap[substring[ii]].RectIdx;
 
                     Rectangle char_rect = spriteRects[texture_char];
                     subWidth += char_rect.Width;
@@ -349,7 +382,7 @@ namespace RogueEssence.Content
                 //newline
                 if (substring[ii] == '\n')
                 {
-                    lines.Add(substring.Substring(line_start, Math.Min(ii + 1, charIndex) - line_start));
+                    lines.Add(substring.Substring(line_start, Math.Min(ii, charIndex) - line_start));
                     line_start = ii + 1;
                     if (line_start >= charIndex)
                         return lines.ToArray();
@@ -382,7 +415,7 @@ namespace RogueEssence.Content
                         if (substr_width > 0)
                             substr_width += CharSpace;
                         //Get ASCII
-                        int texture_char = charMap[substring[ii]];
+                        int texture_char = charMap[substring[ii]].RectIdx;
                         Rectangle char_rect = spriteRects[texture_char];
                         substr_width += char_rect.Width;
                         if (substring[ii] == '-' || substring[ii] == '、' || substring[ii] == '。')

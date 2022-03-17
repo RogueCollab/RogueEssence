@@ -2,6 +2,7 @@
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -10,12 +11,13 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         Buttons[] actionButtons;
+        bool inactiveInput;
 
         public GamepadControlsMenu()
         {
-            actionButtons = new Buttons[DiagManager.Instance.CurSettings.ActionButtons.Length];
-
-            DiagManager.Instance.CurSettings.ActionButtons.CopyTo(actionButtons, 0);
+            actionButtons = new Buttons[DiagManager.Instance.CurActionButtons.Length];
+            DiagManager.Instance.CurActionButtons.CopyTo(actionButtons, 0);
+            inactiveInput = DiagManager.Instance.CurSettings.InactiveInput;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
 
@@ -25,15 +27,20 @@ namespace RogueEssence.Menu
                 if (!Settings.UsedByGamepad((FrameInput.InputType)index))
                     continue;
                 MenuText buttonName = new MenuText(((FrameInput.InputType)index).ToLocal(), new Loc(2, 1), Color.White);
-                MenuText buttonType = new MenuText("(" + actionButtons[index].ToLocal() + ")", new Loc(200, 1), DirH.Right);
+                MenuText buttonType = new MenuText(DiagManager.Instance.GetButtonString(actionButtons[index]), new Loc(200, 1), DirH.Right);
                 flatChoices.Add(new MenuElementChoice(() => { chooseAction(index, buttonType); }, true, buttonName, buttonType));
             }
 
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_CONTROLS_RESET"), resetDefaults));
+            {
+                MenuText buttonName = new MenuText(Text.FormatKey("MENU_CONTROLS_INACTIVE"), new Loc(2, 1), Color.White);
+                MenuText buttonType = new MenuText(inactiveInput ? Text.FormatKey("DLG_CHOICE_ON") : Text.FormatKey("DLG_CHOICE_OFF"), new Loc(200, 1), DirH.Right);
+                flatChoices.Add(new MenuElementChoice(() => { toggleInactiveInput(); }, true, buttonName, buttonType));
+            }
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_CONTROLS_CONFIRM"), confirm));
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_KEYBOARD_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), 232, String.Format("{0}: {1}", Text.FormatKey("MENU_GAMEPAD_TITLE"), DiagManager.Instance.CurGamePadName), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
 
@@ -62,14 +69,14 @@ namespace RogueEssence.Menu
                     continue;
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).Text = "(" + actionButtons[index].ToLocal() + ")";
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText(DiagManager.Instance.GetButtonString(actionButtons[index]));
                 if (actionConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;
                     ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Red;
                     conflicted = true;
                 }
-                else if (actionButtons[index] != DiagManager.Instance.CurSettings.ActionButtons[index])
+                else if (actionButtons[index] != DiagManager.Instance.CurActionButtons[index])
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Yellow;
                     ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Yellow;
@@ -82,7 +89,24 @@ namespace RogueEssence.Menu
                 totalIndex++;
             }
 
+            //move past Reset Defaults
             totalIndex++;
+            //inactive indow
+            {
+                IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText(inactiveInput ? Text.FormatKey("DLG_CHOICE_ON") : Text.FormatKey("DLG_CHOICE_OFF"));
+                if (inactiveInput != DiagManager.Instance.CurSettings.InactiveInput)
+                {
+                    ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Yellow;
+                    ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Yellow;
+                }
+                else
+                {
+                    ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.White;
+                    ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.White;
+                }
+                totalIndex++;
+            }
             if (conflicted)
             {
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
@@ -116,7 +140,7 @@ namespace RogueEssence.Menu
 
         private void chooseAction(int index, MenuText buttonType)
         {
-            buttonType.Text = "(" + Text.FormatKey("MENU_CONTROLS_CHOOSE_BUTTON") + ")";
+            buttonType.SetText("(" + Text.FormatKey("MENU_CONTROLS_CHOOSE_BUTTON") + ")");
 
             MenuManager.Instance.AddMenu(new GetButtonMenu(Settings.ForbiddenButtons, (Buttons button) =>
             {
@@ -133,9 +157,17 @@ namespace RogueEssence.Menu
             refresh();
         }
 
+        private void toggleInactiveInput()
+        {
+            inactiveInput = !inactiveInput;
+
+            refresh();
+        }
+
         private void confirm()
         {
-            actionButtons.CopyTo(DiagManager.Instance.CurSettings.ActionButtons, 0);
+            actionButtons.CopyTo(DiagManager.Instance.CurActionButtons, 0);
+            DiagManager.Instance.CurSettings.InactiveInput = inactiveInput;
 
             DiagManager.Instance.SaveSettings(DiagManager.Instance.CurSettings);
             MenuManager.Instance.NextAction = ReturnCommand();

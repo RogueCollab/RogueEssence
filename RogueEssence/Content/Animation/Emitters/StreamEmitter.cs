@@ -61,8 +61,6 @@ namespace RogueEssence.Content
                 CurrentShotTime -= BurstTime;
 
                 int range = Range;
-                if (Dir.IsDiagonal())
-                    range = (int)(range * 1.4142136);
 
                 Vector2 totalDistance = (Dir.GetLoc() * (range - StartDistance)).ToVector2();
 

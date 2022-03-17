@@ -120,8 +120,16 @@ namespace RogueEssence.Ground
         /// </summary>
         protected void InstantiateAI()
         {
-            m_AITemplate = Script.LuaEngine.Instance.InstantiateLuaModule(m_AIClasspath, m_Arguments);
-            m_fnUpdate = GetAIFunction(FunUpdateName);
+            if (!String.IsNullOrEmpty(m_AIClasspath))
+            {
+                m_AITemplate = LuaEngine.Instance.InstantiateLuaModule(m_AIClasspath, m_Arguments);
+                m_fnUpdate = GetAIFunction(FunUpdateName);
+            }
+            else
+            {
+                m_AITemplate = null;
+                m_fnUpdate = null;
+            }
         }
 
         /// <summary>
@@ -162,7 +170,7 @@ namespace RogueEssence.Ground
 
         public override void ForceState(string statename)
         {
-            throw new NotImplementedException();
+            CurrentState = statename;
         }
 
 
@@ -181,12 +189,6 @@ namespace RogueEssence.Ground
                 m_AICoro = null;
         }
 
-
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-        }
 
         public override void OnMapInit()
         {

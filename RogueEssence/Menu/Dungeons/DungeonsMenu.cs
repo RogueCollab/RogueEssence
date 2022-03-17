@@ -13,61 +13,48 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 14;
 
-        OnChooseSlot chooseDungeonAction;
-        OnChooseSlot chooseGroundAction;
+        OnChooseSlot destAction;
         DungeonSummary summaryMenu;
-        private List<int> dungeonIndices;
+        private List<ZoneLoc> dests;
 
-        public DungeonsMenu(List<int> availables, List<ZoneLoc> groundDests, OnChooseSlot dungeonAction, OnChooseSlot groundAction)
+        public DungeonsMenu(List<string> names, List<ZoneLoc> dests, OnChooseSlot destAction)
         {
-            chooseDungeonAction = dungeonAction;
-            chooseGroundAction = groundAction;
-            dungeonIndices = availables;
+            this.destAction = destAction;
+            this.dests = dests;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            for (int ii = 0; ii < dungeonIndices.Count; ii++)
+            for (int ii = 0; ii < dests.Count; ii++)
             {
                 int dungeonIndex = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[dungeonIndices[ii]].Name.ToLocal(), () => { chooseDungeon(dungeonIndex); }, true,
-                    (DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[ii]] == GameProgress.UnlockState.Completed) ? Color.White : Color.Cyan));
+                if (dests[ii].StructID.Segment < 0)
+                    flatChoices.Add(new MenuTextChoice(names[ii], () => { chooseDungeon(dungeonIndex); }));
+                else
+                    flatChoices.Add(new MenuTextChoice(names[ii], () => { chooseDungeon(dungeonIndex); }, true,
+                        (DataManager.Instance.Save.GetDungeonUnlock(dests[ii].ID) == GameProgress.UnlockState.Completed) ? Color.White : Color.Cyan));
             }
-            for (int ii = 0; ii < groundDests.Count; ii++)
-            {
-                ZoneData zone = DataManager.Instance.GetZone(groundDests[ii].ID);
-                int groundIndex = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.GetGround(zone.GroundMaps[groundDests[ii].StructID.ID]).GetSingleLineName(), () => { chooseGround(groundIndex); }));
-            }
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
-            Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices.ToArray(), 0, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
+            Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices, 0, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
         }
 
         private void chooseDungeon(int choice)
         {
             MenuManager.Instance.RemoveMenu();
-
-            chooseDungeonAction(choice);
-        }
-
-        private void chooseGround(int choice)
-        {
-            MenuManager.Instance.RemoveMenu();
-
-            chooseGroundAction(choice);
+            destAction(choice);
         }
 
 
         protected override void ChoiceChanged()
         {
             int choice = CurrentChoiceTotal;
-            if (choice < dungeonIndices.Count)
+            if (dests[choice].StructID.Segment < 0)
+                summaryMenu.Visible = false;
+            else
             {
                 summaryMenu.Visible = true;
-                summaryMenu.SetDungeon(dungeonIndices[choice], DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[choice]] == GameProgress.UnlockState.Completed);
+                summaryMenu.SetDungeon(dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed);
             }
-            else
-                summaryMenu.Visible = false;
             base.ChoiceChanged();
         }
 

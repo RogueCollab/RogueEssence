@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Network;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Script
 {
@@ -26,6 +27,9 @@ namespace RogueEssence.Script
         private object                 m_choiceresult = -1;
         private MonsterID       m_curspeakerID = new MonsterID();
         private string              m_curspeakerName= "";
+        private bool m_curcenter_h = false;
+        private bool m_curcenter_v = false;
+        private bool m_curautoFinish = false;
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
         private IEnumerator<YieldInstruction> m_curdialogue;
@@ -44,46 +48,61 @@ namespace RogueEssence.Script
 
 
         //Lua wrapper functions
-        public LuaFunction WaitShowMonologue;
         public LuaFunction WaitForChoice;
         public LuaFunction WaitDialog;
         public LuaFunction WaitShowDialogue;
+        public LuaFunction WaitShowTimedDialogue;
         public LuaFunction WaitShowVoiceOver;
+        public LuaFunction WaitInput;
         public LuaFunction WaitShowTitle;
         public LuaFunction WaitHideTitle;
+        public LuaFunction WaitShowBG;
+        public LuaFunction WaitHideBG;
 
         //================================================================
         // Dialogue
         //================================================================
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="text"></param>
-        public void TextMonologue(string text)
+
+
+        public void TextDialogue(string text, int waitTime = -1)
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.SetSign(text);
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, new string[] { text });
+                else
+                {
+                    if (!String.IsNullOrEmpty(m_curspeakerName))
+                        DungeonScene.Instance.LogMsg(String.Format("{0}: {1}", m_curspeakerName, text));
+                    else
+                        DungeonScene.Instance.LogMsg(text);
+                }
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextMonologue({0}): Encountered exception:\n{1}", text, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextDialogue({0}): Encountered exception.", text), e), DiagManager.Instance.DevMode);
             }
         }
 
-
-
-
-        public void TextDialogue(string text)
+        public void TextDialogue(string text, LuaTable callbacks, int waitTime)
         {
+            //TODO: support mid-menu script callbacks
             try
             {
-                m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, new string[] { text }); //!#NOTE : I really don't know why we should pass tables of strings?
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, new string[] { text });
+                else
+                {
+                    if (!String.IsNullOrEmpty(m_curspeakerName))
+                        DungeonScene.Instance.LogMsg(String.Format("{0}: {1}", m_curspeakerName, text));
+                    else
+                        DungeonScene.Instance.LogMsg(text);
+                }
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextDialogue({0}): Encountered exception:\n{1}", text, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextDialogue({0}): Encountered exception.", text), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -92,11 +111,25 @@ namespace RogueEssence.Script
         {
             try
             {
-                m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(new TitleDialog(text, true, expireTime, () => { }));
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, () => { }, text);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception:\n{2}", text, expireTime, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        public void TextWaitMenu(bool anyInput)
+        {
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(anyInput);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextWaitMenu({0}): Encountered exception", anyInput), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -109,7 +142,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextShowTitle({0}, {1}): Encountered exception:\n{2}", text, time, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextWaitMenu({0}, {1}): Encountered exception", text, time), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -122,7 +155,34 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TextDialogue({0}): Encountered exception:\n{1}", time, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextFadeTitle({0}, {1}): Encountered exception", time), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+
+
+        public void ShowBG(string bg, int frameTime, int fadeInTime)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), fadeInTime);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception", bg, frameTime, fadeInTime), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+
+        public void FadeBG(int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(false, new BGAnimData(), time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowBG({0}): Encountered exception", time), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -135,6 +195,9 @@ namespace RogueEssence.Script
             m_curspeakerName = null;
             m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
+            m_curautoFinish = false;
+            m_curcenter_h = false;
+            m_curcenter_v = false;
         }
 
 
@@ -147,9 +210,9 @@ namespace RogueEssence.Script
         /// <param name="form"></param>
         /// <param name="skin"></param>
         /// <param name="gender"></param>
-        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender = Gender.Male)
+        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender)
         {
-            m_curspeakerID = new MonsterID(specie, form, skin, gender) ;
+            m_curspeakerID = new MonsterID(specie, form, skin, gender);
             m_curspeakerName = name;
             m_curspeakerEmo.Emote = 0;
             m_curspeakerSnd = keysound;
@@ -169,9 +232,8 @@ namespace RogueEssence.Script
             }
             else
             {
-                DiagManager.Instance.LogInfo("ScriptUI.SetSpeaker(): The speaker was null!!");
-                m_curspeakerID = new MonsterID(0, 0, 0, Data.Gender.Unknown);
-                m_curspeakerName = "NULL";
+                m_curspeakerID = MonsterID.Invalid;
+                m_curspeakerName = null;
             }
 
             m_curspeakerEmo.Emote = 0;
@@ -182,13 +244,12 @@ namespace RogueEssence.Script
             if (chara != null)
             {
                 m_curspeakerID = chara.CurrentForm;
-                m_curspeakerName = chara.Name;
+                m_curspeakerName = chara.GetDisplayName(true);
             }
             else
             {
-                DiagManager.Instance.LogInfo("ScriptUI.SetSpeaker(): The speaker was null!!");
-                m_curspeakerID = new MonsterID(0, 0, 0, Data.Gender.Unknown);
-                m_curspeakerName = "NULL";
+                m_curspeakerID = MonsterID.Invalid;
+                m_curspeakerName = null;
             }
 
             m_curspeakerEmo.Emote = 0;
@@ -205,6 +266,16 @@ namespace RogueEssence.Script
             m_curspeakerEmo.Emote = emoteIndex;
         }
 
+        public void SetCenter(bool centerH, bool centerV = false)
+        {
+            m_curcenter_h = centerH;
+            m_curcenter_v = centerV;
+        }
+
+        public void SetAutoFinish(bool autoFinish)
+        {
+            m_curautoFinish = autoFinish;
+        }
 
 
         /// <summary>
@@ -212,6 +283,9 @@ namespace RogueEssence.Script
         /// </summary>
         public Coroutine _WaitDialog()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                return new Coroutine(_DummyWait());
+
             return new Coroutine(m_curdialogue);
         }
 
@@ -238,8 +312,14 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="message">Question to be asked to the user.</param>
         /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
-        public void ChoiceMenuYesNo( string message, bool bdefaultstono = false )
+        public void ChoiceMenuYesNo( string message, bool bdefaultstono = false)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI() == 0 ? false : true;
+                return;
+            }
+
             try
             {
                 m_choiceresult = null;
@@ -253,22 +333,22 @@ namespace RogueEssence.Script
                                                                       m_curspeakerName,
                                                                       m_curspeakerEmo,
                                                                       message,
-                                                                      m_curspeakerSnd,
-                                                                      () => { m_choiceresult = true; },
-                                                                      () => { m_choiceresult = false; },
+                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v,
+                                                                      () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                                                                      () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
                 }
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(message,
                         m_curspeakerSnd,
-                        () => { m_choiceresult = true; },
-                        () => { m_choiceresult = false; });
+                        () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                        () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ChoiceMenuYesNo({0}): Encountered exception:\n{1}", message, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChoiceMenuYesNo({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -281,16 +361,17 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="title"></param>
         /// <param name="desc"></param>
-        public void NameMenu(string title, string desc)
+        public void NameMenu(string title, string desc, int maxLength = 116)
         {
             try
             {
                 m_choiceresult = "";
-                m_curchoice = new TeamNameMenu(title, desc, (string name) => { m_choiceresult = name; });
+                //TODO: allow this to work in dungeon mode by skipping replays
+                m_curchoice = new TeamNameMenu(title, desc, maxLength, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.NameMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.NameMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -299,11 +380,12 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = false;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new AssemblyMenu(0, () => { m_choiceresult = true; });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.AssemblyMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.AssemblyMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -328,6 +410,7 @@ namespace RogueEssence.Script
                     Int64 price = (Int64)entry["Price"];
                     goodsList.Add(new Tuple<InvItem, int>(item, (int)price));
                 }
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new ShopMenu(goodsList, 0, (List<int> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
@@ -337,7 +420,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShopMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShopMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -354,6 +437,7 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new SellMenu(0, (List<InvSlot> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
@@ -363,7 +447,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SellMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SellMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -372,11 +456,12 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new DepositMenu(0);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.StorageMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.StorageMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -385,11 +470,12 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new WithdrawMenu(0, true, onChooseSlot);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.WithdrawMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.WithdrawMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -429,11 +515,12 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = null;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new BankMenu(DataManager.Instance.Save.ActiveTeam.Money, onChooseAmount);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.BankMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BankMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -460,7 +547,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SpoilsMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SpoilsMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -479,72 +566,97 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.AppraiseMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.AppraiseMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
 
         public void TutorTeamMenu()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new TutorTeamMenu(-1,
-                    (int teamSlot) => { m_choiceresult = teamSlot; },
-                    () => { });
+                    (int teamSlot) => { m_choiceresult = teamSlot; DataManager.Instance.LogUIPlay(teamSlot); },
+                    () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TutorTeamMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TutorTeamMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
 
         public void RelearnMenu(Character chara)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
                 List<int> forgottenSkills = chara.GetRelearnableSkills();
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
-                (int skillNum) => { m_choiceresult = skillNum; },
-                () => { });
+                (int skillNum) => { m_choiceresult = skillNum; DataManager.Instance.LogUIPlay(skillNum); },
+                () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.RelearnMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.RelearnMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
 
         public void LearnMenu(Character chara, int moveNum)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
                 m_curchoice = new SkillReplaceMenu(chara, moveNum,
-                        (int slot) => { m_choiceresult = slot; },
-                        () => { });
+                        (int slot) => { m_choiceresult = slot; DataManager.Instance.LogUIPlay(slot); },
+                        () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.LearnMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.LearnMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
 
         public void ForgetMenu(Character chara)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = -1;
                 m_curchoice = new SkillForgetMenu(chara,
-                        (int slot) => { m_choiceresult = slot; },
-                        () => { });
+                        (int slot) => { m_choiceresult = slot; DataManager.Instance.LogUIPlay(slot); },
+                        () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ForgetMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ForgetMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -554,16 +666,33 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
+                //TODO: allow this to work in dungeon mode by skipping replays
                 m_curchoice = new PromoteMenu(-1,
                     (int teamSlot) => { m_choiceresult = teamSlot; },
                     () => { });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowPromoteMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowPromoteMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
+
+        public bool CanSwapMenu(LuaTable goods)
+        {
+            List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+            foreach (object key in goods.Keys)
+            {
+                LuaTable entry = goods[key] as LuaTable;
+                int item = (int)((Int64)entry["Item"]);
+                List<int> reqs = new List<int>();
+                LuaTable luaReqs = entry["ReqItem"] as LuaTable;
+                foreach (object tradeIn in luaReqs.Values)
+                    reqs.Add((int)((Int64)tradeIn));
+                goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+            }
+            return SwapShopMenu.CanView(goodsList);
+        }
 
         public void SwapMenu(LuaTable goods, LuaTable prices)
         {
@@ -595,7 +724,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SwapMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SwapMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -613,75 +742,71 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.TributeMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TributeMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
 
-        public void ShowMusicMenu()
+        public void ShowMusicMenu(LuaTable spoilerUnlocks)
         {
             try
             {
+                List<string> unlockedTags = new List<string>();
+                foreach (object key in spoilerUnlocks.Keys)
+                {
+                    string entry = (string)spoilerUnlocks[key];
+                    unlockedTags.Add(entry);
+                }
+
                 m_choiceresult = null;
-                m_curchoice = new MusicMenu((string dir) => { m_choiceresult = dir; });
+                m_curchoice = new MusicMenu(unlockedTags, (string dir) => { m_choiceresult = dir; });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ShowMusicMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowMusicMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
-        public void DungeonChoice(int dungeonid)
+        public void DungeonChoice(string name, ZoneLoc dest)
         {
             try
             {
                 m_choiceresult = null;
-                ZoneData zoneEntry = DataManager.Instance.GetZone(dungeonid);
+                ZoneData zoneEntry = DataManager.Instance.GetZone(dest.ID);
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { m_choiceresult = true; });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { m_choiceresult = false; });
-                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.Name.ToLocal()), dungeonid, false, choices, 0, 1);
+                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", name), dest, false, choices, 0, 1);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.DungeonMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.DungeonMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
-        public void DungeonMenu(LuaTable dungeons, LuaTable grounds)
+        public void DestinationMenu(LuaTable destinations)
         {
             try
             {
-                List<int> availableDungeons = new List<int>();
-                List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
-                foreach (object key in dungeons.Keys)
+                List<string> names = new List<string>();
+                List<ZoneLoc> dests = new List<ZoneLoc>();
+                foreach (object key in destinations.Keys)
                 {
-                    int entry = (int)(Int64)dungeons[key];
-                    availableDungeons.Add(entry);
-                }
-
-                List<ZoneLoc> availableGrounds = new List<ZoneLoc>();
-                foreach (object key in grounds.Keys)
-                {
-                    LuaTable entry = grounds[key] as LuaTable;
-                    int zone = (int)(Int64)entry["Zone"];
-                    int id = (int)(Int64)entry["ID"];
-                    int entryPoint = (int)(Int64)entry["Entry"];
-                    availableGrounds.Add(new ZoneLoc(zone, new SegLoc(-1, id), entryPoint));
+                    LuaTable entry = destinations[key] as LuaTable;
+                    string name = (string)entry["Name"];
+                    ZoneLoc item = (ZoneLoc)entry["Dest"];
+                    names.Add(name);
+                    dests.Add(item);
                 }
 
                 //give the player the choice between all the possible dungeons
                 m_choiceresult = ZoneLoc.Invalid;
-                m_curchoice = new DungeonsMenu(availableDungeons, availableGrounds,
-                    (int choice) => { m_choiceresult = new ZoneLoc(availableDungeons[choice], new SegLoc(0, 0)); },
-                    (int choice) => {
-                        m_choiceresult = new ZoneLoc(availableGrounds[choice].ID,
-          new SegLoc(-1, availableGrounds[choice].StructID.ID), availableGrounds[choice].EntryPoint);
-                    });
+                m_curchoice = new DungeonsMenu(names, dests,
+                    (int choice) => { m_choiceresult = dests[choice]; });
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.DungeonMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.DungeonMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -696,7 +821,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ServersMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ServersMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -709,7 +834,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ContactsMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ContactsMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -722,7 +847,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.SOSMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SOSMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -735,7 +860,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.AOKMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.AOKMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -748,7 +873,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.PeersMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.PeersMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -761,7 +886,7 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.ConnnectMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ConnnectMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -785,7 +910,59 @@ namespace RogueEssence.Script
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.CurrentActivityMenu(): Encountered exception:\n{0}", e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.CurrentActivityMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        public void ChooseMonsterMenu(string title, LuaTable choices, bool canMenu = false, bool canCancel = false)
+        {
+            try
+            {
+                m_choiceresult = null;
+
+                List<(MonsterID mon, string name)> monsters = new();
+
+                for (int ii = 1; choices[ii] is not null; ii++)
+                {
+                    var choice = choices[ii];
+                    if (choice is MonsterID monster)
+                        monsters.Add((monster, ""));
+                    else
+                        throw new ArgumentException($"Table must be array of '{nameof(MonsterID)}'", nameof(choices));
+                }
+
+                if (monsters.Count == 0)
+                    throw new ArgumentException($"Table must be array of one or more '{nameof(MonsterID)}'", nameof(choices));
+
+                void chooseAction(int slot)
+                {
+                    m_choiceresult = monsters[slot].mon;
+                    MenuManager.Instance.RemoveMenu();
+                }
+
+                void cancelAction() { }
+
+                m_curchoice = new ChooseMonsterMenu(title, monsters, 0, chooseAction, canCancel ? cancelAction : null, canMenu);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChooseMonsterMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+
+
+        public void ChooseCustomMenu(ChoiceMenu menu)
+        {
+            try
+            {
+                m_choiceresult = null;
+
+                m_curchoice = menu;
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChooseCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -799,11 +976,17 @@ namespace RogueEssence.Script
         /// <param name="message">The question to ask the user.</param>
         public void BeginChoiceMenu(string message, LuaTable choicespairs, object defaultchoice, object cancelchoice)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
             try
             {
                 m_choiceresult = null;
-                int mappedDefault = 0;
-                int mappedCancel = 0;
+                int? mappedDefault = null;
+                int? mappedCancel = null;
                 //Intepret the choices from lua
                 List<DialogueChoice> choices = new List<DialogueChoice>();
                 IDictionaryEnumerator dict = choicespairs.GetEnumerator();
@@ -819,29 +1002,34 @@ namespace RogueEssence.Script
                         choicetext = (string)tbl[1];
                         enabled = (bool)tbl[2];
                     }
-                    object choiceval = dict.Key;
+                    long choiceval = (long)dict.Key;
 
                     if (defaultchoice.Equals(choiceval))
                         mappedDefault = choices.Count;
                     if (cancelchoice.Equals(choiceval))
                         mappedCancel = choices.Count;
-                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; }, enabled));
+                    choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
+
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+                if (mappedCancel == null)
+                    mappedCancel = -1;
 
                 //Make a choice menu, and check if we display a speaker or not
                 if (m_curspeakerName != null)
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo,
-                            message, m_curspeakerSnd, choices.ToArray(), mappedDefault, mappedCancel);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
                 else
                 {
-                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault, mappedCancel);
+                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptUI.BeginChoiceMenu({0}): Encountered exception:\n{1}", message, e.Message));
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BeginChoiceMenu({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -854,6 +1042,14 @@ namespace RogueEssence.Script
             return m_choiceresult;
         }
 
+        public Action GetChoiceAction(object obj)
+        {
+            return () =>
+            {
+                MenuManager.Instance.RemoveMenu();
+                m_choiceresult = obj;
+            };
+        }
 
 
         /// <summary>
@@ -862,6 +1058,9 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public Coroutine _WaitForChoice()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                return new Coroutine(_DummyWait());
+
             if (m_curchoice != null)
                 return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
             else
@@ -877,11 +1076,11 @@ namespace RogueEssence.Script
             try
             {
                 IInteractable imenu = (IInteractable)menu;
-                return new Coroutine(Menu.MenuManager.Instance.ProcessMenuCoroutine(imenu));
+                return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(imenu));
             }
             catch(Exception ex)
             {
-                DiagManager.Instance.LogInfo("ScriptUI.ProcessMenuCoroutine(): Exception caught: \n" + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                DiagManager.Instance.LogError(ex);
                 return null;
             }
         }
@@ -901,15 +1100,15 @@ namespace RogueEssence.Script
                 return coroutine.yield(UI:_WaitForChoice())
             end", "WaitForChoice").First() as LuaFunction;
 
-            WaitShowMonologue = state.RunString(@"
-            return function(_, text)
-                UI:TextMonologue(text)
-                return coroutine.yield(UI:_WaitDialog())
-            end", "WaitShowMonologue").First() as LuaFunction;
-
             WaitShowDialogue = state.RunString(@"
             return function(_, text)
                 UI:TextDialogue(text)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitShowDialogue").First() as LuaFunction;
+
+            WaitShowTimedDialogue = state.RunString(@"
+            return function(_, text, time)
+                UI:TextDialogue(text, time)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowDialogue").First() as LuaFunction;
 
@@ -918,6 +1117,12 @@ namespace RogueEssence.Script
                 UI:TextVoiceOver(text, expiretime)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowVoiceOver").First() as LuaFunction;
+
+            WaitInput = state.RunString(@"
+            return function(_, any)
+                UI:TextWaitMenu(any)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitInput").First() as LuaFunction;
 
             WaitShowTitle = state.RunString(@"
             return function(_, text, time)
@@ -930,6 +1135,18 @@ namespace RogueEssence.Script
                 UI:TextFadeTitle(time)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitHideTitle").First() as LuaFunction;
+
+            WaitShowBG = state.RunString(@"
+            return function(_, text, frameTime, fadeInTime)
+                UI:ShowBG(text, frameTime, fadeInTime)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitShowBG").First() as LuaFunction;
+
+            WaitHideBG = state.RunString(@"
+            return function(_, time)
+                UI:FadeBG(time)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitHideBG").First() as LuaFunction;
         }
     }
 }

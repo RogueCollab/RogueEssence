@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
                     DirV.Up, DirH.Right, color);
                 flatChoices.Add(new MenuElementChoice(() => { Choose(index, true); }, true, memberName, memberLv));
             }
-            List<MenuChoice[]> box = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
             int startPage = defaultChoice / SLOTS_PER_PAGE;
@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
 
             portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
 
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box.ToArray(), startChoice, startPage, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, startChoice, startPage, SLOTS_PER_PAGE);
 
         }
 
@@ -69,6 +69,15 @@ namespace RogueEssence.Menu
         public bool ChoosingLeader(int choice)
         {
             return choice == DataManager.Instance.Save.ActiveTeam.LeaderIndex;
+        }
+
+        public bool ChoosingStuckMember(int choice)
+        {
+            if (DataManager.Instance.Save.ActiveTeam.Players[choice].IsPartner)
+                return true;
+            if (DataManager.Instance.Save is RogueProgress && DataManager.Instance.GetSkin(DataManager.Instance.Save.ActiveTeam.Players[choice].BaseForm.Skin).Challenge && !DataManager.Instance.Save.ActiveTeam.Players[choice].Dead)
+                return true;
+            return false;
         }
 
         public bool CanChooseAssembly(int choice)
@@ -144,7 +153,7 @@ namespace RogueEssence.Menu
                 //instantly put the team on or remove it
                 if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
                 {
-                    if (!ChoosingLeader(currentChoice))
+                    if (!ChoosingLeader(currentChoice) && !ChoosingStuckMember(currentChoice))
                     {
                         GameManager.Instance.SE("Menu/Toggle");
                         GroundScene.Instance.SilentSendHome(currentChoice);

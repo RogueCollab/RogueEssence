@@ -16,6 +16,12 @@ namespace RogueEssence.Dev.ViewModels
 
     public class TextureLayerBoxViewModel : LayerBoxViewModel<MapLayer>
     {
+        private bool groundMode;
+        public TextureLayerBoxViewModel(bool groundMode) : base(groundMode ? DiagManager.Instance.DevEditor.GroundEditor.Edits : DiagManager.Instance.DevEditor.MapEditor.Edits)
+        {
+            this.groundMode = groundMode;
+        }
+
         public override async Task EditLayer()
         {
             MapLayerWindow window = new MapLayerWindow();
@@ -24,7 +30,7 @@ namespace RogueEssence.Dev.ViewModels
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
+            bool result = await window.ShowDialog<bool>(groundMode ? form.GroundEditForm : form.MapEditForm);
 
             lock (GameBase.lockObj)
             {
@@ -35,6 +41,12 @@ namespace RogueEssence.Dev.ViewModels
                     newLayer.Layer = vm.Front ? DrawLayer.Top : DrawLayer.Bottom;
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Tiles = oldLayer.Tiles;
+
+                    if (groundMode)
+                        edits.Apply(new GroundTextureStateUndo(ChosenLayer));
+                    else
+                        edits.Apply(new MapTextureStateUndo(ChosenLayer));
+
                     Layers[ChosenLayer] = newLayer;
                 }
             }
@@ -43,13 +55,19 @@ namespace RogueEssence.Dev.ViewModels
         protected override MapLayer GetNewLayer()
         {
             MapLayer layer = new MapLayer(String.Format("Layer {0}", Layers.Count));
-            layer.CreateNew(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+            if (groundMode)
+                layer.CreateNew(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+            else
+                layer.CreateNew(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height);
             return layer;
         }
 
         protected override void LoadLayersFromSource()
         {
-            Layers.LoadModels(ZoneManager.Instance.CurrentGround.Layers);
+            if (groundMode)
+                Layers.LoadModels(ZoneManager.Instance.CurrentGround.Layers);
+            else
+                Layers.LoadModels(ZoneManager.Instance.CurrentMap.Layers);
         }
     }
 

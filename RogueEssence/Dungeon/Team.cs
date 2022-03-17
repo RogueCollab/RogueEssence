@@ -9,12 +9,17 @@ using RogueEssence.LevelGen;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public abstract class Team : IGroupSpawnable
+    public abstract class Team
     {
         public List<Character> Players;
         public List<Character> Guests;
 
         public int LeaderIndex;
+
+        /// <summary>
+        /// If set to true, will attack/be attacked by Foe faction when in Ally faction.
+        /// </summary>
+        public bool FoeConflict;
 
         private List<InvItem> inventory;
 
@@ -72,15 +77,19 @@ namespace RogueEssence.Dungeon
                 yield return item;
         }
 
-        public void AddToInv(InvItem invItem)
+        public void AddToInv(InvItem invItem, bool skipCheck = false)
         {
             inventory.Add(invItem);
+            if (skipCheck)
+                return;
             UpdateInv(null, invItem);
         }
-        public void RemoveFromInv(int index)
+        public void RemoveFromInv(int index, bool skipCheck = false)
         {
             InvItem invItem = inventory[index];
             inventory.RemoveAt(index);
+            if (skipCheck)
+                return;
             UpdateInv(invItem, null);
         }
         public void UpdateInv(InvItem oldItem, InvItem newItem)
@@ -166,11 +175,6 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            //TODO: v0.5: remove this
-            if (inventory == null)
-                inventory = new List<InvItem>();
-            if (Guests == null)
-                Guests = new List<Character>();
             ReconnectTeamReference();
         }
 
@@ -228,7 +232,7 @@ namespace RogueEssence.Dungeon
             Name = "";
             Assembly = new List<Character>();
             BoxStorage = new List<InvItem>();
-            Storage = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            Storage = new int[10000];//TODO: remove this magic number and make it an adjustable value
         }
 
         public void SetRank(int rank)
@@ -264,6 +268,14 @@ namespace RogueEssence.Dungeon
                 return Name;
             else
                 return Players[0].BaseName;
+        }
+
+        public string GetDisplayName()
+        {
+            string name = Players[0].BaseName;
+            if (Name != "")
+                name = Name;
+            return String.Format("[color=#FFA5FF]{0}[color]", name);
         }
 
 
@@ -345,7 +357,7 @@ namespace RogueEssence.Dungeon
             Assembly.Insert(idx, chara);
         }
 
-        public Character CreatePlayer(ReRandom rand, MonsterID form, int level, int intrinsic, int personality)
+        public Character CreatePlayer(IRandom rand, MonsterID form, int level, int intrinsic, int personality)
         {
             MonsterID formData = form;
             MonsterData dex = DataManager.Instance.GetMonster(formData.Species);
@@ -377,6 +389,7 @@ namespace RogueEssence.Dungeon
             character.OriginalUUID = DataManager.Instance.Save.UUID;
             character.OriginalTeam = DataManager.Instance.Save.ActiveTeam.Name;
             character.MetAt = Text.FormatKey("MET_AT_START");
+            character.MetLoc = ZoneLoc.Invalid;
 
             return CreatePlayer(character);
         }

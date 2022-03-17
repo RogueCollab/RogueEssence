@@ -62,6 +62,12 @@ namespace RogueEssence.Content
             }
         }
 
+        public static void Export(TileSheet sheet, string filepath)
+        {
+            using (Stream stream = new FileStream(filepath, FileMode.Create, FileAccess.Write, FileShare.None))
+                ExportTex(stream, sheet.baseTexture);
+        }
+
         public static new TileSheet Load(BinaryReader reader)
         {
             long length = reader.ReadInt64();
@@ -106,6 +112,11 @@ namespace RogueEssence.Content
             DrawTile(spriteBatch, pos, x, y, color, 1f, rotation);
         }
 
+        public void DrawTile(SpriteBatch spriteBatch, Vector2 pos, int x, int y, Color color, float rotation, SpriteEffects spriteEffects)
+        {
+            DrawTile(spriteBatch, pos, x, y, color, Vector2.One, rotation, spriteEffects);
+        }
+
         public void DrawTile(SpriteBatch spriteBatch, Vector2 pos, int x, int y, Color color, float scale, float rotation)
         {
             DrawTile(spriteBatch, pos, x, y, color, new Vector2(scale), rotation);
@@ -113,8 +124,13 @@ namespace RogueEssence.Content
 
         public void DrawTile(SpriteBatch spriteBatch, Vector2 pos, int x, int y, Color color, Vector2 scale, float rotation)
         {
+            DrawTile(spriteBatch, pos, x, y, color, scale, rotation, SpriteEffects.None);
+        }
+
+        public void DrawTile(SpriteBatch spriteBatch, Vector2 pos, int x, int y, Color color, Vector2 scale, float rotation, SpriteEffects spriteEffects)
+        {
             if (x < TotalX && y < TotalY)
-                Draw(spriteBatch, pos, new Rectangle(TileWidth * x, TileHeight * y, TileWidth, TileHeight), color, scale, rotation);
+                Draw(spriteBatch, pos, new Rectangle(TileWidth * x, TileHeight * y, TileWidth, TileHeight), color, scale, rotation, spriteEffects);
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
         }

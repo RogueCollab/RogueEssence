@@ -23,13 +23,14 @@ namespace RogueEssence.Content
             Portrait = 4,
             Tile = 8,
             Item = 16,
-            VFX = 32,
-            Icon = 64,
-            Object = 128,
-            BG = 256,
-            Autotile = 512,
-            All = 1023,
-            Count = 1024
+            Particle = 32,
+            Beam = 64,
+            Icon = 128,
+            Object = 256,
+            BG = 512,
+            Autotile = 1024,
+            All = 2047,
+            Count = 2048
         }
 
         public enum GameZoom
@@ -43,8 +44,11 @@ namespace RogueEssence.Content
             x8Far = 3,
         }
 
-        public static int ConvertZoom(this GameZoom zoom, int amount)
+        public static int ConvertZoom(this GameZoom zoom, int amount, bool reverse = false)
         {
+            if (reverse)
+                zoom = (GameZoom)(-(int)zoom);
+
             switch (zoom)
             {
                 case GameZoom.x8Near:
@@ -240,7 +244,6 @@ namespace RogueEssence.Content
         public static string EquipSE { get; private set; }
         public static string MoneySE { get; private set; }
         public static string LeaderSE { get; private set; }
-        public static string ReviveSE { get; private set; }
 
         public static string TitleBG { get; private set; }
 
@@ -538,15 +541,15 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
             }
             if ((conversionFlags & AssetType.Tile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tiles/", PathMod.HardMod(TILE_PATTERN), true, false);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tile/", PathMod.HardMod(TILE_PATTERN), true, false);
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
-            if ((conversionFlags & AssetType.VFX) != AssetType.None)
-            {
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Attacks/Particle", PathMod.HardMod(PARTICLE_PATTERN));
-                Dev.ImportHelper.ImportAllBeams(PathMod.DEV_PATH + "Attacks/Beam", PathMod.HardMod(BEAM_PATTERN));
-            }
+            if ((conversionFlags & AssetType.Particle) != AssetType.None)
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Particle/", PathMod.HardMod(PARTICLE_PATTERN));
+            if ((conversionFlags & AssetType.Beam) != AssetType.None)
+                Dev.ImportHelper.ImportAllBeams(PathMod.DEV_PATH + "Beam/", PathMod.HardMod(BEAM_PATTERN));
+
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
             if ((conversionFlags & AssetType.Object) != AssetType.None)
@@ -556,16 +559,16 @@ namespace RogueEssence.Content
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
                 // Old format (image data):
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tiles/", PathMod.HardMod(TILE_PATTERN), false, true);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tile/", PathMod.HardMod(TILE_PATTERN), false, true);
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
                 // Old format (auto tiles):
-                Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tiles/", DataManager.DATA_PATH + "AutoTile/");
+                Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tile/", DataManager.DATA_PATH + "AutoTile/");
                 // New format (image data & auto tiles):
-                Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TilesDtef/", PathMod.HardMod(TILE_PATTERN));
+                Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TileDtef/", PathMod.HardMod(TILE_PATTERN));
                 
-                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
+                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/", typeof(AutoTileData));
             }
             
             if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
@@ -615,7 +618,6 @@ namespace RogueEssence.Content
                     EquipSE = sysSounds.SelectSingleNode("Equip").InnerText;
                     MoneySE = sysSounds.SelectSingleNode("Money").InnerText;
                     LeaderSE = sysSounds.SelectSingleNode("Leader").InnerText;
-                    ReviveSE = sysSounds.SelectSingleNode("Revive").InnerText;
 
                     TitleBG = xmldoc.DocumentElement.SelectSingleNode("TitleBG").InnerText;
 
@@ -673,7 +675,7 @@ namespace RogueEssence.Content
                 DiagManager.Instance.LogInfo("Portraits Reloaded.");
             }
 
-            if ((assetType & AssetType.VFX) != AssetType.None)
+            if ((assetType & AssetType.Particle) != AssetType.None || (assetType & AssetType.Beam) != AssetType.None)
             {
                 vfxCache.Clear();
                 DiagManager.Instance.LogInfo("Effects Reloaded.");
@@ -715,11 +717,21 @@ namespace RogueEssence.Content
             CharaIndexNode fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(PathMod.ModPath(charaDir + "index.idx")))
+                Dictionary<int, CharaIndexNode> nodes = new Dictionary<int, CharaIndexNode>();
+                foreach (string modPath in PathMod.FallforthPaths(charaDir + "index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                        fullGuide = CharaIndexNode.Load(reader);
+                    using (FileStream stream = File.OpenRead(modPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            CharaIndexNode guide = CharaIndexNode.Load(reader);
+                            foreach (int key in guide.Nodes.Keys)
+                                nodes[key] = guide.Nodes[key];
+                        }
+                    }
                 }
+                fullGuide = new CharaIndexNode();
+                fullGuide.Nodes = nodes;
             }
             catch (Exception ex)
             {
@@ -907,22 +919,67 @@ namespace RogueEssence.Content
 
         public static DirSheet GetIcon(string num)
         {
-            return getDirSheetCache(num, ICON_PATTERN, iconCache);
+            return GetDirSheet(AssetType.Icon, num);
         }
 
         public static DirSheet GetItem(string num)
         {
-            return getDirSheetCache(num, ITEM_PATTERN, itemCache);
+            return GetDirSheet(AssetType.Item, num);
         }
 
         public static DirSheet GetBackground(string num)
         {
-            return getDirSheetCache(num, BG_PATTERN, bgCache);
+            return GetDirSheet(AssetType.BG, num);
         }
 
         public static DirSheet GetObject(string num)
         {
-            return getDirSheetCache(num, OBJECT_PATTERN, objectCache);
+            return GetDirSheet(AssetType.Object, num);
+        }
+
+        public static DirSheet GetDirSheet(AssetType assetType, string num)
+        {
+            switch (assetType)
+            {
+                case AssetType.Object:
+                    return getDirSheetCache(num, GetPattern(assetType), objectCache);
+                case AssetType.BG:
+                    return getDirSheetCache(num, GetPattern(assetType), bgCache);
+                case AssetType.Item:
+                    return getDirSheetCache(num, GetPattern(assetType), itemCache);
+                case AssetType.Icon:
+                    return getDirSheetCache(num, GetPattern(assetType), iconCache);
+
+            }
+            throw new ArgumentException(String.Format("Invalid asset type: {0}", assetType));
+        }
+
+        public static string GetPattern(AssetType assetType)
+        {
+            switch (assetType)
+            {
+                case AssetType.Font:
+                    return FONT_PATTERN;
+                case AssetType.Chara:
+                    return CHARA_PATTERN;
+                case AssetType.Portrait:
+                    return PORTRAIT_PATTERN;
+                case AssetType.Tile:
+                    return TILE_PATTERN;
+                case AssetType.Item:
+                    return ITEM_PATTERN;
+                case AssetType.Particle:
+                    return PARTICLE_PATTERN;
+                case AssetType.Beam:
+                    return BEAM_PATTERN;
+                case AssetType.Icon:
+                    return ICON_PATTERN;
+                case AssetType.Object:
+                    return OBJECT_PATTERN;
+                case AssetType.BG:
+                    return BG_PATTERN;
+            }
+            throw new ArgumentException(String.Format("Invalid asset type: {0}", assetType));
         }
 
         private static DirSheet getDirSheetCache(string num, string pattern, LRUCache<string, DirSheet> cache)
@@ -963,12 +1020,21 @@ namespace RogueEssence.Content
             TileGuide fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(PathMod.ModPath(tileDir + "index.idx")))
+                Dictionary<string, TileIndexNode> nodes = new Dictionary<string, TileIndexNode>();
+                foreach (string modPath in PathMod.FallforthPaths(tileDir + "index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                        fullGuide = TileGuide.Load(reader);
+                    using (FileStream stream = File.OpenRead(modPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            TileGuide guide = TileGuide.Load(reader);
+                            foreach (string key in guide.Nodes.Keys)
+                                nodes[key] = guide.Nodes[key];
+                        }
+                    }
                 }
-
+                fullGuide = new TileGuide();
+                fullGuide.Nodes = nodes;
             }
             catch (Exception ex)
             {

@@ -9,11 +9,6 @@ namespace RogueEssence.Ground
     public abstract class GroundAI
     {
         /// <summary>
-        /// AI Master switch. Turns AI off or on globally for all entities using this AI class.
-        /// </summary>
-        public static bool GlobalAIEnabled { get; set; }
-
-        /// <summary>
         /// State index the AI is currently in
         /// </summary>
         public virtual string CurrentState { get; protected set; }
@@ -21,7 +16,8 @@ namespace RogueEssence.Ground
         /// <summary>
         /// Pointer to the GroundEntity that inherits this.
         /// </summary>
-        public virtual GroundEntity EntityPointer { get; set; }
+        [NonSerialized]
+        public GroundEntity EntityPointer;
 
         /// <summary>
         /// This method handles initializing the AI, if needed, when a map is run.

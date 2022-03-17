@@ -34,7 +34,7 @@ namespace RogueEssence.Menu
                 if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
                 {
                     availableItems.Add(index);
-                    MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).Name.ToLocal(), new Loc(2, 1));
+                    MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                     MenuText menuCount = new MenuText("(" + DataManager.Instance.Save.ActiveTeam.Storage[ii]+")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                     flatChoices.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCount));
                 }
@@ -43,15 +43,15 @@ namespace RogueEssence.Menu
             {
                 int index = ii + DataManager.Instance.DataIndices[DataManager.DataType.Item].Count;
                 availableItems.Add(index);
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetName(), () => { choose(index); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetDisplayName(), () => { choose(index); }));
             }
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
 
-            Initialize(new Loc(16, 16), ItemMenu.ITEM_MENU_WIDTH, Text.FormatKey("MENU_STORAGE_TITLE"), inv.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), ItemMenu.ITEM_MENU_WIDTH, Text.FormatKey("MENU_STORAGE_TITLE"), inv, 0, 0, SLOTS_PER_PAGE);
 
         }
 

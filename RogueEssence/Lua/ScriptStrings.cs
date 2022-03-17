@@ -83,7 +83,7 @@ namespace RogueEssence.Script
             {
                 DiagManager.Instance.LogError(ex);
             }
-            return "";
+            return fmt;
         }
 
         public string FormatKey(string fmt, params object[] para)
@@ -96,7 +96,7 @@ namespace RogueEssence.Script
             {
                 DiagManager.Instance.LogError(ex);
             }
-            return "";
+            return fmt;
         }
 
         public string LocalKeyString(int index)
@@ -110,7 +110,7 @@ namespace RogueEssence.Script
             {
                 DiagManager.Instance.LogError(ex);
             }
-            return "";
+            return ((FrameInput.InputType)index).ToString();
         }
         public string CreateList(LuaTable listStrings)
         {

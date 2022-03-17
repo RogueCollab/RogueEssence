@@ -36,8 +36,7 @@ namespace RogueEssence.Script
             {
                 if (ent == null || fn == null)
                 {
-                    DiagManager.Instance.LogInfo(String.Format("ScriptTask.StartEntityTask(): Got null entity or function pointer!"));
-                    return null;
+                    throw new ArgumentNullException("ScriptTask.StartEntityTask(): Got null entity or function pointer!");
                 }
                 if (ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
                 {
@@ -49,7 +48,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask.StartEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
             return null;
         }
@@ -64,7 +63,7 @@ namespace RogueEssence.Script
             try
             {
                 if (ent == null || fn == null)
-                    DiagManager.Instance.LogInfo(String.Format("ScriptTask._WaitStartEntityTask(): Got null entity or function pointer!"));
+                    throw new ArgumentNullException("ScriptTask._WaitStartEntityTask(): Got null entity or function pointer!");
                 if (ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
                 {
                     BaseTaskUser tu = (BaseTaskUser)ent;
@@ -73,7 +72,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask._WaitStartEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
             return new Coroutine(LuaEngine._DummyWait());
         }
@@ -96,7 +95,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask.StopEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
         }
 
@@ -118,7 +117,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask._WaitEntityTask(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
             }
             return new Coroutine(LuaEngine._DummyWait());
         }
@@ -157,7 +156,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptTask.StartScriptLocalCoroutine(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
                 return null;
             }
         }
@@ -172,7 +171,7 @@ namespace RogueEssence.Script
             else if (obj is LuaFunction)
             {
                 LuaFunction luaFun = obj as LuaFunction;
-                return CoroutineManager.Instance.StartCoroutine(new Coroutine(callScriptFunction(luaFun)), true);
+                return CoroutineManager.Instance.StartCoroutine(new Coroutine(LuaEngine.Instance.CallScriptFunction(luaFun)), true);
             }
             return null;
         }
@@ -197,27 +196,6 @@ namespace RogueEssence.Script
                 if (coroutines.Count == 0)
                     yield break;
                 yield return new WaitForFrames(1);
-            }
-        }
-
-        private IEnumerator<YieldInstruction> callScriptFunction(LuaFunction luaFun)
-        {
-            //Create a lua iterator function for the lua coroutine
-            LuaFunction iter = LuaEngine.Instance.CreateCoroutineIterator(luaFun);
-
-            //Then call it until it returns null!
-            object[] allres = iter.Call();
-            object res = allres.First();
-            while (res != null)
-            {
-                if (res.GetType() == typeof(Coroutine)) //This handles waiting on coroutines
-                    yield return CoroutineManager.Instance.StartCoroutine(res as Coroutine, false);
-                else if (res.GetType().IsSubclassOf(typeof(YieldInstruction)))
-                    yield return res as YieldInstruction;
-
-                //Pick another yield from the lua coroutine
-                allres = iter.Call();
-                res = allres.First();
             }
         }
 

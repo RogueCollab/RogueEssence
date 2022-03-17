@@ -19,33 +19,35 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string name, Type type, object[] attributes, IDictionary member)
+        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IDictionary member, Type[] subGroupStack)
         {
-            LoadLabelControl(control, name);
-
-            DictionaryBox lbxValue = new DictionaryBox();
-            lbxValue.MaxHeight = 180;
-            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm());
-            lbxValue.DataContext = mv;
-
             Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
-            //lbxValue.StringConv = GetStringRep(elementType, ReflectionExt.GetPassableAttributes(2, attributes));
+            DictionaryBox lbxValue = new DictionaryBox();
+            
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 180;
+
+            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            lbxValue.DataContext = mv;
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
+
             //add lambda expression for editing a single element
             mv.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
+                string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
-                if (element == null)
-                    frmData.Title = name + "/" + "New " + elementType.Name;
-                else
-                    frmData.Title = name + "/" + element.ToString();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, "(Dict) " + name + "[" + key.ToString() + "]", elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0]);
 
                 frmData.SelectedOKEvent += () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, name, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
                     op(key, element);
                     frmData.Close();
                 };
@@ -60,27 +62,25 @@ namespace RogueEssence.Dev
 
             mv.OnEditKey += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
-                DataEditForm frmKey = new DataEditForm();
-                if (element == null)
-                    frmKey.Title = name + "/" + "New Key:" + keyType.Name;
-                else
-                    frmKey.Title = name + "/" + element.ToString();
+                string elementName = name + "<Key>";
+                DataEditForm frmData = new DataEditForm();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, "(Dict) " + name + "<New Key>", keyType, new object[0] { }, null, true);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0]);
 
-                frmKey.SelectedOKEvent += () =>
+                frmData.SelectedOKEvent += () =>
                 {
-                    key = DataEditor.SaveClassControls(frmKey.ControlPanel, name, keyType, new object[0] { }, true);
+                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
                     op(key, element);
-                    frmKey.Close();
+                    frmData.Close();
                 };
-                frmKey.SelectedCancelEvent += () =>
+                frmData.SelectedCancelEvent += () =>
                 {
-                    frmKey.Close();
+                    frmData.Close();
                 };
 
-                control.GetOwningForm().RegisterChild(frmKey);
-                frmKey.Show();
+                control.GetOwningForm().RegisterChild(frmData);
+                frmData.Show();
             };
 
             mv.LoadFromDict(member);
@@ -88,10 +88,10 @@ namespace RogueEssence.Dev
         }
 
 
-        public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes)
+        public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
-            controlIndex++;
+
             DictionaryBox lbxValue = (DictionaryBox)control.Children[controlIndex];
             DictionaryBoxViewModel mv = (DictionaryBoxViewModel)lbxValue.DataContext;
             return mv.GetDict(type);

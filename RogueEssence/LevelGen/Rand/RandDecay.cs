@@ -48,14 +48,12 @@ namespace RogueEssence.LevelGen
 
         public IRandPicker<int> CopyState() => new RandDecay(this);
 
-        public IEnumerator<int> GetEnumerator()
+        public IEnumerable<int> EnumerateOutcomes()
         {
             yield return this.Min;
             for (int ii = this.Min + 1; ii < this.Max; ii++)
                 yield return ii;
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         public int Pick(IRandom rand)
         {

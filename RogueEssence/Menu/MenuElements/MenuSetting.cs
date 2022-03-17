@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
         public void SetChoice(int choice)
         {
             CurrentChoice = choice;
-            Setting.Text = TotalChoices[CurrentChoice];
+            Setting.SetText(TotalChoices[CurrentChoice]);
             Setting.Color = (CurrentChoice == SavedChoice) ? NormalColor : ChangedColor;
         }
 
@@ -81,10 +81,10 @@ namespace RogueEssence.Menu
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             //draw all elements with offset added
-            SettingName.Draw(spriteBatch, Bounds.Start);
-            Setting.Draw(spriteBatch, Bounds.Start);
-            Back.Draw(spriteBatch, Bounds.Start);
-            Forth.Draw(spriteBatch, Bounds.Start);
+            SettingName.Draw(spriteBatch, Bounds.Start + offset);
+            Setting.Draw(spriteBatch, Bounds.Start + offset);
+            Back.Draw(spriteBatch, Bounds.Start + offset);
+            Forth.Draw(spriteBatch, Bounds.Start + offset);
         }
     }
 }

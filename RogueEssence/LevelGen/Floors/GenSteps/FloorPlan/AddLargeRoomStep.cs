@@ -89,6 +89,7 @@ namespace RogueEssence.LevelGen
                             else
                                 break;
                         }
+
                         if (setsTaken == exitSets.Count)
                         {
                             for (int xx = 0; xx < chosenRoom.Size.X; xx++)
@@ -209,6 +210,10 @@ namespace RogueEssence.LevelGen
             return resultList;
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]: Amount:{2}", this.GetType().Name, GiantRooms.Count, RoomAmount.ToString());
+        }
     }
 
     [Serializable]

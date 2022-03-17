@@ -36,11 +36,6 @@ namespace RogueEssence.Ground
         /// </summary>
         public HashSet<LuaEngine.EEntLuaEventTypes> EntityCallbacks;
 
-        /// <summary>
-        /// Script events available for this entity's instance.
-        /// </summary>
-        public Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent> ScriptEvents;
-
         public override Color DevEntColoring => Color.Salmon;
 
 
@@ -61,9 +56,8 @@ namespace RogueEssence.Ground
             EntName = spawnername;
             NPCName = npcname;
             NPCChar = npcchar;
-            Bounds = new Rect(Position.X, Position.Y, 8, 8); //Static size, so its easier to click on it!
+            Bounds = new Rect(Position.X, Position.Y, GroundAction.HITBOX_WIDTH, GroundAction.HITBOX_HEIGHT); //Static size, so its easier to click on it!
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
         }
         protected GroundSpawner(GroundSpawner other) : base(other)
         {
@@ -72,9 +66,7 @@ namespace RogueEssence.Ground
             EntityCallbacks = new HashSet<LuaEngine.EEntLuaEventTypes>();
             foreach (LuaEngine.EEntLuaEventTypes ev in other.EntityCallbacks)
                 EntityCallbacks.Add(ev);
-            ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-            foreach (LuaEngine.EEntLuaEventTypes ev in other.ScriptEvents.Keys)
-                ScriptEvents.Add(ev, (ScriptEvent)other.ScriptEvents[ev].Clone());
+
         }
 
         public override GroundEntity Clone() { return new GroundSpawner(this); }
@@ -91,14 +83,13 @@ namespace RogueEssence.Ground
             CurrentNPC = new GroundChar(NPCChar, Position, Direction, NPCName);
 
             //Setup callbacks on the spawned entity
-            foreach (LuaEngine.EEntLuaEventTypes t in EntityCallbacks)
-                CurrentNPC.AddScriptEvent(t);
+            CurrentNPC.ReloadEvents();
 
             currentmap.AddTempChar(CurrentNPC);
             CurrentNPC.OnMapInit();
 
             //Run our script callback after we spawned
-            CoroutineManager.Instance.StartCoroutine( RunEvent(LuaEngine.EEntLuaEventTypes.EntSpawned, CurrentNPC) );
+            CoroutineManager.Instance.StartCoroutine( RunEvent(LuaEngine.EEntLuaEventTypes.EntSpawned, new TriggerResult(), CurrentNPC) );
 
             return CurrentNPC;
         }
@@ -132,72 +123,15 @@ namespace RogueEssence.Ground
                 yield return v;
         }
 
-
-
-        public override void AddScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (!IsEventSupported(ev))
-                return;
-            ScriptEvents.Add(ev, new ScriptEvent(LuaEngine.MakeLuaEntityCallbackName(EntName, ev)));
-        }
-
         public override void LuaEngineReload()
         {
-            foreach (ScriptEvent scriptEvent in ScriptEvents.Values)
-                scriptEvent.LuaEngineReload();
+            ReloadEvents();
         }
 
 
         public bool HasSpawnScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
             return EntityCallbacks.Contains(ev);
-        }
-
-        public override bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            return ScriptEvents.ContainsKey(ev);
-        }
-
-        public override void SyncScriptEvents()
-        {
-            foreach (var ev in ScriptEvents.Keys)
-                ScriptEvents[ev].SetLuaFunctionPath(LuaEngine.MakeLuaEntityCallbackName(EntName, ev));
-        }
-
-        public override void ReloadEvents()
-        {
-            foreach (var entry in ScriptEvents)
-                entry.Value.ReloadEvent();
-        }
-
-        public override void DoCleanup()
-        {
-            foreach (var entry in ScriptEvents)
-                entry.Value.DoCleanup();
-            ScriptEvents.Clear();
-        }
-
-
-        public override void RemoveScriptEvent(LuaEngine.EEntLuaEventTypes ev)
-        {
-            if (ScriptEvents.ContainsKey(ev))
-                ScriptEvents.Remove(ev);
-        }
-
-        public override IEnumerator<YieldInstruction> RunEvent(LuaEngine.EEntLuaEventTypes ev, params object[] parameters)
-        {
-            if (ScriptEvents.ContainsKey(ev))
-            {
-                //Since ScriptEvent.Apply takes a single variadic table, we have to concatenate our current variadic argument table
-                // with the extra parameter we want to pass. Otherwise "parameters" will be passed as a table instead of its
-                // individual elements, and things will crash left and right.
-                List<object> partopass = new List<object>();
-                partopass.Add(this);
-                partopass.AddRange(parameters);
-                yield return CoroutineManager.Instance.StartCoroutine(ScriptEvents[ev].Apply(partopass.ToArray()));
-            }
-            else
-                yield break;
         }
 
         public override bool IsEventSupported(LuaEngine.EEntLuaEventTypes ev)
@@ -209,8 +143,8 @@ namespace RogueEssence.Ground
         [OnDeserialized]
         private void OnDeserialized(StreamingContext cntxt)
         {
-            if (ScriptEvents == null)
-                ScriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
+            Collider.Width = GroundAction.HITBOX_WIDTH;
+            Collider.Height = GroundAction.HITBOX_HEIGHT;
         }
     }
 }

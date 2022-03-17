@@ -57,14 +57,11 @@ namespace RogueElements
             this.spawnTotal = 0;
         }
 
-        public IEnumerator<TV> GetEnumerator()
+        public IEnumerable<TV> EnumerateOutcomes()
         {
             foreach (SpawnRate element in this.spawns.Values)
                 yield return element.Spawn;
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
 
         public IEnumerable<TK> GetKeys()
         {

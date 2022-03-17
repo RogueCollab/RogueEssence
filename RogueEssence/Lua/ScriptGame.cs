@@ -12,7 +12,26 @@ namespace RogueEssence.Script
 {
     class ScriptGame : ILuaEngineComponent
     {
-        public ReRandom Rand { get { return MathUtils.Rand; } }
+        public IRandom Rand { get { return MathUtils.Rand; } }
+
+        public LuaFunction GroundSave;
+
+        public Coroutine _GroundSave()
+        {
+            return new Coroutine(GroundScene.Instance.SaveGame());
+        }
+
+        public ModDiff GetModDiff(string uuidStr)
+        {
+            Guid uuid = new Guid(uuidStr);
+            List<ModDiff> diffs = DataManager.Instance.Save.GetModDiffs();
+            foreach (ModDiff diff in diffs)
+            {
+                if (diff.UUID == uuid)
+                    return diff;
+            }
+            return new ModDiff("", uuid, null, null);
+        }
 
         //===================================
         // Current Map
@@ -50,7 +69,12 @@ namespace RogueEssence.Script
 
         public void EnterGroundMap(string name, string entrypoint, bool preserveMusic = false)
         {
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(name, entrypoint, preserveMusic);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(ZoneManager.Instance.CurrentZoneID, name, entrypoint, preserveMusic);
+        }
+
+        public void EnterGroundMap(int zone, string name, string entrypoint, bool preserveMusic = false)
+        {
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(zone, name, entrypoint, preserveMusic);
         }
 
 
@@ -88,16 +112,6 @@ namespace RogueEssence.Script
         public Coroutine _EndDungeonRun(GameProgress.ResultType result, int destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
         {
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
-        }
-
-        public void SetDebugUI(string str)
-        {
-            GameManager.Instance.DebugUI = str;
-        }
-
-        public string GetDebugUI()
-        {
-            return GameManager.Instance.DebugUI;
         }
 
         /// <summary>
@@ -142,6 +156,9 @@ namespace RogueEssence.Script
         }
 
 
+        /// <summary>
+        /// Centers the camera on a position.
+        /// </summary>
         public LuaFunction MoveCamera;
         public Coroutine _MoveCamera(int x, int y, int duration, bool toPlayer = false)
         {
@@ -181,12 +198,26 @@ namespace RogueEssence.Script
         public void SetTeamLeaderIndex(int idx)
         {
             //make leader
+            int oldIdx = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
             DataManager.Instance.Save.ActiveTeam.LeaderIndex = idx;
 
             //update team
-            ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader,
-                ZoneManager.Instance.CurrentGround.ActiveChar.MapLoc,
-                ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader,
+                    ZoneManager.Instance.CurrentGround.ActiveChar.MapLoc,
+                    ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldIdx, idx);
+                DungeonScene.Instance.ReloadFocusedPlayer();
+            }
+        }
+
+        public void SetCanSwitch(bool canSwitch)
+        {
+            DataManager.Instance.Save.NoSwitching = !canSwitch;
         }
 
         /// <summary>
@@ -206,7 +237,7 @@ namespace RogueEssence.Script
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
-            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Players)
+            foreach (Character ent in DataManager.Instance.Save.ActiveTeam.Players)
                 addfn.Call(tbl, ent);
             return tbl;
         }
@@ -216,7 +247,7 @@ namespace RogueEssence.Script
         }
 
 
-        public int GetGuestPartyCount()
+        public int GetPlayerGuestCount()
         {
             return DataManager.Instance.Save.ActiveTeam.Guests.Count;
         }
@@ -225,7 +256,7 @@ namespace RogueEssence.Script
         /// Return the guests as a LuaTable
         /// </summary>
         /// <returns></returns>
-        public LuaTable GetGuestPartyTable()
+        public LuaTable GetPlayerGuestTable()
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
@@ -233,7 +264,7 @@ namespace RogueEssence.Script
                 addfn.Call(tbl, ent);
             return tbl;
         }
-        public Character GetGuestPartyMember(int index)
+        public Character GetPlayerGuestMember(int index)
         {
             return DataManager.Instance.Save.ActiveTeam.Guests[index];
         }
@@ -261,7 +292,16 @@ namespace RogueEssence.Script
 
         public void AddPlayerTeam(Character character)
         {
-            DataManager.Instance.Save.ActiveTeam.Players.Add(character);
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                DataManager.Instance.Save.ActiveTeam.Players.Add(character);
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, false, character);
+                character.RefreshTraits();
+                character.Tactic.Initialize(character);
+            }
         }
 
         /// <summary>
@@ -270,38 +310,79 @@ namespace RogueEssence.Script
         /// <param name="slot"></param>
         public void RemovePlayerTeam(int slot)
         {
-            Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
-
-            if (player.EquippedItem.ID > -1)
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
-                InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
-                DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
+
+                if (player.EquippedItem.ID > -1)
+                {
+                    InvItem heldItem = player.EquippedItem;
+                    player.DequipItem();
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                }
+
+                GroundScene.Instance.RemoveChar(slot);
             }
 
-            DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
+
+                if (player.EquippedItem.ID > -1)
+                {
+                    InvItem heldItem = player.EquippedItem;
+                    player.DequipItem();
+                    if (DataManager.Instance.Save.ActiveTeam.GetInvCount() + 1 < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+                        DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                }
+
+                DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, false, slot));
+            }
         }
 
-        public void AddGuestTeam(Character character)
+        public void AddPlayerGuest(Character character)
         {
-            DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, true, character);
+                character.RefreshTraits();
+                character.Tactic.Initialize(character);
+            }
         }
 
         /// <summary>
         /// Removes the character from the team, placing its item back in the inventory.
         /// </summary>
         /// <param name="slot"></param>
-        public void RemoveGuestTeam(int slot)
+        public void RemovePlayerGuest(int slot)
         {
-            Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
-
-            if (player.EquippedItem.ID > -1)
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
-                InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
+
+                if (player.EquippedItem.ID > -1)
+                {
+                    player.DequipItem();
+                }
+
+                DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
             }
 
-            DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
+
+                if (player.EquippedItem.ID > -1)
+                {
+                    player.DequipItem();
+                }
+
+                DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, true, slot));
+            }
         }
 
 
@@ -337,7 +418,7 @@ namespace RogueEssence.Script
 
         public string GetTeamName()
         {
-            return DataManager.Instance.Save.ActiveTeam.Name;
+            return DataManager.Instance.Save.ActiveTeam.GetDisplayName();
         }
 
         /// <summary>
@@ -373,21 +454,47 @@ namespace RogueEssence.Script
         public LuaFunction CheckLevelSkills;
         public Coroutine _CheckLevelSkills(Character chara, int oldLevel)
         {
-            return new Coroutine(checkLevelSkills(chara, oldLevel));
+            return new Coroutine(__CheckLevelSkills(chara, oldLevel));
         }
 
-        private IEnumerator<YieldInstruction> checkLevelSkills(Character chara, int oldLevel)
+        private IEnumerator<YieldInstruction> __CheckLevelSkills(Character chara, int oldLevel)
         {
             DungeonScene.GetLevelSkills(chara, oldLevel);
 
             foreach (int skill in DungeonScene.GetLevelSkills(chara, oldLevel))
             {
                 int learn = -1;
-
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                if (DataManager.Instance.CurrentReplay != null)
+                    learn = DataManager.Instance.CurrentReplay.ReadUI();
+                else
+                {
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                    DataManager.Instance.LogUIPlay(learn);
+                }
                 if (learn > -1)
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
             }
+        }
+
+
+        public LuaFunction TryLearnSkill;
+        public Coroutine _TryLearnSkill(Character chara, int skill)
+        {
+            return new Coroutine(__TryLearnSkill(chara, skill));
+        }
+
+        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, int skill)
+        {
+            int learn = -1;
+            if (DataManager.Instance.CurrentReplay != null)
+                learn = DataManager.Instance.CurrentReplay.ReadUI();
+            else
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(chara, skill, (int slot) => { learn = slot; }, () => { }));
+                DataManager.Instance.LogUIPlay(learn);
+            }
+            if (learn > -1)
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
         }
 
         public void LearnSkill(Character chara, int skillNum)
@@ -485,6 +592,7 @@ namespace RogueEssence.Script
             if (bypass)
                 character.DequipItem();
             DataManager.Instance.Save.RegisterMonster(character.BaseForm.Species);
+            DataManager.Instance.Save.RogueUnlockMonster(character.BaseForm.Species);
         }
 
         //===================================
@@ -514,13 +622,21 @@ namespace RogueEssence.Script
             return InvSlot.Invalid;
         }
 
-        public int GetPlayerBagCount()
+        public int GetPlayerEquippedCount()
         {
             int nbitems = 0;
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
-                if (player.EquippedItem.ID > -1) ++nbitems;
+            {
+                if (player.EquippedItem.ID > -1)
+                    nbitems++;
+            }
 
-            return DataManager.Instance.Save.ActiveTeam.GetInvCount() + nbitems;
+            return nbitems;
+        }
+
+        public int GetPlayerBagCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.GetInvCount();
         }
 
         public int GetPlayerBagLimit()
@@ -536,6 +652,11 @@ namespace RogueEssence.Script
         public object GetGuestEquippedItem(int slot)
         {
             return DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
+        }
+
+        public void GivePlayerItem(InvItem item)
+        {
+            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
         }
 
         public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
@@ -581,6 +702,11 @@ namespace RogueEssence.Script
         public int GetPlayerStorageItemCount(int id)
         {
             return DataManager.Instance.Save.ActiveTeam.Storage[id];
+        }
+
+        public void GivePlayerStorageItem(InvItem item)
+        {
+            DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
         }
 
         public void GivePlayerStorageItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
@@ -658,12 +784,12 @@ namespace RogueEssence.Script
 
         public void UnlockDungeon(int dungeonid)
         {
-            DataManager.Instance.UnlockDungeon(dungeonid);
+            DataManager.Instance.Save.UnlockDungeon(dungeonid);
         }
 
         public bool DungeonUnlocked(int dungeonid)
         {
-            return DataManager.Instance.GetDungeonUnlockStatus(dungeonid) != GameProgress.UnlockState.None;
+            return DataManager.Instance.Save.GetDungeonUnlock(dungeonid) != GameProgress.UnlockState.None;
         }
 
         public bool InRogueMode()
@@ -684,6 +810,30 @@ namespace RogueEssence.Script
         public void SetRescueAllowed(bool allowed)
         {
             DataManager.Instance.Save.AllowRescue = allowed;
+        }
+
+        public void QueueLeaderEvent(object obj)
+        {
+            IEnumerator<YieldInstruction> yields = null;
+            if (obj is Coroutine)
+            {
+                Coroutine coro = obj as Coroutine;
+                yields = CoroutineManager.Instance.YieldCoroutine(coro);
+            }
+            else if (obj is LuaFunction)
+            {
+                LuaFunction luaFun = obj as LuaFunction;
+                yields = LuaEngine.Instance.CallScriptFunction(luaFun);
+            }
+
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                GroundScene.Instance.PendingLeaderAction = yields;
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.PendingLeaderAction = yields;
+            }
         }
 
         //===================================
@@ -750,7 +900,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGame.VectorToDirection(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
                 return Dir8.None;
             }
         }
@@ -768,7 +918,7 @@ namespace RogueEssence.Script
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogInfo(String.Format("ScriptGame.RandomDirection(): Got exception :\n{0}", ex.Message));
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
                 return Dir8.None;
             }
         }
@@ -778,7 +928,9 @@ namespace RogueEssence.Script
         /// </summary>
         public override void SetupLuaFunctions(LuaEngine state)
         {
+            GroundSave = state.RunString("return function(_) return coroutine.yield(GAME:_GroundSave()) end").First() as LuaFunction;
             CheckLevelSkills = state.RunString("return function(_,chara, oldLevel) return coroutine.yield(GAME:_CheckLevelSkills(chara, oldLevel)) end").First() as LuaFunction;
+            TryLearnSkill = state.RunString("return function(_,chara, skill) return coroutine.yield(GAME:_TryLearnSkill(chara, skill)) end").First() as LuaFunction;
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;

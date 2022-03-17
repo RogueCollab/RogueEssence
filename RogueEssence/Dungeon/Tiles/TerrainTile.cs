@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -15,12 +16,11 @@ namespace RogueEssence.Dungeon
 
         public override int GetID() { return ID; }
 
-        public TerrainData GetData()
-        {
-            return DataManager.Instance.GetTerrain(ID);
-        }
-        public override string GetName() { return GetData().Name.ToLocal(); }
+        public TerrainData GetData() { return DataManager.Instance.GetTerrain(ID); }
+        public override string GetDisplayName() { return GetData().GetColoredName(); }
 
+
+        [DataType(0, DataManager.DataType.Terrain, false)]
         public int ID;
         public AutoTile TileTex;
         public TerrainTile()
@@ -80,7 +80,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            if (ID > -1 && ID < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries.Count)
+            if (ID > -1 && ID < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count)
                 return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID].Name.ToLocal();
             else
                 return "[EMPTY]";

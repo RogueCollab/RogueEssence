@@ -12,23 +12,30 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
         public bool Released { get; set; }
+
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public EntrySummary GenerateEntrySummary() { return new AIEntrySummary(Name, Released, Comment, Assignable); }
 
 
         public int ID;
+
+        /// <summary>
+        /// Can be assigned via tactics menu
+        /// </summary>
+        public bool Assignable;
         public List<BasePlan> Plans;
 
         [NonSerialized]
         protected BasePlan currentPlan;
         
-        public GameAction GetNextMove(Character controlledChar, bool preThink, ReRandom rand)
+        public GameAction GetNextMove(Character controlledChar, bool preThink, IRandom rand)
         {
             foreach (BasePlan plan in Plans)
             {
@@ -41,7 +48,7 @@ namespace RogueEssence.Data
             return new GameAction(GameAction.ActionType.Wait, Dir8.None);
         }
 
-        protected GameAction AttemptPlan(Character controlledChar, BasePlan plan, bool preThink, ReRandom rand)
+        protected GameAction AttemptPlan(Character controlledChar, BasePlan plan, bool preThink, IRandom rand)
         {
             if ((currentPlan != null) && (currentPlan.GetType() == plan.GetType()))
                 return currentPlan.Think(controlledChar, preThink, rand);
@@ -64,11 +71,12 @@ namespace RogueEssence.Data
 
         public AITactic(AITactic other) : this()
         {
+            ID = other.ID;
+            Assignable = other.Assignable;
             Name = new LocalText(other.Name);
             Comment = other.Comment;
             foreach (BasePlan plan in other.Plans)
                 Plans.Add(plan.CreateNew());
-            ID = other.ID;
         }
 
         public void Initialize(Character controlledChar)
@@ -77,7 +85,7 @@ namespace RogueEssence.Data
                 plan.Initialize(controlledChar);
         }
 
-        public GameAction GetAction(Character controlledChar, ReRandom rand, bool preThink)
+        public GameAction GetAction(Character controlledChar, IRandom rand, bool preThink)
         {
             try
             {
@@ -90,6 +98,35 @@ namespace RogueEssence.Data
             return new GameAction(GameAction.ActionType.Wait, Dir8.None);
         }
 
+        public string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
+    }
+
+
+
+    [Serializable]
+    public class AIEntrySummary : EntrySummary
+    {
+        public bool Assignable;
+
+        public AIEntrySummary() : base()
+        {
+
+        }
+
+        public AIEntrySummary(LocalText name, bool released, string comment, bool assignable)
+            : base(name, released, comment)
+        {
+            Assignable = assignable;
+        }
+
+
+        public override string GetColoredName()
+        {
+            return String.Format("{0}", Name.ToLocal());
+        }
     }
 }
 

@@ -24,6 +24,9 @@ namespace RogueEssence.Dev.Views
         public MapEditForm MapEditForm;
         public GroundEditForm GroundEditForm;
 
+        private Action pendingEditorAction;
+        private Exception pendingException;
+
         public IMapEditor MapEditor { get { return MapEditForm; } }
         public IGroundEditor GroundEditor { get { return GroundEditForm; } }
         public bool AteMouse { get { return false; } }
@@ -89,7 +92,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Skill) != DataManager.DataType.None)
                 {
-                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray();
+                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
                     devViewModel.Game.Skills.Clear();
                     for (int ii = 0; ii < skill_names.Length; ii++)
                         devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
@@ -99,7 +102,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
                 {
-                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray();
+                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
                     devViewModel.Game.Intrinsics.Clear();
                     for (int ii = 0; ii < intrinsic_names.Length; ii++)
                         devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
@@ -109,7 +112,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Status) != DataManager.DataType.None)
                 {
-                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray();
+                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
                     devViewModel.Game.Statuses.Clear();
                     for (int ii = 0; ii < status_names.Length; ii++)
                         devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
@@ -119,7 +122,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
                 {
-                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray();
+                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
                     devViewModel.Game.Items.Clear();
                     for (int ii = 0; ii < item_names.Length; ii++)
                         devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
@@ -130,7 +133,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Monster) != DataManager.DataType.None)
                 {
-                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray();
+                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
                     devViewModel.Player.Monsters.Clear();
                     for (int ii = 0; ii < monster_names.Length; ii++)
                         devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
@@ -140,7 +143,7 @@ namespace RogueEssence.Dev.Views
                     devViewModel.Player.ChosenForm = -1;
                     devViewModel.Player.ChosenForm = 0;
 
-                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray();
+                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
                     devViewModel.Player.Skins.Clear();
                     for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
                         devViewModel.Player.Skins.Add(skin_names[ii]);
@@ -166,14 +169,7 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.GroundZone);
-                    devViewModel.Travel.Grounds.Clear();
-                    for (int ii = 0; ii < zone.GroundMaps.Count; ii++)
-                        devViewModel.Travel.Grounds.Add(zone.GroundMaps[ii]);
-                    devViewModel.Travel.ChosenGround = -1;
-                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("MapChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
-
-                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray();
+                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
                     devViewModel.Travel.Zones.Clear();
                     for (int ii = 0; ii < dungeon_names.Length; ii++)
                         devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
@@ -185,6 +181,9 @@ namespace RogueEssence.Dev.Views
 
                     devViewModel.Travel.ChosenFloor = -1;
                     devViewModel.Travel.ChosenFloor = Math.Min(Math.Max(GetConfig("FloorChoice", 0), 0), devViewModel.Travel.Floors.Count - 1);
+
+                    devViewModel.Travel.ChosenGround = -1;
+                    devViewModel.Travel.ChosenGround = Math.Min(Math.Max(GetConfig("GroundChoice", 0), 0), devViewModel.Travel.Grounds.Count - 1);
                 }
 
                 if (dataType == DataManager.DataType.All)
@@ -197,6 +196,19 @@ namespace RogueEssence.Dev.Views
 
         public void Update(GameTime gameTime)
         {
+            if (pendingEditorAction != null)
+            {
+                try
+                {
+                    pendingEditorAction();
+                }
+                catch (Exception ex)
+                {
+                    pendingException = ex;
+                }
+                pendingEditorAction = null;
+            }
+
             ExecuteOrInvoke(update);
         }
 
@@ -229,6 +241,11 @@ namespace RogueEssence.Dev.Views
 
         public void OpenGround()
         {
+            ExecuteOrInvoke(openGround);
+        }
+
+        private void openGround()
+        {
             GroundEditForm = new GroundEditForm();
             ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel();
             GroundEditForm.DataContext = vm;
@@ -237,6 +254,11 @@ namespace RogueEssence.Dev.Views
         }
 
         public void OpenMap()
+        {
+            ExecuteOrInvoke(openMap);
+        }
+
+        public void openMap()
         {
             MapEditForm = new MapEditForm();
             ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
@@ -287,7 +309,7 @@ namespace RogueEssence.Dev.Views
             // However, this is only happening on linux.  Why not windows and mac?
             // With Mac, cocoa can ONLY start the game window if it's on the main thread. Weird...
 
-            if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
+            if (!OperatingSystem.IsLinux())
                 LoadGameDelegate();
             else
             {
@@ -297,9 +319,32 @@ namespace RogueEssence.Dev.Views
             }
         }
 
+        /// <summary>
+        /// This call cannot be performed within a lock!!
+        /// </summary>
+        /// <param name="action"></param>
+        public static void ExecuteOrPend(Action action)
+        {
+            if (!OperatingSystem.IsLinux())
+                action();
+            else
+            {
+                DevForm editor = (DevForm)DiagManager.Instance.DevEditor;
+                editor.pendingEditorAction = action;
+
+                SpinWait.SpinUntil(() => editor.pendingEditorAction == null);
+
+                if (editor.pendingException != null)
+                {
+                    Exception ex = editor.pendingException;
+                    throw ex;
+                }
+            }
+        }
+
         public static void ExecuteOrInvoke(Action action)
         {
-            if (CoreDllMap.OS == "windows" || CoreDllMap.OS == "osx")
+            if (!OperatingSystem.IsLinux())
                 action();
             else
                 Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Background);
@@ -432,13 +477,10 @@ namespace RogueEssence.Dev.Views
             //https://jimrich.sk/environment-specialfolder-on-windows-linux-and-os-x/
             //MacOS actually uses a different folder for config data, traditionally
             //I guess it's the odd one out...
-            switch (CoreDllMap.OS)
-            {
-                case "osx":
-                    return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
-                default:
-                    return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
-            }
+            if (OperatingSystem.IsMacOS())
+                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
+            else
+                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
         }
     }
 }

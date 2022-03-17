@@ -44,14 +44,10 @@ namespace RogueEssence.Dev.ViewModels
     {
         public DevTabModsViewModel()
         {
-            currentMod = "";
+            currentMod = null;
 
             Mods = new ObservableCollection<ModsNodeViewModel>();
-            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, getModName(""), "");
-            string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-            foreach (string modPath in modsPath)
-                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(modPath), Path.Combine(PathMod.MODS_FOLDER, getModName(modPath))));
-            Mods.Add(baseNode);
+            reloadMods();
         }
 
         private string currentMod;
@@ -72,13 +68,13 @@ namespace RogueEssence.Dev.ViewModels
 
         public void UpdateMod()
         {
-            CurrentMod = "Current Mod: " + getModName(PathMod.Mod);
+            CurrentMod = getModName(PathMod.Quest);
         }
 
         public async void btnSwitch_Click()
         {
             //check to be sure it isn't the current mod
-            if (chosenMod.FullPath == PathMod.Mod)
+            if (chosenMod.FullPath == PathMod.Quest.Path)
                 return;
 
             //give a pop up warning that the game will be reloaded and wait for confirmation
@@ -90,21 +86,21 @@ namespace RogueEssence.Dev.ViewModels
             //modify and reload
             lock (GameBase.lockObj)
             {
+                LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.SetMod(chosenMod.FullPath, false);
+                GameManager.Instance.SetQuest(PathMod.GetModDetails(chosenMod.FullPath), new ModHeader[0] { });
             }
         }
 
         public async void btnAdd_Click()
         {
-            //pop up a name input
-            RenameViewModel vm = new RenameViewModel();
-            RenameWindow window = new RenameWindow()
-            {
-                DataContext = vm
-            };
+            ModConfigWindow window = new ModConfigWindow();
+            ModHeader header = new ModHeader("", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod);
+            ModConfigViewModel vm = new ModConfigViewModel(header);
+            window.DataContext = vm;
 
-            bool result = await window.ShowDialog<bool>((DevForm)DiagManager.Instance.DevEditor);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            bool result = await window.ShowDialog<bool>(form);
             if (!result)
                 return;
             
@@ -129,6 +125,10 @@ namespace RogueEssence.Dev.ViewModels
             ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(chosenNode.FullPath, PathMod.MODS_FOLDER, newName));
             //add all asset folders
             Directory.CreateDirectory(newNode.FullPath);
+            //create the mod xml
+            ModHeader newHeader = new ModHeader(newNode.FullPath, vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
+            PathMod.SaveModDetails(newNode.FullPath, newHeader);
+
             //add Strings
             Directory.CreateDirectory(Path.Join(newNode.FullPath, "Strings"));
             //Content
@@ -163,13 +163,41 @@ namespace RogueEssence.Dev.ViewModels
             chosenMod.Parent.Nodes.Remove(chosenMod);
         }
 
-        private static string getModName(string path)
+        public async void btnEdit_Click()
         {
-            if (path == "")
-                return "[None]";
+            ModConfigWindow window = new ModConfigWindow();
+            ModHeader header = PathMod.Quest;
+            ModConfigViewModel viewModel = new ModConfigViewModel(header);
+            window.DataContext = viewModel;
 
-            //TODO: allow for multi-tiered mods
-            return Path.GetFileName(path);
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            bool result = await window.ShowDialog<bool>(form);
+
+            if (result)
+            {
+                //save the mod data
+                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, viewModel.Name.Trim(), Guid.Parse(viewModel.UUID), Version.Parse(viewModel.Version), (PathMod.ModType)viewModel.ChosenModType);
+                PathMod.SaveModDetails(PathMod.Quest.Path, resultHeader);
+
+                reloadMods();
+            }
+        }
+
+        private void reloadMods()
+        {
+            Mods.Clear();
+            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, null, "");
+            string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+            foreach (string modPath in modsPath)
+                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(PathMod.GetModDetails(modPath)), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+            Mods.Add(baseNode);
+        }
+
+        private static string getModName(ModHeader mod)
+        {
+            if (!mod.IsValid())
+                return null;
+            return mod.GetMenuName();
         }
     }
 }

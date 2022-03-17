@@ -16,14 +16,14 @@ namespace RogueEssence.Menu
         public SongSummary(Rect bounds)
             : base(bounds)
         {
-            Name = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
+            Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
-            OriginName = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
+            OriginName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
             Elements.Add(OriginName);
-            Origin = new MenuText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
+            Origin = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
             Elements.Add(Origin);
-            Artist = new DialogueText("", Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2),
-                Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - Bounds.X, LINE_SPACE, false);
+            Artist = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             Elements.Add(Artist);
         }
 
@@ -63,10 +63,10 @@ namespace RogueEssence.Menu
                 }
             }
 
-            Name.Text = name;
-            OriginName.Text = Text.FormatKey("MENU_SONG_ORIGIN_NAME", originName);
-            Origin.Text = Text.FormatKey("MENU_SONG_ORIGIN", origin);
-            Artist.Text = Text.FormatKey("MENU_SONG_ARTIST", artist);
+            Name.SetText(name);
+            OriginName.SetText(Text.FormatKey("MENU_SONG_ORIGIN_NAME", originName));
+            Origin.SetText(Text.FormatKey("MENU_SONG_ORIGIN", origin));
+            Artist.SetFormattedText(Text.FormatKey("MENU_SONG_ARTIST", artist));
         }
     }
 }

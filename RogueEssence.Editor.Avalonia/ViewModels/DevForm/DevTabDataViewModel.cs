@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using RogueElements;
 using RogueEssence.Data;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -50,7 +54,141 @@ namespace RogueEssence.Dev.ViewModels
         }
         public void btnEditAutoTile_Click()
         {
-            OpenList(DataManager.DataType.AutoTile, DataManager.Instance.GetAutoTile, () => { return new AutoTileData(); });
+            DataManager.DataType dataType = DataManager.DataType.AutoTile;
+            GetEntry entryOp = DataManager.Instance.GetAutoTile;
+            CreateEntry createOp = () => { return new AutoTileData(); };
+
+            lock (GameBase.lockObj)
+            {
+                DataListForm dataListForm = new DataListForm();
+                DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
+                DataOpContainer reindexOp = createReindexOp(dataType, choices);
+
+                DataOpContainer.TaskAction importAction = async () => { await importDtef(dataListForm, choices); }; ;
+                DataOpContainer importOp = new DataOpContainer("Import DTEF", importAction);
+
+
+                DataOpContainer.TaskAction exportAction = async () => { await exportDtef(dataListForm, choices.SearchList.InternalIndex); };
+                
+                DataOpContainer exportOp = new DataOpContainer("Export as DTEF", exportAction);
+                choices.SetOps(reindexOp, importOp/*, exportOp*/);
+
+                dataListForm.DataContext = choices;
+                dataListForm.Show();
+            }
+        }
+
+        private async Task importDtef(DataListForm listForm, DataListFormViewModel choices)
+        {
+            //remember addresses in registry
+            string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+            //open window to choose directory
+            OpenFolderDialog openFileDialog = new OpenFolderDialog();
+            openFileDialog.Directory = folderName;
+
+            string folder = await openFileDialog.ShowAsync(listForm);
+
+            if (!String.IsNullOrEmpty(folder))
+            {
+                string animName = Path.GetFileNameWithoutExtension(folder);
+
+                bool conflict = false;
+                foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+                {
+                    if (name.ToLower() == animName.ToLower())
+                    {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                if (conflict)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(listForm, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Tileset already exists.",
+                        MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
+                DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+                try
+                {
+                    DevForm.ExecuteOrPend(() => { tryImportDtef(choices, folder, animName); });
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(listForm, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            }
+        }
+
+        private void tryImportDtef(DataListFormViewModel choices, string folder, string animName)
+        {
+            lock (GameBase.lockObj)
+            {
+                string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
+                DtefImportHelper.ImportDtef(folder, destFile);
+
+                //reindex all
+                DevHelper.RunIndexing(DataManager.DataType.AutoTile);
+                DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
+                DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);
+                DataManager.Instance.LoadUniversalData();
+                DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
+                DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
+                string[] entries = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetLocalStringArray(true);
+                choices.SetEntries(entries);
+            }
+        }
+
+        private async Task exportDtef(DataListForm listForm, int entryIndex)
+        {
+            if (entryIndex > -1)
+            {
+                //remember addresses in registry
+                string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+                //open window to choose directory
+                OpenFolderDialog openFileDialog = new OpenFolderDialog();
+                openFileDialog.Directory = folderName;
+
+                string folder = await openFileDialog.ShowAsync(listForm);
+
+                if (!String.IsNullOrEmpty(folder))
+                {
+                    DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+                    DevForm.ExecuteOrPend(() => { tryExportDtef(entryIndex, folder); });
+                }
+            }
+        }
+        private void tryExportDtef(int entryIndex, string folder)
+        {
+            lock (GameBase.lockObj)
+            {
+                DtefImportHelper.ExportDtefTile(entryIndex, folder);
+            }
+        }
+
+        private List<string> getDtefConflictSheets(string animName)
+        {
+            List<string> conflicts = new List<string>();
+
+            foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+            {
+                foreach (string suffix in DtefImportHelper.TileTitles)
+                {
+                    string subName = animName + suffix;
+                    if (name.ToLower() == subName.ToLower())
+                        conflicts.Add(name);
+                }
+            }
+
+            return conflicts;
         }
 
         public void btnEditEmote_Click()
@@ -91,74 +229,68 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                DataListFormViewModel choices = new DataListFormViewModel();
-                choices.Name = dataType.ToString();
-                string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                choices.SetEntries(entries);
+                DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
+                DataOpContainer reindexOp = createReindexOp(dataType, choices);
+                choices.SetOps(reindexOp);
 
-                choices.SelectedOKEvent += () =>
+                Views.DataListForm dataListForm = new Views.DataListForm
                 {
-                    if (choices.SearchList.InternalIndex > -1)
-                    {
-                        lock (GameBase.lockObj)
-                        {
-                            int entryNum = choices.SearchList.InternalIndex;
-                            IEntryData data = entryOp(entryNum);
-
-                            Views.DataEditForm editor = new Views.DataEditForm();
-                            editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
-                            DataEditor.LoadDataControls(data, editor.ControlPanel);
-                            editor.SelectedOKEvent += () =>
-                            {
-                                lock (GameBase.lockObj)
-                                {
-                                    object obj = data;
-                                    DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                                    data = (IEntryData)obj;
-                                    DataManager.SaveData(entryNum, dataType.ToString(), data);
-                                    DataManager.Instance.ClearCache(dataType);
-                                    EntrySummary entrySummary = data.GenerateEntrySummary();
-                                    DataManager.Instance.DataIndices[dataType].Entries[entryNum] = entrySummary;
-                                    DataManager.Instance.SaveIndex(dataType);
-                                    DiagManager.Instance.DevEditor.ReloadData(dataType);
-                                    choices.ModifyEntry(entryNum, entrySummary.GetLocalString(true));
-                                    editor.Close();
-                                }
-                            };
-                            editor.SelectedCancelEvent += () =>
-                            {
-                                editor.Close();
-                            };
-
-                            editor.Show();
-                        }
-                    }
+                    DataContext = choices,
                 };
-                choices.SelectedAddEvent += () =>
+                dataListForm.Show();
+            }
+        }
+
+        private DataOpContainer createReindexOp(DataManager.DataType dataType, DataListFormViewModel choices)
+        {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            DataOpContainer.TaskAction reindexAction = async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                lock (GameBase.lockObj)
+                {
+                    DevHelper.RunIndexing(dataType);
+                    DevHelper.RunExtraIndexing(dataType);
+                    DataManager.Instance.LoadIndex(dataType);
+                    DataManager.Instance.LoadUniversalData();
+                    DataManager.Instance.ClearCache(dataType);
+                    DiagManager.Instance.DevEditor.ReloadData(dataType);
+                    string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                    choices.SetEntries(entries);
+                }
+            };
+            return new DataOpContainer("Re-Index", reindexAction);
+        }
+
+        private DataListFormViewModel createChoices(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
+        {
+            DataListFormViewModel choices = new DataListFormViewModel();
+            choices.Name = dataType.ToString();
+            string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+            choices.SetEntries(entries);
+
+            choices.SelectedOKEvent += () =>
+            {
+                if (choices.SearchList.InternalIndex > -1)
                 {
                     lock (GameBase.lockObj)
                     {
-                        int entryNum = DataManager.Instance.DataIndices[dataType].Entries.Count;
-                        IEntryData data = createOp();
+                        int entryNum = choices.SearchList.InternalIndex;
+                        IEntryData data = entryOp(entryNum);
 
-                        Views.DataEditForm editor = new Views.DataEditForm();
-                        editor.Title = data.ToString();//data.GetType().ToString() + "#" + entryNum;
+                        DataEditForm editor = new DataEditForm();
+                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += () =>
                         {
                             lock (GameBase.lockObj)
                             {
                                 object obj = data;
-                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel);
-                                data = (IEntryData)obj;
-                                DataManager.SaveData(entryNum, dataType.ToString(), data);
-                                DataManager.Instance.ClearCache(dataType);
-                                EntrySummary entrySummary = data.GenerateEntrySummary();
-                                DataManager.Instance.DataIndices[dataType].Entries.Add(entrySummary);
-                                DataManager.Instance.SaveIndex(dataType);
-                                DiagManager.Instance.DevEditor.ReloadData(dataType);
-                                entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                                choices.AddEntry(entrySummary.GetLocalString(true));
+                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
+                                DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+
+                                string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                choices.ModifyEntry(entryNum, newName);
                                 editor.Close();
                             }
                         };
@@ -169,27 +301,41 @@ namespace RogueEssence.Dev.ViewModels
 
                         editor.Show();
                     }
-                };
-
-                choices.SelectedReindexEvent += () =>
+                }
+            };
+            choices.SelectedAddEvent += () =>
+            {
+                lock (GameBase.lockObj)
                 {
-                    lock (GameBase.lockObj)
+                    int entryNum = DataManager.Instance.DataIndices[dataType].Count;
+                    IEntryData data = createOp();
+
+                    DataEditForm editor = new DataEditForm();
+                    editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
+                    DataEditor.LoadDataControls(data, editor.ControlPanel);
+                    editor.SelectedOKEvent += () =>
                     {
-                        DevHelper.RunIndexing(dataType);
-                        DataManager.Instance.LoadIndex(dataType);
-                        DataManager.Instance.ClearCache(dataType);
-                        DiagManager.Instance.DevEditor.ReloadData(dataType);
-                        string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
-                        choices.SetEntries(entries);
-                    }
-                };
+                        lock (GameBase.lockObj)
+                        {
+                            object obj = data;
+                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
+                            data = (IEntryData)obj;
+                            DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 
-                Views.DataListForm dataListForm = new Views.DataListForm
-                {
-                    DataContext = choices,
-                };
-                dataListForm.Show();
-            }
+                            string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                            choices.AddEntry(newName);
+                            editor.Close();
+                        }
+                    };
+                    editor.SelectedCancelEvent += () =>
+                    {
+                        editor.Close();
+                    };
+
+                    editor.Show();
+                }
+            };
+            return choices;
         }
 
 
@@ -202,6 +348,7 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
                 if (form.MapEditForm == null)
                 {
+                    LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();
                     if (ZoneManager.Instance.CurrentMap != null)
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, ZoneManager.Instance.CurrentMap.AssetName);
@@ -218,6 +365,7 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
                 if (form.GroundEditForm == null)
                 {
+                    LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();
                     if (ZoneManager.Instance.CurrentGround != null)
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(true, ZoneManager.Instance.CurrentGround.AssetName);

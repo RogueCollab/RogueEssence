@@ -32,19 +32,19 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < intrinsicChoices.Length; ii++)
             {
                 int index = ii;
-                flatChoices.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[index]).Name.ToLocal(), () => { choose(index); }));
+                flatChoices.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[index]).GetColoredName(), () => { choose(index); }));
             }
-            List<MenuChoice[]> intrinsics = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
-            
+            IChoosable[][] intrinsics = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+
             summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16,
-                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_SPACE * 3),
+                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_HEIGHT * 3),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Description = new DialogueText("", summaryMenu.Bounds.Start + new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
-                summaryMenu.Bounds.End.X - GraphicsManager.MenuBG.TileWidth * 4 - summaryMenu.Bounds.X, LINE_SPACE, false);
+            Description = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
+                new Loc(summaryMenu.Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, summaryMenu.Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             summaryMenu.Elements.Add(Description);
 
-            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_RECALL"), intrinsics.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), 144, Text.FormatKey("MENU_INTRINSIC_RECALL"), intrinsics, 0, 0, SLOTS_PER_PAGE);
         }
 
         protected override void MenuPressed()
@@ -68,7 +68,7 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[CurrentChoiceTotal]);
-            Description.Text = entry.Desc.ToLocal();
+            Description.SetFormattedText(entry.Desc.ToLocal());
 
             base.ChoiceChanged();
         }

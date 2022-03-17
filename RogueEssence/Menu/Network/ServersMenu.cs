@@ -25,9 +25,9 @@ namespace RogueEssence.Menu
                 flatChoices.Add(new MenuTextChoice(entryText, () => { choose(index); }, true, ii > 0 ? Color.White : TextIndigo));
             }
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_ADD_NEW"), startAddNew, true, Color.Yellow));
-            List<MenuChoice[]> choices = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(8, 8), 224, Text.FormatKey("MENU_SERVERS_TITLE"), choices.ToArray(), 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(8, 8), 224, Text.FormatKey("MENU_SERVERS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
         private void choose(int index)

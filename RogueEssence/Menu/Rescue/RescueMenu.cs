@@ -50,10 +50,12 @@ namespace RogueEssence.Menu
             if (aokPath != null)
             {
                 AOKMail aok = (AOKMail)DataManager.LoadRescueMail(aokPath);
-                SetAOK(aok);
-                //an AOK mail has been found!
-                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => loadAOK(aokPath, aok), Text.FormatKey("DLG_AWAIT_RESCUE_AOK_FOUND")), true);
-
+                if (aok != null)
+                {
+                    SetAOK(aok);
+                    //an AOK mail has been found!
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => loadAOK(aokPath, aok), Text.FormatKey("DLG_AWAIT_RESCUE_AOK_FOUND")), true);
+                }
             }
             else
             {
@@ -125,7 +127,7 @@ namespace RogueEssence.Menu
             else
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(true, amount);
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -139,7 +141,7 @@ namespace RogueEssence.Menu
             else
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(items[0]);
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -149,7 +151,7 @@ namespace RogueEssence.Menu
         {
             DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem();
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -205,6 +207,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             //NOTE: In order to preserve debug consistency, you SHOULD set the language to that of the quicksave.
             //HOWEVER, it would be too inconvenient for players sharing their quicksaves, thus this feature is LEFT OUT.
@@ -224,7 +227,7 @@ namespace RogueEssence.Menu
             //notify if it is found and working
             //notify if it failed to work
             //delete the mail either way
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue.SOS.RescuedBy = testingMail.RescuingTeam;
             state.Save.Rescue.SOS.RescuingNames = testingMail.RescuingNames;
             state.Save.Rescue.SOS.RescuingTeam = testingMail.RescuingProfile;

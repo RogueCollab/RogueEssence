@@ -1,0 +1,31 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+        x:Class="RogueEssence.Dev.Views.TextTestForm"
+        Title="Text Test" Height="280" Width="300">
+  <!--Icon="/Assets/app-logo.ico"-->
+    <Design.DataContext>
+      <vm:TextTestViewModel/>
+    </Design.DataContext>
+  <Window.Resources>
+  </Window.Resources>
+  <DockPanel>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="34"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBox Name="txtText" Text="{Binding Text}" TextWrapping="Wrap" Margin="4" Grid.Row="0" Grid.ColumnSpan="2"/>
+      <Button Name="btnDlg" Command="{Binding btnDlg_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Dialogue</Button>
+    </Grid>
+  </DockPanel>
+</Window>

@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
 
         public void ProcessActions(FrameTick elapsedTime) { }
 
-        protected static bool IsInputting(InputManager input, params Dir8[] dirs)
+        public static bool IsInputting(InputManager input, params Dir8[] dirs)
         {
             bool choseDir = false;
             bool prevDir = false;

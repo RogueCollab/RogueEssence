@@ -10,6 +10,7 @@ namespace RogueEssence.Menu
         public const int START_VERT = 6;
         private const int MAX_LINES = 3;
         public const int SIDE_BUFFER = 8;
+        public const int VERT_PAD = 2;
         const int LOG_VISIBLE_TIME = 180;
 
         private List<MenuText> entries;
@@ -21,7 +22,7 @@ namespace RogueEssence.Menu
         {
             entries = new List<MenuText>();
             dividers = new List<MenuDivider>();
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + VERT_SPACE * MAX_LINES)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + VERT_SPACE * MAX_LINES + VERT_PAD)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
             timeSinceUpdate = new FrameTick();
             Visible = false;
         }
@@ -39,33 +40,34 @@ namespace RogueEssence.Menu
 
         public void LogAdded(string msg)
         {
-            if (msg == "\n")
-                LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, msg);
+            if (msg == Text.DIVIDER_STR)
+                LogAdded(entries, dividers, START_VERT, msg);
             else
             {
-                string[] lines = GraphicsManager.TextFont.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
+
+                string[] lines = MenuText.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                 foreach (string line in lines)
-                    LogAdded(entries, dividers, Bounds.Y + START_VERT, SIDE_BUFFER, line);
+                    LogAdded(entries, dividers, START_VERT, line);
                 timeSinceUpdate = new FrameTick();
                 Visible = true;
             }
         }
 
-        public static void LogAdded(List<MenuText> entries, List<MenuDivider> dividers, int startVert, int sideBuffer, string msgLine)
+        public static void LogAdded(List<MenuText> entries, List<MenuDivider> dividers, int startVert, string msgLine)
         {
             //methodize this for message log
-            if (msgLine == "\n")
+            if (msgLine == Text.DIVIDER_STR)
             {
                 if (entries.Count > 0)
-                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 11),
-                               GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - sideBuffer * 2);
+                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 12),
+                               GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2);
             }
             else
             {
                 if (entries.Count > 0)
                     entries.Add(new MenuText(msgLine, entries[entries.Count - 1].Loc + new Loc(0, VERT_SPACE)));
                 else
-                    entries.Add(new MenuText(msgLine, new Loc(sideBuffer + GraphicsManager.MenuBG.TileWidth, startVert)));
+                    entries.Add(new MenuText(msgLine, new Loc(GraphicsManager.MenuBG.TileWidth, startVert)));
                 dividers.Add(null);
             }
         }
@@ -96,7 +98,7 @@ namespace RogueEssence.Menu
                 tickRemainder = (int)((elapsedTime.Ticks + tickRemainder) % moveSpeed);
 
                 //limit the upscroll to the amount that would cause the lowest message to become totally visible
-                int scrollLimit = Bounds.Y + START_VERT + VERT_SPACE * (MAX_LINES - 1);
+                int scrollLimit = START_VERT + VERT_SPACE * (MAX_LINES - 1);
                 if (entries[entries.Count - 1].Loc.Y - addAmount < scrollLimit)
                     addAmount = entries[entries.Count - 1].Loc.Y - scrollLimit;
 
@@ -107,7 +109,7 @@ namespace RogueEssence.Menu
                         dividers[ii].Loc = dividers[ii].Loc - new Loc(0, addAmount);
                 }
 
-                while (entries[0].Loc.Y <= Bounds.Y + START_VERT - VERT_SPACE)
+                while (entries[0].Loc.Y <= START_VERT - VERT_SPACE)
                 {
                     entries.RemoveAt(0);
                     dividers.RemoveAt(0);

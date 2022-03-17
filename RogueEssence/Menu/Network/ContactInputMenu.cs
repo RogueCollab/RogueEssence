@@ -68,7 +68,7 @@ namespace RogueEssence.Menu
                 Guid resultGuid;
                 if (Guid.TryParse(SDL.SDL_GetClipboardText(), out resultGuid))
                 {
-                    Text.Text = resultGuid.ToString().ToUpper();
+                    Text.SetText(resultGuid.ToString().ToUpper());
                     UpdatePickerPos();
                     GameManager.Instance.SE("Menu/Sort");
                 }
@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
             {
                 //backspace will erase (if there's something there)
                 if (Text.Text != "")
-                    Text.Text = Text.Text.Substring(0, Text.Text.Length - 1);
+                    Text.SetText(Text.Text.Substring(0, Text.Text.Length - 1));
                 GameManager.Instance.SE("Menu/Cancel");
                 UpdatePickerPos();
             }

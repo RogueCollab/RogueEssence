@@ -36,19 +36,25 @@ namespace RogueEssence.Menu
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 int index = ii;
                 if (activeChar.EquippedItem.ID > -1)
-                    flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), () => { choose(-index - 1); }, enableHeld, !enableHeld ? Color.Red : Color.White));
+                {
+                    MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), new Loc(2, 1), !enableHeld ? Color.Red : Color.White);
+                    MenuText itemPrice = new MenuText(activeChar.EquippedItem.GetPriceString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, !enableHeld ? Color.Red : Color.White);
+                    flatChoices.Add(new MenuElementChoice(() => { choose(-index - 1); }, enableHeld, itemText, itemPrice));
+                }
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 int index = ii;
                 ItemData entry = DataManager.Instance.GetItem(DataManager.Instance.Save.ActiveTeam.GetInv(index).ID);
                 bool enable = !entry.CannotDrop || enableBound;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), () => { choose(index); }, enable, !enable ? Color.Red : Color.White));
+                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), new Loc(2, 1), !enable ? Color.Red : Color.White);
+                MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetPriceString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, !enable ? Color.Red : Color.White);
+                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, true, itemText, itemPrice));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
 
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
@@ -57,7 +63,7 @@ namespace RogueEssence.Menu
             int startPage = actualChoice / SLOTS_PER_PAGE;
             int startIndex = actualChoice % SLOTS_PER_PAGE;
 
-            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv.ToArray(), startIndex, startPage, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv, startIndex, startPage, SLOTS_PER_PAGE);
 
         }
 

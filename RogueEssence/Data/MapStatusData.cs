@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
+using RogueElements;
 
 namespace RogueEssence.Data
 {
@@ -9,7 +10,7 @@ namespace RogueEssence.Data
     {
         public override string ToString()
         {
-            return Name.DefaultText;
+            return Name.ToLocal();
         }
 
         public LocalText Name { get; set; }
@@ -18,6 +19,7 @@ namespace RogueEssence.Data
         public LocalText Desc { get; set; }
 
         public bool Released { get; set; }
+        [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
@@ -29,6 +31,7 @@ namespace RogueEssence.Data
 
         public StateCollection<MapStatusState> StatusStates;
 
+        public PriorityList<RefreshEvent> OnMapRefresh;
         public MapStatusGivenEvent RepeatMethod;
 
         public MapStatusData()
@@ -39,6 +42,13 @@ namespace RogueEssence.Data
             Emitter = new EmptySwitchOffEmitter();
 
             StatusStates = new StateCollection<MapStatusState>();
+            OnMapRefresh = new PriorityList<RefreshEvent>();
+        }
+
+
+        public string GetColoredName()
+        {
+            return String.Format("[color=#00FFFF]{0}[color]", Name.ToLocal());
         }
     }
 }

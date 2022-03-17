@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Menu
 {
@@ -9,11 +10,11 @@ namespace RogueEssence.Menu
     {
         DungeonSummary summaryMenu;
 
-        public DungeonEnterDialog(string message, int dungeon, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
-            : base(message, sound, choices, defaultChoice, cancelChoice)
+        public DungeonEnterDialog(string message, ZoneLoc dest, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
+            : base(message, sound, false, false, choices, defaultChoice, cancelChoice)
         {
             summaryMenu = new DungeonSummary(new Rect(new Loc(8, 8), new Loc(128, GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
-            summaryMenu.SetDungeon(dungeon, DataManager.Instance.Save.DungeonUnlocks[dungeon] == GameProgress.UnlockState.Completed);
+            summaryMenu.SetDungeon(dest.ID, DataManager.Instance.Save.GetDungeonUnlock(dest.ID) == GameProgress.UnlockState.Completed);
         }
         
         public override void Draw(SpriteBatch spriteBatch)

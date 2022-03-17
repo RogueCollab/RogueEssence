@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.RemoveMenu();
 
-            if (DataManager.Instance.FoundRecords(PathMod.NoMod(DataManager.ROGUE_PATH)))
+            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
                 MenuManager.Instance.ReplaceMenu(new QuicksaveMenu());
             else
             {
@@ -90,6 +90,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             //NOTE: In order to preserve debug consistency, you SHOULD set the language to that of the quicksave.
             //HOWEVER, it would be too inconvenient for players sharing their quicksaves, thus this feature is LEFT OUT.
@@ -105,7 +106,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
 
                 GameManager.Instance.SetFade(true, false);
@@ -116,11 +117,13 @@ namespace RogueEssence.Menu
                 {
                     GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
                 }
                 else
                 {
                     GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(false));
                 }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
@@ -137,6 +140,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
             ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
 
             DataManager.Instance.CurrentReplay = replay;
             
@@ -146,7 +150,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay.RecordDir, DataManager.Instance.CurrentReplay.QuicksavePos);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
 
                 GameManager.Instance.SetFade(true, false);
@@ -157,13 +161,14 @@ namespace RogueEssence.Menu
                 {
                     GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
                 }
                 else
                 {
                     GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
+                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(false));
                 }
-                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
 
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
             }

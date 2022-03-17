@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using NLua;
 using RogueEssence.Data;
 
@@ -20,10 +21,11 @@ namespace RogueEssence.Dungeon
         {
             get
             {
+                string name = Nickname;
                 if (String.IsNullOrEmpty(Nickname))
-                    return DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
-                else
-                    return Nickname;
+                    name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                
+                return name;
             }
         }
 
@@ -32,7 +34,7 @@ namespace RogueEssence.Dungeon
 
         public static string GetFullFormName(MonsterID id)
         {
-            string name = DataManager.Instance.GetMonster(id.Species).Name.ToLocal();
+            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[id.Species].Name.ToLocal();
             SkinData data = DataManager.Instance.GetSkin(id.Skin);
             if (data.Symbol != '\0')
                 name = data.Symbol + name;
@@ -68,39 +70,58 @@ namespace RogueEssence.Dungeon
         public int Discriminator;
 
         public string MetAt;
-        //public int MetDungeon;
-        //public StructMap MetFloor;
+        public ZoneLoc MetLoc;
         public string DefeatAt;
-        //public int DefeatDungeon;
-        //public StructMap DefeatFloor;
-        //cannot release founder
+        public ZoneLoc DefeatLoc;
+
+        /// <summary>
+        /// Cannot be removed from assembly.
+        /// </summary>
         public bool IsFounder;
+
+        /// <summary>
+        /// Cannot be removed from team.
+        /// </summary>
+        public bool IsPartner;
+
         public bool IsFavorite;
 
-        public string ScriptVars;
+        public List<BattleEvent> ActionEvents;
+
+        [JsonConverter(typeof(Dev.ScriptVarsConverter))]
+        public Script.LuaTableContainer ScriptVars;
         [NonSerialized]
         public LuaTable LuaDataTable;
 
 
-        public CharData()
+        public CharData() : this(true)
+        { }
+
+        [JsonConstructor]
+        public CharData(bool populateSlots)
         {
             Nickname = "";
             OriginalUUID = "";
             OriginalTeam = "";
             BaseSkills = new List<SlotSkill>();
-            for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
-                BaseSkills.Add(new SlotSkill());
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
+                    BaseSkills.Add(new SlotSkill());
+            }
             BaseIntrinsics = new List<int>();
-            for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                BaseIntrinsics.Add(0);
+            if (populateSlots)
+            {
+                for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
+                    BaseIntrinsics.Add(-1);
+            }
             Relearnables = new List<bool>();
 
             MetAt = "";
-            //MetDungeon = -1;
-            //MetFloor = new StructMap(-1, -1);
+            MetLoc = ZoneLoc.Invalid;
             DefeatAt = "";
-            //DefeatedDungeon = -1;
-            //DefeatedFloor = new StructMap(-1,-1);
+            DefeatLoc = ZoneLoc.Invalid;
+            ActionEvents = new List<BattleEvent>();
             LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
         }
 
@@ -129,15 +150,16 @@ namespace RogueEssence.Dungeon
             OriginalUUID = other.OriginalUUID;
             OriginalTeam = other.OriginalTeam;
             MetAt = other.MetAt;
-            //MetDungeon = other.MetDungeon;
-            //MetFloor = other.MetFloor;
+            MetLoc = other.MetLoc;
             DefeatAt = other.DefeatAt;
-            //FaintDungeon = other.FaintDungeon;
-            //FaintFloor = other.FaintFloor;
+            DefeatLoc = other.DefeatLoc;
             IsFounder = other.IsFounder;
             IsFavorite = other.IsFavorite;
             Discriminator = other.Discriminator;
 
+            ActionEvents = new List<BattleEvent>();
+            foreach (BattleEvent effect in other.ActionEvents)
+                ActionEvents.Add((BattleEvent)effect.Clone());
             //TODO: deep copy?
             LuaDataTable = other.LuaDataTable;
         }
@@ -177,11 +199,7 @@ namespace RogueEssence.Dungeon
 
         public void SaveLua()
         {
-            string serialized = Script.LuaEngine.Instance.SerializeLuaTable(LuaDataTable);
-            if (serialized != null)
-                ScriptVars = serialized;
-            else
-                DiagManager.Instance.LogInfo("CharData.OnSerializing(): Couldn't serialize lua data table!!");
+            ScriptVars = Script.LuaEngine.Instance.LuaTableToDict(LuaDataTable);
         }
 
         public void LoadLua()
@@ -192,13 +210,22 @@ namespace RogueEssence.Dungeon
                 return;
             }
 
-            LuaDataTable = Script.LuaEngine.Instance.DeserializedLuaTable(ScriptVars);
+            LuaDataTable = Script.LuaEngine.Instance.DictToLuaTable(ScriptVars);
             if (LuaDataTable == null)
             {
                 //Make sure thers is at least a table in the data table when done deserializing.
-                DiagManager.Instance.LogInfo(String.Format("CharData.OnDeserialized(): Couldn't deserialize LuaDataTable string '{0}'!", ScriptVars));
+                DiagManager.Instance.LogInfo(String.Format("CharData.LoadLua(): Couldn't deserialize LuaDataTable string '{0}'!", ScriptVars));
                 LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             }
+        }
+
+
+        //TODO: Created v0.5.3, delete on v0.6.1
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (ActionEvents == null)
+                ActionEvents = new List<BattleEvent>();
         }
     }
 }

@@ -16,6 +16,12 @@
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="DataEditor\RankedCollectionBox.axaml.cs">
+      <DependentUpon>RankedCollectionBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\RangeDictBox.axaml.cs">
+      <DependentUpon>RangeDictBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DataEditor\TileEditForm.axaml.cs">
       <DependentUpon>TileEditForm.axaml</DependentUpon>
     </Compile>
@@ -57,6 +63,15 @@
     </Compile>
     <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\ModConfigWindow.axaml.cs">
+      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Testing\TextTestForm.axaml.cs">
+      <DependentUpon>TextTestForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DevForm\DevTabConstants.axaml.cs">
+      <DependentUpon>DevTabConstants.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\DevForm\DevTabMods.axaml.cs">
       <DependentUpon>DevTabMods.axaml</DependentUpon>

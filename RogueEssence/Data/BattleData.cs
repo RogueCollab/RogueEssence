@@ -28,9 +28,9 @@ namespace RogueEssence.Data
 
         public override int GetID() { return ID; }
         //TODO: later on, make child classes for skills, traps, item usages and throws?
-        public override string GetName()
+        public override string GetDisplayName()
         {
-            return DataManager.Instance.GetSkill(ID).Name.ToLocal();
+            return DataManager.Instance.GetSkill(ID).GetIconName();
         }
 
         public override string ToString()

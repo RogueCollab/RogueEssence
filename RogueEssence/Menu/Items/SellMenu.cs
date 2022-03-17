@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (activeChar.EquippedItem.ID > -1)
                 {
-                    MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetName(), new Loc(2, 1));
+                    MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), new Loc(2, 1));
                     MenuText itemPrice = new MenuText(activeChar.EquippedItem.GetSellValue().ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
                     flatChoices.Add(new MenuElementChoice(() => { choose(new InvSlot(true, index)); }, true, itemText, itemPrice));
                 }
@@ -41,23 +41,23 @@ namespace RogueEssence.Menu
             {
                 int index = ii;
 
-                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetName(), new Loc(2, 1));
+                MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), new Loc(2, 1));
                 MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetSellValue().ToString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.Lime);
                 flatChoices.Add(new MenuElementChoice(() => { choose(new InvSlot(false, index)); }, true, itemText, itemPrice));
             }
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
             int startChoice = defaultChoice % SLOTS_PER_PAGE;
             int startPage = defaultChoice / SLOTS_PER_PAGE;
-            List<MenuChoice[]> inv = SortIntoPages(flatChoices, SLOTS_PER_PAGE);
+            IChoosable[][] inv = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
 
             summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + SELL_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_SPACE * 2 - GraphicsManager.MenuBG.TileHeight * 2),
+            moneySummary = new MoneySummary(Rect.FromPoints(new Loc(16 + SELL_MENU_WIDTH, summaryMenu.Bounds.Top - LINE_HEIGHT * 2 - GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, summaryMenu.Bounds.Top)));
 
-            Initialize(new Loc(16, 16), SELL_MENU_WIDTH, Text.FormatKey("MENU_ITEM_TITLE"), inv.ToArray(), startChoice, startPage, SLOTS_PER_PAGE, false, flatChoices.Count);
+            Initialize(new Loc(16, 16), SELL_MENU_WIDTH, Text.FormatKey("MENU_ITEM_TITLE"), inv, startChoice, startPage, SLOTS_PER_PAGE, false, flatChoices.Count);
 
         }
 

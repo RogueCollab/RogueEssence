@@ -12,6 +12,51 @@ using System.Xml;
 
 namespace RogueEssence.Data
 {
+    public static class DataTypeExtensions
+    {
+        public static Type GetClassType(this DataManager.DataType dataType)
+        {
+            switch (dataType)
+            {
+                case DataManager.DataType.Monster:
+                    return typeof(MonsterData);
+                case DataManager.DataType.Skill:
+                    return typeof(SkillData);
+                case DataManager.DataType.Item:
+                    return typeof(ItemData);
+                case DataManager.DataType.Intrinsic:
+                    return typeof(IntrinsicData);
+                case DataManager.DataType.Status:
+                    return typeof(StatusData);
+                case DataManager.DataType.MapStatus:
+                    return typeof(MapStatusData);
+                case DataManager.DataType.Terrain:
+                    return typeof(TerrainData);
+                case DataManager.DataType.Tile:
+                    return typeof(TileData);
+                case DataManager.DataType.Zone:
+                    return typeof(ZoneData);
+                case DataManager.DataType.Emote:
+                    return typeof(EmoteData);
+                case DataManager.DataType.AutoTile:
+                    return typeof(AutoTileData);
+                case DataManager.DataType.Element:
+                    return typeof(ElementData);
+                case DataManager.DataType.GrowthGroup:
+                    return typeof(GrowthData);
+                case DataManager.DataType.SkillGroup:
+                    return typeof(SkillGroupData);
+                case DataManager.DataType.AI:
+                    return typeof(AITactic);
+                case DataManager.DataType.Rank:
+                    return typeof(RankData);
+                case DataManager.DataType.Skin:
+                    return typeof(SkinData);
+            }
+            throw new ArgumentOutOfRangeException(nameof(dataType), dataType, null);
+        }
+    }
+    
     //Manages data such as items, intrinsics, etc.  Also holds save data
     public class DataManager
     {
@@ -54,6 +99,7 @@ namespace RogueEssence.Data
         public static DataManager Instance { get { return instance; } }
 
         public const string DATA_PATH = "Data/";
+        public const string MISC_PATH = DATA_PATH + "Misc/";
         public const string MAP_PATH = DATA_PATH + "Map/";
         public const string GROUND_PATH = DATA_PATH + "Ground/";
         public const string DATA_EXT = ".bin";
@@ -110,13 +156,12 @@ namespace RogueEssence.Data
 
         public List<(MonsterID mon, string name)> StartChars;
         public List<string> StartTeams;
-        public Dictionary<(int, int), List<int>> RarityMap;
         public int StartLevel;
         public int StartPersonality;
-        public int GroundZone;
         public ZoneLoc StartMap;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
+        public TypeDict<BaseData> UniversalData;
 
         public BattleFX HealFX;
         public BattleFX RestoreChargeFX;
@@ -141,7 +186,7 @@ namespace RogueEssence.Data
 
         public bool RecordingReplay { get { return (replayWriter != null); } }
         private BinaryWriter replayWriter;
-        private long replaySaveStatePos;
+        private long replayGroundStatePos;
         public ReplayData CurrentReplay;
         public LoadMode Loading;
 
@@ -188,27 +233,28 @@ namespace RogueEssence.Data
             skinCache = new Dictionary<int, SkinData>();
 
             DataIndices = new Dictionary<DataType, EntryDataIndex>();
+            UniversalData = new TypeDict<BaseData>();
         }
 
         public void InitData()
         {
-            HealFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Heal.fx"), null);
-            RestoreChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "RestoreCharge.fx"), null);
-            LoseChargeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "LoseCharge.fx"), null);
-            NoChargeFX = (EmoteFX)LoadData(PathMod.ModPath(FX_PATH + "NoCharge.fx"), null);
-            ElementFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Element.fx"), null);
-            IntrinsicFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Intrinsic.fx"), null);
-            SendHomeFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "SendHome.fx"), null);
-            ItemLostFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "ItemLost.fx"), null);
-            WarpFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Warp.fx"), null);
-            KnockbackFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Knockback.fx"), null);
-            JumpFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Jump.fx"), null);
-            ThrowFX = (BattleFX)LoadData(PathMod.ModPath(FX_PATH + "Throw.fx"), null);
+            HealFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Heal.fx"));
+            RestoreChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "RestoreCharge.fx"));
+            LoseChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "LoseCharge.fx"));
+            NoChargeFX = LoadData<EmoteFX>(PathMod.ModPath(FX_PATH + "NoCharge.fx"));
+            ElementFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Element.fx"));
+            IntrinsicFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Intrinsic.fx"));
+            SendHomeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "SendHome.fx"));
+            ItemLostFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "ItemLost.fx"));
+            WarpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Warp.fx"));
+            KnockbackFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Knockback.fx"));
+            JumpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Jump.fx"));
+            ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw.fx"));
 
 
-            UniversalEvent = (ActiveEffect)LoadData(PathMod.ModPath(DATA_PATH + "Universal.bin"), null);
+            UniversalEvent = LoadData<ActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal.bin"));
+            UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index.bin"));
             LoadStartParams();
-            LoadRarity();
 
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -227,6 +273,7 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.AI, aiCache);
             LoadIndexFull(DataType.Rank, rankCache);
             LoadIndexFull(DataType.Skin, skinCache);
+            LoadUniversalData();
         }
 
 
@@ -241,6 +288,7 @@ namespace RogueEssence.Data
             Directory.CreateDirectory(Path.Join(baseFolder, MAP_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, GROUND_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, FX_PATH));
+            Directory.CreateDirectory(Path.Join(baseFolder, MISC_PATH));
         }
 
         public static void InitSaveDirs()
@@ -250,42 +298,18 @@ namespace RogueEssence.Data
         }
 
 
-        private void LoadRarity()
+        public void LoadUniversalData()
         {
-            RarityMap = new Dictionary<(int, int), List<int>>();
-
-            string path = PathMod.ModPath(DATA_PATH + "Rarity.xml");
-            //try to load from file
-            if (File.Exists(path))
+            foreach (BaseData baseData in UniversalData)
             {
                 try
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-
-                    foreach (XmlNode speciesNode in xmldoc.DocumentElement.SelectNodes("Species"))
-                    {
-                        int species = Int32.Parse(speciesNode.Attributes.GetNamedItem("name").Value);
-                        foreach (XmlNode rarityNode in speciesNode.SelectNodes("Rarity"))
-                        {
-                            int rarity = Int32.Parse(rarityNode.Attributes.GetNamedItem("name").Value);
-
-                            foreach (XmlNode itemNode in rarityNode.SelectNodes("Item"))
-                            {
-                                int item = Int32.Parse(itemNode.InnerText);
-
-                                if (!RarityMap.ContainsKey((species, rarity)))
-                                    RarityMap[(species, rarity)] = new List<int>();
-
-                                RarityMap[(species, rarity)].Add(item);
-                            }
-                        }
-                    }
-
+                    BaseData data = LoadData<BaseData>(PathMod.ModPath(MISC_PATH + baseData.FileName + DATA_EXT));
+                    UniversalData.Set(data);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    DiagManager.Instance.LogError(ex);
+                    //leave as is
                 }
             }
         }
@@ -314,7 +338,7 @@ namespace RogueEssence.Data
                         XmlNode startSkin = startChar.SelectSingleNode("Skin");
                         int skin = Int32.Parse(startSkin.InnerText);
                         XmlNode startGender = startChar.SelectSingleNode("Gender");
-                        Gender gender = (Gender)Enum.Parse(typeof(Gender), startGender.InnerText);
+                        Gender gender = Enum.Parse<Gender>(startGender.InnerText);
 
                         XmlNode startName = startChar.SelectSingleNode("Name");
                         string name = startName.InnerText;
@@ -334,9 +358,6 @@ namespace RogueEssence.Data
 
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
                     StartPersonality = Int32.Parse(startPersonality.InnerText);
-
-                    XmlNode groundZone = xmldoc.DocumentElement.SelectSingleNode("GroundZone");
-                    GroundZone = Int32.Parse(groundZone.InnerText);
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(Int32.Parse(startMap.SelectSingleNode("Zone").InnerText),
@@ -358,23 +379,41 @@ namespace RogueEssence.Data
         {
             //Notify script engine
             LuaEngine.Instance.OnDataUnload();
-            EndPlay(null, null);
+            //close the file gracefully
+            if (replayWriter != null)
+                replayWriter.Close();
         }
 
 
+        /// <summary>
+        /// Index paths are modified like mods.  However, if multiple mods have conflicting indices, a combined index must be generated.
+        /// </summary>
+        /// <param name="basePath"></param>
+        /// <returns></returns>
         public void LoadIndex(DataType type)
         {
             try
             {
-                using (Stream stream = new FileStream(PathMod.ModPath(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Open, FileAccess.Read, FileShare.Read))
+                List<EntrySummary> summaries = new List<EntrySummary>();
+                foreach (string modPath in PathMod.FallforthPaths(DATA_PATH + type.ToString() + "/index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
+                    using (Stream stream = new FileStream(modPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        IFormatter formatter = new BinaryFormatter();
-                        EntryDataIndex result = (EntryDataIndex)formatter.Deserialize(stream);
-                        DataIndices[type] = result;
+                        EntryDataIndex result = (EntryDataIndex)Serializer.DeserializeData(stream);
+                        for (int ii = 0; ii < result.Entries.Length; ii++)
+                        {
+                            if (result.Entries[ii] != null)
+                            {
+                                if (ii >= summaries.Count)
+                                    summaries.Add(null);
+                                summaries[ii] = result.Entries[ii];
+                            }
+                        }
                     }
                 }
+                EntryDataIndex compositeIndex = new EntryDataIndex();
+                compositeIndex.Entries = summaries.ToArray();
+                DataIndices[type] = compositeIndex;
             }
             catch
             {
@@ -393,7 +432,7 @@ namespace RogueEssence.Data
             {
                 if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT)))
                 {
-                    T data = (T)LoadData(ii, type.ToString());
+                    T data = LoadData<T>(ii, type.ToString());
                     cache.Add(ii, data);
                 }
             }
@@ -403,30 +442,55 @@ namespace RogueEssence.Data
         {
             using (Stream stream = new FileStream(PathMod.HardMod(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, DataIndices[type]);
-                }
+                Serializer.SerializeData(stream, DataIndices[type]);
             }
         }
 
-
-        public static IEntryData LoadData(int indexNum, string subPath)
+        public void ContentChanged(DataType dataType, int entryNum, IEntryData data)
         {
-            return (IEntryData)LoadData(PathMod.ModPath(DATA_PATH + subPath + "/" + indexNum + DATA_EXT));
+            SaveData(entryNum, dataType.ToString(), data);
+            ClearCache(dataType);
+            EntrySummary entrySummary = data.GenerateEntrySummary();
+            if (entryNum > DataIndices[dataType].Count)
+                throw new ArgumentException(String.Format("Attempted to change entry {0} in a {1}-size index.", entryNum, DataIndices[dataType].Count));
+            else if (entryNum == DataIndices[dataType].Count)
+            {
+                EntrySummary[] newEntries = new EntrySummary[DataIndices[dataType].Count + 1];
+                DataIndices[dataType].Entries.CopyTo(newEntries, 0);
+                DataIndices[dataType].Entries = newEntries;
+            }
+            DataIndices[dataType].Entries[entryNum] = entrySummary;
+            SaveIndex(dataType);
+
+            foreach (BaseData baseData in UniversalData)
+            {
+                if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
+                {
+                    baseData.ContentChanged(entryNum);
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
+                }
+            }
+
+            DiagManager.Instance.DevEditor.ReloadData(dataType);
         }
 
-        public static object LoadData(string path, SerializationBinder binder = null)
+        public static T LoadData<T>(int indexNum, string subPath) where T : IEntryData
+        {
+            return LoadData<T>(PathMod.ModPath(DATA_PATH + subPath + "/" + indexNum + DATA_EXT));
+        }
+
+        public static T LoadData<T>(string path)
+        {
+            return (T)LoadData(path, typeof(T));
+        }
+
+        public static object LoadData(string path, Type t)
         {
             using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 //using (BinaryReader reader = new BinaryReader(stream))
                 //{
-                    IFormatter formatter = new BinaryFormatter();
-                    if (binder != null)
-                        formatter.Binder = binder;
-                    return formatter.Deserialize(stream);
+                    return Serializer.DeserializeData(stream);
                 //}
             }
         }
@@ -446,8 +510,7 @@ namespace RogueEssence.Data
             {
                 //using (BinaryWriter writer = new BinaryWriter(stream))
                 //{
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, entry);
+                Serializer.SerializeData(stream, entry);
                 //}
             }
         }
@@ -462,7 +525,7 @@ namespace RogueEssence.Data
             {
                 if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Zone.ToString() + "/" + index + DATA_EXT)))
                 {
-                    data = (ZoneData)LoadData(index, DataType.Zone.ToString());
+                    data = LoadData<ZoneData>(index, DataType.Zone.ToString());
                     return data;
                 }
             }
@@ -478,7 +541,7 @@ namespace RogueEssence.Data
             Map mapData = null;
             try
             {
-                mapData = (Map)LoadData(PathMod.ModPath(MAP_PATH + name + ".rsmap"));
+                mapData = LoadData<Map>(PathMod.ModPath(MAP_PATH + name + ".rsmap"));
                 return mapData;
             }
             catch (Exception ex)
@@ -494,7 +557,7 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
-                mapData = (GroundMap)LoadData(PathMod.ModPath(GROUND_PATH + name + ".rsground"));
+                mapData = LoadData<GroundMap>(PathMod.ModPath(GROUND_PATH + name + ".rsground"));
                 return mapData;
             }
             catch (Exception ex)
@@ -515,7 +578,7 @@ namespace RogueEssence.Data
 
             try
             {
-                data = (SkillData)LoadData(index, DataType.Skill.ToString());
+                data = LoadData<SkillData>(index, DataType.Skill.ToString());
                 skillCache.Add(index, data);
             }
             catch (Exception ex)
@@ -537,7 +600,7 @@ namespace RogueEssence.Data
             {
                 if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Item.ToString() + "/" + index + DATA_EXT)))
                 {
-                    data = (ItemData)LoadData(index, DataType.Item.ToString());
+                    data = LoadData<ItemData>(index, DataType.Item.ToString());
                     itemCache.Add(index, data);
                     return data;
                 }
@@ -558,7 +621,7 @@ namespace RogueEssence.Data
 
             try
             {
-                data = (AutoTileData)LoadData(index, "AutoTile");
+                data = LoadData<AutoTileData>(index, "AutoTile");
                 autoTileCache.Add(index, data);
             }
             catch (Exception ex)
@@ -576,7 +639,7 @@ namespace RogueEssence.Data
 
             try
             {
-                data = (MonsterData)LoadData(index, "Monster");
+                data = LoadData<MonsterData>(index, "Monster");
                 monsterCache.Add(index, data);
             }
             catch (Exception ex)
@@ -596,7 +659,7 @@ namespace RogueEssence.Data
             {
                 if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Status.ToString() + "/" + index + DataManager.DATA_EXT)))
                 {
-                    data = (StatusData)LoadData(index, DataType.Status.ToString());
+                    data = LoadData<StatusData>(index, DataType.Status.ToString());
                     statusCache.Add(index, data);
                     return data;
                 }
@@ -618,7 +681,7 @@ namespace RogueEssence.Data
             {
                 if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Intrinsic.ToString() + "/" + index + DATA_EXT)))
                 {
-                    data = (IntrinsicData)LoadData(index, DataType.Intrinsic.ToString());
+                    data = LoadData<IntrinsicData>(index, DataType.Intrinsic.ToString());
                     intrinsicCache.Add(index, data);
                     return data;
                 }
@@ -641,7 +704,7 @@ namespace RogueEssence.Data
             {
                 if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.MapStatus.ToString() + "/" + index + DATA_EXT)))
                 {
-                    data = (MapStatusData)LoadData(index, DataType.MapStatus.ToString());
+                    data = LoadData<MapStatusData>(index, DataType.MapStatus.ToString());
                     mapStatusCache.Add(index, data);
                     return data;
                 }
@@ -782,7 +845,7 @@ namespace RogueEssence.Data
                     throw new Exception("Started a new play before closing the existing one!");
 
                 replayWriter = new BinaryWriter(new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None));
-                replaySaveStatePos = 0;
+                replayGroundStatePos = 0;
 
                 //write start info
                 Version version = Versioning.GetVersion();
@@ -809,16 +872,23 @@ namespace RogueEssence.Data
             }
         }
 
-        public void ResumePlay(string filePath, long statePos)
+        public void ResumePlay(ReplayData replay)
         {
             try
             {
                 if (replayWriter != null)
                     throw new Exception("Started a new play before closing the existing one!");
 
-                replayWriter = new BinaryWriter(new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None));
-                replaySaveStatePos = statePos;
-                replayWriter.BaseStream.Seek(0, SeekOrigin.End);
+                replayWriter = new BinaryWriter(new FileStream(replay.RecordDir, FileMode.Open, FileAccess.Write, FileShare.None));
+                replayGroundStatePos = replay.GroundsavePos;
+                if (replay.QuicksavePos > 0)
+                {
+                    replayWriter.BaseStream.SetLength(replay.QuicksavePos);
+                    replayWriter.BaseStream.Seek(replay.QuicksavePos, SeekOrigin.Begin);
+                    replayWriter.Flush();
+                }
+                else
+                    replayWriter.BaseStream.Seek(0, SeekOrigin.End);
             }
             catch (Exception ex)
             {
@@ -845,16 +915,35 @@ namespace RogueEssence.Data
             }
         }
 
+        public void LogGroundSave()
+        {
+            if (replayWriter != null)
+            {
+                try
+                {
+                    //erase the previous groundsave on this log
+                    if (replayGroundStatePos > 0)
+                        replayWriter.BaseStream.SetLength(replayGroundStatePos);
+
+                    //serialize the entire save data to mark the start of the dungeon
+                    replayWriter.Write((byte)ReplayData.ReplayLog.GroundsaveLog);
+                    SaveMainGameState(replayWriter);
+
+                    replayWriter.Flush();
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+        }
+
         public void LogQuicksave()
         {
             if (replayWriter != null)
             {
                 try
                 {
-                    //erase the previous quicksave on this log
-                    if (replaySaveStatePos > 0)
-                        replayWriter.BaseStream.SetLength(replaySaveStatePos);
-
                     //serialize the entire save data to mark the start of the dungeon
                     replayWriter.Write((byte)ReplayData.ReplayLog.QuicksaveLog);
                     SaveMainGameState(replayWriter);
@@ -942,7 +1031,7 @@ namespace RogueEssence.Data
 
                     replayWriter.Close();
                     replayWriter = null;
-                    replaySaveStatePos = 0;
+                    replayGroundStatePos = 0;
                 }
 
                 if (fileName == null)
@@ -1157,36 +1246,49 @@ namespace RogueEssence.Data
                             endPos = reader.BaseStream.Length;
                         while (reader.BaseStream.Position != endPos)
                         {
-                            byte type = reader.ReadByte();
-                            if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog)
+                            try
                             {
-                                if (quickload)
+                                long savePos = reader.BaseStream.Position;
+                                byte type = reader.ReadByte();
+                                if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog || type == (byte)ReplayData.ReplayLog.GroundsaveLog)
                                 {
-                                    replay.States.Clear();
-                                    replay.Actions.Clear();
-                                    replay.UICodes.Clear();
+                                    if (quickload)
+                                    {
+                                        replay.States.Clear();
+                                        replay.Actions.Clear();
+                                        replay.UICodes.Clear();
+                                    }
+                                    //read team info
+                                    GameState gameState = ReadGameState(reader, false);
+                                    replay.States.Add(gameState);
+
+                                    if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
+                                        replay.QuicksavePos = savePos;
+                                    else if (type == (byte)ReplayData.ReplayLog.GroundsaveLog)
+                                        replay.GroundsavePos = savePos;
                                 }
-                                if (type == (byte)ReplayData.ReplayLog.QuicksaveLog)
-                                    replay.QuicksavePos = reader.BaseStream.Position;
-                                //read team info
-                                replay.States.Add(ReadGameState(reader, false));
+                                else if (type == (byte)ReplayData.ReplayLog.GameLog)
+                                {
+                                    GameAction play = new GameAction((GameAction.ActionType)reader.ReadByte(), (Dir8)reader.ReadByte());
+                                    int totalArgs = reader.ReadByte();
+                                    for (int ii = 0; ii < totalArgs; ii++)
+                                        play.AddArg(reader.ReadInt32());
+                                    replay.Actions.Add(play);
+                                }
+                                else if (type == (byte)ReplayData.ReplayLog.UILog)
+                                {
+                                    int totalCodes = reader.ReadByte();
+                                    for (int ii = 0; ii < totalCodes; ii++)
+                                        replay.UICodes.Add(reader.ReadInt32());
+                                }
+                                else
+                                    throw new Exception("Invalid Replay command type: " + type);
                             }
-                            else if (type == (byte)ReplayData.ReplayLog.GameLog)
+                            catch (Exception ex)
                             {
-                                GameAction play = new GameAction((GameAction.ActionType)reader.ReadByte(), (Dir8)reader.ReadByte());
-                                int totalArgs = reader.ReadByte();
-                                for (int ii = 0; ii < totalArgs; ii++)
-                                    play.AddArg(reader.ReadInt32());
-                                replay.Actions.Add(play);
+                                //In this case, the error will be presented clearly to the player.  Do not signal.
+                                DiagManager.Instance.LogError(ex, false);
                             }
-                            else if (type == (byte)ReplayData.ReplayLog.UILog)
-                            {
-                                int totalCodes = reader.ReadByte();
-                                for (int ii = 0; ii < totalCodes; ii++)
-                                    replay.UICodes.Add(reader.ReadInt32());
-                            }
-                            else
-                                throw new Exception("Invalid Replay command type: " + type);
                         }
                     }
                 }
@@ -1257,9 +1359,7 @@ namespace RogueEssence.Data
                         string dateDefeated = reader.ReadString();
                         ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-
-                        IFormatter formatter = new BinaryFormatter();
-                        return (BaseRescueMail)formatter.Deserialize(stream);
+                        return (BaseRescueMail)Serializer.DeserializeData(stream);
                     }
                 }
             }
@@ -1306,8 +1406,7 @@ namespace RogueEssence.Data
                     writer.Write(mail.DefeatedVersion.Minor);
                     writer.Write(mail.DefeatedVersion.Build);
                     writer.Write(mail.DefeatedVersion.Revision);
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, mail);
+                    Serializer.SerializeData(stream, mail);
                 }
             }
         }
@@ -1339,21 +1438,6 @@ namespace RogueEssence.Data
                             Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                             return (MainProgress)GameProgress.LoadMainData(reader);
                         }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
-
-                //TODO: v0.5: remove this
-                //versionless load
-                try
-                {
-                    using (FileStream stream = File.OpenRead(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
-                    {
-                        using (BinaryReader reader = new BinaryReader(stream))
-                            return (MainProgress)GameProgress.LoadMainData(reader);
                     }
                 }
                 catch (Exception ex)
@@ -1466,7 +1550,7 @@ namespace RogueEssence.Data
         /// Returns game progress and current zone.
         /// </summary>
         /// <returns></returns>
-        public GameState LoadMainGameState()
+        public GameState LoadMainGameState(bool allowUpgrade)
         {
             if (File.Exists(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH)))
             {
@@ -1476,24 +1560,7 @@ namespace RogueEssence.Data
                     {
                         //loads dungeon, zone, and ground, if there will be one...
                         using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader, false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //In this case, the error will be presented clearly to the player.  Do not signal.
-                    DiagManager.Instance.LogError(ex, false);
-                }
-
-                //TODO: v0.5: remove this
-                //versionless read
-                try
-                {
-                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        //loads dungeon, zone, and ground, if there will be one...
-                        using (BinaryReader reader = new BinaryReader(stream))
-                            return ReadGameState(reader, true);
+                            return ReadGameState(reader, allowUpgrade);
                     }
                 }
                 catch (Exception ex)
@@ -1505,32 +1572,39 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public GameState ReadGameState(BinaryReader reader, bool versionless)
+        public GameState ReadGameState(BinaryReader reader, bool allowUpgrade)
         {
             GameState state = new GameState();
-            //TODO: v0.5: remove this
-            Version version = new Version();
-            if (!versionless)
-                version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+
+            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
 
             state.Save = GameProgress.LoadMainData(reader);
-            if (version < Versioning.GetVersion())
+
+            ZoneManager.LoadToState(reader, state);
+            if (allowUpgrade && state.Save.IsOldVersion())
             {
-                //update unlocks
-                GameProgress.UnlockState[] unlocks = new GameProgress.UnlockState[DataIndices[DataType.Monster].Count];
-                Array.Copy(state.Save.Dex, unlocks, Math.Min(unlocks.Length, state.Save.Dex.Length));
-                state.Save.Dex = unlocks;
+                //ZoneManager.LoadDefaultState(state);
 
-                unlocks = new GameProgress.UnlockState[DataIndices[DataType.Zone].Count];
-                Array.Copy(state.Save.DungeonUnlocks, unlocks, Math.Min(unlocks.Length, state.Save.DungeonUnlocks.Length));
-                state.Save.DungeonUnlocks = unlocks;
-
-                ZoneManager.LoadDefaultState(state);
+                //reload AI
+                foreach (Character player in state.Save.ActiveTeam.Players)
+                {
+                    AITactic ai;
+                    if (player.Tactic != null)
+                        ai = GetAITactic(player.Tactic.ID);
+                    else
+                        ai = GetAITactic(0);
+                    player.Tactic = new AITactic(ai);
+                }
+                foreach (Character player in state.Save.ActiveTeam.Assembly)
+                {
+                    AITactic ai;
+                    if (player.Tactic != null)
+                        ai = GetAITactic(player.Tactic.ID);
+                    else
+                        ai = GetAITactic(0);
+                    player.Tactic = new AITactic(ai);
+                }
             }
-            else
-                ZoneManager.LoadToState(reader, state);
-
-            LuaEngine.Instance.UpdateZoneInstance();
 
 
             if (state.Zone.CurrentMap != null)
@@ -1630,22 +1704,5 @@ namespace RogueEssence.Data
             for (int ii = entriesStart; ii < entriesEnd; ii++)
                 yield return MsgLog[ii];
         }
-
-
-        /// <summary>
-        /// Allows querying the unlock status of a dungeon.
-        /// </summary>
-        /// <param name="dungeonid"></param>
-        /// <returns></returns>
-        public GameProgress.UnlockState GetDungeonUnlockStatus(int dungeonid)
-        {
-            return DataManager.Instance.Save.DungeonUnlocks[dungeonid];
-        }
-        public void UnlockDungeon(int dungeonid)
-        {
-            if (DataManager.Instance.Save.DungeonUnlocks[dungeonid] == GameProgress.UnlockState.None)
-                DataManager.Instance.Save.DungeonUnlocks[dungeonid] = GameProgress.UnlockState.Discovered;
-        }
-
     }
 }

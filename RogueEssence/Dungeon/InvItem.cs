@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Data;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,8 +14,11 @@ namespace RogueEssence.Dungeon
         }
         public override PassiveData GetData() { return DataManager.Instance.GetItem(ID); }
 
+        [DataType(0, DataManager.DataType.Item, false)]
+        public override int ID { get; set; }
         public bool Cursed;
         public int HiddenValue;
+        public int Price;
 
         public InvItem() : base()
         { }
@@ -35,34 +39,62 @@ namespace RogueEssence.Dungeon
             Cursed = cursed;
             HiddenValue = hiddenValue;
         }
+        public InvItem(int index, bool cursed, int hiddenValue, int price)
+        {
+            ID = index;
+            Cursed = cursed;
+            HiddenValue = hiddenValue;
+            Price = price;
+        }
         public InvItem(InvItem other) : base(other)
         {
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;
+            Price = other.Price;
         }
         public ISpawnable Copy() { return new InvItem(this); }
 
-        public override string GetName()
+
+        public string GetPriceString()
         {
-            ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            return MapItem.GetPriceString(Price);
+        }
+
+        public override string GetDisplayName()
+        {
+            ItemData entry = DataManager.Instance.GetItem(ID);
+
+            string prefix = "";
+            if (entry.Icon > -1)
+                prefix += ((char)(entry.Icon + 0xE0A0)).ToString();
+            if (Cursed)
+                prefix += "\uE10B";
+
+            string nameStr = entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
-            else
-                return (entry.Icon > -1 ? ((char)(entry.Icon + 0xE0A0)).ToString() : "") + (Cursed ? "\uE10B" : "") + entry.Name.ToLocal();
+                nameStr += " (" + HiddenValue + ")";
+
+            return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
         }
 
         public override string ToString()
         {
-            ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = DataManager.Instance.GetItem(ID);
+
+            string nameStr = "";
+            if (Cursed)
+                nameStr += "[X]";
+
+            nameStr += entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                return (Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + HiddenValue + ")";
-            else
-                return (Cursed ? "[X]" : "") + entry.Name.ToLocal();
+                nameStr += " (" + HiddenValue + ")";
+
+            return nameStr;
         }
 
         public int GetSellValue()
         {
-            ItemData entry = Data.DataManager.Instance.GetItem(ID);
+            ItemData entry = DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
                 return entry.Price * HiddenValue;
             else

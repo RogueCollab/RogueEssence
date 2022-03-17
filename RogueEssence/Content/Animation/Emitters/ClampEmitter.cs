@@ -44,9 +44,9 @@ namespace RogueEssence.Content
         {
             Loc center = Origin + Dir.GetLoc() * Offset;
             if (Anim1.AnimIndex != "")
-                scene.Anims[(int)DrawLayer.Normal].Add(new MoveToAnim(Anim1, MoveTime, center - HalfOffset, center, LocHeight - HalfHeight, LocHeight, LingerStart, LingerEnd, Dir));
+                scene.Anims[(int)DrawLayer.Normal].Add(new MoveToAnim(Anim1, new EmptyFiniteEmitter(), DrawLayer.Normal, MoveTime, center - HalfOffset, center, LocHeight - HalfHeight, LocHeight, LingerStart, LingerEnd, Dir));
             if (Anim2.AnimIndex != "")
-                scene.Anims[(int)DrawLayer.Normal].Add(new MoveToAnim(Anim2, MoveTime, center + HalfOffset, center, LocHeight + HalfHeight, LocHeight, LingerStart, LingerEnd, Dir));
+                scene.Anims[(int)DrawLayer.Normal].Add(new MoveToAnim(Anim2, new EmptyFiniteEmitter(), DrawLayer.Normal, MoveTime, center + HalfOffset, center, LocHeight + HalfHeight, LocHeight, LingerStart, LingerEnd, Dir));
             finished = true;
         }
         

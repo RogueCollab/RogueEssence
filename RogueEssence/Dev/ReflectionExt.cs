@@ -3,12 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RogueEssence.Dev
 {
     public static class ReflectionExt
     {
         public delegate string TypeStringConv(object member);
+
+        public static T SerializeCopy<T>(T obj)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                IFormatter formatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+                formatter.Serialize(stream, obj);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+
+                stream.Flush();
+                stream.Position = 0;
+
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+                return (T)formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+            }
+        }
 
         public static object CreateMinimalInstance(Type type)
         {
@@ -41,7 +62,7 @@ namespace RogueEssence.Dev
             foreach (object obj in attributes)
             {
                 PassableAttribute att = obj as PassableAttribute;
-                if (att != null)
+                if (att != null && att.PassableArgFlag == flag)
                     objects.Add(att);
             }
             return objects.ToArray();
@@ -56,6 +77,52 @@ namespace RogueEssence.Dev
                     return att;
             }
             return null;
+        }
+
+        public static List<MemberInfo> GetSerializableMembers(this Type type)
+        {
+            List<MemberInfo> members = new List<MemberInfo>();
+            Type privateType = type;
+            Dictionary<string, FieldInfo> backingFields = new Dictionary<string, FieldInfo>();
+            while (privateType != null)
+            {
+                FieldInfo[] fields = privateType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (FieldInfo field in fields)
+                    backingFields[field.Name] = field;
+                privateType = privateType.BaseType;
+            }
+
+            PropertyInfo[] myProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo info in myProperties)
+            {
+                List<string> keys = new List<string>();
+                foreach (string key in backingFields.Keys)
+                    keys.Add(key);
+                for (int ii = 0; ii < keys.Count; ii++)
+                {
+                    if (backingFields[keys[ii]].Name == "<" + info.Name + ">k__BackingField")
+                    {
+                        members.Add(info);
+                        backingFields.Remove(keys[ii]);
+                        break;
+                    }
+                }
+            }
+
+            foreach (FieldInfo info in backingFields.Values)
+                members.Add(info);
+
+            FieldInfo[] myFields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            foreach (FieldInfo info in myFields)
+                members.Add(info);
+
+            for (int ii = members.Count-1; ii >= 0; ii--)
+            {
+                if (members[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
+                    members.RemoveAt(ii);
+            }
+
+            return members;
         }
 
         public static List<MemberInfo> GetEditableMembers(this Type type)
