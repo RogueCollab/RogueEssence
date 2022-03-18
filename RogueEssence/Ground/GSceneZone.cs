@@ -207,19 +207,9 @@ namespace RogueEssence.Ground
                     }
                 case GameAction.ActionType.ShiftSkill:
                     {
-                        int slot = action[1];
                         Character targetChar = DataManager.Instance.Save.ActiveTeam.Players[action[0]];
-                        BackReference<Skill> upState = targetChar.Skills[slot];
-                        BackReference<Skill> downState = targetChar.Skills[slot + 1];
-                        targetChar.Skills[slot] = downState;
-                        targetChar.Skills[slot + 1] = upState;
-
-                        if (upState.BackRef > -1 && downState.BackRef > -1)
-                        {
-                            SlotSkill skill = targetChar.BaseSkills[slot];
-                            targetChar.BaseSkills.RemoveAt(slot);
-                            targetChar.BaseSkills.Insert(slot + 1, skill);
-                        }
+                        int slot = action[1];
+                        targetChar.SilentSwitchSkills(slot);
                         break;
                     }
                 case GameAction.ActionType.SortItems:

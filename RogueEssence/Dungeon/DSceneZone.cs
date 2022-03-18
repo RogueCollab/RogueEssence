@@ -447,8 +447,9 @@ namespace RogueEssence.Dungeon
                 case GameAction.ActionType.ShiftSkill:
                     {
                         result.Success = ActionResult.ResultType.Success;
-
-                        ActiveTeam.Players[action[0]].SwitchSkills(action[1]);
+                        Character targetChar = ActiveTeam.Players[action[0]];
+                        int slot = action[1];
+                        targetChar.SwitchSkills(slot);
                         break;
                     }
                 case GameAction.ActionType.SortItems:

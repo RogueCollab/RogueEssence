@@ -1227,7 +1227,7 @@ namespace RogueEssence.Dungeon
                 Skills[owningSlot] = new BackReference<Skill>(new Skill(skillNum, BaseSkills[newSlot].Charges, enabled), newSlot);
         }
 
-        public void SwitchSkills(int slot)
+        public void SilentSwitchSkills(int slot)
         {
             BackReference<Skill> upState = Skills[slot];
             BackReference<Skill> downState = Skills[slot + 1];
@@ -1245,6 +1245,11 @@ namespace RogueEssence.Dungeon
                 upState.BackRef = downRef;
                 downState.BackRef = upRef;
             }
+        }
+
+        public void SwitchSkills(int slot)
+        {
+            SilentSwitchSkills(slot);
 
             //need to switch relevant statuses around
             List<int> skillIndices = new List<int>();
