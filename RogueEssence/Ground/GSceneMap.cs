@@ -25,16 +25,17 @@ namespace RogueEssence.Ground
 
 
 
-        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, bool held)
+        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, int teamSlot)
         {
             InvItem invItem = null;
-            if (held)
+            if (invSlot < 0)
             {
-                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[invSlot];
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
                 invItem = activeChar.EquippedItem;
             }
             else
                 invItem = DataManager.Instance.Save.ActiveTeam.GetInv(invSlot);
+            Character target = teamSlot == -1 ? DataManager.Instance.Save.ActiveTeam.Leader : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
 
             ItemData itemEntry = (ItemData)invItem.GetData();
 
@@ -45,21 +46,20 @@ namespace RogueEssence.Ground
                         ItemIndexState effect = itemEntry.ItemStates.GetWithDefault<ItemIndexState>();
                         int skill = effect.Index;
 
-                        Character player = (Character)character.Data;
                         int learn = -1;
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(player, skill, (int slot) => { learn = slot; }, () => { }));
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(target, skill, (int slot) => { learn = slot; }, () => { }));
 
                         if (learn > -1)
-                            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(player, skill, learn));
+                            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(target, skill, learn));
                         else
                             yield break;
                     }
                     break;
             }
 
-            if (held)
+            if (invSlot < 0)
             {
-                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[invSlot];
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
                 activeChar.EquippedItem = new InvItem();
             }
             else

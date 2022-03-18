@@ -153,7 +153,7 @@ namespace RogueEssence.Ground
                         //[1] = who to use it on (-1 for the user)
                         //others: which slot to delete,
                         //which intrinsic to have, which team member/item to send in, etc.
-                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1] != 0));
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1]));
                         break;
                     }
                 case GameAction.ActionType.ShiftTeam:

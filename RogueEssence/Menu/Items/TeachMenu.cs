@@ -122,7 +122,7 @@ namespace RogueEssence.Menu
             //give the item at the inv slot to the given team slot
 
             if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                MenuManager.Instance.EndAction = GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, slot, held ? 1 : 0));
+                MenuManager.Instance.EndAction = GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, getItemUseSlot(), choice));
             else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, getItemUseSlot(), choice));
         }

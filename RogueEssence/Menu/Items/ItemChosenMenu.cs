@@ -19,7 +19,15 @@ namespace RogueEssence.Menu
             this.held = held;
 
             bool leader = (GameManager.Instance.CurrentScene != DungeonScene.Instance) || (DungeonScene.Instance.ActiveTeam.Leader == DungeonScene.Instance.FocusedCharacter);
-            bool focus = (GameManager.Instance.CurrentScene != DungeonScene.Instance) || (held && DungeonScene.Instance.ActiveTeam.Players[slot] == DungeonScene.Instance.FocusedCharacter);
+            bool holder = false;
+            if (held)
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    holder = (DungeonScene.Instance.ActiveTeam.Players[slot] == DungeonScene.Instance.FocusedCharacter);
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                    holder = (DataManager.Instance.Save.ActiveTeam.LeaderIndex == slot);
+            }
+
             InvItem invItem = null;
             if (held)
                 invItem = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
@@ -29,20 +37,20 @@ namespace RogueEssence.Menu
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             //able to use if an item is not held, or if an item is held, but the focused character is the holder
-            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            if (!held || holder)
             {
-                switch (entry.UsageType)
+                if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                 {
-                    case ItemData.UseType.Learn:
-                        {
-                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White)); ;
-                            break;
-                        }
+                    switch (entry.UsageType)
+                    {
+                        case ItemData.UseType.Learn:
+                            {
+                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                break;
+                            }
+                    }
                 }
-            }
-            else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-            {
-                if (!held || focus)
+                else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
                     switch (entry.UsageType)
                     {
@@ -107,7 +115,7 @@ namespace RogueEssence.Menu
             {
                 bool invEmpty = (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0);
                 //item is held
-                if (focus || leader)
+                if (holder || leader)
                 {
                     //if the focused character is the holder, it can put it back (disable if inv is full)
                     choices.Add(new MenuTextChoice(leader ? Text.FormatKey("MENU_ITEM_TAKE") : Text.FormatKey("MENU_ITEM_PUT"), PutBackAction));
@@ -120,7 +128,7 @@ namespace RogueEssence.Menu
             {
 
             }
-            else if (!held || focus)
+            else if (!held || holder)
             {
                 //actions can be done only if the focused character is the holder, or if it isn't held at all
                 if (!entry.CannotDrop)
