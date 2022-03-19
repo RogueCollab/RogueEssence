@@ -164,6 +164,10 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig("GroundChoice", chosenGround);
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
+                // Remove common cutscene variables
+                // While these should technically be untouched, in practice a travel attempt means breaking the cutscene and resetting the variables to normal.
+                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
+                DataManager.Instance.Save.CutsceneMode = false;
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
@@ -177,6 +181,10 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig("FloorChoice", chosenFloor);
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
+                // Remove common cutscene variables
+                // While these should technically be untouched, in practice a travel attempt means breaking the cutscene and resetting the variables to normal.
+                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
+                DataManager.Instance.Save.CutsceneMode = false;
                 GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
