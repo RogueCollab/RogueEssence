@@ -231,6 +231,27 @@ namespace RogueEssence.Menu
             return null;
         }
 
+        public InfoMenu CreateNotice(string title, Action finishAction, params string[] msgs)
+        {
+            if (msgs.Length > 0)
+            {
+                List<string> sep_msgs = new List<string>();
+                for (int ii = 0; ii < msgs.Length; ii++)
+                {
+                    string[] break_str = Regex.Split(msgs[ii], @"\[br\]", RegexOptions.IgnoreCase);
+                    sep_msgs.AddRange(break_str);
+                }
+                InfoMenu box = null;
+                for (int ii = sep_msgs.Count - 1; ii >= 0; ii--)
+                {
+                    InfoMenu prevBox = box;
+                    box = new InfoMenu(title, sep_msgs[ii], (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); });
+                }
+                return box;
+            }
+            return null;
+        }
+
         public DialogueBox CreateQuestion(string message, Action yes, Action no)
         {
             return CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message, true, false, false, false, yes, no, false);
