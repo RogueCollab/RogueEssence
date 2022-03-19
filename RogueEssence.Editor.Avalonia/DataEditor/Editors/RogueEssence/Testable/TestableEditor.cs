@@ -29,6 +29,8 @@ namespace RogueEssence.Dev
                         T testObj = (T)DataEditor.SaveWindowControls(control, "", type, attributes, new Type[0]);
                         RunTest(testObj);
                     }
+                    else
+                        GameManager.Instance.SE("Menu/Cancel");
                 }
             };
             control.Children.Add(btnTest);
@@ -37,6 +39,8 @@ namespace RogueEssence.Dev
 
         private bool CheckTest()
         {
+            if (GameManager.Instance.CurrentScene != DungeonScene.Instance)
+                return false;
             return DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null;
         }
 
