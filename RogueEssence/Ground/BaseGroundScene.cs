@@ -138,7 +138,7 @@ namespace RogueEssence.Ground
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
             //draw the background
-            ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, Loc.Zero);
+            ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, ViewRect.Start);
 
             for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
