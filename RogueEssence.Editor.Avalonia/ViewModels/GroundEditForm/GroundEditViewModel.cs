@@ -370,7 +370,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
                 GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-                DevGraphicsManager.ClearCaches();
+                DevDataManager.ClearCaches();
             }
         }
 

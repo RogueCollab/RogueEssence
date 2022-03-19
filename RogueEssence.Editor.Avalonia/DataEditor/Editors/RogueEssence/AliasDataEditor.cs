@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
         public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Int32 member, Type[] subGroupStack)
         {
             AliasAttribute dataAtt = ReflectionExt.FindAttribute<AliasAttribute>(attributes);
-            Dictionary<int, string> aliases = DevGraphicsManager.GetAlias(dataAtt.Name);
+            Dictionary<int, string> aliases = DevDataManager.GetAlias(dataAtt.Name);
 
             if (aliases == null)
             {
@@ -57,7 +57,7 @@ namespace RogueEssence.Dev
         public override Int32 SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             AliasAttribute dataAtt = ReflectionExt.FindAttribute<AliasAttribute>(attributes);
-            Dictionary<int, string> aliases = DevGraphicsManager.GetAlias(dataAtt.Name);
+            Dictionary<int, string> aliases = DevDataManager.GetAlias(dataAtt.Name);
 
             if (aliases == null)
                 return base.SaveWindowControls(control, name, type, attributes, subGroupStack);
@@ -79,7 +79,7 @@ namespace RogueEssence.Dev
         public override string GetString(Int32 obj, Type type, object[] attributes)
         {
             AliasAttribute dataAtt = ReflectionExt.FindAttribute<AliasAttribute>(attributes);
-            Dictionary<int, string> aliases = DevGraphicsManager.GetAlias(dataAtt.Name);
+            Dictionary<int, string> aliases = DevDataManager.GetAlias(dataAtt.Name);
 
             if (aliases != null)
             {

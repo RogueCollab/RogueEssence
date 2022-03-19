@@ -178,7 +178,7 @@ namespace RogueEssence.Dev.ViewModels
             OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
             if (sprites)
             {
-                foreach (CharSheetOp op in DevGraphicsManager.CharSheetOps)
+                foreach (CharSheetOp op in DevDataManager.CharSheetOps)
                     OpList.Add(new SpeciesOpContainer(op, () => applyOpToCharSheet(op)));
             }
 

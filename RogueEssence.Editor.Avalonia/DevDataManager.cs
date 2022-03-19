@@ -9,7 +9,7 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev
 {
-    public class DevGraphicsManager
+    public class DevDataManager
     {
 
         private static LRUCache<TileAddr, Bitmap> tileCache;

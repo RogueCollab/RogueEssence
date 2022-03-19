@@ -59,7 +59,7 @@ namespace RogueEssence.Dev.Views
         {
             lock (GameBase.lockObj)
             {
-                DevGraphicsManager.Init();
+                DevDataManager.Init();
 
                 loadDevConfig();
 
@@ -80,7 +80,7 @@ namespace RogueEssence.Dev.Views
             lock (GameBase.lockObj)
             {
                 if (dataType == DataManager.DataType.All)
-                    DevGraphicsManager.ClearCaches();
+                    DevDataManager.ClearCaches();
 
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
