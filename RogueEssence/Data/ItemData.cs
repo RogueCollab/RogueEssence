@@ -29,6 +29,7 @@ namespace RogueEssence.Data
 
         [Anim(0, "Item/")]
         public string Sprite;
+        [Alias(0, "Item_Icon")]
         public int Icon;
 
         [Dev.Multiline(0)]

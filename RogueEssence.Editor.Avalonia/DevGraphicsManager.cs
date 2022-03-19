@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Avalonia.Media.Imaging;
 using RogueElements;
 using RogueEssence.Content;
@@ -13,6 +14,8 @@ namespace RogueEssence.Dev
 
         private static LRUCache<TileAddr, Bitmap> tileCache;
         private static LRUCache<string, Bitmap> tilesetCache;
+
+        private static LRUCache<string, Dictionary<int, string>> aliasCache;
 
         public static Bitmap IconO;
         public static Bitmap IconX;
@@ -47,6 +50,7 @@ namespace RogueEssence.Dev
 
             tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
+            aliasCache = new LRUCache<string, Dictionary<int, string>>(20);
         }
 
         public static Bitmap GetTile(TileFrame tileTex)
@@ -157,6 +161,28 @@ namespace RogueEssence.Dev
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(new Exception("Error retrieving Tileset #" + tileset + "\n", ex));
+            }
+            return null;
+        }
+
+        public static Dictionary<int, string> GetAlias(string name)
+        {
+            Dictionary<int, string> alias;
+            if (aliasCache.TryGetValue(name, out alias))
+                return alias;
+
+            try
+            {
+                string path = Path.Combine(PathMod.RESOURCE_PATH, "Aliases", name + ".json");
+                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    alias = (Dictionary<int, string>)Data.Serializer.Deserialize(stream, typeof(Dictionary<int, string>));
+
+                aliasCache.Add(name, alias);
+                return alias;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(new Exception("Error retrieving Alias \"" + name + "\"\n", ex));
             }
             return null;
         }
