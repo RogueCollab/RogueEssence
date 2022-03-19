@@ -37,13 +37,7 @@ namespace RogueEssence.Ground
             objectDraw = new List<IDrawableSprite>();
             foregroundDraw = new List<IDrawableSprite>();
 
-            gameScreen = new RenderTarget2D(
-                GraphicsManager.GraphicsDevice,
-                GraphicsManager.ScreenWidth,
-                GraphicsManager.ScreenHeight,
-                false,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                DepthFormat.Depth24);
+            ZoomChanged();
         }
 
         public void ZoomChanged()
@@ -116,7 +110,7 @@ namespace RogueEssence.Ground
                 spriteBatch.End();
 
 
-                GraphicsManager.GraphicsDevice.SetRenderTarget(null);
+                GraphicsManager.GraphicsDevice.SetRenderTarget(GameManager.Instance.GameScreen);
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Black);
 

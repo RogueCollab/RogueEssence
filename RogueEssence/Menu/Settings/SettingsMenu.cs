@@ -70,12 +70,7 @@ namespace RogueEssence.Menu
             DiagManager.Instance.CurSettings.SEBalance = TotalChoices[1].CurrentChoice;
             DiagManager.Instance.CurSettings.BattleFlow = (Settings.BattleSpeed)TotalChoices[2].CurrentChoice;
             DiagManager.Instance.CurSettings.Window = TotalChoices[3].CurrentChoice;
-
-            int zoom = (DiagManager.Instance.CurSettings.Window == 0) ? 2 : DiagManager.Instance.CurSettings.Window;
-            if (DiagManager.Instance.CurSettings.Window != GraphicsManager.WindowZoom)
-                GraphicsManager.WindowZoom = zoom;
-            if ((DiagManager.Instance.CurSettings.Window == 0) != GraphicsManager.FullScreen)
-                GraphicsManager.FullScreen = (DiagManager.Instance.CurSettings.Window == 0);
+            GraphicsManager.SetWindowMode(DiagManager.Instance.CurSettings.Window);
 
             DiagManager.Instance.CurSettings.Border = TotalChoices[4].CurrentChoice;
 

@@ -70,8 +70,7 @@ namespace RogueEssence.Menu
             float scale = GraphicsManager.WindowZoom;
             Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
             Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(0,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferHeight,
+                GraphicsManager.WindowWidth, GraphicsManager.WindowHeight,
                 0, 0, 1);
 
             alphaTest.Projection = orthMatrix;

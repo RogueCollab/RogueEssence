@@ -37,9 +37,15 @@ namespace RogueEssence
         private static GameManager instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new GameManager();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static GameManager Instance { get { return instance; } }
+        
+        public RenderTarget2D GameScreen { get; private set; }
+
 
         public InputManager MetaInputManager;
         public InputManager InputManager;
@@ -90,6 +96,15 @@ namespace RogueEssence
             InputManager = new InputManager();
 
             DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
+
+            ZoomChanged();
+        }
+
+        public void ZoomChanged()
+        {
+            GameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                GraphicsManager.WindowWidth, GraphicsManager.WindowHeight,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
         }
 
         public void BattleSE(string newSE)
@@ -1111,6 +1126,8 @@ namespace RogueEssence
 
         public void Draw(SpriteBatch spriteBatch, double updateTime)
         {
+            GraphicsManager.GraphicsDevice.SetRenderTarget(GameScreen);
+
             if (DataManager.Instance.Loading == DataManager.LoadMode.None || DiagManager.Instance.DevMode)
                 CurrentScene.Draw(spriteBatch);
 
@@ -1162,6 +1179,18 @@ namespace RogueEssence
                 DrawDebug(spriteBatch, updateTime);
             }
             spriteBatch.End();
+
+            GraphicsManager.GraphicsDevice.SetRenderTarget(null);
+
+            GraphicsManager.GraphicsDevice.Clear(Color.Black);
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(1, 1, 1)));
+
+            Loc screenPos = GraphicsManager.GetGameScreenOffset();
+            spriteBatch.Draw(GameScreen, screenPos.ToVector2(), Color.White);
+
+            spriteBatch.End();
+
         }
 
         private void DrawDebug(SpriteBatch spriteBatch, double updateTime)

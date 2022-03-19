@@ -613,7 +613,7 @@ namespace RogueEssence.Content
                     //automatically calculate frame durations and use preset offsets
                     for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
                     {
-                        //convert from clockwise PMD style to counterclockwise PMDO style
+                        //convert from clockwise style to counterclockwise style
                         int sheetIndex = (DirExt.DIR8_COUNT - ii) % DirExt.DIR8_COUNT;
                         if (sheetIndex >= totalY)
                             continue;

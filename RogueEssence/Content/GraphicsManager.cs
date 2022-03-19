@@ -108,13 +108,29 @@ namespace RogueEssence.Content
         public const string OBJECT_PATTERN = CONTENT_PATH + "Object/{0}.dir";
         public const string BG_PATTERN = CONTENT_PATH + "BG/{0}.dir";
 
-
+        /// <summary>
+        /// All textures are multiples of 8, right?
+        /// This also controls the minimum units for a ground map.
+        /// </summary>
         public const int TEX_SIZE = 8;
 
+        /// <summary>
+        /// The size of a dungeon tile, in Tex
+        /// </summary>
         public static int DungeonTexSize;
+
+        /// <summary>
+        /// The size of a dungeon tile, in pixels
+        /// </summary>
         public static int TileSize { get { return DungeonTexSize * TEX_SIZE; } }
+
+        /// <summary>
+        /// The size of the game screen, which will then be stretched by the resolution settings.
+        /// </summary>
         public static int ScreenWidth;
         public static int ScreenHeight;
+
+
         public static string MoneySprite;
         public static int PortraitSize;
         public static List<EmotionType> Emotions;
@@ -143,6 +159,10 @@ namespace RogueEssence.Content
         public static event Action ZoomChanged;
 
         private static GameZoom zoom;
+
+        /// <summary>
+        /// The zoom of the game map.  Only applies to ground and dungeon scenes.  Used only for debug.
+        /// </summary>
         public static GameZoom Zoom
         {
             get { return zoom; }
@@ -155,29 +175,54 @@ namespace RogueEssence.Content
         }
 
         private static int windowZoom;
-        public static int WindowZoom
+
+        /// <summary>
+        /// Game zoom based on window settings, affecting all graphics.  Independent of Zoom, which is used to zoom the map.
+        /// </summary>
+        public static int WindowZoom { get { return windowZoom; } }
+        public static bool FullScreen { get { return graphics.IsFullScreen; } }
+
+        public static void SetWindowMode(int mode)
         {
-            get { return windowZoom; }
-            set
+            if (mode == 0)
             {
-                windowZoom = value;
+                graphics.IsFullScreen = true;
+                DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+                int resize = Math.Min(displayMode.Width / ScreenWidth, displayMode.Height / ScreenHeight);
+                windowZoom = resize;
+
+                float ratio = Math.Max((float)WindowWidth / displayMode.Width, (float)WindowHeight / displayMode.Height);
+                graphics.PreferredBackBufferWidth = (int)(displayMode.Width * ratio);
+                graphics.PreferredBackBufferHeight = (int)(displayMode.Height * ratio);
+
+                //graphics.PreferredBackBufferWidth = displayMode.Width;
+                //graphics.PreferredBackBufferHeight = displayMode.Height;
+            }
+            else
+            {
+                graphics.IsFullScreen = false;
+                windowZoom = mode;
                 graphics.PreferredBackBufferWidth = WindowWidth;
                 graphics.PreferredBackBufferHeight = WindowHeight;
-                graphics.ApplyChanges();
-
-                ZoomChanged?.Invoke();
             }
+            graphics.ApplyChanges();
+
+            ZoomChanged?.Invoke();
         }
-        public static bool FullScreen
+
+        /// <summary>
+        /// For letterboxing
+        /// </summary>
+        /// <returns></returns>
+        public static Loc GetGameScreenOffset()
         {
-            get { return graphics.IsFullScreen; }
-            set
-            {
-                graphics.IsFullScreen = value;
-                graphics.ApplyChanges();
-            }
+            return new Loc((GraphicsDevice.PresentationParameters.BackBufferWidth - WindowWidth) / 2,
+                (GraphicsDevice.PresentationParameters.BackBufferHeight - WindowHeight) / 2);
         }
 
+        /// <summary>
+        /// The actual size of the game window in pixels.  Used for debug drawing that doesn't try to maintain pixel-perfection.
+        /// </summary>
         public static int WindowWidth { get { return windowZoom * ScreenWidth; } }
         public static int WindowHeight { get { return windowZoom * ScreenHeight; } }
 
@@ -355,12 +400,11 @@ namespace RogueEssence.Content
         }
 
 
-        public static void InitBase(GraphicsDeviceManager newGraphics, int zoom, bool fullScreen)
+        public static void InitBase(GraphicsDeviceManager newGraphics, int mode)
         {
             graphics = newGraphics;
-            WindowZoom = zoom;
             Zoom = GameZoom.x1;
-            FullScreen = fullScreen;
+            SetWindowMode(mode);
         }
 
         public static void InitSystem(GraphicsDevice graphics)

@@ -1,4 +1,5 @@
 ﻿using RogueElements;
+using RogueEssence.Content;
 using Microsoft.Xna.Framework.Input;
 using System.IO;
 
@@ -82,7 +83,7 @@ namespace RogueEssence
             Direction = Dir8.None;
         }
 
-        public FrameInput(GamePadState gamePad, KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive, bool screenActive)
+        public FrameInput(GamePadState gamePad, KeyboardState keyboard, MouseState mouse, bool keyActive, bool mouseActive, bool screenActive, Loc screenOffset)
         {
             Active = screenActive;
             BaseGamepadState = gamePad;
@@ -90,7 +91,7 @@ namespace RogueEssence
 
             Loc dirLoc = new Loc();
             inputStates = new bool[(int)InputType.Count];
-            MouseLoc = new Loc(mouse.X, mouse.Y);
+            MouseLoc = new Loc(mouse.X, mouse.Y) - screenOffset;
 
             if (Active)
                 ReadDevInput(keyboard, mouse, keyActive, mouseActive);

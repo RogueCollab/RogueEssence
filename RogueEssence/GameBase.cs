@@ -47,7 +47,7 @@ namespace RogueEssence
             IsFixedTimeStep = true;
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
-            GraphicsManager.InitBase(graphics, (DiagManager.Instance.CurSettings.Window == 0) ? 2 : DiagManager.Instance.CurSettings.Window, (DiagManager.Instance.CurSettings.Window == 0));
+            GraphicsManager.InitBase(graphics, DiagManager.Instance.CurSettings.Window);
             IsMouseVisible = true;
             Window.Title = Text.FormatKey("GAME_TITLE");
             Content.RootDirectory = "Content";
@@ -208,7 +208,7 @@ namespace RogueEssence
                                     input.ReadDevInput(Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse);
                             }
                             else //set this frame's input
-                                input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse, IsActive);
+                                input = new FrameInput(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState(), !DiagManager.Instance.DevEditor.AteKeyboard, !DiagManager.Instance.DevEditor.AteMouse, IsActive, GraphicsManager.GetGameScreenOffset());
                             
                             if (DiagManager.Instance.ActiveDebugReplay == null)
                                 DiagManager.Instance.LogInput(input);

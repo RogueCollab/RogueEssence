@@ -55,13 +55,7 @@ namespace RogueEssence.Dungeon
             subtractBlend.AlphaDestinationBlend = Blend.One;
             subtractBlend.ColorWriteChannels = ColorWriteChannels.Alpha;
 
-            gameScreen = new RenderTarget2D(
-                GraphicsManager.GraphicsDevice,
-                GraphicsManager.ScreenWidth,
-                GraphicsManager.ScreenHeight,
-                false,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                DepthFormat.Depth24);
+            ZoomChanged();
         }
 
         public void ZoomChanged()
@@ -363,7 +357,7 @@ namespace RogueEssence.Dungeon
 
             PostDraw(spriteBatch);
 
-            GraphicsManager.GraphicsDevice.SetRenderTarget(null);
+            GraphicsManager.GraphicsDevice.SetRenderTarget(GameManager.Instance.GameScreen);
 
             GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
