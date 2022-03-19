@@ -665,7 +665,7 @@ namespace RogueEssence
             //actually, just save the entire SOS mail somewhere as the current SOS
             DataManager.Instance.Save.Rescue = new RescueState(sos, true);
             //this is after saving the fail file, but before saving the first state of the replay
-            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(new ZoneLoc(sos.Goal.ID, new SegLoc(0, 0))));
+            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(new ZoneLoc(sos.Goal.ID, new SegLoc(0, 0)), true));
 
 
             //must also set script variables for dungeon if they matter
@@ -676,7 +676,7 @@ namespace RogueEssence
         public IEnumerator<YieldInstruction> BeginGameInSegment(ZoneLoc nextZone, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             yield return CoroutineManager.Instance.StartCoroutine(BeginGame(nextZone.ID, MathUtils.Rand.NextUInt64(), stakes, recorded, silentRestrict));
-            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(nextZone));
+            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(nextZone, true));
         }
         public IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
@@ -684,13 +684,13 @@ namespace RogueEssence
             DataManager.Instance.CurrentReplay = null;
             yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.BeginGame(zoneID, seed, stakes, recorded, silentRestrict));
         }
-        public IEnumerator<YieldInstruction> BeginSegment(ZoneLoc nextZone)
+        public IEnumerator<YieldInstruction> BeginSegment(ZoneLoc nextZone, bool newGame)
         {
             DataManager.Instance.Save.NextDest = nextZone;
             if (DataManager.Instance.RecordingReplay)
                 DataManager.Instance.LogState();
 
-            SceneOutcome = MoveToZone(nextZone);
+            SceneOutcome = MoveToZone(nextZone, newGame, false);
             yield break;
         }
 

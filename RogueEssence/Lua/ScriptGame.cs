@@ -104,7 +104,7 @@ namespace RogueEssence.Script
         public LuaFunction ContinueDungeon;
         public Coroutine _ContinueDungeon(int dungeonid, int structureid, int mapid, int entry)
         {
-            return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry)));
+            return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), false));
         }
 
 
