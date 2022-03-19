@@ -12,6 +12,8 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public abstract class TeamSpawner : ITeamSpawnGenerator<IMobSpawnMap>
     {
+        public bool Explorer { get; set; }
+
         public abstract SpawnList<MobSpawn> GetPossibleSpawns();
         public abstract List<MobSpawn> ChooseSpawns(IRandom rand);
         public Team Spawn(IMobSpawnMap map)
@@ -20,7 +22,11 @@ namespace RogueEssence.LevelGen
 
             if (chosenSpawns.Count > 0)
             {
-                MonsterTeam team = new MonsterTeam();
+                Team team;
+                if (Explorer)
+                    team = new ExplorerTeam();
+                else
+                    team = new MonsterTeam();
                 foreach (MobSpawn chosenSpawn in chosenSpawns)
                     chosenSpawn.Spawn(team, map);
                 return team;
