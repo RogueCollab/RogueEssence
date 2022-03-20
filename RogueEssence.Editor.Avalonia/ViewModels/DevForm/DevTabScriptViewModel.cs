@@ -18,6 +18,7 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabScriptViewModel()
         {
             m_lastcommands = new Stack<string>();
+            m_lastcommands.Push("");
             ScriptLog = "";
             ScriptLine = "";
         }
@@ -34,6 +35,13 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return scriptCaret; }
             set { this.SetIfChanged(ref scriptCaret, value); }
+        }
+
+        private int cmdCaret;
+        public int CmdCaret
+        {
+            get { return cmdCaret; }
+            set { this.SetIfChanged(ref cmdCaret, value); }
         }
 
         private string scriptLine;
@@ -66,7 +74,9 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 ScriptLog = ScriptLog + "\n" + ScriptLine;
+                m_lastcommands.Pop();
                 m_lastcommands.Push(ScriptLine);
+                m_lastcommands.Push("");
                 ScriptCaret = ScriptLog.Length;
                 //Send the text to the script engine
                 LuaEngine.Instance.RunString(ScriptLine);
@@ -78,7 +88,7 @@ namespace RogueEssence.Dev.ViewModels
         public void ShiftHistory(int increment)
         {
             string[] strs = m_lastcommands.ToArray();
-            m_cntDownArrow = (m_cntDownArrow + strs.Length + increment) % strs.Length;
+            m_cntDownArrow = Math.Clamp(m_cntDownArrow + increment, 0, strs.Length - 1);
             ScriptLine = strs[m_cntDownArrow];
         }
 
