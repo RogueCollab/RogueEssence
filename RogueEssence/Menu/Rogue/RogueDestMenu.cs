@@ -10,6 +10,8 @@ namespace RogueEssence.Menu
 {
     public class RogueDestMenu : MultiPageMenu
     {
+        private static int defaultChoice;
+
         private const int SLOTS_PER_PAGE = 12;
 
         DungeonSummary summaryMenu;
@@ -44,6 +46,8 @@ namespace RogueEssence.Menu
                 ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone] as ZoneEntrySummary;
                 flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
             }
+
+            int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             int totalSlots = SLOTS_PER_PAGE;
@@ -55,11 +59,15 @@ namespace RogueEssence.Menu
             infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             UpdateExtraInfo("");
 
-            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, 0, 0, totalSlots, false, -1);
+            int startPage = actualChoice / SLOTS_PER_PAGE;
+            int startIndex = actualChoice % SLOTS_PER_PAGE;
+
+            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, startIndex, startPage, totalSlots, false, -1);
         }
 
         protected override void ChoiceChanged()
         {
+            defaultChoice = CurrentChoiceTotal;
             int choice = CurrentChoiceTotal - 1;
             if (choice > -1)
             {
