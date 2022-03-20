@@ -918,7 +918,6 @@ namespace RogueEssence.Dungeon
                 if (ShowMap != MinimapState.Detail)
                     DrawGame(spriteBatch);
 
-
                 if ((ShowMap != MinimapState.None) && !Turn && !ShowActions && !DataManager.Instance.Save.CutsceneMode && MenuManager.Instance.MenuCount == 0)
                 {
                     //draw minimap

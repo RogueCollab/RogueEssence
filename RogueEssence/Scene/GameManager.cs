@@ -1127,6 +1127,7 @@ namespace RogueEssence
         public void Draw(SpriteBatch spriteBatch, double updateTime)
         {
             GraphicsManager.GraphicsDevice.SetRenderTarget(GameScreen);
+            GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
             if (DataManager.Instance.Loading == DataManager.LoadMode.None || DiagManager.Instance.DevMode)
                 CurrentScene.Draw(spriteBatch);
