@@ -129,6 +129,40 @@ namespace RogueEssence
             }
         }
 
+        public void LoopBattleSE(string newSE)
+        {
+            if (newSE != "")
+                LoopSE("Battle/" + newSE);
+        }
+
+        public void LoopSE(string newSE)
+        {
+            try
+            {
+                if (DataManager.Instance.Loading != DataManager.LoadMode.None)
+                    return;
+
+                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                    SoundManager.PlayLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), 1);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+        public void StopLoopBattleSE(string newSE)
+        {
+            if (newSE != "")
+                StopLoopSE("Battle/" + newSE);
+        }
+
+        public void StopLoopSE(string newSE)
+        {
+            SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
+        }
+
+
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
         {
             yield return new WaitWhile(() => { return CurrentFanfarePhase != FanfarePhase.None; });

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 
 namespace RogueEssence.Content
@@ -26,6 +27,8 @@ namespace RogueEssence.Content
             set { seBalance = value; }
         }
 
+        private static Dictionary<string, LoopedSong> loopedSE;
+
         private static string[] playedSounds = new string[8];
         private static int soundIndex = 0;
 
@@ -33,6 +36,7 @@ namespace RogueEssence.Content
         {
             bgmBalance = 1f;
             seBalance = 1f;
+            loopedSE = new Dictionary<string, LoopedSong>();
         }
 
         public static void PlayBGM(string fileName, float volume = 1.0f)
@@ -56,6 +60,39 @@ namespace RogueEssence.Content
             bgmVol = volume;
             if (song != null)
                 song.Volume = bgmVol * BGMBalance;
+        }
+
+
+        public static void PlayLoopedSE(string fileName, float volume = 1.0f)
+        {
+            if (loopedSE.ContainsKey(fileName))
+                return;
+
+            if (!String.IsNullOrWhiteSpace(fileName))
+            {
+                LoopedSong se = new LoopedSong(fileName);
+                se.Play();
+                float seVol = volume;
+                se.Volume = seVol * seVol;
+                loopedSE.Add(fileName, se);
+            }
+        }
+
+        public static void StopLoopedSE(string fileName, float volume = 1.0f)
+        {
+            LoopedSong se;
+            if (loopedSE.TryGetValue(fileName, out se))
+            {
+                se.Stop();
+                loopedSE.Remove(fileName);
+            }
+        }
+
+        public static void SetLoopedSEVolume(string fileName, float volume)
+        {
+            LoopedSong se;
+            if (loopedSE.TryGetValue(fileName, out se))
+                se.Volume = volume * SEBalance;
         }
 
         public static void NewFrame()

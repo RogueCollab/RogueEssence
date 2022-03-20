@@ -31,6 +31,26 @@ namespace RogueEssence.Script
 
         public LuaFunction WaitSE;
 
+
+        public void LoopSE(string name)
+        {
+            GameManager.Instance.LoopSE(name);
+        }
+
+        public void LoopBattleSE(string name)
+        {
+            GameManager.Instance.LoopBattleSE(name);
+        }
+        public void StopSE(string name)
+        {
+            GameManager.Instance.StopLoopSE(name);
+        }
+
+        public void StopBattleSE(string name)
+        {
+            GameManager.Instance.StopLoopBattleSE(name);
+        }
+
         //===========================
         //  Fanfare
         //===========================
