@@ -357,31 +357,44 @@ namespace RogueEssence.Data
             }
         }
 
-        public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool silent)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <param name="capOnly">Will force lower level to specified level if false.</param>
+        /// <param name="permanent"></param>
+        /// <param name="silent"></param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool capOnly, bool permanent, bool silent)
         {
-            if (zone.LevelCap)
+            StartLevel = zone.Level;
+            for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
             {
-                StartLevel = zone.Level;
-                for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
-                {
-                    RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, true);
+                RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, capOnly);
+                if (!permanent)
                     ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
-                }
-                for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
-                {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, true);
-                    //no backref for guests
-                }
-                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
-                {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, true);
-                    ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
-                }
-                if (!silent)
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_RESTRICT_LEVEL", StartLevel)));
             }
+            for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
+            {
+                RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, capOnly);
+                //no backref for guests
+            }
+            for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
+            {
+                RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, capOnly);
+                if (!permanent)
+                    ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
+            }
+            if (!silent)
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_RESTRICT_LEVEL", StartLevel)));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="level"></param>
+        /// <param name="capOnly">Will force lower level to specified level if false.</param>
         public static void RestrictCharLevel(Character character, int level, bool capOnly)
         {
             //set level
@@ -857,8 +870,8 @@ namespace RogueEssence.Data
             }
 
             //set everyone's levels and mark them for backreferral
-            if (!noRestrict)
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false));
+            if (!noRestrict && zone.LevelCap)
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, true, false, false));
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;
@@ -1033,8 +1046,12 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
+            ZoneData zone = DataManager.Instance.GetZone(zoneID);
+
             MidAdventure = true;
             Stakes = stakes;
+
+            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false, true, true));
 
             if (recorded)
             {
