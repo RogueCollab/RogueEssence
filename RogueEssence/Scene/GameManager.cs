@@ -104,7 +104,7 @@ namespace RogueEssence
         {
             GameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
                 GraphicsManager.WindowWidth, GraphicsManager.WindowHeight,
-                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24Stencil8);
         }
 
         public void BattleSE(string newSE)
@@ -1162,7 +1162,7 @@ namespace RogueEssence
         {
             GraphicsManager.GraphicsDevice.SetRenderTarget(GameScreen);
             GraphicsManager.GraphicsDevice.Clear(Color.Black);
-
+            
             if (DataManager.Instance.Loading == DataManager.LoadMode.None || DiagManager.Instance.DevMode)
                 CurrentScene.Draw(spriteBatch);
 
