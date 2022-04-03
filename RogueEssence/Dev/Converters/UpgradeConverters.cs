@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using NLua;
 using RogueElements;
 using Newtonsoft.Json.Linq;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev
 {
@@ -147,6 +148,45 @@ namespace RogueEssence.Dev
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(IRandom);
+        }
+    }
+
+    //TODO: Created v0.5.2, delete on v1.0.0
+    public class MapBGConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            JObject jObject = JObject.Load(reader);
+            MapBG container = new MapBG();
+            serializer.Populate(jObject.CreateReader(), container);
+
+
+            if (Serializer.OldVersion <= new Version(0, 5, 8, 0))
+            {
+                container.RepeatX = true;
+                container.RepeatY = true;
+            }
+
+            return container;
+        }
+
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(MapBG);
         }
     }
 }
