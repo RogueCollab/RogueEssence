@@ -13,8 +13,8 @@ namespace RogueEssence.Data
     [Serializable]
     public class SerializationContainer
     {
-        public object Object;
         public Version Version;
+        public object Object;
     }
 
     public static class Serializer
@@ -25,6 +25,12 @@ namespace RogueEssence.Data
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             TypeNameHandling = TypeNameHandling.Auto,
         };
+
+        /// <summary>
+        /// A value that is temporarily set when deserializing a data object, serving as a global old version for converters in UpgradeConverters.cs to recognize the version.
+        /// A bit hacky, but is currently the only way for converters to recognize version.
+        /// </summary>
+        public static Version OldVersion;
 
         public static object Deserialize(Stream stream, Type type)
         {
@@ -47,7 +53,40 @@ namespace RogueEssence.Data
         {
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
             {
-                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(reader.ReadToEnd(), typeof(SerializationContainer), Settings);
+                string containerStr = reader.ReadToEnd();
+
+                Version objVersion = new Version(0, 0);
+                try
+                {
+                    using (JsonTextReader textReader = new JsonTextReader(new StringReader(containerStr)))
+                    {
+                        textReader.Read();
+                        textReader.Read();
+                        while (true)
+                        {
+                            if (textReader.TokenType == JsonToken.PropertyName && (string)textReader.Value == "Version")
+                            {
+                                textReader.Read();
+                                objVersion = new Version((string)textReader.Value);
+                                break;
+                            }
+                            else
+                            {
+                                textReader.Skip();
+                                textReader.Read();
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+
+                //Temporarily set global old version for converters in UpgradeConverters.cs to recognize the version.
+                OldVersion = objVersion;
+                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
+                OldVersion = new Version();
                 return container.Object;
             }
         }
