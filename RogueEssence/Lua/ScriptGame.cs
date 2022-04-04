@@ -165,6 +165,15 @@ namespace RogueEssence.Script
             return new Coroutine(GroundScene.Instance.MoveCamera(new Loc(x, y), duration, toPlayer));
         }
 
+        public Loc GetCameraCenter()
+        {
+            return GroundScene.Instance.GetFocusedLoc();
+        }
+
+        public bool IsCameraOnChar()
+        {
+            return !ZoneManager.Instance.CurrentGround.ViewCenter.HasValue;
+        }
 
         //===================================
         // Mail
