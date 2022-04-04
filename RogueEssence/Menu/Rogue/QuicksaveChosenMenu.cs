@@ -115,7 +115,7 @@ namespace RogueEssence.Menu
 
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                 {
-                    GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
+                    GameManager.Instance.MoveToScene(DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
                 }

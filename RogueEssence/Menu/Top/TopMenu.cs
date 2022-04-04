@@ -117,7 +117,10 @@ namespace RogueEssence.Menu
             if (File.Exists(recordDir))
             {
                 if (modDiffs.Count > 0)
+                {
                     cannotRead(recordDir);
+                    return;
+                }
                 else
                 {
                     replay = DataManager.Instance.LoadReplay(recordDir, true);

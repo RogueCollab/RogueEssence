@@ -1043,7 +1043,10 @@ namespace RogueEssence.Data
                     string renamedFile = GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
 
                     if (renamedFile != null)
+                    {
                         Directory.Move(fullPath, PathMod.ModSavePath(REPLAY_PATH, renamedFile + REPLAY_EXTENSION));
+                        return renamedFile + REPLAY_EXTENSION;
+                    }
                 }
                 else
                     Directory.Move(fullPath, PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION));
@@ -1270,14 +1273,14 @@ namespace RogueEssence.Data
                                 else if (type == (byte)ReplayData.ReplayLog.GameLog)
                                 {
                                     GameAction play = new GameAction((GameAction.ActionType)reader.ReadByte(), (Dir8)reader.ReadByte());
-                                    int totalArgs = reader.ReadByte();
+                                    byte totalArgs = reader.ReadByte();
                                     for (int ii = 0; ii < totalArgs; ii++)
                                         play.AddArg(reader.ReadInt32());
                                     replay.Actions.Add(play);
                                 }
                                 else if (type == (byte)ReplayData.ReplayLog.UILog)
                                 {
-                                    int totalCodes = reader.ReadByte();
+                                    byte totalCodes = reader.ReadByte();
                                     for (int ii = 0; ii < totalCodes; ii++)
                                         replay.UICodes.Add(reader.ReadInt32());
                                 }
@@ -1300,6 +1303,96 @@ namespace RogueEssence.Data
                 DiagManager.Instance.LogError(ex, false);
             }
             return null;
+        }
+
+        public void CreateQuicksaveFromReplay()
+        {
+            string quicksavePath = PathMod.ModSavePath(SAVE_PATH, QUICKSAVE_FILE_PATH);
+
+            RecordHeaderData record = GetRecordHeader(CurrentReplay.RecordDir);
+            if (record.IsRogue)
+                quicksavePath = PathMod.ModSavePath(ROGUE_PATH, Path.GetFileNameWithoutExtension(CurrentReplay.RecordDir) + QUICKSAVE_EXTENSION);
+            //delete existing quicksave
+            File.Delete(quicksavePath);
+
+            //load and save data
+            using (FileStream stream = File.OpenRead(CurrentReplay.RecordDir))
+            {
+                using (BinaryReader reader = new BinaryReader(stream))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(new FileStream(quicksavePath, FileMode.Create, FileAccess.Write, FileShare.None)))
+                    {
+                        //read version
+                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadInt32());
+                        //read the pointer for location of epitaph
+                        reader.ReadInt64();
+                        writer.Write(0L);
+                        //read score
+                        writer.Write(reader.ReadInt32());
+                        //read result
+                        writer.Write(reader.ReadInt32());
+                        //read zone
+                        writer.Write(reader.ReadInt32());
+                        //read rogue mode
+                        writer.Write(reader.ReadBoolean());
+                        //seeded run
+                        writer.Write(reader.ReadBoolean());
+                        //read name
+                        writer.Write(reader.ReadString());
+                        //read startdate
+                        writer.Write(reader.ReadString());
+                        //read seed
+                        writer.Write(reader.ReadUInt64());
+                        //read language that the game was played in
+                        writer.Write(reader.ReadString());
+                        //read commands
+                        int currentAction = 0;
+                        while (currentAction < CurrentReplay.CurrentAction)
+                        {
+                            try
+                            {
+                                long savePos = reader.BaseStream.Position;
+                                byte type = reader.ReadByte();
+                                writer.Write(type);
+                                if (type == (byte)ReplayData.ReplayLog.StateLog || type == (byte)ReplayData.ReplayLog.QuicksaveLog || type == (byte)ReplayData.ReplayLog.GroundsaveLog)
+                                {
+                                    //read team info
+                                    GameState gameState = ReadGameState(reader, false);
+                                    SaveGameState(writer, gameState);
+                                }
+                                else if (type == (byte)ReplayData.ReplayLog.GameLog)
+                                {
+                                    writer.Write(reader.ReadByte());
+                                    writer.Write(reader.ReadByte());
+                                    byte totalArgs = reader.ReadByte();
+                                    writer.Write(totalArgs);
+                                    for (int ii = 0; ii < totalArgs; ii++)
+                                        writer.Write(reader.ReadInt32());
+                                    currentAction++;
+                                }
+                                else if (type == (byte)ReplayData.ReplayLog.UILog)
+                                {
+                                    byte totalCodes = reader.ReadByte();
+                                    writer.Write(totalCodes);
+                                    for (int ii = 0; ii < totalCodes; ii++)
+                                        writer.Write(reader.ReadInt32());
+                                }
+                                else
+                                    throw new Exception("Invalid Replay command type: " + type);
+                            }
+                            catch (Exception ex)
+                            {
+                                //In this case, the error will be presented clearly to the player.  Do not signal.
+                                DiagManager.Instance.LogError(ex, false);
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
 
@@ -1525,19 +1618,19 @@ namespace RogueEssence.Data
             GameProgress.SaveMainData(writer, state.Save);
             ZoneManager.SaveToState(writer, state);
 
-            if (ZoneManager.Instance.CurrentMap != null)
+            if (state.Zone.CurrentMap != null)
             {
                 long currentPos = writer.BaseStream.Position;
                 writer.Write(0);
                 //on top level: save status references
                 int totalStatusRefs = 0;
 
-                saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Player, 0, Save.ActiveTeam);
+                saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Player, 0, state.Save.ActiveTeam);
 
-                for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
-                    saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Friend, ii, ZoneManager.Instance.CurrentMap.AllyTeams[ii]);
-                for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
-                    saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Foe, ii, ZoneManager.Instance.CurrentMap.MapTeams[ii]);
+                for (int ii = 0; ii < state.Zone.CurrentMap.AllyTeams.Count; ii++)
+                    saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Friend, ii, state.Zone.CurrentMap.AllyTeams[ii]);
+                for (int ii = 0; ii < state.Zone.CurrentMap.MapTeams.Count; ii++)
+                    saveTeamStatusRefs(writer, ref totalStatusRefs, Faction.Foe, ii, state.Zone.CurrentMap.MapTeams[ii]);
 
                 writer.BaseStream.Seek(currentPos, SeekOrigin.Begin);
                 writer.Write(totalStatusRefs);
