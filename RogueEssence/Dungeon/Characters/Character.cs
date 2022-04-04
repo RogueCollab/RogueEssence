@@ -1957,50 +1957,53 @@ namespace RogueEssence.Dungeon
 
         public void UpdateTileSight(Fov.LightOperation lightOp)
         {
-            switch (GetTileSight())
+            foreach (Loc lightLoc in currentCharAction.GetLocTrail())
             {
-                case Map.SightRange.Blind:
-                    {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc))
-                            lightOp(CharLoc.X, CharLoc.Y, 1f);
-                        break;
-                    }
-                case Map.SightRange.Murky:
-                    {
-                        List<Loc> tiles = new List<Loc>();
-                        for (int x = -1; x <= 1; x++)
+                switch (GetTileSight())
+                {
+                    case Map.SightRange.Blind:
                         {
-                            for (int y = -1; y <= 1; y++)
-                            {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc + new Loc(x, y)))
-                                    lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
-                            }
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, lightLoc))
+                                lightOp(lightLoc.X, lightLoc.Y, 1f);
+                            break;
                         }
-                        break;
-                    }
-                case Map.SightRange.Dark:
-                    {
-                        Loc seen = GetSightDims();
-                        Loc minLoc = new Loc(Math.Max(0, CharLoc.X - seen.X), Math.Max(0, CharLoc.Y - seen.Y));
-                        Loc addLoc = new Loc(Math.Min(ZoneManager.Instance.CurrentMap.Width, CharLoc.X + seen.X + 1), Math.Min(ZoneManager.Instance.CurrentMap.Height, CharLoc.Y + seen.Y + 1)) - minLoc;
+                    case Map.SightRange.Murky:
+                        {
+                            List<Loc> tiles = new List<Loc>();
+                            for (int x = -1; x <= 1; x++)
+                            {
+                                for (int y = -1; y <= 1; y++)
+                                {
+                                    if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, lightLoc + new Loc(x, y)))
+                                        lightOp(lightLoc.X + x, lightLoc.Y + y, 1f);
+                                }
+                            }
+                            break;
+                        }
+                    case Map.SightRange.Dark:
+                        {
+                            Loc seen = GetSightDims();
+                            Loc minLoc = new Loc(Math.Max(0, lightLoc.X - seen.X), Math.Max(0, lightLoc.Y - seen.Y));
+                            Loc addLoc = new Loc(Math.Min(ZoneManager.Instance.CurrentMap.Width, lightLoc.X + seen.X + 1), Math.Min(ZoneManager.Instance.CurrentMap.Height, lightLoc.Y + seen.Y + 1)) - minLoc;
 
-                        Fov.CalculateAnalogFOV(minLoc, addLoc, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
-                        break;
-                    }
-                default:
-                    {
-                        Loc seen = GetSightDims();
-                        List<Loc> tiles = new List<Loc>();
-                        for (int x = -seen.X; x <= seen.X; x++)
-                        {
-                            for (int y = -seen.Y; y <= seen.Y; y++)
-                            {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc + new Loc(x, y)))
-                                    lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
-                            }
+                            Fov.CalculateAnalogFOV(minLoc, addLoc, lightLoc, DungeonScene.Instance.VisionBlocked, lightOp);
+                            break;
                         }
-                        break;
-                    }
+                    default:
+                        {
+                            Loc seen = GetSightDims();
+                            List<Loc> tiles = new List<Loc>();
+                            for (int x = -seen.X; x <= seen.X; x++)
+                            {
+                                for (int y = -seen.Y; y <= seen.Y; y++)
+                                {
+                                    if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, lightLoc + new Loc(x, y)))
+                                        lightOp(lightLoc.X + x, lightLoc.Y + y, 1f);
+                                }
+                            }
+                            break;
+                        }
+                }
             }
         }
 

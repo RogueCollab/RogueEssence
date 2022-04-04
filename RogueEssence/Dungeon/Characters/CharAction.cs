@@ -59,6 +59,11 @@ namespace RogueEssence.Dungeon
             set { currentAnim.CharLoc = value; }
         }
 
+        public IEnumerable<Loc> GetLocTrail()
+        {
+            return currentAnim.GetLocTrail();
+        }
+
         [Dev.NonEdited]
         public Loc CharLocFrom { get { return currentAnim.CharLocFrom; } }
 

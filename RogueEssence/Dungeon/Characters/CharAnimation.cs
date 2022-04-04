@@ -29,6 +29,9 @@ namespace RogueEssence.Dungeon
         public bool MajorAnim { get; set; }
         public abstract Loc CharLoc { get; set; }
         public abstract Loc CharLocFrom { get; }
+
+        public abstract IEnumerable<Loc> GetLocTrail();
+
         public Dir8 CharDir { get; set; }
 
         public abstract bool ActionPassed { get; }
@@ -203,6 +206,10 @@ namespace RogueEssence.Dungeon
 
         public bool FallShort { get; set; }
 
+        public override IEnumerable<Loc> GetLocTrail()
+        {
+            yield return AnimLoc;
+        }
     }
 
 
@@ -217,6 +224,11 @@ namespace RogueEssence.Dungeon
         {
             yield return FromLoc;
             yield return ToLoc;
+        }
+
+        public override IEnumerable<Loc> GetLocTrail()
+        {
+            return GetLocsVisible();
         }
     }
 
@@ -606,6 +618,11 @@ namespace RogueEssence.Dungeon
             if (diff < 1f)
                 yield return new VisionLoc(FromLoc, 1f - diff);
         }
+
+        public override IEnumerable<Loc> GetLocTrail()
+        {
+
+        }
     }
 
     public class CharAnimSwitch : MovingCharAnimation
@@ -702,6 +719,13 @@ namespace RogueEssence.Dungeon
                 yield return new VisionLoc(RecoilLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
             }
         }
+
+
+
+        public override IEnumerable<Loc> GetLocTrail()
+        {
+
+        }
     }
 
     public class CharAnimRush : DashAnimation
@@ -794,6 +818,11 @@ namespace RogueEssence.Dungeon
             }
             else
                 yield return new VisionLoc(RecoilLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
+        }
+
+        public override IEnumerable<Loc> GetLocTrail()
+        {
+
         }
     }
 
