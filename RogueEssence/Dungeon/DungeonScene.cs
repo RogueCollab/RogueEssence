@@ -807,10 +807,11 @@ namespace RogueEssence.Dungeon
         {
             if (SeeAll)
                 return true;
-            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
-                return true;
             bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
-            return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[xx][yy] == Map.DiscoveryState.Traversed);
+            //when the tile is out of bounds, we want to show it if our tilesight is clear, hhide it if not
+            if (outOfBounds)
+                return (FocusedCharacter.GetTileSight() == Map.SightRange.Clear);
+            return (ZoneManager.Instance.CurrentMap.DiscoveryArray[xx][yy] == Map.DiscoveryState.Traversed);
         }
 
         protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy)
