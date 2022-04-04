@@ -1437,7 +1437,9 @@ namespace RogueEssence.Dungeon
         {
             Fov.LightOperation lightOp = (int locX, int locY, float light) =>
             {
-                charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
+                //Can only light up tiles that have been explored
+                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[locX][locY] == Map.DiscoveryState.Traversed)
+                    charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
             };
             Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }
@@ -1521,18 +1523,28 @@ namespace RogueEssence.Dungeon
             {
                 if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 {
-                    if (FocusedCharacter.GetCharSight() != Map.SightRange.Clear)
-                        return 1f - DARK_TRANSPARENT;
-                    else
+                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear)
                         return 1f;
+                    else
+                        return 1f - DARK_TRANSPARENT;
                 }
                 else
                     return 0f;
             }
 
-            //if it's undiscovered, it's black
+            //if it's undiscovered, it's decided-on darkness
             if (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] != Map.DiscoveryState.Traversed)
-                return 0f;
+            {
+                if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                {
+                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear)
+                        return 1f;
+                    else
+                        return 1f - DARK_TRANSPARENT;
+                }
+                else
+                    return 0f;
+            }
 
             //otherwise, use fade value
             Loc dest = loc - rectStart;
