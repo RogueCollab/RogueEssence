@@ -151,7 +151,7 @@ namespace RogueEssence.Dev
         }
     }
 
-    //TODO: Created v0.5.2, delete on v1.0.0
+    //TODO: Created v0.5.10, delete on v1.0.0
     public class MapBGConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

@@ -315,21 +315,24 @@ namespace RogueEssence.Menu
                 if (genders.Count > 1)
                 {
                     int startIndex = 0;
-                    if (backPhase == 1)
-                        startIndex = monId.Gender == Gender.Female ? 1 : 0;
-                    List<DialogueChoice> choices = new()
+                    List<DialogueChoice> choices = new List<DialogueChoice>();
+                    foreach (Gender gender in genders)
                     {
-                        new DialogueChoice(Text.FormatKey("MENU_BOY"), () =>
+                        string menuGender = Text.FormatKey("MENU_GENDERLESS");
+                        if (gender == Gender.Male)
+                            menuGender = Text.FormatKey("MENU_BOY");
+                        if (gender == Gender.Female)
+                            menuGender = Text.FormatKey("MENU_GIRL");
+
+                        if (backPhase == 1 && monId.Gender == gender)
+                            startIndex = choices.Count;
+                        choices.Add(new DialogueChoice(menuGender, () =>
                         {
-                            StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Male), name, -1);
-                        }),
-                        new DialogueChoice(Text.FormatKey("MENU_GIRL"), () =>
-                        {
-                            StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, Gender.Female), name, -1);
-                        }),
-                        new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () =>
-                        { })
-                    };
+                            StartFlow(new MonsterID(monId.Species, monId.Form, monId.Skin, gender), name, -1);
+                        }));
+                    }
+                    choices.Add(new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () => { }));
+
                     MenuManager.Instance.AddMenu(MenuManager.Instance.CreateMultiQuestion(Text.FormatKey("DLG_ASK_GENDER"), false, choices, startIndex, choices.Count - 1), false);
                     return;
                 }
