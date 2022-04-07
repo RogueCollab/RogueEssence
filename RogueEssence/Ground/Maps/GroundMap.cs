@@ -103,6 +103,13 @@ namespace RogueEssence.Ground
 
         }
 
+        [JsonConstructor]
+        public GroundMap(bool init)
+        {
+            scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
+            //dummy constructor for json serialization
+        }
+
         public void LoadRand(IRandom rand)
         {
             this.rand = rand;

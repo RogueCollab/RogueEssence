@@ -152,14 +152,14 @@ namespace RogueEssence.Dev
     }
 
     //TODO: Created v0.5.10, delete on v1.0.0
-    public class MapBGConverter : JsonConverter
+    public class MapBGConverter : JsonConverter<MapBG>
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, MapBG value, JsonSerializer serializer)
         {
             throw new NotImplementedException("We shouldn't be here.");
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override MapBG ReadJson(JsonReader reader, Type objectType, MapBG existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             JObject jObject = JObject.Load(reader);
             MapBG container = new MapBG();
@@ -182,11 +182,6 @@ namespace RogueEssence.Dev
             {
                 return false;
             }
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(MapBG);
         }
     }
 }
