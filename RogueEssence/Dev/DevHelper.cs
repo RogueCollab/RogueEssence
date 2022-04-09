@@ -113,7 +113,7 @@ namespace RogueEssence.Dev
 
         public static void ReserializeData(string dataPath, string ext, Type t)
         {
-            foreach (string dir in PathMod.GetModFiles(dataPath, "*"+ext))
+            foreach (string dir in PathMod.GetModFiles(dataPath, "*" + ext))
             {
                 if (legacy == 2)
                 {
@@ -289,10 +289,10 @@ namespace RogueEssence.Dev
             //Base - direct copy from game
             copyRecursive(GraphicsManager.BASE_PATH, Path.Combine(outputPath, "Base"));
 
-            //Strings - merged copy
+            //Strings - deep merge files
             Directory.CreateDirectory(outputPath);
             copyRecursive(PathMod.NoMod("Strings"), Path.Combine(outputPath, "Strings"));
-            copyRecursive(PathMod.HardMod("Strings"), Path.Combine(outputPath, "Strings"));
+            mergeStringXmlRecursive(PathMod.HardMod("Strings"), Path.Combine(outputPath, "Strings"));
 
             //Editor - direct copy from game
             copyRecursive(PathMod.RESOURCE_PATH, Path.Combine(outputPath, "Editor"));
@@ -304,28 +304,63 @@ namespace RogueEssence.Dev
             //Font - direct copy from game
             copyRecursive(PathMod.NoMod("Font"), Path.Combine(outputPath, "Font"));
 
-            //Content - merged copy
+            //Controls - direct copy from game
+            copyRecursive(PathMod.NoMod("Controls"), Path.Combine(outputPath, "Controls"));
+
+            //Content - merged copy for files, deep merge for indices
             //TODO: only copy what is indexed for characters and portraits
             copyRecursive(PathMod.NoMod(GraphicsManager.CONTENT_PATH), Path.Combine(outputPath, GraphicsManager.CONTENT_PATH));
             copyRecursive(PathMod.HardMod(GraphicsManager.CONTENT_PATH), Path.Combine(outputPath, GraphicsManager.CONTENT_PATH));
+            //save merged content indices
+            {
+                CharaIndexNode charaIndex = GraphicsManager.LoadCharaIndices(GraphicsManager.CONTENT_PATH + "Chara/");
+                using (FileStream stream = new FileStream(Path.Combine(outputPath, GraphicsManager.CONTENT_PATH + "Chara/" + "index.idx"), FileMode.Create, FileAccess.Write))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(stream))
+                        charaIndex.Save(writer);
+                }
+                CharaIndexNode portraitIndex = GraphicsManager.LoadCharaIndices(GraphicsManager.CONTENT_PATH + "Portrait/");
+                using (FileStream stream = new FileStream(Path.Combine(outputPath, GraphicsManager.CONTENT_PATH + "Portrait/" + "index.idx"), FileMode.Create, FileAccess.Write))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(stream))
+                        portraitIndex.Save(writer);
+                }
+                TileGuide tileIndex = GraphicsManager.LoadTileIndices(GraphicsManager.CONTENT_PATH + "Tile/");
+                using (FileStream stream = new FileStream(Path.Combine(outputPath, GraphicsManager.CONTENT_PATH + "Tile/" + "index.idx"), FileMode.Create, FileAccess.Write))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(stream))
+                        tileIndex.Save(writer);
+                }
+            }
 
-            //Data - merge copy everything except script
+            //Data - merge copy everything including script
+            //script will do fine with duplicate files being merged over, EXCEPT for strings files
             //TODO: only copy what is indexed for characters and portraits
             Directory.CreateDirectory(Path.Combine(outputPath, DataManager.DATA_PATH));
+
+            //universal data, start params, etc.
             foreach (string subPath in Directory.GetFiles(PathMod.NoMod(DataManager.DATA_PATH)))
             {
                 string path = Path.GetFileName(subPath);
                 File.Copy(subPath, Path.Combine(outputPath, DataManager.DATA_PATH, path));
             }
-            string exPath = PathMod.NoMod(RogueEssence.Script.LuaEngine.SCRIPT_PATH);
-            foreach (string subPath in Directory.GetDirectories(PathMod.NoMod(DataManager.DATA_PATH)))
-            {
-                if (Path.Equals(subPath + "/", exPath))
-                    continue;
-                string path = Path.GetFileName(subPath);
-                copyRecursive(subPath, Path.Combine(outputPath, DataManager.DATA_PATH, path));
-            }
+
+            //actual data files
+            copyRecursive(PathMod.NoMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
             copyRecursive(PathMod.HardMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
+            //TODO: merge strings files for ground map strings instead of overwrite
+
+            //save merged data indices
+            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+            {
+                if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+                    continue;
+
+                EntryDataIndex idx = DataManager.GetIndex(type);
+                using (Stream stream = new FileStream(Path.Combine(outputPath, DataManager.DATA_PATH + type.ToString() + "/" + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
+                    Serializer.SerializeData(stream, idx);
+            }
+
 
             DiagManager.Instance.LogInfo(String.Format("Standalone game output to {0}", outputPath));
         }
@@ -343,6 +378,35 @@ namespace RogueEssence.Dev
 
             foreach (string file in Directory.GetFiles(srcDir))
                 File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
+        }
+
+        private static void mergeStringXmlRecursive(string srcDir, string destDir)
+        {
+            if (!Directory.Exists(srcDir))
+                return;
+
+            if (!Directory.Exists(destDir))
+                Directory.CreateDirectory(destDir);
+
+            foreach (string directory in Directory.GetDirectories(srcDir))
+                mergeStringXmlRecursive(directory, Path.Combine(destDir, Path.GetFileName(directory)));
+
+            foreach (string file in Directory.GetFiles(srcDir))
+            {
+                if (Path.GetExtension(file) == ".resx")
+                    mergeStringXml(file, Path.Combine(destDir, Path.GetFileName(file)));
+                else
+                    File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
+            }
+        }
+
+        private static void mergeStringXml(string srcPath, string destPath)
+        {
+            Dictionary<string, (string val, string comment)> srcDict = Text.LoadDevStringResx(srcPath);
+            Dictionary<string, (string val, string comment)> destDict = Text.LoadDevStringResx(destPath);
+            foreach (string key in srcDict.Keys)
+                destDict[key] = srcDict[key];
+            Text.SaveStringResx(destPath, destDict);
         }
     }
 }
