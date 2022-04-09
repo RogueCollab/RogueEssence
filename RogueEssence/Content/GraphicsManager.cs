@@ -1059,7 +1059,7 @@ namespace RogueEssence.Content
         }
 
 
-        private static TileGuide LoadTileIndices(string tileDir)
+        public static TileGuide LoadTileIndices(string tileDir)
         {
             TileGuide fullGuide = null;
             try

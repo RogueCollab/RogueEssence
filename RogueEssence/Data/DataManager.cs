@@ -385,12 +385,17 @@ namespace RogueEssence.Data
         }
 
 
+        public void LoadIndex(DataType type)
+        {
+            DataIndices[type] = GetIndex(type);
+        }
+
         /// <summary>
         /// Index paths are modified like mods.  However, if multiple mods have conflicting indices, a combined index must be generated.
         /// </summary>
         /// <param name="basePath"></param>
         /// <returns></returns>
-        public void LoadIndex(DataType type)
+        public static EntryDataIndex GetIndex(DataType type)
         {
             try
             {
@@ -404,7 +409,7 @@ namespace RogueEssence.Data
                         {
                             if (result.Entries[ii] != null)
                             {
-                                if (ii >= summaries.Count)
+                                while (ii >= summaries.Count)
                                     summaries.Add(null);
                                 summaries[ii] = result.Entries[ii];
                             }
@@ -413,11 +418,11 @@ namespace RogueEssence.Data
                 }
                 EntryDataIndex compositeIndex = new EntryDataIndex();
                 compositeIndex.Entries = summaries.ToArray();
-                DataIndices[type] = compositeIndex;
+                return compositeIndex;
             }
             catch
             {
-                DataIndices[type] = new EntryDataIndex();
+                return new EntryDataIndex();
             }
         }
         public void LoadIndexFull<T>(DataType type, Dictionary<int, T> cache) where T : IEntryData
