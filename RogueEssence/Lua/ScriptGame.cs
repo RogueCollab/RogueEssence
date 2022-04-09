@@ -740,14 +740,14 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Bank;
         }
 
-        public int AddToPlayerMoneyBank(int toadd)
+        public void AddToPlayerMoneyBank(int toadd)
         {
-            return DataManager.Instance.Save.ActiveTeam.Bank + toadd;
+            DataManager.Instance.Save.ActiveTeam.Bank += toadd;
         }
 
-        public int RemoveFromPlayerMoneyBank(int toremove)
+        public void RemoveFromPlayerMoneyBank(int toremove)
         {
-            return DataManager.Instance.Save.ActiveTeam.Bank - toremove;
+            DataManager.Instance.Save.ActiveTeam.Bank -= toremove;
         }
 
         public int GetPlayerMoney()
