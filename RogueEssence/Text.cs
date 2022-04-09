@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Xml;
 using System.IO;
+using System.Resources.NetStandard;
 
 
 namespace RogueEssence
@@ -96,7 +97,7 @@ namespace RogueEssence
             return LangNames[lang].Name;
         }
 
-        public static Dictionary<string, string> LoadXmlDoc(string path)
+        public static Dictionary<string, string> LoadStringResx(string path)
         {
             try
             {
@@ -131,6 +132,62 @@ namespace RogueEssence
             {
                 DiagManager.Instance.LogError(ex);
                 return new Dictionary<string, string>();
+            }
+        }
+
+        public static Dictionary<string, (string val, string comment)> LoadDevStringResx(string path)
+        {
+            try
+            {
+                Dictionary<string, (string val, string comment)> translations = new Dictionary<string, (string val, string comment)>();
+                if (File.Exists(path))
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    {
+                        if (xnode.Name == "data")
+                        {
+                            string value = null;
+                            string name = null;
+                            string comment = "";
+                            var atname = xnode.Attributes["name"];
+                            if (atname != null)
+                                name = atname.Value;
+
+                            //Get value
+                            XmlNode valnode = xnode.SelectSingleNode("value");
+                            if (valnode != null)
+                                value = valnode.InnerText;
+
+                            //Get comment
+                            XmlNode comnode = xnode.SelectSingleNode("comment");
+                            if (comnode != null)
+                                comment = comnode.InnerText;
+
+                            if (value != null && name != null)
+                                translations[name] = (value, comment);
+                        }
+                    }
+                }
+                return translations;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+                return new Dictionary<string, (string, string)>();
+            }
+        }
+
+        public static void SaveStringResx(string path, Dictionary<string, (string val, string comment)> stringDict)
+        {
+            using (ResXResourceWriter resx = new ResXResourceWriter(path))
+            {
+                foreach (string key in stringDict.Keys)
+                    resx.AddResource(new ResXDataNode(key, stringDict[key].val) { Comment = stringDict[key].comment });
+
+                resx.Generate();
+                resx.Close();
             }
         }
 
@@ -221,7 +278,7 @@ namespace RogueEssence
             //order of string fallbacks:
             //first go through all mods of the original language
             foreach(string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
-                strings.Add(LoadXmlDoc(path));
+                strings.Add(LoadStringResx(path));
 
             //then go through all mods of the official fallbacks
             if (LangNames.ContainsKey(code))
@@ -229,12 +286,12 @@ namespace RogueEssence
                 foreach (string fallback in LangNames[code].Fallbacks)
                 {
                     foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
-                        strings.Add(LoadXmlDoc(path));
+                        strings.Add(LoadStringResx(path));
                 }
             }
             //then go through all mods of the default language
             foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
-                strings.Add(LoadXmlDoc(path));
+                strings.Add(LoadStringResx(path));
         }
     }
 

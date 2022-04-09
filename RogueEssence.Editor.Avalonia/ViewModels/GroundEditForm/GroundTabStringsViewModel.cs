@@ -73,31 +73,17 @@ namespace RogueEssence.Dev.ViewModels
 
                 if (File.Exists(path))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    Dictionary<string, (string val, string comment)> xmlDict = Text.LoadDevStringResx(path);
+                    foreach (string name in xmlDict.Keys)
                     {
-                        if (xnode.Name == "data")
-                        {
-                            string value = null;
-                            string name = null;
-                            var atname = xnode.Attributes["name"];
-                            if (atname != null)
-                                name = atname.Value;
+                        if (!rawStrings.ContainsKey(name))
+                            rawStrings.Add(name, new Dictionary<string, string>());
 
-                            //Get value
-                            XmlNode valnode = xnode.SelectSingleNode("value");
-                            if (valnode != null)
-                                value = valnode.InnerText;
-
-                            if (!rawStrings.ContainsKey(name))
-                                rawStrings.Add(name, new Dictionary<string, string>());
-
-                            if (!rawStrings[name].ContainsKey(code))
-                                rawStrings[name].Add(code, value);
-                            else
-                                rawStrings[name][code] = value;
-                        }
+                        //TODO: support comments
+                        if (!rawStrings[name].ContainsKey(code))
+                            rawStrings[name].Add(code, xmlDict[name].val);
+                        else
+                            rawStrings[name][code] = xmlDict[name].val;
                     }
 
                     DiagManager.Instance.LogInfo(String.Format("GroundEditor.LoadStrings({0}): Loaded succesfully the \"{1}\" strings file for this map!", stringsdir, fname));
@@ -126,20 +112,18 @@ namespace RogueEssence.Dev.ViewModels
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
                 string path = Path.Combine(stringsdir, fname);
-                using (ResXResourceWriter resx = new ResXResourceWriter(path))
+                Dictionary<string, (string val, string comment)> stringDict = new Dictionary<string, (string val, string comment)>();
+
+                foreach (MapString str in MapStrings)
                 {
-                    //Add all strings matching the specified language code
-                    foreach (MapString str in MapStrings)
-                    {
-                        string tl;
-                        if (!str.Translations.TryGetValue(code, out tl))
-                            tl = "";
-                        if (tl != "" || code == "en")
-                            resx.AddResource(new ResXDataNode(str.Key, tl) { Comment = "" });
-                    }
-                    resx.Generate();
-                    resx.Close();
+                    string tl;
+                    if (!str.Translations.TryGetValue(code, out tl))
+                        tl = "";
+                    //TODO: support comments
+                    if (tl != "" || code == "en")
+                        stringDict[str.Key] = (tl, "");
                 }
+                Text.SaveStringResx(path, stringDict);
             }
         }
 
