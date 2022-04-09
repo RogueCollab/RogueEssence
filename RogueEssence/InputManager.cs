@@ -59,6 +59,11 @@ namespace RogueEssence
 
         }
 
+        public void RepeatFrameInput()
+        {
+            SetFrameInput(CurrentInput);
+        }
+
         public bool OnlyPressed(FrameInput.InputType input)
         {
             //nonmeta input only

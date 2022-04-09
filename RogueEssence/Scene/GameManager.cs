@@ -1067,16 +1067,38 @@ namespace RogueEssence
             }
             else
             {
-                if (!Paused || AdvanceFrame)
+                if (AdvanceFrame)
                 {
-                    //if actions are ready for queue, get a new result
                     CoroutineManager.Instance.Update();
 
-                    int speedFactor = 8;
-                    speedFactor = (int)Math.Round(speedFactor * Math.Pow(2, (int)DebugSpeed));
-
-                    FrameTick newElapsed = FrameTick.FromFrames(1) * speedFactor / 8;
+                    FrameTick newElapsed = FrameTick.FromFrames(1);
                     Update(newElapsed);
+                }
+                else if (!Paused)
+                {
+                    double speedMult = Math.Pow(2, (int)DebugSpeed);
+                    if (DebugSpeed <= GameSpeed.Normal)
+                    {
+                        //if actions are ready for queue, get a new result
+                        CoroutineManager.Instance.Update();
+
+                        FrameTick newElapsed = FrameTick.FromFrames(1) * (int)Math.Round(8 * speedMult) / 8;
+                        Update(newElapsed);
+                    }
+                    else
+                    {
+                        int intMult = (int)Math.Round(speedMult);
+                        for (int ii = 0; ii < intMult; ii++)
+                        {
+                            if (ii > 0)
+                                InputManager.RepeatFrameInput();
+
+                            CoroutineManager.Instance.Update();
+
+                            FrameTick newElapsed = FrameTick.FromFrames(1);
+                            Update(newElapsed);
+                        }
+                    }
                 }
             }
         }
