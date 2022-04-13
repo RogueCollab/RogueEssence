@@ -29,7 +29,7 @@ namespace RogueElements
 
         void Remove(TK key);
 
-        public bool ContainsKey(TK key);
+        bool ContainsKey(TK key);
     }
 
     public interface ISpawnDict
@@ -52,6 +52,6 @@ namespace RogueElements
 
         void Remove(object key);
 
-        public bool Contains(object key);
+        bool Contains(object key);
     }
 }
