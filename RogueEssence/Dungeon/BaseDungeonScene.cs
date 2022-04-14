@@ -116,16 +116,21 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
-        protected virtual void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy)
+        protected virtual void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
         {
             ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy), false);
             EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[xx][yy].Effect;
             if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
             {
+                List<IDrawableSprite> targetDraw;
                 if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
-                    AddToDraw(backDraw, effect);
+                    targetDraw = backDraw;
                 else
-                    AddToDraw(groundDraw, effect);
+                    targetDraw = groundDraw;
+                if (seeTrap || effect.Revealed)
+                    AddToDraw(targetDraw, effect);
+                else
+                    AddToDraw(targetDraw, new UnrevealedTile(effect.TileLoc));
             }
         }
 
@@ -189,6 +194,11 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
+        protected virtual bool CanSeeTraps()
+        {
+            return true;
+        }
+
         protected virtual void DrawItems(SpriteBatch spriteBatch, bool showHiddenItem)
         {
             foreach (MapItem item in ZoneManager.Instance.CurrentMap.Items)
@@ -227,6 +237,8 @@ namespace RogueEssence.Dungeon
             foregroundDraw.Clear();
             shownChars.Clear();
 
+            bool seeTrap = CanSeeTraps();
+
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
@@ -238,7 +250,7 @@ namespace RogueEssence.Dungeon
                         if (outOfBounds)
                             ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
                         else
-                            PrepareTileDraw(spriteBatch, xx, yy);
+                            PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
                     }
                 }
             }

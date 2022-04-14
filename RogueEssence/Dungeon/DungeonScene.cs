@@ -821,9 +821,9 @@ namespace RogueEssence.Dungeon
             return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[xx][yy] == Map.DiscoveryState.Traversed);
         }
 
-        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy)
+        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
         {
-            base.PrepareTileDraw(spriteBatch, xx, yy);
+            base.PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
 
             if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(xx, yy), FocusedCharacter.Mobility))
             {
@@ -887,6 +887,19 @@ namespace RogueEssence.Dungeon
             foreach (Character member in ActiveTeam.Players)
             {
                 if (member.SeeWallItems)
+                    return true;
+            }
+            return false;
+        }
+
+        protected override bool CanSeeTraps()
+        {
+            if (SeeAll)
+                return true;
+
+            foreach (Character member in ActiveTeam.Players)
+            {
+                if (member.SeeTraps)
                     return true;
             }
             return false;
@@ -986,10 +999,12 @@ namespace RogueEssence.Dungeon
 
                                 if (discovery == Map.DiscoveryState.Traversed && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
                                 {
-                                    TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
+                                    TileData entry;
 
                                     //draw tiles
-                                    if (!tile.Effect.Revealed)
+                                    if (tile.Effect.Revealed)
+                                        entry = DataManager.Instance.GetTile(tile.Effect.ID);
+                                    else
                                         entry = DataManager.Instance.GetTile(0);
                                     mapSheet.DrawTile(spriteBatch, destVector, entry.MinimapIcon.X, entry.MinimapIcon.Y, entry.MinimapColor);
                                 }

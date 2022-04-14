@@ -245,6 +245,7 @@ namespace RogueEssence.Dungeon
         public bool SeeAllChars;
         public bool SeeItems;
         public bool SeeWallItems;
+        public bool SeeTraps;
 
         //miscellaneous traits
         public StateCollection<CharState> CharStates;
@@ -1408,6 +1409,7 @@ namespace RogueEssence.Dungeon
             SeeAllChars = false;
             SeeItems = false;
             SeeWallItems = false;
+            SeeTraps = false;
 
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;

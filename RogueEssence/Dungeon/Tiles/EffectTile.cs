@@ -119,8 +119,6 @@ namespace RogueEssence.Dungeon
         {
             Loc drawLoc = GetDrawLoc(offset);
             TileData entry = DataManager.Instance.GetTile(ID);
-            if (!Revealed) //draw texture
-                entry = DataManager.Instance.GetTile(0);
 
             if (entry.Anim.AnimIndex != "")
             {
@@ -133,8 +131,6 @@ namespace RogueEssence.Dungeon
         public Loc GetDrawLoc(Loc offset)
         {
             TileData entry = DataManager.Instance.GetTile(ID);
-            if (!Revealed)
-                entry = DataManager.Instance.GetTile(0);
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
@@ -144,8 +140,6 @@ namespace RogueEssence.Dungeon
         public Loc GetDrawSize()
         {
             TileData entry = DataManager.Instance.GetTile(ID);
-            if (!Revealed)
-                entry = DataManager.Instance.GetTile(0);
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
             return new Loc(sheet.TileWidth, sheet.TileHeight);
@@ -155,6 +149,50 @@ namespace RogueEssence.Dungeon
         {
             string local = (ID > -1) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[ID].Name.ToLocal() : "NULL";
             return string.Format("{0}: {1}", this.GetType().Name, local);
+        }
+    }
+
+
+    public class UnrevealedTile : IDrawableSprite
+    {
+        public Loc TileLoc { get; private set; }
+        public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
+        public int LocHeight { get { return 0; } }
+
+        public UnrevealedTile(Loc loc)
+        {
+            TileLoc = loc;
+        }
+
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        {
+            Loc drawLoc = GetDrawLoc(offset);
+            TileData entry = DataManager.Instance.GetTile(0);
+
+            if (entry.Anim.AnimIndex != "")
+            {
+                DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.GetDrawDir(Dir8.None), Color.White);
+            }
+        }
+
+
+        public Loc GetDrawLoc(Loc offset)
+        {
+            TileData entry = DataManager.Instance.GetTile(0);
+            DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
+
+            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
+            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) - offset;
+        }
+
+        public Loc GetDrawSize()
+        {
+            TileData entry = DataManager.Instance.GetTile(0);
+            DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
+
+            return new Loc(sheet.TileWidth, sheet.TileHeight);
         }
     }
 }
