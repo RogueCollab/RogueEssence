@@ -22,6 +22,7 @@ namespace RogueEssence.Dungeon
         public bool MoneyRestrict;
         public int BagRestrict;
         public int BagSize;
+        public bool Persistent;
 
         //we want to be able to load and save maps in both ground and dungeon mode
         //we want to be able to create new maps and save them to a file
@@ -46,6 +47,8 @@ namespace RogueEssence.Dungeon
         public GroundMap CurrentGround { get; private set; }
 
         public List<MapStatus> CarryOver;
+
+        public int MapsLoaded;
 
         /// <summary>
         /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
@@ -244,7 +247,10 @@ namespace RogueEssence.Dungeon
                 }
                 ZoneGenContext zoneContext = structureContexts[id.Segment];
                 zoneContext.CurrentID = id.ID;
-                zoneContext.Seed = idNoise.GetUInt64((ulong)id.ID);
+                ulong finalSeed = (ulong)id.ID;
+                finalSeed <<= 32;
+                finalSeed |= (ulong)MapsLoaded;
+                zoneContext.Seed = idNoise.GetUInt64(finalSeed);
 
                 //TODO: remove the need for this explicit cast
                 //make a parameterized version of zonestructure and then make zonestructure itself put in basemapgencontext as the parameter
@@ -255,15 +261,20 @@ namespace RogueEssence.Dungeon
                         IGenContext context = Segments[id.Segment].GetMap(zoneContext);
                         Map map = ((BaseMapGenContext)context).Map;
 
-                        //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...
-                        //maps.Add(id, map);
+                        if (Persistent)
+                            maps.Add(id, map);
+                        else
+                            MapsLoaded++;
                         return map;
                     }
                     catch (Exception ex)
                     {
                         DiagManager.Instance.LogError(ex);
                         DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii+1));
-                        zoneContext.Seed = structNoise.GetUInt64((ulong)(id.ID + ii));
+                        ulong subSeed = (ulong)id.ID;
+                        subSeed <<= 32;
+                        subSeed |= (ulong)(MapsLoaded + ii);
+                        zoneContext.Seed = structNoise.GetUInt64(subSeed);
                     }
                 }
             }

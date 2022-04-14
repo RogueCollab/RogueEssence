@@ -50,6 +50,11 @@ namespace RogueEssence.Data
         public bool MoneyRestrict { get; set; }
         public int BagRestrict { get; set; }
         public int BagSize { get; set; }
+
+        /// <summary>
+        /// Turn this on for the zone to remember map layouts and load the old state when returning to the floor. It's not nice on memory though...
+        /// </summary>
+        public bool Persistent { get; set; }
         public int Rescues { get; set; }
         public RogueStatus Rogue { get; set; }
 
@@ -103,6 +108,7 @@ namespace RogueEssence.Data
             zone.MoneyRestrict = MoneyRestrict;
             zone.BagRestrict = BagRestrict;
             zone.BagSize = BagSize;
+            zone.Persistent = Persistent;
 
             //NOTE: these are not deep copies!
             zone.Segments = Segments;
