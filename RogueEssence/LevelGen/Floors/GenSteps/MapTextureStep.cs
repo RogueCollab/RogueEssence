@@ -2,7 +2,7 @@
 using RogueEssence.Dungeon;
 using RogueElements;
 using RogueEssence.Data;
-
+using System.Collections.Generic;
 
 namespace RogueEssence.LevelGen
 {
@@ -38,6 +38,7 @@ namespace RogueEssence.LevelGen
                 map.Map.TextureMap[1] = new AutoTile(BlockTileset);
                 map.Map.TextureMap[2] = new AutoTile(BlockTileset);
             }
+
             for(int ii = 3; ii < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count; ii++)
                 map.Map.TextureMap[ii] = new AutoTile(WaterTileset, GroundTileset);
 
@@ -62,4 +63,49 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    [Serializable]
+    public class MapDictTextureStep<T> : GenStep<T> where T : BaseMapGenContext
+    {
+        [Dev.DataType(2, DataManager.DataType.AutoTile, false)]
+        public Dictionary<int, int> TextureMap;
+
+        public int GroundTexture;
+        public int BlankBG;
+
+        public bool LayeredGround;
+        public bool IndependentGround;
+
+        [Dev.DataType(0, DataManager.DataType.Element, false)]
+        public int GroundElement;
+
+        public MapDictTextureStep() { TextureMap = new Dictionary<int, int>(); }
+
+        public override void Apply(T map)
+        {
+            map.Map.BlankBG = new AutoTile(BlankBG);
+            foreach (int terrain in TextureMap.Keys)
+            {
+                if (terrain == 0)//assume ground
+                    map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain]);
+                else
+                    map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain], TextureMap[GroundTexture]);
+            }
+
+            map.Map.Element = GroundElement;
+            if (LayeredGround)
+            {
+                for (int xx = 0; xx < map.Width; xx++)
+                {
+                    for (int yy = 0; yy < map.Height; yy++)
+                        map.Floor.Tiles[xx][yy] = new AutoTile(TextureMap[GroundTexture]);
+                }
+            }
+        }
+
+
+        public override string ToString()
+        {
+            return String.Format("{0}[{1}]", this.GetType().Name, TextureMap.Count);
+        }
+    }
 }
