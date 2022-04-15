@@ -9,7 +9,7 @@ namespace RogueEssence.LevelGen
 
         public ReachableBlobWaterStep() { }
         
-        public ReachableBlobWaterStep(RandRange blobs, ITile terrain, int minScale, RandRange startScale) : base(blobs, terrain, minScale, startScale)
+        public ReachableBlobWaterStep(RandRange blobs, ITile terrain, ITerrainStencil<T> stencil, int minScale, RandRange startScale) : base(blobs, terrain, stencil, minScale, startScale)
         {
         }
         

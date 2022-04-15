@@ -7,6 +7,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RogueEssence.Dev;
+using RogueEssence.LevelGen;
 
 namespace RogueEssence.Data
 {
@@ -24,6 +25,8 @@ namespace RogueEssence.Data
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             TypeNameHandling = TypeNameHandling.Auto,
+            //NOTE: What do these converters do?  Are they just for the top level class?  They weren't working for class members of type matching the converter...
+            //Converters = new List<JsonConverter>() { new TestConverter() },
         };
 
         /// <summary>
