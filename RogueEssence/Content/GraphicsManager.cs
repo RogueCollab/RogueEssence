@@ -818,6 +818,8 @@ namespace RogueEssence.Content
                     }
                 }
             }
+            if (!fallback.IsValid())
+                fallback = new MonsterID(0, -1, -1, Gender.Unknown);
             return fallback;
         }
 
