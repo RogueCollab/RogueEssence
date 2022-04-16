@@ -6,6 +6,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using System;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -68,13 +69,18 @@ namespace RogueEssence.Menu
         {
             if (input.JustPressed(FrameInput.InputType.SkillMenu))
                 MenuManager.Instance.ClearMenus();
+            else if (input.JustPressed(FrameInput.InputType.SelectItems))
+            {
+                GameManager.Instance.SE("Menu/Toggle");
+                MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, CurrentPage, CurrentChoice), CurrentPage, CurrentChoice);
+            }
             else
                 base.UpdateKeys(input);
         }
 
         private void choose(int choice)
         {
-            if (Data.DataManager.Instance.CurrentReplay == null)
+            if (DataManager.Instance.CurrentReplay == null)
                 MenuManager.Instance.AddMenu(new SkillChosenMenu(CurrentPage, choice), true);
         }
 
@@ -96,5 +102,13 @@ namespace RogueEssence.Menu
             //draw other windows
             summaryMenu.Draw(spriteBatch);
         }
+
+
+        public static IEnumerator<YieldInstruction> MoveCommand(GameAction action, int teamSlot, int switchSlot)
+        {
+            yield return CoroutineManager.Instance.StartCoroutine((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(action) : GroundScene.Instance.ProcessInput(action));
+            MenuManager.Instance.ReplaceMenu(new SkillMenu(teamSlot, switchSlot));
+        }
+
     }
 }
