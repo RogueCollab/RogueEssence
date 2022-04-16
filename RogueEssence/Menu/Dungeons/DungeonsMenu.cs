@@ -53,7 +53,7 @@ namespace RogueEssence.Menu
             else
             {
                 summaryMenu.Visible = true;
-                summaryMenu.SetDungeon(dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed);
+                summaryMenu.SetDungeon(dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed, true);
             }
             base.ChoiceChanged();
         }
