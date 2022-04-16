@@ -280,6 +280,7 @@ namespace RogueEssence.Dungeon
             }
             return maps[id];
         }
+
         public GroundMap GetGround(SegLoc id)
         {
             return DataManager.Instance.GetGround(GroundMaps[id.ID]);

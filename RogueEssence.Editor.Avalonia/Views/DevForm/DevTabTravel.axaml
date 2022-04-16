@@ -22,20 +22,22 @@
       <RowDefinition/>
       <RowDefinition/>
       <RowDefinition/>
+      <RowDefinition/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Zone:</TextBlock>
-    <ComboBox Margin="4" Items="{Binding Zones}" SelectedIndex="{Binding ChosenZone}" VirtualizationMode="Simple" Grid.Row="1" Grid.ColumnSpan="2"/>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0" >Structure:</TextBlock>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1" >Floor:</TextBlock>
-    <ComboBox Margin="4" Items="{Binding Structures}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenStructure}" Grid.Row="3" Grid.Column="0" />
-    <ComboBox Margin="4" Items="{Binding Floors}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenFloor}" VirtualizationMode="Simple" Grid.Row="3" Grid.Column="1"/>
-    <Button Margin="4" Command="{Binding btnEnterDungeon_Click}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="4" Grid.ColumnSpan="2">Enter Map</Button>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="5" Grid.ColumnSpan="2">Ground:</TextBlock>
-    <ComboBox Margin="4" Items="{Binding Grounds}" SelectedIndex="{Binding ChosenGround}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" VirtualizationMode="Simple" Grid.Row="6" Grid.ColumnSpan="2"/>
-    <Button Margin="4" Command="{Binding btnEnterGround_Click}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="7" Grid.ColumnSpan="2">Enter Ground</Button>
+    <Button Margin="4" Command="{Binding btnReloadMap_Click}" Grid.Row="0" Grid.ColumnSpan="2">Reload Current Map</Button>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="1">Zone:</TextBlock>
+    <ComboBox Margin="4" Items="{Binding Zones}" SelectedIndex="{Binding ChosenZone}" VirtualizationMode="Simple" Grid.Row="2" Grid.ColumnSpan="2"/>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="0" >Structure:</TextBlock>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="1" >Floor:</TextBlock>
+    <ComboBox Margin="4" Items="{Binding Structures}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenStructure}" Grid.Row="4" Grid.Column="0" />
+    <ComboBox Margin="4" Items="{Binding Floors}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenFloor}" VirtualizationMode="Simple" Grid.Row="4" Grid.Column="1"/>
+    <Button Margin="4" Command="{Binding btnEnterDungeon_Click}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="5" Grid.ColumnSpan="2">Enter Map</Button>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="6" Grid.ColumnSpan="2">Ground:</TextBlock>
+    <ComboBox Margin="4" Items="{Binding Grounds}" SelectedIndex="{Binding ChosenGround}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" VirtualizationMode="Simple" Grid.Row="7" Grid.ColumnSpan="2"/>
+    <Button Margin="4" Command="{Binding btnEnterGround_Click}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="8" Grid.ColumnSpan="2">Enter Ground</Button>
   </Grid>
 </UserControl>

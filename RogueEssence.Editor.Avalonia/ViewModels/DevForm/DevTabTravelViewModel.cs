@@ -191,5 +191,27 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void btnReloadMap_Click()
+        {
+            lock (GameBase.lockObj)
+            {
+                //only if in a dungeon
+                if (ZoneManager.Instance.CurrentZone != null)
+                {
+                    if (ZoneManager.Instance.CurrentMapID.Segment > -1)
+                    {
+                        //reload the dungeon map
+                        ZoneManager.Instance.CurrentZone.MapsLoaded--;
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID));
+                    }
+                    else
+                    {
+                        //reload ground map
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID));
+                    }
+                }
+            }
+        }
+
     }
 }
