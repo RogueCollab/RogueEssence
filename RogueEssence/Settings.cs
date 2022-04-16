@@ -39,8 +39,9 @@ namespace RogueEssence
         public int BGMBalance;
         public int SEBalance;
         public BattleSpeed BattleFlow;
-        public int Window;
+        public int Minimap;
         public int Border;
+        public int Window;
         public string Language;
 
         public Keys[] DirKeys;
@@ -141,6 +142,7 @@ namespace RogueEssence
             BattleFlow = BattleSpeed.Normal;
             Language = "";
 
+            Minimap = 100;
             Window = 2;
 
             DirKeys = new Keys[4];

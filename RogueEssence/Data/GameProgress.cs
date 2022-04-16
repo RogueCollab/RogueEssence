@@ -423,7 +423,10 @@ namespace RogueEssence.Data
                 character.DeleteSkill(0);
             List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
             foreach (int skill in final_skills)
-                character.LearnSkill(skill, true);
+            {
+                SkillData skillData = DataManager.Instance.GetSkill(skill);
+                character.LearnSkill(skill, (skillData.Data.Category == BattleData.SkillCategory.Physical || skillData.Data.Category == BattleData.SkillCategory.Magical));
+            }
             character.Relearnables = new List<bool>();
         }
 

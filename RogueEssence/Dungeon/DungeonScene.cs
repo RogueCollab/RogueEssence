@@ -944,6 +944,9 @@ namespace RogueEssence.Dungeon
                     //draw minimap
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
+                    float mapVis = 1f;
+                    if (ShowMap == MinimapState.Clear)
+                        mapVis = (0.01f * DiagManager.Instance.CurSettings.Minimap);
                     TileSheet mapSheet = GraphicsManager.MapSheet;
 
                     Vector2 mapStart = new Vector2(0, 16);
@@ -977,24 +980,24 @@ namespace RogueEssence.Dungeon
                                 if (ShowMap == MinimapState.Detail)
                                 {
                                     if (terrain.BlockType == TerrainData.Mobility.Water)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Blue, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
+                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Blue * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
                                     else if (terrain.BlockType == TerrainData.Mobility.Lava)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.DarkOrange, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
+                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.DarkOrange * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
                                     else if (terrain.BlockType == TerrainData.Mobility.Abyss)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Gray, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
+                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Gray * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
                                 }
 
                                 if (!ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), mobility))
                                 {
                                     //draw halls
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj - 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj + 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii - 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii + 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                 }
 
                                 if (discovery == Map.DiscoveryState.Traversed && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
@@ -1006,7 +1009,7 @@ namespace RogueEssence.Dungeon
                                         entry = DataManager.Instance.GetTile(tile.Effect.ID);
                                     else
                                         entry = DataManager.Instance.GetTile(0);
-                                    mapSheet.DrawTile(spriteBatch, destVector, entry.MinimapIcon.X, entry.MinimapIcon.Y, entry.MinimapColor);
+                                    mapSheet.DrawTile(spriteBatch, destVector, entry.MinimapIcon.X, entry.MinimapIcon.Y, entry.MinimapColor * mapVis);
                                 }
                             }
                         }
@@ -1052,7 +1055,7 @@ namespace RogueEssence.Dungeon
                             }
                         }
                         if (seeItem)
-                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(item.TileLoc.X, item.TileLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Cyan);
+                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(item.TileLoc.X, item.TileLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Cyan * mapVis);
                     }
 
                     foreach (Team team in ZoneManager.Instance.CurrentMap.MapTeams)
@@ -1073,7 +1076,7 @@ namespace RogueEssence.Dungeon
                                 if (seen || SeeAll)
                                 {
                                     SkinData skinData = DataManager.Instance.GetSkin(character.Appearance.Skin);
-                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, skinData.MinimapColor);
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, skinData.MinimapColor * mapVis);
                                 }
                             }
                         }
@@ -1095,7 +1098,7 @@ namespace RogueEssence.Dungeon
                                     }
                                 }
                                 if (seen || SeeAll)
-                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, new Color(0, 231, 0));
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, new Color(0, 231, 0) * mapVis);
                             }
                         }
                     }
@@ -1106,7 +1109,7 @@ namespace RogueEssence.Dungeon
                         if (!player.Dead)
                         {
                             mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                    3, 0, Color.Orange);
+                                    3, 0, Color.Orange * mapVis);
                         }
                     }
                     foreach (Character player in ActiveTeam.Players)
@@ -1115,10 +1118,10 @@ namespace RogueEssence.Dungeon
                         {
                             if (player == ActiveTeam.Leader)
                                 mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                    3, (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1, Color.White);
+                                    3, (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1, Color.White * mapVis);
                             else
                                 mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                    3, 0, Color.Yellow);
+                                    3, 0, Color.Yellow * mapVis);
                         }
                     }
 

@@ -32,16 +32,21 @@ namespace RogueEssence.Menu
                 speedChoices.Add(((Settings.BattleSpeed)ii).ToLocal());
             totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BATTLE_SPEED"), 88, 72, speedChoices, (int)DiagManager.Instance.CurSettings.BattleFlow, confirmAction));
 
-            List<string> windowChoices = new List<string>();
-            windowChoices.Add(Text.FormatKey("MENU_SETTINGS_FULL_SCREEN"));
-            for(int ii = 1; ii < 9; ii++)
-                windowChoices.Add(String.Format("{0}x{1}",GraphicsManager.ScreenWidth * ii, GraphicsManager.ScreenHeight * ii));
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_WINDOW_SIZE"), 88, 72, windowChoices, DiagManager.Instance.CurSettings.Window, confirmAction));
-            
+            List<string> minimapChoices = new List<string>();
+            for (int ii = 0; ii < 10; ii++)
+                minimapChoices.Add(String.Format("{0}%", (ii+1) * 10));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MINIMAP_VISIBILITY"), 88, 72, minimapChoices, DiagManager.Instance.CurSettings.Minimap / 10 - 1, confirmAction));
+
             List<string> borderChoices = new List<string>();
             for (int ii = 0; ii < 5; ii++)
                 borderChoices.Add(ii.ToString());
             totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BORDER_STYLE"), 88, 72, borderChoices, DiagManager.Instance.CurSettings.Border, confirmAction));
+
+            List<string> windowChoices = new List<string>();
+            windowChoices.Add(Text.FormatKey("MENU_SETTINGS_FULL_SCREEN"));
+            for (int ii = 1; ii < 9; ii++)
+                windowChoices.Add(String.Format("{0}x{1}", GraphicsManager.ScreenWidth * ii, GraphicsManager.ScreenHeight * ii));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_WINDOW_SIZE"), 88, 72, windowChoices, DiagManager.Instance.CurSettings.Window, confirmAction));
 
             if (!inGame)
             {
@@ -69,16 +74,17 @@ namespace RogueEssence.Menu
             DiagManager.Instance.CurSettings.BGMBalance = TotalChoices[0].CurrentChoice;
             DiagManager.Instance.CurSettings.SEBalance = TotalChoices[1].CurrentChoice;
             DiagManager.Instance.CurSettings.BattleFlow = (Settings.BattleSpeed)TotalChoices[2].CurrentChoice;
-            DiagManager.Instance.CurSettings.Window = TotalChoices[3].CurrentChoice;
+            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[3].CurrentChoice + 1) * 10;
+            DiagManager.Instance.CurSettings.Border = TotalChoices[4].CurrentChoice;
+            DiagManager.Instance.CurSettings.Window = TotalChoices[5].CurrentChoice;
             GraphicsManager.SetWindowMode(DiagManager.Instance.CurSettings.Window);
 
-            DiagManager.Instance.CurSettings.Border = TotalChoices[4].CurrentChoice;
 
             bool changeLanguage = false;
             if (!inGame)
             {
-                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[5].CurrentChoice];
-                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[5].CurrentChoice];
+                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[6].CurrentChoice];
+                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[6].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
             }

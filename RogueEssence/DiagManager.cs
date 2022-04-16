@@ -344,9 +344,10 @@ namespace RogueEssence
                     settings.SEBalance = Int32.Parse(xmldoc.SelectSingleNode("Config/SE").InnerText);
 
                     settings.BattleFlow = Enum.Parse<Settings.BattleSpeed>(xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
+                    settings.Minimap = Int32.Parse(xmldoc.SelectSingleNode("Config/Minimap").InnerText);
 
-                    settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
+                    settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
                     settings.InactiveInput = Boolean.Parse(xmldoc.SelectSingleNode("Config/InactiveInput").InnerText);
                 }
@@ -483,9 +484,10 @@ namespace RogueEssence
                 docNode.AppendInnerTextChild(xmldoc, "SE", settings.SEBalance.ToString());
 
                 docNode.AppendInnerTextChild(xmldoc, "BattleFlow", settings.BattleFlow.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "Minimap", settings.Minimap.ToString());
 
-                docNode.AppendInnerTextChild(xmldoc, "Window", settings.Window.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Border", settings.Border.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "Window", settings.Window.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Language", settings.Language.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "InactiveInput", settings.InactiveInput.ToString());
 
