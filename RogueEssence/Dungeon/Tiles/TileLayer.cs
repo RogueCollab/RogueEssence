@@ -20,7 +20,7 @@ namespace RogueEssence.Dungeon
             else if (Frames.Count == 1)
                 return Frames[0].ToString();
             else
-                return String.Format("[{0}-Frame Layer]", Frames[0].ToString());
+                return String.Format("{0} ({1} Frames)", Frames[0].ToString(), Frames.Count);
         }
 
         public TileLayer()

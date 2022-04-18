@@ -979,12 +979,8 @@ namespace RogueEssence.Dungeon
                                 TerrainData terrain = tile.Data.GetData();
                                 if (ShowMap == MinimapState.Detail)
                                 {
-                                    if (terrain.BlockType == TerrainData.Mobility.Water)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Blue * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
-                                    else if (terrain.BlockType == TerrainData.Mobility.Lava)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.DarkOrange * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
-                                    else if (terrain.BlockType == TerrainData.Mobility.Abyss)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Gray * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
+                                    if (terrain.MinimapColor != Color.White && terrain.MinimapColor != Color.Transparent)
+                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, terrain.MinimapColor * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
                                 }
 
                                 if (!ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), mobility))

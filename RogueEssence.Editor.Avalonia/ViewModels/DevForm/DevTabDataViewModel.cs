@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
@@ -133,7 +134,12 @@ namespace RogueEssence.Dev.ViewModels
                 string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
                 DtefImportHelper.ImportDtef(folder, destFile);
 
-                //reindex all
+                //reindex graphics
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                DevDataManager.ClearCaches();
+
+                //reindex data
                 DevHelper.RunIndexing(DataManager.DataType.AutoTile);
                 DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
                 DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);

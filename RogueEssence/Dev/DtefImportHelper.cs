@@ -174,12 +174,9 @@ namespace RogueEssence.Dev
                         }
                     }
 
+                    // Didn't load anything?  Skip
                     if (index == -1)
-                    {
-                        if (tileTitle == "Secondary")  // Secondary terrain is okay to be missing.
-                            continue;
-                        throw new KeyNotFoundException($"Layer index mapping for layer {tileTitle} for {fileName} missing.");
-                    }
+                        continue;
 
                     // Import auto tiles
                     for (int ii = 0; ii < FieldDtefMapping.Length; ii++)

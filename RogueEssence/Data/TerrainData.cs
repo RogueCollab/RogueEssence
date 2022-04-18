@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueElements;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Data
 {
@@ -32,6 +33,7 @@ namespace RogueEssence.Data
         public int Element;
         public Mobility BlockType;
 
+        public Color MinimapColor;
         public bool BlockDiagonal;
         public bool BlockLight;
         public int ShadowType;
