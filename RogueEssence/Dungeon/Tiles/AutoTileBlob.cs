@@ -186,5 +186,31 @@ namespace RogueEssence.Dungeon
                 return Isolated;
         }
 
+
+        public override IEnumerable<List<TileLayer>> IterateElements()
+        {
+            yield return TopLeft;
+            yield return TopCenter;
+            yield return TopRight;
+
+            yield return Left;
+            yield return Center;
+            yield return Right;
+
+            yield return BottomLeft;
+            yield return BottomCenter;
+            yield return BottomRight;
+
+
+            yield return TopLeftEdge;
+            yield return TopRightEdge;
+            yield return BottomLeftEdge;
+            yield return BottomRightEdge;
+
+            yield return DiagonalForth;
+            yield return DiagonalBack;
+
+            yield return Isolated;
+        }
     }
 }

@@ -22,10 +22,10 @@
     <Compile Update="DataEditor\RangeDictBox.axaml.cs">
       <DependentUpon>RangeDictBox.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\TileEditForm.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileEditForm.axaml.cs">
       <DependentUpon>TileEditForm.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\TileBox.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBox.axaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
     <Compile Update="DataEditor\ParentForm.cs">
@@ -148,10 +148,10 @@
     <Compile Update="Views\GroundEditForm\EntityBrowser.axaml.cs">
       <DependentUpon>EntityBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\AutotileBrowser.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\AutotileBrowser.axaml.cs">
       <DependentUpon>AutotileBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\TileBrowser.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>
   </ItemGroup>

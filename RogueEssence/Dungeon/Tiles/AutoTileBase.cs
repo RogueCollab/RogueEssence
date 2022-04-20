@@ -11,6 +11,8 @@ namespace RogueEssence.Dungeon
         public delegate bool QueryMethod(int x, int y);
         public abstract void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod);
 
+        public abstract IEnumerable<List<TileLayer>> IterateElements();
+
         /// <summary>
         /// Gets a list of tiles to draw, based on a variant code (neighborcode + variant)
         /// </summary>

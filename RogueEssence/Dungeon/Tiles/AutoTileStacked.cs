@@ -223,5 +223,40 @@ namespace RogueEssence.Dungeon
                     throw new ArgumentException("Invalid value to convert.");
             }
         }
+
+
+
+        public override IEnumerable<List<TileLayer>> IterateElements()
+        {
+
+            yield return new List<TileLayer>() { TopLeft };
+            yield return new List<TileLayer>() { Top };
+            yield return new List<TileLayer>() { TopRight };
+
+            yield return new List<TileLayer>() { Left };
+            yield return new List<TileLayer>() { Center };
+            yield return new List<TileLayer>() { Right };
+
+            yield return new List<TileLayer>() { BottomLeft };
+            yield return new List<TileLayer>() { Bottom };
+            yield return new List<TileLayer>() { BottomRight };
+
+
+            yield return new List<TileLayer>() { TopLeftEdge };
+            yield return new List<TileLayer>() { TopRightEdge };
+            yield return new List<TileLayer>() { BottomRightEdge };
+            yield return new List<TileLayer>() { BottomLeftEdge };
+
+
+            yield return new List<TileLayer>() { ColumnTop };
+            yield return new List<TileLayer>() { ColumnCenter };
+            yield return new List<TileLayer>() { ColumnBottom };
+
+            yield return new List<TileLayer>() { RowLeft };
+            yield return new List<TileLayer>() { RowCenter };
+            yield return new List<TileLayer>() { RowRight };
+
+            yield return new List<TileLayer>() { Surrounded };
+        }
     }
 }

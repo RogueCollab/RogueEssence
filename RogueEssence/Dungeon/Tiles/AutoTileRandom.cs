@@ -61,5 +61,10 @@ namespace RogueEssence.Dungeon
             return Ground;
         }
 
+
+        public override IEnumerable<List<TileLayer>> IterateElements()
+        {
+            yield return Ground;
+        }
     }
 }
