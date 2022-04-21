@@ -81,6 +81,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             StringConv = conv;
             Collection = new ObservableCollection<ListElement>();
+            SelectedIndex = -1;
         }
 
 
@@ -118,6 +119,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
             for (int ii = index + 1; ii < Collection.Count; ii++)
                 Collection[ii].Key = ii;
+            SelectedIndex = -1;
             OnMemberChanged?.Invoke();
         }
 
