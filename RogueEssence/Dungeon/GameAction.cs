@@ -31,7 +31,8 @@ namespace RogueEssence.Dungeon
             SetSkill,
             SortItems,
             GiveUp,
-            Rescue
+            Rescue,
+            Option,
         };
 
         public ActionType Type;

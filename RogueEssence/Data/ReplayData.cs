@@ -13,7 +13,8 @@ namespace RogueEssence.Data
             GameLog,
             UILog,
             QuicksaveLog,
-            GroundsaveLog
+            GroundsaveLog,
+            OptionLog,
         }
         
         public string RecordDir;

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
+using RogueEssence.Data;
+using RogueEssence.Dungeon;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -10,9 +13,13 @@ namespace RogueEssence.Menu
         //needs a summary menu?
         bool inGame;
         
-        public SettingsMenu(bool inGame)
+        public SettingsMenu()
         {
-            this.inGame = inGame;
+            this.inGame = false;
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                this.inGame = true;
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                this.inGame = true;
 
             //individual tactics
             List<MenuSetting> totalChoices = new List<MenuSetting>();
@@ -31,6 +38,11 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii <= (int)Settings.BattleSpeed.VeryFast; ii++)
                 speedChoices.Add(((Settings.BattleSpeed)ii).ToLocal());
             totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BATTLE_SPEED"), 88, 72, speedChoices, (int)DiagManager.Instance.CurSettings.BattleFlow, confirmAction));
+
+            List<string> skillChoices = new List<string>();
+            for (int ii = 0; ii <= (int)Settings.SkillDefault.All; ii++)
+                skillChoices.Add(((Settings.SkillDefault)ii).ToLocal());
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_SKILL_DEFAULT"), 88, 72, skillChoices, (int)DiagManager.Instance.CurSettings.DefaultSkills, confirmAction));
 
             List<string> minimapChoices = new List<string>();
             for (int ii = 0; ii < 10; ii++)
@@ -74,17 +86,20 @@ namespace RogueEssence.Menu
             DiagManager.Instance.CurSettings.BGMBalance = TotalChoices[0].CurrentChoice;
             DiagManager.Instance.CurSettings.SEBalance = TotalChoices[1].CurrentChoice;
             DiagManager.Instance.CurSettings.BattleFlow = (Settings.BattleSpeed)TotalChoices[2].CurrentChoice;
-            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[3].CurrentChoice + 1) * 10;
-            DiagManager.Instance.CurSettings.Border = TotalChoices[4].CurrentChoice;
-            DiagManager.Instance.CurSettings.Window = TotalChoices[5].CurrentChoice;
+            DiagManager.Instance.CurSettings.DefaultSkills = (Settings.SkillDefault)TotalChoices[3].CurrentChoice;
+            if (this.inGame)
+                DataManager.Instance.Save.UpdateOptions();
+            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[4].CurrentChoice + 1) * 10;
+            DiagManager.Instance.CurSettings.Border = TotalChoices[5].CurrentChoice;
+            DiagManager.Instance.CurSettings.Window = TotalChoices[6].CurrentChoice;
             GraphicsManager.SetWindowMode(DiagManager.Instance.CurSettings.Window);
 
 
             bool changeLanguage = false;
             if (!inGame)
             {
-                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[6].CurrentChoice];
-                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[6].CurrentChoice];
+                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[7].CurrentChoice];
+                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[7].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
             }
@@ -108,7 +123,7 @@ namespace RogueEssence.Menu
                 SoundManager.BGMBalance = TotalChoices[index].CurrentChoice * 0.1f;
             else if (index == 1)
                 SoundManager.SEBalance = TotalChoices[index].CurrentChoice * 0.1f;
-            else if (index == 4)
+            else if (index == 5)
                 MenuBase.BorderStyle = TotalChoices[index].CurrentChoice;
 
             base.SettingChanged(index);

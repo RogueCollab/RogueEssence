@@ -97,6 +97,8 @@ namespace RogueEssence.Data
         public ModHeader Quest;
         public List<ModHeader> Mods;
 
+        public Settings.SkillDefault DefaultSkill;
+
         public ExplorerTeam ActiveTeam;
         public ReRandom Rand;
 
@@ -168,6 +170,45 @@ namespace RogueEssence.Data
         {
             Rand = new ReRandom(seed);
             UUID = uuid;
+        }
+
+        /// <summary>
+        /// Updates the game-relevant options to the settings.
+        /// Called whenever the settings change in a currently running game.
+        /// Called whenever a new game is started, in order to inherit the existing settings.
+        /// Called whenever a game is resumed, to update the settings to those that may have changed.
+        /// DO NOT call when a replay is started.  Not that it would do anything...
+        /// DO NOT call if a replay is in progress.  Not that it would do anything...
+        /// </summary>
+        /// <returns></returns>
+        public void UpdateOptions()
+        {
+            if (DataManager.Instance.CurrentReplay == null)
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    if (DefaultSkill != DiagManager.Instance.CurSettings.DefaultSkills)
+                    {
+                        GameAction options = new GameAction(GameAction.ActionType.Option, Dir8.None, (int)DiagManager.Instance.CurSettings.DefaultSkills);
+                        DataManager.Instance.LogPlay(options);
+                    }
+                }
+                DefaultSkill = DiagManager.Instance.CurSettings.DefaultSkills;
+            }
+        }
+
+        public bool GetDefaultEnable(int moveIndex)
+        {
+            if (moveIndex < 0)
+                return false;
+
+            if (DefaultSkill == Settings.SkillDefault.All)
+                return true;
+            if (DefaultSkill == Settings.SkillDefault.None)
+                return false;
+
+            SkillData entry = DataManager.Instance.GetSkill(moveIndex);
+            return (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical);
         }
 
         public ContactInfo CreateContactInfo()
@@ -395,7 +436,7 @@ namespace RogueEssence.Data
         /// <param name="character"></param>
         /// <param name="level"></param>
         /// <param name="capOnly">Will force lower level to specified level if false.</param>
-        public static void RestrictCharLevel(Character character, int level, bool capOnly)
+        public void RestrictCharLevel(Character character, int level, bool capOnly)
         {
             //set level
             if (capOnly)
@@ -423,10 +464,7 @@ namespace RogueEssence.Data
                 character.DeleteSkill(0);
             List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
             foreach (int skill in final_skills)
-            {
-                SkillData skillData = DataManager.Instance.GetSkill(skill);
-                character.LearnSkill(skill, (skillData.Data.Category == BattleData.SkillCategory.Physical || skillData.Data.Category == BattleData.SkillCategory.Magical));
-            }
+                character.LearnSkill(skill, GetDefaultEnable(skill));
             character.Relearnables = new List<bool>();
         }
 

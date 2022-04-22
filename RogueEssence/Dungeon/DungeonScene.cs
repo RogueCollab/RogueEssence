@@ -354,6 +354,7 @@ namespace RogueEssence.Dungeon
                     {
                         DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                         DataManager.Instance.CurrentReplay = null;
+                        DataManager.Instance.Save.UpdateOptions();
 
                         GameManager.Instance.SetFade(true, false);
 

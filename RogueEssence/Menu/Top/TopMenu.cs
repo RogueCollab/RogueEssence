@@ -212,6 +212,7 @@ namespace RogueEssence.Menu
                 //no valid next dest happens when the player has saved in a ground map in the middle of an adventure
                 DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
+                DataManager.Instance.Save.UpdateOptions();
 
                 GameManager.Instance.SetFade(true, false);
 
@@ -247,6 +248,7 @@ namespace RogueEssence.Menu
                 LuaEngine.Instance.OnUpgrade();
 
             DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentMapID.Segment > -1)
@@ -370,6 +372,7 @@ namespace RogueEssence.Menu
 
             DataManager.Instance.SetProgress(new MainProgress(MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper()));
             DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
 

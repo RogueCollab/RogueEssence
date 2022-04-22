@@ -1277,7 +1277,11 @@ namespace RogueEssence.Data
                                 }
                                 else if (type == (byte)ReplayData.ReplayLog.GameLog)
                                 {
-                                    GameAction play = new GameAction((GameAction.ActionType)reader.ReadByte(), (Dir8)reader.ReadByte());
+                                    GameAction.ActionType actionType = (GameAction.ActionType)reader.ReadByte();
+                                    Dir8 dir = (Dir8)reader.ReadByte();
+                                    if ((int)dir == 255)
+                                        dir = Dir8.None;
+                                    GameAction play = new GameAction(actionType, dir);
                                     byte totalArgs = reader.ReadByte();
                                     for (int ii = 0; ii < totalArgs; ii++)
                                         play.AddArg(reader.ReadInt32());

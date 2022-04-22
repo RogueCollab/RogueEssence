@@ -35,10 +35,17 @@ namespace RogueEssence
             Fast,
             VeryFast
         }
+        public enum SkillDefault
+        {
+            None,
+            Attacks,
+            All
+        }
 
         public int BGMBalance;
         public int SEBalance;
         public BattleSpeed BattleFlow;
+        public SkillDefault DefaultSkills;
         public int Minimap;
         public int Border;
         public int Window;
@@ -140,6 +147,7 @@ namespace RogueEssence
             BGMBalance = 5;
             SEBalance = 5;
             BattleFlow = BattleSpeed.Normal;
+            DefaultSkills = SkillDefault.Attacks;
             Language = "";
 
             Minimap = 100;

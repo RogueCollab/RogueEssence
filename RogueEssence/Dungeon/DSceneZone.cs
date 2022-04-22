@@ -459,6 +459,13 @@ namespace RogueEssence.Dungeon
                         ActiveTeam.SortItems();
                         break;
                     }
+                case GameAction.ActionType.Option:
+                    {
+                        result.Success = ActionResult.ResultType.Success;
+
+                        DataManager.Instance.Save.DefaultSkill = (Settings.SkillDefault)action[0];
+                        break;
+                    }
                 default:
                     {
                         throw new Exception("Undefined Command: " + action.Type);

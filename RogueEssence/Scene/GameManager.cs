@@ -796,6 +796,7 @@ namespace RogueEssence
                             rescued.AddArg(mail.RescuedBy[ii]);
 
                         DataManager.Instance.LogPlay(rescued);
+                        DataManager.Instance.Save.UpdateOptions();
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, mail));
                     }
                     else
@@ -816,6 +817,7 @@ namespace RogueEssence
                             //the game accepts loading into a file that has been downed, or passed its section with nothing else
                             DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                             DataManager.Instance.CurrentReplay = null;
+                            //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
 
                             SetFade(true, false);
 
@@ -948,6 +950,7 @@ namespace RogueEssence
             {
                 DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
                 DataManager.Instance.Save.UpdateVersion();
+                DataManager.Instance.Save.UpdateOptions();
                 DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
                 DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
                 LuaEngine.Instance.OnNewGame();
@@ -961,6 +964,7 @@ namespace RogueEssence
             }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
             DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(0);

@@ -861,8 +861,7 @@ namespace RogueEssence.Dungeon
                 SkillData oldEntry = DataManager.Instance.GetSkill(player.BaseSkills[slot].SkillNum);
                 oldSkill = oldEntry.GetIconName();
             }
-            SkillData entry = DataManager.Instance.GetSkill(skill);
-            player.ReplaceSkill(skill, slot, (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical));
+            player.ReplaceSkill(skill, slot, DataManager.Instance.Save.GetDefaultEnable(skill));
 
             if (oldSkill == "")
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("DLG_SKILL_LEARN", player.GetDisplayName(false), DataManager.Instance.GetSkill(skill).GetIconName()), player.MemberTeam));
