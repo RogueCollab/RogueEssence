@@ -1406,7 +1406,7 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < range; ii++)
                 {
                     Loc nextLoc = endLoc + dir.GetLoc();
-                    if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, nextLoc))
+                    if (ZoneManager.Instance.CurrentMap.TileBlocked(nextLoc, true))
                         break;
                     endLoc = nextLoc;
                 }
