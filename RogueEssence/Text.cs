@@ -332,6 +332,11 @@ namespace RogueEssence
                 return Key;
             return "";
         }
+
+        public bool IsValid()
+        {
+            return !String.IsNullOrWhiteSpace(Key);
+        }
     }
 
 
