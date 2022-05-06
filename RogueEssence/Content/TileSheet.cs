@@ -31,7 +31,7 @@ namespace RogueEssence.Content
             : base(tex)
         {
             if (Width % tileWidth != 0 || Height % tileHeight != 0)
-                throw new ArgumentException(String.Format("Texture dimensions ({0},{1}) cannot be divided by ({2},{3})", Width, Height, TileWidth, TileHeight));
+                throw new ArgumentException(String.Format("Texture dimensions ({0},{1}) cannot be divided by ({2},{3})", Width, Height, tileWidth, tileHeight));
 
             TotalX = Width / tileWidth;
             TotalY = Height / tileHeight;
