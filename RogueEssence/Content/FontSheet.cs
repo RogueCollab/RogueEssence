@@ -369,12 +369,19 @@ namespace RogueEssence.Content
         }
         public string[] BreakIntoLines(string substring, int width, int charIndex)
         {
+            List<int> trimmedStarts;
+            return BreakIntoLines(substring, width, charIndex, out trimmedStarts);
+        }
+        public string[] BreakIntoLines(string substring, int width, int charIndex, out List<int> trimmedStarts)
+        {
+            trimmedStarts = new List<int>();
             if (String.IsNullOrEmpty(substring))
                 return null;
             int substr_width = 0;
             int width_since_breakable = 0;
             int line_start = 0;
             int last_breakable = 0;
+            trimmedStarts.Add(0);
             //Go through string
             List<string> lines = new List<string>();
             for (int ii = 0; ii < substring.Length; ii++)
@@ -383,6 +390,7 @@ namespace RogueEssence.Content
                 if (substring[ii] == '\n')
                 {
                     lines.Add(substring.Substring(line_start, Math.Min(ii, charIndex) - line_start));
+                    trimmedStarts.Add(0);
                     line_start = ii + 1;
                     if (line_start >= charIndex)
                         return lines.ToArray();
@@ -395,7 +403,10 @@ namespace RogueEssence.Content
                     if (substr_width > 0)
                         substr_width += SpaceWidth;
                     else
+                    {
                         line_start = ii + 1;
+                        trimmedStarts[trimmedStarts.Count - 1] = trimmedStarts[trimmedStarts.Count - 1] + 1;
+                    }
 
                     width_since_breakable = 0;
                     last_breakable = ii+1;

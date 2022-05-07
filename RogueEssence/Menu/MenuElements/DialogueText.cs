@@ -135,7 +135,8 @@ namespace RogueEssence.Menu
             int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;
             Stack<Color> colorStack = new Stack<Color>();
             colorStack.Push(textColor[0].color);
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
+            List<int> trimmedStarts;
+            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length, out trimmedStarts);
             if (lines != null)
             {
                 int startWidth = CenterH ? Rect.Center.X : Rect.X;
@@ -143,12 +144,15 @@ namespace RogueEssence.Menu
 
                 int curColor = 0;
                 int lineChars = 0;
+                //offset to move the color tags by, since cutting string into lines removes extra spaces
+                int totalTrimmedOffset = 0;
                 for (int ii = 0; ii < lines.Length; ii++)
                 {
                     int curChar = 0;
+                    totalTrimmedOffset += trimmedStarts[ii];
                     while (curChar < lines[ii].Length)
                     {
-                        while (textColor[curColor + 1].idx - lineChars == curChar)
+                        while ((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars == curChar)
                         {
                             curColor++;
                             if (textColor[curColor].color == Color.Transparent && colorStack.Count > 1)
@@ -157,7 +161,7 @@ namespace RogueEssence.Menu
                                 colorStack.Push(textColor[curColor].color);
                         }
 
-                        int nextColorIdx = Math.Min(textColor[curColor + 1].idx - lineChars, Math.Min(lines[ii].Length, endIndex - lineChars));
+                        int nextColorIdx = Math.Min((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars, Math.Min(lines[ii].Length, endIndex - lineChars));
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
                             lines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
