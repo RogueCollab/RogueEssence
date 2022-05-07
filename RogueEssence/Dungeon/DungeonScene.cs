@@ -1412,12 +1412,18 @@ namespace RogueEssence.Dungeon
                 GraphicsManager.HPMenu.DrawTile(spriteBatch, new Vector2(digitX, 8), 0, 0);
         }
 
+        /// <summary>
+        /// Lights up tiles for graphical reasons
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="sight"></param>
         public void AddSeenLocs(VisionLoc loc, Map.SightRange sight)
         {
             //needs to be edited according to FOV
             Loc seen = Character.GetSightDims() + new Loc(1);
-            Loc minLoc = new Loc(Math.Max(sightRect.X, loc.Loc.X - seen.X), Math.Max(sightRect.Y, loc.Loc.Y - seen.Y));
-            Loc addLoc = new Loc(Math.Min(sightRect.End.X, loc.Loc.X + seen.X + 1), Math.Min(sightRect.End.Y, loc.Loc.Y + seen.Y + 1)) - minLoc;
+            //however, when adding light, we only change the array if the light falls within the array
+            Loc minLoc = new Loc(loc.Loc.X - seen.X, loc.Loc.Y - seen.Y);
+            Loc addLoc = new Loc(loc.Loc.X + seen.X + 1, loc.Loc.Y + seen.Y + 1) - minLoc;
             switch (sight)
             {
                 case Map.SightRange.Blind:
@@ -1430,7 +1436,10 @@ namespace RogueEssence.Dungeon
                             {
                                 if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc.Loc + new Loc(x, y))
                                     && Collision.InBounds(minLoc, addLoc, new Loc(x, y) + loc.Loc))
-                                    charSightValues[loc.Loc.X + x - sightRect.X][loc.Loc.Y + y - sightRect.Y] += loc.Weight;
+                                {
+                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
+                                        charSightValues[loc.Loc.X + x - sightRect.X][loc.Loc.Y + y - sightRect.Y] += loc.Weight;
+                                }
                             }
                         }
                         break;
@@ -1447,7 +1456,10 @@ namespace RogueEssence.Dungeon
                             for (int y = 0; y < addLoc.Y; y++)
                             {
                                 if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, minLoc + new Loc(x, y)))
-                                    charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
+                                {
+                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
+                                        charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
+                                }
                             }
                         }
                         break;
@@ -1460,9 +1472,12 @@ namespace RogueEssence.Dungeon
         {
             Fov.LightOperation lightOp = (int locX, int locY, float light) =>
             {
-                //Can only light up tiles that have been explored
-                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[locX][locY] == Map.DiscoveryState.Traversed)
-                    charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
+                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(locX, locY)))
+                {
+                    //Can only light up tiles that have been explored
+                    if (ZoneManager.Instance.CurrentMap.DiscoveryArray[locX][locY] == Map.DiscoveryState.Traversed)
+                        charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
+                }
             };
             Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }
