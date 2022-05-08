@@ -459,6 +459,7 @@ namespace RogueEssence.Content
                 if (substr_width >= width && last_breakable > line_start)
                 {
                     lines.Add(substring.Substring(line_start, Math.Min(last_breakable, charIndex) - line_start));
+                    trimmedStarts.Add(0);
                     line_start = last_breakable;
                     if (line_start >= charIndex)
                         return lines.ToArray();
