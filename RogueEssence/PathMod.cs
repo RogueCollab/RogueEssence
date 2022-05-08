@@ -118,7 +118,6 @@ namespace RogueEssence
                 string fullPath = hardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
-                break;
             }
 
             return hardMod("", basePath);

@@ -525,8 +525,8 @@ namespace RogueEssence.Script
 
             SetLuaPaths();
 
-            //Setup some globabl vars
-            LuaState["_SCRIPT_PATH"] = Path.GetFullPath(PathMod.QuestPath(SCRIPT_PATH)); //Share with the script engine the path to the root of the script files
+            //Setup some global vars
+            //LuaState["_SCRIPT_PATH"] = Path.GetFullPath(PathMod.QuestPath(SCRIPT_PATH)); //Share with the script engine the path to the root of the script files
 
             RunString(ZoneCurrentScriptSym + " = nil");
             RunString(MapCurrentScriptSym + " = nil");
