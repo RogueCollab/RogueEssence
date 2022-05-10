@@ -174,7 +174,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeforeExplosion(context));
 
             //release explosion
-            yield return CoroutineManager.Instance.StartCoroutine(context.Explosion.ReleaseExplosion(context.ExplosionTile, context.User, ProcessHitLoc, ProcessHitTile));
+            yield return CoroutineManager.Instance.StartCoroutine(context.Explosion.ReleaseExplosion(context.ExplosionTile, context.User, context.ProcessHitLoc, context.ProcessHitTile));
         }
 
         public IEnumerator<YieldInstruction> ProcessHitLoc(Loc loc)
