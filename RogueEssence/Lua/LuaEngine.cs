@@ -1025,13 +1025,12 @@ namespace RogueEssence.Script
             string abspath = MakeZoneScriptPath(false, zoneassetname, "/init.lua");
             try
             {
-                LuaState.LoadFile(abspath);
-                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(ZONE_SCRIPT_PATTERN, zoneassetname), ZoneCurrentScriptSym, zoneassetname),
-                          abspath);
+                RunAssetScript(abspath, zoneassetname, string.Format(ZONE_SCRIPT_PATTERN, zoneassetname), ZoneCurrentScriptSym);
             }
             catch (Exception e)
             {
                 DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunZoneScript(): Error running zone script!:\n" + e.Message + "\npath:\n" + abspath);
+                LuaState[zoneassetname] = null;
             }
         }
 
@@ -1096,13 +1095,12 @@ namespace RogueEssence.Script
             string abspath = MakeDungeonMapScriptPath(false, mapassetname, "/init.lua");
             try
             {
-                LuaState.LoadFile(abspath);
-                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapassetname), DungeonMapCurrentScriptSym, mapassetname),
-                          abspath);
+                RunAssetScript(abspath, mapassetname, string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapassetname), DungeonMapCurrentScriptSym);
             }
             catch (Exception e)
             {
                 DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunDungeonMapScript(): Error running dungeon map script!:\n" + e.Message + "\npath:\n" + abspath);
+                LuaState[mapassetname] = null;
             }
         }
 
@@ -1155,6 +1153,16 @@ namespace RogueEssence.Script
                 return Path.GetFullPath(PathMod.ModPath(basePath));
         }
 
+        private void RunAssetScript(string abspath, string assetname, string importpath, string globalsymbol)
+        {
+            LuaState.LoadFile(abspath);
+            RunString(String.Format("{0} = require('{1}');", assetname, importpath), abspath);
+            object state = LuaState[assetname];
+            if (state is not LuaTable)
+                throw new InvalidDataException(String.Format("Script did not load a table to variable '{0}'", assetname));
+            RunString(String.Format("{1} = {0}", assetname, globalsymbol), abspath);
+        }
+
         /// <summary>
         /// Load and execute the script of a map.
         /// </summary>
@@ -1164,13 +1172,12 @@ namespace RogueEssence.Script
             string abspath = MakeGroundMapScriptPath(false, mapassetname, "/init.lua");
             try
             {
-                LuaState.LoadFile(abspath);
-                RunString(String.Format("{2} = require('{0}'); {1} = {2}", string.Format(MAP_SCRIPT_PATTERN, mapassetname), MapCurrentScriptSym, mapassetname),
-                          abspath);
+                RunAssetScript(abspath, mapassetname, string.Format(MAP_SCRIPT_PATTERN, mapassetname), MapCurrentScriptSym);
             }
             catch (Exception e)
             {
                 DiagManager.Instance.LogInfo("[SE]:LuaEngine.RunMapScript(): Error running map script!:\n" + e.Message + "\npath:\n" + abspath);
+                LuaState[mapassetname] = null;
             }
         }
 
@@ -1404,7 +1411,8 @@ namespace RogueEssence.Script
                 foreach (string s in splitted )
                 {
                     curp += s;
-                    if (LuaState[curp] == null)
+                    object state = LuaState[curp];
+                    if (state == null)
                         return false;
                     curp += ".";
                 }
