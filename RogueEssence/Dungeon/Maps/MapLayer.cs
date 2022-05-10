@@ -44,7 +44,16 @@ namespace RogueEssence.Dungeon
 
         public void Merge(IMapLayer other)
         {
-            throw new NotImplementedException();
+            MapLayer otherLayer = (MapLayer)other;
+            for (int xx = 0; xx < Width; xx++)
+            {
+                for (int yy = 0; yy < Height; yy++)
+                {
+                    AutoTile tile = otherLayer.Tiles[xx][yy];
+                    if (!tile.IsEmpty())
+                        Tiles[xx][yy] = tile.Copy();
+                }
+            }
         }
 
         public void CreateNew(int width, int height)
