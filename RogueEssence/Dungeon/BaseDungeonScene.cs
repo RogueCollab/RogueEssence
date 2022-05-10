@@ -334,7 +334,8 @@ namespace RogueEssence.Dungeon
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
                 {
                     //if it's a tile on the discovery array, show it
-                    if (CanSeeTile(xx, yy))
+                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
+                    if (!outOfBounds && CanSeeTile(xx, yy))
                         ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy), true);
                 }
             }
