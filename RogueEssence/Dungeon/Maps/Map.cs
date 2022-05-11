@@ -442,12 +442,18 @@ namespace RogueEssence.Dungeon
                 {
                     if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
                     {
-                        AutoTile outTile;
-                        if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))
-                            Tiles[ii][jj].Data.TileTex = outTile.Copy();
+                        //Only color empty tiles
+                        if (Tiles[ii][jj].Data.TileTex.IsEmpty())
+                        {
+                            AutoTile outTile;
+                            if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))
+                            {
+                                Tiles[ii][jj].Data.TileTex = outTile.Copy();
 
-                        if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
-                            blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
+                                if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
+                                    blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
+                            }
+                        }
                     }
                 }
             }
