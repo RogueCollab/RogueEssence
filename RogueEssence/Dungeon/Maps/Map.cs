@@ -180,7 +180,7 @@ namespace RogueEssence.Dungeon
 
             //entry points
             for (int ii = 0; ii < EntryPoints.Count; ii++)
-                EntryPoints[ii] = new LocRay8(EntryPoints[ii].Loc + diff, EntryPoints[ii].Dir);
+                EntryPoints[ii] = new LocRay8(Collision.ClampToBounds(width, height, EntryPoints[ii].Loc + diff), EntryPoints[ii].Dir);
         }
 
 
