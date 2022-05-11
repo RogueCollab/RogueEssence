@@ -28,6 +28,12 @@ namespace RogueEssence.Dungeon
             Effect = new EffectTile();
         }
 
+        public Tile(int type, bool stableTex)
+        {
+            Data = new TerrainTile(type, stableTex);
+            Effect = new EffectTile();
+        }
+
         public Tile(int type, Loc loc)
         {
             Data = new TerrainTile(type);

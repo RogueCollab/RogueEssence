@@ -443,7 +443,7 @@ namespace RogueEssence.Dungeon
                     if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
                     {
                         //Only color empty tiles
-                        if (Tiles[ii][jj].Data.TileTex.IsEmpty())
+                        if (!Tiles[ii][jj].Data.StableTex)
                         {
                             AutoTile outTile;
                             if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))

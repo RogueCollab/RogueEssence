@@ -23,6 +23,13 @@ namespace RogueEssence.Dungeon
         [DataType(0, DataManager.DataType.Terrain, false)]
         public int ID;
         public AutoTile TileTex;
+        
+        //TODO: make this an editable value in map editor... when someone wants it
+        /// <summary>
+        /// Prevents the texture from being overridden by the map's texturemap
+        /// </summary>
+        public bool StableTex;
+
         public TerrainTile()
         {
             TileTex = new AutoTile();
@@ -30,6 +37,11 @@ namespace RogueEssence.Dungeon
         public TerrainTile(int index) : this()
         {
             ID = index;
+        }
+        public TerrainTile(int index, bool stableTex) : this()
+        {
+            ID = index;
+            StableTex = stableTex;
         }
         public TerrainTile(int index, AutoTile tex)
         {
@@ -40,6 +52,7 @@ namespace RogueEssence.Dungeon
         {
             ID = other.ID;
             TileTex = other.TileTex.Copy();
+            StableTex = other.StableTex;
         }
         public TerrainTile Copy() { return new TerrainTile(this); }
 
