@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.RemoveMenu();
 
-            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH)))
+            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION))
                 MenuManager.Instance.ReplaceMenu(new ReplaysMenu());
             else
             {

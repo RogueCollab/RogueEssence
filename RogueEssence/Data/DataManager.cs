@@ -1097,11 +1097,11 @@ namespace RogueEssence.Data
         }
 
 
-        public bool FoundRecords(string mainPath)
+        public bool FoundRecords(string mainPath, string ext)
         {
             if (!Directory.Exists(mainPath))
                 return false;
-            string[] files = Directory.GetFiles(mainPath);
+            string[] files = Directory.GetFiles(mainPath, "*" + ext);
             return ContainsNonTrivialFiles(files);
         }
 

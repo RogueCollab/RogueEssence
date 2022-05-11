@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.RemoveMenu();
 
-            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
+            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.ROGUE_PATH), DataManager.QUICKSAVE_EXTENSION))
                 MenuManager.Instance.ReplaceMenu(new QuicksaveMenu());
             else
             {
