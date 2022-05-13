@@ -340,6 +340,20 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public void AddMoney(Character character, int amount)
+        {
+            Money += amount;
+
+            //TODO: gained money events
+        }
+
+        public void LoseMoney(Character character, int amount)
+        {
+            Money -= amount;
+
+            //TODO: lost money events
+        }
+
         public int GetTotalScore()
         {
             return GetInvValue() + Money + Bank;

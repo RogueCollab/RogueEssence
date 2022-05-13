@@ -7,6 +7,8 @@ namespace RogueEssence.Data
     [Serializable]
     public class PassiveData
     {
+        public PriorityList<ItemGivenEvent> OnEquips;
+        public PriorityList<ItemGivenEvent> OnPickups;
 
         public PriorityList<StatusGivenEvent> BeforeStatusAdds;
         public PriorityList<StatusGivenEvent> OnStatusAdds;
@@ -42,6 +44,9 @@ namespace RogueEssence.Data
 
         public PassiveData()
         {
+            OnEquips = new PriorityList<ItemGivenEvent>();
+            OnPickups = new PriorityList<ItemGivenEvent>();
+
             BeforeStatusAdds = new PriorityList<StatusGivenEvent>();
             OnStatusAdds = new PriorityList<StatusGivenEvent>();
             OnStatusRemoves = new PriorityList<StatusGivenEvent>();

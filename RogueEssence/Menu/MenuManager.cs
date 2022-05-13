@@ -231,6 +231,16 @@ namespace RogueEssence.Menu
             return null;
         }
 
+        public InfoMenu CreateNotice(string title, string msg)
+        {
+            return CreateNotice(title, () => { }, msg);
+        }
+
+        public InfoMenu CreateNotice(string title, params string[] msgs)
+        {
+            return CreateNotice(title, () => { }, msgs);
+        }
+
         public InfoMenu CreateNotice(string title, Action finishAction, params string[] msgs)
         {
             if (msgs.Length > 0)

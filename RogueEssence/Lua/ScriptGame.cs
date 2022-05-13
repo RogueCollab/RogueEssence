@@ -757,12 +757,12 @@ namespace RogueEssence.Script
 
         public void AddToPlayerMoney(int toadd)
         {
-            DataManager.Instance.Save.ActiveTeam.Money += toadd;
+            DataManager.Instance.Save.ActiveTeam.AddMoney(null, toadd);
         }
 
         public void RemoveFromPlayerMoney(int toremove)
         {
-            DataManager.Instance.Save.ActiveTeam.Money -= toremove;
+            DataManager.Instance.Save.ActiveTeam.LoseMoney(null, toremove);
         }
 
         //===================================

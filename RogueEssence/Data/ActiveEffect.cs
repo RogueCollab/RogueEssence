@@ -32,6 +32,9 @@ namespace RogueEssence.Data
         public PriorityList<BattleEvent> AfterActions;
         public PriorityList<ElementEffectEvent> ElementEffects;
 
+        public PriorityList<ItemGivenEvent> OnEquips;
+        public PriorityList<ItemGivenEvent> OnPickups;
+
         public PriorityList<StatusGivenEvent> BeforeStatusAdds;
         public PriorityList<StatusGivenEvent> OnStatusAdds;
         public PriorityList<StatusGivenEvent> OnStatusRemoves;
@@ -68,7 +71,10 @@ namespace RogueEssence.Data
             OnHitTiles = new PriorityList<BattleEvent>();
             AfterActions = new PriorityList<BattleEvent>();
             ElementEffects = new PriorityList<ElementEffectEvent>();
-            
+
+            OnEquips = new PriorityList<ItemGivenEvent>();
+            OnPickups = new PriorityList<ItemGivenEvent>();
+
             BeforeStatusAdds = new PriorityList<StatusGivenEvent>();
             OnStatusAdds = new PriorityList<StatusGivenEvent>();
             OnStatusRemoves = new PriorityList<StatusGivenEvent>();
@@ -105,6 +111,9 @@ namespace RogueEssence.Data
             addOtherPriorityList(OnHitTiles, other.OnHitTiles);
             addOtherPriorityList(AfterActions, other.AfterActions);
             addOtherPriorityList(ElementEffects, other.ElementEffects);
+
+            addOtherPriorityList(OnEquips, other.OnEquips);
+            addOtherPriorityList(OnPickups, other.OnPickups);
 
             addOtherPriorityList(BeforeStatusAdds, other.BeforeStatusAdds);
             addOtherPriorityList(OnStatusAdds, other.OnStatusAdds);
@@ -150,6 +159,9 @@ namespace RogueEssence.Data
             total += OnHitTiles.Count;
             total += AfterActions.Count;
             total += ElementEffects.Count;
+
+            total += OnEquips.Count;
+            total += OnPickups.Count;
 
             total += BeforeStatusAdds.Count;
             total += OnStatusAdds.Count;

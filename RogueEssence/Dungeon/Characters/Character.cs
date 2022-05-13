@@ -1356,24 +1356,12 @@ namespace RogueEssence.Dungeon
         
         public void EquipItem(InvItem item)
         {
+            ItemCheckContext context = new ItemCheckContext(this, new MapItem(item), new MapItem(EquippedItem));
+
             EquippedItem = item;
-            ItemData entry = DataManager.Instance.GetItem(EquippedItem.ID);
-            
-            if (item.Cursed && !CanRemoveStuck)
-            {
-                GameManager.Instance.SE(GraphicsManager.CursedSE);
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_CURSED", item.GetDisplayName(), GetDisplayName(false)));
-            }
-            else if (entry.Cursed)
-            {
-                GameManager.Instance.SE(GraphicsManager.CursedSE);
-                if (!CanRemoveStuck)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE", item.GetDisplayName(), GetDisplayName(false)));
-                else
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE_AVOID", item.GetDisplayName(), GetDisplayName(false)));
-                item.Cursed = true;
-            }
             RefreshTraits();
+
+            OnEquip(context);
         }
 
         /// <summary>
@@ -1381,8 +1369,12 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public void DequipItem()
         {
+            ItemCheckContext context = new ItemCheckContext(this, new MapItem(), new MapItem(EquippedItem));
+
             EquippedItem = new InvItem();
             RefreshTraits();
+
+            OnEquip(context);
         }
 
         //find a way to prevent repeated calls to this method in various other methods
@@ -1760,6 +1752,34 @@ namespace RogueEssence.Dungeon
             };
             foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
                 effect.Event.Apply(effect.Owner, effect.OwnerChar, this);
+        }
+
+        public void OnEquip(ItemCheckContext context)
+        {
+            DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            {
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnEquips, this);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnEquips, this);
+                
+                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnEquips, this);
+            };
+            foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+        }
+
+        public void OnPickup(ItemCheckContext context)
+        {
+            DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            {
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnPickups, this);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnPickups, this);
+
+                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnPickups, this);
+            };
+            foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
         }
 
 

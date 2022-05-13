@@ -50,9 +50,6 @@ namespace RogueEssence.Data
         [Dev.NumberRange(0, -1, Int32.MaxValue)]
         public int Price;
 
-        //whether or not the item autosticks
-        public bool Cursed;
-
         public int Rarity;
         public int MaxStack;
 

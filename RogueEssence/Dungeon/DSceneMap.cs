@@ -323,12 +323,15 @@ namespace RogueEssence.Dungeon
         {
             //assumes they have the space
             MapItem item = ZoneManager.Instance.CurrentMap.Items[itemSlot];
+
+            ItemCheckContext context = new ItemCheckContext(character, item, new MapItem());
+
             Team memberTeam = character.MemberTeam;
             if (item.IsMoney)
             {
                 ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
-                ((ExplorerTeam)memberTeam).Money += item.Value;
                 LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.GetDisplayName(false), Text.FormatKey("MONEY_AMOUNT", item.Value)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
+                ((ExplorerTeam)memberTeam).AddMoney(character, item.Value);
             }
             else
             {
@@ -371,11 +374,14 @@ namespace RogueEssence.Dungeon
                 bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
                 LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE, item.TileLoc, character, false));
             }
+
+            character.OnPickup(context);
         }
 
 
         public void PickupHoldItem(Character character)
         {
+            //TODO: Due to logging no pickups, the code in here happens instantaneously when it should not
             int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
 
             MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[mapSlot];
@@ -436,7 +442,9 @@ namespace RogueEssence.Dungeon
                 if (invSlot == BattleContext.EQUIP_ITEM_SLOT)
                 {
                     InvItem invItem = character.EquippedItem;
-                    character.DequipItem();
+                    
+                    //no need to call dequip since equip will be called
+                    
                     ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
 
                     bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
@@ -450,7 +458,11 @@ namespace RogueEssence.Dungeon
                 {
                     ExplorerTeam memberTeam = (ExplorerTeam)character.MemberTeam;
                     InvItem invItem = memberTeam.GetInv(invSlot);
+
+                    ItemCheckContext context = new ItemCheckContext(character, item, new MapItem(invItem));
+
                     memberTeam.RemoveFromInv(invSlot);
+                    
                     ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
 
                     GameManager.Instance.SE(GraphicsManager.ReplaceSE);
@@ -458,31 +470,29 @@ namespace RogueEssence.Dungeon
                     LogMsg(Text.FormatKey("MSG_REPLACE_ITEM", item.GetDungeonName(), invItem.GetDisplayName()));
 
                     memberTeam.AddToInv(item.MakeInvItem());
-                }
 
+                    character.OnPickup(context);
+                }
             }
             else
             {
                 result.Success = ActionResult.ResultType.TurnTaken;
 
-                InvItem invItem = null;
+                InvItem invItem;
                 if (invSlot == -1)
-                {
                     invItem = character.EquippedItem;
-                    character.DequipItem();
-                }
                 else
-                {
-                    ExplorerTeam memberTeam = (ExplorerTeam)character.MemberTeam;
-                    invItem = memberTeam.GetInv(invSlot);
-                    memberTeam.RemoveFromInv(invSlot);
-                }
+                    invItem = character.MemberTeam.GetInv(invSlot);
+
+                LogMsg(Text.FormatKey("MSG_PLACE_ITEM", character.GetDisplayName(false), invItem.GetDisplayName()));
 
                 ZoneManager.Instance.CurrentMap.Items.Add(new MapItem(invItem, loc));
                 GameManager.Instance.SE(GraphicsManager.PlaceSE);
 
-                LogMsg(Text.FormatKey("MSG_PLACE_ITEM", character.GetDisplayName(false), invItem.GetDisplayName()));
-
+                if (invSlot == -1)
+                    character.DequipItem();
+                else
+                    character.MemberTeam.RemoveFromInv(invSlot);
             }
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
 
@@ -649,10 +659,11 @@ namespace RogueEssence.Dungeon
             result.Success = ActionResult.ResultType.TurnTaken;
 
             InvItem item = itemChar.EquippedItem;
-            ((ExplorerTeam)memberTeam).AddToInv(item);
-            itemChar.DequipItem();
             GameManager.Instance.SE(GraphicsManager.EquipSE);
             LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.GetDisplayName(false), item.GetDisplayName()));
+            itemChar.DequipItem();
+
+            memberTeam.AddToInv(item);
 
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
             yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character));
