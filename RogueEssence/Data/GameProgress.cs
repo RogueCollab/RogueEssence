@@ -530,72 +530,95 @@ namespace RogueEssence.Data
         private void restoreCharLevel(Character character, Character charFrom, int level)
         {
             //compute the amount of experience removed from the original character
-            int removedEXP = 0;
             MonsterData monsterData = DataManager.Instance.GetMonster(charFrom.BaseForm.Species);
             BaseMonsterForm monsterForm = monsterData.Forms[charFrom.BaseForm.Form];
-            int growth = monsterData.EXPTable;
-            GrowthData growthData = DataManager.Instance.GetGrowth(growth);
-            if (level <= charFrom.Level)
+            try
             {
-                removedEXP += charFrom.EXP;
-                int origLevel = charFrom.Level;
-                while (origLevel > level)
+                int removedEXP = 0;
+                int growth = monsterData.EXPTable;
+                GrowthData growthData = DataManager.Instance.GetGrowth(growth);
+                if (level <= charFrom.Level)
                 {
-                    removedEXP += growthData.GetExpToNext(origLevel - 1);
-                    origLevel--;
-                }
-            }
-            //add the EXP to the character
-            if (character.Level < DataManager.Instance.MaxLevel)
-            {
-                character.EXP += removedEXP;
-
-                while (character.EXP >= growthData.GetExpToNext(character.Level))
-                {
-                    if (character.Level >= DataManager.Instance.MaxLevel)
+                    removedEXP += charFrom.EXP;
+                    int origLevel = charFrom.Level;
+                    while (origLevel > level)
                     {
-                        character.EXP = 0;
-                        break;
+                        removedEXP += growthData.GetExpToNext(origLevel - 1);
+                        origLevel--;
                     }
-                    character.EXP -= growthData.GetExpToNext(character.Level);
-                    character.Level++;
                 }
-            }
-            //add stat boosts
-            character.MaxHPBonus = Math.Min(character.MaxHPBonus + charFrom.MaxHPBonus, monsterForm.GetMaxStatBonus(Stat.HP));
-            character.AtkBonus = Math.Min(character.AtkBonus + charFrom.AtkBonus, monsterForm.GetMaxStatBonus(Stat.Attack));
-            character.DefBonus = Math.Min(character.DefBonus + charFrom.DefBonus, monsterForm.GetMaxStatBonus(Stat.Defense));
-            character.MAtkBonus = Math.Min(character.MAtkBonus + charFrom.MAtkBonus, monsterForm.GetMaxStatBonus(Stat.MAtk));
-            character.MDefBonus = Math.Min(character.MDefBonus + charFrom.MDefBonus, monsterForm.GetMaxStatBonus(Stat.MDef));
-            character.SpeedBonus = Math.Min(character.SpeedBonus + charFrom.SpeedBonus, monsterForm.GetMaxStatBonus(Stat.Speed));
-            character.HP = character.MaxHP;
-
-            //restore skills
-            while (character.BaseSkills[0].SkillNum > -1)
-                character.DeleteSkill(0);
-            for(int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
-            {
-                if (charFrom.BaseSkills[ii].SkillNum > -1)
+                //add the EXP to the character
+                if (character.Level < DataManager.Instance.MaxLevel)
                 {
-                    bool enabled = false;
-                    foreach (BackReference<Skill> skill in charFrom.Skills)
+                    character.EXP += removedEXP;
+
+                    while (character.EXP >= growthData.GetExpToNext(character.Level))
                     {
-                        if (skill.BackRef == ii)
+                        character.EXP -= growthData.GetExpToNext(character.Level);
+                        character.Level++;
+
+                        if (character.Level >= DataManager.Instance.MaxLevel)
                         {
-                            enabled = skill.Element.Enabled;
+                            character.EXP = 0;
                             break;
                         }
                     }
-                    character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
                 }
             }
-
-            //restore remembered skills
-            for (int ii = 0; ii < charFrom.Relearnables.Count; ii++)
+            catch (Exception ex)
             {
-                if (ii >= character.Relearnables.Count)
-                    character.Relearnables.Add(false);
-                character.Relearnables[ii] |= charFrom.Relearnables[ii];
+                DiagManager.Instance.LogError(ex);
+            }
+
+            try
+            {
+                //add stat boosts
+                character.MaxHPBonus = Math.Min(character.MaxHPBonus + charFrom.MaxHPBonus, monsterForm.GetMaxStatBonus(Stat.HP));
+                character.AtkBonus = Math.Min(character.AtkBonus + charFrom.AtkBonus, monsterForm.GetMaxStatBonus(Stat.Attack));
+                character.DefBonus = Math.Min(character.DefBonus + charFrom.DefBonus, monsterForm.GetMaxStatBonus(Stat.Defense));
+                character.MAtkBonus = Math.Min(character.MAtkBonus + charFrom.MAtkBonus, monsterForm.GetMaxStatBonus(Stat.MAtk));
+                character.MDefBonus = Math.Min(character.MDefBonus + charFrom.MDefBonus, monsterForm.GetMaxStatBonus(Stat.MDef));
+                character.SpeedBonus = Math.Min(character.SpeedBonus + charFrom.SpeedBonus, monsterForm.GetMaxStatBonus(Stat.Speed));
+                character.HP = character.MaxHP;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+
+            try
+            {
+                //restore skills
+                while (character.BaseSkills[0].SkillNum > -1)
+                    character.DeleteSkill(0);
+                for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
+                {
+                    if (charFrom.BaseSkills[ii].SkillNum > -1)
+                    {
+                        bool enabled = false;
+                        foreach (BackReference<Skill> skill in charFrom.Skills)
+                        {
+                            if (skill.BackRef == ii)
+                            {
+                                enabled = skill.Element.Enabled;
+                                break;
+                            }
+                        }
+                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
+                    }
+                }
+
+                //restore remembered skills
+                for (int ii = 0; ii < charFrom.Relearnables.Count; ii++)
+                {
+                    if (ii >= character.Relearnables.Count)
+                        character.Relearnables.Add(false);
+                    character.Relearnables[ii] |= charFrom.Relearnables[ii];
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
             }
 
             //restoreCharLevel the backref

@@ -777,13 +777,14 @@ namespace RogueEssence.Dungeon
                 {
                     while (player.EXP >= growthData.GetExpToNext(player.Level))
                     {
+                        player.EXP -= growthData.GetExpToNext(player.Level);
+                        player.Level++;
+
                         if (player.Level >= DataManager.Instance.MaxLevel)
                         {
                             player.EXP = 0;
                             break;
                         }
-                        player.EXP -= growthData.GetExpToNext(player.Level);
-                        player.Level++;
                     }
 
 
