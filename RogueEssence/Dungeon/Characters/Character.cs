@@ -1759,7 +1759,8 @@ namespace RogueEssence.Dungeon
             DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnEquips, this);
-                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnEquips, this);
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnEquips, this);
                 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
                     effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnEquips, this);

@@ -293,23 +293,80 @@ namespace RogueEssence.Data
 
         public IEnumerator<YieldInstruction> RestrictTeam(ZoneData zone, bool silent)
         {
-            int teamSize = ExplorerTeam.MAX_TEAM_SLOTS;
-            if (zone.TeamSize > -1)
-                teamSize = zone.TeamSize;
-            if (zone.TeamRestrict)
-                teamSize = 1;
-
             List<string> teamRestrictions = new List<string>();
-            while (ActiveTeam.Players.Count > teamSize)
+            List<string> bagRestrictions = new List<string>();
+
+            try
             {
-                int sendHomeIndex = ActiveTeam.Players.Count - 1;
-                if (sendHomeIndex == ActiveTeam.LeaderIndex)
-                    sendHomeIndex--;
-                teamRestrictions.Add(ActiveTeam.Players[sendHomeIndex].GetDisplayName(true));
-                if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                    GroundScene.Instance.SilentSendHome(sendHomeIndex);
-                else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    DungeonScene.Instance.SilentSendHome(sendHomeIndex);
+                int teamSize = ExplorerTeam.MAX_TEAM_SLOTS;
+                if (zone.TeamSize > -1)
+                    teamSize = zone.TeamSize;
+                if (zone.TeamRestrict)
+                    teamSize = 1;
+
+                while (ActiveTeam.Players.Count > teamSize)
+                {
+                    int sendHomeIndex = ActiveTeam.Players.Count - 1;
+                    if (sendHomeIndex == ActiveTeam.LeaderIndex)
+                        sendHomeIndex--;
+                    teamRestrictions.Add(ActiveTeam.Players[sendHomeIndex].GetDisplayName(true));
+                    if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                        GroundScene.Instance.SilentSendHome(sendHomeIndex);
+                    else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        DungeonScene.Instance.SilentSendHome(sendHomeIndex);
+                }
+
+                if (zone.MoneyRestrict && ActiveTeam.Money > 0)
+                {
+                    ActiveTeam.Bank += ActiveTeam.Money;
+                    ActiveTeam.Money = 0;
+                    bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_MONEY"));
+                }
+
+                if (zone.BagRestrict > -1)
+                {
+                    bool removedItems = false;
+                    int heldSlots = 0;
+                    foreach (Character player in ActiveTeam.Players)
+                    {
+                        if (player.EquippedItem.ID > -1)
+                            heldSlots++;
+                    }
+                    List<InvItem> itemsToStore = new List<InvItem>();
+                    while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict && ActiveTeam.GetInvCount() > 0)
+                    {
+                        removedItems = true;
+                        itemsToStore.Add(ActiveTeam.GetInv(ActiveTeam.GetInvCount() - 1));
+
+                        ActiveTeam.RemoveFromInv(ActiveTeam.GetInvCount() - 1);
+                    }
+                    while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict)
+                    {
+                        foreach (Character player in ActiveTeam.Players)
+                        {
+                            if (player.EquippedItem.ID > -1)
+                            {
+                                removedItems = true;
+                                itemsToStore.Add(player.EquippedItem);
+                                player.DequipItem();
+                                heldSlots--;
+                                break;
+                            }
+                        }
+                    }
+                    ActiveTeam.StoreItems(itemsToStore);
+                    if (!silent && removedItems)
+                    {
+                        if (zone.BagRestrict > 0)
+                            bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT", zone.BagRestrict));
+                        else
+                            bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
             }
 
             if (!silent)
@@ -317,65 +374,17 @@ namespace RogueEssence.Data
                 if (teamRestrictions.Count > 1)
                 {
                     string compositeList = Text.BuildList(teamRestrictions.ToArray());
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_TEAM_SENT_HOME_PLURAL", compositeList)));
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_TEAM_SENT_HOME_PLURAL", compositeList)));
                 }
                 else if (teamRestrictions.Count == 1)
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_TEAM_SENT_HOME", teamRestrictions[0])));
-            }
-            
-            List<string> bagRestrictions = new List<string>();
-            if (zone.MoneyRestrict && ActiveTeam.Money > 0)
-            {
-                ActiveTeam.Bank += ActiveTeam.Money;
-                ActiveTeam.Money = 0;
-                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_MONEY"));
-            }
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("MSG_TEAM_SENT_HOME", teamRestrictions[0])));
 
-            if (zone.BagRestrict > -1)
-            {
-                bool removedItems = false;
-                int heldSlots = 0;
-                foreach (Character player in ActiveTeam.Players)
+                if (bagRestrictions.Count > 0)
                 {
-                    if (player.EquippedItem.ID > -1)
-                        heldSlots++;
+                    string compositeList = Text.BuildList(bagRestrictions.ToArray());
+                    string finalMsg = Text.FormatKey("DLG_RESTRICT_BAG", (compositeList[0].ToString()).ToUpper() + compositeList.Substring(1));
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(finalMsg));
                 }
-                List<InvItem> itemsToStore = new List<InvItem>();
-                while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict && ActiveTeam.GetInvCount() > 0)
-                {
-                    removedItems = true;
-                    itemsToStore.Add(ActiveTeam.GetInv(ActiveTeam.GetInvCount() - 1));
-                    
-                    ActiveTeam.RemoveFromInv(ActiveTeam.GetInvCount() - 1);
-                }
-                while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict)
-                {
-                    foreach (Character player in ActiveTeam.Players)
-                    {
-                        if (player.EquippedItem.ID > -1)
-                        {
-                            removedItems = true;
-                            itemsToStore.Add(player.EquippedItem);
-                            player.DequipItem();
-                            heldSlots--;
-                            break;
-                        }
-                    }
-                }
-                ActiveTeam.StoreItems(itemsToStore);
-                if (!silent && removedItems)
-                {
-                    if (zone.BagRestrict > 0)
-                        bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT", zone.BagRestrict));
-                    else
-                        bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
-                }
-            }
-            if (bagRestrictions.Count > 0 && !silent)
-            {
-                string compositeList = Text.BuildList(bagRestrictions.ToArray());
-                string finalMsg = Text.FormatKey("DLG_RESTRICT_BAG", (compositeList[0].ToString()).ToUpper() + compositeList.Substring(1));
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(finalMsg));
             }
         }
 
@@ -409,23 +418,31 @@ namespace RogueEssence.Data
         public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool capOnly, bool permanent, bool silent)
         {
             StartLevel = zone.Level;
-            for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
+            try
             {
-                RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, capOnly);
-                if (!permanent)
-                    ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
+                for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, capOnly);
+                    if (!permanent)
+                        ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
+                }
+                for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, capOnly);
+                    //no backref for guests
+                }
+                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, capOnly);
+                    if (!permanent)
+                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
+                }
             }
-            for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
+            catch (Exception ex)
             {
-                RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, capOnly);
-                //no backref for guests
+                DiagManager.Instance.LogError(ex);
             }
-            for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
-            {
-                RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, capOnly);
-                if (!permanent)
-                    ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
-            }
+
             if (!silent)
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_RESTRICT_LEVEL", StartLevel)));
         }
@@ -863,25 +880,32 @@ namespace RogueEssence.Data
 
         public static void LossPenalty(GameProgress save)
         {
-            //remove money
-            save.ActiveTeam.Money = 0;
-            //remove bag items
-            for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
+            try
             {
-                ItemData entry = DataManager.Instance.GetItem(save.ActiveTeam.GetInv(ii).ID);
-                if (!entry.CannotDrop)
-                    save.ActiveTeam.RemoveFromInv(ii);
-            }
-
-            //remove equips
-            foreach (Character player in save.ActiveTeam.EnumerateChars())
-            {
-                if (player.EquippedItem.ID > -1)
+                //remove money
+                save.ActiveTeam.Money = 0;
+                //remove bag items
+                for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
                 {
-                    ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
+                    ItemData entry = DataManager.Instance.GetItem(save.ActiveTeam.GetInv(ii).ID);
                     if (!entry.CannotDrop)
-                        player.DequipItem();
+                        save.ActiveTeam.RemoveFromInv(ii);
                 }
+
+                //remove equips
+                foreach (Character player in save.ActiveTeam.EnumerateChars())
+                {
+                    if (player.EquippedItem.ID > -1)
+                    {
+                        ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
+                        if (!entry.CannotDrop)
+                            player.DequipItem();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
             }
         }
 
