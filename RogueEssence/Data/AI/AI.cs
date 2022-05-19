@@ -54,7 +54,7 @@ namespace RogueEssence.Data
                 return currentPlan.Think(controlledChar, preThink, rand);
             else
             {
-                plan.SwitchedIn();
+                plan.SwitchedIn(currentPlan);
                 GameAction result = plan.Think(controlledChar, preThink, rand);
                 if (result != null)
                     currentPlan = plan;
