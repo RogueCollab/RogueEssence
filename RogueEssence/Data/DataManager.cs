@@ -454,7 +454,6 @@ namespace RogueEssence.Data
         public void ContentChanged(DataType dataType, int entryNum, IEntryData data)
         {
             SaveData(entryNum, dataType.ToString(), data);
-            ClearCache(dataType);
             EntrySummary entrySummary = data.GenerateEntrySummary();
             if (entryNum > DataIndices[dataType].Count)
                 throw new ArgumentException(String.Format("Attempted to change entry {0} in a {1}-size index.", entryNum, DataIndices[dataType].Count));
@@ -466,6 +465,7 @@ namespace RogueEssence.Data
             }
             DataIndices[dataType].Entries[entryNum] = entrySummary;
             SaveIndex(dataType);
+            ClearCache(dataType);
 
             foreach (BaseData baseData in UniversalData)
             {
