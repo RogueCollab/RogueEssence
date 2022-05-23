@@ -93,7 +93,18 @@ namespace RogueEssence.Dungeon
         public Loc ViewOffset;
 
         [NonSerialized]
-        public ExplorerTeam ActiveTeam;
+        private ExplorerTeam activeTeam;
+        public ExplorerTeam ActiveTeam
+        {
+            get { return activeTeam; }
+            set
+            {
+                if (activeTeam != null)
+                    activeTeam.containingMap = null;
+                activeTeam = value;
+                activeTeam.containingMap = this;
+            }
+        }
 
         public bool NoRescue;
         public bool NoSwitching;
@@ -353,6 +364,7 @@ namespace RogueEssence.Dungeon
         public void EnterMap(ExplorerTeam activeTeam, LocRay8 entryPoint)
         {
             ActiveTeam = activeTeam;
+
             //place characters around in order
             ActiveTeam.Leader.CharLoc = entryPoint.Loc;
             if (entryPoint.Dir != Dir8.None)
@@ -769,6 +781,23 @@ namespace RogueEssence.Dungeon
                 foreach (Character c in IterateCharacters())
                     c.DoCleanup();
             }
+        }
+
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            ReconnectTeamReference();
+        }
+
+        protected virtual void ReconnectTeamReference()
+        {
+            //reconnect Teams' references
+            foreach (Team team in AllyTeams)
+                team.containingMap = this;
+            foreach (Team team in MapTeams)
+                team.containingMap = this;
         }
     }
 
