@@ -9,10 +9,113 @@ using RogueEssence.LevelGen;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
+    public class EventedList<T> : ICollection<T>, IEnumerable<T>, IEnumerable, IList<T>, IReadOnlyCollection<T>, IReadOnlyList<T>, ICollection, IList
+    {
+        private List<T> list;
+
+        public T this[int index] { get => list[index]; set => list[index] = value; }
+        object IList.this[int index] { get => list[index]; set => list[index] = (T)value; }
+
+        public int Count => list.Count;
+
+        public bool IsReadOnly => ((IList)list).IsReadOnly;
+        public bool IsFixedSize => ((IList)list).IsFixedSize;
+        public bool IsSynchronized => ((IList)list).IsSynchronized;
+        public object SyncRoot => ((IList)list).SyncRoot;
+
+        public EventedList()
+        {
+            list = new List<T>();
+        }
+
+        public void Add(T item)
+        {
+            list.Add(item);
+        }
+
+        int IList.Add(object value)
+        {
+            return ((IList)list).Add(value);
+        }
+
+        public void Clear()
+        {
+            list.Clear();
+        }
+
+        public bool Contains(T item)
+        {
+            return list.Contains(item);
+        }
+
+        bool IList.Contains(object value)
+        {
+            return ((IList)list).Contains(value);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            list.CopyTo(array, arrayIndex);
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            ((IList)list).CopyTo(array, index);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return list.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return list.GetEnumerator();
+        }
+
+        public int IndexOf(T item)
+        {
+            return list.IndexOf(item);
+        }
+
+        int IList.IndexOf(object value)
+        {
+            return ((IList)list).IndexOf(value);
+        }
+
+        public void Insert(int index, T item)
+        {
+            list.Insert(index, item);
+        }
+
+        void IList.Insert(int index, object value)
+        {
+            ((IList)list).Insert(index, value);
+        }
+
+        public bool Remove(T item)
+        {
+            return list.Remove(item);
+        }
+
+        void IList.Remove(object value)
+        {
+            ((IList)list).Remove(value);
+        }
+
+        public void RemoveAt(int index)
+        {
+            list.RemoveAt(index);
+        }
+    }
+
+
+
+    [Serializable]
     public abstract class Team
     {
-        public List<Character> Players;
-        public List<Character> Guests;
+        public EventedList<Character> Players;
+        public EventedList<Character> Guests;
 
         public int LeaderIndex;
 
@@ -25,8 +128,8 @@ namespace RogueEssence.Dungeon
 
         public Team()
         {
-            Players = new List<Character>();
-            Guests = new List<Character>();
+            Players = new EventedList<Character>();
+            Guests = new EventedList<Character>();
             inventory = new List<InvItem>();
         }
         

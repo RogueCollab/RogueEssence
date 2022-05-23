@@ -619,18 +619,18 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MapEntityStateUndo : StateUndo<List<Team>>
+    public class MapEntityStateUndo : StateUndo<EventedList<Team>>
     {
         public MapEntityStateUndo()
         {
         }
 
-        public override List<Team> GetState()
+        public override EventedList<Team> GetState()
         {
             return ZoneManager.Instance.CurrentMap.MapTeams;
         }
 
-        public override void SetState(List<Team> state)
+        public override void SetState(EventedList<Team> state)
         {
             ZoneManager.Instance.CurrentMap.MapTeams = state;
         }

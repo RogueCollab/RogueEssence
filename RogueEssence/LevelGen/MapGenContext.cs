@@ -75,8 +75,8 @@ namespace RogueEssence.LevelGen
         public bool TilesInitialized { get { return Map.Tiles != null; } }
 
         public List<MapItem> Items { get { return Map.Items; } }
-        public List<Team> AllyTeams { get { return Map.AllyTeams; } }
-        public List<Team> MapTeams { get { return Map.MapTeams; } }
+        public EventedList<Team> AllyTeams { get { return Map.AllyTeams; } }
+        public EventedList<Team> MapTeams { get { return Map.MapTeams; } }
 
         public PostProcTile[][] PostProcGrid { get; private set; }
 

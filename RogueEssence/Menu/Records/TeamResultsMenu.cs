@@ -26,7 +26,7 @@ namespace RogueEssence.Menu
 
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            List<Character> charList = GetChars();
+            EventedList<Character> charList = GetChars();
             Stats = new MenuText[charList.Count * 4];
             Portraits = new SpeakerPortrait[charList.Count];
             for (int ii = 0; ii < charList.Count; ii++)
@@ -70,7 +70,7 @@ namespace RogueEssence.Menu
         }
 
         protected abstract string GetTitle();
-        protected abstract List<Character> GetChars();
+        protected abstract EventedList<Character> GetChars();
     }
 
 
@@ -89,7 +89,7 @@ namespace RogueEssence.Menu
                 return Text.FormatKey("MENU_TEAM_TITLE");
         }
 
-        protected override List<Character> GetChars()
+        protected override EventedList<Character> GetChars()
         {
             return Ending.ActiveTeam.Players;
         }
@@ -140,9 +140,9 @@ namespace RogueEssence.Menu
                 return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, (Ending.ActiveTeam.Assembly.Count - 1) / 4 + 1);
         }
 
-        protected override List<Character> GetChars()
+        protected override EventedList<Character> GetChars()
         {
-            List<Character> characters = new List<Character>();
+            EventedList<Character> characters = new EventedList<Character>();
             for (int ii = Page * 4; ii < Ending.ActiveTeam.Assembly.Count && ii < (Page + 1) * 4; ii++)
                 characters.Add(Ending.ActiveTeam.Assembly[ii]);
             return characters;

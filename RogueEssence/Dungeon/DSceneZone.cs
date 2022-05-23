@@ -546,7 +546,7 @@ namespace RogueEssence.Dungeon
 
             Team team = ZoneManager.Instance.CurrentMap.GetTeam(charIndex.Faction, charIndex.Team);
 
-            List<Character> playerList = (charIndex.Guest) ? team.Guests : team.Players;
+            EventedList<Character> playerList = (charIndex.Guest) ? team.Guests : team.Players;
             Character character = playerList[charIndex.Char];
 
             character.OnRemove();
@@ -706,7 +706,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        private int getLiveIndex(List<Character> playerList)
+        private int getLiveIndex(EventedList<Character> playerList)
         {
             for (int ii = 0; ii < playerList.Count; ii++)
             {

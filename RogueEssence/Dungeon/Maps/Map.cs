@@ -379,7 +379,7 @@ namespace RogueEssence.Dungeon
         public Character LookupCharIndex(CharIndex charIndex)
         {
             Team team = GetTeam(charIndex.Faction, charIndex.Team);
-            List<Character> playerList;
+            EventedList<Character> playerList;
             if (charIndex.Guest)
                 playerList = team.Guests;
             else

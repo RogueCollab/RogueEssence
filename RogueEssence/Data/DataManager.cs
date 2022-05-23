@@ -1585,7 +1585,7 @@ namespace RogueEssence.Data
             }
         }
 
-        private void saveTeamMemberStatusRefs(BinaryWriter writer, ref int totalStatusRefs, Faction faction, int teamIndex, bool guest, List<Character> playerList)
+        private void saveTeamMemberStatusRefs(BinaryWriter writer, ref int totalStatusRefs, Faction faction, int teamIndex, bool guest, EventedList<Character> playerList)
         {
             for (int jj = 0; jj < playerList.Count; jj++)
             {
@@ -1740,7 +1740,7 @@ namespace RogueEssence.Data
                             team = state.Save.ActiveTeam;
                             break;
                     }
-                    List<Character> playerList = guest ? team.Guests : team.Players;
+                    EventedList<Character> playerList = guest ? team.Guests : team.Players;
                     StatusEffect status = playerList[player].StatusEffects[statusID];
 
                     Team targetTeam = null;
@@ -1756,7 +1756,7 @@ namespace RogueEssence.Data
                             targetTeam = state.Save.ActiveTeam;
                             break;
                     }
-                    List<Character> targetPlayerList = targetGuest ? targetTeam.Guests : targetTeam.Players;
+                    EventedList<Character> targetPlayerList = targetGuest ? targetTeam.Guests : targetTeam.Players;
                     status.TargetChar = targetPlayerList[targetChar];
                     status.TargetChar.StatusesTargetingThis.Add(new StatusRef(status.ID, playerList[player]));
                 }
