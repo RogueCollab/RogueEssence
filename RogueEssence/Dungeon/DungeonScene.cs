@@ -1472,7 +1472,7 @@ namespace RogueEssence.Dungeon
         {
             Fov.LightOperation lightOp = (int locX, int locY, float light) =>
             {
-                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(locX, locY)))
+                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(locX, locY)) && Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(locX, locY)))
                 {
                     //Can only light up tiles that have been explored
                     if (ZoneManager.Instance.CurrentMap.DiscoveryArray[locX][locY] == Map.DiscoveryState.Traversed)
