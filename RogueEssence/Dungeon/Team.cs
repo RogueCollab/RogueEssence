@@ -160,6 +160,9 @@ namespace RogueEssence.Dungeon
 
         private List<InvItem> inventory;
 
+        [NonSerialized]
+        public Map containingMap;
+
         public Team()
         {
             Players = new EventedList<Character>();
