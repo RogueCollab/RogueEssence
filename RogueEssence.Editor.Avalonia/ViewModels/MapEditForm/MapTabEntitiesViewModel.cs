@@ -18,7 +18,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabEntitiesViewModel()
         {
             MonsterTeam team = new MonsterTeam();
-            SelectedEntity = new Character(new CharData(), team);
+            SelectedEntity = new Character(new CharData());
             SelectedEntity.Level = 1;
             SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
             team.Players.Add(SelectedEntity);
@@ -548,7 +548,7 @@ namespace RogueEssence.Dev.ViewModels
             else
             {
                 MonsterTeam team = new MonsterTeam();
-                SelectedEntity = new Character(new CharData(), team);
+                SelectedEntity = new Character(new CharData());
                 SelectedEntity.Level = 1;
                 SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
                 team.Players.Add(SelectedEntity);

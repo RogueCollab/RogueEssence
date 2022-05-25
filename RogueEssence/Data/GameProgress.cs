@@ -1087,7 +1087,7 @@ namespace RogueEssence.Data
 
             foreach (CharData charData in CharsToStore)
             {
-                Character chara = new Character(charData, ActiveTeam);
+                Character chara = new Character(charData);
                 AITactic tactic = DataManager.Instance.GetAITactic(0);
                 chara.Tactic = new AITactic(tactic);
                 destProgress.ActiveTeam.Assembly.Add(chara);

@@ -700,7 +700,7 @@ namespace RogueEssence.Dev.ViewModels
                             chdata.Nickname = "";
                             chdata.BaseForm = new MonsterID();
                             chdata.Level = 1;
-                            Character ch = new Character(chdata, null);
+                            Character ch = new Character(chdata);
                             AITactic tactic = DataManager.Instance.GetAITactic(0);
                             ch.Tactic = new AITactic(tactic);
 

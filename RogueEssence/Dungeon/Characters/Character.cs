@@ -255,7 +255,7 @@ namespace RogueEssence.Dungeon
 
         //temporarily stores forced warp to prevent warp chains
         public List<Loc> WarpHistory;
-        
+
         [NonSerialized]
         public Team MemberTeam;
 
@@ -303,10 +303,10 @@ namespace RogueEssence.Dungeon
             BackRef = new TempCharBackRef(false, -1);
         }
 
-        public Character(CharData baseChar, Team team)
-            : this(baseChar, team, new Loc(), Dir8.Down) { }
+        public Character(CharData baseChar)
+            : this(baseChar, new Loc(), Dir8.Down) { }
 
-        public Character(CharData baseChar, Team team, Loc newLoc, Dir8 charDir)
+        public Character(CharData baseChar, Loc newLoc, Dir8 charDir)
             : base(baseChar)
         {            
             CurrentForm = BaseForm;
@@ -348,7 +348,6 @@ namespace RogueEssence.Dungeon
             StatusEffects = new Dictionary<int, StatusEffect>();
             currentCharAction = new EmptyCharAction(new CharAnimIdle(newLoc, charDir));
             StatusesTargetingThis = new List<StatusRef>();
-            MemberTeam = team;
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
@@ -376,7 +375,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
                 character.BaseIntrinsics[ii] = this.BaseIntrinsics[ii];
 
-            Character new_mob = new Character(character, team);
+            Character new_mob = new Character(character);
             team.Players.Add(new_mob);
             new_mob.CharLoc = this.CharLoc;
             new_mob.CharDir = this.CharDir;

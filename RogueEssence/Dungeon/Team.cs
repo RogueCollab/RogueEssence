@@ -161,7 +161,7 @@ namespace RogueEssence.Dungeon
         private List<InvItem> inventory;
 
         [NonSerialized]
-        public Map containingMap;
+        public Map ContainingMap;
 
         public Team()
         {
@@ -206,32 +206,46 @@ namespace RogueEssence.Dungeon
         {
             Players.ItemAdding += addingMember;
             Guests.ItemAdding += addingMember;
-            Players.ItemChanging += settingMember;
-            Guests.ItemChanging += settingMember;
+            Players.ItemChanging += settingPlayer;
+            Guests.ItemChanging += settingGuest;
             Players.ItemRemoving += removingMember;
             Guests.ItemRemoving += removingMember;
             Players.ItemsClearing += clearingPlayers;
             Guests.ItemsClearing += clearingGuests;
         }
 
-        private void settingMember(int index, Character chara)
+        private void settingPlayer(int index, Character chara)
         {
+            Players[index].MemberTeam = null;
+            chara.MemberTeam = this;
+            //TODO: update location caches
+        }
+        private void settingGuest(int index, Character chara)
+        {
+            Guests[index].MemberTeam = null;
+            chara.MemberTeam = this;
             //TODO: update location caches
         }
         private void addingMember(int index, Character chara)
         {
+            chara.MemberTeam = this;
             //TODO: update location caches
         }
         private void removingMember(int index, Character chara)
         {
+            chara.MemberTeam = null;
             //TODO: update location caches
         }
         private void clearingPlayers()
         {
+            foreach (Character chara in Players)
+                chara.MemberTeam = null;
             //TODO: update location caches
         }
         private void clearingGuests()
         {
+            foreach (Character chara in Guests)
+                chara.MemberTeam = null;
             //TODO: update location caches
         }
 
@@ -587,7 +601,7 @@ namespace RogueEssence.Dungeon
 
         public Character CreatePlayer(CharData character)
         {
-            Character player = new Character(character, this);
+            Character player = new Character(character);
             foreach (BackReference<Skill> skill in player.Skills)
             {
                 if (skill.Element.SkillNum > -1)

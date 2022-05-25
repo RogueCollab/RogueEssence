@@ -100,9 +100,9 @@ namespace RogueEssence.Dungeon
             set
             {
                 if (activeTeam != null)
-                    activeTeam.containingMap = null;
+                    activeTeam.ContainingMap = null;
                 activeTeam = value;
-                activeTeam.containingMap = this;
+                activeTeam.ContainingMap = this;
             }
         }
 
@@ -684,32 +684,46 @@ namespace RogueEssence.Dungeon
         {
             AllyTeams.ItemAdding += addingTeam;
             MapTeams.ItemAdding += addingTeam;
-            AllyTeams.ItemChanging += settingTeam;
-            MapTeams.ItemChanging += settingTeam;
+            AllyTeams.ItemChanging += settingAllies;
+            MapTeams.ItemChanging += settingFoes;
             AllyTeams.ItemRemoving += removingTeam;
             MapTeams.ItemRemoving += removingTeam;
             AllyTeams.ItemsClearing += clearingAllies;
             MapTeams.ItemsClearing += clearingFoes;
         }
 
-        private void settingTeam(int index, Team chara)
+        private void settingAllies(int index, Team team)
         {
+            AllyTeams[index].ContainingMap = null;
+            team.ContainingMap = this;
             //TODO: update location caches
         }
-        private void addingTeam(int index, Team chara)
+        private void settingFoes(int index, Team team)
         {
+            MapTeams[index].ContainingMap = null;
+            team.ContainingMap = this;
             //TODO: update location caches
         }
-        private void removingTeam(int index, Team chara)
+        private void addingTeam(int index, Team team)
         {
+            team.ContainingMap = this;
+            //TODO: update location caches
+        }
+        private void removingTeam(int index, Team team)
+        {
+            team.ContainingMap = null;
             //TODO: update location caches
         }
         private void clearingAllies()
         {
+            foreach (Team team in AllyTeams)
+                team.ContainingMap = null;
             //TODO: update location caches
         }
         private void clearingFoes()
         {
+            foreach (Team team in MapTeams)
+                team.ContainingMap = null;
             //TODO: update location caches
         }
 
@@ -823,16 +837,17 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            ReconnectTeamReference();
+            //No need to set team events since they'd already be set during the class construction phase of deserialization
+            ReconnectMapReference();
         }
 
-        protected virtual void ReconnectTeamReference()
+        protected virtual void ReconnectMapReference()
         {
             //reconnect Teams' references
             foreach (Team team in AllyTeams)
-                team.containingMap = this;
+                team.ContainingMap = this;
             foreach (Team team in MapTeams)
-                team.containingMap = this;
+                team.ContainingMap = this;
         }
     }
 

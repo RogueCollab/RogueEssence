@@ -107,7 +107,7 @@ namespace RogueEssence.LevelGen
 
             character.Discriminator = map.Rand.Next();
 
-            Character new_mob = new Character(character, team);
+            Character new_mob = new Character(character);
             team.Players.Add(new_mob);
 
             return new_mob;
