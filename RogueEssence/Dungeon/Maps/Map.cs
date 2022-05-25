@@ -41,6 +41,10 @@ namespace RogueEssence.Dungeon
             Traversed//shows all
         }
 
+        //Fast-lookup from location to character
+        [NonSerialized]
+        private Dictionary<Loc, List<Character>> lookup;
+
         public LocalText Name { get; set; }
 
 
@@ -100,9 +104,19 @@ namespace RogueEssence.Dungeon
             set
             {
                 if (activeTeam != null)
+                {
                     activeTeam.ContainingMap = null;
+
+                    //remove references from the lookup
+                    removeTeamLookup(activeTeam);
+                }
                 activeTeam = value;
-                activeTeam.ContainingMap = this;
+                if (activeTeam != null)
+                {
+                    activeTeam.ContainingMap = this;
+                    //add references to the lookup
+                    addTeamLookup(activeTeam);
+                }
             }
         }
 
@@ -160,6 +174,8 @@ namespace RogueEssence.Dungeon
             DiscoveryArray = new DiscoveryState[width][];
             for (int ii = 0; ii < width; ii++)
                 DiscoveryArray[ii] = new DiscoveryState[height];
+
+            lookup = new Dictionary<Loc, List<Character>>();
         }
 
 
@@ -254,8 +270,8 @@ namespace RogueEssence.Dungeon
 
                     if (Grid.GetForkDirs(testLoc, TileBlocked, TileBlocked).Count >= 2)
                         return;
-                        //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
-                        foreach (Character character in ActiveTeam.Players)
+                    //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
+                    foreach (Character character in ActiveTeam.Players)
                     {
                         if (character.IsInSightBounds(testLoc))
                             return;
@@ -560,12 +576,50 @@ namespace RogueEssence.Dungeon
 
         public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
-            foreach (Character character in IterateCharacters())
+            bool oldSystem = false;
+            bool newSystem = true;
+
+            Character oldResult = null;
+            if (oldSystem)
             {
-                if (!character.Dead && character.CharLoc == loc && exclude != character)
-                    return character;
+                foreach (Character character in IterateCharacters())
+                {
+                    if (!character.Dead && character.CharLoc == loc && exclude != character)
+                    {
+                        oldResult = character;
+                        break;
+                    }
+                }
             }
-            return null;
+
+            Character newResult = null;
+            if (newSystem)
+            {
+                List<Character> list;
+                if (lookup.TryGetValue(loc, out list))
+                {
+                    foreach (Character character in list)
+                    {
+                        if (!character.Dead && character.CharLoc == loc && exclude != character)
+                        {
+                            newResult = character;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (oldSystem && newSystem)
+            {
+                if (oldResult != newResult)
+                    throw new Exception("Inconsistent cache!");
+
+                return newResult;
+            }
+            else if (newSystem)
+                return newResult;
+            else
+                return oldResult;
         }
 
 
@@ -692,39 +746,120 @@ namespace RogueEssence.Dungeon
             MapTeams.ItemsClearing += clearingFoes;
         }
 
+        private void removeTeamLookup(Team team)
+        {
+            foreach (Character chara in team.Players)
+                RemoveCharLookup(chara);
+            foreach (Character chara in team.Guests)
+                RemoveCharLookup(chara);
+        }
+
+        private void addTeamLookup(Team team)
+        {
+            foreach (Character chara in team.Players)
+                AddCharLookup(chara);
+            foreach (Character chara in team.Guests)
+                AddCharLookup(chara);
+        }
+
+        public void RemoveCharLookup(Character chara)
+        {
+            try
+            {
+                List<Character> list = lookup[chara.CharLoc];
+                int idx = list.IndexOf(chara);
+                list.RemoveAt(idx);
+                if (list.Count == 0)
+                    lookup.Remove(chara.CharLoc);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+        public void AddCharLookup(Character chara)
+        {
+            try
+            {
+                //add to new location
+                List<Character> newList;
+                if (lookup.TryGetValue(chara.CharLoc, out newList))
+                    newList.Add(chara);
+                else
+                {
+                    lookup[chara.CharLoc] = new List<Character>();
+                    lookup[chara.CharLoc].Add(chara);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+        public void ModifyCharLookup(Character chara, Loc prevLoc)
+        {
+            try
+            {
+                //remove from old location
+                List<Character> list = lookup[prevLoc];
+                int idx = list.IndexOf(chara);
+                list.RemoveAt(idx);
+                if (list.Count == 0)
+                    lookup.Remove(prevLoc);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            AddCharLookup(chara);
+        }
+
+
         private void settingAllies(int index, Team team)
         {
             AllyTeams[index].ContainingMap = null;
             team.ContainingMap = this;
-            //TODO: update location caches
+            //update location caches
+            removeTeamLookup(AllyTeams[index]);
+            addTeamLookup(team);
         }
         private void settingFoes(int index, Team team)
         {
             MapTeams[index].ContainingMap = null;
             team.ContainingMap = this;
-            //TODO: update location caches
+            //update location caches
+            removeTeamLookup(MapTeams[index]);
+            addTeamLookup(team);
         }
         private void addingTeam(int index, Team team)
         {
             team.ContainingMap = this;
-            //TODO: update location caches
+            //update location caches
+            addTeamLookup(team);
         }
         private void removingTeam(int index, Team team)
         {
             team.ContainingMap = null;
-            //TODO: update location caches
+            //update location caches
+            removeTeamLookup(team);
         }
         private void clearingAllies()
         {
             foreach (Team team in AllyTeams)
+            {
                 team.ContainingMap = null;
-            //TODO: update location caches
+                //update location caches
+                removeTeamLookup(team);
+            }
         }
         private void clearingFoes()
         {
             foreach (Team team in MapTeams)
+            {
                 team.ContainingMap = null;
-            //TODO: update location caches
+                //update location caches
+                removeTeamLookup(team);
+            }
         }
 
         //========================
@@ -837,6 +972,9 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
+            //recompute the lookup
+            lookup = new Dictionary<Loc, List<Character>>();
+
             //No need to set team events since they'd already be set during the class construction phase of deserialization
             ReconnectMapReference();
         }
@@ -845,9 +983,15 @@ namespace RogueEssence.Dungeon
         {
             //reconnect Teams' references
             foreach (Team team in AllyTeams)
+            {
                 team.ContainingMap = this;
+                addTeamLookup(team);
+            }
             foreach (Team team in MapTeams)
+            {
                 team.ContainingMap = this;
+                addTeamLookup(team);
+            }
         }
     }
 

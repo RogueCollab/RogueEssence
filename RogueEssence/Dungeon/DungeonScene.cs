@@ -1457,7 +1457,7 @@ namespace RogueEssence.Dungeon
                             {
                                 if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, minLoc + new Loc(x, y)))
                                 {
-                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
+                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, minLoc + new Loc(x, y)))
                                         charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
                                 }
                             }

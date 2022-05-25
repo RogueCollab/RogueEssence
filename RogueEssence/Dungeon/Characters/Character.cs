@@ -1484,7 +1484,7 @@ namespace RogueEssence.Dungeon
                 activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
             }
             //check bag items
-            if (!ItemDisabled)
+            if (!ItemDisabled && MemberTeam != null)
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
@@ -2143,7 +2143,10 @@ namespace RogueEssence.Dungeon
 
         private void updateLoc(Loc oldLoc)
         {
-            //TODO: update location caches
+            if (oldLoc == CharLoc)
+                return;
+            //update location caches
+            MemberTeam?.ContainingMap?.ModifyCharLookup(this, oldLoc);
         }
 
         public void StartEmote(Emote emote)
@@ -2160,12 +2163,19 @@ namespace RogueEssence.Dungeon
         {
             if (OccupiedwithAction())
             {
+                Loc preInterruptLoc = CharLoc;
                 //if it's a major anim, it must wait.  put this on the top of the stack to be executed the moment it is available
+                //ProcessInterruptingAnim can have 3 outcomes:
+                //-It tells the new animation to wait until it is currently done
+                //-It prevents the new animation from being executed but changes the current animation in some way (likely CharLoc)
                 bool wait = currentCharAction.ProcessInterruptingAnim(charAnim);
                 if (wait)
                     yield return new WaitWhile(OccupiedwithAction);
                 else
+                {
+                    updateLoc(preInterruptLoc);
                     yield break;
+                }
             }
 
             CharAction prevAction = currentCharAction;

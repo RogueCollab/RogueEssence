@@ -218,35 +218,47 @@ namespace RogueEssence.Dungeon
         {
             Players[index].MemberTeam = null;
             chara.MemberTeam = this;
-            //TODO: update location caches
+            //update location caches
+            ContainingMap?.RemoveCharLookup(Players[index]);
+            ContainingMap?.AddCharLookup(chara);
         }
         private void settingGuest(int index, Character chara)
         {
             Guests[index].MemberTeam = null;
             chara.MemberTeam = this;
-            //TODO: update location caches
+            //update location caches
+            ContainingMap?.RemoveCharLookup(Guests[index]);
+            ContainingMap?.AddCharLookup(chara);
         }
         private void addingMember(int index, Character chara)
         {
             chara.MemberTeam = this;
-            //TODO: update location caches
+            //update location caches
+            ContainingMap?.AddCharLookup(chara);
         }
         private void removingMember(int index, Character chara)
         {
             chara.MemberTeam = null;
-            //TODO: update location caches
+            //update location caches
+            ContainingMap?.RemoveCharLookup(chara);
         }
         private void clearingPlayers()
         {
             foreach (Character chara in Players)
+            {
                 chara.MemberTeam = null;
-            //TODO: update location caches
+                //update location caches
+                ContainingMap?.RemoveCharLookup(chara);
+            }
         }
         private void clearingGuests()
         {
             foreach (Character chara in Guests)
+            {
                 chara.MemberTeam = null;
-            //TODO: update location caches
+                //update location caches
+                ContainingMap?.RemoveCharLookup(chara);
+            }
         }
 
         public int GetInvCount()
