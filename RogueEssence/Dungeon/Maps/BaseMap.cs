@@ -34,8 +34,8 @@ namespace RogueEssence.Dungeon
         public int Height { get { return Tiles[0].Length; } }
 
         public List<MapItem> Items;
-        public EventedList<Team> MapTeams;
-        public EventedList<Team> AllyTeams;
+        public EventedList<Team> MapTeams { get; private set; }
+        public EventedList<Team> AllyTeams { get; private set; }
 
 
         public BaseMap()

@@ -13,8 +13,31 @@ namespace RogueEssence.Dungeon
     {
         private List<T> list;
 
-        public T this[int index] { get => list[index]; set => list[index] = value; }
-        object IList.this[int index] { get => list[index]; set => list[index] = (T)value; }
+        public delegate void EventedListAction(int index, T item);
+
+        public event EventedListAction ItemChanging;
+        public event EventedListAction ItemAdding;
+        public event EventedListAction ItemRemoving;
+        public event Action ItemsClearing;
+
+        public T this[int index]
+        {
+            get => list[index];
+            set
+            {
+                ItemChanging?.Invoke(index, value);
+                list[index] = value;
+            }
+        }
+        object IList.this[int index]
+        {
+            get => list[index];
+            set
+            {
+                ItemChanging?.Invoke(index, (T)value);
+                list[index] = (T)value;
+            }
+        }
 
         public int Count => list.Count;
 
@@ -30,16 +53,19 @@ namespace RogueEssence.Dungeon
 
         public void Add(T item)
         {
+            ItemAdding?.Invoke(list.Count, item);
             list.Add(item);
         }
 
         int IList.Add(object value)
         {
+            ItemAdding?.Invoke(list.Count, (T)value);
             return ((IList)list).Add(value);
         }
 
         public void Clear()
         {
+            ItemsClearing?.Invoke();
             list.Clear();
         }
 
@@ -50,7 +76,7 @@ namespace RogueEssence.Dungeon
 
         bool IList.Contains(object value)
         {
-            return ((IList)list).Contains(value);
+            return Contains((T)value);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
@@ -70,7 +96,7 @@ namespace RogueEssence.Dungeon
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return list.GetEnumerator();
+            return GetEnumerator();
         }
 
         public int IndexOf(T item)
@@ -80,31 +106,39 @@ namespace RogueEssence.Dungeon
 
         int IList.IndexOf(object value)
         {
-            return ((IList)list).IndexOf(value);
+            return IndexOf((T)value);
         }
 
         public void Insert(int index, T item)
         {
+            ItemAdding?.Invoke(index, item);
             list.Insert(index, item);
         }
 
         void IList.Insert(int index, object value)
         {
-            ((IList)list).Insert(index, value);
+            Insert(index, (T)value);
         }
 
         public bool Remove(T item)
         {
-            return list.Remove(item);
+            int index = IndexOf(item);
+            if (index > -1)
+            {
+                RemoveAt(index);
+                return true;
+            }
+            return false;
         }
 
         void IList.Remove(object value)
         {
-            ((IList)list).Remove(value);
+            Remove((T)value);
         }
 
         public void RemoveAt(int index)
         {
+            ItemRemoving?.Invoke(index, list[index]);
             list.RemoveAt(index);
         }
     }
@@ -114,8 +148,8 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class Team
     {
-        public EventedList<Character> Players;
-        public EventedList<Character> Guests;
+        public EventedList<Character> Players { get; private set; }
+        public EventedList<Character> Guests { get; private set; }
 
         public int LeaderIndex;
 
@@ -131,6 +165,8 @@ namespace RogueEssence.Dungeon
             Players = new EventedList<Character>();
             Guests = new EventedList<Character>();
             inventory = new List<InvItem>();
+
+            setMemberEvents();
         }
         
         public Character Leader { get { return Players[LeaderIndex]; } }
@@ -163,6 +199,38 @@ namespace RogueEssence.Dungeon
                 yield return chara;
         }
 
+        private void setMemberEvents()
+        {
+            Players.ItemAdding += addingMember;
+            Guests.ItemAdding += addingMember;
+            Players.ItemChanging += settingMember;
+            Guests.ItemChanging += settingMember;
+            Players.ItemRemoving += removingMember;
+            Guests.ItemRemoving += removingMember;
+            Players.ItemsClearing += clearingPlayers;
+            Guests.ItemsClearing += clearingGuests;
+        }
+
+        private void settingMember(int index, Character chara)
+        {
+            //TODO: update location caches
+        }
+        private void addingMember(int index, Character chara)
+        {
+            //TODO: update location caches
+        }
+        private void removingMember(int index, Character chara)
+        {
+            //TODO: update location caches
+        }
+        private void clearingPlayers()
+        {
+            //TODO: update location caches
+        }
+        private void clearingGuests()
+        {
+            //TODO: update location caches
+        }
 
         public int GetInvCount()
         {
@@ -278,6 +346,7 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
+            //No need to set member events since they'd already be set during the class construction phase of deserialization
             ReconnectTeamReference();
         }
 

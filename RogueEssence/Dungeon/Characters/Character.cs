@@ -12,8 +12,6 @@ using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
-    
-
     [Serializable]
     public class Character : CharData, ICharSprite, IEntityWithLuaData
     {
@@ -173,7 +171,12 @@ namespace RogueEssence.Dungeon
         public Loc CharLoc
         {
             get { return currentCharAction.CharLoc; }
-            set { currentCharAction.CharLoc = value; }
+            set
+            {
+                Loc oldLoc = currentCharAction.CharLoc;
+                currentCharAction.CharLoc = value;
+                updateLoc(oldLoc);
+            }
         }
 
         /// <summary>
@@ -2139,6 +2142,11 @@ namespace RogueEssence.Dungeon
         public Loc MapLoc { get { return currentCharAction.MapLoc; } }
         public int LocHeight { get { return currentCharAction.LocHeight; } }
 
+        private void updateLoc(Loc oldLoc)
+        {
+            //TODO: update location caches
+        }
+
         public void StartEmote(Emote emote)
         {
             currentEmote = emote;
@@ -2164,7 +2172,9 @@ namespace RogueEssence.Dungeon
             CharAction prevAction = currentCharAction;
             CharAction newCharAction = new EmptyCharAction(charAnim);
             newCharAction.PickUpFrom(Appearance, currentCharAction);
+            Loc oldLoc = CharLoc;
             currentCharAction = newCharAction;
+            updateLoc(oldLoc);
 
             UpdateFrame();
         }
@@ -2176,7 +2186,9 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(action.OnIntro(this));
             action.BeginAction(this, currentCharAction);
+            Loc oldLoc = CharLoc;
             currentCharAction = action;
+            updateLoc(oldLoc);
             UpdateFrame();
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(this);
@@ -2208,7 +2220,9 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(action.OnIntro(this));
             action.BeginAction(this, currentCharAction);
+            Loc oldLoc = CharLoc;
             currentCharAction = action;
+            updateLoc(oldLoc);
             UpdateFrame();
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(this);

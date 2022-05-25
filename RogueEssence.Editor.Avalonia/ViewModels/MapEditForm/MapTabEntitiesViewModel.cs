@@ -632,7 +632,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public override void SetState(EventedList<Team> state)
         {
-            ZoneManager.Instance.CurrentMap.MapTeams = state;
+            ZoneManager.Instance.CurrentMap.MapTeams.Clear();
+            foreach(Team item in state)
+                ZoneManager.Instance.CurrentMap.MapTeams.Add(item);
         }
     }
 }

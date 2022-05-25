@@ -138,6 +138,8 @@ namespace RogueEssence.Dungeon
             TextureMap = new Dictionary<int, AutoTile>();
 
             CurrentTurnMap = new TurnState();
+
+            setTeamEvents();
         }
 
 
@@ -664,6 +666,39 @@ namespace RogueEssence.Dungeon
         {
             INoise noise = new ReNoise(rand.FirstSeed);
             BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
+        }
+
+        private void setTeamEvents()
+        {
+            AllyTeams.ItemAdding += addingTeam;
+            MapTeams.ItemAdding += addingTeam;
+            AllyTeams.ItemChanging += settingTeam;
+            MapTeams.ItemChanging += settingTeam;
+            AllyTeams.ItemRemoving += removingTeam;
+            MapTeams.ItemRemoving += removingTeam;
+            AllyTeams.ItemsClearing += clearingAllies;
+            MapTeams.ItemsClearing += clearingFoes;
+        }
+
+        private void settingTeam(int index, Team chara)
+        {
+            //TODO: update location caches
+        }
+        private void addingTeam(int index, Team chara)
+        {
+            //TODO: update location caches
+        }
+        private void removingTeam(int index, Team chara)
+        {
+            //TODO: update location caches
+        }
+        private void clearingAllies()
+        {
+            //TODO: update location caches
+        }
+        private void clearingFoes()
+        {
+            //TODO: update location caches
         }
 
         //========================
