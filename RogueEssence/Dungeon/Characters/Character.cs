@@ -259,6 +259,8 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         public Team MemberTeam;
 
+        public int Proximity;
+
         public TempCharBackRef BackRef;
 
         public Character() : this(true)
@@ -285,6 +287,9 @@ namespace RogueEssence.Dungeon
             }
 
             EquippedItem = new InvItem();
+
+            Proximity = -1;
+
             ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
@@ -336,6 +341,9 @@ namespace RogueEssence.Dungeon
                 Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
 
             EquippedItem = new InvItem();
+
+            Proximity = -1;
+
             ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
@@ -1421,10 +1429,28 @@ namespace RogueEssence.Dungeon
                 skillState.Element.Sealed = false;
             }
         }
+
+        private void refreshProximity()
+        {
+            int oldProximity = Proximity;
+            Proximity = -1;
+
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives(this))
+                    Proximity = Math.Max(Proximity, proximityTuple.passive.ProximityEvent.Radius);
+            }
+
+            if (Proximity != oldProximity)
+                MemberTeam?.ContainingMap?.ModifyCharProximity(this, oldProximity);
+        }
+
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
         public void RefreshTraits()
         {
             baseRefresh();
+
+            refreshProximity();
 
             OnRefresh();
 
@@ -1518,7 +1544,7 @@ namespace RogueEssence.Dungeon
                 //for now, just iterate everyone and their proximity passives
                 //TODO: we need location caching.  profiling shows that every turn drops FPS thanks to this block of code!!
                 StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateProximityCharacters(CharLoc))
                 {
                     if (!character.Dead)
                         charQueue.Enqueue(-character.Speed, character);
@@ -1537,6 +1563,15 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<PassiveContext> IterateProximityPassives(Character character, Loc targetLoc, Priority portPriority)
         {
+            foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives(character))
+            {
+                if (proximityTuple.passive.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() &&
+                    (DungeonScene.Instance.GetMatchup(character, this) & proximityTuple.passive.ProximityEvent.TargetAlignments) != Alignment.None)
+                    yield return new PassiveContext(proximityTuple.owner, proximityTuple.passive, portPriority, this);
+            }
+        }
+        private IEnumerable<(PassiveActive, ProximityPassive)> findProximityPassives(Character character)
+        {
             //check all of their entries for proximity ranges; return them only if their ranges are above 0
             //whatever proximity passive class is used, it needs to somehow refer back to the character owning it
             //can the passive active be made up on the spot?
@@ -1545,16 +1580,16 @@ namespace RogueEssence.Dungeon
             foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
             {
                 ProximityPassive proximity = (ProximityPassive)status.GetData();
-                if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-                    yield return new PassiveContext(status, proximity.ProximityEvent, portPriority, this);
+                if (proximity.ProximityEvent.Radius > -1)
+                    yield return (status, proximity);
             }
 
             //check statuses
             foreach (StatusEffect status in StatusEffects.Values)
             {
                 ProximityPassive proximity = (ProximityPassive)status.GetData();
-                if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-                    yield return new PassiveContext(status, proximity.ProximityEvent, portPriority, this);
+                if (proximity.ProximityEvent.Radius > -1)
+                    yield return (status, proximity);
             }
 
             //check eqipped item
@@ -1562,9 +1597,9 @@ namespace RogueEssence.Dungeon
             if (EquippedItem.ID > -1 && !ItemDisabled)
             {
                 ProximityPassive proximity = (ProximityPassive)EquippedItem.GetData();
-                if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
+                if (proximity.ProximityEvent.Radius > -1)
                 {
-                    yield return new PassiveContext(EquippedItem, proximity.ProximityEvent, portPriority, this);
+                    yield return (EquippedItem, proximity);
                     activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
                 }
             }
@@ -1575,7 +1610,7 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
                     ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
-                    if (itemData.BagEffect && itemData.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist4() && (DungeonScene.Instance.GetMatchup(character, this) & itemData.ProximityEvent.TargetAlignments) != Alignment.None)
+                    if (itemData.BagEffect && itemData.ProximityEvent.Radius > -1)
                     {
                         if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
                             activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
@@ -1588,7 +1623,7 @@ namespace RogueEssence.Dungeon
                     {
                         InvItem invItem = MemberTeam.GetInv(activeItems[key]);
                         ItemData itemData = DataManager.Instance.GetItem(invItem.ID);
-                        yield return new PassiveContext(invItem, itemData.ProximityEvent, portPriority, this);
+                        yield return (invItem, itemData);
                     }
                 }
             }
@@ -1602,13 +1637,12 @@ namespace RogueEssence.Dungeon
                     if (intrinsic.Element.ID > -1)
                     {
 						ProximityPassive proximity = (ProximityPassive)intrinsic.Element.GetData();
-						if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-							yield return new PassiveContext(intrinsic.Element, proximity.ProximityEvent, portPriority, this);
-					}
+						if (proximity.ProximityEvent.Radius > -1)
+                            yield return (intrinsic.Element, proximity);
+                    }
                 }
             }
 
-            yield break;
         }
 
         public IEnumerator<YieldInstruction> BeforeTryAction(BattleContext context)

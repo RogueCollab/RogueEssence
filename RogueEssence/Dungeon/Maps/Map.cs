@@ -574,52 +574,27 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public IEnumerable<Character> IterateProximityCharacters(Loc loc)
+        {
+            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                if ((character.CharLoc - loc).Dist8() <= character.Proximity)
+                    yield return character;
+            }
+        }
+
         public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
-            bool oldSystem = false;
-            bool newSystem = true;
-
-            Character oldResult = null;
-            if (oldSystem)
+            List<Character> list;
+            if (lookup.TryGetValue(loc, out list))
             {
-                foreach (Character character in IterateCharacters())
+                foreach (Character character in list)
                 {
                     if (!character.Dead && character.CharLoc == loc && exclude != character)
-                    {
-                        oldResult = character;
-                        break;
-                    }
+                        return character;
                 }
             }
-
-            Character newResult = null;
-            if (newSystem)
-            {
-                List<Character> list;
-                if (lookup.TryGetValue(loc, out list))
-                {
-                    foreach (Character character in list)
-                    {
-                        if (!character.Dead && character.CharLoc == loc && exclude != character)
-                        {
-                            newResult = character;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (oldSystem && newSystem)
-            {
-                if (oldResult != newResult)
-                    throw new Exception("Inconsistent cache!");
-
-                return newResult;
-            }
-            else if (newSystem)
-                return newResult;
-            else
-                return oldResult;
+            return null;
         }
 
 
@@ -771,6 +746,8 @@ namespace RogueEssence.Dungeon
                 list.RemoveAt(idx);
                 if (list.Count == 0)
                     lookup.Remove(chara.CharLoc);
+
+                //TODO: update proximity
             }
             catch (Exception ex)
             {
@@ -790,6 +767,8 @@ namespace RogueEssence.Dungeon
                     lookup[chara.CharLoc] = new List<Character>();
                     lookup[chara.CharLoc].Add(chara);
                 }
+
+                //TODO: update proximity
             }
             catch (Exception ex)
             {
@@ -806,6 +785,8 @@ namespace RogueEssence.Dungeon
                 list.RemoveAt(idx);
                 if (list.Count == 0)
                     lookup.Remove(prevLoc);
+
+                //TODO: update proximity
             }
             catch (Exception ex)
             {
@@ -814,6 +795,10 @@ namespace RogueEssence.Dungeon
             AddCharLookup(chara);
         }
 
+        public void ModifyCharProximity(Character chara, int oldRadius)
+        {
+            //TODO: update proximity
+        }
 
         private void settingAllies(int index, Team team)
         {
