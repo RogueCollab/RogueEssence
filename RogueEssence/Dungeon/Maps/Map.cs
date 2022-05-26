@@ -794,16 +794,11 @@ namespace RogueEssence.Dungeon
         }
         public void ModifyCharLookup(Character chara, Loc prevLoc)
         {
-            try
-            {
-                lookup.Move(chara);
+            //TODO: fix the Move operation
+            lookup.Remove(chara);
+            lookup.Add(chara);
 
-                //TODO: update proximity
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
+            //TODO: update proximity
         }
 
         public void ModifyCharProximity(Character chara, int oldRadius)
