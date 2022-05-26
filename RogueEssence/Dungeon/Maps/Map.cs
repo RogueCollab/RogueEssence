@@ -44,7 +44,7 @@ namespace RogueEssence.Dungeon
 
         //Fast-lookup from location to character
         [NonSerialized]
-        private QuadTreePoint<Character> lookup;
+        private Dictionary<Loc, List<Character>> lookup;
 
         public LocalText Name { get; set; }
 
@@ -178,7 +178,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < width; ii++)
                 DiscoveryArray[ii] = new DiscoveryState[height];
 
-            this.lookup = new QuadTreePoint<Character>(0, 0, width, height);
+            this.lookup = new Dictionary<Loc, List<Character>>();
         }
 
 
@@ -214,7 +214,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < EntryPoints.Count; ii++)
                 EntryPoints[ii] = new LocRay8(Collision.ClampToBounds(width, height, EntryPoints[ii].Loc + diff), EntryPoints[ii].Dir);
 
-            this.lookup = new QuadTreePoint<Character>(0, 0, width, height);
+            this.lookup = new Dictionary<Loc, List<Character>>();
             //wait... don't we need to recompute all entities?
         }
 
@@ -609,19 +609,23 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<Character> GetCharsInRect(Rect rect)
         {
-            foreach (Character character in lookup.EnumObjects(new System.Drawing.Rectangle(rect.X, rect.Y, rect.Width, rect.Height)))
+            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if (!character.Dead)
+                if (!character.Dead && rect.Contains(character.CharLoc))
                     yield return character;
             }
         }
 
         public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
-            foreach (Character character in lookup.EnumObjects(new System.Drawing.Rectangle(loc.X, loc.Y, 1, 1)))
+            List<Character> list;
+            if (lookup.TryGetValue(loc, out list))
             {
-                if (!character.Dead && exclude != character)
-                    return character;
+                foreach (Character character in list)
+                {
+                    if (!character.Dead && character.CharLoc == loc && exclude != character)
+                        return character;
+                }
             }
             return null;
         }
@@ -770,7 +774,11 @@ namespace RogueEssence.Dungeon
         {
             try
             {
-                lookup.Remove(chara);
+                List<Character> list = lookup[chara.CharLoc];
+                int idx = list.IndexOf(chara);
+                list.RemoveAt(idx);
+                if (list.Count == 0)
+                    lookup.Remove(chara.CharLoc);
 
                 //TODO: update proximity
             }
@@ -783,7 +791,14 @@ namespace RogueEssence.Dungeon
         {
             try
             {
-                lookup.Add(chara);
+                List<Character> newList;
+                if (lookup.TryGetValue(chara.CharLoc, out newList))
+                    newList.Add(chara);
+                else
+                {
+                    lookup[chara.CharLoc] = new List<Character>();
+                    lookup[chara.CharLoc].Add(chara);
+                }
 
                 //TODO: update proximity
             }
@@ -796,7 +811,12 @@ namespace RogueEssence.Dungeon
         {
             try
             {
-                lookup.Move(chara);
+                //remove from old location
+                List<Character> list = lookup[prevLoc];
+                int idx = list.IndexOf(chara);
+                list.RemoveAt(idx);
+                if (list.Count == 0)
+                    lookup.Remove(prevLoc);
 
                 //TODO: update proximity
             }
@@ -804,6 +824,8 @@ namespace RogueEssence.Dungeon
             {
                 DiagManager.Instance.LogError(ex);
             }
+
+            AddCharLookup(chara);
         }
 
         public void ModifyCharProximity(Character chara, int oldRadius)
@@ -984,7 +1006,7 @@ namespace RogueEssence.Dungeon
         internal void OnDeserializedMethod(StreamingContext context)
         {
             //recompute the lookup
-            lookup = new QuadTreePoint<Character>(0, 0, Width, Height);
+            lookup = new Dictionary<Loc, List<Character>>();
 
             //No need to set team events since they'd already be set during the class construction phase of deserialization
             ReconnectMapReference();
