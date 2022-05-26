@@ -90,7 +90,7 @@ namespace RogueEssence.Dev.ViewModels
         public void TileStates_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "TileStates[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle("Tile", elementName, element, typeof(TileState), new object[0]);
 
             //TODO: make this a member and reference it that way

@@ -40,7 +40,7 @@ namespace RogueEssence.Dev.ViewModels
         public void MapEffect_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
             string elementName = "MapEffect";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(ActiveEffect), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
@@ -70,7 +70,7 @@ namespace RogueEssence.Dev.ViewModels
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapStatus), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapStatus), new object[0], element, true, new Type[0]);
@@ -111,7 +111,7 @@ namespace RogueEssence.Dev.ViewModels
         public void Events_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Events[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(SingleCharEvent), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);

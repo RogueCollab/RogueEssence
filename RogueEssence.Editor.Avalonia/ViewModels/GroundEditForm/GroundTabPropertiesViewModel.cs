@@ -103,7 +103,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, type, new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, elementName, type, new object[0], element, true, new Type[0]);

@@ -441,7 +441,7 @@ namespace RogueEssence.Dev.ViewModels
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0]);

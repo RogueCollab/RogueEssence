@@ -16,6 +16,9 @@
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="DataEditor\DataEditRootForm.axaml.cs">
+      <DependentUpon>DataEditRootForm.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DataEditor\RankedCollectionBox.axaml.cs">
       <DependentUpon>RankedCollectionBox.axaml</DependentUpon>
     </Compile>

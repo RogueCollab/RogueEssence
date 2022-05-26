@@ -136,7 +136,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, type, new object[0], element, true, new Type[0]);
@@ -196,7 +196,7 @@ namespace RogueEssence.Dev.ViewModels
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap<Key>";
-            DataEditForm frmKey = new DataEditForm();
+            DataEditForm frmKey = new DataEditRootForm();
             frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(int), new object[0]);
 
             DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(int), new object[0], key, true, new Type[0]);
@@ -216,7 +216,7 @@ namespace RogueEssence.Dev.ViewModels
         public void TextureMap_EditItem(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap[" + key.ToString() + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(AutoTile), new object[0], element, true, new Type[0]);

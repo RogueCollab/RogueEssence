@@ -284,7 +284,7 @@ namespace RogueEssence.Dev.ViewModels
                         int entryNum = choices.SearchList.InternalIndex;
                         IEntryData data = entryOp(entryNum);
 
-                        DataEditForm editor = new DataEditForm();
+                        DataEditForm editor = new DataEditRootForm();
                         editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
                         editor.SelectedOKEvent += async () =>
@@ -312,7 +312,7 @@ namespace RogueEssence.Dev.ViewModels
                     int entryNum = DataManager.Instance.DataIndices[dataType].Count;
                     IEntryData data = createOp();
 
-                    DataEditForm editor = new DataEditForm();
+                    DataEditForm editor = new DataEditRootForm();
                     editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
                     DataEditor.LoadDataControls(data, editor.ControlPanel);
                     editor.SelectedOKEvent += async () =>

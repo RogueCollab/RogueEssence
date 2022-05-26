@@ -1,0 +1,34 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+        x:Class="RogueEssence.Dev.Views.DataEditRootForm"
+        Title="{Binding Name}" Width="340" Height="540" Opened="Window_Loaded" Closing="Window_Closing">
+  <!--Icon="/Assets/app-logo.ico"-->
+  <Window.Resources>
+  </Window.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="32"/>
+      <RowDefinition Height="32"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <!--ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2"-->
+    <ScrollViewer Grid.ColumnSpan="2">
+      <StackPanel Name="stkContent" Margin="4">
+        
+      </StackPanel>
+    </ScrollViewer>
+    <Button Click="btnApply_Click" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">Save All Sub-Windows</Button>
+    <Button Click="btnOK_Click" Margin="4" Grid.Row="2" Grid.Column="0">OK</Button>
+    <Button Click="btnCancel_Click" Margin="4" Grid.Row="2" Grid.Column="1">Cancel</Button>
+  </Grid>
+</Window>
