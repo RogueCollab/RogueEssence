@@ -638,16 +638,16 @@ namespace RogueEssence.Dungeon
             if (attacker.MemberTeam == target.MemberTeam)
                 return Alignment.Friend;
 
-            CharIndex attackerIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(attacker);
-            CharIndex targetIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(target);
+            Faction attackerFaction = ZoneManager.Instance.CurrentMap.GetCharFaction(attacker);
+            Faction targetFaction = ZoneManager.Instance.CurrentMap.GetCharFaction(target);
             //members of the same faction are friends
-            if (attackerIndex.Faction == targetIndex.Faction)
+            if (attackerFaction == targetFaction)
                 return Alignment.Friend;
             //if any faction is friend, then the matchup might be friend.
-            if (attackerIndex.Faction == Faction.Friend || targetIndex.Faction == Faction.Friend)
+            if (attackerFaction == Faction.Friend || targetFaction == Faction.Friend)
             {
                 bool foeTruce = true; // allies and foes won't attack each other, unless this is set to false
-                if (attackerIndex.Faction == Faction.Foe || targetIndex.Faction == Faction.Foe)
+                if (attackerFaction == Faction.Foe || targetFaction == Faction.Foe)
                 {
                     foeTruce &= !attacker.MemberTeam.FoeConflict;
                     foeTruce &= !target.MemberTeam.FoeConflict;

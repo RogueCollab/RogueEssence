@@ -2083,9 +2083,12 @@ namespace RogueEssence.Dungeon
             }
             else
             {
-                //add members of the same team
-                foreach (Character member in MemberTeam.EnumerateChars())
-                    seenChars.Add(member);
+                //add members of the same team - can be seen no matter what
+                foreach (Character target in MemberTeam.EnumerateChars())
+                {
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
+                        seenChars.Add(target);
+                }
 
                 Loc radius = GetSightDims();
                 //iterate through everyone in max sight range EXCEPT members of the same team

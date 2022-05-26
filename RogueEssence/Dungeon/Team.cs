@@ -163,6 +163,9 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         public Map ContainingMap;
 
+        [NonSerialized]
+        public Faction MapFaction;
+
         public Team()
         {
             Players = new EventedList<Character>();
