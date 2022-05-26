@@ -493,6 +493,7 @@ namespace RogueEssence.Ground
             }
 
             this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
+            //wait... don't we need to recompute all entities?
         }
 
         public void Retile(int texSize)

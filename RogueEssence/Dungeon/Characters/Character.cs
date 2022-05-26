@@ -9,11 +9,12 @@ using System.Runtime.Serialization;
 using RogueEssence.Script;
 using NLua;
 using Newtonsoft.Json;
+using QuadTrees.QTreePoint;
 
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class Character : CharData, ICharSprite, IEntityWithLuaData
+    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable
     {
 
         public const int MAX_FULLNESS = 100;
@@ -178,6 +179,8 @@ namespace RogueEssence.Dungeon
                 updateLoc(oldLoc);
             }
         }
+
+        System.Drawing.Point IPointQuadStorable.Point { get { return new System.Drawing.Point(CharLoc.X, CharLoc.Y); } }
 
         /// <summary>
         /// Character's direction.
