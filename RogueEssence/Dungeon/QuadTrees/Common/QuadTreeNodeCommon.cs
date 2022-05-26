@@ -413,7 +413,7 @@ namespace QuadTrees.Common
                         {
                             Insert(child._objects[index]);
                         }
-                        Debug.Assert(beforeCount + child._objectCount == Count);
+                        Debug.Assert(beforeCount == Count);
                     }
                     if (child._objects != null)
                     {
