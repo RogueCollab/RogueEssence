@@ -574,11 +574,26 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Iterate through all characters with proximity passives that touch the specified location./
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
         public IEnumerable<Character> IterateProximityCharacters(Loc loc)
         {
+            //TODO: create a proximity lookup structure so we don't have to iterate all characters
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
                 if ((character.CharLoc - loc).Dist8() <= character.Proximity)
+                    yield return character;
+            }
+        }
+
+        public IEnumerable<Character> GetCharsInRect(Rect rect)
+        {
+            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                if (rect.Contains(character.CharLoc))
                     yield return character;
             }
         }

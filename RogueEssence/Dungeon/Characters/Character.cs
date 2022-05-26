@@ -1541,8 +1541,6 @@ namespace RogueEssence.Dungeon
             if (dungeonMode)
             {
                 //iterate through all other characters' proximity effects which touch this character
-                //for now, just iterate everyone and their proximity passives
-                //TODO: we need location caching.  profiling shows that every turn drops FPS thanks to this block of code!!
                 StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateProximityCharacters(CharLoc))
                 {
@@ -2064,13 +2062,37 @@ namespace RogueEssence.Dungeon
         }
 
 
+        /// <summary>
+        /// Does not guarantee any order
+        /// </summary>
+        /// <param name="targetAlignment"></param>
+        /// <returns></returns>
         public List<Character> GetSeenCharacters(Alignment targetAlignment)
         {
             List<Character> seenChars = new List<Character>();
-            foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            if (SeeAllChars)
             {
-                if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
-                    seenChars.Add(target);
+                foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                {
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
+                        seenChars.Add(target);
+                }
+            }
+            else
+            {
+                //add members of the same team
+                foreach (Character member in MemberTeam.EnumerateChars())
+                    seenChars.Add(member);
+
+                Loc radius = GetSightDims();
+                //iterate through everyone in max sight range EXCEPT members of the same team
+                foreach (Character target in ZoneManager.Instance.CurrentMap.GetCharsInRect(Rect.FromPoints(CharLoc - radius, CharLoc + radius)))
+                {
+                    if (target.MemberTeam == MemberTeam)
+                        continue;
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
+                        seenChars.Add(target);
+                }
             }
             return seenChars;
         }
@@ -2084,10 +2106,10 @@ namespace RogueEssence.Dungeon
             if (character == null)
                 return false;
 
-            if (character.MemberTeam == this.MemberTeam)
+            if (SeeAllChars)
                 return true;
 
-            if (SeeAllChars)
+            if (character.MemberTeam == this.MemberTeam)
                 return true;
 
             if (character.Unlocatable)
