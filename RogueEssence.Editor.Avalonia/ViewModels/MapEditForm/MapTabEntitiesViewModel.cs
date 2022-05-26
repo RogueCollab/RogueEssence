@@ -464,16 +464,15 @@ namespace RogueEssence.Dev.ViewModels
                 }
 
                 if (itemExists)
-                    await MessageBox.Show(form.MapEditForm, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                {
+                    await MessageBox.Show(frmData, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
+                }
                 else
                 {
                     op(index, element);
-                    frmData.Close();
+                    return true;
                 }
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
             };
 
             form.MapEditForm.RegisterChild(frmData);

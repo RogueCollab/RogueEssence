@@ -11,13 +11,15 @@ using Avalonia.Threading;
 using System.Threading;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.Views
 {
     public class DataEditForm : ParentForm
     {
-        public event Action SelectedOKEvent;
-        public event Action SelectedCancelEvent;
+        public delegate Task<bool> taskevent();
+        public taskevent SelectedOKEvent;
+        //public event Action SelectedCancelEvent;
 
         public StackPanel ControlPanel { get; }
 
@@ -55,14 +57,19 @@ namespace RogueEssence.Dev.Views
             CloseChildren();
         }
 
-        public void btnOK_Click(object sender, RoutedEventArgs e)
+        public async void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            SelectedOKEvent?.Invoke();
+            bool close = false;
+            if (SelectedOKEvent != null)
+                close = await SelectedOKEvent.Invoke();
+            if (close)
+                Close();
         }
 
         public void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            SelectedCancelEvent?.Invoke();
+            //SelectedCancelEvent?.Invoke();
+            Close();
         }
 
     }

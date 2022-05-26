@@ -42,15 +42,11 @@ namespace RogueEssence.Dev
 
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0]);
 
-                frmData.SelectedOKEvent += () =>
+                frmData.SelectedOKEvent += async () =>
                 {
                     element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
                     op(index, element);
-                    frmData.Close();
-                };
-                frmData.SelectedCancelEvent += () =>
-                {
-                    frmData.Close();
+                    return true;
                 };
 
                 control.GetOwningForm().RegisterChild(frmData);

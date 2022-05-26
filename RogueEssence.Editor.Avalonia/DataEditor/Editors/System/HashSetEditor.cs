@@ -67,16 +67,13 @@ namespace RogueEssence.Dev
                     if (itemExists)
                     {
                         await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate items.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                        return false;
                     }
                     else
                     {
                         op(index, newElement);
-                        frmData.Close();
+                        return true;
                     }
-                };
-                frmData.SelectedCancelEvent += () =>
-                {
-                    frmData.Close();
                 };
 
                 control.GetOwningForm().RegisterChild(frmData);

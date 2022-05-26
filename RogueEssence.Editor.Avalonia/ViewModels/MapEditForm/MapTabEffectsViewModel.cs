@@ -45,15 +45,11 @@ namespace RogueEssence.Dev.ViewModels
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true, new Type[0]);
                 op(element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -97,16 +93,15 @@ namespace RogueEssence.Dev.ViewModels
                 }
 
                 if (itemExists)
-                    await MessageBox.Show(form.MapEditForm, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                {
+                    await MessageBox.Show(frmData, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
+                }
                 else
                 {
                     op(index, element);
-                    frmData.Close();
+                    return true;
                 }
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
             };
 
             form.MapEditForm.RegisterChild(frmData);
@@ -121,15 +116,11 @@ namespace RogueEssence.Dev.ViewModels
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true, new Type[0]);
                 op(index, element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;

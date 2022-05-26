@@ -17,10 +17,10 @@ namespace RogueEssence.Dev
         {
             base.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
 
-            Button btnTest = new Button();
-            btnTest.Margin = new Avalonia.Thickness(0, 4, 0, 0);
-            btnTest.Content = "Mass Assign Sheet";
-            btnTest.Click += (object sender, RoutedEventArgs e) =>
+            Button btnAssign = new Button();
+            btnAssign.Margin = new Avalonia.Thickness(0, 4, 0, 0);
+            btnAssign.Content = "Mass Assign Sheet";
+            btnAssign.Click += (object sender, RoutedEventArgs e) =>
             {
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = "Choose a Tilesheet";
@@ -29,7 +29,7 @@ namespace RogueEssence.Dev
                 elementAttr[0] = new AnimAttribute(0, "Tile");
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, name, typeof(string), elementAttr, "", true, new Type[0]);
 
-                frmData.SelectedOKEvent += () =>
+                frmData.SelectedOKEvent += async () =>
                 {
                     object element = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(string), elementAttr, true, new Type[0]);
                     string destSheet = (string)element;
@@ -45,16 +45,13 @@ namespace RogueEssence.Dev
                     }
                     LoadWindowControls(control, parent, name, type, attributes, preTiles, subGroupStack);
 
-                    frmData.Close();
+                    return true;
                 };
-                frmData.SelectedCancelEvent += () =>
-                {
-                    frmData.Close();
-                };
+
                 control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
-            control.Children.Add(btnTest);
+            control.Children.Add(btnAssign);
         }
 
     }

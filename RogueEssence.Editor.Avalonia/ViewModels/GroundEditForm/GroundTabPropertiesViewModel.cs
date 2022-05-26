@@ -108,15 +108,11 @@ namespace RogueEssence.Dev.ViewModels
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, elementName, type, new object[0], element, true, new Type[0]);
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0]);
                 op(element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -142,7 +138,7 @@ namespace RogueEssence.Dev.ViewModels
             tmv.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
             tmv.LoadTile(element);
 
-            tmv.SelectedOKEvent += () =>
+            tmv.SelectedOKEvent += async () =>
             {
                 element = tmv.GetTile();
                 op(element);

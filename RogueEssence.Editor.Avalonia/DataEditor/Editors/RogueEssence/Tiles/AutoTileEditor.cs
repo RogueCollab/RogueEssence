@@ -34,7 +34,7 @@ namespace RogueEssence.Dev
                 tmv.TileBrowser.TileSize = GraphicsManager.TileSize;
                 tmv.LoadTile(element);
 
-                tmv.SelectedOKEvent += () =>
+                tmv.SelectedOKEvent += async () =>
                 {
                     element = tmv.GetTile();
                     op(element);

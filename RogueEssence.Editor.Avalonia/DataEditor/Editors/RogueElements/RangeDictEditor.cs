@@ -72,15 +72,11 @@ namespace RogueEssence.Dev
 
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
 
-                frmData.SelectedOKEvent += () =>
+                frmData.SelectedOKEvent += async () =>
                 {
                     element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
                     op(key, element);
-                    frmData.Close();
-                };
-                frmData.SelectedCancelEvent += () =>
-                {
-                    frmData.Close();
+                    return true;
                 };
 
                 control.GetOwningForm().RegisterChild(frmData);
@@ -99,15 +95,11 @@ namespace RogueEssence.Dev
 
                 DataEditor.LoadClassControls(frmKey.ControlPanel, parent, elementName, keyType, attrList.ToArray(), key, true, new Type[0]);
 
-                frmKey.SelectedOKEvent += () =>
+                frmKey.SelectedOKEvent += async () =>
                 {
                     key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true, new Type[0]);
                     op(key, element);
-                    frmKey.Close();
-                };
-                frmKey.SelectedCancelEvent += () =>
-                {
-                    frmKey.Close();
+                    return true;
                 };
 
                 control.GetOwningForm().RegisterChild(frmKey);

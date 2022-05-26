@@ -116,19 +116,15 @@ namespace RogueEssence.Dev.ViewModels
                 Views.DataEditForm editor = new Views.DataEditForm();
                 editor.Title = DataEditor.GetWindowTitle("", name, data, data.GetType());
                 DataEditor.LoadDataControls(data, editor.ControlPanel);
-                editor.SelectedOKEvent += () =>
+                editor.SelectedOKEvent += async () =>
                 {
                     lock (GameBase.lockObj)
                     {
                         object obj = data;
                         DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
                         saveOp((T)obj);
-                        editor.Close();
+                        return true;
                     }
-                };
-                editor.SelectedCancelEvent += () =>
-                {
-                    editor.Close();
                 };
 
                 editor.Show();

@@ -275,7 +275,7 @@ namespace RogueEssence.Dev.ViewModels
             string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
             choices.SetEntries(entries);
 
-            choices.SelectedOKEvent += () =>
+            choices.SelectedOKEvent += async () =>
             {
                 if (choices.SearchList.InternalIndex > -1)
                 {
@@ -287,7 +287,7 @@ namespace RogueEssence.Dev.ViewModels
                         DataEditForm editor = new DataEditForm();
                         editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                         DataEditor.LoadDataControls(data, editor.ControlPanel);
-                        editor.SelectedOKEvent += () =>
+                        editor.SelectedOKEvent += async () =>
                         {
                             lock (GameBase.lockObj)
                             {
@@ -297,12 +297,8 @@ namespace RogueEssence.Dev.ViewModels
 
                                 string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
                                 choices.ModifyEntry(entryNum, newName);
-                                editor.Close();
+                                return true;
                             }
-                        };
-                        editor.SelectedCancelEvent += () =>
-                        {
-                            editor.Close();
                         };
 
                         editor.Show();
@@ -319,7 +315,7 @@ namespace RogueEssence.Dev.ViewModels
                     DataEditForm editor = new DataEditForm();
                     editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
                     DataEditor.LoadDataControls(data, editor.ControlPanel);
-                    editor.SelectedOKEvent += () =>
+                    editor.SelectedOKEvent += async () =>
                     {
                         lock (GameBase.lockObj)
                         {
@@ -330,12 +326,8 @@ namespace RogueEssence.Dev.ViewModels
 
                             string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
                             choices.AddEntry(newName);
-                            editor.Close();
+                            return true;
                         }
-                    };
-                    editor.SelectedCancelEvent += () =>
-                    {
-                        editor.Close();
                     };
 
                     editor.Show();
