@@ -33,4 +33,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DocumentationFile>bin\x64\Debug\net5.0\RogueEssence.xml</DocumentationFile>
+  </PropertyGroup>
 </Project>

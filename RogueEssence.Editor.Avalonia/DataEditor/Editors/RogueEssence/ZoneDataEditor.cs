@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         {
             base.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
 
-            LoadLabelControl(control, "Script Events");
+            LoadLabelControl(control, "Script Events", "Events that can be created in the lua script for this zone.");
 
             Border border = new Border();
             border.BorderThickness = new Thickness(1);

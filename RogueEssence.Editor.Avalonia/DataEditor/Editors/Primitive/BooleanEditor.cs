@@ -27,6 +27,10 @@ namespace RogueEssence.Dev
             chkValue.Margin = new Thickness(0, 4, 0, 0);
             chkValue.Content = DataEditor.GetMemberTitle(name);
             chkValue.IsChecked = member;
+
+            string desc = DevDataManager.GetDoc(subGroupStack[subGroupStack.Length - 2], name);
+            ToolTip.SetTip(chkValue, desc);
+
             control.Children.Add(chkValue);
         }
 

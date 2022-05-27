@@ -32,11 +32,15 @@ namespace RogueEssence.Dev
         public virtual bool DefaultLabel => true;
         public virtual bool DefaultType => false;
 
-        public static void LoadLabelControl(StackPanel control, string name)
+        public static void LoadLabelControl(StackPanel control, string name, string desc)
         {
             TextBlock lblName = new TextBlock();
             lblName.Margin = new Thickness(0, 4, 0, 0);
             lblName.Text = DataEditor.GetMemberTitle(name) + ":";
+
+            if (desc != null)
+                ToolTip.SetTip(lblName, desc);
+
             control.Children.Add(lblName);
         }
 
@@ -209,7 +213,8 @@ namespace RogueEssence.Dev
 
             if (!subGroup)
             {
-                LoadLabelControl(control, name);
+                string desc = DevDataManager.GetDoc(subGroupStack[subGroupStack.Length - 1], name);
+                LoadLabelControl(control, name, desc);
                 if (member == null)
                 {
                     Type[] children;
@@ -332,7 +337,10 @@ namespace RogueEssence.Dev
                     StackPanel controlParent = control;
 
                     if (includeLabel)
-                        LoadLabelControl(control, name);
+                    {
+                        string desc = DevDataManager.GetDoc(subGroupStack[subGroupStack.Length - 1], name);
+                        LoadLabelControl(control, name, desc);
+                    }
 
                     if (includeDecoration)
                     {
@@ -412,7 +420,10 @@ namespace RogueEssence.Dev
 
                     StackPanel controlParent = null;
                     if (includeLabel)
-                        LoadLabelControl(control, name);
+                    {
+                        string desc = DevDataManager.GetDoc(subGroupStack[subGroupStack.Length - 1], name);
+                        LoadLabelControl(control, name, desc);
+                    }
 
                     Grid sharedRowPanel = getSharedRowPanel(2);
 

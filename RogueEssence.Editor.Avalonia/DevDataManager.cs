@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Xml;
 using Avalonia.Media.Imaging;
 using RogueElements;
 using RogueEssence.Content;
@@ -22,8 +23,12 @@ namespace RogueEssence.Dev
 
         public static List<CharSheetOp> CharSheetOps;
 
+        public static Dictionary<string, string> TypeDocs;
+
         public static void Init()
         {
+            initDocs();
+
             CharSheetOps = new List<CharSheetOp>();
 
             if (!Directory.Exists(Path.Combine(PathMod.RESOURCE_PATH, "Extensions")))
@@ -51,6 +56,57 @@ namespace RogueEssence.Dev
             tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
             aliasCache = new LRUCache<string, Dictionary<int, string>>(20);
+        }
+
+        private static void initDocs()
+        {
+            TypeDocs = new Dictionary<string, string>();
+
+            foreach (string path in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Docs"), "*.xml"))
+            {
+                try
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+                    XmlNode assembly = xmldoc.SelectSingleNode("doc/assembly/name");
+                    XmlNode members = xmldoc.SelectSingleNode("doc/members");
+                    foreach (XmlNode xnode in members.ChildNodes)
+                    {
+                        if (xnode.Name == "member")
+                        {
+                            string value = null;
+                            string name = null;
+                            var atname = xnode.Attributes["name"];
+                            if (atname != null)
+                                name = atname.Value;
+
+                            //Get value
+                            XmlNode valnode = xnode.SelectSingleNode("summary");
+                            if (valnode != null)
+                                value = valnode.InnerText.Trim().Replace("\r\n            ", "\r\n");
+
+                            if (value != null && name != null)
+                            {
+                                if (name.StartsWith("F:") || name.StartsWith("P:"))
+                                    TypeDocs[assembly.InnerText + ":" + name.Substring(2)] = value;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+        }
+
+        public static string GetDoc(Type ownerType, string name)
+        {
+            string desc;
+            string key = ownerType.Assembly.GetName().Name + ":" + ownerType.FullName + "." + name;
+            if (DevDataManager.TypeDocs.TryGetValue(key, out desc))
+                return desc;
+            return "Documentation Missing.  Create an issue for this.";
         }
 
         public static Bitmap GetTile(TileFrame tileTex)
