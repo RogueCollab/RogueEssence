@@ -23,7 +23,8 @@ namespace RogueEssence.Dev
 
         public static List<CharSheetOp> CharSheetOps;
 
-        public static Dictionary<string, string> TypeDocs;
+        private static Dictionary<string, string> memberDocs;
+        private static Dictionary<string, string> typeDocs;
 
         public static void Init()
         {
@@ -60,7 +61,8 @@ namespace RogueEssence.Dev
 
         private static void initDocs()
         {
-            TypeDocs = new Dictionary<string, string>();
+            memberDocs = new Dictionary<string, string>();
+            typeDocs = new Dictionary<string, string>();
 
             foreach (string path in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Docs"), "*.xml"))
             {
@@ -88,7 +90,10 @@ namespace RogueEssence.Dev
                             if (value != null && name != null)
                             {
                                 if (name.StartsWith("F:") || name.StartsWith("P:"))
-                                    TypeDocs[assembly.InnerText + ":" + name.Substring(2)] = value;
+                                    memberDocs[assembly.InnerText + ":" + name.Substring(2)] = value;
+                                else if (name.StartsWith("T:"))
+                                    typeDocs[assembly.InnerText + ":" + name.Substring(2)] = value;
+
                             }
                         }
                     }
@@ -100,20 +105,45 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static string GetDoc(Type ownerType, string name)
+        public static string GetTypeDoc(Type ownerType)
+        {
+            string desc;
+            Type unconstructedType = ownerType;
+            if (unconstructedType.IsConstructedGenericType)
+                unconstructedType = unconstructedType.GetGenericTypeDefinition();
+            string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName;
+            if (typeDocs.TryGetValue(key, out desc))
+                return desc;
+
+            return "Documentation Missing.  Create an issue for this.";
+        }
+
+        public static string GetMemberDoc(Type ownerType, string name)
         {
             Type objectType = typeof(object);
 
             string desc;
+            //Main base types
             while (ownerType != objectType)
             {
                 Type unconstructedType = ownerType;
                 if (unconstructedType.IsConstructedGenericType)
                     unconstructedType = unconstructedType.GetGenericTypeDefinition();
                 string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName + "." + name;
-                if (DevDataManager.TypeDocs.TryGetValue(key, out desc))
+                if (memberDocs.TryGetValue(key, out desc))
                     return desc;
                 ownerType = ownerType.BaseType;
+            }
+            //Interfaces
+            Type[] interfaceTypes = ownerType.GetInterfaces();
+            foreach (Type iType in interfaceTypes)
+            {
+                Type unconstructedType = iType;
+                if (unconstructedType.IsConstructedGenericType)
+                    unconstructedType = unconstructedType.GetGenericTypeDefinition();
+                string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName + "." + name;
+                if (memberDocs.TryGetValue(key, out desc))
+                    return desc;
             }
 
             return "Documentation Missing.  Create an issue for this.";

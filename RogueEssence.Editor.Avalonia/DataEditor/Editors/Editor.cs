@@ -213,7 +213,7 @@ namespace RogueEssence.Dev
 
             if (!subGroup)
             {
-                string desc = DevDataManager.GetDoc(parentType, name);
+                string desc = DevDataManager.GetMemberDoc(parentType, name);
                 LoadLabelControl(control, name, desc);
                 if (member == null)
                 {
@@ -338,7 +338,7 @@ namespace RogueEssence.Dev
 
                     if (includeLabel)
                     {
-                        string desc = DevDataManager.GetDoc(parentType, name);
+                        string desc = DevDataManager.GetMemberDoc(parentType, name);
                         LoadLabelControl(control, name, desc);
                     }
 
@@ -421,7 +421,7 @@ namespace RogueEssence.Dev
                     StackPanel controlParent = null;
                     if (includeLabel)
                     {
-                        string desc = DevDataManager.GetDoc(parentType, name);
+                        string desc = DevDataManager.GetMemberDoc(parentType, name);
                         LoadLabelControl(control, name, desc);
                     }
 
@@ -499,9 +499,15 @@ namespace RogueEssence.Dev
                     subject.OnNext(items);
                     cbValue.KeyDown += ComboBox_ScrollToLetter(items);
                     cbValue.SelectedIndex = selection;
+                    {
+                        string typeDesc = DevDataManager.GetTypeDoc(children[cbValue.SelectedIndex]);
+                        ToolTip.SetTip(cbValue, typeDesc);
+                    }
 
                     cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                     {
+                        string typeDesc = DevDataManager.GetTypeDoc(children[cbValue.SelectedIndex]);
+                        ToolTip.SetTip(cbValue, typeDesc);
                         createMethods[cbValue.SelectedIndex]();
                     };
 

@@ -28,7 +28,7 @@ namespace RogueEssence.Dev
             chkValue.Content = DataEditor.GetMemberTitle(name);
             chkValue.IsChecked = member;
 
-            string desc = DevDataManager.GetDoc(parentType, name);
+            string desc = DevDataManager.GetMemberDoc(parentType, name);
             ToolTip.SetTip(chkValue, desc);
 
             control.Children.Add(chkValue);
