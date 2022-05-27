@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(AnimAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
             AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
             ComboBox cbValue = new ComboBox();

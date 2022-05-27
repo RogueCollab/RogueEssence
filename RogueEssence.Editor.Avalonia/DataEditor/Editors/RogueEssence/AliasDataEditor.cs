@@ -22,14 +22,14 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(AliasAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Int32 member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Int32 member, Type[] subGroupStack)
         {
             AliasAttribute dataAtt = ReflectionExt.FindAttribute<AliasAttribute>(attributes);
             Dictionary<int, string> aliases = DevDataManager.GetAlias(dataAtt.Name);
 
             if (aliases == null)
             {
-                base.LoadWindowControls(control, parent, name, type, attributes, member, subGroupStack);
+                base.LoadWindowControls(control, parent, parentType, name, type, attributes, member, subGroupStack);
                 return;
             }
             

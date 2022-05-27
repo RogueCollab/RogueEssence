@@ -21,7 +21,7 @@ namespace RogueEssence.Dev
         public override bool DefaultLabel => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Type member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Type member, Type[] subGroupStack)
         {
             TypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<TypeConstraintAttribute>(attributes);
             Type baseType = dataAtt.BaseClass;

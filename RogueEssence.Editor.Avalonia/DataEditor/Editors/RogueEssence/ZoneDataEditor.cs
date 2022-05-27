@@ -15,9 +15,9 @@ namespace RogueEssence.Dev
     public class ZoneDataEditor : Editor<ZoneData>
     {
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, ZoneData obj, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, ZoneData obj, Type[] subGroupStack)
         {
-            base.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
+            base.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
 
             LoadLabelControl(control, "Script Events", "Events that can be created in the lua script for this zone.");
 

@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Enum member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Enum member, Type[] subGroupStack)
         {
             Array enums = type.GetEnumValues();
             if (type.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0)

@@ -11,9 +11,9 @@ namespace RogueEssence.Dev
         Type GetAttributeType();
         Type GetConvertingType();
 
-        void LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack);
+        void LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack);
 
-        void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, Type[] subGroupStack);
+        void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, Type[] subGroupStack);
 
         void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack);
 

@@ -102,10 +102,20 @@ namespace RogueEssence.Dev
 
         public static string GetDoc(Type ownerType, string name)
         {
+            Type objectType = typeof(object);
+
             string desc;
-            string key = ownerType.Assembly.GetName().Name + ":" + ownerType.FullName + "." + name;
-            if (DevDataManager.TypeDocs.TryGetValue(key, out desc))
-                return desc;
+            while (ownerType != objectType)
+            {
+                Type unconstructedType = ownerType;
+                if (unconstructedType.IsConstructedGenericType)
+                    unconstructedType = unconstructedType.GetGenericTypeDefinition();
+                string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName + "." + name;
+                if (DevDataManager.TypeDocs.TryGetValue(key, out desc))
+                    return desc;
+                ownerType = ownerType.BaseType;
+            }
+
             return "Documentation Missing.  Create an issue for this.";
         }
 

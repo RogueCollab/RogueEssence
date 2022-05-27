@@ -13,9 +13,9 @@ namespace RogueEssence.Dev
     public class AutoTileBaseEditor : Editor<AutoTileBase>
     {
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, AutoTileBase obj, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, AutoTileBase obj, Type[] subGroupStack)
         {
-            base.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
+            base.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
 
             Button btnAssign = new Button();
             btnAssign.Margin = new Avalonia.Thickness(0, 4, 0, 0);
@@ -27,7 +27,7 @@ namespace RogueEssence.Dev
 
                 object[] elementAttr = new object[1];
                 elementAttr[0] = new AnimAttribute(0, "Tile");
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, name, typeof(string), elementAttr, "", true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, typeof(string), elementAttr, "", true, new Type[0]);
 
                 frmData.SelectedOKEvent += async () =>
                 {
@@ -43,7 +43,7 @@ namespace RogueEssence.Dev
                                 layer.Frames[ii] = new TileFrame(layer.Frames[ii].TexLoc, destSheet);
                         }
                     }
-                    LoadWindowControls(control, parent, name, type, attributes, preTiles, subGroupStack);
+                    LoadWindowControls(control, parent, parentType, name, type, attributes, preTiles, subGroupStack);
 
                     return true;
                 };

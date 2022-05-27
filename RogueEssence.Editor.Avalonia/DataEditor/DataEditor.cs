@@ -54,7 +54,7 @@ namespace RogueEssence.Dev
 
         public static void LoadDataControls(object obj, StackPanel control)
         {
-            LoadClassControls(control, "Test", obj.ToString(), obj.GetType(), new object[0], obj, true, new Type[0]);
+            LoadClassControls(control, "Test", null, obj.ToString(), obj.GetType(), new object[0], obj, true, new Type[0]);
         }
 
         private static IEditor findEditor(Type objType, object[] attributes)
@@ -80,16 +80,16 @@ namespace RogueEssence.Dev
             throw new ArgumentException("Unhandled type!");
         }
 
-        public static void LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
+        public static void LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            converter.LoadClassControls(control, parent, name, type, attributes, member, isWindow, subGroupStack);
+            converter.LoadClassControls(control, parent, parentType, name, type, attributes, member, isWindow, subGroupStack);
         }
 
-        public static void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
+        public static void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            converter.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
+            converter.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
         }
 
         public static void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)

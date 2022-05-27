@@ -21,14 +21,14 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultLabel => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Boolean member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Boolean member, Type[] subGroupStack)
         {
             CheckBox chkValue = new CheckBox();
             chkValue.Margin = new Thickness(0, 4, 0, 0);
             chkValue.Content = DataEditor.GetMemberTitle(name);
             chkValue.IsChecked = member;
 
-            string desc = DevDataManager.GetDoc(subGroupStack[subGroupStack.Length - 2], name);
+            string desc = DevDataManager.GetDoc(parentType, name);
             ToolTip.SetTip(chkValue, desc);
 
             control.Children.Add(chkValue);

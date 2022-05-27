@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(SoundAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
             ComboBox cbValue = new ComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
