@@ -6,13 +6,16 @@ using RogueEssence.Dungeon;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Mostly obsolete; use regular spawning and pick rooms marked as disconnected
+    /// Picks tiles that cannot be reached by walking from the entrance and spawns the mobs there.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T>
         where T : StairsMapGenContext, ITiledGenContext
     {
+        /// <summary>
+        /// The terrain types to spawn the mobs in.
+        /// </summary>
         public List<ITile> AcceptedTiles;
 
         public PlaceDisconnectedMobsStep()

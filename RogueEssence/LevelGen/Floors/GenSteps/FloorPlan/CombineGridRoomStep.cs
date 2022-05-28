@@ -28,12 +28,25 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class CombineGridRoomStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
     {
-        //just combine simple squares for now
-        public SpawnList<GridCombo<T>> Combos;
-        public ComponentCollection RoomComponents { get; set; }
+        /// <summary>
+        /// The number of merges to add to the grid plan.
+        /// </summary>
         public RandRange MergeRate;
 
+        /// <summary>
+        /// List of possible merges that can be done.
+        /// </summary>
+        public SpawnList<GridCombo<T>> Combos;
+
+        /// <summary>
+        /// Determines which rooms are eligible to be merged into a new room.
+        /// </summary>
         public List<BaseRoomFilter> Filters { get; set; }
+
+        /// <summary>
+        /// Components that the newly added room will be labeled with.
+        /// </summary>
+        public ComponentCollection RoomComponents { get; set; }
 
         public CombineGridRoomStep()
         {

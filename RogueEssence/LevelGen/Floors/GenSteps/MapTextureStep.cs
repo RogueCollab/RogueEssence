@@ -6,19 +6,46 @@ using System.Collections.Generic;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Decides the tileset for the walls, ground, etc.
+    /// This is done by setting the map's TextureMap to the specified textures.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MapTextureStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        /// <summary>
+        /// The tileset used for walkable tiles.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
         public int GroundTileset;
+
+        /// <summary>
+        /// The tileset used for walls, both breakable and unbreakable.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
         public int BlockTileset;
+
+        /// <summary>
+        /// The tileset used for water, lava, etc.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
         public int WaterTileset;
 
+        /// <summary>
+        /// Adds an additional ground texture beneath all textures.
+        /// Useful for wall textures that contain transparent pixels.
+        /// </summary>
         public bool LayeredGround;
+
+        /// <summary>
+        /// Turns off border textures for the ground tileset when near walls.
+        /// </summary>
         public bool IndependentGround;
 
+        /// <summary>
+        /// The map's elemental aligment.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public int GroundElement;
 
@@ -63,18 +90,46 @@ namespace RogueEssence.LevelGen
         }
     }
 
+
+    /// <summary>
+    /// Decides the tileset for the walls, ground, etc.
+    /// This is done by setting the map's TextureMap to the specified textures.
+    /// A more fine-tuned version of MapTextureStep that allows mapping of more than just Ground+Wall+Secondary.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MapDictTextureStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        /// <summary>
+        /// Maps the terrain type to the specified autotile.
+        /// </summary>
         [Dev.DataType(2, DataManager.DataType.AutoTile, false)]
         public Dictionary<int, int> TextureMap;
 
+        /// <summary>
+        /// The texture considered to be the ground for this map.
+        /// </summary>
         public int GroundTexture;
+
+        /// <summary>
+        /// The repeated texture used for the border.
+        /// </summary>
         public int BlankBG;
 
+        /// <summary>
+        /// Adds an additional ground texture beneath all textures.
+        /// Useful for wall textures that contain transparent pixels.
+        /// </summary>
         public bool LayeredGround;
+
+        /// <summary>
+        /// Turns off border textures for the ground tileset when near walls.
+        /// </summary>
         public bool IndependentGround;
 
+        /// <summary>
+        /// The map's elemental aligment.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public int GroundElement;
 

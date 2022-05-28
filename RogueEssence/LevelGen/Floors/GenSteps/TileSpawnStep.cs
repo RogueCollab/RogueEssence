@@ -6,7 +6,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Generates the table of trap tiles to spawn on a floor
+    /// Generates the encounter table of trap tiles to spawn on a floor.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]

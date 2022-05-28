@@ -5,9 +5,16 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Adds map statuses to the floor.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MapExtraStatusStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        /// <summary>
+        /// The array of statuses to add to the map.
+        /// </summary>
         public int[] ExtraMapStatus;
 
         public MapExtraStatusStep()

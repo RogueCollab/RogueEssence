@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 namespace RogueEssence
 {
+    /// <summary>
+    /// Removes extraneous unbreakable wall tiles by turning them into regular wall tiles.
+    /// THIS DOES NOT WORK YET
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MinimizeBarrierStep<T> : GenStep<T>
         where T : class, ITiledGenContext

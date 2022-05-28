@@ -4,16 +4,34 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Adds large rooms to the grid plan.
+    /// This is done by choosing an area that contains at least one eligible room, and no ineligible rooms.
+    /// The step then bulldozes the area and places the new room in it.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class AddLargeRoomStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
     {
-        //just combine simple squares for now
-        public SpawnList<LargeRoom<T>> GiantRooms;
+        /// <summary>
+        /// The amount of rooms to place.
+        /// </summary>
         public RandRange RoomAmount;
 
-        public ComponentCollection RoomComponents { get; set; }
+        /// <summary>
+        /// The types of rooms to place.
+        /// </summary>
+        public SpawnList<LargeRoom<T>> GiantRooms;
 
+        /// <summary>
+        /// Determines which rooms are eligible to be replaced with the new room.
+        /// </summary>
         public List<BaseRoomFilter> Filters { get; set; }
+
+        /// <summary>
+        /// Components that the newly added room will be labeled with.
+        /// </summary>
+        public ComponentCollection RoomComponents { get; set; }
 
         public AddLargeRoomStep()
             : base()

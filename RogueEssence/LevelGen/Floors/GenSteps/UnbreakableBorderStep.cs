@@ -3,6 +3,11 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Turns the tiles at the edge of the map into the Unbreakable terrain.
+    /// Thickness can be customized.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class UnbreakableBorderStep<T> : GenStep<T> where T : class, IUnbreakableGenContext
     {
@@ -33,7 +38,11 @@ namespace RogueEssence.LevelGen
         }
     }
 
-
+    /// <summary>
+    /// Turns the tiles at the edge of the map into the specified terrain.
+    /// Thickness and tile type can be customized.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class TileBorderStep<T> : GenStep<T> where T : class, ITiledGenContext
     {

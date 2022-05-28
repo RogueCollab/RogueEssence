@@ -3,6 +3,12 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Creates blobs of water using cellular automata, and places them around the map.
+    /// The water must be reachable from the stairs.
+    /// WIP DOES NOT WORK
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class ReachableBlobWaterStep<T> : BlobWaterStep<T> where T : class, ITiledGenContext
     {

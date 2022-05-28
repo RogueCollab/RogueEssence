@@ -4,6 +4,10 @@ using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates the encounter table of enemies to spawn on a floor.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MobSpawnStep<T> : GenStep<T> where T : BaseMapGenContext
     {

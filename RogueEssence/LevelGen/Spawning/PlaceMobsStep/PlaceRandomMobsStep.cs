@@ -5,13 +5,25 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Places mobs in random rooms.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class PlaceRandomMobsStep<T> : PlaceMobsStep<T> where T : ListMapGenContext
     {
         public const int AVERAGE_CLUMP_FACTOR = 100;
 
+        /// <summary>
+        /// A percentage value at or above 0.
+        /// Lower numbers make enemies spread out more evenly.
+        /// Higher numbers cause them to spawn in bigger groups.
+        /// </summary>
         public int ClumpFactor;
 
+        /// <summary>
+        /// Used to filter out rooms unsuitable for spawning the mobs in.
+        /// </summary>
         public List<BaseRoomFilter> Filters { get; set; }
 
         public PlaceRandomMobsStep()

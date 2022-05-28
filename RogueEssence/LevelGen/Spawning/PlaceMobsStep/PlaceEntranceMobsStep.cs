@@ -5,6 +5,11 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Places mobs in the room where the entrance is.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEntrance"></typeparam>
     [Serializable]
     public class PlaceEntranceMobsStep<T, TEntrance> : PlaceMobsStep<T> where T : ListMapGenContext, IViewPlaceableGenContext<TEntrance>
         where TEntrance : IEntrance

@@ -3,6 +3,11 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates a room with specific tiles, borders, and post-processing mask.
+    /// EDITOR UNFRIENDLY
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class RoomGenPostProcSpecific<T> : RoomGenSpecific<T> where T : ITiledGenContext, IPostProcGenContext
     {

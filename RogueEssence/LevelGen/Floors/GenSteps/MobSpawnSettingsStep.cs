@@ -4,10 +4,21 @@ using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Chooses the enemy limit and respawn time for the map.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MobSpawnSettingsStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        /// <summary>
+        /// The limit to the number of enemies on the map.  If this number is reached or exceeded, no more respawns will occur.
+        /// </summary>
         public int MaxFoes;
+
+        /// <summary>
+        /// The amount of time it takes for a new enemy team to respawn, in turns.
+        /// </summary>
         public int RespawnTime;
 
         public MobSpawnSettingsStep()

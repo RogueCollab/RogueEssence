@@ -8,7 +8,14 @@ namespace RogueEssence.LevelGen
     public abstract class PlaceMobsStep<T> : GenStep<T>
         where T : class, IGroupPlaceableGenContext<TeamSpawn>
     {
+        /// <summary>
+        /// The generator responsible for creating the list of teams to spawn.
+        /// </summary>
         public IMultiTeamSpawner<T> Spawn;
+
+        /// <summary>
+        /// Determines if the mobs should be spawned as allies.
+        /// </summary>
         public bool Ally;
 
         public PlaceMobsStep() { }

@@ -6,7 +6,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Generates the table of items to spawn on a floor
+    /// Sets the floor's item spawn tables.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]

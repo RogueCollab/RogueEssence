@@ -3,6 +3,11 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates a room, and then coats it with additional tiles.
+    /// INCOMPLETE
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class RoomGenCoated<T> : RoomGen<T> where T : ITiledGenContext
     {

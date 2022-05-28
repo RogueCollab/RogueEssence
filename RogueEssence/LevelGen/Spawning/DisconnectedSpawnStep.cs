@@ -5,6 +5,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
+    /// Spawns objects on tiles that are not connected to the main path.
     /// Mostly obsolete; use regular spawning and pick rooms marked as disconnected
     /// </summary>
     /// <typeparam name="T"></typeparam>

@@ -5,6 +5,10 @@ using RogueEssence.Dungeon;
 //Delet this but need to make a new class for sealing marked rooms off
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Deprecated.  DO NOT USE.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class DetourStep<T> : GenStep<T>
         where T : class, IFloorPlanGenContext, IPlaceableGenContext<EffectTile>, IGroupPlaceableGenContext<TeamSpawn>, IMobSpawnMap
