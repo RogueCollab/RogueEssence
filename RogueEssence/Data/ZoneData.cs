@@ -9,9 +9,21 @@ namespace RogueEssence.Data
 {
     public enum RogueStatus
     {
+        /// <summary>
+        /// Disallowed for Rogue mode.
+        /// </summary>
         None,
+        /// <summary>
+        /// Allowed for rogue mode, cannot transfer anything.
+        /// </summary>
         NoTransfer,
+        /// <summary>
+        /// Allowed for rogue mode, can only transfer items to main save.
+        /// </summary>
         ItemTransfer,
+        /// <summary>
+        /// Allowed for rogue mode, can transfer items and characters to main save.
+        /// </summary>
         AllTransfer
     }
 
