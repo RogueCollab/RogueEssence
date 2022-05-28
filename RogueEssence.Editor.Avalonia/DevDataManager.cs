@@ -121,19 +121,21 @@ namespace RogueEssence.Dev
         public static string GetMemberDoc(Type ownerType, string name)
         {
             Type objectType = typeof(object);
+            Type baseType = ownerType;
 
             string desc;
             //Main base types
-            while (ownerType != objectType)
+            while (baseType != objectType)
             {
-                Type unconstructedType = ownerType;
+                Type unconstructedType = baseType;
                 if (unconstructedType.IsConstructedGenericType)
                     unconstructedType = unconstructedType.GetGenericTypeDefinition();
                 string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName + "." + name;
                 if (memberDocs.TryGetValue(key, out desc))
                     return desc;
-                ownerType = ownerType.BaseType;
+                baseType = baseType.BaseType;
             }
+
             //Interfaces
             Type[] interfaceTypes = ownerType.GetInterfaces();
             foreach (Type iType in interfaceTypes)
