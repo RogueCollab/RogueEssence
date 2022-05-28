@@ -9,9 +9,21 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class CategorySpawn<T>
     {
+        /// <summary>
+        /// The objects to spawn within this category.
+        /// Assuming that this category was chosen for spawning,
+        /// the chance that an object will spawn on a given floor is its spawn rate for that floor,
+        /// divided by the sum of all objects' spawn rates on that floor.
+        /// </summary>
         [RangeBorder(0, true, true)]
         [Dev.EditorHeight(0, 290)]
         public SpawnRangeList<T> Spawns;
+
+        /// <summary>
+        /// The spawn rate of the entire category across the entire dungeon segment.
+        /// The chance that this category is chosen on a given floor is the spawn rate for that floor,
+        /// divided by the sum of all categories' spawn rates on that floor.
+        /// </summary>
         [RangeBorder(0, true, true)]
         public RangeDict<int> SpawnRates;
 
@@ -29,13 +41,19 @@ namespace RogueEssence.LevelGen
 
 
     /// <summary>
-    /// Generates the table of items to spawn on all floors
+    /// Generates the table of items to spawn on all floors.
     /// </summary>
     [Serializable]
     public class ItemSpawnZoneStep : ZoneStep
     {
+        /// <summary>
+        /// At what point in the map gen process to run the item spawning in.
+        /// </summary>
         public Priority Priority;
 
+        /// <summary>
+        /// The spawn table, organized by category.
+        /// </summary>
         [Dev.SubGroup]
         [Dev.EditorHeight(0, 260)]
         public Dictionary<string, CategorySpawn<InvItem>> Spawns;

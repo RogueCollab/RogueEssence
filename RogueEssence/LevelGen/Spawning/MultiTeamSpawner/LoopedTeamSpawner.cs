@@ -5,12 +5,22 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Spawns mob teams from a specified team builder, at a specified amount.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class LoopedTeamSpawner<T> : IMultiTeamSpawner<T>
         where T : IGenContext, IMobSpawnMap
     {
+        /// <summary>
+        /// Builds the team to be spawned.
+        /// </summary>
         public TeamSpawner Picker;
 
+        /// <summary>
+        /// Decides how many teams to spawn.
+        /// </summary>
         public IRandPicker<int> AmountSpawner;
 
         public LoopedTeamSpawner() { }

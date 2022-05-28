@@ -3,10 +3,20 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Names all floors of the dungeon segment according to a naming convention.
+    /// </summary>
     [Serializable]
     public class FloorNameIDZoneStep : ZoneStep
     {
+        /// <summary>
+        /// The name to give the floors.  Can use {0} for floor number.
+        /// </summary>
         public LocalText Name;
+
+        /// <summary>
+        /// At what point in the map gen process to run the naming step in.
+        /// </summary>
         public Priority Priority;
 
         public FloorNameIDZoneStep()

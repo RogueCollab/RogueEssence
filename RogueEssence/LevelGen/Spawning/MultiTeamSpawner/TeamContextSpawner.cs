@@ -5,6 +5,10 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Spawns mob teams to the map based on the map's encounter table.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class TeamContextSpawner<T> : IMultiTeamSpawner<T> 
         where T : BaseMapGenContext

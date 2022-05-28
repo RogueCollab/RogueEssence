@@ -17,30 +17,47 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MobSpawn : ISpawnable, ISpawnGenerator<IMobSpawnMap>
     {
+        /// <summary>
+        /// The species, form, etc. of the mob spawned.
+        /// </summary>
         [Dev.MonsterID(0, false, false, true, true)]
         public MonsterID BaseForm;
 
+        /// <summary>
+        /// The level of the monster spawned.
+        /// </summary>
         [Dev.SubGroup]
         [Dev.RangeBorder(0, false, true)]
         public RandRange Level;
 
+        /// <summary>
+        /// The skills for the mob.  Empty spaces will be filled based on its current level.
+        /// </summary>
         [Dev.DataType(1, DataManager.DataType.Skill, false)]
         public List<int> SpecifiedSkills;
 
+        /// <summary>
+        /// The passive skill for the mob.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.Intrinsic, true)]
         public int Intrinsic;
 
+        /// <summary>
+        /// The mob's AI.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.AI, false)]
         public int Tactic;
 
+        /// <summary>
+        /// Conditions that must be met in order for the mob to spawn.
+        /// </summary>
         public List<MobSpawnCheck> SpawnConditions;
-        public List<MobSpawnExtra> SpawnFeatures;
-        //extra spawn event
-        //items
-        //status problems
-        //special statuses
-        //stat changes
 
+        /// <summary>
+        /// Additional alterations made to the mob after it is created but before it is spawned.
+        /// </summary>
+        public List<MobSpawnExtra> SpawnFeatures;
+        
         public MobSpawn()
         {
             BaseForm = new MonsterID(0, 0, -1, Gender.Unknown);

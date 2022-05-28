@@ -19,6 +19,9 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MobSpawnStatus : MobSpawnExtra
     {
+        /// <summary>
+        /// The possible statuses.  Picks one.
+        /// </summary>
         public SpawnList<StatusEffect> Statuses;
 
         public MobSpawnStatus()

@@ -12,8 +12,14 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class TileSpawnZoneStep : ZoneStep
     {
+        /// <summary>
+        /// At what point in the map gen process to run the trap spawning in.
+        /// </summary>
         public Priority Priority;
 
+        /// <summary>
+        /// The encounter table for traps across all floors of the dungeon segment.
+        /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]
         public SpawnRangeList<EffectTile> Spawns;

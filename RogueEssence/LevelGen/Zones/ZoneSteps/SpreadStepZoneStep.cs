@@ -8,19 +8,31 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Spreads a map gen step randomly across the dungeon segment.
+    /// </summary>
     [Serializable]
     public class SpreadStepZoneStep : ZoneStep
     {
+        /// <summary>
+        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// </summary>
         public SpreadPlanBase SpreadPlan;
+
+        /// <summary>
+        /// The steps to distribute.
+        /// </summary>
         public IRandPicker<IGenPriority> Spawns;
 
+        /// <summary>
+        /// Flags from the player's passives that will affect the appearance rate of the step.
+        /// </summary>
         [StringTypeConstraint(0, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]
         public List<IGenPriority> DropItems;
-        //spreads an item through the floors
-        //ensures that the space in floors between occurrences is kept tame
+
         public SpreadStepZoneStep()
         {
             ModStates = new List<FlagType>();
@@ -116,11 +128,25 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// Spreads a map gen step randomly across the dungeon segment, allowing precise control over the spawn rate across different floors.
+    /// </summary>
     [Serializable]
     public class SpreadStepRangeZoneStep : ZoneStep
     {
+        /// <summary>
+        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// </summary>
         public SpreadPlanBase SpreadPlan;
+
+        /// <summary>
+        /// The steps to distribute.  Probabilities can be customized across floors.
+        /// </summary>
         public SpawnRangeList<IGenPriority> Spawns;
+
+        /// <summary>
+        /// Flags from the player's passives that will affect the appearance rate of the step.
+        /// </summary>
         [StringTypeConstraint(0, typeof(ModGenState))]
         public List<FlagType> ModStates;
 

@@ -7,21 +7,35 @@ using RogueEssence.Dev;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Generates the table of items to spawn on all floors
+    /// Generates the table of mobs to spawn on all floors.
     /// </summary>
     [Serializable]
     public class TeamSpawnZoneStep : ZoneStep
     {
+        /// <summary>
+        /// At what point in the map gen process to run the mob spawning in.
+        /// </summary>
         public Priority Priority;
 
+        /// <summary>
+        /// The encounter table for mobs across all floors of the dungeon segment.
+        /// When spawning, the chosen mobs will be grouped into teams of a size described in Team Sizes.
+        /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]
         [Dev.EditorHeight(0, 290)]
         public SpawnRangeList<TeamMemberSpawn> Spawns;
+
+        /// <summary>
+        /// The size of teams across all floors of the dungeon segment.
+        /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]
         public SpawnRangeList<int> TeamSizes;
 
+        /// <summary>
+        /// Pre-made teams and their spawn chances across floors.
+        /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]
         public SpawnRangeList<SpecificTeamSpawner> SpecificSpawns;

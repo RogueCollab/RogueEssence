@@ -4,6 +4,13 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// A floor generator that utilizes a grid plan.
+    /// The grid plan is a grid of X by Y cells, which can be filled by a room generator.
+    /// Additionally, horizontal and vertical hallways connect the cells to each other.
+    /// Using this generator allows for gen steps that operate on grid plans.
+    /// It also allows everything RoomFloorGen allows.
+    /// </summary>
     [Serializable]
     public class GridFloorGen : FloorMapGen<MapGenContext>
     {
@@ -41,6 +48,13 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// A floor generator that utilizes a floor plan.
+    /// The floor plan a list of rooms and hallways, which can be placed in any location.
+    /// The room and hall positions are not confined to a grid.
+    /// Using this generator allows for gen steps that operate on floor plans.
+    /// It also allows everything StairsFloorGen allows.
+    /// </summary>
     [Serializable]
     public class RoomFloorGen : FloorMapGen<ListMapGenContext>
     {
@@ -77,6 +91,11 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// A floor generator that utilizes stairs.
+    /// Using this generator allows for gen steps that operate on stairs.
+    /// It also allows basic tile and spawning gen steps.
+    /// </summary>
     [Serializable]
     public class StairsFloorGen : FloorMapGen<StairsMapGenContext>
     {
@@ -113,6 +132,11 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// A floor generator that is suited for loading maps created by the editor.
+    /// Using this generator allows for gen steps that load maps.
+    /// It also allows basic tile and spawning gen steps.
+    /// </summary>
     [Serializable]
     public class LoadGen : FloorMapGen<MapLoadContext>
     {
@@ -150,7 +174,7 @@ namespace RogueEssence.LevelGen
     }
 
     [Serializable]
-    public class FloorMapGen<T> : MapGen<T>, IFloorGen
+    public abstract class FloorMapGen<T> : MapGen<T>, IFloorGen
         where T : class, IGenContext
     {
         public IGenContext GenMap(ZoneGenContext zoneContext)

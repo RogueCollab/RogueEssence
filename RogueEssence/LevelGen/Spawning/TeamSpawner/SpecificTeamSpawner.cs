@@ -4,9 +4,15 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Spawns a team with specific members.
+    /// </summary>
     [Serializable]
     public class SpecificTeamSpawner : TeamSpawner
     {
+        /// <summary>
+        /// The members of the team.
+        /// </summary>
         public List<MobSpawn> Spawns;
 
         public SpecificTeamSpawner() { Spawns = new List<MobSpawn>(); }

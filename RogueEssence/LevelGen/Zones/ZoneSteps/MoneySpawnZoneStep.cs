@@ -14,14 +14,26 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MoneySpawnZoneStep : ZoneStep
     {
+        /// <summary>
+        /// At what point in the map gen process to run the money spawning in.
+        /// </summary>
         public Priority Priority;
 
+        /// <summary>
+        /// The amount of money spawned on the first floor.
+        /// </summary>
         [Dev.RangeBorder(0, false, true)]
         public RandRange StartAmount;
 
+        /// <summary>
+        /// The amount of money that is added on each increasing floor.
+        /// </summary>
         [Dev.RangeBorder(0, false, true)]
         public RandRange AddAmount;
 
+        /// <summary>
+        /// Flags from the player's passives that will affect the money spawned.
+        /// </summary>
         [StringTypeConstraint(0, typeof(ModGenState))]
         public List<FlagType> ModStates;
 

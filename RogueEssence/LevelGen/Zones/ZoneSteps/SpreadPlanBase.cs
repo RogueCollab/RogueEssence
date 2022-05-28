@@ -8,6 +8,9 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public abstract class SpreadPlanBase
     {
+        /// <summary>
+        /// The range of floors that can be spawned in.
+        /// </summary>
         [RangeBorder(0, true, true)]
         public IntRange FloorRange;
 
@@ -37,13 +40,13 @@ namespace RogueEssence.LevelGen
 
 
     /// <summary>
-    /// Spreads the item across floors by rolling a fixed chance for each
+    /// Spreads the item across floors by rolling a fixed chance on each floor.
     /// </summary>
     [Serializable]
     public class SpreadPlanChance : SpreadPlanBase
     {
         /// <summary>
-        /// In percent
+        /// In percent.
         /// </summary>
         public int Chance;
 
@@ -70,11 +73,16 @@ namespace RogueEssence.LevelGen
     }
 
     /// <summary>
-    /// Spreads the item across floors with specified spacing between
+    /// Spreads the object across floors with specified spacing between.
+    /// Good for ensuring a steady supply of food, etc.
     /// </summary>
     [Serializable]
     public class SpreadPlanSpaced : SpreadPlanBase
     {
+        /// <summary>
+        /// The object spawns will never be found LESS than FloorSpacing.Min floors apart,
+        /// and never MORE than FloorSpacing.Max floors apart.
+        /// </summary>
         public RandRange FloorSpacing;
 
         public SpreadPlanSpaced() { }
@@ -103,12 +111,19 @@ namespace RogueEssence.LevelGen
     }
 
     /// <summary>
-    /// Spreads the item across floors by randomly distributing across them without repetition
+    /// Spreads the spawn across floors based on a quota.  Thus, the dungeon segment is guaranteed to have this many spawns.
     /// </summary>
     [Serializable]
     public class SpreadPlanQuota : SpreadPlanBase
     {
+        /// <summary>
+        /// Determines the amount to spawn.
+        /// </summary>
         public IRandPicker<int> Quota;
+
+        /// <summary>
+        /// Can spawn on the same floor multiple times.
+        /// </summary>
         public bool Replaceable;
 
         public SpreadPlanQuota() { Quota = new RandRange(); }
