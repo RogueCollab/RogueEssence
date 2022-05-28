@@ -5,7 +5,10 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
-
+    /// <summary>
+    /// Spawns a box with a random item in it.
+    /// </summary>
+    /// <typeparam name="TGenContext"></typeparam>
     [Serializable]
     public class BoxSpawner<TGenContext> : IStepSpawner<TGenContext, MapItem>
         where TGenContext : IGenContext
@@ -20,9 +23,15 @@ namespace RogueEssence.LevelGen
             this.BoxID = id;
         }
 
+        /// <summary>
+        /// The item ID of the box containing the item.
+        /// </summary>
         [Dev.DataType(0, Data.DataManager.DataType.Item, false)]
         public int BoxID { get; set; }
 
+        /// <summary>
+        /// The spawner that decides what item the box holds.
+        /// </summary>
         public IStepSpawner<TGenContext, MapItem> BaseSpawner { get; set; }
 
         public List<MapItem> GetSpawns(TGenContext map)

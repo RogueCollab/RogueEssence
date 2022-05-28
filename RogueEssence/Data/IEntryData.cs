@@ -26,7 +26,7 @@
         bool Released { get; }
 
         /// <summary>
-        /// Additional comments for this asset.
+        /// Developer-only comments for this asset.
         /// </summary>
         string Comment { get; set; }
 
