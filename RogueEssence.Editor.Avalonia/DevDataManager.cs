@@ -115,7 +115,7 @@ namespace RogueEssence.Dev
             if (typeDocs.TryGetValue(key, out desc))
                 return desc;
 
-            return "Documentation Missing.  Create an issue for this.";
+            return null;
         }
 
         public static string GetMemberDoc(Type ownerType, string name)
@@ -130,7 +130,7 @@ namespace RogueEssence.Dev
                 Type unconstructedType = baseType;
                 if (unconstructedType.IsConstructedGenericType)
                     unconstructedType = unconstructedType.GetGenericTypeDefinition();
-                string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName + "." + name;
+                string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName.Replace('+', '.') + "." + name;
                 if (memberDocs.TryGetValue(key, out desc))
                     return desc;
                 baseType = baseType.BaseType;
@@ -143,12 +143,12 @@ namespace RogueEssence.Dev
                 Type unconstructedType = iType;
                 if (unconstructedType.IsConstructedGenericType)
                     unconstructedType = unconstructedType.GetGenericTypeDefinition();
-                string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName + "." + name;
+                string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName.Replace('+', '.') + "." + name;
                 if (memberDocs.TryGetValue(key, out desc))
                     return desc;
             }
 
-            return "Documentation Missing.  Create an issue for this.";
+            return null;
         }
 
         public static Bitmap GetTile(TileFrame tileTex)

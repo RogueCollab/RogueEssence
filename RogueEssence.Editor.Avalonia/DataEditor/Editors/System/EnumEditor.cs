@@ -75,6 +75,17 @@ namespace RogueEssence.Dev
                 cbValue.Bind(ComboBox.ItemsProperty, subject);
                 subject.OnNext(items);
                 cbValue.SelectedIndex = selection;
+                {
+                    string typeDesc = DevDataManager.GetMemberDoc(type, enums.GetValue(cbValue.SelectedIndex).ToString());
+                    if (typeDesc != null)
+                        ToolTip.SetTip(cbValue, typeDesc);
+                }
+                cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+                {
+                    string typeDesc = DevDataManager.GetMemberDoc(type, enums.GetValue(cbValue.SelectedIndex).ToString());
+                    if (typeDesc != null)
+                        ToolTip.SetTip(cbValue, typeDesc);
+                };
                 control.Children.Add(cbValue);
             }
         }
