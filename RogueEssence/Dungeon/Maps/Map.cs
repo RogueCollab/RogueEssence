@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
 using QuadTrees;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -141,7 +142,11 @@ namespace RogueEssence.Dungeon
 
         public DiscoveryState[][] DiscoveryArray;
 
-        public Map()
+        public Map() : this(true)
+        { }
+
+        [JsonConstructor]
+        public Map(bool initEvents)
         {
             AssetName = "";
             Name = new LocalText();
@@ -167,7 +172,8 @@ namespace RogueEssence.Dungeon
 
             CurrentTurnMap = new TurnState();
 
-            setTeamEvents();
+            if (initEvents)
+                setTeamEvents();
         }
 
 
@@ -1010,6 +1016,8 @@ namespace RogueEssence.Dungeon
 
             //No need to set team events since they'd already be set during the class construction phase of deserialization
             ReconnectMapReference();
+
+            setTeamEvents();
         }
 
         protected virtual void ReconnectMapReference()
