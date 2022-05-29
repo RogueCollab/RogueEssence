@@ -976,8 +976,8 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(DropItem(heldItem, player.CharLoc));
             }
 
-            ActiveTeam.AddToSortedAssembly(player);
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
+            ActiveTeam.AddToSortedAssembly(player);
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(player);
             yield return new WaitForFrames(30);
@@ -997,8 +997,8 @@ namespace RogueEssence.Dungeon
                     ActiveTeam.AddToInv(heldItem);
             }
 
-            ActiveTeam.AddToSortedAssembly(player);
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
+            ActiveTeam.AddToSortedAssembly(player);
         }
 
         public IEnumerator<YieldInstruction> DropItem(InvItem item, Loc loc)

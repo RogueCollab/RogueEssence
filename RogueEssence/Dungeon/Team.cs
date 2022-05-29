@@ -30,18 +30,11 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         public Faction MapFaction;
 
-        public Team() : this(true)
-        { }
-
-        [JsonConstructor]
-        public Team(bool initEvents)
+        public Team()
         {
             Players = new EventedList<Character>();
             Guests = new EventedList<Character>();
             inventory = new List<InvItem>();
-
-            if (initEvents)
-                setMemberEvents();
         }
 
         public Character Leader { get { return Players[LeaderIndex]; } }
@@ -74,7 +67,7 @@ namespace RogueEssence.Dungeon
                 yield return chara;
         }
 
-        private void setMemberEvents()
+        protected virtual void setMemberEvents()
         {
             Players.ItemAdding += addingMember;
             Guests.ItemAdding += addingMember;
@@ -248,12 +241,12 @@ namespace RogueEssence.Dungeon
         internal void OnDeserializedMethod(StreamingContext context)
         {
             //No need to set member events since they'd already be set during the class construction phase of deserialization
-            ReconnectTeamReference();
+            reconnectTeamReference();
 
             setMemberEvents();
         }
 
-        protected virtual void ReconnectTeamReference()
+        protected virtual void reconnectTeamReference()
         {
             //reconnect Players' references
             foreach (Character player in Players)
@@ -283,6 +276,16 @@ namespace RogueEssence.Dungeon
     public class MonsterTeam : Team
     {
         public bool Unrecruitable;
+
+        public MonsterTeam() : this(true)
+        { }
+
+        [JsonConstructor]
+        public MonsterTeam(bool initEvents) : base()
+        {
+            if (initEvents)
+                setMemberEvents();
+        }
     }
 
     [Serializable]
@@ -293,7 +296,7 @@ namespace RogueEssence.Dungeon
         public int MaxInv;
 
         public string Name;
-        public List<Character> Assembly;
+        public EventedList<Character> Assembly;
         public int[] Storage;
         public List<InvItem> BoxStorage;
         public int Bank;
@@ -302,12 +305,18 @@ namespace RogueEssence.Dungeon
         public int Fame;
         public int RankExtra;
 
-        public ExplorerTeam()
+        public ExplorerTeam() : this(true)
+        { }
+        [JsonConstructor]
+        public ExplorerTeam(bool initEvents) : base()
         {
             Name = "";
-            Assembly = new List<Character>();
+            Assembly = new EventedList<Character>();
             BoxStorage = new List<InvItem>();
             Storage = new int[10000];//TODO: remove this magic number and make it an adjustable value
+
+            if (initEvents)
+                setMemberEvents();
         }
 
         public void SetRank(int rank)
@@ -502,10 +511,38 @@ namespace RogueEssence.Dungeon
             return player;
         }
 
-
-        protected override void ReconnectTeamReference()
+        private void settingAssembly(int index, Character chara)
         {
-            base.ReconnectTeamReference();
+            Assembly[index].MemberTeam = null;
+            chara.MemberTeam = this;
+        }
+        private void addingAssembly(int index, Character chara)
+        {
+            chara.MemberTeam = this;
+        }
+        private void removingAssembly(int index, Character chara)
+        {
+            chara.MemberTeam = null;
+        }
+        private void clearingAssembly()
+        {
+            foreach (Character chara in Assembly)
+                chara.MemberTeam = null;
+        }
+
+        protected override void setMemberEvents()
+        {
+            base.setMemberEvents();
+
+            Assembly.ItemAdding += addingAssembly;
+            Assembly.ItemChanging += settingAssembly;
+            Assembly.ItemRemoving += removingAssembly;
+            Assembly.ItemsClearing += clearingAssembly;
+        }
+
+        protected override void reconnectTeamReference()
+        {
+            base.reconnectTeamReference();
             foreach (Character player in Assembly)
                 player.MemberTeam = this;
         }

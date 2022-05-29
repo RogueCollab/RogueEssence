@@ -148,8 +148,6 @@ namespace RogueEssence.Data
             Quest = ModHeader.Invalid;
             Mods = new List<ModHeader>();
 
-            ActiveTeam = new ExplorerTeam();
-
             Dex = new List<UnlockState>();
             RogueStarters = new List<bool>();
             DungeonUnlocks = new List<UnlockState>();
@@ -170,6 +168,8 @@ namespace RogueEssence.Data
         {
             Rand = new ReRandom(seed);
             UUID = uuid;
+
+            ActiveTeam = new ExplorerTeam();
         }
 
         /// <summary>
@@ -485,17 +485,11 @@ namespace RogueEssence.Data
             character.Relearnables = new List<bool>();
         }
 
-        public IEnumerator<YieldInstruction> RestoreLevel()
+        public void RestoreLevel()
         {
             if (StartLevel > -1)
             {
                 GameState state = DataManager.Instance.LoadMainGameState(false);
-                if (state == null)
-                {
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_ERR_READ_SAVE")));
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_ERR_READ_SAVE_FALLBACK")));
-                    yield break;
-                }
                 //the current save file has the level-restricted characters
                 //the other save file has the original characters
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
@@ -630,22 +624,29 @@ namespace RogueEssence.Data
         /// </summary>
         protected void ClearDungeonItems()
         {
-            foreach (Character character in ActiveTeam.EnumerateChars())
+            try
             {
-                if (character.EquippedItem.ID > -1)
+                foreach (Character character in ActiveTeam.EnumerateChars())
                 {
-                    character.EquippedItem.Cursed = false;
-                    ItemData entry = DataManager.Instance.GetItem(character.EquippedItem.ID);
+                    if (character.EquippedItem.ID > -1)
+                    {
+                        character.EquippedItem.Cursed = false;
+                        ItemData entry = DataManager.Instance.GetItem(character.EquippedItem.ID);
+                        if (entry.MaxStack <= 1 && entry.UsageType != ItemData.UseType.Box)
+                            character.EquippedItem.HiddenValue = 0;
+                    }
+                }
+                foreach (InvItem item in ActiveTeam.EnumerateInv())
+                {
+                    item.Cursed = false;
+                    ItemData entry = DataManager.Instance.GetItem(item.ID);
                     if (entry.MaxStack <= 1 && entry.UsageType != ItemData.UseType.Box)
-                        character.EquippedItem.HiddenValue = 0;
+                        item.HiddenValue = 0;
                 }
             }
-            foreach (InvItem item in ActiveTeam.EnumerateInv())
+            catch (Exception ex)
             {
-                item.Cursed = false;
-                ItemData entry = DataManager.Instance.GetItem(item.ID);
-                if (entry.MaxStack <= 1 && entry.UsageType != ItemData.UseType.Box)
-                    item.HiddenValue = 0;
+                DiagManager.Instance.LogError(ex);
             }
         }
 
@@ -711,15 +712,9 @@ namespace RogueEssence.Data
         public void FullRestore()
         {
             foreach (Character character in ActiveTeam.EnumerateChars())
-            {
-                character.Dead = false;
                 character.FullRestore();
-            }
             foreach (Character character in ActiveTeam.Assembly)
-            {
-                character.Dead = false;
                 character.FullRestore();
-            }
             MidAdventure = false;
             ClearDungeonItems();
             //clear rescue status
@@ -883,6 +878,7 @@ namespace RogueEssence.Data
         public int[] StorageToStore;
         public int MoneyToStore;
 
+        [JsonConstructor]
         public MainProgress()
         {
             CharsToStore = new List<CharData>();
@@ -973,78 +969,94 @@ namespace RogueEssence.Data
             Outcome = result;
             bool recorded = DataManager.Instance.RecordingReplay;
             string recordFile = null;
-            if (result == ResultType.Rescue)
+            try
             {
-                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
+                if (result == ResultType.Rescue)
+                {
+                    Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
-                DataManager.Instance.MsgLog.Clear();
-                //end the game with a recorded ending
-                recordFile = DataManager.Instance.EndPlay(this, StartDate);
+                    DataManager.Instance.MsgLog.Clear();
+                    //end the game with a recorded ending
+                    recordFile = DataManager.Instance.EndPlay(this, StartDate);
 
-                SOSMail sos = Rescue.SOS;
-                string dateRescued = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
-                ReplayData replay = DataManager.Instance.LoadReplay(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile), false);
-                AOKMail aok = new AOKMail(sos, DataManager.Instance.Save, dateRescued, replay);
-                GeneratedAOK = DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), aok, false);
-                string deletePath = DataManager.FindRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sos, sos.Extension);
-                if (deletePath != null)
-                    File.Delete(deletePath);
+                    SOSMail sos = Rescue.SOS;
+                    string dateRescued = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+                    ReplayData replay = DataManager.Instance.LoadReplay(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile), false);
+                    AOKMail aok = new AOKMail(sos, DataManager.Instance.Save, dateRescued, replay);
+                    GeneratedAOK = DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), aok, false);
+                    string deletePath = DataManager.FindRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sos, sos.Extension);
+                    if (deletePath != null)
+                        File.Delete(deletePath);
 
-                if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
-                    NextDest = nextArea;
+                    if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
+                        NextDest = nextArea;
+                    else
+                        NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+                }
+                else if (result != ResultType.Cleared)
+                {
+                    if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                        Location = ZoneManager.Instance.CurrentGround.GetColoredName();
+                    else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        Location = ZoneManager.Instance.CurrentMap.GetColoredName();
+
+                    DataManager.Instance.MsgLog.Clear();
+                    //end the game with a recorded ending
+                    recordFile = DataManager.Instance.EndPlay(this, StartDate);
+
+                    if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
+                        LossPenalty(this);
+
+                    if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
+                        NextDest = nextArea;
+                    else
+                        NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+
+                }
                 else
-                    NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+                {
+                    int completedZone = ZoneManager.Instance.CurrentZoneID;
+                    CompleteDungeon(completedZone);
+
+                    Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
+
+                    DataManager.Instance.MsgLog.Clear();
+                    //end the game with a recorded ending
+                    recordFile = DataManager.Instance.EndPlay(this, StartDate);
+
+                    if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
+                        NextDest = nextArea;
+                    else
+                        NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+
+                }
+
+                TotalAdventures++;
+
+                FullRestore();
             }
-            else if (result != ResultType.Cleared)
+            catch (Exception ex)
             {
-                if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                    Location = ZoneManager.Instance.CurrentGround.GetColoredName();
-                else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    Location = ZoneManager.Instance.CurrentMap.GetColoredName();
-
-                DataManager.Instance.MsgLog.Clear();
-                //end the game with a recorded ending
-                recordFile = DataManager.Instance.EndPlay(this, StartDate);
-
-                if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
-                    LossPenalty(this);
-
-                if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
-                    NextDest = nextArea;
-                else
-                    NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
-
+                DiagManager.Instance.LogError(ex);
             }
-            else
+
+            bool mergeDataBack = (Stakes != DungeonStakes.None);
+            try
             {
-                int completedZone = ZoneManager.Instance.CurrentZoneID;
-                CompleteDungeon(completedZone);
-
-                Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
-
-                DataManager.Instance.MsgLog.Clear();
-                //end the game with a recorded ending
-                recordFile = DataManager.Instance.EndPlay(this, StartDate);
-
-                if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
-                    NextDest = nextArea;
-                else
-                    NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
-
+                //merge back the team if the dungeon was level-limited
+                RestoreLevel();
             }
-
-            TotalAdventures++;
-
-            FullRestore();
-
-            //merge back the team if the dungeon was level-limited
-            yield return CoroutineManager.Instance.StartCoroutine(RestoreLevel());
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+                mergeDataBack = false;
+            }
 
             GameState state = DataManager.Instance.LoadMainGameState(false);
             MainProgress mainSave = state?.Save as MainProgress;
 
             //save the result to the main file
-            if (Stakes != DungeonStakes.None)
+            if (mergeDataBack)
             {
                 if (mainSave != null)
                     mainSave.MergeDataTo(this);
@@ -1116,6 +1128,7 @@ namespace RogueEssence.Data
     {
         public bool Seeded { get; set; }
 
+        [JsonConstructor]
         public RogueProgress()
         { }
         public RogueProgress(ulong seed, string uuid, bool seeded) : base(seed, uuid)

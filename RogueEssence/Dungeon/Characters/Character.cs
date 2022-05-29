@@ -483,6 +483,12 @@ namespace RogueEssence.Dungeon
 
         public void FullRestore()
         {
+            if (Dead)
+            {
+                Dead = false;
+                DefeatAt = "";
+            }
+
             List<int> skillIndices = baseRestore();
 
             OnSkillsChanged(skillIndices.ToArray());
@@ -1606,7 +1612,7 @@ namespace RogueEssence.Dungeon
             }
 
             // check bag items
-            if (!ItemDisabled)
+            if (!ItemDisabled && MemberTeam != null)
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
@@ -1736,59 +1742,88 @@ namespace RogueEssence.Dungeon
 
         public void OnModifyHP(ref int hpChange)
         {
-            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs, this);
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ModifyHPs, this);
+                DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs, this);
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ModifyHPs, this);
 
-                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs, this);
-            };
-            foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+                    foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs, this);
+                };
+                foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
+                    effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         public void OnRestoreHP(ref int hpChange)
         {
-            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs, this);
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.RestoreHPs, this);
+                DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs, this);
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.RestoreHPs, this);
 
-                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs, this);
-            };
-            foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+                    foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs, this);
+                };
+                foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
+                    effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         private void OnSkillsChanged(int[] skillIndices)
         {
-            DungeonScene.EventEnqueueFunction<SkillChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SkillChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                //check statuses
-                foreach (StatusEffect status in StatusEffects.Values)
-                    status.AddEventsToQueue<SkillChangeEvent>(queue, maxPriority, ref nextPriority, ((StatusData)status.GetData()).OnSkillChanges, this);
-            };
-            foreach (EventQueueElement<SkillChangeEvent> effect in DungeonScene.IterateEvents<SkillChangeEvent>(function))
-                effect.Event.Apply(effect.Owner, this, skillIndices);
+                DungeonScene.EventEnqueueFunction<SkillChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SkillChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    //check statuses
+                    foreach (StatusEffect status in StatusEffects.Values)
+                        status.AddEventsToQueue<SkillChangeEvent>(queue, maxPriority, ref nextPriority, ((StatusData)status.GetData()).OnSkillChanges, this);
+                };
+                foreach (EventQueueElement<SkillChangeEvent> effect in DungeonScene.IterateEvents<SkillChangeEvent>(function))
+                    effect.Event.Apply(effect.Owner, this, skillIndices);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         private void OnRefresh()
         {
-            DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh, this);
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnRefresh, this);
+                DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh, this);
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnRefresh, this);
 
-                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnRefresh, this);
-            };
-            foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, this);
+                    foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnRefresh, this);
+                };
+                foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
+                    effect.Event.Apply(effect.Owner, effect.OwnerChar, this);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         public void OnEquip(ItemCheckContext context)
