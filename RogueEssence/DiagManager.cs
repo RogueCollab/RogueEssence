@@ -8,6 +8,7 @@ using RogueEssence.Dev;
 using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using System.Text.RegularExpressions;
+using RogueElements;
 
 namespace RogueEssence
 {
@@ -97,6 +98,18 @@ namespace RogueEssence
         {
             errorAddedEvent = errorAdded;
             errorTraceEvent = errorTrace;
+        }
+
+        public void ListenToMapGen()
+        {
+            GenContextDebug.OnError += LogError;
+            GenContextDebug.OnStepIn += logRogueElements;
+            GenContextDebug.OnStep += logRogueElements;
+        }
+
+        private void logRogueElements(string msg)
+        {
+            LogInfo(String.Format("Mapgen: {0}", msg));
         }
 
         public void Unload()

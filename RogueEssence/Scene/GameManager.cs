@@ -398,9 +398,10 @@ namespace RogueEssence
 
         public void Begin()
         {
-
             SoundManager.BGMBalance = DiagManager.Instance.CurSettings.BGMBalance * 0.1f;
             SoundManager.SEBalance = DiagManager.Instance.CurSettings.SEBalance * 0.1f;
+            if (DiagManager.Instance.DevMode)
+                DiagManager.Instance.ListenToMapGen();
 
             //coroutines.Clear();
             MoveToScene(new SplashScene());

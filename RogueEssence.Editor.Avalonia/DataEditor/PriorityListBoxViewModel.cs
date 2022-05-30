@@ -234,7 +234,7 @@ namespace RogueEssence.Dev.ViewModels
             SelectedIndex = newBoxIndex;
         }
 
-        public void btnEditKey_Click(object sender, RoutedEventArgs e)
+        public void btnEditKey_Click()
         {
             if (SelectedIndex > -1)
             {
