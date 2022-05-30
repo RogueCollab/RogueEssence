@@ -507,6 +507,11 @@ namespace RogueEssence.Dungeon
                                 if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
                                     blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
                             }
+                            else
+                            {
+                                if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
+                                    blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
+                            }
                         }
                     }
                 }
