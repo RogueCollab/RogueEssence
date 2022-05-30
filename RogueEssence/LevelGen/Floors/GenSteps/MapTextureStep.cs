@@ -103,6 +103,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Maps the terrain type to the specified autotile.
         /// </summary>
+        [Dev.DataType(1, DataManager.DataType.Terrain, false)]
         [Dev.DataType(2, DataManager.DataType.AutoTile, false)]
         public Dictionary<int, int> TextureMap;
 

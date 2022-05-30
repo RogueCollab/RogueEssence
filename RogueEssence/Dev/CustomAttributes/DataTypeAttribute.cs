@@ -2,7 +2,7 @@
 
 namespace RogueEssence.Dev
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public class DataTypeAttribute : PassableAttribute
     {
         public readonly Data.DataManager.DataType DataType;
@@ -15,7 +15,7 @@ namespace RogueEssence.Dev
         }
     }
 
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public class DataFolderAttribute : PassableAttribute
     {
         public readonly string FolderPath;
