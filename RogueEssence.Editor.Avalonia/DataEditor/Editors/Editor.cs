@@ -501,15 +501,13 @@ namespace RogueEssence.Dev
                     cbValue.SelectedIndex = selection;
                     {
                         string typeDesc = DevDataManager.GetTypeDoc(children[cbValue.SelectedIndex]);
-                        if (typeDesc != null)
-                            ToolTip.SetTip(cbValue, typeDesc);
+                        ToolTip.SetTip(cbValue, typeDesc);
                     }
 
                     cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                     {
                         string typeDesc = DevDataManager.GetTypeDoc(children[cbValue.SelectedIndex]);
-                        if (typeDesc != null)
-                            ToolTip.SetTip(cbValue, typeDesc);
+                        ToolTip.SetTip(cbValue, typeDesc);
                         createMethods[cbValue.SelectedIndex]();
                     };
 
