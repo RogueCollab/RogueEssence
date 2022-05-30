@@ -33,8 +33,10 @@ namespace RogueEssence.LevelGen
 
         /// <summary>
         /// Flags from the player's passives that will affect the money spawned.
+        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
+        /// The amount of money spawned will be increased by the ModGenState's value.
         /// </summary>
-        [StringTypeConstraint(0, typeof(ModGenState))]
+        [StringTypeConstraint(1, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]

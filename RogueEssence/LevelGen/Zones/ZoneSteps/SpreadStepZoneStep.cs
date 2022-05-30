@@ -26,8 +26,10 @@ namespace RogueEssence.LevelGen
 
         /// <summary>
         /// Flags from the player's passives that will affect the appearance rate of the step.
+        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
+        /// The chance of the step appearing will be increased by the ModGenState's value.
         /// </summary>
-        [StringTypeConstraint(0, typeof(ModGenState))]
+        [StringTypeConstraint(1, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]
@@ -146,8 +148,10 @@ namespace RogueEssence.LevelGen
 
         /// <summary>
         /// Flags from the player's passives that will affect the appearance rate of the step.
+        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
+        /// The chance of the step appearing will be increased by the ModGenState's value.
         /// </summary>
-        [StringTypeConstraint(0, typeof(ModGenState))]
+        [StringTypeConstraint(1, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]
