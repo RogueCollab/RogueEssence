@@ -331,7 +331,7 @@ namespace RogueEssence.Dev
                 else if (children.Length == 1)
                 {
                     Type memberType = member.GetType();
-                    if (children[0] != memberType)
+                    if (!children[0].IsAssignableTo(memberType))
                         throw new TargetException("Types do not match.");
 
                     StackPanel controlParent = control;

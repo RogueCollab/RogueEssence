@@ -29,6 +29,9 @@ namespace RogueEssence.Dev
         {
             if (type.IsValueType)
                 return Activator.CreateInstance(type);
+            if (type.IsArray)
+                return Array.CreateInstance(type.GetElementType(), 0);
+
             ConstructorInfo[] ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
             if (ctors.Length > 0)
             {
