@@ -9,6 +9,7 @@ using RogueEssence.Menu;
 using RogueEssence.Dev.Views;
 using RogueEssence.LevelGen;
 using RogueEssence.Script;
+using RogueElements;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -198,7 +199,11 @@ namespace RogueEssence.Dev.ViewModels
                 //only if in a dungeon
                 if (ZoneManager.Instance.CurrentZone != null)
                 {
-                    if (ZoneManager.Instance.CurrentMapID.Segment > -1)
+                    if (ZoneManager.Instance.InDevZone)
+                    {
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64());
+                    }
+                    else if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                     {
                         //reload the dungeon map
                         ZoneManager.Instance.CurrentZone.MapsLoaded--;
