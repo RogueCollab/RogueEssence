@@ -390,7 +390,7 @@ namespace RogueEssence.Content
                 if (substring[ii] == '\n')
                 {
                     lines.Add(substring.Substring(line_start, Math.Min(ii, charIndex) - line_start));
-                    trimmedStarts.Add(0);
+                    trimmedStarts.Add(1);
                     line_start = ii + 1;
                     if (line_start >= charIndex)
                         return lines.ToArray();

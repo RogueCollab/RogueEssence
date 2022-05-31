@@ -299,12 +299,31 @@ namespace RogueEssence.Menu
                 for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
                     scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
 
-                Pauses.Add(pauses);
-                ScriptCalls.Add(scripts);
-
                 DialogueText text = new DialogueText("", new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
                     Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2), TEXT_HEIGHT, centerH, centerV, 0);
                 text.SetFormattedText(scrolls[nn]);
+
+                int totalTrim = 0;
+                int totalLength = 0;
+                int lineCount = text.GetLineCount();
+                for (int ii = 0; ii < lineCount; ii++)
+                {
+                    totalTrim += text.GetLineTrim(ii);
+                    int oldLength = totalLength;
+                    totalLength += text.GetLineTrim(ii) + text.GetLineLength(ii);
+                    foreach (TextPause pause in pauses)
+                    {
+                        if (oldLength <= pause.LetterIndex && pause.LetterIndex < totalLength)
+                            pause.LetterIndex -= totalTrim;
+                    }
+                    foreach (TextScript script in scripts)
+                    {
+                        if (oldLength <= script.LetterIndex && script.LetterIndex < totalLength)
+                            script.LetterIndex -= totalTrim;
+                    }
+                }
+                Pauses.Add(pauses);
+                ScriptCalls.Add(scripts);
                 Texts.Add(text);
             }
             CurrentText.CurrentCharIndex = curCharIndex - startLag;

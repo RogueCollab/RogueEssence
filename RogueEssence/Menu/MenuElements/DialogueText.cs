@@ -16,9 +16,12 @@ namespace RogueEssence.Menu
         public int CurrentCharIndex;
         public bool CenterH;
         public bool CenterV;
-        private List<(int idx, Color color)> textColor;
         public float TextOpacity;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= Text.Length; } }
+
+        private List<(int idx, Color color)> textColor;
+        private List<int> trimmedStarts;
+        private string[] fullLines;
 
         public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
         {
@@ -49,8 +52,6 @@ namespace RogueEssence.Menu
                         continue;
                     switch (key)
                     {
-                        case "pause":
-                            break;
                         case "colorstart":
                             {
                                 string hex = match.Groups["colorval"].Value;
@@ -74,22 +75,6 @@ namespace RogueEssence.Menu
                 text = text.Remove(ranges[ii].Min, ranges[ii].Length);
 
             colors.Add((text.Length, Color.Transparent));
-
-            //manually discount all newlines from the color indices
-            int newLag = 0;
-            int colorIdx = 0;
-            for (int ii = 0; ii < text.Length; ii++)
-            {
-                while (colors[colorIdx].idx == ii)
-                {
-                    colors[colorIdx] = (colors[colorIdx].idx - newLag, colors[colorIdx].color);
-                    colorIdx++;
-                    if (colorIdx >= colors.Count)
-                        break;
-                }
-                if (text[ii] == '\n')
-                    newLag++;
-            }
         }
 
         public void SetFormattedText(string text)
@@ -98,36 +83,63 @@ namespace RogueEssence.Menu
             formatText(textColor, ref text);
 
             Text = text;
+
+            List<int> trimmedStarts;
+            fullLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length, out trimmedStarts);
+            this.trimmedStarts = trimmedStarts;
         }
 
         public Loc GetTextProgress()
         {
-            string[] currLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length);
-            Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(currLines[currLines.Length - 1]), LineHeight * (currLines.Length - 1));
+            int curLineIndex = 0;
+            int curLineStart = 0;
+            foreach (string line in fullLines)
+            {
+                if (CurrentCharIndex == -1 || curLineStart + line.Length < CurrentCharIndex)
+                {
+                    curLineStart += line.Length;
+                    curLineIndex++;
+                }
+                else
+                    break;
+            }
+            int curLineProgress = CurrentCharIndex - curLineStart;
+            string substr = fullLines[curLineIndex].Substring(0, curLineProgress);
+            Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(substr), LineHeight * curLineIndex);
             
-            string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
             if (CenterH)
-                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1])) / 2, 0);
+                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(substr)) / 2, 0);
             if (CenterV)
-                loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (allLines.Length - 1) * LineHeight)) / 2);
+                loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight)) / 2);
             return loc;
         }
 
         public Loc GetTextSize()
         {
             int maxWidth = 0;
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
-            foreach (string line in lines)
+            foreach (string line in fullLines)
                 maxWidth = Math.Max(maxWidth, GraphicsManager.TextFont.SubstringWidth(line));
 
-            return new Loc(maxWidth, GraphicsManager.TextFont.CharHeight + (lines.Length - 1) * LineHeight);
+            return new Loc(maxWidth, GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight);
+        }
+
+        public int GetLineLength(int idx)
+        {
+            return fullLines[idx].Length;
+        }
+
+        /// <summary>
+        /// When a text is broken up into lines, some trimming occurs at the beginning.  This obtains that value so callers can keep in sync with the character position mappings.
+        /// </summary>
+        /// <returns></returns>
+        public int GetLineTrim(int idx)
+        {
+            return trimmedStarts[idx];
         }
 
         public int GetLineCount()
         {
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
-            
-            return lines.Length;
+            return fullLines.Length;
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
@@ -135,22 +147,21 @@ namespace RogueEssence.Menu
             int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;
             Stack<Color> colorStack = new Stack<Color>();
             colorStack.Push(textColor[0].color);
-            List<int> trimmedStarts;
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length, out trimmedStarts);
-            if (lines != null)
+
+            if (fullLines != null)
             {
                 int startWidth = CenterH ? Rect.Center.X : Rect.X;
-                int startHeight = CenterV ? Rect.Center.Y - (GraphicsManager.TextFont.CharHeight + (lines.Length - 1) * LineHeight) / 2 : Rect.Y;
+                int startHeight = CenterV ? Rect.Center.Y - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight) / 2 : Rect.Y;
 
                 int curColor = 0;
                 int lineChars = 0;
                 //offset to move the color tags by, since cutting string into lines removes extra spaces
                 int totalTrimmedOffset = 0;
-                for (int ii = 0; ii < lines.Length; ii++)
+                for (int ii = 0; ii < fullLines.Length; ii++)
                 {
                     int curChar = 0;
                     totalTrimmedOffset += trimmedStarts[ii];
-                    while (curChar < lines[ii].Length)
+                    while (curChar < fullLines[ii].Length)
                     {
                         while ((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars == curChar)
                         {
@@ -161,17 +172,17 @@ namespace RogueEssence.Menu
                                 colorStack.Push(textColor[curColor].color);
                         }
 
-                        int nextColorIdx = Math.Min((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars, Math.Min(lines[ii].Length, endIndex - lineChars));
+                        int nextColorIdx = Math.Min((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars, Math.Min(fullLines[ii].Length, endIndex - lineChars));
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
-                            lines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
+                            fullLines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
                             colorStack.Peek() * TextOpacity, curChar, nextColorIdx - curChar);
                         curChar = nextColorIdx;
 
                         if (curChar + lineChars >= endIndex)
                             break;
                     }
-                    lineChars += lines[ii].Length;
+                    lineChars += fullLines[ii].Length;
                     if (lineChars >= endIndex)
                         break;
                 }

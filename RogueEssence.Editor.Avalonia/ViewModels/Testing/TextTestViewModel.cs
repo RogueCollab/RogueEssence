@@ -14,6 +14,7 @@ using RogueElements;
 using RogueEssence.Dev.Views;
 using RogueEssence.Menu;
 using RogueEssence.Ground;
+using System.Text.RegularExpressions;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -41,9 +42,9 @@ namespace RogueEssence.Dev.ViewModels
                 if (text != "")
                 {
                     if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                        DungeonScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(text);
+                        DungeonScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(Regex.Unescape(text));
                     else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                        GroundScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(text);
+                        GroundScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(Regex.Unescape(text));
                 }
             }
         }
