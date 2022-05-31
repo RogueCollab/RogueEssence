@@ -173,7 +173,7 @@ namespace RogueEssence.Menu
 
                 DialogueText text = new DialogueText("", new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
 
-                text.SetFormattedText(scrolls[nn]);
+                text.SetAndFormatText(scrolls[nn]);
                 Texts.Add(text);
 
                 Loc size = text.GetTextSize();

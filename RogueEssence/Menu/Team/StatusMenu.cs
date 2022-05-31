@@ -88,13 +88,13 @@ namespace RogueEssence.Menu
             {
                 int entryIndex = mapIndices[index];
                 Data.MapStatusData entry = Data.DataManager.Instance.GetMapStatus(entryIndex);
-                Description.SetFormattedText(entry.Desc.ToLocal());
+                Description.SetAndFormatText(entry.Desc.ToLocal());
             }
             else
             {
                 int entryIndex = indices[index - mapIndices.Count];
                 Data.StatusData entry = Data.DataManager.Instance.GetStatus(entryIndex);
-                Description.SetFormattedText(entry.Desc.ToLocal());
+                Description.SetAndFormatText(entry.Desc.ToLocal());
             }
             base.ChoiceChanged();
         }

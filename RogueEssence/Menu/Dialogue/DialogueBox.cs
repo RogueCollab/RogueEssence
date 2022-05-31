@@ -299,9 +299,14 @@ namespace RogueEssence.Menu
                 for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
                     scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
 
+                List<string> splitText;
+                List<List<(int idx, Color color)>> splitColor;
+                List<List<TextPause>> splitPauses = new List<List<TextPause>>();
+                List<List<TextScript>> splitScripts = new List<List<TextScript>>();
+
                 DialogueText text = new DialogueText("", new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
                     Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2), TEXT_HEIGHT, centerH, centerV, 0);
-                text.SetFormattedText(scrolls[nn]);
+                text.SetAndFormatText(scrolls[nn]);
 
                 int totalTrim = 0;
                 int totalLength = 0;

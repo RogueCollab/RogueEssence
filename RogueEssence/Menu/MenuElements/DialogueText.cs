@@ -11,17 +11,32 @@ namespace RogueEssence.Menu
     public class DialogueText : IMenuElement
     {
         public int LineHeight;
-        public string Text { get; private set; }
         public Rect Rect;
         public int CurrentCharIndex;
         public bool CenterH;
         public bool CenterV;
         public float TextOpacity;
-        public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= Text.Length; } }
+        public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= formattedTextLength; } }
 
+        /// <summary>
+        /// Text color starts and stops.
+        /// </summary>
         private List<(int idx, Color color)> textColor;
+
+        /// <summary>
+        /// The amount of space to trim when the lines were broken up.
+        /// </summary>
         private List<int> trimmedStarts;
+
+        /// <summary>
+        /// Formatted lines after breaking the text down and trimming the spaces at the edges.
+        /// </summary>
         private string[] fullLines;
+
+        /// <summary>
+        /// The sum of the length of all lines in fullLines.  Saves computation.
+        /// </summary>
+        private int formattedTextLength;
 
         public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
         {
@@ -32,7 +47,7 @@ namespace RogueEssence.Menu
             TextOpacity = 1f;
             CurrentCharIndex = startIndex;
             textColor = new List<(int idx, Color color)>();
-            SetFormattedText(text);
+            SetAndFormatText(text);
         }
         public DialogueText(string text, Rect rect, int lineHeight) : this(text, rect, lineHeight, false, false, -1)
         { }
@@ -77,16 +92,49 @@ namespace RogueEssence.Menu
             colors.Add((text.Length, Color.Transparent));
         }
 
-        public void SetFormattedText(string text)
+        /// <summary>
+        /// Splits the text into multiple textboxes worth of text, or just one if it can fit in the textbox.
+        /// </summary>
+        /// <param name="text"></param>
+        public static void SplitFormattedText(int width, string text, out List<string> splitText, out List<List<(int idx, Color color)>> splitColor)
+        {
+            List<(int idx, Color color)> tempColor = new List<(int idx, Color color)>();
+            string tempText = text;
+            formatText(tempColor, ref tempText);
+
+            List<int> trimmedStarts;
+            string[] tempLines = GraphicsManager.TextFont.BreakIntoLines(tempText, width, tempText.Length, out trimmedStarts);
+
+            splitText = new List<string>();
+            splitColor = new List<List<(int idx, Color color)>>();
+        }
+
+        public void SetPreFormattedText(string text, List<(int idx, Color color)> color)
+        {
+            textColor = color;
+
+            List<int> trimmedStarts;
+            fullLines = GraphicsManager.TextFont.BreakIntoLines(text, Rect.Width, text.Length, out trimmedStarts);
+            this.trimmedStarts = trimmedStarts;
+
+            formattedTextLength = 0;
+            if (fullLines != null)
+            {
+                foreach (string line in fullLines)
+                    formattedTextLength += line.Length;
+            }
+        }
+
+        /// <summary>
+        /// Sets the text and formats/spaces it properly.
+        /// </summary>
+        /// <param name="text"></param>
+        public void SetAndFormatText(string text)
         {
             textColor.Clear();
             formatText(textColor, ref text);
 
-            Text = text;
-
-            List<int> trimmedStarts;
-            fullLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length, out trimmedStarts);
-            this.trimmedStarts = trimmedStarts;
+            SetPreFormattedText(text, textColor);
         }
 
         public Loc GetTextProgress()
@@ -144,7 +192,7 @@ namespace RogueEssence.Menu
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;
+            int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : formattedTextLength;
             Stack<Color> colorStack = new Stack<Color>();
             colorStack.Push(textColor[0].color);
 
@@ -191,7 +239,7 @@ namespace RogueEssence.Menu
 
         public void FinishText()
         {
-            CurrentCharIndex = Text.Length;
+            CurrentCharIndex = formattedTextLength;
         }
     }
 }
