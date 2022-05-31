@@ -96,17 +96,65 @@ namespace RogueEssence.Menu
         /// Splits the text into multiple textboxes worth of text, or just one if it can fit in the textbox.
         /// </summary>
         /// <param name="text"></param>
-        public static void SplitFormattedText(int width, string text, out List<string> splitText, out List<List<(int idx, Color color)>> splitColor)
+        public static List<DialogueText> SplitFormattedText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
         {
             List<(int idx, Color color)> tempColor = new List<(int idx, Color color)>();
             string tempText = text;
             formatText(tempColor, ref tempText);
 
             List<int> trimmedStarts;
-            string[] tempLines = GraphicsManager.TextFont.BreakIntoLines(tempText, width, tempText.Length, out trimmedStarts);
+            string[] tempLines = GraphicsManager.TextFont.BreakIntoLines(tempText, rect.Width, tempText.Length, out trimmedStarts);
 
-            splitText = new List<string>();
-            splitColor = new List<List<(int idx, Color color)>>();
+            List<DialogueText> results = new List<DialogueText>();
+            int cutIdx = 0;
+            int endColorIndex = 0;
+            List<Color> colorStack = new List<Color>();
+            for (int ii = 0; ii < tempLines.Length + 1; ii++)
+            {
+                if (ii == tempLines.Length || GraphicsManager.TextFont.CharHeight + (ii - cutIdx) * lineHeight > rect.Height)
+                {
+                    string[] initLines = new string[ii - cutIdx];
+                    Array.Copy(tempLines, cutIdx, initLines, 0, initLines.Length);
+
+                    List<int> initTrim = new List<int>();
+                    for (int nn = cutIdx; nn < ii; nn++)
+                        initTrim.Add(trimmedStarts[nn]);
+
+                    List<(int idx, Color color)> initColor = new List<(int idx, Color color)>();
+                    int startColorIndex = endColorIndex;
+                    for (int nn = 0; nn < initLines.Length; nn++)
+                        endColorIndex += initTrim[nn] + initLines[nn].Length;
+                    //pickup the tags from before
+                    for(int nn = 0; nn < colorStack.Count; nn++)
+                        initColor.Add((0, colorStack[nn]));
+                    //copy eligible colors for this dialogue box
+                    for (int nn = 0; nn < tempColor.Count; nn++)
+                    {
+                        if (startColorIndex <= tempColor[nn].idx && tempColor[nn].idx < endColorIndex)
+                        {
+                            initColor.Add((tempColor[nn].idx - startColorIndex, tempColor[nn].color));
+                            if (tempColor[nn].color == Color.Transparent)
+                                colorStack.RemoveAt(colorStack.Count - 1);
+                            else
+                                colorStack.Add(tempColor[nn].color);
+                        }
+                    }
+                    //close the tags cleanly
+                    for (int nn = colorStack.Count - 1; nn >= 0; nn--)
+                        initColor.Add((endColorIndex- startColorIndex, Color.Transparent));
+
+                    DialogueText newBox = new DialogueText("", rect, lineHeight, centerH, centerV, startIndex);
+                    newBox.textColor = initColor;
+                    newBox.fullLines = initLines;
+                    newBox.trimmedStarts = initTrim;
+                    newBox.updateFullTextLength();
+
+                    results.Add(newBox);
+                    cutIdx = ii;
+                }
+            }
+
+            return results;
         }
 
         public void SetPreFormattedText(string text, List<(int idx, Color color)> color)
@@ -117,6 +165,11 @@ namespace RogueEssence.Menu
             fullLines = GraphicsManager.TextFont.BreakIntoLines(text, Rect.Width, text.Length, out trimmedStarts);
             this.trimmedStarts = trimmedStarts;
 
+            updateFullTextLength();
+        }
+
+        private void updateFullTextLength()
+        {
             formattedTextLength = 0;
             if (fullLines != null)
             {

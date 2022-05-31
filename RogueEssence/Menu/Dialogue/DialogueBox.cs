@@ -299,37 +299,49 @@ namespace RogueEssence.Menu
                 for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
                     scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
 
-                List<string> splitText;
-                List<List<(int idx, Color color)>> splitColor;
-                List<List<TextPause>> splitPauses = new List<List<TextPause>>();
-                List<List<TextScript>> splitScripts = new List<List<TextScript>>();
-
-                DialogueText text = new DialogueText("", new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
+                List<DialogueText> texts = DialogueText.SplitFormattedText(scrolls[nn], new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
                     Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2), TEXT_HEIGHT, centerH, centerV, 0);
-                text.SetAndFormatText(scrolls[nn]);
 
                 int totalTrim = 0;
                 int totalLength = 0;
-                int lineCount = text.GetLineCount();
-                for (int ii = 0; ii < lineCount; ii++)
+                for (int kk = 0; kk < texts.Count; kk++)
                 {
-                    totalTrim += text.GetLineTrim(ii);
-                    int oldLength = totalLength;
-                    totalLength += text.GetLineTrim(ii) + text.GetLineLength(ii);
-                    foreach (TextPause pause in pauses)
+                    DialogueText text = texts[kk];
+
+                    //pauses and scripts need to be re-aligned to the removals done by breaking the text into lines
+                    List<TextPause> subPauses = new List<TextPause>();
+                    List<TextScript> subScripts = new List<TextScript>();
+
+                    int lineCount = text.GetLineCount();
+                    for (int ii = 0; ii < lineCount; ii++)
                     {
-                        if (oldLength <= pause.LetterIndex && pause.LetterIndex < totalLength)
-                            pause.LetterIndex -= totalTrim;
+                        totalTrim += text.GetLineTrim(ii);
+                        int oldLength = totalLength;
+                        totalLength += text.GetLineTrim(ii) + text.GetLineLength(ii);
+                        foreach (TextPause pause in pauses)
+                        {
+                            if (oldLength <= pause.LetterIndex && pause.LetterIndex < totalLength)
+                            {
+                                pause.LetterIndex -= totalTrim;
+                                subPauses.Add(pause);
+                            }
+                        }
+                        foreach (TextScript script in scripts)
+                        {
+                            if (oldLength <= script.LetterIndex && script.LetterIndex < totalLength)
+                            {
+                                script.LetterIndex -= totalTrim;
+                                subScripts.Add(script);
+                            }
+                        }
                     }
-                    foreach (TextScript script in scripts)
-                    {
-                        if (oldLength <= script.LetterIndex && script.LetterIndex < totalLength)
-                            script.LetterIndex -= totalTrim;
-                    }
+                    totalTrim = totalLength;
+
+                    Pauses.Add(subPauses);
+                    ScriptCalls.Add(subScripts);
+                    Texts.Add(text);
                 }
-                Pauses.Add(pauses);
-                ScriptCalls.Add(scripts);
-                Texts.Add(text);
+
             }
             CurrentText.CurrentCharIndex = curCharIndex - startLag;
         }
