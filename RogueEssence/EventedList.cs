@@ -15,6 +15,7 @@ namespace RogueEssence
         public event EventedListAction ItemChanging;
         public event EventedListAction ItemAdding;
         public event EventedListAction ItemRemoving;
+        
         public event Action ItemsClearing;
 
         public T this[int index]
