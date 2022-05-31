@@ -11,16 +11,22 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class AutoTile
     {
+        /// <summary>
+        /// If AutoTileSet is set to -1, this variable can be specified to make a hand-crafted texture.
+        /// </summary>
         public List<TileLayer> Layers;
 
         [Dev.DataType(0, DataManager.DataType.AutoTile, true)]
         public int AutoTileset { get; private set; }
 
         /// <summary>
-        /// Tilesets that are considered this tileset for texture computing purposes.  Only used for Autotiles
+        /// Associates are autotiles that will be considered the same as the autotile this object is using.
+        /// Only used for texture computation, and only relevant for edge cases involving when two different autotiles meet.
         /// </summary>
         [Dev.DataType(1, DataManager.DataType.AutoTile, false)]
         public HashSet<int> Associates { get; private set; }
+
+        [Dev.NonEdited]
         public int NeighborCode;
 
         public AutoTile()
