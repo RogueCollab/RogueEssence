@@ -277,6 +277,11 @@ namespace RogueEssence.Dungeon
                         zoneContext.Seed = structNoise.GetUInt64(subSeed);
                     }
                 }
+
+                DiagManager.Instance.LogInfo(String.Format("Falling back to an empty map!"));
+                Map bak = new Map();
+                bak.CreateNew(10, 10);
+                return bak;
             }
             return maps[id];
         }
