@@ -24,8 +24,17 @@ namespace RogueEssence.Dungeon
     {
         public enum AreaLimit
         {
+            /// <summary>
+            /// Hits in all directions.
+            /// </summary>
             Full,
+            /// <summary>
+            /// Hits the front and sides in a cone shape.
+            /// </summary>
             Cone,
+            /// <summary>
+            /// Hits the tiles left and right of the center.
+            /// </summary>
             Sides
         }
         public enum TargetHitType

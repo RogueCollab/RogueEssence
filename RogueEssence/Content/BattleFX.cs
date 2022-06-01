@@ -5,14 +5,26 @@ namespace RogueEssence.Content
     [Serializable]
     public class BattleFX
     {
+        /// <summary>
+        /// After playing this VFX, will wait this many milliseconds before moving to the next one.
+        /// </summary>
         public int Delay;
 
+        /// <summary>
+        /// The sound effect of the VFX
+        /// </summary>
         [Dev.Sound(0)]
         public string Sound;
 
+        /// <summary>
+        /// The Particle FX
+        /// </summary>
         [Dev.SubGroup]
         public FiniteEmitter Emitter;
 
+        /// <summary>
+        /// Screen shake and other effects.
+        /// </summary>
         [Dev.SubGroup]
         public ScreenMover ScreenMovement;
 

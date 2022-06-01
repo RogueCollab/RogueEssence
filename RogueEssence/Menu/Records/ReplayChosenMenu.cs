@@ -5,6 +5,8 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
 using SDL2;
+using System;
+using RogueEssence.Content;
 
 
 namespace RogueEssence.Menu
@@ -27,7 +29,8 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE"), DeleteAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(240, 0), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choiceLength = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(224, GraphicsManager.ScreenWidth - choiceLength), 0), choiceLength, choices.ToArray(), 0);
         }
 
 

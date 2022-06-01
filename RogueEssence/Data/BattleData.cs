@@ -49,26 +49,90 @@ namespace RogueEssence.Data
 
         [DataType(0, DataManager.DataType.Element, false)]
         public int Element;
+
         public SkillCategory Category;
 
+        /// <summary>
+        /// The chance of the attack hitting.
+        /// </summary>
         public int HitRate;
 
+        /// <summary>
+        /// Special variables that this skill contains.
+        /// They are potentially checked against in a select number of battle events.
+        /// </summary>
         public StateCollection<SkillState> SkillStates;
+
+        /// <summary>
+        /// Occurs before the attacker tries to use the skill.
+        /// If the skill is cancelled here, the turn and skill are not used.
+        /// </summary>
         public PriorityList<BattleEvent> BeforeTryActions;
+
+        /// <summary>
+        /// Occurs before the attacker uses the skill.
+        /// If the skill is cancelled here, the turn will still be passed.
+        /// </summary>
         public PriorityList<BattleEvent> BeforeActions;
+
+        /// <summary>
+        /// Occurs right after the attacker uses the skill.
+        /// The skill will have been called out, and the turn will be passed.
+        /// In a skill with multiple strikes, this event will be called at the beginning of each strike.
+        /// </summary>
         public PriorityList<BattleEvent> OnActions;
+
+        /// <summary>
+        /// Occurs after a tile is targeted and before it creates a splash damage hitbox.
+        /// Can be used to alter the hitbox or redirect it.
+        /// </summary>
         public PriorityList<BattleEvent> BeforeExplosions;
+
+        /// <summary>
+        /// Occurs before the target is hit.
+        /// At this point, the target variable is available for calculations.
+        /// </summary>
         public PriorityList<BattleEvent> BeforeHits;
+
+        /// <summary>
+        /// Occurs when the target is hit.
+        /// Does not occur if the target evaded the attack.
+        /// </summary>
         public PriorityList<BattleEvent> OnHits;
+
+        /// <summary>
+        /// Occurs when the attack hits a tile.
+        /// Can be used for terrain deformation.
+        /// </summary>
         public PriorityList<BattleEvent> OnHitTiles;
+
+        /// <summary>
+        /// Occurs after all targets are hit by the skill.
+        /// In a skill with multiple strikes, this event will be called at the end of each strike.
+        /// </summary>
         public PriorityList<BattleEvent> AfterActions;
+
+        /// <summary>
+        /// Modifies the elemental effect system.
+        /// </summary>
         public PriorityList<ElementEffectEvent> ElementEffects;
 
-
+        /// <summary>
+        /// VFX that play target before they are hit.
+        /// Will always play, even if the evasion roll results in a miss.
+        /// </summary>
         public List<BattleFX> IntroFX;
 
+        /// <summary>
+        /// VFX that play when the target is hit.
+        /// Only plays if the target is actually hit.
+        /// </summary>
         public BattleFX HitFX;
 
+        /// <summary>
+        /// Target character animation when it is hit.
+        /// Only plays if the target is actually hit.
+        /// </summary>
         public CharAnimData HitCharAction;
 
         public BattleData()

@@ -26,9 +26,15 @@ namespace RogueEssence.Data
 
         public LocalText Name { get; set; }
 
-
+        /// <summary>
+        /// How the item looks in the game.
+        /// </summary>
         [Anim(0, "Item/")]
         public string Sprite;
+
+        /// <summary>
+        /// The icon displayed next to the item's name.
+        /// </summary>
         [Alias(0, "Item_Icon")]
         public int Icon;
 
@@ -47,37 +53,70 @@ namespace RogueEssence.Data
             return summary;
         }
 
+        /// <summary>
+        /// How much the item sells for.
+        /// </summary>
         [Dev.NumberRange(0, -1, Int32.MaxValue)]
         public int Price;
 
+        /// <summary>
+        /// The rarity rating of the item.
+        /// </summary>
         public int Rarity;
+
+        /// <summary>
+        /// The maximum amount a single slot of this item can be stacked.
+        /// 0 is unstackable.
+        /// </summary>
         public int MaxStack;
 
+        /// <summary>
+        /// Cannot be manually dropped, cannot be lost, cannot be stolen.
+        /// </summary>
         public bool CannotDrop;
 
-        //a simple bool to determine whether the item activates in bag or on hold
-        //NOTE: There is no event that fires when items are given to or taken from the bag, thus RefreshTraits for bag items WILL NOT WORK right now
+        /// <summary>
+        /// Determines whether the item activates in bag or on equip.
+        /// </summary>
         public bool BagEffect;
 
+        /// <summary>
+        /// Special variables that this item contains.
+        /// They are potentially checked against in a select number of battle events.
+        /// </summary>
         public StateCollection<ItemState> ItemStates;
 
-        //add equip effects
-        //inherited from PassiveEffect; check there.
-
+        /// <summary>
+        /// The hitbox of the attack that comes out when the item is used.
+        /// </summary>
         public CombatAction UseAction;
+
+        /// <summary>
+        /// The splash effect that is triggered for each target of the UseAction hitbox.
+        /// </summary>
         public ExplosionData Explosion;
 
-        //the effect of using it
+        /// <summary>
+        /// The effects of using the item.
+        /// </summary>
         public BattleData UseEvent;
 
-        //define whether this is a food, drink, etc for the proper sound/animation on use
-        //"none" and "ammo" will prevent use, but UseEffect can still be triggered by throwing it
-        //(this means that throw effect is the same as use effect)
+        /// <summary>
+        /// Define whether this is a food, drink, etc for the proper sound/animation on use
+        /// "None" and "ammo" will prevent use, but UseEffect can still be triggered by throwing it.
+        /// This means that throw effect is the same as use effect.
+        /// </summary>
         public UseType UsageType;
 
-        //define whether this item flies in an arc or in a straight line
+        /// <summary>
+        /// Defines whether this item flies in an arc or in a straight line.
+        /// </summary>
         public bool ArcThrow;
-        //define an AnimData for the custom graphic when flying (-1 for using the item graphic itself)
+        
+        /// <summary>
+        /// Defines the custom graphics for the item when it is thrown.
+        /// Set to an empty anim to use the item's own sprite.
+        /// </summary>
         public Content.AnimData ThrowAnim;
         
         public ItemData()

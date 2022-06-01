@@ -307,10 +307,15 @@ namespace RogueEssence.Dungeon
         }
     }
 
-
+    /// <summary>
+    /// A hitbox that targets the self.
+    /// </summary>
     [Serializable]
     public class SelfAction : CombatAction
     {
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         //this action throws out no hitbox
@@ -357,17 +362,35 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    /// <summary>
+    /// A hitbox that works a melee attack.
+    /// </summary>
     [Serializable]
     public class AttackAction : CombatAction
     {
+        /// <summary>
+        /// Determines if tiles are targeted.
+        /// </summary>
         public bool HitTiles;
+
+        /// <summary>
+        /// Determines which tiles will trigger the explosion hitbox, as opposed to hitting the tile directly.
+        /// </summary>
         public TileAlignment BurstTiles;
+
+        /// <summary>
+        /// The Particle FX to play when the 
+        /// </summary>
         public FiniteEmitter Emitter;
 
-        //create one or more SingleFrameHitbox;
-
+        /// <summary>
+        /// Determines if it hits only in front, front and sides, etc.
+        /// </summary>
         public AttackCoverage WideAngle;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         [NonSerialized]
@@ -514,14 +537,30 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    /// <summary>
+    /// A hitbox that hits in an area-of-effect around the user.
+    /// </summary>
     [Serializable]
     public class AreaAction : CombatAction
     {
+        /// <summary>
+        /// The Particle FX for the area effect that scales in radius to the attack's radius.
+        /// </summary>
         public CircleSquareEmitter Emitter;
 
-        //create a CircleSquareHitbox;
+        /// <summary>
+        /// Determines if the hitbox targets tiles or not.
+        /// </summary>
         public bool HitTiles;
+
+        /// <summary>
+        /// Determines which tiles will trigger the explosion hitbox, as opposed to hitting the tile directly.
+        /// </summary>
         public TileAlignment BurstTiles;
+
+        /// <summary>
+        /// Determines the shape of the hitbox.
+        /// </summary>
         public Hitbox.AreaLimit HitArea;
 
         /// <summary>
@@ -534,6 +573,9 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Speed;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         public AreaAction()
@@ -638,27 +680,50 @@ namespace RogueEssence.Dungeon
         }
     }
 
-
-
+    /// <summary>
+    /// A hitbox that hits a tile or area several tiles in front of the attacker.
+    /// </summary>
     [Serializable]
     public class OffsetAction : CombatAction
     {
         public enum OffsetArea
         {
+            /// <summary>
+            /// Hits only the targeted tile.
+            /// </summary>
             Tile,
+            /// <summary>
+            /// Hits the targeted tile, and the tiles to the left and right of it.
+            /// </summary>
             Sides,
+            /// <summary>
+            /// Hits the targeted tile, and all adjacent tiles.
+            /// </summary>
             Area
         }
 
+        /// <summary>
+        /// The Particle FX for the area effect that scales in radius to the attack's radius.
+        /// </summary>
         public CircleSquareEmitter Emitter;
 
-        //create a CircleSquareHitbox;
+        /// <summary>
+        /// Determines if the hitbox targets tiles or not.
+        /// </summary>
         public bool HitTiles;
+
+        /// <summary>
+        /// Determines which tiles will trigger the explosion hitbox, as opposed to hitting the tile directly.
+        /// </summary>
         public TileAlignment BurstTiles;
+
+        /// <summary>
+        /// The shape of the hitbox.
+        /// </summary>
         public OffsetArea HitArea;
 
         /// <summary>
-        /// In Tiles
+        /// The number of tiles away from the attacker the hitbox appears.
         /// </summary>
         public int Range;
 
@@ -667,6 +732,9 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Speed;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         public OffsetAction()
@@ -766,7 +834,14 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class LinearAction : CombatAction
     {
+        /// <summary>
+        /// Determines if the hitbox targets tiles or not.
+        /// </summary>
         public bool HitTiles;
+
+        /// <summary>
+        /// The range of the attack in tiles.
+        /// </summary>
         public int Range;
 
         /// <summary>
@@ -775,7 +850,7 @@ namespace RogueEssence.Dungeon
         public bool StopAtHit;
         
         /// <summary>
-        /// When set, will explode on a wall and stop there.  When unset, it will move past the wall and not explode.
+        /// When set, will stop when it hits a wall, deploying the attack's explosion.  When unset, it will move past the wall and not explode.
         /// </summary>
         public bool StopAtWall;
 
@@ -809,33 +884,76 @@ namespace RogueEssence.Dungeon
         public override int Distance { get { return Range; } set { Range = value; } }
     }
 
+    /// <summary>
+    /// A projectile hitbox that is shot forward or in rays.
+    /// </summary>
     [Serializable]
     public class ProjectileAction : LinearAction
     {
         public enum RayCount
         {
+            /// <summary>
+            /// Shoots forward.
+            /// </summary>
             One,
+            /// <summary>
+            /// Shoots forward and the diagonal sides.
+            /// </summary>
             Three,
+            /// <summary>
+            /// Shoots in an X-shape.
+            /// </summary>
             FourCross,
+            /// <summary>
+            /// Shoots in a star shape.
+            /// </summary>
             Five,
+            /// <summary>
+            /// Shoots outward in 8 directions.
+            /// </summary>
             Eight
         }
 
+        /// <summary>
+        /// The animation of the projectile being thrown.
+        /// </summary>
         public AnimData Anim;
+
+        /// <summary>
+        /// The Particle FX attached to the projectile being thrown.
+        /// </summary>
         public AttachPointEmitter Emitter;
+
+        /// <summary>
+        /// The Particle FX for a stream coming out of the attacker.
+        /// </summary>
         public ShootingEmitter StreamEmitter;
 
+        /// <summary>
+        /// Determines how many directions the projectile is shot out in.
+        /// </summary>
         public RayCount Rays;
 
         /// <summary>
         /// Tiles per Second.  Use 0 for instant travel.
         /// </summary>
         public int Speed;
+
+        /// <summary>
+        /// If turned on, the projectile will travel back to the attacker with its hitbox still live.
+        /// </summary>
         public bool Boomerang;
 
+        /// <summary>
+        /// Item sprites can be used for the sprite of the projectile.
+        /// This overrides Anim.
+        /// </summary>
         [Anim(0, "Item/")]
         public string ItemSprite;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         public ProjectileAction()
@@ -998,21 +1116,35 @@ namespace RogueEssence.Dungeon
         }
     }
 
-
+    /// <summary>
+    /// A beam hitbox that sweeps forward.
+    /// </summary>
     [Serializable]
     public class WaveMotionAction : LinearAction
     {
-        //create a BeamSweepHitbox;
-
+        /// <summary>
+        /// The animationf for the beam being fired.
+        /// </summary>
         public BeamAnimData Anim;
+
+        /// <summary>
+        /// Makes the beam 3 tiles wide.
+        /// </summary>
         public bool Wide;
 
         /// <summary>
         /// Tiles per Second.  Use 0 for instant travel.
         /// </summary>
         public int Speed;
+
+        /// <summary>
+        /// The amount of frames for the animation to linger after reaching max range.
+        /// </summary>
         public int Linger;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         public WaveMotionAction()
@@ -1074,6 +1206,9 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    /// <summary>
+    /// A hitbox that flies in an arc to hit the enemy.
+    /// </summary>
     [Serializable]
     public class ThrowAction : CombatAction
     {
@@ -1084,7 +1219,14 @@ namespace RogueEssence.Dungeon
             WideAngle
         }
 
+        /// <summary>
+        /// The animation of the projectile being thrown.
+        /// </summary>
         public AnimData Anim;
+
+        /// <summary>
+        /// The Particle FX attached to the projectile being thrown.
+        /// </summary>
         public AttachPointEmitter Emitter;
 
         /// <summary>
@@ -1092,16 +1234,26 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int Range;
 
-
         /// <summary>
-        /// Tiles per Second.  Use 0 for instant travel.
+        /// Travel time of the projectile in tiles per Second.  Use 0 for instant travel.
         /// </summary>
         public int Speed;
+
+        /// <summary>
+        /// Determines the area that the arc can target.
+        /// </summary>
         public ArcCoverage Coverage;
 
+        /// <summary>
+        /// Item sprites can be used for the sprite of the projectile.
+        /// This overrides Anim.
+        /// </summary>
         [Anim(0, "Item/")]
         public string ItemSprite;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         public CharAnimData CharAnimData;
 
         public ThrowAction()
@@ -1282,6 +1434,9 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    /// <summary>
+    /// A hitbox that has the attacker lunge forward.
+    /// </summary>
     [Serializable]
     public class DashAction : LinearAction
     {
@@ -1293,15 +1448,22 @@ namespace RogueEssence.Dungeon
         }
 
         public AnimData Anim;
+
         public int AnimOffset;
+
         public AttachPointEmitter Emitter;
 
         public LineCoverage WideAngle;
 
+        /// <summary>
+        /// The animation the user plays when using the skill.
+        /// </summary>
         [Dev.FrameType(0, true)]
         public int CharAnim;
 
-
+        /// <summary>
+        /// Visual modifier for when the dash animation is executed.
+        /// </summary>
         public DashAppearance AppearanceMod;
 
         [NonSerialized]

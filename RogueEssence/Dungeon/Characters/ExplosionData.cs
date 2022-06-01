@@ -16,27 +16,46 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class ExplosionData
     {
+        /// <summary>
+        /// Which entities are targeted by the explosion.
+        /// </summary>
         public Alignment TargetAlignments;
 
+        /// <summary>
+        /// Determines if the explosion targets tiles or not.
+        /// </summary>
         public bool HitTiles;
 
         /// <summary>
-        /// In Tiles
+        /// The range of the explosion in Tiles.
+        /// Skills that do not have a splash effect use 0.
         /// </summary>
         public int Range;
 
         /// <summary>
-        /// Speed to Spread from 0 to Range in Tiles Per Second
+        /// Speed to Spread from a radius of 0 to a radius of the explosion's max range.
+        /// In Tiles Per Second
         /// </summary>
         public int Speed;
 
+        /// <summary>
+        /// The Particle FX that plays on each tile covered by the explosion.
+        /// </summary>
         public FiniteEmitter TileEmitter;
 
-
+        /// <summary>
+        /// The Particle FX for the explosion that scales in radius to the explosion's radius.
+        /// </summary>
         public CircleSquareEmitter Emitter;
 
+        /// <summary>
+        /// VFX that plays before the explosion goes off.
+        /// </summary>
         public List<BattleFX> IntroFX;
 
+        /// <summary>
+        /// VFX that plays when the explosion goes off.
+        /// </summary>
         public BattleFX ExplodeFX;
 
         public ExplosionData()

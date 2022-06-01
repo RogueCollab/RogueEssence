@@ -28,7 +28,9 @@ namespace RogueEssence.Data
             return summary;
         }
 
-
+        /// <summary>
+        /// How fast this unit levels up.  Uses the Growth Group EXP tables.
+        /// </summary>
         [Dev.DataType(0, DataManager.DataType.GrowthGroup, false)]
         public int EXPTable;
 
