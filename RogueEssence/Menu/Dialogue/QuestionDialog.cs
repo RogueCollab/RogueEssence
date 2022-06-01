@@ -60,9 +60,9 @@ namespace RogueEssence.Menu
                 menu_choices[ii] = new MenuTextChoice(choices[ii].Choice, () => { choose(index); }, choices[ii].Enabled, choices[ii].Enabled ? Color.White : Color.Red);
                 results[ii] = choices[ii].Result;
             }
-            int question_width = CalculateChoiceLength(menu_choices, 0);
-            Initialize(new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - question_width, startY - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2) - QUESTION_SPACE),
-                question_width, menu_choices, defaultChoice);
+            int choice_width = CalculateChoiceLength(menu_choices, 0);
+            Initialize(new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width, startY - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2) - QUESTION_SPACE),
+                choice_width, menu_choices, defaultChoice);
 
             this.cancelChoice = cancelChoice;
         }

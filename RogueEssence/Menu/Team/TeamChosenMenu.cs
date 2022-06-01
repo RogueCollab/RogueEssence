@@ -4,6 +4,8 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Ground;
+using System;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -103,7 +105,8 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(176, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(176, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
 
         private void SummaryAction()
