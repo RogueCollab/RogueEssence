@@ -1577,11 +1577,16 @@ namespace RogueEssence.Data
 
         public void SaveGameState(GameState state)
         {
-            using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Create, FileAccess.Write, FileShare.None))
+            using (MemoryStream tempStream = new MemoryStream())
             {
                 //saves scene, zone, and ground, if there will be one...
-                using (BinaryWriter writer = new BinaryWriter(stream))
+                using (BinaryWriter writer = new BinaryWriter(tempStream))
+                {
                     SaveGameState(writer, state);
+
+                    using (Stream stream = new FileStream(PathMod.ModSavePath(SAVE_PATH, SAVE_FILE_PATH), FileMode.Create, FileAccess.Write, FileShare.None))
+                        tempStream.WriteTo(stream);
+                }
             }
         }
 

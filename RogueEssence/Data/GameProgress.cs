@@ -652,11 +652,19 @@ namespace RogueEssence.Data
 
         public static void SaveMainData(BinaryWriter writer, GameProgress save)
         {
-            using (MemoryStream classStream = new MemoryStream())
+            try
             {
-                Serializer.SerializeData(classStream, save);
-                writer.Write(classStream.Position);
-                classStream.WriteTo(writer.BaseStream);
+                using (MemoryStream classStream = new MemoryStream())
+                {
+                    Serializer.SerializeData(classStream, save);
+                    writer.Write(classStream.Position);
+
+                    classStream.WriteTo(writer.BaseStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
             }
         }
 
