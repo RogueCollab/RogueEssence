@@ -275,7 +275,7 @@ namespace RogueEssence.Script
                     ch.StartAction(action);
                     return new WaitUntil(() =>
                     {
-                        return action.Complete;
+                        return action.Complete || (ch.GetCurrentAction() != action);
                     });
                 }
                 throw new ArgumentException("Entity is not a valid type.");
@@ -586,7 +586,7 @@ namespace RogueEssence.Script
                     ch.StartAction(action);
                     return new WaitUntil(() =>
                     {
-                        return action.Complete;
+                        return action.Complete || (ch.GetCurrentAction() != action);
                     });
                 }
                 throw new ArgumentException("Entity is not a valid type.");
@@ -630,7 +630,7 @@ namespace RogueEssence.Script
                     ch.StartAction(newAction);
                     return new WaitUntil(() =>
                     {
-                        return newAction.Complete;
+                        return newAction.Complete || (ch.GetCurrentAction() != newAction);
                     });
                 }
 
