@@ -742,7 +742,12 @@ namespace RogueEssence.Dungeon
             }
         }
 
-
+        /// <summary>
+        /// Makes the character disappear but also causes it to let go of its item.
+        /// Technically should be handled by the scripts calling it.
+        /// TODO: remove this method, after removing calls from rescue to script
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<YieldInstruction> DieSilent()
         {
             HP = 0;
@@ -777,45 +782,6 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> Die()
         {
-            int animTime = 10 + GameManager.Instance.ModifyBattleSpeed(50, CharLoc);
-
-            if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-            {
-                CharAnimDefeated defeatAnim = new CharAnimDefeated();
-                defeatAnim.CharLoc = CharLoc;
-                defeatAnim.CharDir = CharDir;
-                defeatAnim.MajorAnim = true;
-                defeatAnim.AnimTime = animTime;
-                yield return CoroutineManager.Instance.StartCoroutine(this.StartAnim(defeatAnim));
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT", GetDisplayName(true)));
-            }
-            else
-            {
-                CharAnimDefeated defeatAnim = new CharAnimDefeated();
-                defeatAnim.CharLoc = CharLoc;
-                defeatAnim.CharDir = CharDir;
-                defeatAnim.MajorAnim = true;
-                defeatAnim.AnimTime = animTime;
-                yield return CoroutineManager.Instance.StartCoroutine(this.StartAnim(defeatAnim));
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT_FOE", GetDisplayName(true)));
-
-            }
-
-            yield return new WaitForFrames(animTime - 1);
-
-            HP = 0;
-            Dead = true;
-
-            
-            //pre death:
-            //defeat message
-            //mark as dead
-            //drop item
-
-            //post death:
-            //revert to normal
-            //EXP handout
-
             yield return CoroutineManager.Instance.StartCoroutine(OnDeath());
             
             if (Dead)
