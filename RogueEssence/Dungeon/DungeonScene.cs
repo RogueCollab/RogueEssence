@@ -681,7 +681,7 @@ namespace RogueEssence.Dungeon
                 int input_gap = 2;
                 if ((input.InputTime - input.AddedInputTime) / input_gap < input.InputTime / input_gap)
                 {
-                    MinimapOffset += input.Direction.GetLoc();
+                    MinimapOffset += input.Direction.GetLoc() * 2;
 
                     Loc centerLoc = new Loc();
                     if (FocusedCharacter != null)
