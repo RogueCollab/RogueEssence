@@ -432,14 +432,21 @@ namespace RogueEssence.Data
         }
         public void LoadCacheFull<T>(DataType type, Dictionary<int, T> cache) where T : IEntryData
         {
-            cache.Clear();
-            for (int ii = 0; ii < DataIndices[type].Count; ii++)
+            try
             {
-                if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT)))
+                cache.Clear();
+                for (int ii = 0; ii < DataIndices[type].Count; ii++)
                 {
-                    T data = LoadData<T>(ii, type.ToString());
-                    cache.Add(ii, data);
+                    if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT)))
+                    {
+                        T data = LoadData<T>(ii, type.ToString());
+                        cache.Add(ii, data);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                cache.Clear();
             }
         }
 
