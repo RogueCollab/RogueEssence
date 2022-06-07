@@ -4,6 +4,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Emits several particles or particle emitters specified in a list.
+    /// </summary>
     [Serializable]
     public class ListEmitter : FiniteEmitter
     {

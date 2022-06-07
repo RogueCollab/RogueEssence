@@ -4,8 +4,10 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
-
+    /// <summary>
+    /// Emits particles within a specified range.
+    /// Particles emitted in this manner utilize the trajectory they are fired in.
+    /// </summary>
     [Serializable]
     public class CircleSquareFountainEmitter : CircleSquareEmitter
     {
@@ -40,6 +42,9 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new CircleSquareFountainEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IParticleEmittable> Anims;
         public int Bursts;
         public int ParticlesPerBurst;

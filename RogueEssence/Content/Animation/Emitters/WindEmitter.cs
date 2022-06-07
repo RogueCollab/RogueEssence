@@ -4,7 +4,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Emits particles traveling horizontally over the screen in varying speed.
+    /// </summary>
     [Serializable]
     public class WindEmitter : FiniteEmitter
     {

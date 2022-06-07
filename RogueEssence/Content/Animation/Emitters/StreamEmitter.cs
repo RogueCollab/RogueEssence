@@ -6,7 +6,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Emits particles in a stream, traveling in the trajectory of the hitbox.
+    /// </summary>
     [Serializable]
     public class StreamEmitter : ShootingEmitter
     {
@@ -40,11 +42,38 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new StreamEmitter(this); }
 
+        /// <summary>
+        /// Particles to emit.
+        /// </summary>
         public List<IParticleEmittable> Anims;
+
+        /// <summary>
+        /// The number of times to repeat emitting.
+        /// </summary>
         public int Shots;
+
+        /// <summary>
+        /// The number of frames between each shot.
+        /// </summary>
         public int BurstTime;
+
+        /// <summary>
+        /// The starting distance of the emitted particle, in pixels from the origin.
+        /// A positive number shifts the spawn to be further in the direction being fired.
+        /// A negative number shifts it back.
+        /// </summary>
         public int StartDistance;
+
+        /// <summary>
+        /// Modifies the end distance of the emitted particle, in pixels.
+        /// A positive number shifts the spawn to be further in the direction being fired.
+        /// A negative number shifts it back.
+        /// </summary>
         public int EndDiff;
+
+        /// <summary>
+        /// The layer to spawn the particles in.
+        /// </summary>
         public DrawLayer Layer;
 
 

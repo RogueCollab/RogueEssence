@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Creates an overlay effect using a background texture.
+    /// </summary>
     [Serializable]
     public class FiniteOverlayEmitter : FiniteEmitter
     {
@@ -29,13 +32,26 @@ namespace RogueEssence.Content
         public override BaseEmitter Clone() { return new FiniteOverlayEmitter(this); }
 
         public int Offset;
+
+        /// <summary>
+        /// The background texture to show.
+        /// </summary>
         public BGAnimData Anim;
+
         /// <summary>
         /// Pixels per second
         /// </summary>
         public Loc Movement;
+
+        /// <summary>
+        /// The total time the animation appears, in frames.
+        /// </summary>
         public int TotalTime;
         public DrawLayer Layer;
+
+        /// <summary>
+        /// The color to shift the background texture.
+        /// </summary>
         public Color Color;
 
 

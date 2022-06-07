@@ -7,11 +7,29 @@ namespace RogueEssence.Content
 
     public enum DrawLayer
     {
+        /// <summary>
+        /// Draws on the floor, behind all entities.
+        /// </summary>
         Bottom = 0,
+        /// <summary>
+        /// Draws in front of entities if placed at a higher Y coordinate, but draws behind entities in a tie.
+        /// </summary>
         Back = 1,
+        /// <summary>
+        /// Draws in behind of entities if placed at a lower Y coordinate, but draws in front of entities in a tie.
+        /// </summary>
         Normal = 2,
+        /// <summary>
+        /// Draws in front of entities.
+        /// </summary>
         Front = 3,
+        /// <summary>
+        /// Draws on top of everything else.  Often used for overlay.
+        /// </summary>
         Top = 4,
+        /// <summary>
+        /// Does not draw.
+        /// </summary>
         NoDraw = 5
     }
 

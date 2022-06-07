@@ -3,6 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Creates after-images of the moving character.
+    /// </summary>
     [Serializable]
     public class AfterImageEmitter : AttachPointEmitter
     {

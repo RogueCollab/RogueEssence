@@ -89,6 +89,9 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// An emitter that does nothing.
+    /// </summary>
     [Serializable]
     public class EmptyFiniteEmitter : FiniteEmitter
     {
@@ -130,6 +133,9 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// An emitter that does nothing.
+    /// </summary>
     [Serializable]
     public class EmptyCircleSquareEmitter : CircleSquareEmitter
     {
@@ -214,6 +220,9 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// An emitter that does nothing.
+    /// </summary>
     [Serializable]
     public class EmptyShootingEmitter : ShootingEmitter
     {
@@ -235,6 +244,9 @@ namespace RogueEssence.Content
         public virtual void SetupEmit(ICharSprite user, Loc origin, Loc dest, Dir8 dir, int locHeight) { SetupEmit(origin, dest, dir); LocHeight = locHeight; }
     }
 
+    /// <summary>
+    /// An emitter that does nothing.
+    /// </summary>
     [Serializable]
     public class EmptyAttachEmitter : AttachPointEmitter
     {
@@ -253,6 +265,9 @@ namespace RogueEssence.Content
         public abstract void SwitchOff();
     }
 
+    /// <summary>
+    /// An emitter that does nothing.
+    /// </summary>
     [Serializable]
     public class EmptySwitchOffEmitter : SwitchOffEmitter
     {

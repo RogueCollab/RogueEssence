@@ -5,7 +5,9 @@ using RogueElements;
 namespace RogueEssence.Content
 {
 
-
+    /// <summary>
+    /// Emits particles within a specified start range, which all move outwards to the maximum radius.
+    /// </summary>
     [Serializable]
     public class FiniteReleaseRangeEmitter : FiniteReleaseEmitter
     {
@@ -40,6 +42,9 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// Emits particles within a specified start range, which all move outwards until they finish animating.
+    /// </summary>
     [Serializable]
     public class FiniteReleaseEmitter : FiniteEmitter
     {
@@ -131,6 +136,9 @@ namespace RogueEssence.Content
 
     }
 
+    /// <summary>
+    /// Emits particles within a specified start range, which all move outwards until they reach the maximum range.
+    /// </summary>
     [Serializable]
     public class AttachReleaseRangeEmitter : AttachReleaseEmitter
     {
@@ -166,6 +174,9 @@ namespace RogueEssence.Content
 
     }
 
+    /// <summary>
+    /// Emits particles within a specified start range, which all move outwards until they finish animating.
+    /// </summary>
     [Serializable]
     public class AttachReleaseEmitter : AttachPointEmitter
     {
@@ -246,6 +257,9 @@ namespace RogueEssence.Content
 
     }
 
+    /// <summary>
+    /// Emits particles within a specified start range, which all move outwards until they reach the max range specified by the hitbox.
+    /// </summary>
     [Serializable]
     public class CircleSquareReleaseEmitter : CircleSquareEmitter
     {

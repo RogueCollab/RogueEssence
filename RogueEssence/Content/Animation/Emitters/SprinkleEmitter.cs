@@ -5,8 +5,12 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
-
+    /// <summary>
+    /// Emits particles within a specified circular area.
+    /// The area of emission starts at a radius of 0 and grows to a maximum range.
+    /// The particles themselves will move in the specified direction.
+    /// Often used to simulate confetti-like objects that float downwards.
+    /// </summary>
     [Serializable]
     public class FiniteSprinkleEmitter : FiniteEmitter
     {
@@ -40,23 +44,48 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new FiniteSprinkleEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IParticleEmittable> Anims;
 
         /// <summary>
+        /// The maximum radius of the emitting area.
         /// In Pixels
         /// </summary>
         public int Range;
 
         /// <summary>
+        /// Speed of the radius's increase.
         /// In Pixels Per Second
         /// </summary>
         public int Speed;
 
+        /// <summary>
+        /// Total particles to emit by the time the emitter finishes.
+        /// </summary>
         public int TotalParticles;
+
+        /// <summary>
+        /// The speed for the particles to travel in height.
+        /// In pixels per second.
+        /// </summary>
         public int HeightSpeed;
+
+        /// <summary>
+        /// How far left or right the particle's trajectory will drift as it moves.
+        /// In pixels per second.
+        /// </summary>
         public int SpeedDiff;
+
+        /// <summary>
+        /// Height added to the particles when they are initialy created.
+        /// </summary>
         public int StartHeight;
 
+        /// <summary>
+        /// The draw layer to put the particles on.
+        /// </summary>
         public DrawLayer Layer;
 
         [NonSerialized]
@@ -106,6 +135,11 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// Emits particles within a specified circular area, attached to a moving user or object.
+    /// The particles themselves will move in the specified direction.
+    /// Often used to simulate confetti-like objects that float downwards.
+    /// </summary>
     [Serializable]
     public class AttachSprinkleEmitter : AttachPointEmitter
     {
@@ -131,14 +165,43 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new AttachSprinkleEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IParticleEmittable> Anims;
-        public int Range;//pixels!
+
+        /// <summary>
+        /// Radius of the emitting area in pixels.
+        /// </summary>
+        public int Range;
+
         public int ParticlesPerBurst;
+
+        /// <summary>
+        /// Number of frames between bursts.
+        /// </summary>
         public int BurstTime;
+
+        /// <summary>
+        /// The speed for the particles to travel in height.
+        /// In pixels per second.
+        /// </summary>
         public int HeightSpeed;
+
+        /// <summary>
+        /// How far left or right the particle's trajectory will drift as it moves.
+        /// In pixels per second.
+        /// </summary>
         public int SpeedDiff;
+
+        /// <summary>
+        /// The amount of height to add to the particles when they initially spawn.
+        /// </summary>
         public int StartHeight;
 
+        /// <summary>
+        /// The draw layer to put the particles on.
+        /// </summary>
         public DrawLayer Layer;
 
         [NonSerialized]
@@ -181,6 +244,12 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// Emits particles within the range of the hitbox that owns it.
+    /// The area of emission is a circle that starts at a radius of 0 and grows to the range of the square-shaped hitbox.
+    /// The particles themselves will move in the specified direction.
+    /// Often used to simulate confetti-like objects that float downwards.
+    /// </summary>
     [Serializable]
     public class CircleSquareSprinkleEmitter : CircleSquareEmitter
     {
@@ -217,20 +286,36 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new CircleSquareSprinkleEmitter(this); }
 
-        public List<IParticleEmittable> Anims;
-        public double ParticlesPerTile;
-        
         /// <summary>
-        /// Pixels Per Second
+        /// The particles to emit.
+        /// </summary>
+        public List<IParticleEmittable> Anims;
+
+        /// <summary>
+        /// The amount of particles to emit per tile covered by the hitbox.
+        /// </summary>
+        public double ParticlesPerTile;
+
+        /// <summary>
+        /// The speed for the particles to travel in height.
+        /// In pixels per second.
         /// </summary>
         public int HeightSpeed;
 
         /// <summary>
-        /// Pixels Per Second
+        /// How far left or right the particle's trajectory will drift as it moves.
+        /// In pixels per second.
         /// </summary>
         public int SpeedDiff;
+
+        /// <summary>
+        /// The amount of height to add to the particles when they initially spawn.
+        /// </summary>
         public int StartHeight;
 
+        /// <summary>
+        /// The draw layer to put the particles on.
+        /// </summary>
         public DrawLayer Layer;
 
         [NonSerialized]
