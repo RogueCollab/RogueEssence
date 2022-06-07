@@ -17,7 +17,7 @@ namespace RogueEssence.Dev.ViewModels
         public GroundTabPropertiesViewModel()
         {
             ScrollEdges = new ObservableCollection<string>();
-            for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
+            for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
             BG = new ClassBoxViewModel(new StringConv(typeof(IBackgroundSprite), new object[0]));

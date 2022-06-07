@@ -27,7 +27,7 @@ namespace RogueEssence.Dev.ViewModels
                 Elements.Add(ii.ToString("D2") + ": " + element_names[ii]);
 
             ScrollEdges = new ObservableCollection<string>();
-            for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
+            for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
             BG = new ClassBoxViewModel(new StringConv(typeof(IBackgroundSprite), new object[0]));

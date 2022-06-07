@@ -818,17 +818,25 @@ namespace RogueEssence.Dungeon
                 return true;
             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 return true;
-            bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
-            return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[xx][yy] == Map.DiscoveryState.Traversed);
+            Loc loc = new Loc(xx, yy);
+            bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc);
+            if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap)
+            {
+                loc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
+                outOfBounds = false;
+            }
+            return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] == Map.DiscoveryState.Traversed);
         }
 
         protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
         {
             base.PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
 
-            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(xx, yy), FocusedCharacter.Mobility))
+            Loc visualLoc = new Loc(xx, yy);
+            Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
+            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
             {
-                if (Collision.InFront(FocusedCharacter.CharLoc, new Loc(xx, yy), FocusedCharacter.CharDir, -1))
+                if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
                     GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
                 else
                     GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);

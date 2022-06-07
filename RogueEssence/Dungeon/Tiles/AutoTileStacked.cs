@@ -72,14 +72,14 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             for (int xx = 0; xx < rectSize.X; xx++)
             {
                 for (int yy = 0; yy < rectSize.Y; yy++)
                 {
                     int neighborCode = -1;
-                    if (Collision.InBounds(totalSize.X, totalSize.Y, rectStart + new Loc(xx, yy)) && presenceMethod(xx + rectStart.X, yy + rectStart.Y))
+                    if (presenceMethod(xx + rectStart.X, yy + rectStart.Y))
                         neighborCode = textureWaterTile(xx + rectStart.X, yy + rectStart.Y, queryMethod);
                     
                     if (neighborCode != -1)

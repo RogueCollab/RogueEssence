@@ -208,7 +208,7 @@ namespace RogueEssence.Dev.ViewModels
             //now recompute all tiles within the multiselect rectangle + 1
             Rect bounds = coveredRect;
             bounds.Inflate(1, 1);
-            ZoneManager.Instance.CurrentGround.Layers[layer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size);
+            ZoneManager.Instance.CurrentGround.Layers[layer].CalculateAutotiles(ZoneManager.Instance.CurrentGround.Rand.FirstSeed, bounds.Start, bounds.Size, ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Wrap);
         }
     }
 

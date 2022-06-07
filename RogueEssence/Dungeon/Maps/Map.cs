@@ -27,13 +27,20 @@ namespace RogueEssence.Dungeon
             Blind = 3
         }
 
-        /// <summary>
-        /// Describes how to handle the map scrolling past the edge of the map
-        /// </summary>
         public enum ScrollEdge
         {
-            Blank = 0,//displays a black void, or the BlankBG texture
-            Clamp,//does not scroll past the edge of the map
+            /// <summary>
+            /// Displays the BlankBG texture, or a black void if there is none
+            /// </summary>
+            Blank = 0,
+            /// <summary>
+            /// Does not scroll past the edge of the map.
+            /// </summary>
+            Clamp,
+            /// <summary>
+            /// The map is wrapped around.
+            /// </summary>
+            Wrap,
         }
 
         public enum DiscoveryState
@@ -73,6 +80,10 @@ namespace RogueEssence.Dungeon
         public SightRange TileSight;
         public SightRange CharSight;
 
+
+        /// <summary>
+        /// Describes how to handle the map scrolling past the edge of the map
+        /// </summary>
         public ScrollEdge EdgeView;
 
 
@@ -480,7 +491,7 @@ namespace RogueEssence.Dungeon
         public void CalculateAutotiles(Loc rectStart, Loc rectSize)
         {
             foreach (MapLayer layer in Layers)
-                layer.CalculateAutotiles(this.rand.FirstSeed, rectStart, rectSize);
+                layer.CalculateAutotiles(this.rand.FirstSeed, rectStart, rectSize, EdgeView == ScrollEdge.Wrap);
         }
 
         public void CalculateTerrainAutotiles(Loc rectStart, Loc rectSize)
@@ -494,51 +505,71 @@ namespace RogueEssence.Dungeon
             {
                 for (int jj = rectStart.Y; jj < rectStart.Y + rectSize.Y; jj++)
                 {
-                    if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
-                    {
-                        //Only color empty tiles
-                        if (!Tiles[ii][jj].Data.StableTex)
-                        {
-                            AutoTile outTile;
-                            if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))
-                            {
-                                Tiles[ii][jj].Data.TileTex = outTile.Copy();
+                    Loc destLoc = new Loc(ii, jj);
+                    if (EdgeView == ScrollEdge.Wrap)
+                        destLoc = WrapLoc(destLoc);
 
-                                if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
-                                    blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
-                            }
-                            else
-                            {
-                                if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
-                                    blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
-                            }
-                        }
+                    if (!Collision.InBounds(Width, Height, destLoc))
+                        continue;
+
+                    //Only color empty tiles
+                    if (Tiles[destLoc.X][destLoc.Y].Data.StableTex)
+                        continue;
+
+                    AutoTile outTile;
+                    if (TextureMap.TryGetValue(Tiles[destLoc.X][destLoc.Y].Data.ID, out outTile))
+                    {
+                        Tiles[destLoc.X][destLoc.Y].Data.TileTex = outTile.Copy();
+
+                        if (Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset > -1)
+                            blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
+                    }
+                    else
+                    {
+                        if (Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset > -1)
+                            blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
                     }
                 }
             }
             foreach (int tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(noise, rectStart, rectSize, new Loc(Width, Height),
+                entry.Tiles.AutoTileArea(noise, rectStart, rectSize,
                     (int x, int y, int neighborCode) =>
                     {
-                        Tiles[x][y].Data.TileTex.NeighborCode = neighborCode;
+                        Loc checkLoc = new Loc(x, y);
+                        if (EdgeView == ScrollEdge.Wrap)
+                            checkLoc = WrapLoc(checkLoc);
+                        else if (Collision.InBounds(Width, Height, checkLoc))
+                            return;
+                        Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.NeighborCode = neighborCode;
                     },
                     (int x, int y) =>
                     {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                        Loc checkLoc = new Loc(x, y);
+                        if (EdgeView == ScrollEdge.Wrap)
+                            checkLoc = WrapLoc(checkLoc);
+                        else if (!Collision.InBounds(Width, Height, checkLoc))
                             return true;
-                        return Tiles[x][y].Data.TileTex.AutoTileset == tileset;
+                        return Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.AutoTileset == tileset;
                     },
                     (int x, int y) =>
                     {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                        Loc checkLoc = new Loc(x, y);
+                        if (EdgeView == ScrollEdge.Wrap)
+                            checkLoc = WrapLoc(checkLoc);
+                        else if (!Collision.InBounds(Width, Height, checkLoc))
                             return true;
-                        return Tiles[x][y].Data.TileTex.AutoTileset == tileset || Tiles[x][y].Data.TileTex.Associates.Contains(tileset);
+                        return Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.AutoTileset == tileset || Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.Associates.Contains(tileset);
                     });
             }
         }
 
+        /// <summary>
+        /// The region must be the region up for recalculation, NOT the changed tiles.
+        /// </summary>
+        /// <param name="startLoc"></param>
+        /// <param name="sizeLoc"></param>
         public void MapModified(Loc startLoc, Loc sizeLoc)
         {
             CalculateAutotiles(startLoc, sizeLoc);
@@ -574,6 +605,16 @@ namespace RogueEssence.Dungeon
                 if (!character.Dead)
                     character.UpdateTileSight(discoveryLightOp);
             }
+        }
+
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapLoc(Loc loc)
+        {
+            return (loc + new Loc(Width, Height)) % new Loc(Width, Height);
         }
 
         public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)

@@ -153,22 +153,25 @@ namespace RogueEssence.Dungeon
     }
 
 
-    public class UnrevealedTile : IDrawableSprite
+    public class DrawTile : IDrawableSprite
     {
         public Loc TileLoc { get; private set; }
         public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
         public int LocHeight { get { return 0; } }
 
-        public UnrevealedTile(Loc loc)
+        public int TileID;
+
+        public DrawTile(Loc loc, int tileID)
         {
             TileLoc = loc;
+            TileID = tileID;
         }
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Loc drawLoc = GetDrawLoc(offset);
-            TileData entry = DataManager.Instance.GetTile(0);
+            TileData entry = DataManager.Instance.GetTile(TileID);
 
             if (entry.Anim.AnimIndex != "")
             {

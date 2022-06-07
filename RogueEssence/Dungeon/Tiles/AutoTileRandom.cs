@@ -14,13 +14,13 @@ namespace RogueEssence.Dungeon
             Ground = new List<TileLayer>();
         }
 
-        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             for (int xx = rectStart.X; xx < rectStart.X + rectSize.X; xx++)
             {
                 for (int yy = rectStart.Y; yy < rectStart.Y + rectSize.Y; yy++)
                 {
-                    if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(xx, yy)) && presenceMethod(xx, yy))
+                    if (presenceMethod(xx, yy))
                         placementMethod(xx, yy, GetVariantCode(noise.Get2DUInt64((ulong)xx, (ulong)yy), 0));
                 }
             }

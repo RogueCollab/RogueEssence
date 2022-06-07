@@ -77,7 +77,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void CalculateAutotiles(ulong randSeed, Loc rectStart, Loc rectSize)
+        public void CalculateAutotiles(ulong randSeed, Loc rectStart, Loc rectSize, bool wrap)
         {
             ReNoise noise = new ReNoise(randSeed);
             HashSet<int> floortilesets = new HashSet<int>();
@@ -85,34 +85,54 @@ namespace RogueEssence.Dungeon
             {
                 for (int jj = rectStart.Y; jj < rectStart.Y + rectSize.Y; jj++)
                 {
-                    if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
-                    {
-                        if (Tiles[ii][jj].AutoTileset > -1)
-                            floortilesets.Add(Tiles[ii][jj].AutoTileset);
-                    }
+                    Loc destLoc = new Loc(ii, jj);
+                    if (wrap)
+                        destLoc = WrapLoc(destLoc);
+
+                    if (!Collision.InBounds(Width, Height, destLoc))
+                        continue;
+
+                    if (Tiles[destLoc.X][destLoc.Y].AutoTileset > -1)
+                        floortilesets.Add(Tiles[destLoc.X][destLoc.Y].AutoTileset);
                 }
             }
             foreach (int tileset in floortilesets)
             {
                 Data.AutoTileData entry = Data.DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(noise, rectStart, rectSize, new Loc(Width, Height),
+                entry.Tiles.AutoTileArea(noise, rectStart, rectSize,
                     (int x, int y, int neighborCode) =>
                     {
-                        Tiles[x][y].NeighborCode = neighborCode;
+                        Loc checkLoc = new Loc(x, y);
+                        if (wrap)
+                            checkLoc = WrapLoc(checkLoc);
+                        else if (Collision.InBounds(Width, Height, checkLoc))
+                            return;
+                        Tiles[checkLoc.X][checkLoc.Y].NeighborCode = neighborCode;
                     },
                     (int x, int y) =>
                     {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                        Loc checkLoc = new Loc(x, y);
+                        if (wrap)
+                            checkLoc = WrapLoc(checkLoc);
+                        else if (!Collision.InBounds(Width, Height, checkLoc))
                             return true;
-                        return Tiles[x][y].AutoTileset == tileset;
+                        return Tiles[checkLoc.X][checkLoc.Y].AutoTileset == tileset;
                     },
                     (int x, int y) =>
                     {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                        Loc checkLoc = new Loc(x, y);
+                        if (wrap)
+                            checkLoc = WrapLoc(checkLoc);
+                        else if (!Collision.InBounds(Width, Height, checkLoc))
                             return true;
-                        return Tiles[x][y].AutoTileset == tileset || Tiles[x][y].Associates.Contains(tileset);
+                        return Tiles[checkLoc.X][checkLoc.Y].AutoTileset == tileset || Tiles[checkLoc.X][checkLoc.Y].Associates.Contains(tileset);
                     });
             }
+        }
+
+        public Loc WrapLoc(Loc loc)
+        {
+            return (loc + new Loc(Width, Height)) % new Loc(Width, Height);
         }
 
         public override string ToString()

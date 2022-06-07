@@ -83,7 +83,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             int[][] mainArray = new int[rectSize.X+2][];
             for (int ii = 0; ii < rectSize.X + 2; ii++)
@@ -104,7 +104,7 @@ namespace RogueEssence.Dungeon
             {
                 for (int yy = 0; yy < rectSize.Y + 2; yy++)
                 {
-                    if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(rectStart.X + xx, rectStart.Y + yy)) && presenceMethod(rectStart.X + xx - 1, rectStart.Y + yy - 1))
+                    if (presenceMethod(rectStart.X + xx - 1, rectStart.Y + yy - 1))
                         textureMainBlock(mainArray, rectStart, rectStart.X + xx - 1, rectStart.Y + yy - 1, queryMethod);
                 }
             }
@@ -113,7 +113,7 @@ namespace RogueEssence.Dungeon
             {
                 for (int yy = 0; yy < rectSize.Y; yy++)
                 {
-                    if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(rectStart.X + xx, rectStart.Y + yy)) && presenceMethod(rectStart.X + xx, rectStart.Y + yy) && mainArray[xx+1][yy+1] == -1)
+                    if (presenceMethod(rectStart.X + xx, rectStart.Y + yy) && mainArray[xx+1][yy+1] == -1)
                         textureLooseBlock(looseArray, mainArray, rectStart, rectStart.X + xx, rectStart.Y + yy, queryMethod);
                 }
             }

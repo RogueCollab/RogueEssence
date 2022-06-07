@@ -9,7 +9,7 @@ namespace RogueEssence.Dungeon
     {
         public delegate void PlacementMethod(int x, int y, int neighborCode);
         public delegate bool QueryMethod(int x, int y);
-        public abstract void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod);
+        public abstract void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod);
 
         public abstract IEnumerable<List<TileLayer>> IterateElements();
 

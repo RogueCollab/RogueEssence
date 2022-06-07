@@ -118,8 +118,10 @@ namespace RogueEssence.Dungeon
 
         protected virtual void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
         {
-            ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy), false);
-            EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[xx][yy].Effect;
+            Loc visualLoc = new Loc(xx, yy);
+            Loc wrappedLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
+            ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, wrappedLoc, false);
+            EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[wrappedLoc.X][wrappedLoc.Y].Effect;
             if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
             {
                 List<IDrawableSprite> targetDraw;
@@ -127,10 +129,11 @@ namespace RogueEssence.Dungeon
                     targetDraw = backDraw;
                 else
                     targetDraw = groundDraw;
+
                 if (seeTrap || effect.Revealed)
-                    AddToDraw(targetDraw, effect);
+                    AddToDraw(targetDraw, new DrawTile(visualLoc, effect.ID));
                 else
-                    AddToDraw(targetDraw, new UnrevealedTile(effect.TileLoc));
+                    AddToDraw(targetDraw, new DrawTile(visualLoc, 0));
             }
         }
 
@@ -244,13 +247,12 @@ namespace RogueEssence.Dungeon
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
                 {
                     //if it's a tile on the discovery array, show it
-                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
                     if (CanSeeTile(xx, yy))
                     {
-                        if (outOfBounds)
-                            ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
-                        else
+                        if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
                             PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
+                        else
+                            ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
                     }
                 }
             }
@@ -334,9 +336,16 @@ namespace RogueEssence.Dungeon
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
                 {
                     //if it's a tile on the discovery array, show it
-                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
-                    if (!outOfBounds && CanSeeTile(xx, yy))
-                        ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy), true);
+                    Loc frontLoc = new Loc(xx, yy);
+                    if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, frontLoc))
+                    {
+                        if (CanSeeTile(xx, yy))
+                        {
+                            if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap)
+                                frontLoc = ZoneManager.Instance.CurrentMap.WrapLoc(frontLoc);
+                            ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, frontLoc, true);
+                        }
+                    }
                 }
             }
 
