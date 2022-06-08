@@ -29,8 +29,8 @@
     <Image Source="{Binding Preview, Converter={StaticResource TileConverter}}"  VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="None" Grid.Row="0" Grid.Column="0"/>
     <Image Source="{Binding AssociatePreview, Converter={StaticResource TileConverter}}"  VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="None" Grid.Row="0" Grid.Column="1"/>
 
-    <views:SearchListBox DataContext="{Binding Autotiles}" Margin="4" Grid.Row="1" Grid.Column="0"/>
-    <views:SearchListBox DataContext="{Binding AssociateAutotiles}" Margin="4" Grid.Row="1" Grid.Column="1"/>
+    <views:SearchListBox DataContext="{Binding Autotiles}" Margin="4" Grid.Row="1" Grid.Column="0" ToolTip.Tip="Choose the autotile.&#x0a;Its texture will be automatically calculated when placed on the map."/>
+    <views:SearchListBox DataContext="{Binding AssociateAutotiles}" Margin="4" Grid.Row="1" Grid.Column="1" ToolTip.Tip="Autotiles in the associate list will treat this tile as one of their own in texture calculation.&#x0a;The autotile chosen here will have no effect unless added to the list using the Add button."/>
     
     <Grid Grid.Row="1" Grid.Column="2">
       <Grid.RowDefinitions>
@@ -41,15 +41,15 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <ListBox SelectionMode="AlwaysSelected" Items="{Binding Associates}" SelectedIndex="{Binding ChosenAssociate}" Margin="4,2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+      <ListBox SelectionMode="AlwaysSelected" Items="{Binding Associates}" SelectedIndex="{Binding ChosenAssociate}" Margin="4,2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ToolTip.Tip="The actual list of associate tiles.">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <TextBlock Text="{Binding Converter={StaticResource DataEntryConverter}, ConverterParameter=1024}"/>
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <Button Command="{Binding btnAddTile_Click}" Margin="4,2" Grid.Row="1" Grid.Column="0" >Add</Button>
-      <Button Command="{Binding btnDeleteTile_Click}" Margin="4,2" Grid.Row="1" Grid.Column="1">Delete</Button>
+      <Button Command="{Binding btnAddTile_Click}" Margin="4,2" Grid.Row="1" Grid.Column="0" ToolTip.Tip="Add to the associate list.">Add</Button>
+      <Button Command="{Binding btnDeleteTile_Click}" Margin="4,2" Grid.Row="1" Grid.Column="1" ToolTip.Tip="Delete from the associate list.">Delete</Button>
     </Grid>
   
   </Grid>

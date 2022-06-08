@@ -34,11 +34,11 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
-    <Button Command="{Binding AddLayer}" Margin="2" Grid.Row="2" Grid.Column="0" >+</Button>
-    <Button Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1">-</Button>
-    <Button Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2">D</Button>
-    <Button Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3">M</Button>
-    <Button Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4">^</Button>
-    <Button Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5">v</Button>
+    <Button Command="{Binding AddLayer}" Margin="2" Grid.Row="2" Grid.Column="0" ToolTip.Tip="Add Layer">+</Button>
+    <Button Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1" ToolTip.Tip="Delete Layer">-</Button>
+    <Button Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2" ToolTip.Tip="Duplicate Layer">D</Button>
+    <Button Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3" ToolTip.Tip="Merge Layer">M</Button>
+    <Button Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4" ToolTip.Tip="Move Layer Up">^</Button>
+    <Button Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5" ToolTip.Tip="Move Layer Down">v</Button>
   </Grid>
 </UserControl>
