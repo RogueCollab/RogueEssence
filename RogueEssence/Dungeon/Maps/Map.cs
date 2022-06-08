@@ -617,6 +617,28 @@ namespace RogueEssence.Dungeon
             return (loc + new Loc(Width, Height)) % new Loc(Width, Height);
         }
 
+        /// <summary>
+        /// Slices a rectangle at the wrapped map boundaries.
+        /// </summary>
+        /// <returns></returns>
+        public Rect[][] WrapSplitRect(Rect rect)
+        {
+            Loc topLeftBounds = new Loc(MathUtils.DivDown(rect.Start.X, Width), MathUtils.DivDown(rect.Start.Y, Height));
+            Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, Width), MathUtils.DivDown(rect.End.Y, Height));
+
+            Rect[][] choppedGrid = new Rect[bottomRightBounds.X - topLeftBounds.X][];
+            for (int xx = topLeftBounds.X; xx < bottomRightBounds.X; xx++)
+            {
+                choppedGrid[xx] = new Rect[bottomRightBounds.Y - topLeftBounds.Y];
+                for (int yy = topLeftBounds.Y; yy < bottomRightBounds.Y; yy++)
+                {
+                    Rect subRect = new Rect(new Loc(xx, yy) * new Loc(Width, Height), new Loc(xx+1, yy+1) * new Loc(Width, Height));
+                    choppedGrid[xx][yy] = Rect.Intersect(rect, subRect);
+                }
+            }
+            return choppedGrid;
+        }
+
         public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)
         {
             if (ally)

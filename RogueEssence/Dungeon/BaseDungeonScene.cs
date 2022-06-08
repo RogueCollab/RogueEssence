@@ -20,10 +20,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
-        protected List<IDrawableSprite> groundDraw;
-        protected List<IDrawableSprite> backDraw;
-        protected List<IDrawableSprite> frontDraw;
-        protected List<IDrawableSprite> foregroundDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> groundDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> backDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> frontDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> foregroundDraw;
         protected List<Character> shownChars;
 
 
@@ -40,10 +40,10 @@ namespace RogueEssence.Dungeon
         public BaseDungeonScene()
         {
 
-            groundDraw = new List<IDrawableSprite>();
-            backDraw = new List<IDrawableSprite>();
-            frontDraw = new List<IDrawableSprite>();
-            foregroundDraw = new List<IDrawableSprite>();
+            groundDraw = new List<(IDrawableSprite, Loc)>();
+            backDraw = new List<(IDrawableSprite, Loc)>();
+            frontDraw = new List<(IDrawableSprite, Loc)>();
+            foregroundDraw = new List<(IDrawableSprite, Loc)>();
             shownChars = new List<Character>();
 
             subtractBlend = new BlendState();
@@ -125,7 +125,7 @@ namespace RogueEssence.Dungeon
             EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[wrappedLoc.X][wrappedLoc.Y].Effect;
             if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
             {
-                List<IDrawableSprite> targetDraw;
+                List<(IDrawableSprite, Loc)> targetDraw;
                 if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
                     targetDraw = backDraw;
                 else
@@ -241,6 +241,7 @@ namespace RogueEssence.Dungeon
             foregroundDraw.Clear();
             shownChars.Clear();
 
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
             bool seeTrap = CanSeeTraps();
 
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
@@ -250,7 +251,7 @@ namespace RogueEssence.Dungeon
                     //if it's a tile on the discovery array, show it
                     if (CanSeeTile(xx, yy))
                     {
-                        if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
+                        if (wrapped || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
                             PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
                         else
                             ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
@@ -267,9 +268,9 @@ namespace RogueEssence.Dungeon
             int charIndex = 0;
             while (charIndex < groundDraw.Count)
             {
-                groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                groundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    groundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    groundDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -294,12 +295,12 @@ namespace RogueEssence.Dungeon
             {
                 while (charIndex < backDraw.Count)
                 {
-                    int charY = backDraw[charIndex].MapLoc.Y;
+                    int charY = backDraw[charIndex].loc.Y;
                     if (charY == yy * GraphicsManager.TileSize)
                     {
-                        backDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            backDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -308,12 +309,12 @@ namespace RogueEssence.Dungeon
 
                 while (charIndex < backDraw.Count)
                 {
-                    int charY = backDraw[charIndex].MapLoc.Y;
+                    int charY = backDraw[charIndex].loc.Y;
                     if (charY < (yy + 1) * GraphicsManager.TileSize)
                     {
-                        backDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                         if (GameManager.Instance.ShowDebug)
-                            backDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                            backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -323,9 +324,9 @@ namespace RogueEssence.Dungeon
 
             while (charIndex < backDraw.Count)
             {
-                backDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    backDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -338,11 +339,11 @@ namespace RogueEssence.Dungeon
                 {
                     //if it's a tile on the discovery array, show it
                     Loc frontLoc = new Loc(xx, yy);
-                    if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, frontLoc))
+                    if (wrapped || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, frontLoc))
                     {
                         if (CanSeeTile(xx, yy))
                         {
-                            if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap)
+                            if (wrapped)
                                 frontLoc = ZoneManager.Instance.CurrentMap.WrapLoc(frontLoc);
                             ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, frontLoc, true);
                         }
@@ -353,9 +354,9 @@ namespace RogueEssence.Dungeon
             charIndex = 0;
             while (charIndex < frontDraw.Count)
             {
-                frontDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                frontDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    frontDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    frontDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -368,9 +369,9 @@ namespace RogueEssence.Dungeon
             charIndex = 0;
             while (charIndex < foregroundDraw.Count)
             {
-                foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                foregroundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 if (GameManager.Instance.ShowDebug)
-                    foregroundDraw[charIndex].DrawDebug(spriteBatch, ViewRect.Start);
+                    foregroundDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 

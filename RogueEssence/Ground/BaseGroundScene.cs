@@ -19,11 +19,11 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 
-        protected List<IDrawableSprite> groundDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> groundDraw;
 
-        protected List<IDrawableSprite> objectDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> objectDraw;
 
-        protected List<IDrawableSprite> foregroundDraw;
+        protected List<(IDrawableSprite sprite, Loc loc)> foregroundDraw;
 
         protected Rect viewTileRect;
         
@@ -33,9 +33,9 @@ namespace RogueEssence.Ground
         public BaseGroundScene()
         {
 
-            groundDraw = new List<IDrawableSprite>();
-            objectDraw = new List<IDrawableSprite>();
-            foregroundDraw = new List<IDrawableSprite>();
+            groundDraw = new List<(IDrawableSprite, Loc)>();
+            objectDraw = new List<(IDrawableSprite, Loc)>();
+            foregroundDraw = new List<(IDrawableSprite, Loc)>();
 
             ZoomChanged();
         }
@@ -169,7 +169,7 @@ namespace RogueEssence.Ground
             int charIndex = 0;
             while (charIndex < groundDraw.Count)
             {
-                groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                groundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -229,10 +229,10 @@ namespace RogueEssence.Ground
             {
                 while (charIndex < objectDraw.Count)
                 {
-                    int charY = objectDraw[charIndex].MapLoc.Y;
+                    int charY = objectDraw[charIndex].loc.Y;
                     if (charY == j * ZoneManager.Instance.CurrentGround.TileSize)
                     {
-                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -241,10 +241,10 @@ namespace RogueEssence.Ground
 
                 while (charIndex < objectDraw.Count)
                 {
-                    int charY = objectDraw[charIndex].MapLoc.Y;
+                    int charY = objectDraw[charIndex].loc.Y;
                     if (charY < (j + 1) * ZoneManager.Instance.CurrentGround.TileSize)
                     {
-                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                        objectDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                         charIndex++;
                     }
                     else
@@ -254,7 +254,7 @@ namespace RogueEssence.Ground
 
             while (charIndex < objectDraw.Count)
             {
-                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -267,7 +267,7 @@ namespace RogueEssence.Ground
             charIndex = 0;
             while (charIndex < objectDraw.Count)
             {
-                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 
@@ -293,7 +293,7 @@ namespace RogueEssence.Ground
             charIndex = 0;
             while (charIndex < foregroundDraw.Count)
             {
-                foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                foregroundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
                 charIndex++;
             }
 

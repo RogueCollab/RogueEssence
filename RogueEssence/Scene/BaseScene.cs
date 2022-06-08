@@ -105,16 +105,21 @@ namespace RogueEssence
             return Collision.Collides(spriteRect, viewBounds);
         }
 
-        public void AddToDraw(List<IDrawableSprite> sprites, IDrawableSprite sprite)
+        public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite)
         {
-            CollectionExt.AddToSortedList(sprites, sprite, CompareSpriteCoords);
+            AddToDraw(sprites, sprite, sprite.MapLoc);
+        }
+
+        public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite, Loc drawLoc)
+        {
+            CollectionExt.AddToSortedList(sprites, (sprite, drawLoc), CompareSpriteCoords);
         }
 
 
 
-        public int CompareSpriteCoords(IDrawableSprite sprite1, IDrawableSprite sprite2)
+        public int CompareSpriteCoords((IDrawableSprite sprite, Loc loc) sprite1, (IDrawableSprite sprite, Loc loc) sprite2)
         {
-            return Math.Sign(sprite1.MapLoc.Y - sprite2.MapLoc.Y);
+            return Math.Sign(sprite1.loc.Y - sprite2.loc.Y);
         }
     }
 }
