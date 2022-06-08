@@ -251,7 +251,7 @@ namespace RogueEssence.Dungeon
                     //if it's a tile on the discovery array, show it
                     if (CanSeeTile(xx, yy))
                     {
-                        if (wrapped || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
+                        if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
                             PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
                         else
                             ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
@@ -339,7 +339,7 @@ namespace RogueEssence.Dungeon
                 {
                     //if it's a tile on the discovery array, show it
                     Loc frontLoc = new Loc(xx, yy);
-                    if (wrapped || !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, frontLoc))
+                    if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, frontLoc))
                     {
                         if (CanSeeTile(xx, yy))
                         {

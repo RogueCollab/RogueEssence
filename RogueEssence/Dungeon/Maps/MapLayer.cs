@@ -105,7 +105,7 @@ namespace RogueEssence.Dungeon
                         Loc checkLoc = new Loc(x, y);
                         if (wrap)
                             checkLoc = WrapLoc(checkLoc);
-                        else if (Collision.InBounds(Width, Height, checkLoc))
+                        else if (!Collision.InBounds(Width, Height, checkLoc))
                             return;
                         Tiles[checkLoc.X][checkLoc.Y].NeighborCode = neighborCode;
                     },
