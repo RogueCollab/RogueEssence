@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
             int maxWidth = minWidth;
             foreach(MenuTextChoice choice in choices)
                 maxWidth = Math.Max(choice.Text.GetTextLength() + 16 + GraphicsManager.MenuBG.TileWidth * 2, maxWidth);
-            maxWidth = ((maxWidth - 1) / 4 + 1) * 4;
+            maxWidth = MathUtils.DivUp(maxWidth, 4) * 4;
             return maxWidth;
         }
 

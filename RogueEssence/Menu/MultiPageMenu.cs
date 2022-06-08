@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
 
         protected static IChoosable[][] SortIntoPages(IChoosable[] choices, int maxSlots)
         {
-            int pages = (choices.Length - 1) / maxSlots + 1;
+            int pages = MathUtils.DivUp(choices.Length, maxSlots);
             int count = 0;
             List<IChoosable[]> box = new List<IChoosable[]>();
             for (int ii = 0; ii < pages; ii++)

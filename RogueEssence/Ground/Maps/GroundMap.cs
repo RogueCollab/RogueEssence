@@ -498,8 +498,8 @@ namespace RogueEssence.Ground
 
         public void Retile(int texSize)
         {
-            int newWidth = (Width * TexSize - 1) / texSize + 1;
-            int newHeight = (Height * TexSize - 1) / texSize + 1;
+            int newWidth = MathUtils.DivUp(Width * TexSize, texSize);
+            int newHeight = MathUtils.DivUp(Height * TexSize, texSize);
 
             TexSize = texSize;
 

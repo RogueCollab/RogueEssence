@@ -97,7 +97,7 @@ namespace RogueEssence.Menu
         {
             if (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0)
                 return 0;
-            return (DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1) / SLOTS_PER_PAGE + 1;
+            return MathUtils.DivUp(DataManager.Instance.Save.ActiveTeam.GetInvCount(), SLOTS_PER_PAGE);
         }
 
         protected override void ChoiceChanged()
