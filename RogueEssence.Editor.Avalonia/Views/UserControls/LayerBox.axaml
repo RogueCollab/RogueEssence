@@ -5,6 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.LayerBox">
+  <UserControl.Resources>
+  </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="16"/>
@@ -20,7 +22,7 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="6">Layers:</TextBlock>
-    <ListBox  Margin="2" SelectionMode="AlwaysSelected" Items="{Binding Layers}" SelectedIndex="{Binding ChosenLayer, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
+    <ListBox Margin="2" SelectionMode="AlwaysSelected" Items="{Binding Layers}" SelectedIndex="{Binding ChosenLayer, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid>
@@ -34,11 +36,41 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
-    <Button Command="{Binding AddLayer}" Margin="2" Grid.Row="2" Grid.Column="0" >+</Button>
-    <Button Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1">-</Button>
-    <Button Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2">D</Button>
-    <Button Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3">M</Button>
-    <Button Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4">^</Button>
-    <Button Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5">v</Button>
+    <Button Command="{Binding AddLayer}" Margin="2" Grid.Row="2" Grid.Column="0" ToolTip.Tip="Add Layer">
+      <Panel>
+        <Image Source="/Assets/LayerAdd.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1" ToolTip.Tip="Delete Layer">
+      <Panel>
+        <Image Source="/Assets/LayerDelete.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2" ToolTip.Tip="Duplicate Layer">
+      <Panel>
+        <Image Source="/Assets/LayerDupe.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3" ToolTip.Tip="Merge Layer">
+      <Panel>
+        <Image Source="/Assets/LayerMerge.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4" ToolTip.Tip="Move Layer Up">
+      <Panel>
+        <Image Source="/Assets/LayerUp.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5" ToolTip.Tip="Move Layer Down">
+      <Panel>
+        <Image Source="/Assets/LayerDown.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
   </Grid>
 </UserControl>

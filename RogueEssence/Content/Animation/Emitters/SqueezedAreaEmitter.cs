@@ -5,7 +5,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Area Emitter but instead of a perfect circle, it is vertically squeezed into a short ellipse.
+    /// </summary>
     [Serializable]
     public class SqueezedAreaEmitter : FiniteEmitter
     {

@@ -3,6 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// A simple emitter that releases a single animation, or particle emitter.
+    /// </summary>
     [Serializable]
     public class SingleEmitter : FiniteEmitter
     {
@@ -40,9 +43,24 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new SingleEmitter(this); }
 
+        /// <summary>
+        /// Shifts the animation in the given number of pixels, based on the direction of the origin entity.
+        /// </summary>
         public int Offset;
+
+        /// <summary>
+        /// The animation to play.  Can also be an emitter.
+        /// </summary>
         public IEmittable Anim;
+
+        /// <summary>
+        /// The layer to put the animation on.
+        /// </summary>
         public DrawLayer Layer;
+
+        /// <summary>
+        /// Uses the other entity as the origin point of the animation, if there is one.
+        /// </summary>
         public bool UseDest;
 
 

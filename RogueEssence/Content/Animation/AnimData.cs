@@ -199,16 +199,43 @@ namespace RogueEssence.Content
     public abstract class AnimDataBase
     {
         public abstract GraphicsManager.AssetType AssetType { get; }
+
+        /// <summary>
+        /// The graphics of the animation.
+        /// </summary>
         public abstract string AnimIndex { get; set; }
+
         /// <summary>
         /// Time spent on each frame of animation, in frames (time unit)
         /// </summary>
         public int FrameTime { get; set; }
+
+        /// <summary>
+        /// The first frame of the animation, inclusive.
+        /// -1 defaults to 0.
+        /// </summary>
         public int StartFrame { get; set; }
+
+        /// <summary>
+        /// The last frame of the animation, inclusive.
+        /// -1 defaults to the last frame possible.
+        /// </summary>
         [SharedRow]
         public int EndFrame { get; set; }
+
+        /// <summary>
+        /// The direction of the animation.
+        /// </summary>
         public Dir8 AnimDir { get; set; }
+
+        /// <summary>
+        /// Transparency.  0 for invisible, 255 for opaque.
+        /// </summary>
         public byte Alpha { get; set; }
+
+        /// <summary>
+        /// Horizontal or vertical flip effects.
+        /// </summary>
         public SpriteFlip AnimFlip { get; set; }
 
         public AnimDataBase()

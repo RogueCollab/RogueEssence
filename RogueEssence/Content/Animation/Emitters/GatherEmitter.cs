@@ -4,6 +4,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Emits particles at the circumference of a specified range, which all move inwards to the center.
+    /// </summary>
     [Serializable]
     public class FiniteGatherEmitter : FiniteEmitter
     {
@@ -38,7 +41,14 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new FiniteGatherEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<AnimData> Anims;
+
+        /// <summary>
+        /// The animation will start at a cirumference that encircles the other entity being targeted.
+        /// </summary>
         public bool UseDest;
         public int TravelTime;
         public int Bursts;

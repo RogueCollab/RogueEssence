@@ -3,8 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
-
+    /// <summary>
+    /// Emits particles falling downwards in a rain.
+    /// </summary>
     [Serializable]
     public class ScreenRainEmitter : SwitchOffEmitter
     {

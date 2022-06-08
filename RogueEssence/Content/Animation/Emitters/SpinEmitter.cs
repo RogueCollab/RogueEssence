@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Emits particles that spin around the origin in a consistent radius.
+    /// Not very used.
+    /// </summary>
     [Serializable]
     public class SpinEmitter : FiniteEmitter
     {
