@@ -1994,8 +1994,8 @@ namespace RogueEssence.Dungeon
         //either border of sight range, or border of the screen
         public static Loc GetSightDims()
         {
-            int width = (GraphicsManager.ScreenWidth - GraphicsManager.TileSize - 1) / 2 / GraphicsManager.TileSize + 1;
-            int height = (GraphicsManager.ScreenHeight - GraphicsManager.TileSize - 1) / 2 / GraphicsManager.TileSize + 1;
+            int width = MathUtils.DivUp(GraphicsManager.ScreenWidth - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
+            int height = MathUtils.DivUp(GraphicsManager.ScreenHeight - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
             return new Loc(width, height);
         }
 

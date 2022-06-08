@@ -76,7 +76,7 @@ namespace RogueEssence.Content
                         if (particleSpeed != 0)
                         {
                             totalTime *= GraphicsManager.MAX_FPS;
-                            totalTime = (totalTime - 1) / -particleSpeed + 1;
+                            totalTime = MathUtils.DivUp(totalTime, -particleSpeed);
                         }
 
                         IParticleEmittable chosenAnim = Anims[MathUtils.Rand.Next(Anims.Count)];

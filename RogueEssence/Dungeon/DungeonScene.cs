@@ -769,8 +769,9 @@ namespace RogueEssence.Dungeon
                 //recompute character sight
                 Loc sightStart = new Loc(viewCenter.X - GraphicsManager.ScreenWidth / 2 - GraphicsManager.TileSize / 3, viewCenter.Y - GraphicsManager.ScreenHeight / 2 - GraphicsManager.TileSize / 3);
                 Loc sightEnd = new Loc(viewCenter.X + GraphicsManager.ScreenWidth / 2 + GraphicsManager.TileSize / 3, viewCenter.Y + GraphicsManager.ScreenHeight / 2 + GraphicsManager.TileSize / 3);
-                sightRect = new Rect((int)Math.Floor((float)sightStart.X / GraphicsManager.TileSize), (int)Math.Floor((float)sightStart.Y / GraphicsManager.TileSize),
-                    (sightEnd.X - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)sightStart.X / GraphicsManager.TileSize), (sightEnd.Y - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)sightStart.Y / GraphicsManager.TileSize));
+                sightRect = new Rect(MathUtils.DivDown(sightStart.X, GraphicsManager.TileSize), MathUtils.DivDown(sightStart.Y, GraphicsManager.TileSize),
+                    MathUtils.DivUp(sightEnd.X, GraphicsManager.TileSize) - MathUtils.DivDown(sightStart.X, GraphicsManager.TileSize),
+                    MathUtils.DivUp(sightEnd.Y, GraphicsManager.TileSize) - MathUtils.DivDown(sightStart.Y, GraphicsManager.TileSize));
 
                 if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.GetTileSight() != Map.SightRange.Clear) && !SeeAll)
                 {
@@ -1246,7 +1247,7 @@ namespace RogueEssence.Dungeon
                     {
                         Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
                         GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
-                        int hpAmount = (hpChar.HP * 18 - 1) / hpChar.MaxHP + 1;
+                        int hpAmount = MathUtils.DivUp(hpChar.HP * 18, hpChar.MaxHP);
                         Color hpColor = new Color(88, 248, 88);
                         if (hpChar.HP * 4 <= hpChar.MaxHP)
                             hpColor = new Color(248, 128, 88);

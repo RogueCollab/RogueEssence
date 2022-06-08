@@ -85,8 +85,9 @@ namespace RogueEssence.Ground
 
             ViewRect = new Rect((int)(focusedLoc.X - GraphicsManager.ScreenWidth / scale / 2), (int)(focusedLoc.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));
-            viewTileRect = new Rect((int)Math.Floor((float)ViewRect.X / ZoneManager.Instance.CurrentGround.TileSize), (int)Math.Floor((float)ViewRect.Y / ZoneManager.Instance.CurrentGround.TileSize),
-                (ViewRect.End.X - 1) / ZoneManager.Instance.CurrentGround.TileSize + 1 - (int)Math.Floor((float)ViewRect.X / ZoneManager.Instance.CurrentGround.TileSize), (ViewRect.End.Y - 1) / ZoneManager.Instance.CurrentGround.TileSize + 1 - (int)Math.Floor((float)ViewRect.Y / ZoneManager.Instance.CurrentGround.TileSize));
+            viewTileRect = new Rect(MathUtils.DivDown(ViewRect.X, ZoneManager.Instance.CurrentGround.TileSize), MathUtils.DivDown(ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize),
+                MathUtils.DivUp(ViewRect.End.X, ZoneManager.Instance.CurrentGround.TileSize) - MathUtils.DivDown(ViewRect.X, ZoneManager.Instance.CurrentGround.TileSize),
+                MathUtils.DivUp(ViewRect.End.Y, ZoneManager.Instance.CurrentGround.TileSize) - MathUtils.DivDown(ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize));
 
         }
 

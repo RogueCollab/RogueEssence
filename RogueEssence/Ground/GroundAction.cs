@@ -406,9 +406,9 @@ namespace RogueEssence.Ground
         public override void Update(FrameTick elapsedTime)
         {
             if (ActionTime < Duration / 2)
-                LocHeight = (Height * ActionTime.ToFrames() * 2 - 1) / Duration + 1;
+                LocHeight = MathUtils.DivUp(Height * ActionTime.ToFrames() * 2, Duration);
             else
-                LocHeight = (Height * (Duration - ActionTime.ToFrames()) * 2 - 1) / Duration + 1;
+                LocHeight = MathUtils.DivUp(Height * (Duration - ActionTime.ToFrames()) * 2, Duration);
         }
     }
 }

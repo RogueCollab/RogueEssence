@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
             Page = page;
 
             List<(string name, Version version)> versionData = GetVersionsList(ending);
-            Title = new MenuText(Text.FormatKey("MENU_RESULTS_VERSION_TITLE", Page + 1, (versionData.Count - 1) / MAX_LINES + 1), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            Title = new MenuText(Text.FormatKey("MENU_RESULTS_VERSION_TITLE", Page + 1, MathUtils.DivUp(versionData.Count, MAX_LINES)), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 

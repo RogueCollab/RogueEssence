@@ -11,8 +11,8 @@
 	{
         public GridWorld(int width, int height, int cellSize)
 		{
-			var iwidth = (width - 1) / cellSize + 1;
-			var iheight = (height - 1) / cellSize + 1;
+			var iwidth = MathUtils.DivUp(width, cellSize);
+			var iheight = MathUtils.DivUp(height, cellSize);
 
 			this.grid = new Grid(iwidth, iheight, cellSize);
 		}

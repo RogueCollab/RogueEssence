@@ -105,8 +105,9 @@ namespace RogueEssence.Dungeon
 
             ViewRect = new Rect((int)(viewCenter.X - GraphicsManager.ScreenWidth / scale / 2), (int)(viewCenter.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));
-            viewTileRect = new Rect((int)Math.Floor((float)ViewRect.X / GraphicsManager.TileSize), (int)Math.Floor((float)ViewRect.Y / GraphicsManager.TileSize),
-                (ViewRect.End.X - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)ViewRect.X / GraphicsManager.TileSize), (ViewRect.End.Y - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)ViewRect.Y / GraphicsManager.TileSize));
+            viewTileRect = new Rect(MathUtils.DivDown(ViewRect.X, GraphicsManager.TileSize), MathUtils.DivDown(ViewRect.Y, GraphicsManager.TileSize),
+                MathUtils.DivUp(ViewRect.End.X, GraphicsManager.TileSize) - MathUtils.DivDown(ViewRect.X, GraphicsManager.TileSize),
+                MathUtils.DivUp(ViewRect.End.Y, GraphicsManager.TileSize) - MathUtils.DivDown(ViewRect.Y, GraphicsManager.TileSize));
 
         }
 
