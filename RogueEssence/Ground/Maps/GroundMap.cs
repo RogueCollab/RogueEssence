@@ -459,7 +459,7 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public Loc WrapLoc(Loc loc)
         {
-            return BaseScene.WrapLoc(loc, Size);
+            return Loc.Wrap(loc, Size);
         }
 
         /// <summary>
@@ -470,7 +470,7 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public Loc WrapGroundLoc(Loc loc)
         {
-            return BaseScene.WrapLoc(loc, GroundSize);
+            return Loc.Wrap(loc, GroundSize);
         }
 
         /// <summary>

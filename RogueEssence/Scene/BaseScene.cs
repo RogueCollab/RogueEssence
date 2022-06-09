@@ -141,18 +141,6 @@ namespace RogueEssence
             }
         }
 
-
-        /// <summary>
-        /// Converts out of bounds coords to wrapped-around coords.
-        /// </summary>
-        /// <param name="loc"></param>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        public static Loc WrapLoc(Loc loc, Loc size)
-        {
-            return (loc % size + size) % size;
-        }
-
         /// <summary>
         /// Slices a rectangle at the wrapped map boundaries.
         /// </summary>
@@ -170,7 +158,7 @@ namespace RogueEssence
                 {
                     Rect subRect = new Rect((topLeftBounds + new Loc(xx, yy)) * size, size);
                     Rect interRect = Rect.Intersect(rect, subRect);
-                    Rect wrappedRect = new Rect(WrapLoc(interRect.Start, size), interRect.Size);
+                    Rect wrappedRect = new Rect(Loc.Wrap(interRect.Start, size), interRect.Size);
                     choppedGrid[xx][yy] = wrappedRect;
                 }
             }
