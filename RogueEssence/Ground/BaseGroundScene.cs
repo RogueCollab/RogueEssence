@@ -132,20 +132,25 @@ namespace RogueEssence.Ground
 
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
+            bool wrapped = ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Wrap;
+
             //draw the background
             ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, ViewRect.Start);
 
-            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+            for (int yy = viewTileRect.Y; yy < viewTileRect.End.Y; yy++)
             {
-                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                for (int xx = viewTileRect.X; xx < viewTileRect.End.X; xx++)
                 {
+                    Loc visualLoc = new Loc(xx, yy);
                     //if it's a tile on the discovery array, show it
-                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
-
-                    if (outOfBounds)
-                        ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj));
+                    if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, visualLoc))
+                    {
+                        Loc wrappedLoc = ZoneManager.Instance.CurrentGround.WrapLoc(visualLoc);
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, wrappedLoc, false);
+                    }
                     else
-                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), false);
+                        ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, visualLoc);
+
                 }
             }
 
@@ -272,15 +277,18 @@ namespace RogueEssence.Ground
             }
 
             //draw tiles in front
-            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+            for (int yy = viewTileRect.Y; yy < viewTileRect.End.Y; yy++)
             {
-                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                for (int xx = viewTileRect.X; xx < viewTileRect.End.X; xx++)
                 {
                     //if it's a tile on the discovery array, show it
-                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
-
-                    if (!outOfBounds)
-                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), true);
+                    Loc frontLoc = new Loc(xx, yy);
+                    if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, frontLoc))
+                    {
+                        if (wrapped)
+                            frontLoc = ZoneManager.Instance.CurrentGround.WrapLoc(frontLoc);
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, frontLoc, true);
+                    }
                 }
             }
 

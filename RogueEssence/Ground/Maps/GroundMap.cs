@@ -449,6 +449,17 @@ namespace RogueEssence.Ground
         }
 
 
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapLoc(Loc loc)
+        {
+            return (loc + new Loc(Width, Height)) % new Loc(Width, Height);
+        }
+
+
         public IEnumerable<GroundChar> IterateCharacters()
         {
             if (ActiveChar != null)
