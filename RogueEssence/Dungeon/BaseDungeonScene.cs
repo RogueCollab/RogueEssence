@@ -20,10 +20,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
-        protected List<(IDrawableSprite sprite, Loc loc)> groundDraw;
-        protected List<(IDrawableSprite sprite, Loc loc)> backDraw;
-        protected List<(IDrawableSprite sprite, Loc loc)> frontDraw;
-        protected List<(IDrawableSprite sprite, Loc loc)> foregroundDraw;
+        protected List<(IDrawableSprite sprite, Loc wrapOffset)> groundDraw;
+        protected List<(IDrawableSprite sprite, Loc wrapOffset)> backDraw;
+        protected List<(IDrawableSprite sprite, Loc wrapOffset)> frontDraw;
+        protected List<(IDrawableSprite sprite, Loc wrapOffset)> foregroundDraw;
         protected List<Character> shownChars;
 
 
@@ -243,6 +243,14 @@ namespace RogueEssence.Dungeon
 
             bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
             bool seeTrap = CanSeeTraps();
+            //Rect[][] divRects;
+            //if (wrapped)
+            //    divRects = ZoneManager.Instance.CurrentMap.WrapSplitRect(ViewRect);
+            //else
+            //{
+            //    divRects = new Rect[1][];
+            //    divRects[0] = new Rect[1] { ViewRect };
+            //}
 
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
@@ -264,13 +272,21 @@ namespace RogueEssence.Dungeon
             {
                 if (CanSeeSprite(ViewRect, effect))
                     AddToDraw(groundDraw, effect);
+                //for (int xx = 0; xx < divRects.Length; xx++)
+                //{
+                //    for (int yy = 0; yy < divRects[xx].Length; yy++)
+                //    {
+                //        if (CanSeeSprite(divRects[xx][yy], effect))
+                //            AddToDraw(groundDraw, effect);
+                //    }
+                //}
             }
             int charIndex = 0;
             while (charIndex < groundDraw.Count)
             {
-                groundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
+                groundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + groundDraw[charIndex].wrapOffset);
                 if (GameManager.Instance.ShowDebug)
-                    groundDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    groundDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start + groundDraw[charIndex].wrapOffset);
                 charIndex++;
             }
 
@@ -291,42 +307,11 @@ namespace RogueEssence.Dungeon
 
             //draw object
             charIndex = 0;
-            for (int yy = viewTileRect.Y; yy < viewTileRect.End.Y; yy++)
-            {
-                while (charIndex < backDraw.Count)
-                {
-                    int charY = backDraw[charIndex].loc.Y;
-                    if (charY == yy * GraphicsManager.TileSize)
-                    {
-                        backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
-                        if (GameManager.Instance.ShowDebug)
-                            backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-                    else
-                        break;
-                }
-
-                while (charIndex < backDraw.Count)
-                {
-                    int charY = backDraw[charIndex].loc.Y;
-                    if (charY < (yy + 1) * GraphicsManager.TileSize)
-                    {
-                        backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
-                        if (GameManager.Instance.ShowDebug)
-                            backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-                    else
-                        break;
-                }
-            }
-
             while (charIndex < backDraw.Count)
             {
-                backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
+                backDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + backDraw[charIndex].wrapOffset);
                 if (GameManager.Instance.ShowDebug)
-                    backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    backDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start + backDraw[charIndex].wrapOffset);
                 charIndex++;
             }
 
@@ -354,9 +339,9 @@ namespace RogueEssence.Dungeon
             charIndex = 0;
             while (charIndex < frontDraw.Count)
             {
-                frontDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
+                frontDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + frontDraw[charIndex].wrapOffset);
                 if (GameManager.Instance.ShowDebug)
-                    frontDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    frontDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start + frontDraw[charIndex].wrapOffset);
                 charIndex++;
             }
 
@@ -369,9 +354,9 @@ namespace RogueEssence.Dungeon
             charIndex = 0;
             while (charIndex < foregroundDraw.Count)
             {
-                foregroundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start);
+                foregroundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + foregroundDraw[charIndex].wrapOffset);
                 if (GameManager.Instance.ShowDebug)
-                    foregroundDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    foregroundDraw[charIndex].sprite.DrawDebug(spriteBatch, ViewRect.Start + foregroundDraw[charIndex].wrapOffset);
                 charIndex++;
             }
 

@@ -107,7 +107,7 @@ namespace RogueEssence
 
         public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite)
         {
-            AddToDraw(sprites, sprite, sprite.MapLoc);
+            AddToDraw(sprites, sprite, Loc.Zero);
         }
 
         public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite, Loc drawLoc)
@@ -119,7 +119,7 @@ namespace RogueEssence
 
         public int CompareSpriteCoords((IDrawableSprite sprite, Loc loc) sprite1, (IDrawableSprite sprite, Loc loc) sprite2)
         {
-            return Math.Sign(sprite1.loc.Y - sprite2.loc.Y);
+            return Math.Sign((sprite1.sprite.MapLoc.Y - sprite1.loc.Y) - (sprite2.sprite.MapLoc.Y - sprite2.loc.Y));
         }
     }
 }
