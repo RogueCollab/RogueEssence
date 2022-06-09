@@ -347,12 +347,12 @@ namespace RogueEssence.Ground
 
                 if (GameManager.Instance.ShowDebug)
                 {
-                    foreach ((IDrawableSprite sprite, Loc wrapOffset) group in groundDraw)
-                        group.sprite.DrawDebug(spriteBatch, ViewRect.Start + group.wrapOffset);
-                    foreach ((IDrawableSprite sprite, Loc wrapOffset) group in objectDraw)
-                        group.sprite.DrawDebug(spriteBatch, ViewRect.Start + group.wrapOffset);
-                    foreach ((IDrawableSprite sprite, Loc wrapOffset) group in foregroundDraw)
-                        group.sprite.DrawDebug(spriteBatch, ViewRect.Start + group.wrapOffset);
+                    foreach ((IDrawableSprite sprite, Loc viewOffset) group in groundDraw)
+                        group.sprite.DrawDebug(spriteBatch, group.viewOffset);
+                    foreach ((IDrawableSprite sprite, Loc viewOffset) group in objectDraw)
+                        group.sprite.DrawDebug(spriteBatch, group.viewOffset);
+                    foreach ((IDrawableSprite sprite, Loc viewOffset) group in foregroundDraw)
+                        group.sprite.DrawDebug(spriteBatch, group.viewOffset);
                 }
             }
 

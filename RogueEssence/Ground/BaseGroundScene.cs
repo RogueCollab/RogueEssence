@@ -19,11 +19,11 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 
-        protected List<(IDrawableSprite sprite, Loc wrapOffset)> groundDraw;
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> groundDraw;
 
-        protected List<(IDrawableSprite sprite, Loc wrapOffset)> objectDraw;
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> objectDraw;
 
-        protected List<(IDrawableSprite sprite, Loc wrapOffset)> foregroundDraw;
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> foregroundDraw;
 
         protected Rect viewTileRect;
         
@@ -133,6 +133,14 @@ namespace RogueEssence.Ground
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
             bool wrapped = ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Wrap;
+            Rect[][] divRects;
+            if (wrapped)
+                divRects = ZoneManager.Instance.CurrentGround.WrapSplitRect(ViewRect);
+            else
+            {
+                divRects = new Rect[1][];
+                divRects[0] = new Rect[1] { ViewRect };
+            }
 
             //draw the background
             ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, ViewRect.Start);
@@ -160,33 +168,25 @@ namespace RogueEssence.Ground
                 if (layer.Visible)
                 {
                     foreach (IDrawableSprite effect in layer.Anims)
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, effect);
-                    }
+                        AddDivRectDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, divRects, effect);
                 }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(groundDraw, effect);
-            }
+                AddDivRectDraw(groundDraw, divRects, effect);
+
             int charIndex = 0;
             while (charIndex < groundDraw.Count)
             {
-                groundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + groundDraw[charIndex].wrapOffset);
+                groundDraw[charIndex].sprite.Draw(spriteBatch, groundDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
-            List<GroundChar> shownShadows = new List<GroundChar>();
+            List<(GroundChar, Loc)> shownShadows = new List<(GroundChar, Loc)>();
 
             //draw effects in object space
             //get all back effects, see if they're in the screen, and put them in the list, sorted
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Back])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
-            }
+                AddDivRectDraw(objectDraw, divRects, effect);
 
             if (!DataManager.Instance.HideChars)
             {
@@ -195,25 +195,22 @@ namespace RogueEssence.Ground
                 {
                     if (!character.EntEnabled)
                         continue;
-                    if (CanSeeSprite(ViewRect, character))
+                    foreach(Loc viewLoc in IterateDivRectDraw(divRects, character))
                     {
-                        AddToDraw(objectDraw, character);
-                        shownShadows.Add(character);
+                        AddToDraw(objectDraw, character, viewLoc);
+                        shownShadows.Add((character, viewLoc));
                     }
                 }
             }
             //get all effects, see if they're in the screen, and put them in the list, sorted
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Normal])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
-            }
+                AddDivRectDraw(objectDraw, divRects, effect);
 
             //draw shadows
-            foreach (GroundChar shadowChar in shownShadows)
+            foreach ((GroundChar sprite, Loc viewLoc) shadowChar in shownShadows)
             {
-                if (shadowChar.EntEnabled)
-                    shadowChar.DrawShadow(spriteBatch, ViewRect.Start);
+                if (shadowChar.sprite.EntEnabled)
+                    shadowChar.sprite.DrawShadow(spriteBatch, shadowChar.viewLoc);
             }
 
             //draw items
@@ -223,8 +220,7 @@ namespace RogueEssence.Ground
                 {
                     if (!item.EntEnabled)
                         continue;
-                    if (CanSeeSprite(ViewRect, item))
-                        AddToDraw(objectDraw, item);
+                    AddDivRectDraw(objectDraw, divRects, item);
                 }
             }
 
@@ -232,20 +228,18 @@ namespace RogueEssence.Ground
             charIndex = 0;
             while (charIndex < objectDraw.Count)
             {
-                objectDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + objectDraw[charIndex].wrapOffset);
+                objectDraw[charIndex].sprite.Draw(spriteBatch, objectDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
             //draw effects in top
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
-            }
+                AddDivRectDraw(objectDraw, divRects, effect);
+
             charIndex = 0;
             while (charIndex < objectDraw.Count)
             {
-                objectDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + objectDraw[charIndex].wrapOffset);
+                objectDraw[charIndex].sprite.Draw(spriteBatch, objectDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
@@ -267,17 +261,14 @@ namespace RogueEssence.Ground
 
             //draw effects in foreground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Top])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(foregroundDraw, effect);
-            }
+                AddDivRectDraw(foregroundDraw, divRects, effect);
+
             charIndex = 0;
             while (charIndex < foregroundDraw.Count)
             {
-                foregroundDraw[charIndex].sprite.Draw(spriteBatch, ViewRect.Start + foregroundDraw[charIndex].wrapOffset);
+                foregroundDraw[charIndex].sprite.Draw(spriteBatch, foregroundDraw[charIndex].viewOffset);
                 charIndex++;
             }
-
         }
 
         public virtual void DrawDev(SpriteBatch spriteBatch)

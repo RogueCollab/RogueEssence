@@ -615,12 +615,24 @@ namespace RogueEssence.Dungeon
 
         /// <summary>
         /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on tiles.
         /// </summary>
         /// <param name="loc"></param>
         /// <returns></returns>
         public Loc WrapLoc(Loc loc)
         {
-            return (loc + new Loc(Width, Height)) % new Loc(Width, Height);
+            return BaseScene.WrapLoc(loc, Size);
+        }
+
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on pixels.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapGroundLoc(Loc loc)
+        {
+            return BaseScene.WrapLoc(loc, GroundSize);
         }
 
         /// <summary>
@@ -629,20 +641,7 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public Rect[][] WrapSplitRect(Rect rect)
         {
-            Loc topLeftBounds = new Loc(MathUtils.DivDown(rect.Start.X, Width), MathUtils.DivDown(rect.Start.Y, Height));
-            Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, Width), MathUtils.DivDown(rect.End.Y, Height));
-
-            Rect[][] choppedGrid = new Rect[bottomRightBounds.X - topLeftBounds.X][];
-            for (int xx = 0; xx < bottomRightBounds.X - topLeftBounds.X; xx++)
-            {
-                choppedGrid[xx] = new Rect[bottomRightBounds.Y - topLeftBounds.Y];
-                for (int yy = 0; yy < bottomRightBounds.Y - topLeftBounds.Y; yy++)
-                {
-                    Rect subRect = new Rect((topLeftBounds + new Loc(xx, yy)) * new Loc(Width, Height), (topLeftBounds + new Loc(xx, yy) + Loc.One) * new Loc(Width, Height));
-                    choppedGrid[xx][yy] = Rect.Intersect(rect, subRect);
-                }
-            }
-            return choppedGrid;
+            return BaseScene.WrapSplitRect(rect, GroundSize);
         }
 
         public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)
@@ -745,7 +744,7 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public Loc? GetClosestTileForChar(Character character, Loc loc)
         {
-            return Grid.FindClosestConnectedTile(new Loc(), new Loc(Width, Height),
+            return Grid.FindClosestConnectedTile(new Loc(), Size,
                 (Loc testLoc) =>
                 {
                     if (character == null)

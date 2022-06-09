@@ -107,19 +107,79 @@ namespace RogueEssence
 
         public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite)
         {
-            AddToDraw(sprites, sprite, Loc.Zero);
+            AddToDraw(sprites, sprite, ViewRect.Start);
         }
 
-        public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite, Loc drawLoc)
+        public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite, Loc viewOffset)
         {
-            CollectionExt.AddToSortedList(sprites, (sprite, drawLoc), CompareSpriteCoords);
+            CollectionExt.AddToSortedList(sprites, (sprite, viewOffset), CompareSpriteCoords);
+        }
+
+        /// <summary>
+        /// Add to draw the sprites in the view rect; one for each divided part of it.
+        /// Divisions are due to map wrapping.
+        /// </summary>
+        public void AddDivRectDraw(List<(IDrawableSprite, Loc)> sprites, Rect[][] divRects, IDrawableSprite sprite)
+        {
+            foreach (Loc viewOffset in IterateDivRectDraw(divRects, sprite))
+                AddToDraw(sprites, sprite, viewOffset);
+        }
+
+        public IEnumerable<Loc> IterateDivRectDraw(Rect[][] divRects, IDrawableSprite sprite)
+        {
+            int xOffset = 0;
+            for (int xx = 0; xx < divRects.Length; xx++)
+            {
+                int yOffset = 0;
+                for (int yy = 0; yy < divRects[xx].Length; yy++)
+                {
+                    if (CanSeeSprite(divRects[xx][yy], sprite))
+                        yield return divRects[xx][yy].Start - new Loc(xOffset, yOffset);
+                    yOffset += divRects[xx][yy].Height;
+                }
+                xOffset += divRects[xx][0].Width;
+            }
         }
 
 
-
-        public int CompareSpriteCoords((IDrawableSprite sprite, Loc loc) sprite1, (IDrawableSprite sprite, Loc loc) sprite2)
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static Loc WrapLoc(Loc loc, Loc size)
         {
-            return Math.Sign((sprite1.sprite.MapLoc.Y - sprite1.loc.Y) - (sprite2.sprite.MapLoc.Y - sprite2.loc.Y));
+            return (loc % size + size) % size;
+        }
+
+        /// <summary>
+        /// Slices a rectangle at the wrapped map boundaries.
+        /// </summary>
+        /// <returns></returns>
+        public static Rect[][] WrapSplitRect(Rect rect, Loc size)
+        {
+            Loc topLeftBounds = new Loc(MathUtils.DivDown(rect.Start.X, size.X), MathUtils.DivDown(rect.Start.Y, size.Y));
+            Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, size.X), MathUtils.DivUp(rect.End.Y, size.Y));
+
+            Rect[][] choppedGrid = new Rect[bottomRightBounds.X - topLeftBounds.X][];
+            for (int xx = 0; xx < bottomRightBounds.X - topLeftBounds.X; xx++)
+            {
+                choppedGrid[xx] = new Rect[bottomRightBounds.Y - topLeftBounds.Y];
+                for (int yy = 0; yy < bottomRightBounds.Y - topLeftBounds.Y; yy++)
+                {
+                    Rect subRect = new Rect((topLeftBounds + new Loc(xx, yy)) * size, size);
+                    Rect interRect = Rect.Intersect(rect, subRect);
+                    Rect wrappedRect = new Rect(WrapLoc(interRect.Start, size), interRect.Size);
+                    choppedGrid[xx][yy] = wrappedRect;
+                }
+            }
+            return choppedGrid;
+        }
+
+        public int CompareSpriteCoords((IDrawableSprite sprite, Loc viewOffset) sprite1, (IDrawableSprite sprite, Loc viewOffset) sprite2)
+        {
+            return Math.Sign((sprite1.sprite.MapLoc.Y - sprite1.viewOffset.Y) - (sprite2.sprite.MapLoc.Y - sprite2.viewOffset.Y));
         }
     }
 }

@@ -27,11 +27,16 @@ namespace RogueEssence.Dungeon
         public List<MapLayer> Layers;
 
         public Tile[][] Tiles;
-        
+
         //includes all start points
         public List<LocRay8> EntryPoints;
         public int Width { get { return Tiles.Length; } }
         public int Height { get { return Tiles[0].Length; } }
+        public Loc Size { get { return new Loc(Width, Height); } }
+
+        public int GroundWidth { get { return Width * GraphicsManager.TileSize; } }
+        public int GroundHeight { get { return Height * GraphicsManager.TileSize; } }
+        public Loc GroundSize { get { return Size * GraphicsManager.TileSize; } }
 
         public List<MapItem> Items;
         public EventedList<Team> MapTeams { get; set; }

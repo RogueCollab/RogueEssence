@@ -42,12 +42,14 @@ namespace RogueEssence.Ground
         public int TileSize { get { return TexSize * GraphicsManager.TEX_SIZE; } }
         public int Width { get { return Layers[0].Tiles.Length; } }
         public int Height { get { return Layers[0].Tiles[0].Length; } }
+        public Loc Size { get { return new Loc(Width, Height); } }
 
         public int TexWidth { get { return Width * TexSize; } }
         public int TexHeight { get { return Height * TexSize; } }
 
         public int GroundWidth { get { return Width * TileSize; } }
         public int GroundHeight { get { return Height * TileSize; } }
+        public Loc GroundSize { get { return new Loc(GroundWidth, GroundHeight); } }
 
         /// <summary>
         /// the internal name of the map, no spaces or special characters, never localized.
@@ -451,12 +453,33 @@ namespace RogueEssence.Ground
 
         /// <summary>
         /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on tiles.
         /// </summary>
         /// <param name="loc"></param>
         /// <returns></returns>
         public Loc WrapLoc(Loc loc)
         {
-            return (loc + new Loc(Width, Height)) % new Loc(Width, Height);
+            return BaseScene.WrapLoc(loc, Size);
+        }
+
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on pixels.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapGroundLoc(Loc loc)
+        {
+            return BaseScene.WrapLoc(loc, GroundSize);
+        }
+
+        /// <summary>
+        /// Slices a rectangle at the wrapped map boundaries.
+        /// </summary>
+        /// <returns></returns>
+        public Rect[][] WrapSplitRect(Rect rect)
+        {
+            return BaseScene.WrapSplitRect(rect, GroundSize);
         }
 
 

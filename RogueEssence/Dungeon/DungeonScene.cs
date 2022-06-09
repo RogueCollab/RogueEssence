@@ -844,16 +844,13 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        protected override void PrepareFrontDraw()
+        protected override void PrepareFrontDraw(Rect[][] divRects)
         {
             //draw hitboxes on top
             foreach (Hitbox hitbox in Hitboxes)
-            {
-                if (CanSeeSprite(ViewRect, hitbox))
-                    AddToDraw(frontDraw, hitbox);
-            }
+                AddDivRectDraw(frontDraw, divRects, hitbox);
 
-            base.PrepareFrontDraw();
+            base.PrepareFrontDraw(divRects);
         }
 
         protected override bool CanIdentifyCharOnScreen(Character character)
@@ -915,27 +912,27 @@ namespace RogueEssence.Dungeon
             return false;
         }
 
-        protected override void DrawItems(SpriteBatch spriteBatch, bool showHiddenItem)
+        protected override void DrawItems(SpriteBatch spriteBatch, Rect[][] divRects, bool showHiddenItem)
         {
-            base.DrawItems(spriteBatch, showHiddenItem);
+            base.DrawItems(spriteBatch, divRects, showHiddenItem);
 
             //draw pickup items
             foreach (PickupItem item in PickupItems)
             {
-                if (CanSeeSprite(ViewRect, item))
+                foreach (Loc viewLoc in IterateDivRectDraw(divRects, item))
                 {
                     TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                     if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
                     {
                         if (showHiddenItem)
-                            item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                            item.Draw(spriteBatch, viewLoc, Color.White * 0.5f);
                     }
                     else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                     {
                         if (terrain.BlockType == TerrainData.Mobility.Passable)
-                            item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                            item.Draw(spriteBatch, viewLoc, Color.White);
                         else
-                            item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                            item.Draw(spriteBatch, viewLoc, Color.White * 0.5f);
                     }
                 }
             }
