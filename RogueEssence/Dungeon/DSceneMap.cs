@@ -1516,8 +1516,10 @@ namespace RogueEssence.Dungeon
             mobility.Add(TerrainData.Mobility.Lava);
             mobility.Add(TerrainData.Mobility.Water);
             mobility.Add(TerrainData.Mobility.Abyss);
-            
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+
+            if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap)
+                loc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
+            else if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
                 return true;
 
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y];

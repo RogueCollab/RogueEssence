@@ -2022,8 +2022,7 @@ namespace RogueEssence.Dungeon
             {
                 case Map.SightRange.Blind:
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc))
-                            lightOp(CharLoc.X, CharLoc.Y, 1f);
+                        lightOp(CharLoc.X, CharLoc.Y, 1f);
                         break;
                     }
                 case Map.SightRange.Murky:
@@ -2032,18 +2031,15 @@ namespace RogueEssence.Dungeon
                         for (int x = -1; x <= 1; x++)
                         {
                             for (int y = -1; y <= 1; y++)
-                            {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc + new Loc(x, y)))
-                                    lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
-                            }
+                                lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
                         }
                         break;
                     }
                 case Map.SightRange.Dark:
                     {
                         Loc seen = GetSightDims();
-                        Loc minLoc = new Loc(Math.Max(0, CharLoc.X - seen.X), Math.Max(0, CharLoc.Y - seen.Y));
-                        Loc addLoc = new Loc(Math.Min(ZoneManager.Instance.CurrentMap.Width, CharLoc.X + seen.X + 1), Math.Min(ZoneManager.Instance.CurrentMap.Height, CharLoc.Y + seen.Y + 1)) - minLoc;
+                        Loc minLoc = new Loc(CharLoc.X - seen.X, CharLoc.Y - seen.Y);
+                        Loc addLoc = new Loc(CharLoc.X + seen.X + 1, CharLoc.Y + seen.Y + 1) - minLoc;
 
                         Fov.CalculateAnalogFOV(minLoc, addLoc, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
                         break;
@@ -2055,10 +2051,7 @@ namespace RogueEssence.Dungeon
                         for (int x = -seen.X; x <= seen.X; x++)
                         {
                             for (int y = -seen.Y; y <= seen.Y; y++)
-                            {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc + new Loc(x, y)))
-                                    lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
-                            }
+                                lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
                         }
                         break;
                     }

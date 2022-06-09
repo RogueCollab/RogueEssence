@@ -592,7 +592,13 @@ namespace RogueEssence.Dungeon
 
         private void discoveryLightOp(int x, int y, float light)
         {
-            DiscoveryArray[x][y] = DiscoveryState.Traversed;
+            Loc checkLoc = new Loc(x, y);
+            if (EdgeView == ScrollEdge.Wrap)
+                checkLoc = WrapLoc(checkLoc);
+            else if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, checkLoc))
+                return;
+
+            DiscoveryArray[checkLoc.X][checkLoc.Y] = DiscoveryState.Traversed;
         }
 
         public void UpdateExploration(Character character)
@@ -627,12 +633,12 @@ namespace RogueEssence.Dungeon
             Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, Width), MathUtils.DivDown(rect.End.Y, Height));
 
             Rect[][] choppedGrid = new Rect[bottomRightBounds.X - topLeftBounds.X][];
-            for (int xx = topLeftBounds.X; xx < bottomRightBounds.X; xx++)
+            for (int xx = 0; xx < bottomRightBounds.X - topLeftBounds.X; xx++)
             {
                 choppedGrid[xx] = new Rect[bottomRightBounds.Y - topLeftBounds.Y];
-                for (int yy = topLeftBounds.Y; yy < bottomRightBounds.Y; yy++)
+                for (int yy = 0; yy < bottomRightBounds.Y - topLeftBounds.Y; yy++)
                 {
-                    Rect subRect = new Rect(new Loc(xx, yy) * new Loc(Width, Height), new Loc(xx+1, yy+1) * new Loc(Width, Height));
+                    Rect subRect = new Rect((topLeftBounds + new Loc(xx, yy)) * new Loc(Width, Height), (topLeftBounds + new Loc(xx, yy) + Loc.One) * new Loc(Width, Height));
                     choppedGrid[xx][yy] = Rect.Intersect(rect, subRect);
                 }
             }

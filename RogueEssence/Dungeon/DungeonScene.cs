@@ -1205,30 +1205,35 @@ namespace RogueEssence.Dungeon
                 Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 //subtractive blending
                 spriteBatch.Begin(SpriteSortMode.Deferred, subtractBlend, SamplerState.PointClamp, null, null, null, matrix);
+                bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
 
                 for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
                 {
                     for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                     {
+                        Loc mapLoc = new Loc(ii, jj);
                         //set tile sprite position
-                        if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
+                        if (!wrapped && !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapLoc))
                         {
                             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                            continue;
                         }
-                        else if (!Collision.InBounds(sightRect, new Loc(ii, jj)))
+
+                        if (!Collision.InBounds(sightRect, mapLoc))
                             GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
                         else
                         {
-                            if (charSightValues[ii - sightRect.X][jj - sightRect.Y] < 1f)
+                            float charSightValue = charSightValues[mapLoc.X - sightRect.X][mapLoc.Y - sightRect.Y];
+                            if (charSightValue < 1f)
                             {
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null,
-                                    Color.White * DARK_TRANSPARENT * Math.Max(1f - charSightValues[ii - sightRect.X][jj - sightRect.Y], 0), new Vector2(GraphicsManager.TileSize));
+                                    Color.White * DARK_TRANSPARENT * Math.Max(1f - charSightValue, 0), new Vector2(GraphicsManager.TileSize));
                             }
 
                             for (int dir = 0; dir < DirExt.DIR8_COUNT; dir++)
                             {
-                                foreach (VisionLoc tex in getDarknessTextures(new Loc(ii, jj), sightRect.Start, (Dir8)dir))
+                                foreach (VisionLoc tex in getDarknessTextures(mapLoc, sightRect.Start, (Dir8)dir))
                                 {
                                     //draw in correct location
                                     Loc dest = new Loc(ii * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.X, jj * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.Y)
@@ -1443,12 +1448,8 @@ namespace RogueEssence.Dungeon
                         {
                             for (int y = -1; y <= 1; y++)
                             {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc.Loc + new Loc(x, y))
-                                    && Collision.InBounds(minLoc, addLoc, new Loc(x, y) + loc.Loc))
-                                {
-                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
-                                        charSightValues[loc.Loc.X + x - sightRect.X][loc.Loc.Y + y - sightRect.Y] += loc.Weight;
-                                }
+                                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
+                                    charSightValues[loc.Loc.X + x - sightRect.X][loc.Loc.Y + y - sightRect.Y] += loc.Weight;
                             }
                         }
                         break;
@@ -1464,11 +1465,8 @@ namespace RogueEssence.Dungeon
                         {
                             for (int y = 0; y < addLoc.Y; y++)
                             {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, minLoc + new Loc(x, y)))
-                                {
-                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, minLoc + new Loc(x, y)))
-                                        charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
-                                }
+                                if (Collision.InBounds(sightRect.Start, sightRect.Size, minLoc + new Loc(x, y)))
+                                    charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
                             }
                         }
                         break;
@@ -1479,14 +1477,21 @@ namespace RogueEssence.Dungeon
 
         public void CalculateSymmetricFOV(Loc rectStart, Loc rectSize, VisionLoc start)
         {
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
             Fov.LightOperation lightOp = (int locX, int locY, float light) =>
             {
-                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(locX, locY)) && Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(locX, locY)))
-                {
-                    //Can only light up tiles that have been explored
-                    if (ZoneManager.Instance.CurrentMap.DiscoveryArray[locX][locY] == Map.DiscoveryState.Traversed)
-                        charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
-                }
+                Loc testLoc = new Loc(locX, locY);
+                if (!Collision.InBounds(sightRect.Start, sightRect.Size, testLoc))
+                    return;
+
+                if (wrapped)
+                    testLoc = ZoneManager.Instance.CurrentMap.WrapLoc(testLoc);
+                else if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
+                    return;
+
+                //Can only light up tiles that have been explored
+                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[testLoc.X][testLoc.Y] == Map.DiscoveryState.Traversed)
+                    charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
             };
             Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }
@@ -1565,8 +1570,9 @@ namespace RogueEssence.Dungeon
             if (SeeAll)
                 return 1f;
 
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
             //if it's out of bounds, use the decided-on darkness of out-of-bounds
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+            if (!wrapped && !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
             {
                 if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 {
@@ -1579,8 +1585,9 @@ namespace RogueEssence.Dungeon
                     return 0f;
             }
 
+            Loc wrappedLoc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
             //if it's undiscovered, it's decided-on darkness
-            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] != Map.DiscoveryState.Traversed)
+            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[wrappedLoc.X][wrappedLoc.Y] != Map.DiscoveryState.Traversed)
             {
                 if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 {
