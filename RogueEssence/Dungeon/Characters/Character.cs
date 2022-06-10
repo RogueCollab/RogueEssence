@@ -2137,7 +2137,7 @@ namespace RogueEssence.Dungeon
                 case Map.SightRange.Murky:
                     {
                         Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
-                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
+                        return MemberTeam.ContainingMap.GetLocInTestBounds(sightBounds, ref toLoc);
                     }
                 case Map.SightRange.Dark:
                     {
@@ -2161,7 +2161,7 @@ namespace RogueEssence.Dungeon
             Loc seen = GetSightDims();
             Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
-            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
+            return MemberTeam.ContainingMap.GetLocInTestBounds(sightBounds, ref loc);
         }
 
 

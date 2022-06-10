@@ -288,7 +288,7 @@ namespace RogueEssence.Dungeon
         /// If it's not wrapped, expect normal results.
         /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
         /// </summary>
-        /// <param name="loc"></param>
+        /// <param name="loc">The location to test.  Will be wrapped if the map is wrapped.</param>
         /// <returns></returns>
         public bool GetLocInMapBounds(ref Loc loc)
         {
@@ -304,13 +304,27 @@ namespace RogueEssence.Dungeon
         /// Checks to see if a location is in bounds of a rectangle, accounting for the map's wrapping, if there is any.
         /// Uses tile units.
         /// </summary>
-        /// <param name="rect"></param>
-        /// <param name="loc"></param>
+        /// <param name="rect">The rectangle to test with.</param>
+        /// <param name="loc">The loc to test with.  Will be wrapped to a value that fits in bounds if map is wrapped.</param>
         /// <returns></returns>
-        public bool InBounds(Rect rect, Loc loc)
+        public bool GetLocInTestBounds(Rect rect, ref Loc loc)
         {
             if (EdgeView == ScrollEdge.Wrap)
-                return WrappedCollision.InBounds(Size, rect, loc);
+            {
+                if (WrappedCollision.InBounds(Size, rect, loc))
+                {
+                    Loc wrappedStart = WrapLoc(rect.Start);
+                    Loc wrappedLoc = WrapLoc(loc);
+                    if (wrappedLoc.X < wrappedStart.X)
+                        wrappedLoc.X += Size.X;
+                    if (wrappedLoc.Y < wrappedStart.Y)
+                        wrappedLoc.Y += Size.Y;
+                    Loc wrappedDiff = wrappedLoc - wrappedStart;
+                    loc = rect.Start + wrappedDiff;
+                    return true;
+                }
+                return false;
+            }
             else
                 return Collision.InBounds(rect, loc);
         }

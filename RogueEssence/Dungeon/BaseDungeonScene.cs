@@ -182,7 +182,9 @@ namespace RogueEssence.Dungeon
         {
             if (character.Dead)
                 return false;
-            if (!ZoneManager.Instance.CurrentMap.InBounds(viewTileRect, character.CharLoc))
+
+            Loc testLoc = character.CharLoc;
+            if (!ZoneManager.Instance.CurrentMap.GetLocInTestBounds(viewTileRect, ref testLoc))
                 return false;
 
             return true;
