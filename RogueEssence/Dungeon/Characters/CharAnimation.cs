@@ -219,7 +219,7 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public virtual IEnumerable<VisionLoc> GetVisionLocs()
         {
-            yield return new VisionLoc(CharLoc, 1f);
+            yield return new VisionLoc(VisualLoc, 1f);
         }
 
     }
@@ -536,7 +536,7 @@ namespace RogueEssence.Dungeon
         {
             float diff = ActionTime.FractionOf(FINISH_TIME);
             if (diff > 0f)
-                yield return new VisionLoc(ToLoc, diff);
+                yield return new VisionLoc(VisualLoc, diff);
             if (diff < 1f)
                 yield return new VisionLoc(FromLoc, 1f - diff); 
         }
@@ -603,7 +603,7 @@ namespace RogueEssence.Dungeon
             if (ActionTime < ANIM_TIME / 2)
                 yield return new VisionLoc(FromLoc, 1f);
             else
-                yield return new VisionLoc(ToLoc, 1f);
+                yield return new VisionLoc(VisualLoc, 1f);
         }
     }
 
@@ -632,7 +632,7 @@ namespace RogueEssence.Dungeon
         {
             float diff = ActionTime.FractionOf(ANIM_TIME);
             if (diff > 0f)
-                yield return new VisionLoc(ToLoc, diff);
+                yield return new VisionLoc(VisualLoc, diff);
             if (diff < 1f)
                 yield return new VisionLoc(FromLoc, 1f - diff);
         }
@@ -719,17 +719,17 @@ namespace RogueEssence.Dungeon
             {
                 float diff = (ActionTime - AnimRushTime).FractionOf(AnimHitTime - AnimRushTime);
                 if (diff > 0f)
-                    yield return new VisionLoc(RecoilLoc, diff);
+                    yield return new VisionLoc(VisualLoc, diff);
                 if (diff < 1f)
                     yield return new VisionLoc(FromLoc, 1f - diff);
             }
             else if (ActionTime < AnimReturnTime)
             {
-                yield return new VisionLoc(RecoilLoc, 1f);//or maybe the ToLoc
+                yield return new VisionLoc(VisualLoc, 1f);//or maybe the ToLoc
             }
             else
             {
-                yield return new VisionLoc(RecoilLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
+                yield return new VisionLoc(VisualLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
             }
         }
     }
@@ -818,12 +818,12 @@ namespace RogueEssence.Dungeon
             {
                 float diff = (ActionTime).FractionOf(totalTime);
                 if (diff > 0f)
-                    yield return new VisionLoc(RecoilLoc, diff);
+                    yield return new VisionLoc(VisualLoc, diff);
                 if (diff < 1f)
                     yield return new VisionLoc(FromLoc, 1f - diff);
             }
             else
-                yield return new VisionLoc(RecoilLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
+                yield return new VisionLoc(VisualLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
         }
     }
 
@@ -869,12 +869,12 @@ namespace RogueEssence.Dungeon
             {
                 float diff = ActionTime.FractionOf(ANIM_TIME);
                 if (diff > 0f)
-                    yield return new VisionLoc(ToLoc, diff);
+                    yield return new VisionLoc(VisualLoc, diff);
                 if (diff < 1f)
                     yield return new VisionLoc(FromLoc, 1f - diff);
             }
             else
-                yield return new VisionLoc(RecoilLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
+                yield return new VisionLoc(VisualLoc, 1f);//or maybe the diff from ToLoc to RecoilLoc
         }
     }
     

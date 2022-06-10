@@ -119,8 +119,14 @@ namespace RogueEssence
         /// Add to draw the sprites in the view rect; one for each divided part of it.
         /// Divisions are due to map wrapping.
         /// </summary>
+        /// <param name="sprites"></param>
+        /// <param name="divRects">The ViewRect divided into pieces based on wrapped map borders.</param>
+        /// <param name="sprite"></param>
         public void AddDivRectDraw(List<(IDrawableSprite, Loc)> sprites, Rect[][] divRects, IDrawableSprite sprite)
         {
+            // for every view slice, check if the sprite is in it, and add to the sprite draw list.
+            // TODO: for every view slice, check how many sprite positions need to render in it; check based on all the maps the sprite occupies.
+            // You will need to remove redundants here
             foreach (Loc viewOffset in IterateDivRectDraw(divRects, sprite))
                 AddToDraw(sprites, sprite, viewOffset);
         }
