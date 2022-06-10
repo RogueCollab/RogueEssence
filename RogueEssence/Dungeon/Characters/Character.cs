@@ -2137,10 +2137,7 @@ namespace RogueEssence.Dungeon
                 case Map.SightRange.Murky:
                     {
                         Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
-                        if (MemberTeam.ContainingMap.EdgeView == Map.ScrollEdge.Wrap)
-                            return WrappedCollision.InBounds(MemberTeam.ContainingMap.Size, sightBounds, toLoc);
-                        else
-                            return Collision.InBounds(sightBounds, toLoc);
+                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
                     }
                 case Map.SightRange.Dark:
                     {
@@ -2164,10 +2161,7 @@ namespace RogueEssence.Dungeon
             Loc seen = GetSightDims();
             Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
-            if (MemberTeam.ContainingMap.EdgeView == Map.ScrollEdge.Wrap)
-                return WrappedCollision.InBounds(MemberTeam.ContainingMap.Size, sightBounds, loc);
-            else
-                return Collision.InBounds(sightBounds, loc);
+            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
         }
 
 

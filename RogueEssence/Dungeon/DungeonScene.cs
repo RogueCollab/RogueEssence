@@ -819,14 +819,12 @@ namespace RogueEssence.Dungeon
                 return true;
             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 return true;
+
             Loc loc = new Loc(xx, yy);
-            bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc);
-            if (ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap)
-            {
-                loc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
-                outOfBounds = false;
-            }
-            return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] == Map.DiscoveryState.Traversed);
+            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref loc))
+                return false;
+
+            return ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] == Map.DiscoveryState.Traversed;
         }
 
         protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
@@ -1466,16 +1464,13 @@ namespace RogueEssence.Dungeon
 
         public void CalculateSymmetricFOV(Loc rectStart, Loc rectSize, VisionLoc start)
         {
-            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
             Fov.LightOperation lightOp = (int locX, int locY, float light) =>
             {
                 Loc testLoc = new Loc(locX, locY);
                 if (!Collision.InBounds(sightRect.Start, sightRect.Size, testLoc))
                     return;
 
-                if (wrapped)
-                    testLoc = ZoneManager.Instance.CurrentMap.WrapLoc(testLoc);
-                else if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
+                if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref testLoc))
                     return;
 
                 //Can only light up tiles that have been explored
@@ -1559,9 +1554,9 @@ namespace RogueEssence.Dungeon
             if (SeeAll)
                 return 1f;
 
-            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
             //if it's out of bounds, use the decided-on darkness of out-of-bounds
-            if (!wrapped && !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+            Loc wrappedLoc = loc;
+            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref wrappedLoc))
             {
                 if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 {
@@ -1574,7 +1569,6 @@ namespace RogueEssence.Dungeon
                     return 0f;
             }
 
-            Loc wrappedLoc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
             //if it's undiscovered, it's decided-on darkness
             if (ZoneManager.Instance.CurrentMap.DiscoveryArray[wrappedLoc.X][wrappedLoc.Y] != Map.DiscoveryState.Traversed)
             {

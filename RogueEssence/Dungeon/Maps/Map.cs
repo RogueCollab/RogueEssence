@@ -506,10 +506,7 @@ namespace RogueEssence.Dungeon
                 for (int jj = rectStart.Y; jj < rectStart.Y + rectSize.Y; jj++)
                 {
                     Loc destLoc = new Loc(ii, jj);
-                    if (EdgeView == ScrollEdge.Wrap)
-                        destLoc = WrapLoc(destLoc);
-
-                    if (!Collision.InBounds(Width, Height, destLoc))
+                    if (!GetLocInMapBounds(ref destLoc))
                         continue;
 
                     //Only color empty tiles
@@ -538,28 +535,25 @@ namespace RogueEssence.Dungeon
                     (int x, int y, int neighborCode) =>
                     {
                         Loc checkLoc = new Loc(x, y);
-                        if (EdgeView == ScrollEdge.Wrap)
-                            checkLoc = WrapLoc(checkLoc);
-                        else if (!Collision.InBounds(Width, Height, checkLoc))
+                        if (!GetLocInMapBounds(ref checkLoc))
                             return;
+
                         Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.NeighborCode = neighborCode;
                     },
                     (int x, int y) =>
                     {
                         Loc checkLoc = new Loc(x, y);
-                        if (EdgeView == ScrollEdge.Wrap)
-                            checkLoc = WrapLoc(checkLoc);
-                        else if (!Collision.InBounds(Width, Height, checkLoc))
+                        if (!GetLocInMapBounds(ref checkLoc))
                             return true;
+
                         return Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.AutoTileset == tileset;
                     },
                     (int x, int y) =>
                     {
                         Loc checkLoc = new Loc(x, y);
-                        if (EdgeView == ScrollEdge.Wrap)
-                            checkLoc = WrapLoc(checkLoc);
-                        else if (!Collision.InBounds(Width, Height, checkLoc))
+                        if (!GetLocInMapBounds(ref checkLoc))
                             return true;
+
                         return Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.AutoTileset == tileset || Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.Associates.Contains(tileset);
                     });
             }
@@ -593,9 +587,7 @@ namespace RogueEssence.Dungeon
         private void discoveryLightOp(int x, int y, float light)
         {
             Loc checkLoc = new Loc(x, y);
-            if (EdgeView == ScrollEdge.Wrap)
-                checkLoc = WrapLoc(checkLoc);
-            else if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, checkLoc))
+            if (!GetLocInMapBounds(ref checkLoc))
                 return;
 
             DiscoveryArray[checkLoc.X][checkLoc.Y] = DiscoveryState.Traversed;
@@ -642,6 +634,38 @@ namespace RogueEssence.Dungeon
         public Rect[][] WrapSplitRect(Rect rect)
         {
             return BaseScene.WrapSplitRect(rect, GroundSize);
+        }
+
+        /// <summary>
+        /// Checks to see if the loc is in map bounds.
+        /// If it's not wrapped, expect normal results.
+        /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public bool GetLocInMapBounds(ref Loc loc)
+        {
+            if (EdgeView == ScrollEdge.Wrap)
+            {
+                loc = WrapLoc(loc);
+                return true;
+            }
+            return Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc);
+        }
+
+        /// <summary>
+        /// Checks to see if a location is in bounds of a rectangle, accounting for the map's wrapping, if there is any.
+        /// Uses tile units.
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public bool InBounds(Rect rect, Loc loc)
+        {
+            if (EdgeView == ScrollEdge.Wrap)
+                return WrappedCollision.InBounds(Size, rect, loc);
+            else
+                return Collision.InBounds(rect, loc);
         }
 
         public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)

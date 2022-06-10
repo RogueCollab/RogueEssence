@@ -182,17 +182,8 @@ namespace RogueEssence.Dungeon
         {
             if (character.Dead)
                 return false;
-            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
-            if (!wrapped)
-            {
-                if (!Collision.InBounds(viewTileRect, character.CharLoc))
-                    return false;
-            }
-            else
-            {
-                if (!WrappedCollision.InBounds(ZoneManager.Instance.CurrentMap.Size, viewTileRect, character.CharLoc))
-                    return false;
-            }
+            if (!ZoneManager.Instance.CurrentMap.InBounds(viewTileRect, character.CharLoc))
+                return false;
 
             return true;
         }
