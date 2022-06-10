@@ -2130,49 +2130,44 @@ namespace RogueEssence.Dungeon
         public bool CanSeeLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
         {
             //needs to be edited according to FOV
-            Loc diffLoc = (fromLoc - toLoc);
             switch (sight)
             {
                 case Map.SightRange.Blind:
                     return false;
                 case Map.SightRange.Murky:
-                    return diffLoc.Dist8() <= 1;
+                    {
+                        Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
+                        if (MemberTeam.ContainingMap.EdgeView == Map.ScrollEdge.Wrap)
+                            return WrappedCollision.InBounds(MemberTeam.ContainingMap.Size, sightBounds, toLoc);
+                        else
+                            return Collision.InBounds(sightBounds, toLoc);
+                    }
                 case Map.SightRange.Dark:
                     {
-                        Loc seen = GetSightDims();
-
-                        if (Math.Abs(diffLoc.X) > seen.X)
-                            return false;
-                        if (Math.Abs(diffLoc.Y) > seen.Y)
+                        if (!IsInSightBoundsFrom(fromLoc, toLoc))
                             return false;
 
                         return Fov.IsInFOV(fromLoc, toLoc, DungeonScene.Instance.VisionBlocked);
                     }
                 default:
-                    {
-                        Loc seen = GetSightDims();
-
-                        if (Math.Abs(diffLoc.X) > seen.X)
-                            return false;
-                        if (Math.Abs(diffLoc.Y) > seen.Y)
-                            return false;
-
-                        return true;
-                    }
+                        return IsInSightBoundsFrom(fromLoc, toLoc);
             }
         }
 
         public bool IsInSightBounds(Loc loc)
         {
-            Loc diffLoc = (CharLoc - loc);
+            return IsInSightBoundsFrom(CharLoc, loc);
+        }
+
+        public bool IsInSightBoundsFrom(Loc fromLoc, Loc loc)
+        {
             Loc seen = GetSightDims();
+            Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
-            if (Math.Abs(diffLoc.X) > seen.X)
-                return false;
-            if (Math.Abs(diffLoc.Y) > seen.Y)
-                return false;
-
-            return true;
+            if (MemberTeam.ContainingMap.EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.InBounds(MemberTeam.ContainingMap.Size, sightBounds, loc);
+            else
+                return Collision.InBounds(sightBounds, loc);
         }
 
 

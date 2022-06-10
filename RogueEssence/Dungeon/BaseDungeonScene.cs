@@ -24,7 +24,7 @@ namespace RogueEssence.Dungeon
         protected List<(IDrawableSprite sprite, Loc viewOffset)> backDraw;
         protected List<(IDrawableSprite sprite, Loc viewOffset)> frontDraw;
         protected List<(IDrawableSprite sprite, Loc viewOffset)> foregroundDraw;
-        protected List<Character> shownChars;
+        protected List<(Character sprite, Loc viewOffset)> shownChars;
 
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace RogueEssence.Dungeon
             backDraw = new List<(IDrawableSprite, Loc)>();
             frontDraw = new List<(IDrawableSprite, Loc)>();
             foregroundDraw = new List<(IDrawableSprite, Loc)>();
-            shownChars = new List<Character>();
+            shownChars = new List<(Character sprite, Loc viewOffset)>();
 
             subtractBlend = new BlendState();
             subtractBlend.ColorBlendFunction = BlendFunction.ReverseSubtract;
@@ -152,9 +152,12 @@ namespace RogueEssence.Dungeon
                 {
                     if (CanSeeCharOnScreen(character))
                     {
-                        shownChars.Add(character);
-                        if (CanIdentifyCharOnScreen(character))
-                            AddToDraw(backDraw, character);
+                        foreach (Loc viewLoc in IterateDivRectDraw(divRects, character))
+                        {
+                            shownChars.Add((character, viewLoc));
+                            if (CanIdentifyCharOnScreen(character))
+                                AddToDraw(backDraw, character, viewLoc);
+                        }
                     }
                 }
             }
@@ -179,8 +182,17 @@ namespace RogueEssence.Dungeon
         {
             if (character.Dead)
                 return false;
-            if (!CanSeeSprite(ViewRect, character))
-                return false;
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
+            if (!wrapped)
+            {
+                if (!Collision.InBounds(viewTileRect, character.CharLoc))
+                    return false;
+            }
+            else
+            {
+                if (!WrappedCollision.InBounds(ZoneManager.Instance.CurrentMap.Size, viewTileRect, character.CharLoc))
+                    return false;
+            }
 
             return true;
         }
@@ -275,11 +287,11 @@ namespace RogueEssence.Dungeon
             PrepareBackDraw(divRects);
 
             //draw shadows
-            foreach (Character shadowChar in shownChars)
+            foreach ((Character sprite, Loc viewOffset) shadowChar in shownChars)
             {
-                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[shadowChar.CharLoc.X][shadowChar.CharLoc.Y].Data.GetData();
+                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
                 int terrainShadow = terrain.ShadowType;
-                shadowChar.DrawShadow(spriteBatch, ViewRect.Start, terrainShadow);
+                shadowChar.sprite.DrawShadow(spriteBatch, shadowChar.viewOffset, terrainShadow);
             }
 
 

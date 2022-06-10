@@ -1251,17 +1251,17 @@ namespace RogueEssence.Dungeon
         {
             if (Turn)
             {
-                foreach (Character hpChar in shownChars)
+                foreach ((Character sprite, Loc viewOffset) hpChar in shownChars)
                 {
-                    if (CanIdentifyCharOnScreen(hpChar))
+                    if (CanIdentifyCharOnScreen(hpChar.sprite))
                     {
-                        Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
+                        Loc drawLoc = hpChar.sprite.CharLoc * GraphicsManager.TileSize - hpChar.viewOffset + new Loc(2, GraphicsManager.TileSize - 6);
                         GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
-                        int hpAmount = MathUtils.DivUp(hpChar.HP * 18, hpChar.MaxHP);
+                        int hpAmount = MathUtils.DivUp(hpChar.sprite.HP * 18, hpChar.sprite.MaxHP);
                         Color hpColor = new Color(88, 248, 88);
-                        if (hpChar.HP * 4 <= hpChar.MaxHP)
+                        if (hpChar.sprite.HP * 4 <= hpChar.sprite.MaxHP)
                             hpColor = new Color(248, 128, 88);
-                        else if (hpChar.HP * 2 <= hpChar.MaxHP)
+                        else if (hpChar.sprite.HP * 2 <= hpChar.sprite.MaxHP)
                             hpColor = new Color(248, 232, 88);
                         GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(drawLoc.X + 1, drawLoc.Y + 1, hpAmount, 2), null, hpColor);
                     }
@@ -1430,11 +1430,6 @@ namespace RogueEssence.Dungeon
         /// <param name="sight"></param>
         public void AddSeenLocs(VisionLoc loc, Map.SightRange sight)
         {
-            //needs to be edited according to FOV
-            Loc seen = Character.GetSightDims() + new Loc(1);
-            //however, when adding light, we only change the array if the light falls within the array
-            Loc minLoc = new Loc(loc.Loc.X - seen.X, loc.Loc.Y - seen.Y);
-            Loc addLoc = new Loc(loc.Loc.X + seen.X + 1, loc.Loc.Y + seen.Y + 1) - minLoc;
             switch (sight)
             {
                 case Map.SightRange.Blind:
@@ -1453,18 +1448,15 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        CalculateSymmetricFOV(minLoc, addLoc, loc);
+                        CalculateSymmetricFOV(sightRect.Start, sightRect.Size, loc);
                         break;
                     }
                 default:
                     {
-                        for (int x = 0; x < addLoc.X; x++)
+                        for (int x = 0; x < sightRect.Size.X; x++)
                         {
-                            for (int y = 0; y < addLoc.Y; y++)
-                            {
-                                if (Collision.InBounds(sightRect.Start, sightRect.Size, minLoc + new Loc(x, y)))
-                                    charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
-                            }
+                            for (int y = 0; y < sightRect.Size.Y; y++)
+                                charSightValues[sightRect.Start.X + x - sightRect.X][sightRect.Start.Y + y - sightRect.Y] += loc.Weight;
                         }
                         break;
                     }
