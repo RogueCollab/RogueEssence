@@ -28,6 +28,22 @@ namespace RogueEssence.Dungeon
 
         public bool MajorAnim { get; set; }
         public abstract Loc CharLoc { get; set; }
+
+        protected Loc? visualOverride;
+        /// <summary>
+        /// The visual char loc.  Needed for wrapping
+        /// </summary>
+        public Loc VisualLoc
+        {
+            get
+            {
+                if (visualOverride != null)
+                    return visualOverride.Value;
+                else
+                    return CharLoc;
+            }
+        }
+
         public abstract Loc CharLocFrom { get; }
         public Dir8 CharDir { get; set; }
 
@@ -179,15 +195,28 @@ namespace RogueEssence.Dungeon
             currentFrame = sheet.GetCurrentFrame(charFrameType, DirExt.AddAngles(CharDir, dirOffset), FrameMethod);
         }
 
-        //location that this character is in, for visibility purposes
-        //if any of these locations are seen by the player, the character is considered seen by the player
+        public void SetLocWithoutVisual(Loc loc)
+        {
+            Loc oldLoc = VisualLoc;
+            CharLoc = loc;
+            visualOverride = oldLoc;
+        }
+
+        /// <summary>
+        /// location that this character is in, for visibility purposes
+        /// if any of these locations are seen by the player, the character is considered seen by the player
+        /// </summary>
+        /// <returns></returns>
         public virtual IEnumerable<Loc> GetLocsVisible()
         {
             yield return CharLoc;
         }
 
-        //location that this character is in, for vision purposes
-        //any locations seen by these locs are seen by the player
+        /// <summary>
+        /// location that this character is in, for vision purposes
+        /// any locations seen by these locs are seen by the player
+        /// </summary>
+        /// <returns></returns>
         public virtual IEnumerable<VisionLoc> GetVisionLocs()
         {
             yield return new VisionLoc(CharLoc, 1f);
@@ -199,7 +228,7 @@ namespace RogueEssence.Dungeon
     {
         public Loc AnimLoc { get; set; }
         public override Loc CharLocFrom { get { return AnimLoc; } }
-        public override Loc CharLoc { get { return AnimLoc; } set { AnimLoc = value; } }
+        public override Loc CharLoc { get { return AnimLoc; } set { AnimLoc = value; visualOverride = null; } }
 
         public bool FallShort { get; set; }
 
@@ -211,7 +240,7 @@ namespace RogueEssence.Dungeon
         public Loc FromLoc { get; set; }
         public Loc ToLoc { get; set; }
         public override Loc CharLocFrom { get { return FromLoc; } }
-        public override Loc CharLoc { get { return ToLoc; } set { ToLoc = value; } }
+        public override Loc CharLoc { get { return ToLoc; } set { ToLoc = value; visualOverride = null; } }
 
         public override IEnumerable<Loc> GetLocsVisible()
         {
@@ -223,7 +252,7 @@ namespace RogueEssence.Dungeon
     public abstract class RecoilingAnimation : MovingCharAnimation
     {
         public Loc RecoilLoc { get; set; }
-        public override Loc CharLoc { get { return RecoilLoc; } set { RecoilLoc = value; } }
+        public override Loc CharLoc { get { return RecoilLoc; } set { RecoilLoc = value; visualOverride = null; } }
 
         public override IEnumerable<Loc> GetLocsVisible()
         {
@@ -251,7 +280,7 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
         protected override bool AllowFrameTypeDrawEffects() { return true; }
 
@@ -294,7 +323,7 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return BaseFrameType; } }
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
     }
 
@@ -314,7 +343,7 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return BaseFrameType; } }
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
     }
 
@@ -332,7 +361,7 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return BaseFrameType; } }
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
 
             int farthest_distance = GraphicsManager.TileSize * (FallShort ? 1 : 2) / 3;
             Loc toOffset = CharDir.GetLoc() * farthest_distance;
@@ -372,7 +401,7 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return GraphicsManager.HurtAction; } }
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
             if (ActionTime.FractionOf(2, ANIM_TIME) % 2 == 0)
                 drawOffset = drawOffset + CharDir.Reverse().GetLoc();
         }
@@ -392,7 +421,7 @@ namespace RogueEssence.Dungeon
                 drawOffset = drawOffset + CharDir.Reverse().GetLoc();
             if (ActionTime.FractionOf(4, AnimTime) > 0)
                 opacity = 128;
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
     }
 
@@ -410,7 +439,7 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return 0; } }
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
             LocHeight = MAX_TILE_HEIGHT * GraphicsManager.TileSize-(int)ActionTime.FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
         }
     }
@@ -429,7 +458,7 @@ namespace RogueEssence.Dungeon
 
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
             LocHeight = (int)ActionTime.FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
         }
     }
@@ -448,7 +477,7 @@ namespace RogueEssence.Dungeon
 
         protected override void UpdateFrameInternal()
         {
-            MapLoc = AnimLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
             dirOffset = (Dir8)(ActionTime.FractionOf(8 * SPINS, ANIM_TIME) % 8);
         }
     }
@@ -496,7 +525,7 @@ namespace RogueEssence.Dungeon
             int curSegment = Math.Min(trueTime.ToFrames() / FINISH_TIME, MidLocs.Count-1);
             Dir8 midDir = MidDirs[curSegment];
             Loc fromLoc = MidLocs[curSegment];
-            Loc toLoc = curSegment+1 < MidLocs.Count ? MidLocs[curSegment + 1] : ToLoc;
+            Loc toLoc = curSegment+1 < MidLocs.Count ? MidLocs[curSegment + 1] : VisualLoc;
             dirOffset = (Dir8)(((int)midDir - (int)CharDir + DirExt.DIR8_COUNT) % DirExt.DIR8_COUNT);
             FrameTick segmentTime = trueTime - FINISH_TIME * curSegment;
             double intb = Math.Min(1.0, (double)segmentTime.FractionOf(FINISH_TIME));
@@ -527,10 +556,11 @@ namespace RogueEssence.Dungeon
             if (walkAnim == null)
                 return newAnim.MajorAnim;
 
-            MidLocs.Add(ToLoc);
+            MidLocs.Add(VisualLoc);
             MidDirs.Add(CharDir);
 
             ToLoc = walkAnim.ToLoc;
+            visualOverride = walkAnim.VisualLoc;
             CharDir = walkAnim.CharDir;
 
             SpeedMult = MidLocs.Count;
@@ -558,7 +588,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 LocHeight = -(int)(ActionTime - ANIM_TIME).FractionOf(GraphicsManager.TileSize * MAX_TILE_HEIGHT * 2, ANIM_TIME);
-                MapLoc = ToLoc * GraphicsManager.TileSize;
+                MapLoc = VisualLoc * GraphicsManager.TileSize;
             }
         }
         public override IEnumerable<Loc> GetLocsVisible()
@@ -586,12 +616,12 @@ namespace RogueEssence.Dungeon
         protected override int AnimFrameType { get { return GraphicsManager.IdleAction; } }
         protected override void UpdateFrameInternal()
         {
-            if (FromLoc != ToLoc)
+            if (FromLoc != VisualLoc)
             {
-                double maxDistance = Math.Sqrt(((FromLoc - ToLoc) * GraphicsManager.TileSize).DistSquared());
+                double maxDistance = Math.Sqrt(((FromLoc - VisualLoc) * GraphicsManager.TileSize).DistSquared());
                 LocHeight = AnimMath.GetArc(maxDistance / 2, ANIM_TIME, ActionTime.ToFrames());
 
-                Loc diff = (ToLoc - FromLoc) * GraphicsManager.TileSize;
+                Loc diff = (VisualLoc - FromLoc) * GraphicsManager.TileSize;
                 diff = new Loc((int)(diff.X * ActionTime.FractionOf(ANIM_TIME)), (int)(diff.Y * ActionTime.FractionOf(ANIM_TIME)));
                 MapLoc = diff + FromLoc * GraphicsManager.TileSize;
             }
@@ -618,7 +648,7 @@ namespace RogueEssence.Dungeon
         protected override void UpdateFrameInternal()
         {
             LocHeight = 0;
-            MapLoc = ToLoc * GraphicsManager.TileSize;
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
     }
 
@@ -671,13 +701,13 @@ namespace RogueEssence.Dungeon
             else if (ActionTime < AnimTotalTime)
             {
                 double intb = (double)(ActionTime - AnimReturnTime).FractionOf(AnimTotalTime - AnimReturnTime);
-                Loc newLoc = new Loc(AnimMath.Lerp(ToLoc.X * GraphicsManager.TileSize, RecoilLoc.X * GraphicsManager.TileSize, intb),
-                    AnimMath.Lerp(ToLoc.Y * GraphicsManager.TileSize, RecoilLoc.Y * GraphicsManager.TileSize, intb));
+                Loc newLoc = new Loc(AnimMath.Lerp(ToLoc.X * GraphicsManager.TileSize, VisualLoc.X * GraphicsManager.TileSize, intb),
+                    AnimMath.Lerp(ToLoc.Y * GraphicsManager.TileSize, VisualLoc.Y * GraphicsManager.TileSize, intb));
                 MapLoc = newLoc;
             }
             else
             {
-                MapLoc = RecoilLoc * GraphicsManager.TileSize;
+                MapLoc = VisualLoc * GraphicsManager.TileSize;
             }
         }
 
@@ -774,8 +804,8 @@ namespace RogueEssence.Dungeon
             else
             {
                 double intb = (double)(ActionTime - totalTime).FractionOf(BOUNCE_TIME);
-                MapLoc = new Loc(AnimMath.Lerp(ToLoc.X * GraphicsManager.TileSize, RecoilLoc.X * GraphicsManager.TileSize, intb),
-                    AnimMath.Lerp(ToLoc.Y * GraphicsManager.TileSize, RecoilLoc.Y * GraphicsManager.TileSize, intb));
+                MapLoc = new Loc(AnimMath.Lerp(ToLoc.X * GraphicsManager.TileSize, VisualLoc.X * GraphicsManager.TileSize, intb),
+                    AnimMath.Lerp(ToLoc.Y * GraphicsManager.TileSize, VisualLoc.Y * GraphicsManager.TileSize, intb));
                 LocHeight = AnimMath.GetArc(GraphicsManager.TileSize / 2, FrameTick.FrameToTick(BOUNCE_TIME), (ActionTime - totalTime).Ticks);
             }
         }
@@ -828,8 +858,8 @@ namespace RogueEssence.Dungeon
             else
             {
                 double intb = (double)(ActionTime - totalTime).FractionOf(BOUNCE_TIME);
-                MapLoc = new Loc(AnimMath.Lerp(ToLoc.X * GraphicsManager.TileSize, RecoilLoc.X * GraphicsManager.TileSize, intb),
-                    AnimMath.Lerp(ToLoc.Y * GraphicsManager.TileSize, RecoilLoc.Y * GraphicsManager.TileSize, intb));
+                MapLoc = new Loc(AnimMath.Lerp(ToLoc.X * GraphicsManager.TileSize, VisualLoc.X * GraphicsManager.TileSize, intb),
+                    AnimMath.Lerp(ToLoc.Y * GraphicsManager.TileSize, VisualLoc.Y * GraphicsManager.TileSize, intb));
                 LocHeight = AnimMath.GetArc(GraphicsManager.TileSize / 2, FrameTick.FrameToTick(BOUNCE_TIME), (ActionTime - totalTime).Ticks);
             }
         }

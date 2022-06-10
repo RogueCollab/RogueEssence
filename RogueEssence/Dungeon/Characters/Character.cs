@@ -2206,6 +2206,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> StartAnim(CharAnimation charAnim)
         {
+            charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
             if (OccupiedwithAction())
             {
                 Loc preInterruptLoc = CharLoc;

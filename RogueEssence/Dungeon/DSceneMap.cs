@@ -1533,12 +1533,8 @@ namespace RogueEssence.Dungeon
 
         public bool BlockedByCharacter(Character character, Loc loc, Alignment targetAlignments)
         {
-            foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
-                if (IsTargeted(character, target, targetAlignments) && target.CharLoc == loc)
-                    return true;
-            }
-            return false;
+            Character target = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            return IsTargeted(character, target, targetAlignments);
         }
 
         //used for run mode ending

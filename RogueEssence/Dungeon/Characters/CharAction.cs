@@ -153,12 +153,13 @@ namespace RogueEssence.Dungeon
             anim.CharDir = owner.CharDir;
             anim.MajorAnim = true;
             anim.FallShort = fallShort;
-            BeginAnim(owner.Appearance, anim, prevAction);
+            BeginAnim(owner, anim, prevAction);
         }
-        protected void BeginAnim(MonsterID appearance, CharAnimation charAnim, CharAction prevAction)
+        protected void BeginAnim(Character owner, CharAnimation charAnim, CharAction prevAction)
         {
+            charAnim.SetLocWithoutVisual(owner.MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
             currentAnim = charAnim;
-            PickUpFrom(appearance, prevAction);
+            PickUpFrom(owner.Appearance, prevAction);
         }
         public virtual void BeginAction(Character owner, CharAction prevAction) { }
         public IEnumerator<YieldInstruction> OnIntro(Character owner)
@@ -1553,7 +1554,7 @@ namespace RogueEssence.Dungeon
             rushAnim.OnFinishLunge = OnFinishLunge;
             rushAnim.MajorAnim = true;
 
-            BeginAnim(owner.Appearance, rushAnim, prevAction);
+            BeginAnim(owner, rushAnim, prevAction);
             base.BeginAction(owner, prevAction);
         }
         public override IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect)

@@ -27,22 +27,6 @@ namespace RogueEssence.Dungeon
             Blind = 3
         }
 
-        public enum ScrollEdge
-        {
-            /// <summary>
-            /// Displays the BlankBG texture, or a black void if there is none
-            /// </summary>
-            Blank = 0,
-            /// <summary>
-            /// Does not scroll past the edge of the map.
-            /// </summary>
-            Clamp,
-            /// <summary>
-            /// The map is wrapped around.
-            /// </summary>
-            Wrap,
-        }
-
         public enum DiscoveryState
         {
             None = 0,
@@ -79,12 +63,6 @@ namespace RogueEssence.Dungeon
         public string Music;
         public SightRange TileSight;
         public SightRange CharSight;
-
-
-        /// <summary>
-        /// Describes how to handle the map scrolling past the edge of the map
-        /// </summary>
-        public ScrollEdge EdgeView;
 
 
         public Dictionary<int, MapStatus> Status;
@@ -429,6 +407,8 @@ namespace RogueEssence.Dungeon
         }
 
 
+
+
         public Character LookupCharIndex(CharIndex charIndex)
         {
             Team team = GetTeam(charIndex.Faction, charIndex.Team);
@@ -605,68 +585,6 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        /// <summary>
-        /// Converts out of bounds coords to wrapped-around coords.
-        /// Based on tiles.
-        /// </summary>
-        /// <param name="loc"></param>
-        /// <returns></returns>
-        public Loc WrapLoc(Loc loc)
-        {
-            return Loc.Wrap(loc, Size);
-        }
-
-        /// <summary>
-        /// Converts out of bounds coords to wrapped-around coords.
-        /// Based on pixels.
-        /// </summary>
-        /// <param name="loc"></param>
-        /// <returns></returns>
-        public Loc WrapGroundLoc(Loc loc)
-        {
-            return Loc.Wrap(loc, GroundSize);
-        }
-
-        /// <summary>
-        /// Slices a rectangle at the wrapped map boundaries.
-        /// </summary>
-        /// <returns></returns>
-        public Rect[][] WrapSplitRect(Rect rect)
-        {
-            return BaseScene.WrapSplitRect(rect, GroundSize);
-        }
-
-        /// <summary>
-        /// Checks to see if the loc is in map bounds.
-        /// If it's not wrapped, expect normal results.
-        /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
-        /// </summary>
-        /// <param name="loc"></param>
-        /// <returns></returns>
-        public bool GetLocInMapBounds(ref Loc loc)
-        {
-            if (EdgeView == ScrollEdge.Wrap)
-            {
-                loc = WrapLoc(loc);
-                return true;
-            }
-            return Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc);
-        }
-
-        /// <summary>
-        /// Checks to see if a location is in bounds of a rectangle, accounting for the map's wrapping, if there is any.
-        /// Uses tile units.
-        /// </summary>
-        /// <param name="rect"></param>
-        /// <param name="loc"></param>
-        /// <returns></returns>
-        public bool InBounds(Rect rect, Loc loc)
-        {
-            if (EdgeView == ScrollEdge.Wrap)
-                return WrappedCollision.InBounds(Size, rect, loc);
-            else
-                return Collision.InBounds(rect, loc);
-        }
 
         public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)
         {
@@ -721,6 +639,9 @@ namespace RogueEssence.Dungeon
 
         public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
+            if (!GetLocInMapBounds(ref loc))
+                return null;
+
             List<Character> list;
             if (lookup.TryGetValue(loc, out list))
             {

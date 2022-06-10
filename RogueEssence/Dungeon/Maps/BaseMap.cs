@@ -15,6 +15,22 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class BaseMap : IMobSpawnMap
     {
+        public enum ScrollEdge
+        {
+            /// <summary>
+            /// Displays the BlankBG texture, or a black void if there is none
+            /// </summary>
+            Blank = 0,
+            /// <summary>
+            /// Does not scroll past the edge of the map.
+            /// </summary>
+            Clamp,
+            /// <summary>
+            /// The map is wrapped around.
+            /// </summary>
+            Wrap,
+        }
+
         protected IRandom rand;
         public IRandom Rand { get { return rand; } }
         IRandom IMobSpawnMap.Rand { get { return rand; } }
@@ -27,6 +43,11 @@ namespace RogueEssence.Dungeon
         public List<MapLayer> Layers;
 
         public Tile[][] Tiles;
+
+        /// <summary>
+        /// Describes how to handle the map scrolling past the edge of the map
+        /// </summary>
+        public ScrollEdge EdgeView;
 
         //includes all start points
         public List<LocRay8> EntryPoints;
@@ -116,7 +137,7 @@ namespace RogueEssence.Dungeon
 
         public bool TileBlocked(Loc loc, uint mobility, bool diagonal)
         {
-            if (!Collision.InBounds(Width, Height, loc))
+            if (!GetLocInMapBounds(ref loc))
                 return true;
 
             Tile tile = Tiles[loc.X][loc.Y];
@@ -133,7 +154,7 @@ namespace RogueEssence.Dungeon
         }
         public bool TerrainBlocked(Loc loc, uint mobility)
         {
-            if (!Collision.InBounds(Width, Height, loc))
+            if (!GetLocInMapBounds(ref loc))
                 return true;
 
             Tile tile = Tiles[loc.X][loc.Y];
@@ -228,6 +249,70 @@ namespace RogueEssence.Dungeon
                     return false;
                 },
                 origin);
+        }
+
+
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on tiles.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapLoc(Loc loc)
+        {
+            return Loc.Wrap(loc, Size);
+        }
+
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on pixels.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapGroundLoc(Loc loc)
+        {
+            return Loc.Wrap(loc, GroundSize);
+        }
+
+        /// <summary>
+        /// Slices a rectangle at the wrapped map boundaries.
+        /// </summary>
+        /// <returns></returns>
+        public Rect[][] WrapSplitRect(Rect rect)
+        {
+            return BaseScene.WrapSplitRect(rect, GroundSize);
+        }
+
+        /// <summary>
+        /// Checks to see if the loc is in map bounds.
+        /// If it's not wrapped, expect normal results.
+        /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public bool GetLocInMapBounds(ref Loc loc)
+        {
+            if (EdgeView == ScrollEdge.Wrap)
+            {
+                loc = WrapLoc(loc);
+                return true;
+            }
+            return Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc);
+        }
+
+        /// <summary>
+        /// Checks to see if a location is in bounds of a rectangle, accounting for the map's wrapping, if there is any.
+        /// Uses tile units.
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public bool InBounds(Rect rect, Loc loc)
+        {
+            if (EdgeView == ScrollEdge.Wrap)
+                return WrappedCollision.InBounds(Size, rect, loc);
+            else
+                return Collision.InBounds(rect, loc);
         }
 
         public void AddLayer(string name)
