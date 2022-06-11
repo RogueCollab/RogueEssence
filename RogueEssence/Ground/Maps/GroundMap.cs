@@ -502,6 +502,17 @@ namespace RogueEssence.Ground
             }
         }
 
+        public void WrapEntities()
+        {
+            if (EdgeView == BaseMap.ScrollEdge.Wrap)
+            {
+                if (ActiveChar != null)
+                    ActiveChar.SetMapLoc(WrapGroundLoc(ActiveChar.MapLoc));
+
+                foreach (GroundEntity ent in IterateEntities())
+                    ent.SetMapLoc(WrapGroundLoc(ent.MapLoc));
+            }
+        }
 
         public uint GetObstacle(int x, int y)
         {

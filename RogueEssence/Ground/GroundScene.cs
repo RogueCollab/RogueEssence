@@ -278,6 +278,9 @@ namespace RogueEssence.Ground
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
+                //Wrap all coordinates
+                ZoneManager.Instance.CurrentGround.WrapEntities();
+
                 //Make entities think!
                 foreach (GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
                 {
