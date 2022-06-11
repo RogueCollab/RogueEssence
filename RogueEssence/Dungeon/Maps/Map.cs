@@ -490,22 +490,12 @@ namespace RogueEssence.Dungeon
                         continue;
 
                     //Only color empty tiles
-                    if (Tiles[destLoc.X][destLoc.Y].Data.StableTex)
-                        continue;
-
                     AutoTile outTile;
-                    if (TextureMap.TryGetValue(Tiles[destLoc.X][destLoc.Y].Data.ID, out outTile))
-                    {
+                    if (!Tiles[destLoc.X][destLoc.Y].Data.StableTex && TextureMap.TryGetValue(Tiles[destLoc.X][destLoc.Y].Data.ID, out outTile))
                         Tiles[destLoc.X][destLoc.Y].Data.TileTex = outTile.Copy();
 
-                        if (Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset > -1)
-                            blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
-                    }
-                    else
-                    {
-                        if (Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset > -1)
-                            blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
-                    }
+                    if (Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset > -1)
+                        blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
                 }
             }
             foreach (int tileset in blocktilesets)
