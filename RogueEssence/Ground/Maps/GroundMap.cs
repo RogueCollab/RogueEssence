@@ -268,7 +268,7 @@ namespace RogueEssence.Ground
         {
             //GroundChar groundChar = new GroundChar(ActiveTeam.Leader, entry.Loc, (entry.Dir != Dir8.None) ? entry.Dir : ActiveTeam.Leader.CharDir, "PLAYER");
             if (ActiveChar != null)
-                grid.Remove(ActiveChar);
+                grid.Remove(ActiveChar, EdgeView == BaseMap.ScrollEdge.Wrap);
             ActiveChar = mapChar;
 
             if (ActiveChar != null)
@@ -338,17 +338,17 @@ namespace RogueEssence.Ground
         public void RemoveMapChar(GroundChar mapChar)
         {
             Entities[0].MapChars.Remove(mapChar);
-            grid.Remove(mapChar);
+            grid.Remove(mapChar, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
         private void signCharToMap(GroundChar groundChar)
         {
             groundChar.Map = this;
-            grid.Add(groundChar);
+            grid.Add(groundChar, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
         public void AddObject(GroundObject groundObj)
         {
             Entities[0].GroundObjects.Add(groundObj);
-            grid.Add(groundObj);
+            grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         /// <summary>
@@ -359,7 +359,7 @@ namespace RogueEssence.Ground
         {
             ch.Map = this;
             Entities[0].TemporaryChars.Add(ch);
-            grid.Add(ch);
+            grid.Add(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         /// <summary>
@@ -369,13 +369,13 @@ namespace RogueEssence.Ground
         public void RemoveTempChar(GroundChar ch)
         {
             Entities[0].TemporaryChars.Remove(ch);
-            grid.Remove(ch);
+            grid.Remove(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         public void RemoveObject(GroundObject groundObj)
         {
             Entities[0].GroundObjects.Remove(groundObj);
-            grid.Remove(groundObj);
+            grid.Remove(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         /// <summary>
@@ -581,38 +581,33 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerable<IObstacle> FindPossible(int x, int y, int w, int h)
         {
-            x = Math.Max(0, Math.Min(x, this.GroundWidth - w));
-            y = Math.Max(0, Math.Min(y, this.GroundHeight - h));
-            w = Math.Max(0, Math.Min(w, this.GroundWidth - x));
-            h = Math.Max(0, Math.Min(h, this.GroundHeight - y));
-
-
-            foreach (IObstacle obstacle in this.grid.QueryBoxes(x, y, w, h))
+            foreach (IObstacle obstacle in this.grid.QueryBoxes(x, y, w, h, EdgeView == BaseMap.ScrollEdge.Wrap))
                 yield return obstacle;
             foreach (IObstacle obstacle in findWalls(x, y, w, h))
                 yield return obstacle;
-
         }
 
         private IEnumerable<IObstacle> findWalls(int x, int y, int w, int h)
         {
-            x = Math.Max(0, Math.Min(x, this.GroundWidth - w));
-            y = Math.Max(0, Math.Min(y, this.GroundHeight - h));
-            w = Math.Max(0, Math.Min(w, this.GroundWidth - x));
-            h = Math.Max(0, Math.Min(h, this.GroundHeight - y));
-
             int divSize = GraphicsManager.TEX_SIZE;
-            var minX = (x / divSize);
-            var minY = (y / divSize);
-            var maxX = ((x + w - 1) / divSize);
-            var maxY = ((y + h - 1) / divSize);
+            var minX = MathUtils.DivDown(x, divSize);
+            var minY = MathUtils.DivDown(y, divSize);
+            var maxX = MathUtils.DivUp(x + w, divSize);
+            var maxY = MathUtils.DivUp(y + h, divSize);
+            Loc texSize = new Loc(TexWidth, TexHeight);
 
-            for (int ii = minX; ii <= maxX; ii++)
+            for (int ii = minX; ii < maxX; ii++)
             {
-                for (int jj = minY; jj <= maxY; jj++)
+                for (int jj = minY; jj < maxY; jj++)
                 {
-                    if (obstacles[ii][jj].Tags > 0)
-                        yield return obstacles[ii][jj];
+                    Loc testLoc = new Loc(ii, jj);
+                    if (EdgeView == BaseMap.ScrollEdge.Wrap)
+                        testLoc = Loc.Wrap(testLoc, texSize);
+                    else if (!RogueElements.Collision.InBounds(TexWidth, TexHeight, testLoc))
+                        continue;
+
+                    if (obstacles[testLoc.X][testLoc.Y].Tags > 0)
+                        yield return obstacles[testLoc.X][testLoc.Y];
                 }
             }
         }
@@ -639,7 +634,7 @@ namespace RogueEssence.Ground
 
         public void Update(IBox box, Rect from)
         {
-            this.grid.Update(box, from);
+            this.grid.Update(box, from, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         public IHit Hit(Loc point, IEnumerable<IObstacle> ignoring = null)
@@ -653,6 +648,7 @@ namespace RogueEssence.Ground
 
             foreach (var other in boxes)
             {
+                //TODO: detect collision in wrap-arounds
                 var hit = AABB.Hit.Resolve(point, other);
 
                 if (hit != null)
@@ -681,6 +677,7 @@ namespace RogueEssence.Ground
 
             foreach (IObstacle other in boxes)
             {
+                //TODO: detect collision in wrap-arounds
                 var hit = AABB.Hit.Resolve(origin, destination, other);
 
                 if (hit != null && (nearest == null || hit.IsNearest(nearest, origin)))
@@ -702,6 +699,7 @@ namespace RogueEssence.Ground
 
             foreach (IObstacle other in boxes)
             {
+                //TODO: detect collision in wrap-arounds
                 IHit hit = AABB.Hit.Resolve(origin, destination, other);
 
                 if (hit != null && (nearest == null || hit.IsNearest(nearest, origin.Start)))
@@ -775,7 +773,7 @@ namespace RogueEssence.Ground
                             Action<string, int, int, float> drawString)
         {
             // Drawing boxes
-            IEnumerable<IObstacle> boxes = this.grid.QueryBoxes(x, y, w, h);
+            IEnumerable<IObstacle> boxes = this.grid.QueryBoxes(x, y, w, h, EdgeView == BaseMap.ScrollEdge.Wrap);
             foreach (IObstacle box in boxes)
                 drawBox(box);
 
@@ -784,7 +782,7 @@ namespace RogueEssence.Ground
                 drawBox(box);
 
             // Drawing cells
-            IEnumerable<AABB.Grid.Cell> cells = this.grid.QueryCells(x, y, w, h);
+            IEnumerable<AABB.Grid.Cell> cells = this.grid.QueryCells(x, y, w, h, EdgeView == BaseMap.ScrollEdge.Wrap);
             foreach (AABB.Grid.Cell cell in cells)
             {
                 int count = cell.Count();
@@ -1019,7 +1017,7 @@ namespace RogueEssence.Ground
             foreach (GroundObject groundObj in Entities[layer].GroundObjects)
             {
                 groundObj.OnDeserializeMap(this);
-                grid.Add(groundObj);
+                grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
             }
         }
 

@@ -309,9 +309,9 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public IEnumerable<Loc> IterateLocInBounds(Rect rect, Loc loc)
         {
-            if (EdgeView != BaseMap.ScrollEdge.Wrap)
+            if (EdgeView != ScrollEdge.Wrap)
             {
-                if (RogueElements.Collision.InBounds(rect, loc))
+                if (Collision.InBounds(rect, loc))
                     yield return loc;
                 yield break;
             }
@@ -329,7 +329,7 @@ namespace RogueEssence.Dungeon
                 {
                     Loc mapStart = new Loc(xx, yy) * Size;
                     Loc testLoc = mapStart + wrapLoc;
-                    if (RogueElements.Collision.InBounds(rect, testLoc))
+                    if (Collision.InBounds(rect, testLoc))
                         yield return testLoc;
                 }
             }
