@@ -842,13 +842,16 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        protected override void PrepareFrontDraw(Rect[][] divRects)
+        protected override void PrepareFrontDraw()
         {
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == BaseMap.ScrollEdge.Wrap;
+            Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
+
             //draw hitboxes on top
             foreach (Hitbox hitbox in Hitboxes)
-                AddDivRectDraw(frontDraw, divRects, hitbox);
+                AddRelevantDraw(frontDraw, wrapped, wrapSize, hitbox);
 
-            base.PrepareFrontDraw(divRects);
+            base.PrepareFrontDraw();
         }
 
         protected override bool CanIdentifyCharOnScreen(Character character)
@@ -910,14 +913,16 @@ namespace RogueEssence.Dungeon
             return false;
         }
 
-        protected override void DrawItems(SpriteBatch spriteBatch, Rect[][] divRects, bool showHiddenItem)
+        protected override void DrawItems(SpriteBatch spriteBatch, bool showHiddenItem)
         {
-            base.DrawItems(spriteBatch, divRects, showHiddenItem);
+            base.DrawItems(spriteBatch, showHiddenItem);
 
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == BaseMap.ScrollEdge.Wrap;
+            Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
             //draw pickup items
             foreach (PickupItem item in PickupItems)
             {
-                foreach (Loc viewLoc in IterateDivRectDraw(divRects, item))
+                foreach (Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
                     TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                     if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
@@ -1481,10 +1486,9 @@ namespace RogueEssence.Dungeon
                     return;
 
                 //can only light up tiles currently in the viewport
-                if (!ZoneManager.Instance.CurrentMap.GetLocInTestBounds(sightRect, ref testLoc))
-                    return;
-
-                charSightValues[testLoc.X - sightRect.Start.X][testLoc.Y - sightRect.Start.Y] += start.Weight;
+                //but be sure to light up all of them
+                foreach (Loc loc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
+                    charSightValues[loc.X - sightRect.Start.X][loc.Y - sightRect.Start.Y] += start.Weight;
             };
             Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }

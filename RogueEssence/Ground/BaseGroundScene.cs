@@ -132,15 +132,7 @@ namespace RogueEssence.Ground
 
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
-            bool wrapped = ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Wrap;
-            Rect[][] divRects;
-            if (wrapped)
-                divRects = ZoneManager.Instance.CurrentGround.WrapSplitRect(ViewRect);
-            else
-            {
-                divRects = new Rect[1][];
-                divRects[0] = new Rect[1] { ViewRect };
-            }
+            bool wrapped = ZoneManager.Instance.CurrentGround.EdgeView == BaseMap.ScrollEdge.Wrap;
 
             //draw the background
             ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, ViewRect.Start);
@@ -151,14 +143,10 @@ namespace RogueEssence.Ground
                 {
                     Loc visualLoc = new Loc(xx, yy);
                     //if it's a tile on the discovery array, show it
-                    if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, visualLoc))
-                    {
-                        Loc wrappedLoc = ZoneManager.Instance.CurrentGround.WrapLoc(visualLoc);
-                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, wrappedLoc, false);
-                    }
+                    if (ZoneManager.Instance.CurrentGround.InMapBounds(visualLoc))
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, visualLoc, false);
                     else
                         ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, visualLoc);
-
                 }
             }
 
@@ -168,11 +156,11 @@ namespace RogueEssence.Ground
                 if (layer.Visible)
                 {
                     foreach (IDrawableSprite effect in layer.Anims)
-                        AddDivRectDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, divRects, effect);
+                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
                 }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
-                AddDivRectDraw(groundDraw, divRects, effect);
+                AddRelevantDraw(groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             int charIndex = 0;
             while (charIndex < groundDraw.Count)
@@ -186,7 +174,7 @@ namespace RogueEssence.Ground
             //draw effects in object space
             //get all back effects, see if they're in the screen, and put them in the list, sorted
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Back])
-                AddDivRectDraw(objectDraw, divRects, effect);
+                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             if (!DataManager.Instance.HideChars)
             {
@@ -195,7 +183,7 @@ namespace RogueEssence.Ground
                 {
                     if (!character.EntEnabled)
                         continue;
-                    foreach(Loc viewLoc in IterateDivRectDraw(divRects, character))
+                    foreach(Loc viewLoc in IterateRelevantDraw(wrapped, ZoneManager.Instance.CurrentGround.GroundSize, character))
                     {
                         AddToDraw(objectDraw, character, viewLoc);
                         shownShadows.Add((character, viewLoc));
@@ -204,7 +192,7 @@ namespace RogueEssence.Ground
             }
             //get all effects, see if they're in the screen, and put them in the list, sorted
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Normal])
-                AddDivRectDraw(objectDraw, divRects, effect);
+                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             //draw shadows
             foreach ((GroundChar sprite, Loc viewLoc) shadowChar in shownShadows)
@@ -220,7 +208,7 @@ namespace RogueEssence.Ground
                 {
                     if (!item.EntEnabled)
                         continue;
-                    AddDivRectDraw(objectDraw, divRects, item);
+                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
                 }
             }
 
@@ -234,7 +222,7 @@ namespace RogueEssence.Ground
 
             //draw effects in top
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
-                AddDivRectDraw(objectDraw, divRects, effect);
+                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             charIndex = 0;
             while (charIndex < objectDraw.Count)
@@ -250,18 +238,14 @@ namespace RogueEssence.Ground
                 {
                     //if it's a tile on the discovery array, show it
                     Loc frontLoc = new Loc(xx, yy);
-                    if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, frontLoc))
-                    {
-                        if (wrapped)
-                            frontLoc = ZoneManager.Instance.CurrentGround.WrapLoc(frontLoc);
+                    if (ZoneManager.Instance.CurrentGround.InMapBounds(frontLoc))
                         ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, frontLoc, true);
-                    }
                 }
             }
 
             //draw effects in foreground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Top])
-                AddDivRectDraw(foregroundDraw, divRects, effect);
+                AddRelevantDraw(foregroundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             charIndex = 0;
             while (charIndex < foregroundDraw.Count)

@@ -97,10 +97,11 @@ namespace RogueEssence
             Loc drawSize = sprite.GetDrawSize();
             if (drawSize == new Loc(-1))
                 return true;
+            if (drawSize == Loc.Zero)
+                return false;
+
             Rect spriteRect = new Rect(sprite.GetDrawLoc(Loc.Zero), drawSize);
 
-            if (spriteRect.Size == Loc.Zero)
-                return false;
 
             return Collision.Collides(spriteRect, viewBounds);
         }
@@ -115,60 +116,54 @@ namespace RogueEssence
             CollectionExt.AddToSortedList(sprites, (sprite, viewOffset), CompareSpriteCoords);
         }
 
-        /// <summary>
-        /// Add to draw the sprites in the view rect; one for each divided part of it.
-        /// Divisions are due to map wrapping.
-        /// </summary>
-        /// <param name="sprites"></param>
-        /// <param name="divRects">The ViewRect divided into pieces based on wrapped map borders.</param>
-        /// <param name="sprite"></param>
-        public void AddDivRectDraw(List<(IDrawableSprite, Loc)> sprites, Rect[][] divRects, IDrawableSprite sprite)
+        public void AddRelevantDraw(List<(IDrawableSprite, Loc)> sprites, bool wrapped, Loc wrapSize, IDrawableSprite sprite)
         {
-            // for every view slice, check if the sprite is in it, and add to the sprite draw list.
-            // TODO: for every view slice, check how many sprite positions need to render in it; check based on all the maps the sprite occupies.
-            // You will need to remove redundants here
-            foreach (Loc viewOffset in IterateDivRectDraw(divRects, sprite))
+            foreach (Loc viewOffset in IterateRelevantDraw(wrapped, wrapSize, sprite))
                 AddToDraw(sprites, sprite, viewOffset);
         }
 
-        public IEnumerable<Loc> IterateDivRectDraw(Rect[][] divRects, IDrawableSprite sprite)
+        public IEnumerable<Loc> IterateRelevantDraw(bool wrapped, Loc wrapSize, IDrawableSprite sprite)
         {
-            int xOffset = 0;
-            for (int xx = 0; xx < divRects.Length; xx++)
-            {
-                int yOffset = 0;
-                for (int yy = 0; yy < divRects[xx].Length; yy++)
-                {
-                    if (CanSeeSprite(divRects[xx][yy], sprite))
-                        yield return divRects[xx][yy].Start - new Loc(xOffset, yOffset);
-                    yOffset += divRects[xx][yy].Height;
-                }
-                xOffset += divRects[xx][0].Width;
-            }
-        }
+            if (sprite == null)
+                yield break;
 
-        /// <summary>
-        /// Slices a rectangle at the wrapped map boundaries.
-        /// </summary>
-        /// <returns></returns>
-        public static Rect[][] WrapSplitRect(Rect rect, Loc size)
-        {
-            Loc topLeftBounds = new Loc(MathUtils.DivDown(rect.Start.X, size.X), MathUtils.DivDown(rect.Start.Y, size.Y));
-            Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, size.X), MathUtils.DivUp(rect.End.Y, size.Y));
+            Loc drawSize = sprite.GetDrawSize();
+            if (drawSize == new Loc(-1))
+                yield return ViewRect.Start;
+            if (drawSize == Loc.Zero)
+                yield break;
 
-            Rect[][] choppedGrid = new Rect[bottomRightBounds.X - topLeftBounds.X][];
-            for (int xx = 0; xx < bottomRightBounds.X - topLeftBounds.X; xx++)
+            Loc baseDrawLoc = sprite.GetDrawLoc(Loc.Zero);
+            if (!wrapped)
             {
-                choppedGrid[xx] = new Rect[bottomRightBounds.Y - topLeftBounds.Y];
-                for (int yy = 0; yy < bottomRightBounds.Y - topLeftBounds.Y; yy++)
+                Rect spriteRect = new Rect(baseDrawLoc, drawSize);
+                if (Collision.Collides(spriteRect, ViewRect))
+                    yield return ViewRect.Start;
+                yield break;
+            }
+
+            //take the topmost Y of the map, subtract the height of the sprite, round down to the lowest whole map.  this is the topmost map to check
+            //take the bottom-most Y of the map, round up to the highest whole map.  this is the bottom-most (exclusive) map to check
+            //do the same for X
+            Loc topLeftBounds = new Loc(MathUtils.DivDown(ViewRect.X - drawSize.X, wrapSize.X), MathUtils.DivDown(ViewRect.Y - drawSize.Y, wrapSize.Y));
+            Loc bottomRightBounds = new Loc(MathUtils.DivUp(ViewRect.End.X, wrapSize.X), MathUtils.DivUp(ViewRect.End.Y, wrapSize.Y));
+            Loc wrapLoc = Loc.Wrap(baseDrawLoc, wrapSize);
+
+            for (int xx = topLeftBounds.X; xx < bottomRightBounds.X; xx++)
+            {
+                for (int yy = topLeftBounds.Y; yy < bottomRightBounds.Y; yy++)
                 {
-                    Rect subRect = new Rect((topLeftBounds + new Loc(xx, yy)) * size, size);
-                    Rect interRect = Rect.Intersect(rect, subRect);
-                    Rect wrappedRect = new Rect(Loc.Wrap(interRect.Start, size), interRect.Size);
-                    choppedGrid[xx][yy] = wrappedRect;
+                    Loc mapStart = new Loc(xx, yy) * wrapSize;
+                    Rect spriteRect = new Rect(mapStart + wrapLoc, drawSize);
+                    if (Collision.Collides(spriteRect, ViewRect))
+                    {
+                        //first compute a loc for which the addition to the original loc would result in this checked loc
+                        Loc diffLoc = spriteRect.Start - baseDrawLoc;
+                        //that difference is how much the viewRect needs to be shifted by
+                        yield return ViewRect.Start - diffLoc;
+                    }
                 }
             }
-            return choppedGrid;
         }
 
         public int CompareSpriteCoords((IDrawableSprite sprite, Loc viewOffset) sprite1, (IDrawableSprite sprite, Loc viewOffset) sprite2)

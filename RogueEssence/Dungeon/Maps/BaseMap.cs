@@ -275,15 +275,6 @@ namespace RogueEssence.Dungeon
         }
 
         /// <summary>
-        /// Slices a rectangle at the wrapped map boundaries.
-        /// </summary>
-        /// <returns></returns>
-        public Rect[][] WrapSplitRect(Rect rect)
-        {
-            return BaseScene.WrapSplitRect(rect, GroundSize);
-        }
-
-        /// <summary>
         /// Checks to see if the loc is in map bounds.
         /// If it's not wrapped, expect normal results.
         /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
@@ -297,36 +288,51 @@ namespace RogueEssence.Dungeon
                 loc = WrapLoc(loc);
                 return true;
             }
-            return Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc);
+            return Collision.InBounds(Width, Height, loc);
         }
 
-        /// <summary>
-        /// Checks to see if a location is in bounds of a rectangle, accounting for the map's wrapping, if there is any.
-        /// Uses tile units.
-        /// </summary>
-        /// <param name="rect">The rectangle to test with.</param>
-        /// <param name="loc">The loc to test with.  Will be wrapped to a value that fits in bounds if map is wrapped.</param>
-        /// <returns></returns>
-        public bool GetLocInTestBounds(Rect rect, ref Loc loc)
+        public bool InBounds(Rect rect, Loc loc)
         {
-            if (EdgeView == ScrollEdge.Wrap)
-            {
-                if (WrappedCollision.InBounds(Size, rect, loc))
-                {
-                    Loc wrappedStart = WrapLoc(rect.Start);
-                    Loc wrappedLoc = WrapLoc(loc);
-                    if (wrappedLoc.X < wrappedStart.X)
-                        wrappedLoc.X += Size.X;
-                    if (wrappedLoc.Y < wrappedStart.Y)
-                        wrappedLoc.Y += Size.Y;
-                    Loc wrappedDiff = wrappedLoc - wrappedStart;
-                    loc = rect.Start + wrappedDiff;
-                    return true;
-                }
-                return false;
-            }
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.InBounds(Size, rect, loc);
             else
                 return Collision.InBounds(rect, loc);
+        }
+
+
+        /// <summary>
+        /// Gets all wrapped locations that fit in the specified bounds.
+        /// In tiles.
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public IEnumerable<Loc> IterateLocInBounds(Rect rect, Loc loc)
+        {
+            if (EdgeView != BaseMap.ScrollEdge.Wrap)
+            {
+                if (RogueElements.Collision.InBounds(rect, loc))
+                    yield return loc;
+                yield break;
+            }
+
+            //take the topmost Y of the map, subtract the height of the sprite, round down to the lowest whole map.  this is the topmost map to check
+            //take the bottom-most Y of the map, round up to the highest whole map.  this is the bottom-most (exclusive) map to check
+            //do the same for X
+            Loc topLeftBounds = new Loc(MathUtils.DivDown(rect.X, Size.X), MathUtils.DivDown(rect.Y, Size.Y));
+            Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, Size.X), MathUtils.DivUp(rect.End.Y, Size.Y));
+            Loc wrapLoc = Loc.Wrap(loc, Size);
+
+            for (int xx = topLeftBounds.X; xx < bottomRightBounds.X; xx++)
+            {
+                for (int yy = topLeftBounds.Y; yy < bottomRightBounds.Y; yy++)
+                {
+                    Loc mapStart = new Loc(xx, yy) * Size;
+                    Loc testLoc = mapStart + wrapLoc;
+                    if (RogueElements.Collision.InBounds(rect, testLoc))
+                        yield return testLoc;
+                }
+            }
         }
 
         public void AddLayer(string name)

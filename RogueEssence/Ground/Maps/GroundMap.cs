@@ -472,16 +472,20 @@ namespace RogueEssence.Ground
         {
             return Loc.Wrap(loc, GroundSize);
         }
-
-        /// <summary>
-        /// Slices a rectangle at the wrapped map boundaries.
-        /// </summary>
-        /// <returns></returns>
-        public Rect[][] WrapSplitRect(Rect rect)
+        public bool InMapBounds(Loc loc)
         {
-            return BaseScene.WrapSplitRect(rect, GroundSize);
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return true;
+            return RogueElements.Collision.InBounds(Width, Height, loc);
         }
 
+        public bool InBounds(Rect rect, Loc loc)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.InBounds(Size, rect, loc);
+            else
+                return RogueElements.Collision.InBounds(rect, loc);
+        }
 
         public IEnumerable<GroundChar> IterateCharacters()
         {
@@ -757,6 +761,7 @@ namespace RogueEssence.Ground
 
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
         {
+            loc = WrapLoc(loc);
             foreach (MapLayer layer in Layers)
             {
                 if ((layer.Layer == DrawLayer.Top) == front && layer.Visible)
