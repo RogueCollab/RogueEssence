@@ -1445,6 +1445,8 @@ namespace RogueEssence.Script
             {
                 if (val is ProxyType)
                     types.Add(((ProxyType)val).UnderlyingSystemType);
+                else if (val is Type)
+                    types.Add((Type)val);
                 else if (val is LuaTable)
                 {
                     throw new NotImplementedException("I haven't decided now to do nested generic types yet...");
