@@ -48,6 +48,12 @@ namespace RogueEssence.Dungeon
             ID = index;
             TileTex = tex;
         }
+        public TerrainTile(int index, AutoTile tex, bool stableTex)
+        {
+            ID = index;
+            TileTex = tex;
+            StableTex = stableTex;
+        }
         protected TerrainTile(TerrainTile other)
         {
             ID = other.ID;

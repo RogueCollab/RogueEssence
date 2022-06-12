@@ -360,7 +360,7 @@ namespace RogueEssence.Dungeon
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
             //draw the background
-            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, Loc.Zero);
+            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, ViewRect.Start);
 
             spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 

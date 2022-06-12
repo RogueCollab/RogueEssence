@@ -46,6 +46,13 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaiseAndSet(ref chosenTerrain, value); }
         }
 
+        private bool stableTex;
+        public bool StableTex
+        {
+            get { return stableTex; }
+            set { this.RaiseAndSet(ref stableTex, value); }
+        }
+
 
         public TileBrowserViewModel TileBrowser { get; set; }
         public AutotileBrowserViewModel AutotileBrowser { get; set; }
@@ -78,7 +85,7 @@ namespace RogueEssence.Dev.ViewModels
                         if (brush.MultiSelect == Loc.One)
                         {
                             CanvasStroke<TerrainTile>.ProcessCanvasInput(input, tileCoords, inWindow,
-                                () => new DrawStroke<TerrainTile>(tileCoords, new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile())),
+                                () => new DrawStroke<TerrainTile>(tileCoords, new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile(), StableTex)),
                                 () => new DrawStroke<TerrainTile>(tileCoords, new TerrainTile(0, new AutoTile())),
                                 paintStroke, ref DungeonEditScene.Instance.TerrainInProgress);
                         }
@@ -94,7 +101,7 @@ namespace RogueEssence.Dev.ViewModels
                 case TileEditMode.Rectangle:
                     {
                         CanvasStroke<TerrainTile>.ProcessCanvasInput(input, tileCoords, inWindow,
-                            () => new RectStroke<TerrainTile>(tileCoords, new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile())),
+                            () => new RectStroke<TerrainTile>(tileCoords, new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile(), StableTex)),
                             () => new RectStroke<TerrainTile>(tileCoords, new TerrainTile(0, new AutoTile())),
                             paintStroke, ref DungeonEditScene.Instance.TerrainInProgress);
                     }
@@ -102,7 +109,7 @@ namespace RogueEssence.Dev.ViewModels
                 case TileEditMode.Fill:
                     {
                         CanvasStroke<TerrainTile>.ProcessCanvasInput(input, tileCoords, inWindow,
-                            () => new FillStroke<TerrainTile>(tileCoords, new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile())),
+                            () => new FillStroke<TerrainTile>(tileCoords, new TerrainTile(ChosenTerrain, getBrush().GetSanitizedTile(), StableTex)),
                             () => new FillStroke<TerrainTile>(tileCoords, new TerrainTile(0, new AutoTile())),
                             fillStroke, ref DungeonEditScene.Instance.TerrainInProgress);
                     }
@@ -132,7 +139,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 tiles[xx] = new TerrainTile[brush.MultiSelect.Y];
                 for (int yy = 0; yy < brush.MultiSelect.Y; yy++)
-                    tiles[xx][yy] = new TerrainTile(ChosenTerrain, brush.GetSanitizedTile(new Loc(xx, yy)));
+                    tiles[xx][yy] = new TerrainTile(ChosenTerrain, brush.GetSanitizedTile(new Loc(xx, yy)), StableTex);
             }
             return tiles;
         }
@@ -159,6 +166,7 @@ namespace RogueEssence.Dev.ViewModels
             TerrainTile terrainTile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Data;
 
             ChosenTerrain = terrainTile.ID;
+            StableTex = terrainTile.StableTex;
             if (terrainTile.TileTex.AutoTileset > -1)
             {
                 //switch to autotile tab

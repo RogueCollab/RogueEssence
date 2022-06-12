@@ -4,11 +4,15 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Content
 {
-
+    //TODO: move this variable around so that NoDraw is -2?
     public enum DrawLayer
     {
         /// <summary>
-        /// Draws on the floor, behind all entities.
+        /// Draws on the floor, behind all entities and terrain.
+        /// </summary>
+        Under = -1,
+        /// <summary>
+        /// Draws on the floor, behind all entities but not terrain.
         /// </summary>
         Bottom = 0,
         /// <summary>

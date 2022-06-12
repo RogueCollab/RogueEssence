@@ -345,14 +345,33 @@ namespace RogueEssence.Dungeon
 
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
         {
-            foreach (MapLayer layer in Layers)
+            if (!front)
             {
-                if ((layer.Layer == DrawLayer.Top) == front && layer.Visible)
-                    layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
+                foreach (MapLayer layer in Layers)
+                {
+                    if ((layer.Layer == DrawLayer.Under) && layer.Visible)
+                        layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
+                }
+
+                Tiles[loc.X][loc.Y].Data.TileTex.Draw(spriteBatch, drawPos);
             }
 
-            if (!front)
-                Tiles[loc.X][loc.Y].Data.TileTex.Draw(spriteBatch, drawPos);
+            foreach (MapLayer layer in Layers)
+            {
+                if (!layer.Visible)
+                    continue;
+                if (front)
+                {
+                    if (layer.Layer != DrawLayer.Top)
+                        continue;
+                }
+                else
+                {
+                    if (layer.Layer < DrawLayer.Bottom || DrawLayer.Top <= layer.Layer)
+                        continue;
+                }
+                layer.Tiles[loc.X][loc.Y].Draw(spriteBatch, drawPos);
+            }
         }  
     }
 

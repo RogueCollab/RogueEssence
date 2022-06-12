@@ -72,10 +72,13 @@ namespace RogueEssence.LevelGen
             map.Map.Element = GroundElement;
             if (LayeredGround)
             {
+                map.Map.AddLayer("Under");
+                MapLayer layer = map.Map.Layers[map.Map.Layers.Count - 1];
+                layer.Layer = Content.DrawLayer.Under;
                 for (int xx = 0; xx < map.Width; xx++)
                 {
                     for (int yy = 0; yy < map.Height; yy++)
-                        map.Floor.Tiles[xx][yy] = new AutoTile(GroundTileset);
+                        layer.Tiles[xx][yy] = new AutoTile(GroundTileset);
                 }
             }
         }
@@ -150,10 +153,13 @@ namespace RogueEssence.LevelGen
             map.Map.Element = GroundElement;
             if (LayeredGround)
             {
+                map.Map.AddLayer("Under");
+                MapLayer layer = map.Map.Layers[map.Map.Layers.Count - 1];
+                layer.Layer = Content.DrawLayer.Under;
                 for (int xx = 0; xx < map.Width; xx++)
                 {
                     for (int yy = 0; yy < map.Height; yy++)
-                        map.Floor.Tiles[xx][yy] = new AutoTile(TextureMap[GroundTexture]);
+                        layer.Tiles[xx][yy] = new AutoTile(TextureMap[GroundTexture]);
                 }
             }
         }
