@@ -14,7 +14,7 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class RoomGenSpecificLoad<T> : RoomGen<T> where T : BaseMapGenContext
+    public class RoomGenLoadMap<T> : RoomGen<T> where T : BaseMapGenContext
     {
         /// <summary>
         /// Map file to load.
@@ -40,13 +40,13 @@ namespace RogueEssence.LevelGen
         [NonSerialized]
         private Map map;
 
-        public RoomGenSpecificLoad()
+        public RoomGenLoadMap()
         {
             MapID = "";
         }
 
 
-        protected RoomGenSpecificLoad(RoomGenSpecificLoad<T> other)
+        protected RoomGenLoadMap(RoomGenLoadMap<T> other)
         {
             MapID = other.MapID;
             this.RoomTerrain = other.RoomTerrain;
@@ -61,7 +61,7 @@ namespace RogueEssence.LevelGen
             }
 
         }
-        public override RoomGen<T> Copy() { return new RoomGenSpecificLoad<T>(this); }
+        public override RoomGen<T> Copy() { return new RoomGenLoadMap<T>(this); }
 
 
         public override Loc ProposeSize(IRandom rand)
