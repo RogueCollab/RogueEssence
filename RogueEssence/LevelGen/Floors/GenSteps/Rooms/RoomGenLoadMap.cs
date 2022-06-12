@@ -30,12 +30,12 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Determines which tiles of the border are open for halls.
         /// </summary>
-        public Dictionary<Dir4, bool[]> Borders { get; set; }
+        //public Dictionary<Dir4, bool[]> Borders { get; set; }
 
         /// <summary>
         /// Determines if connecting hallways should continue digging inward after they hit the room bounds, until a walkable tile is found.
         /// </summary>
-        public bool FulfillAll { get; set; }
+        //public bool FulfillAll { get; set; }
 
         [NonSerialized]
         private Map map;
@@ -50,15 +50,15 @@ namespace RogueEssence.LevelGen
         {
             MapID = other.MapID;
             this.RoomTerrain = other.RoomTerrain;
-            this.FulfillAll = other.FulfillAll;
+            //this.FulfillAll = other.FulfillAll;
 
-            this.Borders = new Dictionary<Dir4, bool[]>();
-            foreach (Dir4 dir in DirExt.VALID_DIR4)
-            {
-                this.Borders[dir] = new bool[other.Borders[dir].Length];
-                for (int jj = 0; jj < other.Borders[dir].Length; jj++)
-                    this.Borders[dir][jj] = other.Borders[dir][jj];
-            }
+            //this.Borders = new Dictionary<Dir4, bool[]>();
+            //foreach (Dir4 dir in DirExt.VALID_DIR4)
+            //{
+            //    this.Borders[dir] = new bool[other.Borders[dir].Length];
+            //    for (int jj = 0; jj < other.Borders[dir].Length; jj++)
+            //        this.Borders[dir][jj] = other.Borders[dir][jj];
+            //}
 
         }
         public override RoomGen<T> Copy() { return new RoomGenLoadMap<T>(this); }
@@ -145,7 +145,7 @@ namespace RogueEssence.LevelGen
             foreach (LocRay8 entrance in this.map.EntryPoints)
                 map.Map.EntryPoints.Add(new LocRay8(entrance.Loc + this.Draw.Start, entrance.Dir));
 
-            this.FulfillRoomBorders(map, this.FulfillAll);
+            //this.FulfillRoomBorders(map, this.FulfillAll);
             this.SetRoomBorders(map);
         }
 
@@ -165,14 +165,14 @@ namespace RogueEssence.LevelGen
             {
                 for (int ii = 0; ii < this.Draw.Width; ii++)
                 {
-                    this.FulfillableBorder[Dir4.Up][ii] = this.map.Tiles[ii][0].TileEquivalent(this.RoomTerrain) || this.Borders[Dir4.Up][ii];
-                    this.FulfillableBorder[Dir4.Down][ii] = this.map.Tiles[ii][this.Draw.Height - 1].TileEquivalent(this.RoomTerrain) || this.Borders[Dir4.Down][ii];
+                    this.FulfillableBorder[Dir4.Up][ii] = this.map.Tiles[ii][0].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Up][ii];
+                    this.FulfillableBorder[Dir4.Down][ii] = this.map.Tiles[ii][this.Draw.Height - 1].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Down][ii];
                 }
 
                 for (int ii = 0; ii < this.Draw.Height; ii++)
                 {
-                    this.FulfillableBorder[Dir4.Left][ii] = this.map.Tiles[0][ii].TileEquivalent(this.RoomTerrain) || this.Borders[Dir4.Left][ii];
-                    this.FulfillableBorder[Dir4.Right][ii] = this.map.Tiles[this.Draw.Width - 1][ii].TileEquivalent(this.RoomTerrain) || this.Borders[Dir4.Right][ii];
+                    this.FulfillableBorder[Dir4.Left][ii] = this.map.Tiles[0][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Left][ii];
+                    this.FulfillableBorder[Dir4.Right][ii] = this.map.Tiles[this.Draw.Width - 1][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Right][ii];
                 }
             }
         }

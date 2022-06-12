@@ -20,10 +20,9 @@ namespace RogueEssence.LevelGen
             for (int xx = 0; xx < width; xx++)
                 PostProcMask[xx] = new PostProcTile[height];
         }
-        public RoomGenPostProcSpecific(int width, int height, ITile roomTerrain, bool fulfillAll) : this(width, height)
+        public RoomGenPostProcSpecific(int width, int height, ITile roomTerrain) : this(width, height)
         {
             RoomTerrain = roomTerrain;
-            FulfillAll = fulfillAll;
         }
 
         public override void DrawOnMap(T map)
