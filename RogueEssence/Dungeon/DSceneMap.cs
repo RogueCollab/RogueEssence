@@ -1534,6 +1534,8 @@ namespace RogueEssence.Dungeon
         public bool BlockedByCharacter(Character character, Loc loc, Alignment targetAlignments)
         {
             Character target = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            if (target == null)
+                return false;
             return IsTargeted(character, target, targetAlignments);
         }
 
