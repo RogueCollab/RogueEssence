@@ -210,6 +210,12 @@ namespace RogueEssence.Ground
                         continue;
                     AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
                 }
+                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].TemporaryObjects)
+                {
+                    if (!item.EntEnabled)
+                        continue;
+                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
+                }
             }
 
             //draw object

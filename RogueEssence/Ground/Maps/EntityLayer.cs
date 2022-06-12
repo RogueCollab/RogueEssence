@@ -25,6 +25,12 @@ namespace RogueEssence.Ground
         public List<GroundObject> GroundObjects;
 
         /// <summary>
+        /// Field for object entities that should not be serialized
+        /// </summary>
+        [NonSerialized]
+        public List<GroundObject> TemporaryObjects;
+
+        /// <summary>
         /// Contains a list of all the NPCs spawners on this map
         /// </summary>
         public List<GroundSpawner> Spawners;
@@ -44,6 +50,7 @@ namespace RogueEssence.Ground
             MapChars = new List<GroundChar>();
             Spawners = new List<GroundSpawner>();
             TemporaryChars = new List<GroundChar>();
+            TemporaryObjects = new List<GroundObject>();
         }
 
         protected EntityLayer(EntityLayer other)
@@ -57,6 +64,7 @@ namespace RogueEssence.Ground
             MapChars = new List<GroundChar>();
             Spawners = new List<GroundSpawner>();
             TemporaryChars = new List<GroundChar>();
+            TemporaryObjects = new List<GroundObject>();
         }
 
         public IMapLayer Clone() { return new EntityLayer(this); }
@@ -92,6 +100,9 @@ namespace RogueEssence.Ground
                 yield return v;
 
             foreach (GroundEntity v in GroundObjects)
+                yield return v;
+
+            foreach (GroundEntity v in TemporaryObjects)
                 yield return v;
 
             foreach (GroundEntity v in Markers)

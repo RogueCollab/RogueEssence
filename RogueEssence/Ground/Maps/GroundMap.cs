@@ -351,6 +351,12 @@ namespace RogueEssence.Ground
             grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
+        public void RemoveObject(GroundObject groundObj)
+        {
+            Entities[0].GroundObjects.Remove(groundObj);
+            grid.Remove(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
+        }
+
         /// <summary>
         /// Add a character entity that shouldn't be serialized!
         /// </summary>
@@ -372,9 +378,15 @@ namespace RogueEssence.Ground
             grid.Remove(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
-        public void RemoveObject(GroundObject groundObj)
+        public void AddTempObject(GroundObject groundObj)
         {
-            Entities[0].GroundObjects.Remove(groundObj);
+            Entities[0].TemporaryObjects.Add(groundObj);
+            grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
+        }
+
+        public void RemoveTempObject(GroundObject groundObj)
+        {
+            Entities[0].TemporaryObjects.Remove(groundObj);
             grid.Remove(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
@@ -387,6 +399,21 @@ namespace RogueEssence.Ground
         public GroundObject GetObj(string instancename)
         {
             GroundObject found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; });
+            if (found != null)
+                return found;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Lookup a temporary object instance by name on the map.
+        /// Returns the object if found, or null.
+        /// </summary>
+        /// <param name="instancename">Name of the object instance</param>
+        /// <returns>Forund object, or null</returns>
+        public GroundObject GetTempObj(string instancename)
+        {
+            GroundObject found = Entities[0].TemporaryObjects.Find((GroundObject ch) => { return ch.EntName == instancename; });
             if (found != null)
                 return found;
 
