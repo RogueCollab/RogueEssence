@@ -50,7 +50,7 @@
         <ColumnDefinition Width="120"/>
       </Grid.ColumnDefinitions>
       <ComboBox Items="{Binding TerrainTypes}" SelectedIndex="{Binding ChosenTerrain}" VirtualizationMode="Simple" VerticalAlignment="Center" Margin="4,2" Grid.Column="0"/>
-      <CheckBox Margin="4" IsChecked="{Binding StableTex}" Grid.Column="1">Stable Texture</CheckBox>
+      <CheckBox Margin="4" IsChecked="{Binding StableTex}" Grid.Column="1" ToolTip.Tip="Prevents the texture from being overwritten by the Texture Map.">Stable Texture</CheckBox>
     </Grid>
     <TabControl TabStripPlacement="Top" SelectedIndex="{Binding TabIndex}" Margin="4" Grid.Row="2" Grid.ColumnSpan="2">
       <TabItem Header="Tiles" >
