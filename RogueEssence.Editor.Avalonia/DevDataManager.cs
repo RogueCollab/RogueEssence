@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using RogueElements;
 using RogueEssence.Content;
@@ -26,8 +27,12 @@ namespace RogueEssence.Dev
         private static Dictionary<string, string> memberDocs;
         private static Dictionary<string, string> typeDocs;
 
+        private static Dictionary<string, Size> savedTypeSizes;
+
         public static void Init()
         {
+            savedTypeSizes = new Dictionary<string, Size>();
+
             initDocs();
 
             CharSheetOps = new List<CharSheetOp>();
@@ -150,6 +155,17 @@ namespace RogueEssence.Dev
 
             return null;
         }
+
+        public static bool GetTypeSize(Type type, out Size size)
+        {
+            return savedTypeSizes.TryGetValue(type.FullName, out size);
+        }
+
+        public static void SetTypeSize(Type type, Size size)
+        {
+            savedTypeSizes[type.FullName] = size;
+        }
+
 
         public static Bitmap GetTile(TileFrame tileTex)
         {

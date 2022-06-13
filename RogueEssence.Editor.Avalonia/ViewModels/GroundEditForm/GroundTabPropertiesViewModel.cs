@@ -107,6 +107,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, type, new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, null, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, type);
 
             frmData.SelectedOKEvent += async () =>
             {

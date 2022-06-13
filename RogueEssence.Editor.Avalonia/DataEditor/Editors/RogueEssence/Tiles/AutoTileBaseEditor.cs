@@ -28,6 +28,7 @@ namespace RogueEssence.Dev
                 object[] elementAttr = new object[1];
                 elementAttr[0] = new AnimAttribute(0, "Tile");
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, typeof(string), elementAttr, "", true, new Type[0]);
+                DataEditor.TrackTypeSize(frmData, typeof(string));
 
                 frmData.SelectedOKEvent += async () =>
                 {

@@ -140,6 +140,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, type);
 
             frmData.SelectedOKEvent += async () =>
             {
@@ -201,6 +202,7 @@ namespace RogueEssence.Dev.ViewModels
 
             DataTypeAttribute attr = new DataTypeAttribute(1, DataManager.DataType.Terrain, false);
             DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(int), new object[1] { attr }, key, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmKey, typeof(int));
 
             frmKey.SelectedOKEvent += async () =>
             {
@@ -221,6 +223,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(AutoTile), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(AutoTile));
 
             frmData.SelectedOKEvent += async () =>
             {

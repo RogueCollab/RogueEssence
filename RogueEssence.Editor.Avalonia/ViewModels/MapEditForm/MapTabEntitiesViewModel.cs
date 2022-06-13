@@ -445,6 +445,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(StatusEffect));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>

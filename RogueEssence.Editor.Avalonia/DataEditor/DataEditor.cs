@@ -52,9 +52,28 @@ namespace RogueEssence.Dev
             editors.Add(editor);
         }
 
-        public static void LoadDataControls(object obj, StackPanel control)
+        public static void LoadDataControls(object obj, DataEditForm editor)
         {
-            LoadClassControls(control, "Test", null, obj.ToString(), obj.GetType(), new object[0], obj, true, new Type[0]);
+            Type editType = obj.GetType();
+            LoadClassControls(editor.ControlPanel, "Test", null, obj.ToString(), editType, new object[0], obj, true, new Type[0]);
+            TrackTypeSize(editor, editType);
+        }
+
+        public static void TrackTypeSize(DataEditForm editor, Type editType)
+        {
+            Size savedSize;
+            if (DevDataManager.GetTypeSize(editType, out savedSize))
+            {
+                editor.Width = savedSize.Width;
+                editor.Height = savedSize.Height;
+            }
+
+            void editorWindow_SizeChanged(Size size)
+            {
+                DevDataManager.SetTypeSize(editType, size);
+            }
+
+            editor.GetObservable(TopLevel.ClientSizeProperty).Subscribe(editorWindow_SizeChanged);
         }
 
         private static IEditor findEditor(Type objType, object[] attributes)

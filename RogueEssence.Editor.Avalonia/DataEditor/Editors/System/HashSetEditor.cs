@@ -45,6 +45,7 @@ namespace RogueEssence.Dev
 
                 //TODO: make this a member and reference it that way
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {

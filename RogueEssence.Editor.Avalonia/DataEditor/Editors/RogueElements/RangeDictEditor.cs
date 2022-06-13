@@ -71,6 +71,7 @@ namespace RogueEssence.Dev
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
@@ -94,6 +95,7 @@ namespace RogueEssence.Dev
                 frmKey.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, attrList.ToArray());
 
                 DataEditor.LoadClassControls(frmKey.ControlPanel, parent, null, elementName, keyType, attrList.ToArray(), key, true, new Type[0]);
+                DataEditor.TrackTypeSize(frmKey, keyType);
 
                 frmKey.SelectedOKEvent += async () =>
                 {

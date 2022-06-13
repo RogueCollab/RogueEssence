@@ -95,6 +95,7 @@ namespace RogueEssence.Dev.ViewModels
 
             //TODO: make this a member and reference it that way
             DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", null, elementName, typeof(TileState), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(TileState));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>

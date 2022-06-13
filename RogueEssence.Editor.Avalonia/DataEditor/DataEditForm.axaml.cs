@@ -28,6 +28,7 @@ namespace RogueEssence.Dev.Views
             InitializeComponent();
 
             ControlPanel = this.FindControl<StackPanel>("stkContent");
+            
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -64,7 +65,7 @@ namespace RogueEssence.Dev.Views
         {
             if (Design.IsDesignMode)
                 return;
-
+            
             CloseChildren();
         }
 

@@ -44,6 +44,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(ActiveEffect), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(ActiveEffect));
 
             frmData.SelectedOKEvent += async () =>
             {
@@ -74,6 +75,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapStatus), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(MapStatus), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(MapStatus));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
@@ -115,6 +117,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(SingleCharEvent), new object[0]);
 
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(SingleCharEvent));
 
             frmData.SelectedOKEvent += async () =>
             {
