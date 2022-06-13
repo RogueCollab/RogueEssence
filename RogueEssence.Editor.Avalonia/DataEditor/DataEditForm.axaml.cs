@@ -61,7 +61,7 @@ namespace RogueEssence.Dev.Views
             this.Width = this.Width + 10;
         }
 
-        public void Window_Closing(object sender, CancelEventArgs e)
+        public virtual void Window_Closing(object sender, CancelEventArgs e)
         {
             if (Design.IsDesignMode)
                 return;

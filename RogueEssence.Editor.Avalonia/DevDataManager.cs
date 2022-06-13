@@ -31,8 +31,7 @@ namespace RogueEssence.Dev
 
         public static void Init()
         {
-            savedTypeSizes = new Dictionary<string, Size>();
-
+            initEditorSettings();
             initDocs();
 
             CharSheetOps = new List<CharSheetOp>();
@@ -62,6 +61,81 @@ namespace RogueEssence.Dev
             tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
             aliasCache = new LRUCache<string, Dictionary<int, string>>(20);
+        }
+
+        private static void initEditorSettings()
+        {
+            savedTypeSizes = new Dictionary<string, Size>();
+
+            string path = Path.Combine(DiagManager.CONFIG_PATH, "EditWindow.xml");
+
+            if (!File.Exists(path))
+                return;
+
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(path);
+                XmlNode members = xmldoc.SelectSingleNode("members");
+                foreach (XmlNode xnode in members.ChildNodes)
+                {
+                    if (xnode.Name == "member")
+                    {
+                        Size? value = null;
+                        string name = null;
+                        var atname = xnode.Attributes["name"];
+                        if (atname != null)
+                            name = atname.Value;
+
+                        //Get value
+                        XmlNode valnode = xnode.SelectSingleNode("size");
+                        if (valnode != null)
+                        {
+                            string[] valueStr = valnode.InnerText.Trim().Split(",");
+                            if (valueStr.Length == 2)
+                            {
+                                int width, height;
+                                if (int.TryParse(valueStr[0], out width) && int.TryParse(valueStr[1], out height))
+                                    value = new Size(width, height);
+                            }
+                        }
+
+                        if (value != null && name != null)
+                            savedTypeSizes[name] = value.Value;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+        public static void SaveEditorSettings()
+        {
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+
+                XmlNode docNode = xmldoc.CreateElement("members");
+                xmldoc.AppendChild(docNode);
+
+                foreach (string typeString in savedTypeSizes.Keys)
+                {
+                    Size size = savedTypeSizes[typeString];
+                    XmlElement member = xmldoc.CreateElement("member");
+                    member.SetAttribute("name", typeString);
+                    member.AppendInnerTextChild(xmldoc, "size", String.Format("{0},{1}", (int)size.Width, (int)size.Height));
+                    docNode.AppendChild(member);
+                }
+
+                xmldoc.Save(DiagManager.CONFIG_PATH + "EditWindow.xml");
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         private static void initDocs()
@@ -158,12 +232,14 @@ namespace RogueEssence.Dev
 
         public static bool GetTypeSize(Type type, out Size size)
         {
-            return savedTypeSizes.TryGetValue(type.FullName, out size);
+            string name = type.Assembly.GetName().Name + ":" + type.FullName;
+            return savedTypeSizes.TryGetValue(name, out size);
         }
 
         public static void SetTypeSize(Type type, Size size)
         {
-            savedTypeSizes[type.FullName] = size;
+            string name = type.Assembly.GetName().Name + ":" + type.FullName;
+            savedTypeSizes[name] = size;
         }
 
 
