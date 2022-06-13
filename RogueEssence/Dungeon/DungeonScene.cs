@@ -790,7 +790,7 @@ namespace RogueEssence.Dungeon
                             foreach (VisionLoc visionLoc in member.GetVisionLocs())
                             {
                                 if (visionLoc.Weight > 0)
-                                    AddSeenLocs(visionLoc, member.GetCharSight());
+                                    AddBrightLocs(visionLoc, member.GetCharSight());
                             }
                         }
                     }
@@ -1233,7 +1233,7 @@ namespace RogueEssence.Dungeon
 
                             for (int dir = 0; dir < DirExt.DIR8_COUNT; dir++)
                             {
-                                foreach (VisionLoc tex in getDarknessTextures(mapLoc, sightRect.Start, (Dir8)dir))
+                                foreach (VisionLoc tex in getBorderDarkness(mapLoc, sightRect, (Dir8)dir))
                                 {
                                     //draw in correct location
                                     Loc dest = new Loc(ii * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.X, jj * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.Y)
@@ -1427,14 +1427,18 @@ namespace RogueEssence.Dungeon
         }
 
         /// <summary>
-        /// Lights up tiles for graphical reasons
+        /// Lights up tiles for graphical reasons.
         /// </summary>
         /// <param name="loc"></param>
         /// <param name="sight"></param>
-        public void AddSeenLocs(VisionLoc loc, Map.SightRange sight)
+        public void AddBrightLocs(VisionLoc loc, Map.SightRange sight)
         {
             //The sight rect of the character, not the screen.
-            Loc seen = Character.GetSightDims();
+            //TODO: we currently add 1 to the range, even though it's beyond the actual sight of the players.
+            //This is to prevent darkness at the edge of vision from constantly showing up when walking.
+            //However, this is not ideal; the tiles being lit up actually aren't in character sight.
+            //So there needs to be a better way eventually...
+            Loc seen = Character.GetSightDims() + Loc.One;
             Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
             switch (sight)
             {
@@ -1493,11 +1497,18 @@ namespace RogueEssence.Dungeon
             Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }
 
-
-        private IEnumerable<VisionLoc> getDarknessTextures(Loc loc, Loc rectStart, Dir8 dir)
+        /// <summary>
+        /// Gets the texture and darkness intensity of a tile's border in a certain direction.
+        /// It is only used for tiles that are already bright.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="sightRect"></param>
+        /// <param name="dir"></param>
+        /// <returns>A visionLoc of the texture to draw, and the intensity to draw it at (the amount of darkness to add).</returns>
+        private IEnumerable<VisionLoc> getBorderDarkness(Loc loc, Rect sightRect, Dir8 dir)
         {
             //y0 = inward, y1 = outward, y2 = wall
-            float curLight = getBrightnessValue(loc, rectStart);
+            float curLight = getBrightnessValue(loc, sightRect.Start);
             if (dir.IsDiagonal())
             {
                 DirH horiz;
@@ -1506,9 +1517,9 @@ namespace RogueEssence.Dungeon
                 Loc horizLoc = loc + horiz.GetLoc();
                 Loc vertLoc = loc + vert.GetLoc();
                 Loc diagLoc = loc + dir.GetLoc();
-                float horizLight = getBrightnessValue(horizLoc, rectStart);
-                float vertLight = getBrightnessValue(vertLoc, rectStart);
-                float diagLight = getBrightnessValue(diagLoc, rectStart);
+                float horizLight = getBrightnessValue(horizLoc, sightRect.Start);
+                float vertLight = getBrightnessValue(vertLoc, sightRect.Start);
+                float diagLight = getBrightnessValue(diagLoc, sightRect.Start);
                 float darkest = curLight;
                 //if any of the 4-dir lights are darker than
                 if (horizLight == vertLight)
@@ -1556,12 +1567,18 @@ namespace RogueEssence.Dungeon
             else
             {
                 Loc diagLoc = loc + dir.GetLoc();
-                float diff = curLight - getBrightnessValue(diagLoc, rectStart);
+                float diff = curLight - getBrightnessValue(diagLoc, sightRect.Start);
                 if (diff > 0)
                     yield return new VisionLoc(new Loc((int)dir.Reverse() / 2, 2), diff);
             }
         }
 
+        /// <summary>
+        /// Gets the brightness of a tile, for border computation.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="rectStart"></param>
+        /// <returns></returns>
         private float getBrightnessValue(Loc loc, Loc rectStart)
         {
             if (SeeAll)
@@ -1596,7 +1613,7 @@ namespace RogueEssence.Dungeon
                     return 0f;
             }
 
-            //otherwise, use fade value
+            //if it's outside the camera, treat it as no-border
             Loc dest = loc - rectStart;
             if (!Collision.InBounds(charSightValues.Length, charSightValues[0].Length, dest))
                 return 1f - DARK_TRANSPARENT;
