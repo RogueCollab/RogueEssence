@@ -1438,8 +1438,19 @@ namespace RogueEssence.Data
                             ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
                             if (goal.ID != mail.Goal.ID || goal.StructID.Segment != mail.Goal.StructID.Segment || goal.StructID.ID != mail.Goal.StructID.ID)
                                 continue;
-                            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-                            if (version != mail.DefeatedVersion)
+                            int versionCount = reader.ReadInt32();
+                            List<ModVersion> versions = new List<ModVersion>();
+                            for (int ii = 0; ii < versionCount; ii++)
+                            {
+                                string name = reader.ReadString();
+                                Guid uuid = Guid.Parse(reader.ReadString());
+                                Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                                ModVersion diff = new ModVersion(name, uuid, version);
+                                versions.Add(diff);
+                            }
+                            List<ModVersion> curVersions = PathMod.GetModVersion();
+                            List<ModDiff> versionDiff = PathMod.DiffModVersions(versions, curVersions);
+                            if (versionDiff.Count > 0)
                                 continue;
 
                             return filename;
@@ -1467,7 +1478,13 @@ namespace RogueEssence.Data
                         int turnstaken = reader.ReadInt32();
                         string dateDefeated = reader.ReadString();
                         ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
-                        Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                        int versionCount = reader.ReadInt32();
+                        for (int ii = 0; ii < versionCount; ii++)
+                        {
+                            string name = reader.ReadString();
+                            Guid uuid = Guid.Parse(reader.ReadString());
+                            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                        }
                         return (BaseRescueMail)Serializer.DeserializeData(stream);
                     }
                 }
@@ -1511,10 +1528,16 @@ namespace RogueEssence.Data
                     writer.Write(mail.Goal.ID);
                     writer.Write(mail.Goal.StructID.Segment);
                     writer.Write(mail.Goal.StructID.ID);
-                    writer.Write(mail.DefeatedVersion.Major);
-                    writer.Write(mail.DefeatedVersion.Minor);
-                    writer.Write(mail.DefeatedVersion.Build);
-                    writer.Write(mail.DefeatedVersion.Revision);
+                    writer.Write(mail.DefeatedVersion.Count);
+                    for (int ii = 0; ii < mail.DefeatedVersion.Count; ii++)
+                    {
+                        writer.Write(mail.DefeatedVersion[ii].Name);
+                        writer.Write(mail.DefeatedVersion[ii].UUID.ToString());
+                        writer.Write(mail.DefeatedVersion[ii].Version.Major);
+                        writer.Write(mail.DefeatedVersion[ii].Version.Minor);
+                        writer.Write(mail.DefeatedVersion[ii].Version.Build);
+                        writer.Write(mail.DefeatedVersion[ii].Version.Revision);
+                    }
                     Serializer.SerializeData(stream, mail);
                 }
             }

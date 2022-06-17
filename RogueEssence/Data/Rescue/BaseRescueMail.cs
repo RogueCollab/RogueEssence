@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Data
@@ -14,7 +15,8 @@ namespace RogueEssence.Data
         public int TurnsTaken { get; set; }
         public string DateDefeated { get; set; }
         public ZoneLoc Goal { get; set; }
-        public Version DefeatedVersion { get; set; }
+
+        public List<ModVersion> DefeatedVersion { get; set; }
         public MapItem OfferedItem { get; set; }
         public LocalText GoalText { get; set; }
         public MonsterID[] TeamProfile { get; set; }

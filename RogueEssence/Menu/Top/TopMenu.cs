@@ -105,39 +105,34 @@ namespace RogueEssence.Menu
         private static void cannotRead(string path)
         {
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ERR_READ_FILE"),
-                Text.FormatKey("DLG_ERR_READ_FILE_FALLBACK", path)), false);
+                Text.FormatKey("DLG_ERR_READ_FILE_FALLBACK", PathMod.GetRelativePath(path))), false);
         }
 
         public static void Continue(SOSMail rescueMail)
         {
-            List<ModDiff> modDiffs = DataManager.Instance.Save.GetModDiffs();
             //check for presence of a main save-quicksave
             ReplayData replay = null;
             string recordDir = PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH);
             if (File.Exists(recordDir))
             {
-                if (modDiffs.Count > 0)
+                replay = DataManager.Instance.LoadReplay(recordDir, true);
+                if (replay == null)
                 {
                     cannotRead(recordDir);
                     return;
-                }
-                else
-                {
-                    replay = DataManager.Instance.LoadReplay(recordDir, true);
-                    if (replay == null)
-                    {
-                        cannotRead(recordDir);
-                        return;
-                    }
                 }
             }
             if (replay != null)
             {
                 MenuManager.Instance.ClearMenus();
+                List<ModDiff> replayDiffs = replay.States[0].Save.GetModDiffs();
+                if (replayDiffs.Count > 0)
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_FILE_VERSION_DIFF")), false);
                 GameManager.Instance.SceneOutcome = continueReplay(replay, rescueMail);
                 return;
             }
 
+            List<ModDiff> modDiffs = DataManager.Instance.Save.GetModDiffs();
             if (modDiffs.Count > 0)
                 DiagManager.Instance.LogInfo("Loading with version diffs:");
 

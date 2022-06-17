@@ -186,6 +186,9 @@ namespace RogueEssence.Menu
 
                 TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
                 MenuManager.Instance.ClearMenus();
+                List<ModDiff> replayDiffs = aok.RescueReplay.States[0].Save.GetModDiffs();
+                if (replayDiffs.Count > 0)
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_FILE_VERSION_DIFF")), false);
                 GameManager.Instance.SceneOutcome = validateReplay(aok.RescueReplay);
             }
             else

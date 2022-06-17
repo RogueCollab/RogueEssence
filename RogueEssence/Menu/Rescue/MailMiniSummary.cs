@@ -18,12 +18,12 @@ namespace RogueEssence.Menu
         {
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
-            Reward = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
-            Elements.Add(Reward);
-            LastSeen = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
-            Elements.Add(LastSeen);
-            Goal = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2));
+            Goal = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
             Elements.Add(Goal);
+            LastSeen = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 2));
+            Elements.Add(LastSeen);
+            Reward = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + 2));
+            Elements.Add(Reward);
             Portraits = new SpeakerPortrait[0];
         }
 
@@ -43,10 +43,20 @@ namespace RogueEssence.Menu
         {
             if (mail != null)
             {
+                List<ModVersion> curVersions = PathMod.GetModVersion();
+                List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
                 Name.SetText(mail.TeamName);
-                Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---"));
-                LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated));
                 Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' ')));
+                if (versionDiff.Count > 0)
+                {
+                    LastSeen.SetText("[" + Text.FormatKey("MENU_MAIL_INCOMPATIBLE") + "]");
+                    Reward.SetText("");
+                }
+                else
+                {
+                    LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated));
+                    Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---"));
+                }
                 Portraits = new SpeakerPortrait[mail.TeamProfile.Length];
                 for (int ii = 0; ii < mail.TeamProfile.Length; ii++)
                     Portraits[ii] = new SpeakerPortrait(mail.TeamProfile[ii], new EmoteStyle(GraphicsManager.SOSEmotion, true),
@@ -62,9 +72,9 @@ namespace RogueEssence.Menu
             if (mail != null)
             {
                 Name.SetText(mail.TeamName);
-                Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---"));
-                LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated));
                 Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' ')));
+                LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", mail.DateDefeated));
+                Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", mail.OfferedItem.Value > -1 ? mail.OfferedItem.GetDungeonName() : "---"));
                 Portraits = new SpeakerPortrait[mail.TeamProfile.Length];
                 for (int ii = 0; ii < mail.TeamProfile.Length; ii++)
                     Portraits[ii] = new SpeakerPortrait(mail.TeamProfile[ii], new EmoteStyle(0, true),
@@ -78,9 +88,9 @@ namespace RogueEssence.Menu
         private void setError()
         {
             Name.SetText("[" + Text.FormatKey("MENU_MAIL_ERROR") + "]");
-            Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", "---"));
-            LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", "---"));
             Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", "---"));
+            LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", "---"));
+            Reward.SetText(Text.FormatKey("MENU_SOS_REWARD", "---"));
             Portraits = new SpeakerPortrait[0];
         }
     }

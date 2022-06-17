@@ -43,6 +43,58 @@ namespace RogueEssence
             DEV_PATH = ExePath + "RawAsset/";
         }
 
+        /// <summary>
+        /// Takes a full path and returns a new path that is relative to the executable folder.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string GetRelativePath(string path)
+        {
+            List<string> exeSplit = Split(ExePath);
+            List<string> split = Split(path);
+
+            List<string> result = new List<string>();
+            for (int ii = 0; ii < split.Count; ii++)
+            {
+                if (ii < exeSplit.Count)
+                {
+                    if (exeSplit[ii] == split[ii])
+                        continue;
+                    else
+                    {
+                        result.Insert(0, "..");
+                        result.Add(split[ii]);
+                    }
+                }
+                else
+                    result.Add(split[ii]);
+            }
+
+            for (int jj = split.Count; jj < exeSplit.Count; jj++)
+                result.Insert(0, "..");
+
+            return Path.Combine(result.ToArray());
+        }
+
+        public static List<string> Split(string path)
+        {
+            List<string> result = new List<string>();
+            DirectoryInfo pathInfo = new DirectoryInfo(path);
+            foreach (string split in Split(pathInfo))
+                result.Add(split);
+            return result;
+        }
+
+        public static IEnumerable<string> Split(this DirectoryInfo path)
+        {
+            if (path == null)
+                throw new ArgumentNullException("path");
+            if (path.Parent != null)
+                foreach (var d in Split(path.Parent))
+                    yield return d;
+            yield return path.Name;
+        }
+
         public static string ModSavePath(string baseFolder)
         {
             return Path.Join(ExePath, baseFolder, Quest.Path);
@@ -215,6 +267,92 @@ namespace RogueEssence
             docNode.AppendInnerTextChild(xmldoc, "ModType", header.ModType.ToString());
 
             xmldoc.Save(Path.Join(path, "Mod.xml"));
+        }
+
+
+
+        public static List<ModVersion> GetModVersion()
+        {
+            List<ModVersion> result = new List<ModVersion>();
+            result.Add(new ModVersion("[Game]", Guid.Empty, Versioning.GetVersion()));
+            if (Quest.IsValid())
+                result.Add(new ModVersion(Quest.Name, Quest.UUID, Quest.Version));
+
+            foreach (ModHeader mod in Mods)
+                result.Add(new ModVersion(mod.Name, mod.UUID, mod.Version));
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a diff list of mod versions preserving order as much as possible.
+        /// </summary>
+        /// <param name="oldVersion"></param>
+        /// <param name="newVersion"></param>
+        /// <returns></returns>
+        public static List<ModDiff> DiffModVersions(List<ModVersion> oldVersion, List<ModVersion> newVersion)
+        {
+            HashSet<Guid> processedIDs = new HashSet<Guid>();
+            List<ModDiff> result = new List<ModDiff>();
+
+            for (int ii = 0; ii < oldVersion.Count; ii++)
+            {
+                if (!processedIDs.Contains(oldVersion[ii].UUID))
+                {
+                    bool found = false;
+                    for (int jj = ii; jj < newVersion.Count; jj++)
+                    {
+                        if (oldVersion[ii].UUID == newVersion[jj].UUID)
+                        {
+                            if (oldVersion[ii].Version != newVersion[jj].Version)
+                                result.Add(new ModDiff(newVersion[jj].Name, newVersion[jj].UUID, oldVersion[ii].Version, newVersion[jj].Version));
+                            found = true;
+                        }
+                    }
+                    if (!found)
+                        result.Add(new ModDiff(oldVersion[ii].Name, oldVersion[ii].UUID, oldVersion[ii].Version, null));
+                    processedIDs.Add(oldVersion[ii].UUID);
+                }
+
+                if (ii < newVersion.Count && !processedIDs.Contains(newVersion[ii].UUID))
+                {
+                    bool found = false;
+                    for (int jj = ii; jj < oldVersion.Count; jj++)
+                    {
+                        if (oldVersion[jj].UUID == newVersion[ii].UUID)
+                        {
+                            if (oldVersion[jj].Version != newVersion[ii].Version)
+                                result.Add(new ModDiff(newVersion[ii].Name, newVersion[ii].UUID, oldVersion[jj].Version, newVersion[ii].Version));
+                            found = true;
+                        }
+                    }
+                    if (!found)
+                        result.Add(new ModDiff(newVersion[ii].Name, newVersion[ii].UUID, null, newVersion[ii].Version));
+                    processedIDs.Add(newVersion[ii].UUID);
+                }
+            }
+
+            for (int jj = oldVersion.Count; jj < newVersion.Count; jj++)
+            {
+                if (!processedIDs.Contains(newVersion[jj].UUID))
+                    result.Add(new ModDiff(newVersion[jj].Name, newVersion[jj].UUID, null, newVersion[jj].Version));
+            }
+
+            return result;
+        }
+    }
+
+    public struct ModVersion
+    {
+        public string Name;
+        public Guid UUID;
+        public Version Version;
+
+        public ModVersion(string name, Guid uuid, Version version)
+        {
+            Name = name;
+            UUID = uuid;
+            Version = version;
         }
     }
 

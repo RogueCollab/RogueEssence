@@ -762,47 +762,25 @@ namespace RogueEssence.Data
             return newRecruits;
         }
 
+        public List<ModVersion> GetModVersion()
+        {
+            List<ModVersion> result = new List<ModVersion>();
+            result.Add(new ModVersion("[Game]", Guid.Empty, GameVersion));
+            if (Quest.IsValid())
+                result.Add(new ModVersion(Quest.Name, Quest.UUID, Quest.Version));
+
+            foreach (ModHeader mod in Mods)
+                result.Add(new ModVersion(mod.Name, mod.UUID, mod.Version));
+
+            return result;
+        }
 
         public List<ModDiff> GetModDiffs()
         {
-            List<ModDiff> result = new List<ModDiff>();
+            List<ModVersion> oldVersion = GetModVersion();
+            List<ModVersion> newVersion = PathMod.GetModVersion();
 
-            if (GameVersion != Versioning.GetVersion())
-                result.Add(new ModDiff("[Game]", Guid.Empty, GameVersion, Versioning.GetVersion()));
-
-            if (Quest.UUID != PathMod.Quest.UUID)
-            {
-                result.Add(new ModDiff(Quest.GetMenuName(), Quest.UUID, Quest.Version, null));
-                result.Add(new ModDiff(PathMod.Quest.GetMenuName(), PathMod.Quest.UUID, null, PathMod.Quest.Version));
-            }
-            else if (Quest.Version != PathMod.Quest.Version)
-                result.Add(new ModDiff(PathMod.Quest.GetMenuName(), PathMod.Quest.UUID, Quest.Version, PathMod.Quest.Version));
-
-            bool[] foundNewMod = new bool[PathMod.Mods.Length];
-            foreach (ModHeader oldMod in Mods)
-            {
-                bool found = false;
-                for (int ii = 0; ii < PathMod.Mods.Length; ii++)
-                {
-                    ModHeader newMod = PathMod.Mods[ii];
-                    if (oldMod.UUID == newMod.UUID)
-                    {
-                        found = true;
-                        foundNewMod[ii] = true;
-                        if (oldMod.Version != newMod.Version)
-                            result.Add(new ModDiff(newMod.GetMenuName(), newMod.UUID, oldMod.Version, newMod.Version));
-                        break;
-                    }
-                }
-                if (!found)
-                    result.Add(new ModDiff(oldMod.GetMenuName(), oldMod.UUID, oldMod.Version, null));
-            }
-            for (int ii = 0; ii < foundNewMod.Length; ii++)
-            {
-                if (!foundNewMod[ii])
-                    result.Add(new ModDiff(PathMod.Mods[ii].GetMenuName(), PathMod.Mods[ii].UUID, null, PathMod.Mods[ii].Version));
-            }
-            return result;
+            return PathMod.DiffModVersions(oldVersion, newVersion);
         }
 
         /// <summary>
