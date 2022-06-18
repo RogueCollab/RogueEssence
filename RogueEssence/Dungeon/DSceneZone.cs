@@ -286,6 +286,7 @@ namespace RogueEssence.Dungeon
 
             //extraneous directions are removed
 
+            DataManager.Instance.QueueLogUI();
             ActionResult result = new ActionResult();//denotes if a turn was taken
             yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(action, CurrentCharacter, result));
 
@@ -293,6 +294,7 @@ namespace RogueEssence.Dungeon
             {
                 //log the turn and reset inputs
                 DataManager.Instance.LogPlay(action);
+                DataManager.Instance.DequeueLogUI();
             }
         }
 

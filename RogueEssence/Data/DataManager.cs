@@ -991,8 +991,31 @@ namespace RogueEssence.Data
             }
         }
 
+        Queue<int[]> uiQueue;
+        public void QueueLogUI()
+        {
+            uiQueue = new Queue<int[]>();
+        }
+
+        public void DequeueLogUI()
+        {
+            if (uiQueue == null)
+                return;
+            Queue<int[]> tempQueue = uiQueue;
+            uiQueue = null;
+
+            while (tempQueue.Count > 0)
+                LogUIPlay(tempQueue.Dequeue());
+        }
+
         public void LogUIPlay(params int[] code)
         {
+            if (uiQueue != null)
+            {
+                uiQueue.Enqueue(code);
+                return;
+            }
+
             if (replayWriter != null)
             {
                 try
