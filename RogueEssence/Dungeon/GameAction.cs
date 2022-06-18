@@ -59,6 +59,14 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public GameAction(GameAction other)
+        {
+            Type = other.Type;
+            Dir = other.Dir;
+            this.args = new List<int>();
+            this.args.AddRange(other.args);
+        }
+
         public void AddArg(int arg)
         {
             args.Add(arg);
