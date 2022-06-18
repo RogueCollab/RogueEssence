@@ -109,7 +109,11 @@ namespace RogueEssence.Dungeon
 
         public int GetContextStateInt<T>(bool global, int defaultVal) where T : ContextIntState
         {
-            ContextIntState countState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            return GetContextStateInt(typeof(T), global, defaultVal);
+        }
+        public int GetContextStateInt(Type type, bool global, int defaultVal)
+        {
+            ContextIntState countState = global ? (ContextIntState)GlobalContextStates.GetWithDefault(type) : (ContextIntState)ContextStates.GetWithDefault(type);
             if (countState == null)
                 return defaultVal;
             else
@@ -119,10 +123,15 @@ namespace RogueEssence.Dungeon
 
         public void AddContextStateInt<T>(bool global, int addedVal) where T : ContextIntState
         {
-            ContextIntState countState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            AddContextStateInt(typeof(T), global, addedVal);
+        }
+
+        public void AddContextStateInt(Type type, bool global, int addedVal)
+        {
+            ContextIntState countState = global ? (ContextIntState)GlobalContextStates.GetWithDefault(type) : (ContextIntState)ContextStates.GetWithDefault(type);
             if (countState == null)
             {
-                T newCount = (T)Activator.CreateInstance(typeof(T));
+                ContextIntState newCount = (ContextIntState)Activator.CreateInstance(type);
                 newCount.Count = addedVal;
                 if (global)
                     GlobalContextStates.Set(newCount);
@@ -139,7 +148,12 @@ namespace RogueEssence.Dungeon
         }
         public Multiplier GetContextStateMult<T>(bool global, Multiplier defaultVal) where T : ContextMultState
         {
-            ContextMultState countState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            return GetContextStateMult(typeof(T), global, defaultVal);
+        }
+
+        public Multiplier GetContextStateMult(Type type, bool global, Multiplier defaultVal)
+        {
+            ContextMultState countState = global ? (ContextMultState)GlobalContextStates.GetWithDefault(type) : (ContextMultState)ContextStates.GetWithDefault(type);
             if (countState == null)
                 return defaultVal;
             else
@@ -148,10 +162,15 @@ namespace RogueEssence.Dungeon
 
         public void AddContextStateMult<T>(bool global, int numerator, int denominator) where T : ContextMultState
         {
-            ContextMultState multState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            AddContextStateMult(typeof(T), global, numerator, denominator);
+        }
+
+        public void AddContextStateMult(Type type, bool global, int numerator, int denominator)
+        {
+            ContextMultState multState = global ? (ContextMultState)GlobalContextStates.GetWithDefault(type) : (ContextMultState)ContextStates.GetWithDefault(type);
             if (multState == null)
             {
-                T newMult = (T)Activator.CreateInstance(typeof(T));
+                ContextMultState newMult = (ContextMultState)Activator.CreateInstance(type);
                 newMult.Mult = new Multiplier(numerator, denominator);
                 if (global)
                     GlobalContextStates.Set(newMult);
