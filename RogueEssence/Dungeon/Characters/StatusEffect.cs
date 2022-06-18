@@ -7,14 +7,41 @@ namespace RogueEssence.Dungeon
 
     public enum DrawEffect
     {
+        /// <summary>
+        /// No draw effect
+        /// </summary>
         None = -1,
+        /// <summary>
+        /// The character uses its sleeping animation.
+        /// </summary>
         Sleeping = 0,
+        /// <summary>
+        /// The character uses only the first frame of its idle animation
+        /// </summary>
         Stopped,
+        /// <summary>
+        /// Animates normally, but shaking
+        /// </summary>
         Shaking,
+        /// <summary>
+        /// In a charging pose.
+        /// </summary>
         Charging,
+        /// <summary>
+        /// Not drawn, but the shadow is still there.
+        /// </summary>
         Absent,
+        /// <summary>
+        /// Constantly spinning
+        /// </summary>
         Spinning,
+        /// <summary>
+        /// Constantly in pain
+        /// </summary>
         Hurt,
+        /// <summary>
+        /// Semi-transparent
+        /// </summary>
         Transparent
     }
 
