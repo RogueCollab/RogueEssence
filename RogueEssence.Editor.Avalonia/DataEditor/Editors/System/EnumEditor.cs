@@ -122,7 +122,7 @@ namespace RogueEssence.Dev
             else
             {
                 ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                return (Enum)Enum.ToObject(type, cbValue.SelectedIndex);
+                return (Enum)enums.GetValue(cbValue.SelectedIndex);
             }
         }
     }
