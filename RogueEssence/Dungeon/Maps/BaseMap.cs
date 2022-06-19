@@ -99,7 +99,7 @@ namespace RogueEssence.Dungeon
 
         public Tile GetTile(Loc loc)
         {
-            if (!Collision.InBounds(Width, Height, loc))
+            if (!GetLocInMapBounds(ref loc))
                 return null;
             return Tiles[loc.X][loc.Y];
         }
@@ -198,6 +198,7 @@ namespace RogueEssence.Dungeon
             }
             if (TileBlocked(loc, mobility, false))
                 return false;
+            loc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
             if (Tiles[loc.X][loc.Y].Effect.ID > -1)
             {
                 TileData tileData = DataManager.Instance.GetTile(Tiles[loc.X][loc.Y].Effect.ID);
@@ -220,6 +221,15 @@ namespace RogueEssence.Dungeon
         {
             return FindItemlessTile(origin, origin - new Loc(range), new Loc(range * 2 + 1), voluntary);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="voluntary"></param>
+        /// <returns>Unwrapped destination value.</returns>
         public Loc? FindItemlessTile(Loc origin, Loc start, Loc end, bool voluntary)
         {
             return Grid.FindClosestConnectedTile(start, end,

@@ -90,7 +90,7 @@ namespace RogueEssence.Dungeon
             {
                 ProcessDir(character.CharDir.Reverse(), switchedChar);
 
-                CharAnimWalk switchedWalkAnim = new CharAnimWalk(switchedChar.CharLoc, fromLoc, switchedChar.CharDir, charSpeed);
+                CharAnimWalk switchedWalkAnim = new CharAnimWalk(switchedChar.CharLoc, switchedChar.CharLoc + switchedChar.CharDir.GetLoc(), switchedChar.CharDir, charSpeed);
                 yield return CoroutineManager.Instance.StartCoroutine(switchedChar.StartAnim(switchedWalkAnim));
             }
 
@@ -1048,7 +1048,7 @@ namespace RogueEssence.Dungeon
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }
             }
-            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y];
+            Tile tile = ZoneManager.Instance.CurrentMap.GetTile(loc);
             TerrainData terrain = tile.Data.GetData();
             if (terrain.BlockType == TerrainData.Mobility.Lava)
             {
@@ -1065,7 +1065,7 @@ namespace RogueEssence.Dungeon
             }
             else
             {
-                mapItem.TileLoc = loc;
+                mapItem.TileLoc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
                 ZoneManager.Instance.CurrentMap.Items.Add(mapItem);
 
                 if (!silent)

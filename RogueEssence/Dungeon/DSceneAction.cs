@@ -677,7 +677,7 @@ namespace RogueEssence.Dungeon
 
         public bool IsTargeted(Loc tile, TileAlignment tileAlignment)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, tile))
+            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref tile))
                 return false;
 
             if (tileAlignment == TileAlignment.None)
