@@ -14,5 +14,9 @@ namespace RogueEssence
         {
             return new Loc((int)loc.X, (int)loc.Y);
         }
+        public static Rect CreateRect(this Loc loc, int radius)
+        {
+            return new Rect(loc - new Loc(radius), new Loc(radius * 2) + Loc.One);
+        }
     }
 }

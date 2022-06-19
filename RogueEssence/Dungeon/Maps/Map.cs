@@ -613,7 +613,8 @@ namespace RogueEssence.Dungeon
             //TODO: create a proximity lookup structure so we don't have to iterate all characters
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if ((character.CharLoc - loc).Dist8() <= character.Proximity)
+                Rect region = character.CharLoc.CreateRect(character.Proximity);
+                if (ZoneManager.Instance.CurrentMap.InBounds(region, loc))
                     yield return character;
             }
         }

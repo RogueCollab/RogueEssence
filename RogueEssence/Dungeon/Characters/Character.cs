@@ -1412,7 +1412,7 @@ namespace RogueEssence.Dungeon
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives(this))
+                foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives())
                     Proximity = Math.Max(Proximity, proximityTuple.passive.ProximityEvent.Radius);
             }
 
@@ -1536,14 +1536,15 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<PassiveContext> IterateProximityPassives(Character character, Loc targetLoc, Priority portPriority)
         {
-            foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives(character))
+            foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives())
             {
-                if (proximityTuple.passive.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() &&
+                Rect region = this.CharLoc.CreateRect(proximityTuple.passive.ProximityEvent.Radius);
+                if (ZoneManager.Instance.CurrentMap.InBounds(region, targetLoc) &&
                     (DungeonScene.Instance.GetMatchup(character, this) & proximityTuple.passive.ProximityEvent.TargetAlignments) != Alignment.None)
                     yield return new PassiveContext(proximityTuple.owner, proximityTuple.passive.ProximityEvent, portPriority, this);
             }
         }
-        private IEnumerable<(PassiveActive, ProximityPassive)> findProximityPassives(Character character)
+        private IEnumerable<(PassiveActive, ProximityPassive)> findProximityPassives()
         {
             //check all of their entries for proximity ranges; return them only if their ranges are above 0
             //whatever proximity passive class is used, it needs to somehow refer back to the character owning it
