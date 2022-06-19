@@ -532,7 +532,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// The region must be the region up for recalculation, NOT the changed tiles.
         /// </summary>
-        /// <param name="startLoc"></param>
+        /// <param name="startLoc">Unwrapped start of rectangle</param>
         /// <param name="sizeLoc"></param>
         public void MapModified(Loc startLoc, Loc sizeLoc)
         {

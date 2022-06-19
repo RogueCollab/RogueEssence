@@ -264,6 +264,7 @@ namespace RogueEssence.Dungeon
 
         public void QueueTrap(Loc loc)
         {
+            loc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
             //order matters
             if (!PendingTraps.Contains(loc))
                 PendingTraps.Add(loc);
@@ -527,18 +528,15 @@ namespace RogueEssence.Dungeon
                 }
 
                 //read signs or objects
-                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, frontLoc))
+                Tile tile = ZoneManager.Instance.CurrentMap.GetTile(frontLoc);
+                if (tile != null && tile.Effect.ID > -1)
                 {
-                    Tile tile = ZoneManager.Instance.CurrentMap.Tiles[frontLoc.X][frontLoc.Y];
-                    if (tile.Effect.ID > -1)
+                    TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
+                    if (entry.StepType == TileData.TriggerType.Blocker || entry.StepType == TileData.TriggerType.Unlockable)
                     {
-                        TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
-                        if (entry.StepType == TileData.TriggerType.Blocker || entry.StepType == TileData.TriggerType.Unlockable)
-                        {
-                            yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
-                            yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
-                            yield break;
-                        }
+                        yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
+                        yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
+                        yield break;
                     }
                 }
             }

@@ -22,12 +22,36 @@ namespace RogueEssence.Dungeon
         public const int FLOOR_ITEM_SLOT = -2;
         public const int FORCED_SLOT = -3;
 
-        public Loc StrikeStartTile { get; set; }//the tile of the user before it started a strike (used for tipper effects)
-        public Loc StrikeEndTile { get; set; }//the tile of the user JUST AFTER it started a strike (used for updating position)
-        public Dir8 StartDir { get; set; }//the direcion of the user before it started a strike (used for multistrike confusion)
+        /// <summary>
+        /// the tile of the user before it started a strike (used for tipper effects)
+        /// wrapped; it can't go out of bounds anyway
+        /// </summary>
+        public Loc StrikeStartTile { get; set; }
+        /// <summary>
+        /// the tile of the user JUST AFTER it started a strike (used for updating position)
+        /// wrapped; it can't go out of bounds anyway
+        /// </summary>
+        public Loc StrikeEndTile { get; set; }
+        /// <summary>
+        /// the direcion of the user before it started a strike (used for multistrike confusion)
+        /// unwrapped
+        /// </summary>
+        public Dir8 StartDir { get; set; }
+        /// <summary>
+        /// the origin tile for the explosion
+        /// unwrapped
+        /// </summary>
         public Loc ExplosionTile { get; set; }
+        /// <summary>
+        ///  the location of the tile being targeted
+        /// unwrapped
+        /// </summary>
         public Loc TargetTile { get; set; }
-        public List<Loc> StrikeLandTiles { get; set; }//all tiles in which a strike's hitbox ended (used for item landing)
+        /// <summary>
+        /// all tiles in which a strike's hitbox ended (used for item landing)
+        /// unwrapped
+        /// </summary>
+        public List<Loc> StrikeLandTiles { get; set; }
 
 
         public BattleActionType ActionType { get; set; }
