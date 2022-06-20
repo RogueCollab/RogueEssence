@@ -2141,10 +2141,15 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        if (!IsInSightBoundsFrom(fromLoc, toLoc))
-                            return false;
+                        Loc seen = GetSightDims();
+                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
-                        return Fov.IsInFOV(fromLoc, toLoc, DungeonScene.Instance.VisionBlocked);
+                        foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
+                        {
+                            if (Fov.IsInFOV(fromLoc, testLoc, DungeonScene.Instance.VisionBlocked))
+                                return true;
+                        }
+                        return false;
                     }
                 default:
                         return IsInSightBoundsFrom(fromLoc, toLoc);

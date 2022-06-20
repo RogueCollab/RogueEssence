@@ -1294,15 +1294,9 @@ namespace RogueEssence.Dungeon
             //find the closest target to land on
             if (Coverage != ArcCoverage.Single)
             {
-                List<Character> targets = new List<Character>();
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
-                {
-                    if (DungeonScene.Instance.IsTargeted(owner, character, TargetAlignments))
-                        targets.Add(character);
-                }
-                Character target = GetTarget(owner, ownerLoc, dir, Coverage == ArcCoverage.WideAngle, modRange, targets);
+                Loc? target = GetTarget(owner, ownerLoc, dir, Coverage == ArcCoverage.WideAngle, modRange, TargetAlignments, null);
                 if (target != null)
-                    return target.CharLoc;
+                    return target.Value;
             }
 
             //if impossible to find, use the default farthest landing spot
@@ -1335,7 +1329,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public static Character GetTarget(Character owner, Loc ownerLoc, Dir8 dir, bool wide, int range, IEnumerable<Character> targets)
+        public static Loc? GetTarget(Character owner, Loc ownerLoc, Dir8 dir, bool wide, int range, Alignment alignment, Character exempt)
         {
             Loc targetLoc = ownerLoc;
             List<bool> sideL = new List<bool>();
@@ -1348,10 +1342,11 @@ namespace RogueEssence.Dungeon
                 if (sideM)
                 {
                     //check directly forward
-                    foreach (Character character in targets)
+                    Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(targetLoc);
+                    if (character != null && character != exempt)
                     {
-                        if (targetLoc == character.CharLoc)
-                            return character;
+                        if (DungeonScene.Instance.IsTargeted(owner, character, alignment))
+                            return targetLoc;
                     }
                 }
 
@@ -1387,18 +1382,20 @@ namespace RogueEssence.Dungeon
                         if (sideL[side])
                         {
                             //check sides
-                            foreach (Character character in targets)
+                            Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(leftLoc);
+                            if (character != null && character != exempt)
                             {
-                                if (leftLoc == character.CharLoc)
-                                    return character;
+                                if (DungeonScene.Instance.IsTargeted(owner, character, alignment))
+                                    return leftLoc;
                             }
                         }
                         if (sideR[side])
                         {
-                            foreach (Character character in targets)
+                            Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(rightLoc);
+                            if (character != null && character != exempt)
                             {
-                                if (rightLoc == character.CharLoc)
-                                    return character;
+                                if (DungeonScene.Instance.IsTargeted(owner, character, alignment))
+                                    return rightLoc;
                             }
                         }
 

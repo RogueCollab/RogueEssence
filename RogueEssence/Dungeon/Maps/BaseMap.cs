@@ -301,20 +301,32 @@ namespace RogueEssence.Dungeon
             return Collision.InBounds(Width, Height, loc);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loc1">Reference loc</param>
+        /// <param name="loc2">Loc to get the closest wrap of.  May be out of bounds.</param>
+        /// <returns></returns>
+        public Loc GetClosestUnwrappedLoc(Loc loc1, Loc loc2)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.GetClosestWrap(Size, loc1, loc2);
+            else
+                return loc2;
+        }
+
         public int GetClosestDist8(Loc loc1, Loc loc2)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)
-                return WrappedCollision.GetDist8(Size, loc1, loc2);
-            else
-                return (loc1 - loc2).Dist8();
+                loc2 = WrappedCollision.GetClosestWrap(Size, loc1, loc2);
+            return (loc1 - loc2).Dist8();
         }
 
         public bool InRange(Loc loc1, Loc loc2, int range)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)
-                return WrappedCollision.GetDist8(Size, loc1, loc2) <= range;
-            else
-                return (loc1 - loc2).Dist8() <= range;
+                loc2 = WrappedCollision.GetClosestWrap(Size, loc1, loc2);
+            return (loc1 - loc2).Dist8() <= range;
         }
 
         public bool InBounds(Rect rect, Loc loc)

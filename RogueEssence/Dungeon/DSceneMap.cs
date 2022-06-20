@@ -1400,17 +1400,10 @@ namespace RogueEssence.Dungeon
 
             Loc endLoc = character.CharLoc;
 
-            List<Character> targets = new List<Character>();
-            foreach (Character cand in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            {
-                if (character != cand && Instance.IsTargeted(attacker, cand, targetAlignments))
-                    targets.Add(cand);
-            }
-
             //find the closest target to land on
-            Character target = ThrowAction.GetTarget(attacker, character.CharLoc, dir, true, range, targets);
+            Loc? target = ThrowAction.GetTarget(attacker, character.CharLoc, dir, true, range, targetAlignments, character);
             if (target != null)
-                endLoc = target.CharLoc;
+                endLoc = target.Value;
             else //if impossible to find, use the default farthest landing spot
             {
                 for (int ii = 0; ii < range; ii++)
@@ -1447,7 +1440,7 @@ namespace RogueEssence.Dungeon
             yield return new WaitForFrames(CharAnimThrown.ANIM_TIME);
 
             if (target != null) //if landed on enemy
-                yield return CoroutineManager.Instance.StartCoroutine(targetHit(target, attacker));
+                yield return CoroutineManager.Instance.StartCoroutine(targetHit(ZoneManager.Instance.CurrentMap.GetCharAtLoc(target.Value), attacker));
             else //if landed by self
                 yield return CoroutineManager.Instance.StartCoroutine(targetHit(character, attacker));
             
@@ -1614,10 +1607,11 @@ namespace RogueEssence.Dungeon
             //not empty?  pick the first one in a clockwise rotation
             foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters(ally, foe))
             {
-                Dir8 offDir = (target.CharLoc - FocusedCharacter.CharLoc).GetDir();
+                Loc unwrapped = ZoneManager.Instance.CurrentMap.GetClosestUnwrappedLoc(FocusedCharacter.CharLoc, target.CharLoc);
+                Dir8 offDir = DirExt.GetDir(FocusedCharacter.CharLoc, unwrapped);
                 if (offDir != Dir8.None)
                 {
-                    if (CanSeeCharOnScreen(target) && Collision.InFront(FocusedCharacter.CharLoc, target.CharLoc, offDir, -1))
+                    if (CanSeeCharOnScreen(target) && Collision.InFront(FocusedCharacter.CharLoc, unwrapped, offDir, -1))
                         losTargets[(int)offDir] = true;
                 }
             }
