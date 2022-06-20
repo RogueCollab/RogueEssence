@@ -337,6 +337,14 @@ namespace RogueEssence.Dungeon
                 return Collision.InBounds(rect, loc);
         }
 
+        public bool Collides(Rect rect1, Rect rect2)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.Collides(Size, rect1, rect2);
+            else
+                return Collision.Collides(rect1, rect2);
+        }
+
 
         /// <summary>
         /// Gets all wrapped locations that fit in the specified bounds.

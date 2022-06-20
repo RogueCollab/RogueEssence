@@ -542,12 +542,13 @@ namespace RogueEssence.Dungeon
             //update exploration for every character that sees the change
             if (ActiveTeam != null)
             {
+                Rect modifiedRect = new Rect(startLoc, sizeLoc);
                 foreach (Character character in ActiveTeam.Players)
                 {
                     if (!character.Dead)
                     {
                         Loc seenBounds = Character.GetSightDims();
-                        if (Collision.Collides(startLoc, sizeLoc, character.CharLoc - seenBounds, seenBounds * 2 + new Loc(1)))
+                        if (Collides(modifiedRect, new Rect(character.CharLoc - seenBounds, seenBounds * 2 + new Loc(1))))
                             UpdateExploration(character);
                     }
                 }
@@ -679,7 +680,10 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public Loc? GetClosestTileForChar(Character character, Loc loc)
         {
-            return Grid.FindClosestConnectedTile(new Loc(), Size,
+            Loc boundsStartLoc = Loc.Zero;
+            if (EdgeView == ScrollEdge.Wrap)
+                boundsStartLoc = loc - Size / 2;
+            return Grid.FindClosestConnectedTile(boundsStartLoc, Size,
                 (Loc testLoc) =>
                 {
                     if (character == null)
