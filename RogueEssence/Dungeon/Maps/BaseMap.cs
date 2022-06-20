@@ -301,6 +301,22 @@ namespace RogueEssence.Dungeon
             return Collision.InBounds(Width, Height, loc);
         }
 
+        public int GetClosestDist8(Loc loc1, Loc loc2)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.GetDist8(Size, loc1, loc2);
+            else
+                return (loc1 - loc2).Dist8();
+        }
+
+        public bool InRange(Loc loc1, Loc loc2, int range)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.GetDist8(Size, loc1, loc2) <= range;
+            else
+                return (loc1 - loc2).Dist8() <= range;
+        }
+
         public bool InBounds(Rect rect, Loc loc)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)

@@ -1538,8 +1538,7 @@ namespace RogueEssence.Dungeon
         {
             foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives())
             {
-                Rect region = this.CharLoc.CreateRect(proximityTuple.passive.ProximityEvent.Radius);
-                if (ZoneManager.Instance.CurrentMap.InBounds(region, targetLoc) &&
+                if (ZoneManager.Instance.CurrentMap.InRange(this.CharLoc, targetLoc, proximityTuple.passive.ProximityEvent.Radius) &&
                     (DungeonScene.Instance.GetMatchup(character, this) & proximityTuple.passive.ProximityEvent.TargetAlignments) != Alignment.None)
                     yield return new PassiveContext(proximityTuple.owner, proximityTuple.passive.ProximityEvent, portPriority, this);
             }
