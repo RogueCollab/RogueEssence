@@ -2071,7 +2071,7 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 {
-                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
                         seenChars.Add(target);
                 }
             }

@@ -559,8 +559,15 @@ namespace RogueEssence.Dungeon
             MidLocs.Add(VisualLoc);
             MidDirs.Add(CharDir);
 
-            ToLoc = walkAnim.ToLoc;
-            visualOverride = walkAnim.VisualLoc;
+            //maintain consistency with map switchovers
+            if (walkAnim.FromLoc == VisualLoc)
+            {
+                ToLoc = walkAnim.ToLoc;
+                visualOverride = walkAnim.VisualLoc;
+            }
+            else // switching back
+                ToLoc = walkAnim.ToLoc;
+
             CharDir = walkAnim.CharDir;
 
             SpeedMult = MidLocs.Count;

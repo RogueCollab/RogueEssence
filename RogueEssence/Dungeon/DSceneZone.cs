@@ -806,9 +806,8 @@ namespace RogueEssence.Dungeon
                 return 12;
 
             Loc seen = Character.GetSightDims();
-            Loc startDiff = movingChar.CharLoc - FocusedCharacter.CharLoc;
-            Loc endDiff = destTile - FocusedCharacter.CharLoc;
-            if ((Math.Abs(startDiff.X) > seen.X || Math.Abs(startDiff.Y) > seen.Y) && (Math.Abs(endDiff.X) > seen.X || Math.Abs(endDiff.Y) > seen.Y))
+            Rect sightBounds = new Rect(FocusedCharacter.CharLoc - seen, seen * 2 + new Loc(1));
+            if (!ZoneManager.Instance.CurrentMap.InBounds(sightBounds, movingChar.CharLoc) && !ZoneManager.Instance.CurrentMap.InBounds(sightBounds, destTile))
                 return 0;
 
             //character walks into vision

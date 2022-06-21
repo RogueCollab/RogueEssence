@@ -623,7 +623,7 @@ namespace RogueEssence.Dungeon
         {
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
             {
-                if (!character.Dead && rect.Contains(character.CharLoc))
+                if (!character.Dead && ZoneManager.Instance.CurrentMap.InBounds(rect, character.CharLoc))
                     yield return character;
             }
         }

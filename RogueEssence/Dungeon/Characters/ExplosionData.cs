@@ -104,12 +104,12 @@ namespace RogueEssence.Dungeon
                 effect, hitEffect));
         }
 
-        public void AddTargetedTiles(Loc origin, HashSet<Loc> hitTiles)
+        public IEnumerable<Loc> IterateTargetedTiles(Loc origin)
         {
             for (int ii = -Range; ii <= Range; ii++)
             {
                 for (int jj = -Range; jj <= Range; jj++)
-                    hitTiles.Add(new Loc(origin.X + ii, origin.Y + jj));
+                    yield return new Loc(origin.X + ii, origin.Y + jj);
             }
         }
 
