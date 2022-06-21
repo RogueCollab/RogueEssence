@@ -322,6 +322,13 @@ namespace RogueEssence.Dungeon
             return (loc1 - loc2).Dist8();
         }
 
+        public Dir8 GetClosestDir8(Loc loc1, Loc loc2)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                loc2 = WrappedCollision.GetClosestWrap(Size, loc1, loc2);
+            return DirExt.GetDir(loc1, loc2);
+        }
+
         public bool InRange(Loc loc1, Loc loc2, int range)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)

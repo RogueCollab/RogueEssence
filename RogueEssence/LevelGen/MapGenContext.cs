@@ -413,7 +413,7 @@ namespace RogueEssence.LevelGen
 
             foreach (MapGenEntrance entrance in GenEntrances)
             {
-                if ((entrance.Loc - loc).Dist8() <= MIN_DIST_FROM_START)
+                if (Map.InRange(entrance.Loc, loc, MIN_DIST_FROM_START))
                     return false;
             }
             return true;
