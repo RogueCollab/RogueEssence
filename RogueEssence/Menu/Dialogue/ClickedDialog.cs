@@ -39,8 +39,9 @@ namespace RogueEssence.Menu
                 return;
             base.Draw(spriteBatch);
 
+            TextPause textPause = getCurrentTextPause();
             //draw down-tick
-            if (Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+            if (Finished && textPause == null && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                 GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
         }
     }

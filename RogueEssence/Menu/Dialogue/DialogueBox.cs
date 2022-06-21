@@ -43,6 +43,7 @@ namespace RogueEssence.Menu
 
         protected FrameTick TotalTextTime;
         protected FrameTick CurrentTextTime;
+        protected FrameTick LastSpeakTime;
         protected FrameTick CurrentScrollTime;
 
         public abstract void ProcessTextDone(InputManager input);
@@ -78,45 +79,57 @@ namespace RogueEssence.Menu
         public virtual void ProcessActions(FrameTick elapsedTime)
         {
             TotalTextTime += elapsedTime;
-            if (!CurrentText.Finished)
+            if (!CurrentText.Finished || getCurrentTextPause() != null)
+            {
                 CurrentTextTime += elapsedTime;
+                LastSpeakTime += elapsedTime;
+            }
             if (scrolling)
                 CurrentScrollTime += elapsedTime;
         }
 
         public void Update(InputManager input)
         {
-            if (!CurrentText.Finished)
+            TextScript textScript = getCurrentTextScript();
+            if (textScript != null)
             {
-                TextScript textScript = getCurrentTextScript();
-                if (textScript != null)
-                {
-                    //TODO: execute callback and wait for its completion
-                    CurrentScript.RemoveAt(0);
-                }
+                //TODO: execute callback and wait for its completion
+                CurrentScript.RemoveAt(0);
+            }
 
-                TextPause textPause = getCurrentTextPause();
+            TextPause textPause = getCurrentTextPause();
+            if (textPause != null)
+            {
                 bool continueText;
-                if (textPause != null)
-                {
-                    if (textPause.Time > 0)
-                        continueText = CurrentTextTime >= textPause.Time;
-                    else
-                        continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
-                            || input.JustPressed(FrameInput.InputType.LeftMouse));
-                }
+                if (textPause.Time > 0)
+                    continueText = CurrentTextTime >= textPause.Time;
                 else
-                    continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
+                    continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                        || input.JustPressed(FrameInput.InputType.LeftMouse));
 
-                if (continueText)
+                if (!continueText)
+                    return;
+                else
                 {
-                    CurrentTextTime = new FrameTick();
-                    CurrentText.CurrentCharIndex++;
-                    if (Sound && CurrentText.CurrentCharIndex % 3 == 0)
-                        GameManager.Instance.SE("Menu/Speak");
-
                     if (textPause != null)//remove last text pause
                         CurrentPause.RemoveAt(0);
+                }
+            }
+            else
+            {
+                bool continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
+                continueText |= CurrentText.Finished;
+            }
+
+
+            if (!CurrentText.Finished)
+            {
+                CurrentTextTime = new FrameTick();
+                CurrentText.CurrentCharIndex++;
+                if (Sound && LastSpeakTime > 2)
+                {
+                    LastSpeakTime = new FrameTick();
+                    GameManager.Instance.SE("Menu/Speak");
                 }
             }
             else if (curTextIndex < Texts.Count - 1)
@@ -165,7 +178,7 @@ namespace RogueEssence.Menu
                 speakerPic.Draw(spriteBatch, new Loc());
 
             //draw down-tick
-            if (CurrentText.Finished && curTextIndex < Texts.Count - 1 && !scrolling && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+            if (CurrentText.Finished && textPause == null && curTextIndex < Texts.Count - 1 && !scrolling && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                 GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
         }
 
@@ -174,7 +187,7 @@ namespace RogueEssence.Menu
             yield return CurrentText;
         }
 
-        private TextPause getCurrentTextPause()
+        protected TextPause getCurrentTextPause()
         {
             if (CurrentPause.Count > 0)
             {
@@ -184,7 +197,7 @@ namespace RogueEssence.Menu
             return null;
         }
 
-        private TextScript getCurrentTextScript()
+        protected TextScript getCurrentTextScript()
         {
             if (CurrentScript.Count > 0)
             {
@@ -304,6 +317,8 @@ namespace RogueEssence.Menu
 
                 int totalTrim = 0;
                 int totalLength = 0;
+                int curPause = 0;
+                int curScript = 0;
                 for (int kk = 0; kk < texts.Count; kk++)
                 {
                     DialogueText text = texts[kk];
@@ -318,21 +333,27 @@ namespace RogueEssence.Menu
                         totalTrim += text.GetLineTrim(ii);
                         int oldLength = totalLength;
                         totalLength += text.GetLineTrim(ii) + text.GetLineLength(ii);
-                        foreach (TextPause pause in pauses)
+                        for (; curPause < pauses.Count; curPause++)
                         {
-                            if (oldLength <= pause.LetterIndex && pause.LetterIndex < totalLength)
+                            TextPause pause = pauses[curPause];
+                            if (pause.LetterIndex <= totalLength)
                             {
                                 pause.LetterIndex -= totalTrim;
                                 subPauses.Add(pause);
                             }
+                            else
+                                break;
                         }
-                        foreach (TextScript script in scripts)
+                        for (; curScript < scripts.Count; curScript++)
                         {
-                            if (oldLength <= script.LetterIndex && script.LetterIndex < totalLength)
+                            TextScript script = scripts[curScript];
+                            if (script.LetterIndex <= totalLength)
                             {
                                 script.LetterIndex -= totalTrim;
                                 subScripts.Add(script);
                             }
+                            else
+                                break;
                         }
                     }
                     totalTrim = totalLength;
