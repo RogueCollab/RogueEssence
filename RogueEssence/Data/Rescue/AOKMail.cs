@@ -17,6 +17,7 @@ namespace RogueEssence.Data
         public MonsterID[] RescuingProfile;
         public int[] RescuingPersonalities;
         public int FinalStatement;
+        //TODO: just make this a byte array so that it doesn't undergo json serialization bloat
         public ReplayData RescueReplay;
 
         public AOKMail()

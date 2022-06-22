@@ -47,6 +47,10 @@ namespace RogueEssence.Dungeon
         }
         public int ArgCount { get { return args.Count; } }
 
+        public GameAction()
+        {
+            this.args = new List<int>();
+        }
 
         public GameAction(ActionType type, Dir8 dir, params int[] args)
         {

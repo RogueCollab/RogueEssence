@@ -50,10 +50,13 @@ namespace RogueEssence.Menu
             if (sosMode)
             {
                 mail = DataManager.LoadRescueMail(fileName) as SOSMail;
-                List<ModVersion> curVersions = PathMod.GetModVersion();
-                List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
-                if (versionDiff.Count > 0)
-                    mail = null;
+                if (mail != null)
+                {
+                    List<ModVersion> curVersions = PathMod.GetModVersion();
+                    List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
+                    if (versionDiff.Count > 0)
+                        mail = null;
+                }
             }
             MenuManager.Instance.AddMenu(new MailChosenMenu(sosMode && (mail != null), fileName, action, () => { DeleteAction(fileName); }), true);
         }

@@ -1467,7 +1467,15 @@ namespace RogueEssence.Data
                             {
                                 string name = reader.ReadString();
                                 Guid uuid = Guid.Parse(reader.ReadString());
-                                Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                                int major = reader.ReadInt32();
+                                int minor = reader.ReadInt32();
+                                int build = reader.ReadInt32();
+                                int rev = reader.ReadInt32();
+                                Version version;
+                                if (build > -1)
+                                    version = new Version(major, minor, build, rev);
+                                else
+                                    version = new Version(major, minor);
                                 ModVersion diff = new ModVersion(name, uuid, version);
                                 versions.Add(diff);
                             }
@@ -1506,7 +1514,15 @@ namespace RogueEssence.Data
                         {
                             string name = reader.ReadString();
                             Guid uuid = Guid.Parse(reader.ReadString());
-                            Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                            int major = reader.ReadInt32();
+                            int minor = reader.ReadInt32();
+                            int build = reader.ReadInt32();
+                            int rev = reader.ReadInt32();
+                            Version version;
+                            if (build > -1)
+                                version = new Version(major, minor, build, rev);
+                            else
+                                version = new Version(major, minor);
                         }
                         return (BaseRescueMail)Serializer.DeserializeData(stream);
                     }
