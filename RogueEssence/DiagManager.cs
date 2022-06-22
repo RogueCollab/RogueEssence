@@ -46,6 +46,7 @@ namespace RogueEssence
 
         public bool DevMode;
         public IRootEditor DevEditor;
+        public bool ListenGen;
 
         public bool GamePadActive { get; private set; }
 
@@ -109,7 +110,8 @@ namespace RogueEssence
 
         private void logRogueElements(string msg)
         {
-            LogInfo(String.Format("Mapgen: {0}", msg));
+            if (ListenGen)
+                LogInfo(String.Format("Mapgen: {0}", msg));
         }
 
         public void Unload()

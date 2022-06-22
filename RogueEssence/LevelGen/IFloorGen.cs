@@ -201,7 +201,7 @@ namespace RogueEssence.LevelGen
             foreach (ZoneStep zoneStep in zoneContext.ZoneSteps)
                 zoneStep.Apply(zoneContext, map, queue);
 
-            if (DiagManager.Instance.DevMode)
+            if (DiagManager.Instance.DevMode && DiagManager.Instance.ListenGen)
             {
                 DiagManager.Instance.LogInfo("Generating map with these steps:");
                 StablePriorityQueue<Priority, IGenStep> queue2 = new StablePriorityQueue<Priority, IGenStep>();

@@ -25,6 +25,17 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        private bool debugGen;
+        public bool DebugGen
+        {
+            get { return debugGen; }
+            set
+            {
+                this.SetIfChanged(ref debugGen, value);
+                DiagManager.Instance.ListenGen = value;
+            }
+        }
+
         public ObservableCollection<string> Zones { get; }
 
         private int chosenZone;

@@ -88,6 +88,7 @@ namespace RogueEssence.Dev.Views
                 {
                     devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
                     devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
+                    devViewModel.Travel.DebugGen = DiagManager.Instance.ListenGen;
                 }
 
                 if ((dataType & DataManager.DataType.Skill) != DataManager.DataType.None)
