@@ -30,15 +30,13 @@ namespace RogueEssence
 
         protected override bool AttemptBlob(T map, BlobMap blobMap, int blobIdx)
         {
-            bool IsMapValid(Loc loc) => map.GetTile(loc).TileEquivalent(map.RoomTerrain);
+            bool IsMapValid(Loc loc) => map.RoomTerrain.TileEquivalent(map.GetTile(loc));
 
             // the XY to add to translate from point on the map to point on the blob map
             Loc offset = Loc.Zero;
             bool IsBlobValid(Loc loc)
             {
                 Loc srcLoc = loc + blobMap.Blobs[blobIdx].Bounds.Start;
-                if (!Collision.InBounds(blobMap.Blobs[blobIdx].Bounds, srcLoc))
-                    return false;
                 Loc destLoc = loc + offset;
                 if (!map.CanSetTile(destLoc, this.Terrain))
                     return false;

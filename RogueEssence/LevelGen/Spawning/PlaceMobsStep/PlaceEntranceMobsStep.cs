@@ -35,7 +35,7 @@ namespace RogueEssence.LevelGen
             for (int ii = 0; ii < map.RoomPlan.RoomCount; ii++)
             {
                 FloorRoomPlan room = map.RoomPlan.GetRoomPlan(ii);
-                if (Collision.InBounds(room.RoomGen.Draw, startLoc))
+                if (map.RoomPlan.InBounds(room.RoomGen.Draw, startLoc))
                 {
                     startRoom = ii;
                     break;

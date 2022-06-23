@@ -53,7 +53,7 @@ namespace RogueEssence.LevelGen
 
                 foreach (ITile tile in AcceptedTiles)
                 {
-                    if (map.GetTile(testLoc).TileEquivalent(tile) || map.GetTile(testLoc).TileEquivalent(map.RoomTerrain))
+                    if (tile.TileEquivalent(map.GetTile(testLoc)) || map.RoomTerrain.TileEquivalent(map.GetTile(testLoc)))
                         return false;
                 }
                 return true;
@@ -81,7 +81,7 @@ namespace RogueEssence.LevelGen
                         bool allowPlacement = false;
                         foreach (ITile tile in AcceptedTiles)
                         {
-                            if (map.GetTile(new Loc(xx, yy)).TileEquivalent(tile))
+                            if (tile.TileEquivalent(map.GetTile(new Loc(xx, yy))))
                                 allowPlacement = true;
                         }
                         if (allowPlacement)

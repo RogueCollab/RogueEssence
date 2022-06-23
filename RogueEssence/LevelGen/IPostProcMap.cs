@@ -5,6 +5,7 @@ namespace RogueEssence.LevelGen
 {
     public interface IPostProcGenContext : ITiledGenContext
     {
+        PostProcTile GetPostProc(Loc loc);
         PostProcTile[][] PostProcGrid { get; }
     }
 

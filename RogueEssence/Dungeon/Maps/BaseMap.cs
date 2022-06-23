@@ -198,7 +198,7 @@ namespace RogueEssence.Dungeon
             }
             if (TileBlocked(loc, mobility, false))
                 return false;
-            loc = ZoneManager.Instance.CurrentMap.WrapLoc(loc);
+            loc = WrapLoc(loc);
             if (Tiles[loc.X][loc.Y].Effect.ID > -1)
             {
                 TileData tileData = DataManager.Instance.GetTile(Tiles[loc.X][loc.Y].Effect.ID);

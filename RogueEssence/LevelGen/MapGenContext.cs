@@ -54,14 +54,20 @@ namespace RogueEssence.LevelGen
 
         public Tile[][] Tiles { get { return Map.Tiles; } }
 
-        public ITile GetTile(Loc loc) { return Map.Tiles[loc.X][loc.Y]; }
+        public ITile GetTile(Loc loc) { return Map.GetTile(loc); }
         public virtual bool CanSetTile(Loc loc, ITile tile)
         {
-            return !Map.Tiles[loc.X][loc.Y].TileEquivalent(UnbreakableTerrain);
+            if (!UnbreakableTerrain.TileEquivalent(Map.GetTile(loc)))
+                return true;
+            if (UnbreakableTerrain.TileEquivalent(tile))
+                return true;
+
+            return false;
         }
         public bool TrySetTile(Loc loc, ITile tile)
         {
             if (!CanSetTile(loc, tile)) return false;
+            loc = Map.WrapLoc(loc);
             Map.Tiles[loc.X][loc.Y] = (Tile)tile;
             return true;
         }
@@ -76,6 +82,13 @@ namespace RogueEssence.LevelGen
         public List<MapItem> Items { get { return Map.Items; } }
         public EventedList<Team> AllyTeams { get { return Map.AllyTeams; } }
         public EventedList<Team> MapTeams { get { return Map.MapTeams; } }
+
+        public PostProcTile GetPostProc(Loc loc)
+        {
+            if (!Map.GetLocInMapBounds(ref loc))
+                return null;
+            return PostProcGrid[loc.X][loc.Y];
+        }
 
         public PostProcTile[][] PostProcGrid { get; private set; }
 
@@ -120,7 +133,10 @@ namespace RogueEssence.LevelGen
 
         public bool HasTileEffect(Loc loc)
         {
-            return Map.Tiles[loc.X][loc.Y].Effect.ID > -1;
+            Tile tile = Map.GetTile(loc);
+            if (tile == null)
+                return false;
+            return tile.Effect.ID > -1;
         }
 
         List<Loc> IPlaceableGenContext<MoneySpawn>.GetAllFreeTiles() { return getAllFreeTiles(getOpenItemTiles); }
@@ -153,9 +169,7 @@ namespace RogueEssence.LevelGen
 
         protected bool isObstructed(Loc loc)
         {
-            if (!Collision.InBounds(Width, Height, loc))
-                return true;
-            return (!Tiles[loc.X][loc.Y].TileEquivalent(RoomTerrain) || HasTileEffect(loc));
+            return (!RoomTerrain.TileEquivalent(GetTile(loc)) || HasTileEffect(loc));
         }
 
         bool IPlaceableGenContext<MoneySpawn>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
@@ -167,7 +181,7 @@ namespace RogueEssence.LevelGen
         {
             if (isObstructed(loc))
                 return false;
-            if (PostProcGrid[loc.X][loc.Y].Status[(int)PostProcType.Panel] || PostProcGrid[loc.X][loc.Y].Status[(int)PostProcType.Item])
+            if (GetPostProc(loc).Status[(int)PostProcType.Panel] || GetPostProc(loc).Status[(int)PostProcType.Item])
                 return false;
 
             if (Grid.GetForkDirs(loc, isObstructed, isObstructed).Count >= 2)
@@ -359,7 +373,7 @@ namespace RogueEssence.LevelGen
 
             Grid.LocTest checkLenient = (Loc testLoc) =>
             {
-                return Tiles[testLoc.X][testLoc.Y].TileEquivalent(RoomTerrain);
+                return RoomTerrain.TileEquivalent(GetTile(testLoc));
             };
 
             tiles = Grid.FindTilesInBox(rect.Start, rect.Size, checkLenient);

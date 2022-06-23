@@ -47,15 +47,11 @@ namespace RogueEssence
         {
             Grid.LocTest checkGround = (Loc testLoc) =>
             {
-                if (!Collision.InBounds(map.Width, map.Height, testLoc))
-                    return false;
-                return (map.GetTile(testLoc).TileEquivalent(map.RoomTerrain));
+                return map.RoomTerrain.TileEquivalent(map.GetTile(testLoc));
             };
             Grid.LocTest checkBlock = (Loc testLoc) =>
             {
-                if (!Collision.InBounds(map.Width, map.Height, testLoc))
-                    return false;
-                return map.GetTile(testLoc).TileEquivalent(map.WallTerrain);
+                return map.WallTerrain.TileEquivalent(map.GetTile(testLoc));
             };
 
             Rect fullRect = new Rect(0, 0, map.Width, map.Height);

@@ -38,7 +38,7 @@ namespace RogueEssence.LevelGen
             for (int xx = 0; xx < Draw.Width; xx++)
             {
                 for (int yy = 0; yy < Draw.Height; yy++)
-                    map.PostProcGrid[Draw.X + xx][Draw.Y + yy].AddMask(PostProcMask[xx][yy]);
+                    map.GetPostProc(new Loc(Draw.X + xx, Draw.Y + yy)).AddMask(PostProcMask[xx][yy]);
             }
         }
     }

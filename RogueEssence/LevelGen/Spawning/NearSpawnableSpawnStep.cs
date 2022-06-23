@@ -46,7 +46,7 @@ namespace RogueEssence.LevelGen
                 FloorRoomPlan room = map.RoomPlan.GetRoomPlan(ii);
                 for (int jj = 0; jj < map.Count; jj++)
                 {
-                    if (Collision.InBounds(room.RoomGen.Draw, map.GetLoc(jj)))
+                    if (map.RoomPlan.InBounds(room.RoomGen.Draw, map.GetLoc(jj)))
                         spawningRooms.Add(new RoomHallIndex(ii, false), 100);
                 }
             }
