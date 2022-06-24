@@ -38,15 +38,15 @@ namespace RogueEssence.LevelGen
 
 
 
-        public override void ReceiveOpenedBorder(IRoomGen sourceRoom, Dir4 dir)
+        public override void AskWithOpenedBorder(IRoomGen sourceRoom, Dir4 dir)
         {
             //TODO: transfer to internal roomgen 
         }
-        public override void ReceiveFulfillableBorder(IRoomGen sourceRoom, Dir4 dir)
+        public override void AskWithFulfillableBorder(IRoomGen sourceRoom, Dir4 dir)
         {
             //TODO: transfer to internal roomgen 
         }
-        public override void ReceiveBorderRange(IntRange range, Dir4 dir)
+        public override void AskBorderRange(IntRange range, Dir4 dir)
         {
             //TODO: transfer to internal roomgen 
         }
