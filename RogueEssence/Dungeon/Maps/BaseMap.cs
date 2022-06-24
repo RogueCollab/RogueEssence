@@ -376,23 +376,8 @@ namespace RogueEssence.Dungeon
                 yield break;
             }
 
-            //take the topmost Y of the map, subtract the height of the sprite, round down to the lowest whole map.  this is the topmost map to check
-            //take the bottom-most Y of the map, round up to the highest whole map.  this is the bottom-most (exclusive) map to check
-            //do the same for X
-            Loc topLeftBounds = new Loc(MathUtils.DivDown(rect.X, Size.X), MathUtils.DivDown(rect.Y, Size.Y));
-            Loc bottomRightBounds = new Loc(MathUtils.DivUp(rect.End.X, Size.X), MathUtils.DivUp(rect.End.Y, Size.Y));
-            Loc wrapLoc = Loc.Wrap(loc, Size);
-
-            for (int xx = topLeftBounds.X; xx < bottomRightBounds.X; xx++)
-            {
-                for (int yy = topLeftBounds.Y; yy < bottomRightBounds.Y; yy++)
-                {
-                    Loc mapStart = new Loc(xx, yy) * Size;
-                    Loc testLoc = mapStart + wrapLoc;
-                    if (Collision.InBounds(rect, testLoc))
-                        yield return testLoc;
-                }
-            }
+            foreach (Loc inLoc in WrappedCollision.IteratePointsInBounds(Size, rect, loc))
+                yield return inLoc;
         }
 
         public void AddLayer(string name)

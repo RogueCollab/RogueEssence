@@ -142,27 +142,12 @@ namespace RogueEssence
                 yield break;
             }
 
-            //take the topmost Y of the map, subtract the height of the sprite, round down to the lowest whole map.  this is the topmost map to check
-            //take the bottom-most Y of the map, round up to the highest whole map.  this is the bottom-most (exclusive) map to check
-            //do the same for X
-            Loc topLeftBounds = new Loc(MathUtils.DivDown(ViewRect.X - drawSize.X, wrapSize.X), MathUtils.DivDown(ViewRect.Y - drawSize.Y, wrapSize.Y));
-            Loc bottomRightBounds = new Loc(MathUtils.DivUp(ViewRect.End.X, wrapSize.X), MathUtils.DivUp(ViewRect.End.Y, wrapSize.Y));
-            Loc wrapLoc = Loc.Wrap(baseDrawLoc, wrapSize);
-
-            for (int xx = topLeftBounds.X; xx < bottomRightBounds.X; xx++)
+            foreach (Rect spriteRect in WrappedCollision.IterateRegionsColliding(wrapSize, ViewRect, new Rect(baseDrawLoc, drawSize)))
             {
-                for (int yy = topLeftBounds.Y; yy < bottomRightBounds.Y; yy++)
-                {
-                    Loc mapStart = new Loc(xx, yy) * wrapSize;
-                    Rect spriteRect = new Rect(mapStart + wrapLoc, drawSize);
-                    if (Collision.Collides(spriteRect, ViewRect))
-                    {
-                        //first compute a loc for which the addition to the original loc would result in this checked loc
-                        Loc diffLoc = spriteRect.Start - baseDrawLoc;
-                        //that difference is how much the viewRect needs to be shifted by
-                        yield return ViewRect.Start - diffLoc;
-                    }
-                }
+                //first compute a loc for which the addition to the original loc would result in this checked loc
+                Loc diffLoc = spriteRect.Start - baseDrawLoc;
+                //that difference is how much the viewRect needs to be shifted by
+                yield return ViewRect.Start - diffLoc;
             }
         }
 
