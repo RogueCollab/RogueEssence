@@ -118,19 +118,23 @@ namespace RogueEssence.Dev
                 if (legacy == 2)
                 {
                     object data = LegacyLoad(dir);
-                    LegacySave(dir, data);
+                    if (data != null)
+                        LegacySave(dir, data);
                 }
                 else if (legacy == 1)
                 {
                     object data = LegacyLoad(dir);
-                    DataManager.SaveData(dir, data);
+                    if (data != null)
+                        DataManager.SaveData(dir, data);
                     object json = DataManager.LoadData(dir, t);
-                    LegacySave(dir, json);
+                    if (json != null)
+                        LegacySave(dir, json);
                 }
                 else
                 {
                     object data = LoadWithLegacySupport(dir, t);
-                    DataManager.SaveData(dir, data);
+                    if (data != null)
+                        DataManager.SaveData(dir, data);
                 }
             }
         }
