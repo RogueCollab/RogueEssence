@@ -677,13 +677,13 @@ namespace RogueEssence.Dungeon
         /// </summary>
         /// <param name="character">The character being moved. Null if not a character currently on the map.</param>
         /// <param name="loc">The ideal warp destination.</param>
-        /// <returns></returns>
+        /// <returns>The best fit warp destination.  This value is wrapped.</returns>
         public Loc? GetClosestTileForChar(Character character, Loc loc)
         {
             Loc boundsStartLoc = Loc.Zero;
             if (EdgeView == ScrollEdge.Wrap)
                 boundsStartLoc = loc - Size / 2;
-            return Grid.FindClosestConnectedTile(boundsStartLoc, Size,
+            Loc? result = Grid.FindClosestConnectedTile(boundsStartLoc, Size,
                 (Loc testLoc) =>
                 {
                     if (character == null)
@@ -711,6 +711,12 @@ namespace RogueEssence.Dungeon
                     return TileBlocked(testLoc, true, true);
                 },
                 loc);
+
+            // wrap the value
+            if (result.HasValue)
+                result = WrapLoc(result.Value);
+
+            return result;
         }
 
         public bool IsBlocked(Loc loc, uint mobility)
