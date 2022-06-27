@@ -130,6 +130,7 @@ namespace RogueEssence.Dev.ViewModels
                 SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
                 speciesChanged();
+                updateStats();
             }
         }
 
@@ -149,6 +150,7 @@ namespace RogueEssence.Dev.ViewModels
                     SelectedEntity.BaseForm.Form = value;
                     SelectedEntity.RestoreForm();
                     SelectedEntity.HP = SelectedEntity.MaxHP;
+                    updateStats();
                 }
                 this.RaisePropertyChanged();
             }
@@ -193,6 +195,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.RaiseAndSet(ref SelectedEntity.Level, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
+                updateStats();
             }
         }
 
@@ -322,37 +325,75 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.RaiseAndSet(ref SelectedEntity.MaxHPBonus, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
+                HPTotal = HPTotal;
             }
         }
 
         public int AtkBonus
         {
             get { return SelectedEntity.AtkBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.AtkBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.AtkBonus, value); AtkTotal = AtkTotal; }
         }
 
         public int DefBonus
         {
             get { return SelectedEntity.DefBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.DefBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.DefBonus, value); DefTotal = DefTotal; }
         }
 
         public int MAtkBonus
         {
             get { return SelectedEntity.MAtkBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.MAtkBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.MAtkBonus, value); MAtkTotal = MAtkTotal; }
         }
 
         public int MDefBonus
         {
             get { return SelectedEntity.MDefBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.MDefBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.MDefBonus, value); MDefTotal = MDefTotal; }
         }
 
         public int SpeedBonus
         {
             get { return SelectedEntity.SpeedBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.SpeedBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.SpeedBonus, value); SpeedTotal = SpeedTotal; }
+        }
+
+
+        public string HPTotal
+        {
+            get { return "= " + SelectedEntity.MaxHP; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string AtkTotal
+        {
+            get { return "= " + SelectedEntity.Atk; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string DefTotal
+        {
+            get { return "= " + SelectedEntity.Def; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string MAtkTotal
+        {
+            get { return "= " + SelectedEntity.MAtk; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string MDefTotal
+        {
+            get { return "= " + SelectedEntity.MDef; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string SpeedTotal
+        {
+            get { return "= " + SelectedEntity.Speed; }
+            set { this.RaisePropertyChanged(); }
         }
 
         public CollectionBoxViewModel Statuses { get; set; }
@@ -592,6 +633,16 @@ namespace RogueEssence.Dev.ViewModels
             foreach (StatusEffect state in SelectedEntity.StatusEffects.Values)
                 states.Add(state);
             Statuses.LoadFromList(states);
+        }
+
+        private void updateStats()
+        {
+            HPTotal = HPTotal;
+            AtkTotal = AtkTotal;
+            DefTotal = DefTotal;
+            MAtkTotal = MAtkTotal;
+            MDefTotal = MDefTotal;
+            SpeedTotal = SpeedTotal;
         }
 
         /// <summary>

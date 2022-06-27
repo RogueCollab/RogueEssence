@@ -120,38 +120,46 @@
           <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="80"/>
+          <ColumnDefinition Width="72"/>
           <ColumnDefinition/>
-          <ColumnDefinition Width="80"/>
+          <ColumnDefinition/>
+          <ColumnDefinition Width="72"/>
+          <ColumnDefinition/>
           <ColumnDefinition/>
           <ColumnDefinition Width="240"/>
         </Grid.ColumnDefinitions>
         <TextBlock Margin="4,2" Text="Skill 1:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="0"/>
-        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill0}" VerticalAlignment="Center" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <CheckBox Margin="4" IsChecked="{Binding SkillsOn0}" Grid.Row="0" Grid.Column="3">Enabled</CheckBox>
+        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill0}" VerticalAlignment="Center" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4"/>
+        <CheckBox Margin="4" IsChecked="{Binding SkillsOn0}" Grid.Row="0" Grid.Column="5">Enable</CheckBox>
         <TextBlock Margin="4,2" Text="Skill 2:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1"/>
-        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill1}" VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <CheckBox Margin="4" IsChecked="{Binding SkillsOn1}" Grid.Row="1" Grid.Column="3">Enabled</CheckBox>
+        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill1}" VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4"/>
+        <CheckBox Margin="4" IsChecked="{Binding SkillsOn1}" Grid.Row="1" Grid.Column="5">Enable</CheckBox>
         <TextBlock Margin="4,2" Text="Skill 3:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="2"/>
-        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill2}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <CheckBox Margin="4" IsChecked="{Binding SkillsOn2}" Grid.Row="2" Grid.Column="3">Enabled</CheckBox>
+        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill2}" VerticalAlignment="Center" Margin="4,2" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="4"/>
+        <CheckBox Margin="4" IsChecked="{Binding SkillsOn2}" Grid.Row="2" Grid.Column="5">Enable</CheckBox>
         <TextBlock Margin="4,2" Text="Skill 4:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
-        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill3}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <CheckBox Margin="4" IsChecked="{Binding SkillsOn3}" Grid.Row="3" Grid.Column="3">Enabled</CheckBox>
+        <ComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill3}" VerticalAlignment="Center" Margin="4,2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="4"/>
+        <CheckBox Margin="4" IsChecked="{Binding SkillsOn3}" Grid.Row="3" Grid.Column="5">Enable</CheckBox>
         <TextBlock Margin="4,2" Text="+HP:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4"/>
         <NumericUpDown Value="{Binding HPBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="1"/>
-        <TextBlock Margin="4,2" Text="+Speed:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="2"/>
-        <NumericUpDown Value="{Binding SpeedBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="3"/>
+        <TextBlock Margin="4,2" Text="{Binding HPTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="2"/>
+        <TextBlock Margin="4,2" Text="+Speed:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="3"/>
+        <NumericUpDown Value="{Binding SpeedBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="4" Grid.Column="4"/>
+        <TextBlock Margin="4,2" Text="{Binding SpeedTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="5"/>
         <TextBlock Margin="4,2" Text="+Attack:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="5"/>
         <NumericUpDown Value="{Binding AtkBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="5" Grid.Column="1"/>
-        <TextBlock Margin="4,2" Text="+Defense:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="2"/>
-        <NumericUpDown Value="{Binding DefBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="5" Grid.Column="3"/>
+        <TextBlock Margin="4,2" Text="{Binding AtkTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="2"/>
+        <TextBlock Margin="4,2" Text="+Defense:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="3"/>
+        <NumericUpDown Value="{Binding DefBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="5" Grid.Column="4"/>
+        <TextBlock Margin="4,2" Text="{Binding DefTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="5"/>
         <TextBlock Margin="4,2" Text="+M.Atk:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="6"/>
         <NumericUpDown Value="{Binding MAtkBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="6" Grid.Column="1"/>
-        <TextBlock Margin="4,2" Text="+M.Def:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="6" Grid.Column="2"/>
-        <NumericUpDown Value="{Binding MDefBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="6" Grid.Column="3"/>
+        <TextBlock Margin="4,2" Text="{Binding MAtkTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="2"/>
+        <TextBlock Margin="4,2" Text="+M.Def:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="6" Grid.Column="3"/>
+        <NumericUpDown Value="{Binding MDefBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="6" Grid.Column="4"/>
+        <TextBlock Margin="4,2" Text="{Binding MDefTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="5"/>
         
-        <Grid Grid.RowSpan="7" Grid.Column="4">
+        <Grid Grid.RowSpan="7" Grid.Column="6">
           <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition/>
