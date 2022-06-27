@@ -737,26 +737,18 @@ namespace RogueEssence.Data
             {
                 if (GetMonsterUnlock(ii) == UnlockState.Completed && destProgress.GetMonsterUnlock(ii) != UnlockState.Completed)
                 {
-                    MonsterData entry = DataManager.Instance.GetMonster(ii);
-                    if (entry.PromoteFrom == -1)
-                    {
-                        bool isOriginal = false;
-                        for (int jj = 0; jj < DataManager.Instance.StartChars.Count; jj++)
-                        {
-                            if (ii == DataManager.Instance.StartChars[jj].mon.Species)
-                                isOriginal = true;
-                        }
-                        if (!isOriginal)
-                            newRecruits.Add(ii);
-                    }
                     if (completion)
                         destProgress.RegisterMonster(ii);
-                    destProgress.RogueUnlockMonster(ii);
                 }
                 if (GetMonsterUnlock(ii) == UnlockState.Discovered && destProgress.GetMonsterUnlock(ii) == UnlockState.None)
                 {
                     if (completion)
                         destProgress.SeenMonster(ii);
+                }
+                if (GetRogueUnlock(ii) && !destProgress.GetRogueUnlock(ii))
+                {
+                    destProgress.RogueUnlockMonster(ii);
+                    newRecruits.Add(ii);
                 }
             }
             return newRecruits;

@@ -438,9 +438,22 @@ namespace RogueEssence.Dungeon
             //TODO: lost money events
         }
 
+        public int GetStorageValue()
+        {
+            int invValue = 0;
+            foreach (InvItem item in BoxStorage)
+                invValue += item.GetSellValue();
+            for (int ii = 0; ii < Storage.Length; ii++)
+            {
+                if (Storage[ii] > 0)
+                    invValue += DataManager.Instance.GetItem(ii).Price;
+            }
+            return invValue;
+        }
+
         public int GetTotalScore()
         {
-            return GetInvValue() + Money + Bank;
+            return GetInvValue() + GetStorageValue() + Money + Bank;
         }
 
         public void AddToSortedAssembly(Character chara)

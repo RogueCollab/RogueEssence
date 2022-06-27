@@ -81,7 +81,7 @@ namespace RogueEssence.Menu
 
             if (rogue != null)
             {
-                BankValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank),
+                BankValueTally = new MenuText(Text.FormatKey("MENU_RESULTS_BONUS_VALUE", Ending.ActiveTeam.Bank + Ending.ActiveTeam.GetStorageValue()),
                     new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), DirH.None);
                 TotalTally = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_SCORE", Ending.ActiveTeam.GetTotalScore()),
                     new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.None);
