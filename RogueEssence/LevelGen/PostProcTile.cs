@@ -1,30 +1,36 @@
-﻿namespace RogueEssence.LevelGen
+﻿using System;
+
+namespace RogueEssence.LevelGen
 {
+    [Flags]
     public enum PostProcType
     {
-        Terrain,
-        Panel,
-        Item,
-        Count
+        None = 0,
+        Terrain = 1,
+        Panel = 2,
+        Item = 4,
     }
 
     public class PostProcTile
     {
-        public bool[] Status;
+        public PostProcType Status;
 
         public PostProcTile()
+        { }
+
+        public PostProcTile(PostProcType status)
         {
-            Status = new bool[(int)PostProcType.Count];
+            Status = status;
         }
+
         public PostProcTile(PostProcTile other) : this()
         {
-            other.Status.CopyTo(Status, 0);
+            Status = other.Status;
         }
 
         public void AddMask(PostProcTile other)
         {
-            for (int ii = 0; ii < (int)PostProcType.Count; ii++)
-                Status[ii] |= other.Status[ii];
+            Status |= other.Status;
         }
     }
 }

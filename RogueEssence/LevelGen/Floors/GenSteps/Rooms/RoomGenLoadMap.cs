@@ -37,6 +37,8 @@ namespace RogueEssence.LevelGen
         /// </summary>
         //public bool FulfillAll { get; set; }
 
+        public PostProcType PreventChanges { get; set; }
+
         [NonSerialized]
         private Map map;
 
@@ -50,6 +52,7 @@ namespace RogueEssence.LevelGen
         {
             MapID = other.MapID;
             this.RoomTerrain = other.RoomTerrain;
+            this.PreventChanges = other.PreventChanges;
             //this.FulfillAll = other.FulfillAll;
 
             //this.Borders = new Dictionary<Dir4, bool[]>();
@@ -147,6 +150,12 @@ namespace RogueEssence.LevelGen
 
             //this.FulfillRoomBorders(map, this.FulfillAll);
             this.SetRoomBorders(map);
+
+            for (int xx = 0; xx < Draw.Width; xx++)
+            {
+                for (int yy = 0; yy < Draw.Height; yy++)
+                    map.GetPostProc(new Loc(Draw.X + xx, Draw.Y + yy)).AddMask(new PostProcTile(PreventChanges));
+            }
         }
 
         protected override void PrepareFulfillableBorders(IRandom rand)

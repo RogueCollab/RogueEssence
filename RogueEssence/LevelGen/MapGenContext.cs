@@ -57,12 +57,15 @@ namespace RogueEssence.LevelGen
         public ITile GetTile(Loc loc) { return Map.GetTile(loc); }
         public virtual bool CanSetTile(Loc loc, ITile tile)
         {
-            if (!UnbreakableTerrain.TileEquivalent(Map.GetTile(loc)))
-                return true;
-            if (UnbreakableTerrain.TileEquivalent(tile))
-                return true;
-
-            return false;
+            if (UnbreakableTerrain.TileEquivalent(Map.GetTile(loc)))
+            {
+                if (!UnbreakableTerrain.TileEquivalent(tile))
+                    return false;
+            }
+            PostProcTile postProc = GetPostProc(loc);
+            if ((postProc.Status & PostProcType.Terrain) != PostProcType.None)
+                return false;
+            return true;
         }
         public bool TrySetTile(Loc loc, ITile tile)
         {
@@ -73,8 +76,8 @@ namespace RogueEssence.LevelGen
         }
         public void SetTile(Loc loc, ITile tile)
         {
-            if (!TrySetTile(loc, tile))
-                throw new InvalidOperationException("Can't place tile!");
+            loc = Map.WrapLoc(loc);
+            Map.Tiles[loc.X][loc.Y] = (Tile)tile;
         }
 
         public bool TilesInitialized { get { return Map.Tiles != null; } }
@@ -181,7 +184,7 @@ namespace RogueEssence.LevelGen
         {
             if (isObstructed(loc))
                 return false;
-            if (GetPostProc(loc).Status[(int)PostProcType.Panel] || GetPostProc(loc).Status[(int)PostProcType.Item])
+            if ((GetPostProc(loc).Status & (PostProcType.Panel | PostProcType.Item)) != PostProcType.None)
                 return false;
 
             if (Grid.GetForkDirs(loc, isObstructed, isObstructed).Count >= 2)
