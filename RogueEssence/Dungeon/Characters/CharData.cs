@@ -24,7 +24,7 @@ namespace RogueEssence.Dungeon
                 string name = Nickname;
                 if (String.IsNullOrEmpty(Nickname))
                     name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
-                
+
                 return name;
             }
         }

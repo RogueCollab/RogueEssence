@@ -30,10 +30,20 @@ namespace RogueEssence.Dungeon
             {
                 if (ProxyName != "")
                     return ProxyName;
-                if (MemberTeam is MonsterTeam)
-                    return GetFullFormName(CurrentForm);
+                if (MemberTeam is ExplorerTeam)
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        return Nickname;
+                    else
+                        return DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                }
                 else
-                    return BaseName;
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        return Nickname;
+                    else
+                        return GetFullFormName(BaseForm);
+                }
             }
         }
 
@@ -47,10 +57,20 @@ namespace RogueEssence.Dungeon
             string name = Name;
             if (trueName)
             {
-                if (MemberTeam is MonsterTeam)
-                    name = GetFullFormName(CurrentForm);
+                if (MemberTeam is ExplorerTeam)
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        name = Nickname;
+                    else
+                        name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                }
                 else
-                    name = BaseName;
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        name = Nickname;
+                    else
+                        name = GetFullFormName(BaseForm);
+                }
             }
 
             Team team = MemberTeam;
