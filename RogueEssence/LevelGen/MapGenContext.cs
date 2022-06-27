@@ -35,7 +35,7 @@ namespace RogueEssence.LevelGen
 
         public int Width { get { return Map.Width; } }
         public int Height { get { return Map.Height; } }
-
+        public bool Wrap { get { return Map.EdgeView == BaseMap.ScrollEdge.Wrap; } }
         public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
         public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
         public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
@@ -111,9 +111,10 @@ namespace RogueEssence.LevelGen
             Map.LoadRand(rand);
         }
 
-        public virtual void CreateNew(int width, int height)
+        public virtual void CreateNew(int width, int height, bool wrap = false)
         {
             Map.CreateNew(width, height);
+            Map.EdgeView = BaseMap.ScrollEdge.Wrap;
             PostProcGrid = new PostProcTile[width][];
             for (int ii = 0; ii < width; ii++)
             {
@@ -199,25 +200,34 @@ namespace RogueEssence.LevelGen
 
         void IPlaceableGenContext<MoneySpawn>.PlaceItem(Loc loc, MoneySpawn item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapItem newItem = new MapItem(true, item.Amount);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }
         void IPlaceableGenContext<InvItem>.PlaceItem(Loc loc, InvItem item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapItem newItem = new MapItem(item);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }
         void IPlaceableGenContext<MapItem>.PlaceItem(Loc loc, MapItem item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapItem newItem = new MapItem(item);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }
         void IPlaceableGenContext<EffectTile>.PlaceItem(Loc loc, EffectTile item)
         {
-            Map.Tiles[loc.X][loc.Y].Effect = new EffectTile(item);
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
+            Tile tile = Map.GetTile(loc);
+            tile.Effect = new EffectTile(item);
         }
 
 
@@ -289,9 +299,19 @@ namespace RogueEssence.LevelGen
                 if (locs.Length != itemBatch.Team.MemberGuestCount)
                     throw new Exception("Team members not matching locations!");
                 for (int ii = 0; ii < itemBatch.Team.Players.Count; ii++)
-                    itemBatch.Team.Players[ii].CharLoc = locs[ii];
+                {
+                    Loc loc = locs[ii];
+                    if (!Map.GetLocInMapBounds(ref loc))
+                        throw new ArgumentException("Loc out of bounds.");
+                    itemBatch.Team.Players[ii].CharLoc = loc;
+                }
                 for (int ii = 0; ii < itemBatch.Team.Guests.Count; ii++)
-                    itemBatch.Team.Guests[ii].CharLoc = locs[itemBatch.Team.Players.Count + ii];
+                {
+                    Loc loc = locs[itemBatch.Team.Players.Count + ii];
+                    if (!Map.GetLocInMapBounds(ref loc))
+                        throw new ArgumentException("Loc out of bounds.");
+                    itemBatch.Team.Guests[ii].CharLoc = loc;
+                }
             }
 
             if (itemBatch.AllyFaction)
@@ -387,11 +407,15 @@ namespace RogueEssence.LevelGen
 
         void IPlaceableGenContext<MapGenEntrance>.PlaceItem(Loc loc, MapGenEntrance item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapGenEntrance newItem = new MapGenEntrance(loc, item.Dir);
             GenEntrances.Add(newItem);
         }
         void IPlaceableGenContext<MapGenExit>.PlaceItem(Loc loc, MapGenExit item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapGenExit newItem = new MapGenExit(loc, new EffectTile(item.Tile));
             GenExits.Add(newItem);
         }
