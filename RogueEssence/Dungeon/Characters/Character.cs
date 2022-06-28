@@ -260,7 +260,14 @@ namespace RogueEssence.Dungeon
         /// Can only use basic attack as an action.
         /// </summary>
         public bool AttackOnly;
+        /// <summary>
+        /// Treated as a foe by friends in combat
+        /// </summary>
         public bool EnemyOfFriend;
+        /// <summary>
+        /// Treats friends as foes in and out of combat
+        /// </summary>
+        public bool AttackFriend;
         //visibility and sight
         public Map.SightRange TileSight;
         public Map.SightRange CharSight;

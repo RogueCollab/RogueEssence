@@ -625,6 +625,13 @@ namespace RogueEssence.Dungeon
             return GetMatchup(attacker, target, true);
         }
 
+        /// <summary>
+        /// Determines how the first character should treat the second character.
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="target"></param>
+        /// <param name="action">Whether the alignment is for thinking (off) or for attacking (on)</param>
+        /// <returns></returns>
         public Alignment GetMatchup(Character attacker, Character target, bool action)
         {
             if (attacker == null) return Alignment.Foe;
@@ -633,6 +640,8 @@ namespace RogueEssence.Dungeon
                 return Alignment.Self;
 
             if (target.EnemyOfFriend && action)
+                return Alignment.Foe;
+            if (attacker.AttackFriend && action)
                 return Alignment.Foe;
 
             if (attacker.MemberTeam == target.MemberTeam)
