@@ -124,7 +124,13 @@ namespace RogueEssence.LevelGen
                     {
                         int layerTo;
                         if (layerMap.TryGetValue(ii, out layerTo))
-                            map.Map.Layers[layerTo].Tiles[this.Draw.X + xx][this.Draw.Y + yy] = this.map.Layers[ii].Tiles[xx][yy];
+                        {
+                            Loc wrapLoc = this.Draw.Start + new Loc(xx, yy);
+                            if (map.Map.GetLocInMapBounds(ref wrapLoc))
+                                map.Map.Layers[layerTo].Tiles[wrapLoc.X][wrapLoc.Y] = this.map.Layers[ii].Tiles[xx][yy];
+                            else
+                                throw new IndexOutOfRangeException("Attempted to draw custom room graphics out of range!");
+                        }
                     }
                 }
             }
@@ -132,7 +138,11 @@ namespace RogueEssence.LevelGen
             //place items
             foreach (MapItem item in this.map.Items)
             {
-                item.TileLoc = item.TileLoc + this.Draw.Start;
+                Loc wrapLoc = item.TileLoc + this.Draw.Start;
+                if (map.Map.GetLocInMapBounds(ref wrapLoc))
+                    item.TileLoc = wrapLoc;
+                else
+                    throw new IndexOutOfRangeException("Attempted to draw custom room item out of range!");
                 map.Items.Add(item);
             }
 
@@ -140,13 +150,25 @@ namespace RogueEssence.LevelGen
             foreach (Team team in this.map.MapTeams)
             {
                 foreach (Character member in team.EnumerateChars())
-                    member.CharLoc = member.CharLoc + this.Draw.Start;
+                {
+                    Loc wrapLoc = member.CharLoc + this.Draw.Start;
+                    if (map.Map.GetLocInMapBounds(ref wrapLoc))
+                        member.CharLoc = wrapLoc;
+                    else
+                        throw new IndexOutOfRangeException("Attempted to draw custom room enemy out of range!");
+                }
                 map.MapTeams.Add(team);
             }
 
             //place map entrances
             foreach (LocRay8 entrance in this.map.EntryPoints)
-                map.Map.EntryPoints.Add(new LocRay8(entrance.Loc + this.Draw.Start, entrance.Dir));
+            {
+                Loc wrapLoc = entrance.Loc + this.Draw.Start;
+                if (map.Map.GetLocInMapBounds(ref wrapLoc))
+                    map.Map.EntryPoints.Add(new LocRay8(wrapLoc, entrance.Dir));
+                else
+                    throw new IndexOutOfRangeException("Attempted to draw custom room entrance out of range!");
+            }
 
             //this.FulfillRoomBorders(map, this.FulfillAll);
             this.SetRoomBorders(map);

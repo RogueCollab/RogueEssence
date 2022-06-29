@@ -72,10 +72,15 @@ namespace RogueEssence.LevelGen
                 //roll a merge
                 GridCombo<T> combo = Combos.Pick(rand);
                 List<Loc> viableLocs = new List<Loc>();
+
+                Rect allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight) - combo.Size + new Loc(1));
+                if (floorPlan.Wrap)
+                    allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight));
+
                 //attempt to place it
-                for (int xx = 0; xx < floorPlan.GridWidth - (combo.Size.X - 1); xx++)
+                for (int xx = allowedRange.X; xx < allowedRange.End.X; xx++)
                 {
-                    for (int yy = 0; yy < floorPlan.GridHeight - (combo.Size.Y - 1); yy++)
+                    for (int yy = allowedRange.Y; yy < allowedRange.End.Y; yy++)
                     {
                         bool viable = true;
                         //check for room presence in all rooms (must be SINGLE and immutable)
