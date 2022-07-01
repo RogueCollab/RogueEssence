@@ -114,7 +114,8 @@ namespace RogueEssence.LevelGen
         public virtual void CreateNew(int width, int height, bool wrap = false)
         {
             Map.CreateNew(width, height);
-            Map.EdgeView = BaseMap.ScrollEdge.Wrap;
+            if (wrap)
+                Map.EdgeView = BaseMap.ScrollEdge.Wrap;
             PostProcGrid = new PostProcTile[width][];
             for (int ii = 0; ii < width; ii++)
             {
