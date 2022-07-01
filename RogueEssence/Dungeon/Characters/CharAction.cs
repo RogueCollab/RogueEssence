@@ -1453,6 +1453,8 @@ namespace RogueEssence.Dungeon
 
         public LineCoverage WideAngle;
 
+        public bool SnapBack;
+
         /// <summary>
         /// The animation the user plays when using the skill.
         /// </summary>
@@ -1490,6 +1492,7 @@ namespace RogueEssence.Dungeon
             AnimOffset = other.AnimOffset;
             Emitter = (AttachPointEmitter)other.Emitter.Clone();
             WideAngle = other.WideAngle;
+            SnapBack = other.SnapBack;
             CharAnim = other.CharAnim;
             AppearanceMod = other.AppearanceMod;
         }
@@ -1531,7 +1534,7 @@ namespace RogueEssence.Dungeon
             Loc endLoc = startLoc + owner.CharDir.GetLoc() * modRange;
             rushAnim.ToLoc = endLoc;
 
-            if (!owner.CantWalk)
+            if (!SnapBack)
             {
                 bool stay = true;
                 if (endLoc != startLoc && ZoneManager.Instance.CurrentMap.IsBlocked(endLoc, owner.Mobility))
