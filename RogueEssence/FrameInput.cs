@@ -188,8 +188,12 @@ namespace RogueEssence
         {
             if (keyActive)
             {
-                inputStates[(int)InputType.MuteMusic] = keyboard.IsKeyDown(Keys.F11);
                 inputStates[(int)InputType.ShowDebug] = keyboard.IsKeyDown(Keys.F1);
+                inputStates[(int)InputType.Pause] |= keyboard.IsKeyDown(Keys.F2);
+                inputStates[(int)InputType.AdvanceFrame] |= keyboard.IsKeyDown(Keys.F3);
+                inputStates[(int)InputType.SpeedDown] |= keyboard.IsKeyDown(Keys.F5);
+                inputStates[(int)InputType.SpeedUp] |= keyboard.IsKeyDown(Keys.F6);
+                inputStates[(int)InputType.MuteMusic] = keyboard.IsKeyDown(Keys.F8);
             }
 
             if (DiagManager.Instance.DevMode)
@@ -201,11 +205,7 @@ namespace RogueEssence
                 {
                     inputStates[(int)InputType.Ctrl] |= (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
 
-                    inputStates[(int)InputType.Pause] |= keyboard.IsKeyDown(Keys.F2);
-                    inputStates[(int)InputType.AdvanceFrame] |= keyboard.IsKeyDown(Keys.F3);
                     inputStates[(int)InputType.Test] |= keyboard.IsKeyDown(Keys.F4);
-                    inputStates[(int)InputType.SpeedDown] |= keyboard.IsKeyDown(Keys.F5);
-                    inputStates[(int)InputType.SpeedUp] |= keyboard.IsKeyDown(Keys.F6);
                     //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F7);
                     //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F8);
                     inputStates[(int)InputType.SeeAll] |= keyboard.IsKeyDown(Keys.F9);
