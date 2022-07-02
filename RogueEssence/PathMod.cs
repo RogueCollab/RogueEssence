@@ -347,6 +347,7 @@ namespace RogueEssence
         public string Name;
         public Guid UUID;
         public Version Version;
+        public string VersionString { get { return (Version == null) ? "---" : Version.ToString(); } }
 
         public ModVersion(string name, Guid uuid, Version version)
         {
@@ -362,6 +363,10 @@ namespace RogueEssence
         public Guid UUID;
         public Version OldVersion;
         public Version NewVersion;
+
+        public string OldVersionString { get { return (OldVersion == null) ? "---" : OldVersion.ToString(); } }
+
+        public string NewVersionString { get { return (NewVersion == null) ? "---" : NewVersion.ToString(); } }
 
         public ModDiff(string name, Guid uuid, Version oldVersion, Version newVersion)
         {

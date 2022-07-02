@@ -47,6 +47,7 @@ namespace RogueEssence.Menu
         private void choose(string fileName)
         {
             SOSMail mail = null;
+            bool offVersion = false;
             if (sosMode)
             {
                 mail = DataManager.LoadRescueMail(fileName) as SOSMail;
@@ -55,10 +56,13 @@ namespace RogueEssence.Menu
                     List<ModVersion> curVersions = PathMod.GetModVersion();
                     List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
                     if (versionDiff.Count > 0)
+                    {
                         mail = null;
+                        offVersion = true;
+                    }
                 }
             }
-            MenuManager.Instance.AddMenu(new MailChosenMenu(sosMode && (mail != null), fileName, action, () => { DeleteAction(fileName); }), true);
+            MenuManager.Instance.AddMenu(new MailChosenMenu(sosMode && (mail != null), offVersion, fileName, action, () => { DeleteAction(fileName); }), true);
         }
 
 

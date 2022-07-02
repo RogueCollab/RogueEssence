@@ -24,8 +24,8 @@ namespace RogueEssence.Menu
             Ending = ending;
             Page = page;
 
-            List<(string name, Version version)> versionData = GetVersionsList(ending);
-            Title = new MenuText(Text.FormatKey("MENU_RESULTS_VERSION_TITLE", Page + 1, MathUtils.DivUp(versionData.Count, MAX_LINES)), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            List<ModVersion> versionData = ending.GetModVersion();
+            Title = new MenuText(Text.FormatKey("MENU_VERSION_TITLE", Page + 1, MathUtils.DivUp(versionData.Count, MAX_LINES)), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
@@ -34,25 +34,11 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < displayTotal; ii++)
             {
                 Versions[ii] = new MenuText[2];
-                Versions[ii][0] = new MenuText(versionData[ii].name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
-                Versions[ii][1] = new MenuText(versionData[ii].version.ToString(), new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Versions[ii][0] = new MenuText(versionData[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
+                Versions[ii][1] = new MenuText(versionData[ii].VersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
             }
 
             base.Initialize();
-        }
-
-        public static List<(string name, Version version)> GetVersionsList(GameProgress ending)
-        {
-            List<(string name, Version version)> versionData = new List<(string name, Version version)>();
-
-            versionData.Add(("[Game]", ending.GameVersion));
-            if (ending.Quest.IsValid())
-                versionData.Add((ending.Quest.GetMenuName(), ending.Quest.Version));
-
-            foreach (ModHeader mod in ending.Mods)
-                versionData.Add((mod.GetMenuName(), mod.Version));
-
-            return versionData;
         }
 
         public override IEnumerable<IMenuElement> GetElements()
@@ -89,7 +75,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Page < (VersionResultsMenu.GetVersionsList(Ending).Count - 1) / MAX_LINES)
+                if (Page < (Ending.GetModVersion().Count - 1) / MAX_LINES)
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, Page + 1));
                 else
                     MenuManager.Instance.ReplaceMenu(new FinalResultsMenu(Ending));

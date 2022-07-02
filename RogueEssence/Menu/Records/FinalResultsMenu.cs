@@ -124,7 +124,7 @@ namespace RogueEssence.Menu
             {
                 GameManager.Instance.SE("Menu/Skip");
 
-                MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, (VersionResultsMenu.GetVersionsList(Ending).Count - 1) / VersionResultsMenu.MAX_LINES));
+                MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, (Ending.GetModVersion().Count - 1) / VersionResultsMenu.MAX_LINES));
             }
             else if (IsInputting(input, Dir8.Right))
             {
