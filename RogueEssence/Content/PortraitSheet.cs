@@ -11,10 +11,12 @@ namespace RogueEssence.Content
     {
         public string Name;
         public List<int> Fallbacks;
+        public bool AllowRandom;
 
-        public EmotionType(string name)
+        public EmotionType(string name, bool allowRandom)
         {
             Name = name;
+            AllowRandom = allowRandom;
             Fallbacks = new List<int>();
         }
     }

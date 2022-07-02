@@ -329,7 +329,8 @@ namespace RogueEssence.Content
                     foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
                     {
                         XmlNode emotionName = emotion.SelectSingleNode("Name");
-                        Emotions.Add(new EmotionType(emotionName.InnerText));
+                        XmlNode emotionRandom = emotion.SelectSingleNode("Random");
+                        Emotions.Add(new EmotionType(emotionName.InnerText, Boolean.Parse(emotionRandom.InnerText)));
                         List<string> emotionFallbacks = new List<string>();
                         foreach (XmlNode fallback in emotion.SelectNodes("Fallback"))
                             emotionFallbacks.Add(fallback.InnerText);

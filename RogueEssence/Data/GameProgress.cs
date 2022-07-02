@@ -226,11 +226,17 @@ namespace RogueEssence.Data
         public void UpdateTeamProfile(bool standard)
         {
             ulong curSeed = Rand.FirstSeed;
-            ulong totalEmotes = (ulong)GraphicsManager.Emotions.Count;
+            List<int> totalEmotes = new List<int>();
+            for (int ii = 0; ii < GraphicsManager.Emotions.Count; ii++)
+            {
+                EmotionType emoType = GraphicsManager.Emotions[ii];
+                if (emoType.AllowRandom)
+                    totalEmotes.Add(ii);
+            }
             List<ProfilePic> teamProfile = new List<ProfilePic>();
             foreach (Character chara in ActiveTeam.Players)
             {
-                int piece = (int)((curSeed ^ (ulong)chara.Discriminator) % totalEmotes);
+                int piece = totalEmotes[(int)((curSeed ^ (ulong)chara.Discriminator) % (ulong)totalEmotes.Count)];
                 if (standard)
                     piece = 0;
                 teamProfile.Add(new ProfilePic(chara.BaseForm, piece));
