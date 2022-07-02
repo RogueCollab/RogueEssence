@@ -116,7 +116,7 @@ namespace RogueEssence.Dungeon
         {
             if (context.UsageSlot > BattleContext.DEFAULT_ATTACK_SLOT && context.UsageSlot < CharData.MAX_SKILL_SLOTS)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(context.User.DeductCharges(context.UsageSlot, 1, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(context.User.DeductCharges(context.UsageSlot, 1, false, false, false));
                 if (context.User.Skills[context.UsageSlot].Element.Charges == 0)
                     context.SkillUsedUp = context.User.Skills[context.UsageSlot].Element.SkillNum;
             }

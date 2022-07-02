@@ -870,12 +870,12 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(DeductCharges(skillSlot, charges, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(DeductCharges(skillSlot, charges, true, true, true));
         }
 
-        public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges, bool effect, bool declare)
+        public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges, bool effect, bool declare, bool force)
         {
-            if (ChargeSaver)
+            if (ChargeSaver && force)
             {
                 if (declare)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ZERO", GetDisplayName(false)));
