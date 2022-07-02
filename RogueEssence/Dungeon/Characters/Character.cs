@@ -255,11 +255,16 @@ namespace RogueEssence.Dungeon
         public bool StopItemAtHit;
         public bool MovesScrambled;
         public bool ChargeSaver;
-        
+
         /// <summary>
-        /// Can only use basic attack as an action.
+        /// The Wait command translates to attack.
         /// </summary>
-        public bool AttackOnly;
+        public bool WaitToAttack;
+
+        /// <summary>
+        /// Can't pick up/place/equip/take items, cant interact with ground/people.
+        /// </summary>
+        public bool CantInteract;
         /// <summary>
         /// Treated as a foe by friends in combat
         /// </summary>
@@ -1405,7 +1410,8 @@ namespace RogueEssence.Dungeon
             MovesScrambled = false;
 
             ChargeSaver = false;
-            AttackOnly = false;
+            WaitToAttack = false;
+            CantInteract = false;
             EnemyOfFriend = false;
 
             Unidentifiable = false;

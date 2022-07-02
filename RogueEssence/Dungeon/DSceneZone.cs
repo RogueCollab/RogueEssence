@@ -303,7 +303,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> ProcessInput(GameAction action, Character character, ActionResult result)
         {
             //translates commands into actions
-            if (character.AttackOnly && character.CantWalk && action.Type == GameAction.ActionType.Wait)
+            if (character.WaitToAttack && character.CantWalk && action.Type == GameAction.ActionType.Wait)
                 action = new GameAction(GameAction.ActionType.Attack, action.Dir);
 
             ProcessDir(action.Dir, character);

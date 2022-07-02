@@ -48,15 +48,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessUseItem(Character character, int invSlot, int teamSlot, ActionResult result)
         {
-            if (character.AttackOnly)
-            {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
-                yield break;
-            }
             Character target = teamSlot == -1 ? character : character.MemberTeam.Players[teamSlot];
-            if (target.AttackOnly)
+            if (target != character && character.CantInteract)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", target.GetDisplayName(false)), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM_OTHER", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -82,12 +77,6 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessThrowItem(Character character, int invSlot, ActionResult result)
         {
-            if (character.AttackOnly)
-            {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
-                yield break;
-            }
-
             BattleContext context = new BattleContext(BattleActionType.Throw);
             context.User = character;
             context.UsageSlot = invSlot;

@@ -300,7 +300,7 @@ namespace RogueEssence.Dungeon
             if (!(memberTeam is ExplorerTeam))
                 yield break;
 
-            if (character.AttackOnly)
+            if (character.CantInteract)
             {
                 LogMsg(Text.FormatKey("MSG_CANT_PICKUP_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
@@ -407,7 +407,7 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> ProcessPlaceItem(Character character, int invSlot, ActionResult result)
         {
-            if (character.AttackOnly)
+            if (character.CantInteract)
             {
                 LogMsg(Text.FormatKey("MSG_CANT_DROP_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
@@ -504,7 +504,7 @@ namespace RogueEssence.Dungeon
         {
             //past this point, the game state is changed
 
-            if (character == FocusedCharacter && !character.AttackOnly)
+            if (character == FocusedCharacter && !character.CantInteract)
             {
                 Loc frontLoc = character.CharLoc + character.CharDir.GetLoc();
                 foreach(Character member in ActiveTeam.EnumerateChars())
@@ -562,7 +562,7 @@ namespace RogueEssence.Dungeon
         
         public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, ActionResult result)
         {
-            if (character.AttackOnly)
+            if (character.CantInteract)
             {
                 LogMsg(Text.FormatKey("MSG_CANT_CHECK_TILE", character.GetDisplayName(false)), false, true);
                 yield break;
@@ -590,7 +590,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessGiveItem(Character character, int invSlot, int teamSlot, ActionResult result)
         {
-            if (character.AttackOnly)
+            if (character.CantInteract)
             {
                 LogMsg(Text.FormatKey("MSG_CANT_SWAP_ITEM", character.GetDisplayName(false)), false, true);
                 yield break;
@@ -639,7 +639,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessTakeItem(Character character, int teamSlot, ActionResult result)
         {
-            if (character.AttackOnly)
+            if (character.CantInteract)
             {
                 LogMsg(Text.FormatKey("MSG_CANT_DEQUIP", character.GetDisplayName(false)), false, true);
                 yield break;
