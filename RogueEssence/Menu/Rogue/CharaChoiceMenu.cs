@@ -39,7 +39,8 @@ namespace RogueEssence.Menu
             {
                 if (DiagManager.Instance.DevMode)
                     startChars.Add(ii);
-                else if (DataManager.Instance.Save.GetRogueUnlock(ii) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Released)
+                //TODO: String Assets
+                else if (DataManager.Instance.Save.GetRogueUnlock(ii) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()].Released)
                     startChars.Add(ii);
                 else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
                     startChars.Add(ii);
@@ -51,7 +52,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < startChars.Count; ii++)
             {
                 int startChar = startChars[ii];
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar].GetColoredName(), () => { choose(startChar); }));
+                //TODO: String Assets
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar.ToString()].GetColoredName(), () => { choose(startChar); }));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);

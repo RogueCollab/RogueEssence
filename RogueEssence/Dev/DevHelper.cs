@@ -172,17 +172,14 @@ namespace RogueEssence.Dev
             try
             {
                 EntryDataIndex fullGuide = new EntryDataIndex();
-                List<EntrySummary> entries = new List<EntrySummary>();
+                Dictionary<string, EntrySummary> entries = new Dictionary<string, EntrySummary>();
                 foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
-                    int num = Convert.ToInt32(file);
                     IEntryData data = (IEntryData)LoadWithLegacySupport(dir, t);
-                    while (entries.Count <= num)
-                        entries.Add(null);
-                    entries[num] = data.GenerateEntrySummary();
+                    entries[file] = data.GenerateEntrySummary();
                 }
-                fullGuide.Entries = entries.ToArray();
+                fullGuide.Entries = entries;
 
                 if (entries.Count > 0)
                 {

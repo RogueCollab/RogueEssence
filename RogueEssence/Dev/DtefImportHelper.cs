@@ -193,7 +193,8 @@ namespace RogueEssence.Dev
 
                     autoTile.Name = new LocalText(fileName + tileTitle);
 
-                    DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
+                    //TODO: String Assets
+                    DataManager.SaveData(index.ToString(), DataManager.DataType.AutoTile.ToString(), autoTile);
                     Debug.WriteLine($"{index:D3}: {autoTile.Name}");
                 }
                 ImportHelper.SaveTileSheet(tileList, destFile, tileSize);

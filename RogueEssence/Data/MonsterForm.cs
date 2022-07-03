@@ -79,7 +79,8 @@ namespace RogueEssence.Data
             {
                 if (LevelSkills[ii].Level == levelLearned || LevelSkills[ii].Level <= levelLearned && relearn)
                 {
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill].Released)
+                    //TODO: String Assets
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill.ToString()].Released)
                         yield return LevelSkills[ii].Skill;
                 }
             }
@@ -94,7 +95,8 @@ namespace RogueEssence.Data
             {
                 if (LevelSkills[ii].Level <= level && !skills.Contains(LevelSkills[ii].Skill))
                 {
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill].Released)
+                    //TODO: String Assets
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill.ToString()].Released)
                         skills.Insert(specifiedSkills.Count, LevelSkills[ii].Skill);
                 }
             }

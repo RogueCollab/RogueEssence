@@ -764,7 +764,8 @@ namespace RogueEssence.Dev
 
                                 autoTile.Name = new LocalText(outputName + tileTitle);
 
-                                DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
+                                //TODO: String Assets
+                                DataManager.SaveData(index.ToString(), DataManager.DataType.AutoTile.ToString(), autoTile);
                                 Debug.WriteLine(String.Format("{0:D3}: {1}", index, autoTile.Name));
                             }
                         }

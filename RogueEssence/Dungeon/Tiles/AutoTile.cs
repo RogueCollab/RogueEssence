@@ -154,8 +154,9 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
+            //TODO: String Assets
             if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count)
-                return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[AutoTileset].Name.ToLocal());
+                return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[AutoTileset.ToString()].Name.ToLocal());
             else
             {
                 if (Layers.Count > 0)

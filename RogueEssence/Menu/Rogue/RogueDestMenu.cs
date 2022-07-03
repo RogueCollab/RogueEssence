@@ -25,7 +25,8 @@ namespace RogueEssence.Menu
 
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
             {
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii] as ZoneEntrySummary;
+                //TODO: String Assets
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii.ToString()] as ZoneEntrySummary;
                 if (!DiagManager.Instance.DevMode)
                 {
                     if (DataManager.Instance.Save.GetDungeonUnlock(ii) == GameProgress.UnlockState.None)
@@ -43,7 +44,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
                 int zone = dungeonIndices[ii];
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone] as ZoneEntrySummary;
+                //TODO: String Assets
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone.ToString()] as ZoneEntrySummary;
                 flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
             }
 

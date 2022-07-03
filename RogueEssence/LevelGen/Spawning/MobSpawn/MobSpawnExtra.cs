@@ -53,7 +53,8 @@ namespace RogueEssence.LevelGen
                 return string.Format("{0}[{1}]", this.GetType().Name, Statuses.Count.ToString());
             else
             {
-                EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Status].Entries[Statuses.GetSpawn(0).ID];
+                //TODO: String Assets
+                EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Status].Entries[Statuses.GetSpawn(0).ID.ToString()];
                 return string.Format("{0}: {1}", this.GetType().Name, summary.Name.ToLocal());
             }
         }

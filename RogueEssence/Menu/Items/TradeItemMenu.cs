@@ -45,7 +45,8 @@ namespace RogueEssence.Menu
                 int index = ii;
                 if (itemPresence[index] > 0)
                 {
-                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                    //TODO: String Assets
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index.ToString()] as ItemEntrySummary;
                     if (itemEntry.ContainsState<MaterialState>())
                     {
                         AllowedGoods.Add(index);

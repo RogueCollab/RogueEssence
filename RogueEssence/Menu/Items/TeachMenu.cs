@@ -81,7 +81,8 @@ namespace RogueEssence.Menu
                     return false;
             }
 
-            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[effect.Index].Released)
+            //TODO: String Assets
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[effect.Index.ToString()].Released)
                 return false;
 
             return entry.CanLearnSkill(effect.Index);

@@ -40,7 +40,8 @@ namespace RogueEssence.Menu
                     
                     //name
                     MenuText dexNum = new MenuText(ii.ToString("D3"), new Loc(2, 1), color);
-                    MenuText dexName = new MenuText(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii].Name.ToLocal(), new Loc(24, 1), color);
+                    //TODO: String Assets
+                    MenuText dexName = new MenuText(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()].Name.ToLocal(), new Loc(24, 1), color);
                     flatChoices.Add(new MenuElementChoice(() => { choose(ii); }, true, dexNum, dexName));
                 }
                 else

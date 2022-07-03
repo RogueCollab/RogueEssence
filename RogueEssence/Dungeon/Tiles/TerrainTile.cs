@@ -99,8 +99,9 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
+            //TODO: String Assets
             if (ID > -1 && ID < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count)
-                return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID].Name.ToLocal();
+                return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID.ToString()].Name.ToLocal();
             else
                 return "[EMPTY]";
         }

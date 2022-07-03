@@ -534,7 +534,7 @@ namespace RogueEssence.Script
             MonsterData entry = DataManager.Instance.GetMonster(character.BaseForm.Species);
             for (int ii = 0; ii < entry.Promotions.Count; ii++)
             {
-                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[entry.Promotions[ii].Result].Released)
+                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[entry.Promotions[ii].Result.ToString()].Released)
                     continue;
 
                 bool hardReq = false;
@@ -562,7 +562,7 @@ namespace RogueEssence.Script
 
             for (int ii = 0; ii < entry.Promotions.Count; ii++)
             {
-                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[entry.Promotions[ii].Result].Released)
+                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[entry.Promotions[ii].Result.ToString()].Released)
                     continue;
                 if (entry.Promotions[ii].IsQualified(character, false))
                     addfn.Call(tbl, entry.Promotions[ii]);

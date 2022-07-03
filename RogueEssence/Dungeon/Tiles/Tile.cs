@@ -58,10 +58,11 @@ namespace RogueEssence.Dungeon
         public override string ToString()
         {
             List<string> values = new List<string>();
+            //TODO: String Assets
             if (Data.ID > -1)
-                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[Data.ID].Name.ToLocal());
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[Data.ID.ToString()].Name.ToLocal());
             if (Effect.ID > -1)
-                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[Effect.ID].Name.ToLocal());
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[Effect.ID.ToString()].Name.ToLocal());
             string features = string.Join("/", values);
             return string.Format("{0}: {1}", this.GetType().Name, features);
         }

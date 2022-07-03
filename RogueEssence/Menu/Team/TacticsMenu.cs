@@ -24,12 +24,14 @@ namespace RogueEssence.Menu
                 int tacticIndex = -1;
                 for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
                 {
-                    AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                    //TODO: String Assets
+                    AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj.ToString()] as AIEntrySummary;
                     if (summary.Assignable)
                     {
                         if (jj == character.Tactic.ID)
                             tacticIndex = jj;
-                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].GetColoredName());
+                        //TODO: String Assets
+                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj.ToString()].GetColoredName());
                     }
                 }
                 releasedTactics = choices.Count;
@@ -46,7 +48,8 @@ namespace RogueEssence.Menu
             List<string> allChoices = new List<string>();
             for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
             {
-                AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                //TODO: String Assets
+                AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj.ToString()] as AIEntrySummary;
                 if (summary.Assignable)
                     allChoices.Add(summary.GetColoredName());
             }
