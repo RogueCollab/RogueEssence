@@ -146,7 +146,7 @@ namespace RogueEssence.Dev.ViewModels
                 DataManager.Instance.LoadUniversalData();
                 DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
                 DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
-                string[] entries = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetLocalStringArray(true);
+                Dictionary<string, string> entries = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetLocalStringArray(true);
                 choices.SetEntries(entries);
             }
         }
@@ -229,7 +229,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
         private delegate string[] GetEntryNames();
-        private delegate IEntryData GetEntry(int entryNum);
+        private delegate IEntryData GetEntry(string entryNum);
         private delegate IEntryData CreateEntry();
         private void OpenList(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
         {
@@ -261,7 +261,7 @@ namespace RogueEssence.Dev.ViewModels
                     DataManager.Instance.LoadUniversalData();
                     DataManager.Instance.ClearCache(dataType);
                     DiagManager.Instance.DevEditor.ReloadData(dataType);
-                    string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                    Dictionary<string, string> entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
                     choices.SetEntries(entries);
                 }
             };
@@ -272,20 +272,20 @@ namespace RogueEssence.Dev.ViewModels
         {
             DataListFormViewModel choices = new DataListFormViewModel();
             choices.Name = dataType.ToString();
-            string[] entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+            Dictionary<string, string> entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
             choices.SetEntries(entries);
 
             choices.SelectedOKEvent += async () =>
             {
-                if (choices.SearchList.InternalIndex > -1)
+                if (choices.ChosenAsset != null)
                 {
                     lock (GameBase.lockObj)
                     {
-                        int entryNum = choices.SearchList.InternalIndex;
+                        string entryNum = choices.ChosenAsset;
                         IEntryData data = entryOp(entryNum);
 
                         DataEditForm editor = new DataEditRootForm();
-                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
+                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType());
                         DataEditor.LoadDataControls(data, editor);
                         editor.SelectedOKEvent += async () =>
                         {
@@ -309,7 +309,8 @@ namespace RogueEssence.Dev.ViewModels
             {
                 lock (GameBase.lockObj)
                 {
-                    int entryNum = DataManager.Instance.DataIndices[dataType].Count;
+                    //TODO: String Assets
+                    string entryNum = DataManager.Instance.DataIndices[dataType].Count.ToString();
                     IEntryData data = createOp();
 
                     DataEditForm editor = new DataEditRootForm();
@@ -325,7 +326,7 @@ namespace RogueEssence.Dev.ViewModels
                             DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 
                             string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
-                            choices.AddEntry(newName);
+                            choices.AddEntry(entryNum, newName);
                             return true;
                         }
                     };

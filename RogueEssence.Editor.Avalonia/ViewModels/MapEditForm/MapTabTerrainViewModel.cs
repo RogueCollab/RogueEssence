@@ -18,9 +18,9 @@ namespace RogueEssence.Dev.ViewModels
             AutotileBrowser = new AutotileBrowserViewModel();
 
             TerrainTypes = new ObservableCollection<string>();
-            string[] terrain_names = DataManager.Instance.DataIndices[DataManager.DataType.Terrain].GetLocalStringArray(true);
-            for (int ii = 0; ii < terrain_names.Length; ii++)
-                TerrainTypes.Add(ii.ToString("D3") + ": " + terrain_names[ii]);
+            Dictionary<string, string> terrain_names = DataManager.Instance.DataIndices[DataManager.DataType.Terrain].GetLocalStringArray(true);
+            foreach (string key in terrain_names.Keys)
+                TerrainTypes.Add(key + ": " + terrain_names[key]);
         }
 
         private TileEditMode terrainMode;

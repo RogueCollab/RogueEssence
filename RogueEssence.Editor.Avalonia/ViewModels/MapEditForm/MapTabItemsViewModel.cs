@@ -17,10 +17,10 @@ namespace RogueEssence.Dev.ViewModels
             SelectedEntity = new MapItem();
 
             ItemTypes = new ObservableCollection<string>();
-            ItemTypes.Add("---: Money");
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
-            for (int ii = 0; ii < monster_names.Length; ii++)
-                ItemTypes.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+            ItemTypes.Add("[Money]");
+            Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+            foreach (string key in monster_names.Keys)
+                ItemTypes.Add(key + ": " + monster_names[key]);
 
         }
 

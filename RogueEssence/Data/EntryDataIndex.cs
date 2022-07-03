@@ -12,7 +12,7 @@ namespace RogueEssence.Data
 
         public EntryDataIndex()
         {
-
+            Entries = new Dictionary<string, EntrySummary>();
         }
 
         public Dictionary<string, string> GetLocalStringArray(bool verbose = false)

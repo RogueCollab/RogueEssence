@@ -30,7 +30,7 @@ namespace RogueEssence.Dev
             string choice = member;
 
             List<string> items = new List<string>();
-            items.Add("---");
+            items.Add("**EMPTY**");
             int chosenIndex = 0;
 
             string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Music");

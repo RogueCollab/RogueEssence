@@ -46,12 +46,13 @@ namespace RogueEssence.Dev
 
                 if (dataAtt.InvalidSpecies)
                 {
-                    species.Add("---");
+                    species.Add("**EMPTY**");
                     chosenSpecies++;
                 }
 
+                //TODO: String Assets
                 for (int ii = 0; ii < nameIndex.Count; ii++)
-                    species.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(false));
+                    species.Add(ii.ToString() + ": " + nameIndex.Entries[ii.ToString()].GetLocalString(false));
 
                 var speciesSubject = new Subject<List<string>>();
                 var formSubject = new Subject<List<string>>();
@@ -120,12 +121,13 @@ namespace RogueEssence.Dev
                 List<string> items = new List<string>();
                 if (dataAtt.InvalidSkin)
                 {
-                    items.Add("---");
+                    items.Add("**EMPTY**");
                     chosenIndex++;
                 }
 
+                //TODO: String Assets
                 for (int ii = 0; ii < nameIndex.Count; ii++)
-                    items.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(false));
+                    items.Add(ii.ToString() + ": " + nameIndex.Entries[ii.ToString()].GetLocalString(false));
 
                 var subject = new Subject<List<string>>();
                 cbSkin.Bind(ComboBox.ItemsProperty, subject);
@@ -152,7 +154,7 @@ namespace RogueEssence.Dev
                 List<string> items = new List<string>();
                 if (dataAtt.InvalidGender)
                 {
-                    items.Add("---");
+                    items.Add("**EMPTY**");
                     chosenIndex++;
                 }
 
@@ -269,7 +271,7 @@ namespace RogueEssence.Dev
             MonsterData monsterData = DataManager.Instance.GetMonster(species);
 
             if (dataAtt.InvalidForm)
-                forms.Add("---");
+                forms.Add("**EMPTY**");
 
             for (int ii = 0; ii < monsterData.Forms.Count; ii++)
                 forms.Add(monsterData.Forms[ii].FormName.ToLocal());

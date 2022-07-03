@@ -110,11 +110,12 @@ namespace RogueEssence.Dev.ViewModels
             Autotiles.Clear();
             AssociateAutotiles.Clear();
 
-            Autotiles.AddItem("---");
+            Autotiles.AddItem("**EMPTY**");
 
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count; ii++)
             {
-                EntrySummary entry = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[ii];
+                //TODO: String Assets
+                EntrySummary entry = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[ii.ToString()];
                 //TODO: autotiles need tile sizes too, to compare
                 if (24 == TileSize)
                 {

@@ -540,16 +540,16 @@ namespace RogueEssence.Dev.ViewModels
             ObjectAnims = new ObservableCollection<string>();
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
-            for (int ii = 0; ii < monster_names.Length; ii++)
-                Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+            Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
+            foreach(string key in monster_names.Keys)
+                Monsters.Add(key + ": " + monster_names[key]);
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                Skins.Add(skin_names[ii]);
+            Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+            foreach (string key in skin_names.Keys)
+                Skins.Add(key + ": " + skin_names[key]);
 
             Genders = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Gender.Female; ii++)
@@ -809,7 +809,7 @@ namespace RogueEssence.Dev.ViewModels
             GroundObject groundEnt = SelectedEntity as GroundObject;
             string oldIndex = groundEnt.ObjectAnim.AnimIndex;
             ObjectAnims.Clear();
-            ObjectAnims.Add("---");
+            ObjectAnims.Add("**EMPTY**");
             string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + groundEnt.ObjectAnim.AssetType.ToString() + "/");
             int newAnim = 0;
             for (int ii = 0; ii < dirs.Length; ii++)

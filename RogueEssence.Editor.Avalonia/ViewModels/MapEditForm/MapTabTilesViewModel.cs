@@ -17,9 +17,9 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabTilesViewModel()
         {
             TileTypes = new ObservableCollection<string>();
-            string[] tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray(true);
-            for (int ii = 0; ii < tile_names.Length; ii++)
-                TileTypes.Add(ii.ToString("D3") + ": " + tile_names[ii]);
+            Dictionary<string, string> tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray(true);
+            foreach (string key in tile_names.Keys)
+                TileTypes.Add(key + ": " + tile_names[key]);
 
             Owners = new ObservableCollection<string>();
             for (int ii = 0; ii < 3; ii++)

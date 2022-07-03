@@ -19,9 +19,10 @@ namespace RogueEssence.Dev.Converters
             {
                 DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataType];
+                //TODO: String Assets
                 if (idx >= 0 && idx < nameIndex.Count)
-                    return nameIndex.Entries[idx].Name.ToLocal();
-                return "---";
+                    return nameIndex.Entries[idx.ToString()].Name.ToLocal();
+                return "**EMPTY**";
             }
             return value;
         }

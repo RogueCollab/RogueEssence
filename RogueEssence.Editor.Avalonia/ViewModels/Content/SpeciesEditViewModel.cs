@@ -403,7 +403,8 @@ namespace RogueEssence.Dev.ViewModels
                 CharaIndexNode charaNode = GetIndexNode();
                 for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
                 {
-                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
+                    //TODO: String Assets
+                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()];
 
                     MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
                     MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
@@ -526,7 +527,8 @@ namespace RogueEssence.Dev.ViewModels
             CharaIndexNode charaNode = GetIndexNode();
             for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
             {
-                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii];
+                //TODO: String Assets
+                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()];
 
                 MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
                 if (hasSprite(charaNode, dexID))

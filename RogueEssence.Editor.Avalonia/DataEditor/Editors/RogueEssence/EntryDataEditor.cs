@@ -34,12 +34,13 @@ namespace RogueEssence.Dev
             List<string> items = new List<string>();
             if (dataAtt.IncludeInvalid)
             {
-                items.Add("---");
+                items.Add("**EMPTY**");
                 chosenIndex++;
             }
 
+            //TODO: String Assets
             for (int ii = 0; ii < nameIndex.Count; ii++)
-                items.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(true));
+                items.Add(ii.ToString() + ": " + nameIndex.Entries[ii.ToString()].GetLocalString(true));
 
             var subject = new Subject<List<string>>();
             cbValue.Bind(ComboBox.ItemsProperty, subject);
@@ -67,9 +68,10 @@ namespace RogueEssence.Dev
             DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataAtt.DataType];
+            //TODO: String Assets
             if (obj >= 0 && obj < nameIndex.Count)
-                return nameIndex.Entries[obj].Name.ToLocal();
-            return "---";
+                return nameIndex.Entries[obj.ToString()].Name.ToLocal();
+            return "**EMPTY**";
         }
     }
 }

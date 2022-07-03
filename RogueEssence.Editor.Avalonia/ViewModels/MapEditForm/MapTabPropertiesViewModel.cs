@@ -22,9 +22,9 @@ namespace RogueEssence.Dev.ViewModels
                 Sights.Add(((Map.SightRange)ii).ToLocal());
 
             Elements = new ObservableCollection<string>();
-            string[] element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray(true);
-            for (int ii = 0; ii < element_names.Length; ii++)
-                Elements.Add(ii.ToString("D2") + ": " + element_names[ii]);
+            Dictionary<string, string> element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray(true);
+            foreach (string key in element_names.Keys)
+                Elements.Add(key + ": " + element_names[key]);
 
             ScrollEdges = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)

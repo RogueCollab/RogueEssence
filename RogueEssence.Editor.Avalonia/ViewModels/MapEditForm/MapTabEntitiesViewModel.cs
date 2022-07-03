@@ -28,43 +28,43 @@ namespace RogueEssence.Dev.ViewModels
                 Directions.Add(dir.ToLocal());
 
             Tactics = new ObservableCollection<string>();
-            string[] tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
-            for (int ii = 0; ii < tactic_names.Length; ii++)
-                Tactics.Add(ii.ToString("D2") + ": " + tactic_names[ii]);
+            Dictionary<string, string> tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
+            foreach (string key in tactic_names.Keys)
+                Tactics.Add(key + ": " + tactic_names[key]);
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
-            for (int ii = 0; ii < monster_names.Length; ii++)
-                Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+            Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
+            foreach (string key in monster_names.Keys)
+                Monsters.Add(key + ": " + monster_names[key]);
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                Skins.Add(skin_names[ii]);
+            Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+            foreach (string key in skin_names.Keys)
+                Skins.Add(key + ": " + skin_names[key]);
 
             Genders = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Gender.Female; ii++)
                 Genders.Add(((Gender)ii).ToLocal());
 
             Intrinsics = new ObservableCollection<string>();
-            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+            Dictionary<string, string> intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
             Intrinsics.Add("---: None");
-            for (int ii = 0; ii < intrinsic_names.Length; ii++)
-                Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
+            foreach (string key in intrinsic_names.Keys)
+                Intrinsics.Add(key + ": " + intrinsic_names[key]);
 
             Equips = new ObservableCollection<string>();
             Equips.Add("---: None");
-            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
-            for (int ii = 0; ii < item_names.Length; ii++)
-                Equips.Add(ii.ToString("D3") + ": " + item_names[ii]);
+            Dictionary<string, string> item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+            foreach (string key in item_names.Keys)
+                Equips.Add(key + ": " + item_names[key]);
 
             Skills = new ObservableCollection<string>();
             Skills.Add("---: None");
-            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
-            for (int ii = 0; ii < skill_names.Length; ii++)
-                Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
+            Dictionary<string, string> skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
+            foreach (string key in skill_names.Keys)
+                Skills.Add(key + ": " + skill_names[key]);
 
             speciesChanged();
 

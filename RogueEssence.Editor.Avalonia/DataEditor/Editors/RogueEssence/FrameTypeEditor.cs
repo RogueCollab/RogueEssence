@@ -80,7 +80,7 @@ namespace RogueEssence.Dev
         {
             if (obj >= 0 && obj < GraphicsManager.Actions.Count)
                 return GraphicsManager.Actions[obj].Name;
-            return "---";
+            return "**EMPTY**";
         }
     }
 }

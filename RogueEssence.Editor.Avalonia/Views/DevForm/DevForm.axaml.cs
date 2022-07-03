@@ -93,40 +93,40 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Skill) != DataManager.DataType.None)
                 {
-                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
                     devViewModel.Game.Skills.Clear();
-                    for (int ii = 0; ii < skill_names.Length; ii++)
-                        devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
+                    foreach(string key in entry_names.Keys)
+                        devViewModel.Game.Skills.Add(key + ": " + entry_names[key]);
                     devViewModel.Game.ChosenSkill = -1;
                     devViewModel.Game.ChosenSkill = Math.Min(Math.Max(GetConfig("SkillChoice", 0), 0), devViewModel.Game.Skills.Count - 1);
                 }
 
                 if ((dataType & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
                 {
-                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
                     devViewModel.Game.Intrinsics.Clear();
-                    for (int ii = 0; ii < intrinsic_names.Length; ii++)
-                        devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
+                    foreach (string key in entry_names.Keys)
+                        devViewModel.Game.Intrinsics.Add(key + ": " + entry_names[key]);
                     devViewModel.Game.ChosenIntrinsic = -1;
                     devViewModel.Game.ChosenIntrinsic = Math.Min(Math.Max(GetConfig("IntrinsicChoice", 0), 0), devViewModel.Game.Intrinsics.Count - 1);
                 }
 
                 if ((dataType & DataManager.DataType.Status) != DataManager.DataType.None)
                 {
-                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
                     devViewModel.Game.Statuses.Clear();
-                    for (int ii = 0; ii < status_names.Length; ii++)
-                        devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
+                    foreach (string key in entry_names.Keys)
+                        devViewModel.Game.Statuses.Add(key + ": " + entry_names[key]);
                     devViewModel.Game.ChosenStatus = -1;
                     devViewModel.Game.ChosenStatus = Math.Min(Math.Max(GetConfig("StatusChoice", 0), 0), devViewModel.Game.Statuses.Count - 1);
                 }
 
                 if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
                 {
-                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
                     devViewModel.Game.Items.Clear();
-                    for (int ii = 0; ii < item_names.Length; ii++)
-                        devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
+                    foreach (string key in entry_names.Keys)
+                        devViewModel.Game.Items.Add(key + ": " + entry_names[key]);
                     devViewModel.Game.ChosenItem = -1;
                     devViewModel.Game.ChosenItem = Math.Min(Math.Max(GetConfig("ItemChoice", 0), 0), devViewModel.Game.Items.Count - 1);
                 }
@@ -134,20 +134,20 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Monster) != DataManager.DataType.None)
                 {
-                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
                     devViewModel.Player.Monsters.Clear();
-                    for (int ii = 0; ii < monster_names.Length; ii++)
-                        devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+                    foreach (string key in entry_names.Keys)
+                        devViewModel.Player.Monsters.Add(key + ": " + entry_names[key]);
                     devViewModel.Player.ChosenMonster = -1;
                     devViewModel.Player.ChosenMonster = 0;
 
                     devViewModel.Player.ChosenForm = -1;
                     devViewModel.Player.ChosenForm = 0;
 
-                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+                    Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
                     devViewModel.Player.Skins.Clear();
-                    for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                        devViewModel.Player.Skins.Add(skin_names[ii]);
+                    foreach (string key in skin_names.Keys)
+                        devViewModel.Player.Skins.Add(key + ": " + entry_names[key]);
                     devViewModel.Player.ChosenSkin = -1;
                     devViewModel.Player.ChosenSkin = 0;
 
@@ -170,10 +170,10 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
                     devViewModel.Travel.Zones.Clear();
-                    for (int ii = 0; ii < dungeon_names.Length; ii++)
-                        devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
+                    foreach (string key in entry_names.Keys)
+                        devViewModel.Travel.Zones.Add(key + ": " + entry_names[key]);
                     devViewModel.Travel.ChosenZone = -1;
                     devViewModel.Travel.ChosenZone = Math.Min(Math.Max(GetConfig("ZoneChoice", 0), 0), devViewModel.Travel.Zones.Count - 1);
 
