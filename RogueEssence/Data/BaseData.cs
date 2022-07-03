@@ -9,7 +9,7 @@ namespace RogueEssence.Data
     {
         public abstract string FileName { get; }
         public abstract DataManager.DataType TriggerType { get; }
-        public abstract void ContentChanged(int idx);
+        public abstract void ContentChanged(string idx);
         public abstract void ReIndex();
     }
 }

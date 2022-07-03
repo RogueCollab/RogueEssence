@@ -6,20 +6,20 @@ namespace RogueEssence.Data
     [Serializable]
     public class EntryDataIndex
     {
-        public int Count { get { return Entries.Length; } }
+        public int Count { get { return Entries.Count; } }
 
-        public EntrySummary[] Entries;
+        public Dictionary<string, EntrySummary> Entries;
 
         public EntryDataIndex()
         {
 
         }
 
-        public string[] GetLocalStringArray(bool verbose = false)
+        public Dictionary<string, string> GetLocalStringArray(bool verbose = false)
         {
-            string[] names = new string[Entries.Length];
-            for (int ii = 0; ii < Entries.Length; ii++)
-                names[ii] = Entries[ii].GetLocalString(verbose);
+            Dictionary<string, string> names = new Dictionary<string, string>();
+            foreach(string key in Entries.Keys)
+                names[key] = Entries[key].GetLocalString(verbose);
             return names;
         }
     }

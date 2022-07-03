@@ -135,22 +135,22 @@ namespace RogueEssence.Data
         private const int MAP_STATUS_CACHE_SIZE = 50;
 
 
-        private LRUCache<int, ItemData> itemCache;
-        private LRUCache<int, StatusData> statusCache;
-        private LRUCache<int, IntrinsicData> intrinsicCache;
-        private LRUCache<int, SkillData> skillCache;
-        private LRUCache<int, MonsterData> monsterCache;
-        private LRUCache<int, AutoTileData> autoTileCache;
-        private LRUCache<int, MapStatusData> mapStatusCache;
-        private Dictionary<int, TileData> tileCache;
-        private Dictionary<int, TerrainData> terrainCache;
-        private Dictionary<int, EmoteData> emoteCache;
-        private Dictionary<int, ElementData> elementCache;
-        private Dictionary<int, GrowthData> growthCache;
-        private Dictionary<int, SkillGroupData> skillgroupCache;
-        private Dictionary<int, AITactic> aiCache;
-        private Dictionary<int, RankData> rankCache;
-        private Dictionary<int, SkinData> skinCache;
+        private LRUCache<string, ItemData> itemCache;
+        private LRUCache<string, StatusData> statusCache;
+        private LRUCache<string, IntrinsicData> intrinsicCache;
+        private LRUCache<string, SkillData> skillCache;
+        private LRUCache<string, MonsterData> monsterCache;
+        private LRUCache<string, AutoTileData> autoTileCache;
+        private LRUCache<string, MapStatusData> mapStatusCache;
+        private Dictionary<string, TileData> tileCache;
+        private Dictionary<string, TerrainData> terrainCache;
+        private Dictionary<string, EmoteData> emoteCache;
+        private Dictionary<string, ElementData> elementCache;
+        private Dictionary<string, GrowthData> growthCache;
+        private Dictionary<string, SkillGroupData> skillgroupCache;
+        private Dictionary<string, AITactic> aiCache;
+        private Dictionary<string, RankData> rankCache;
+        private Dictionary<string, SkinData> skinCache;
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
@@ -215,22 +215,22 @@ namespace RogueEssence.Data
 
             MsgLog = new List<string>();
 
-            itemCache = new LRUCache<int, ItemData>(ITEM_CACHE_SIZE);
-            statusCache = new LRUCache<int, StatusData>(STATUS_CACHE_SIZE);
-            intrinsicCache = new LRUCache<int, IntrinsicData>(INSTRINSIC_CACHE_SIZE);
-            skillCache = new LRUCache<int, SkillData>(SKILL_CACHE_SIZE);
-            monsterCache = new LRUCache<int, MonsterData>(MONSTER_CACHE_SIZE);
-            autoTileCache = new LRUCache<int, AutoTileData>(AUTOTILE_CACHE_SIZE);
-            mapStatusCache = new LRUCache<int, MapStatusData>(MAP_STATUS_CACHE_SIZE);
-            tileCache = new Dictionary<int, TileData>();
-            terrainCache = new Dictionary<int, TerrainData>();
-            emoteCache = new Dictionary<int, EmoteData>();
-            elementCache = new Dictionary<int, ElementData>();
-            growthCache = new Dictionary<int, GrowthData>();
-            skillgroupCache = new Dictionary<int, SkillGroupData>();
-            aiCache = new Dictionary<int, AITactic>();
-            rankCache = new Dictionary<int, RankData>();
-            skinCache = new Dictionary<int, SkinData>();
+            itemCache = new LRUCache<string, ItemData>(ITEM_CACHE_SIZE);
+            statusCache = new LRUCache<string, StatusData>(STATUS_CACHE_SIZE);
+            intrinsicCache = new LRUCache<string, IntrinsicData>(INSTRINSIC_CACHE_SIZE);
+            skillCache = new LRUCache<string, SkillData>(SKILL_CACHE_SIZE);
+            monsterCache = new LRUCache<string, MonsterData>(MONSTER_CACHE_SIZE);
+            autoTileCache = new LRUCache<string, AutoTileData>(AUTOTILE_CACHE_SIZE);
+            mapStatusCache = new LRUCache<string, MapStatusData>(MAP_STATUS_CACHE_SIZE);
+            tileCache = new Dictionary<string, TileData>();
+            terrainCache = new Dictionary<string, TerrainData>();
+            emoteCache = new Dictionary<string, EmoteData>();
+            elementCache = new Dictionary<string, ElementData>();
+            growthCache = new Dictionary<string, GrowthData>();
+            skillgroupCache = new Dictionary<string, SkillGroupData>();
+            aiCache = new Dictionary<string, AITactic>();
+            rankCache = new Dictionary<string, RankData>();
+            skinCache = new Dictionary<string, SkinData>();
 
             DataIndices = new Dictionary<DataType, EntryDataIndex>();
             UniversalData = new TypeDict<BaseData>();
@@ -399,25 +399,18 @@ namespace RogueEssence.Data
         {
             try
             {
-                List<EntrySummary> summaries = new List<EntrySummary>();
+                Dictionary<string, EntrySummary> summaries = new Dictionary<string, EntrySummary>();
                 foreach (string modPath in PathMod.FallforthPaths(DATA_PATH + type.ToString() + "/index.idx"))
                 {
                     using (Stream stream = new FileStream(modPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         EntryDataIndex result = (EntryDataIndex)Serializer.DeserializeData(stream);
-                        for (int ii = 0; ii < result.Entries.Length; ii++)
-                        {
-                            if (result.Entries[ii] != null)
-                            {
-                                while (ii >= summaries.Count)
-                                    summaries.Add(null);
-                                summaries[ii] = result.Entries[ii];
-                            }
-                        }
+                        foreach(string key in result.Entries.Keys)
+                            summaries[key] = result.Entries[key];
                     }
                 }
                 EntryDataIndex compositeIndex = new EntryDataIndex();
-                compositeIndex.Entries = summaries.ToArray();
+                compositeIndex.Entries = summaries;
                 return compositeIndex;
             }
             catch
@@ -425,22 +418,22 @@ namespace RogueEssence.Data
                 return new EntryDataIndex();
             }
         }
-        public void LoadIndexFull<T>(DataType type, Dictionary<int, T> cache) where T : IEntryData
+        public void LoadIndexFull<T>(DataType type, Dictionary<string, T> cache) where T : IEntryData
         {
             LoadIndex(type);
             LoadCacheFull(type, cache);
         }
-        public void LoadCacheFull<T>(DataType type, Dictionary<int, T> cache) where T : IEntryData
+        public void LoadCacheFull<T>(DataType type, Dictionary<string, T> cache) where T : IEntryData
         {
             try
             {
                 cache.Clear();
-                for (int ii = 0; ii < DataIndices[type].Count; ii++)
+                foreach (string key in DataIndices[type].Entries.Keys)
                 {
-                    if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + ii + DataManager.DATA_EXT)))
+                    if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + key + DataManager.DATA_EXT)))
                     {
-                        T data = LoadData<T>(ii, type.ToString());
-                        cache.Add(ii, data);
+                        T data = LoadData<T>(key, type.ToString());
+                        cache.Add(key, data);
                     }
                 }
             }
@@ -458,18 +451,10 @@ namespace RogueEssence.Data
             }
         }
 
-        public void ContentChanged(DataType dataType, int entryNum, IEntryData data)
+        public void ContentChanged(DataType dataType, string entryNum, IEntryData data)
         {
             SaveData(entryNum, dataType.ToString(), data);
             EntrySummary entrySummary = data.GenerateEntrySummary();
-            if (entryNum > DataIndices[dataType].Count)
-                throw new ArgumentException(String.Format("Attempted to change entry {0} in a {1}-size index.", entryNum, DataIndices[dataType].Count));
-            else if (entryNum == DataIndices[dataType].Count)
-            {
-                EntrySummary[] newEntries = new EntrySummary[DataIndices[dataType].Count + 1];
-                DataIndices[dataType].Entries.CopyTo(newEntries, 0);
-                DataIndices[dataType].Entries = newEntries;
-            }
             DataIndices[dataType].Entries[entryNum] = entrySummary;
             SaveIndex(dataType);
             ClearCache(dataType);
@@ -486,7 +471,7 @@ namespace RogueEssence.Data
             DiagManager.Instance.DevEditor.ReloadData(dataType);
         }
 
-        public static T LoadData<T>(int indexNum, string subPath) where T : IEntryData
+        public static T LoadData<T>(string indexNum, string subPath) where T : IEntryData
         {
             return LoadData<T>(PathMod.ModPath(DATA_PATH + subPath + "/" + indexNum + DATA_EXT));
         }
@@ -508,7 +493,7 @@ namespace RogueEssence.Data
         }
 
 
-        public static void SaveData(int indexNum, string subPath, IEntryData entry)
+        public static void SaveData(string indexNum, string subPath, IEntryData entry)
         {
             string folder = PathMod.HardMod(DATA_PATH + subPath);
             if (!Directory.Exists(folder))
@@ -530,6 +515,10 @@ namespace RogueEssence.Data
 
 
         public ZoneData GetZone(int index)
+        {
+            return GetZone(index.ToString());
+        }
+        public ZoneData GetZone(string index)
         {
             ZoneData data = null;
 
@@ -583,6 +572,10 @@ namespace RogueEssence.Data
 
         public SkillData GetSkill(int index)
         {
+            return GetSkill(index.ToString());
+        }
+        public SkillData GetSkill(string index)
+        {
             SkillData data;
             if (skillCache.TryGetValue(index, out data))
                 return data;
@@ -603,6 +596,10 @@ namespace RogueEssence.Data
 
 
         public ItemData GetItem(int index)
+        {
+            return GetItem(index.ToString());
+        }
+        public ItemData GetItem(string index)
         {
             ItemData data;
             if (itemCache.TryGetValue(index, out data))
@@ -627,6 +624,11 @@ namespace RogueEssence.Data
 
         public AutoTileData GetAutoTile(int index)
         {
+            return GetAutoTile(index.ToString());
+        }
+
+        public AutoTileData GetAutoTile(string index)
+        {
             AutoTileData data;
             if (autoTileCache.TryGetValue(index, out data))
                 return data;
@@ -645,6 +647,10 @@ namespace RogueEssence.Data
 
         public MonsterData GetMonster(int index)
         {
+            return GetMonster(index.ToString());
+        }
+        public MonsterData GetMonster(string index)
+        {
             MonsterData data;
             if (monsterCache.TryGetValue(index, out data))
                 return data;
@@ -662,6 +668,10 @@ namespace RogueEssence.Data
         }
 
         public StatusData GetStatus(int index)
+        {
+            return GetStatus(index.ToString());
+        }
+        public StatusData GetStatus(string index)
         {
             StatusData data;
             if (statusCache.TryGetValue(index, out data))
@@ -684,6 +694,10 @@ namespace RogueEssence.Data
         }
 
         public IntrinsicData GetIntrinsic(int index)
+        {
+            return GetIntrinsic(index.ToString());
+        }
+        public IntrinsicData GetIntrinsic(string index)
         {
             IntrinsicData data;
             if (intrinsicCache.TryGetValue(index, out data))
@@ -708,6 +722,10 @@ namespace RogueEssence.Data
 
         public MapStatusData GetMapStatus(int index)
         {
+            return GetMapStatus(index.ToString());
+        }
+        public MapStatusData GetMapStatus(string index)
+        {
             MapStatusData data;
             if (mapStatusCache.TryGetValue(index, out data))
                 return data;
@@ -731,6 +749,10 @@ namespace RogueEssence.Data
 
         public TileData GetTile(int index)
         {
+            return GetTile(index.ToString());
+        }
+        public TileData GetTile(string index)
+        {
             TileData data = null;
             if (tileCache.TryGetValue(index, out data))
                 return data;
@@ -739,6 +761,10 @@ namespace RogueEssence.Data
         }
 
         public TerrainData GetTerrain(int index)
+        {
+            return GetTerrain(index.ToString());
+        }
+        public TerrainData GetTerrain(string index)
         {
             TerrainData data = null;
             if (terrainCache.TryGetValue(index, out data))
@@ -749,6 +775,10 @@ namespace RogueEssence.Data
 
         public EmoteData GetEmote(int index)
         {
+            return GetEmote(index.ToString());
+        }
+        public EmoteData GetEmote(string index)
+        {
             EmoteData data = null;
             if (emoteCache.TryGetValue(index, out data))
                 return data;
@@ -757,6 +787,10 @@ namespace RogueEssence.Data
         }
 
         public ElementData GetElement(int index)
+        {
+            return GetElement(index.ToString());
+        }
+        public ElementData GetElement(string index)
         {
             ElementData data = null;
             if (elementCache.TryGetValue(index, out data))
@@ -768,6 +802,10 @@ namespace RogueEssence.Data
 
         public GrowthData GetGrowth(int index)
         {
+            return GetGrowth(index.ToString());
+        }
+        public GrowthData GetGrowth(string index)
+        {
             GrowthData data = null;
             if (growthCache.TryGetValue(index, out data))
                 return data;
@@ -776,6 +814,10 @@ namespace RogueEssence.Data
         }
 
         public SkillGroupData GetSkillGroup(int index)
+        {
+            return GetSkillGroup(index.ToString());
+        }
+        public SkillGroupData GetSkillGroup(string index)
         {
             SkillGroupData data = null;
             if (skillgroupCache.TryGetValue(index, out data))
@@ -786,6 +828,10 @@ namespace RogueEssence.Data
 
         public AITactic GetAITactic(int index)
         {
+            return GetAITactic(index.ToString());
+        }
+        public AITactic GetAITactic(string index)
+        {
             AITactic data = null;
             if (aiCache.TryGetValue(index, out data))
                 return data;
@@ -795,6 +841,10 @@ namespace RogueEssence.Data
 
         public RankData GetRank(int index)
         {
+            return GetRank(index.ToString());
+        }
+        public RankData GetRank(string index)
+        {
             RankData data = null;
             if (rankCache.TryGetValue(index, out data))
                 return data;
@@ -803,6 +853,10 @@ namespace RogueEssence.Data
         }
 
         public SkinData GetSkin(int index)
+        {
+            return GetSkin(index.ToString());
+        }
+        public SkinData GetSkin(string index)
         {
             SkinData data = null;
             if (skinCache.TryGetValue(index, out data))
