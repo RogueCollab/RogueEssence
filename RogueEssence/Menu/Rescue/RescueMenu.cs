@@ -125,7 +125,7 @@ namespace RogueEssence.Menu
             if (amount == 0)
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem();
             else
-                DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(true, amount);
+                DataManager.Instance.Save.Rescue.SOS.OfferedItem = MapItem.CreateMoney(amount);
 
             GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;

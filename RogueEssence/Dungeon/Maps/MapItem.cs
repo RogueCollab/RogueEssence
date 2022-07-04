@@ -24,7 +24,7 @@ namespace RogueEssence.Dungeon
                 if (IsMoney)
                     return GraphicsManager.MoneySprite;
                 else
-                    return Data.DataManager.Instance.GetItem(Value).Sprite;
+                    return DataManager.Instance.GetItem(Value).Sprite;
             }
         }
 
@@ -41,12 +41,6 @@ namespace RogueEssence.Dungeon
         public MapItem(int value)
         {
             Value = value;
-        }
-
-        public MapItem(bool isMoney, int value)
-            : this(value)
-        {
-            IsMoney = isMoney;
         }
 
         public MapItem(int value, int hiddenValue)
@@ -85,6 +79,14 @@ namespace RogueEssence.Dungeon
         public InvItem MakeInvItem()
         {
             return new InvItem(Value, Cursed, HiddenValue, Price);
+        }
+
+        public static MapItem CreateMoney(int amt)
+        {
+            MapItem item = new MapItem();
+            item.IsMoney = true;
+            item.HiddenValue = amt;
+            return item;
         }
 
         public int GetSellValue()
@@ -135,10 +137,10 @@ namespace RogueEssence.Dungeon
         public string GetDungeonName()
         {
             if (IsMoney)
-                return Text.FormatKey("MONEY_AMOUNT", Value);
+                return Text.FormatKey("MONEY_AMOUNT", HiddenValue);
             else
             {
-                Data.ItemData entry = Data.DataManager.Instance.GetItem(Value);
+                ItemData entry = DataManager.Instance.GetItem(Value);
 
                 string prefix = "";
                 if (entry.Icon > -1)

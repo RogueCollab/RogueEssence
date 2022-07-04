@@ -227,13 +227,15 @@ namespace RogueEssence.Dungeon
             //fade white back with music
 
             //remove reward item
-            MapItem offeredItem = new MapItem((action[0] == 1), action[1]);
+            MapItem offeredItem = new MapItem();
+            offeredItem.IsMoney = (action[0] == 1);
+            offeredItem.Value = action[1];
             offeredItem.HiddenValue = action[2];
 
             if (offeredItem.Value > -1)
             {
                 if (offeredItem.IsMoney)
-                    ActiveTeam.Bank -= offeredItem.Value;
+                    ActiveTeam.Bank -= offeredItem.HiddenValue;
                 else
                 {
                     ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
