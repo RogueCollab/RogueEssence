@@ -133,7 +133,7 @@ namespace RogueEssence.Menu
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
         }
 
-        private void setRewardItem(List<int> slots)
+        private void setRewardItem(List<WithdrawSlot> slots)
         {
             List<InvItem> items = DataManager.Instance.Save.ActiveTeam.TakeItems(slots, false);
             if (items.Count > 1)

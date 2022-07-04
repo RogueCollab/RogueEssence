@@ -13,34 +13,37 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 8;
 
+        public delegate void OnWithdrawChoice(List<WithdrawSlot> slot);
+
         ItemSummary summaryMenu;
-        List<int> availableItems;
-        OnMultiChoice storageChoice;
+        List<WithdrawSlot> availableItems;
+        OnWithdrawChoice storageChoice;
         bool continueOnChoose;
 
-        public WithdrawMenu(int defaultChoice, bool continueOnChoose, OnMultiChoice storageChoice)
+        public WithdrawMenu(int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice)
         {
             this.continueOnChoose = continueOnChoose;
             this.storageChoice = storageChoice;
-            availableItems = new List<int>();
+            availableItems = new List<WithdrawSlot>();
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
             {
                 int index = ii;
                 if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
                 {
-                    availableItems.Add(index);
-                    Data.ItemData entry = Data.DataManager.Instance.GetItem(ii);
+                    WithdrawSlot slot = new WithdrawSlot(false, index, 0);
+                    availableItems.Add(slot);
+                    ItemData entry = DataManager.Instance.GetItem(ii);
                     MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
                     MenuText menuCount = new MenuText("(" + DataManager.Instance.Save.ActiveTeam.Storage[ii] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
-                    flatChoices.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCount));
+                    flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                 }
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.BoxStorage.Count; ii++)
             {
-                int index = ii + DataManager.Instance.DataIndices[DataManager.DataType.Item].Count;
-                availableItems.Add(index);
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetDisplayName(), () => { choose(index); }));
+                WithdrawSlot slot = new WithdrawSlot(true, 0, ii);
+                availableItems.Add(slot);
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetDisplayName(), () => { choose(slot); }));
             }
 
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
@@ -56,10 +59,10 @@ namespace RogueEssence.Menu
 
         }
 
-        private void choose(int choice)
+        private void choose(WithdrawSlot choice)
         {
             int startIndex = CurrentChoiceTotal;
-            List<int> choices = new List<int>();
+            List<WithdrawSlot> choices = new List<WithdrawSlot>();
             choices.Add(choice);
             MenuManager.Instance.AddMenu(new WithdrawChosenMenu(choices, startIndex, continueOnChoose, storageChoice), true);
         }
@@ -67,7 +70,7 @@ namespace RogueEssence.Menu
         protected override void ChoseMultiIndex(List<int> slots)
         {
             int startIndex = CurrentChoiceTotal;
-            List<int> indices = new List<int>();
+            List<WithdrawSlot> indices = new List<WithdrawSlot>();
             foreach (int slot in slots)
                 indices.Add(availableItems[slot]);
             MenuManager.Instance.AddMenu(new WithdrawChosenMenu(indices, startIndex, continueOnChoose, storageChoice), true);
@@ -76,11 +79,11 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             int totalChoice = CurrentChoiceTotal;
-            int index = availableItems[totalChoice];
-            if (index < DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
-                summaryMenu.SetItem(new InvItem(index, false, 1));
+            WithdrawSlot index = availableItems[totalChoice];
+            if (!index.IsBox)
+                summaryMenu.SetItem(new InvItem(index.ItemID, false, 1));
             else
-                summaryMenu.SetItem(DataManager.Instance.Save.ActiveTeam.BoxStorage[index - DataManager.Instance.DataIndices[DataManager.DataType.Item].Count]);
+                summaryMenu.SetItem(DataManager.Instance.Save.ActiveTeam.BoxStorage[index.BoxSlot]);
             base.ChoiceChanged();
         }
         

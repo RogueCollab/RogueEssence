@@ -729,7 +729,7 @@ namespace RogueEssence.Script
         }
         public void TakePlayerStorageItem(int id)
         {
-            DataManager.Instance.Save.ActiveTeam.TakeItems(new List<int> { id });
+            DataManager.Instance.Save.ActiveTeam.TakeItems(new List<WithdrawSlot> { new WithdrawSlot(false, id, 0) });
         }
 
         //===================================
