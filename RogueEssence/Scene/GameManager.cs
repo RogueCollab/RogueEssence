@@ -636,7 +636,7 @@ namespace RogueEssence
         /// </summary>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
-        public IEnumerator<YieldInstruction> MoveToGround(int zone, string mapname, string entrypoint, bool preserveMusic)
+        public IEnumerator<YieldInstruction> MoveToGround(string zone, string mapname, string entrypoint, bool preserveMusic)
         {
             //if we're in a test map, return to editor
             if (ZoneManager.Instance.InDevZone)
@@ -713,7 +713,7 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(BeginGame(nextZone.ID, MathUtils.Rand.NextUInt64(), stakes, recorded, silentRestrict));
             yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(nextZone, true));
         }
-        public IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             //initiate the adventure
             DataManager.Instance.CurrentReplay = null;

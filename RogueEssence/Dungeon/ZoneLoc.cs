@@ -5,25 +5,25 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public struct ZoneLoc
     {
-        public int ID;
+        public string ID;
         public SegLoc StructID;
         public int EntryPoint;
         
-        public ZoneLoc(int id, int structure, int structId, int entryPoint)
+        public ZoneLoc(string id, int structure, int structId, int entryPoint)
         {
             ID = id;
             StructID = new SegLoc(structure, structId);
             EntryPoint = entryPoint;
         }
 
-        public ZoneLoc(int id, SegLoc structId)
+        public ZoneLoc(string id, SegLoc structId)
         {
             ID = id;
             StructID = structId;
             EntryPoint = 0;
         }
 
-        public ZoneLoc(int id, SegLoc structId, int entryPoint)
+        public ZoneLoc(string id, SegLoc structId, int entryPoint)
         {
             ID = id;
             StructID = structId;
@@ -31,13 +31,13 @@ namespace RogueEssence.Dungeon
         }
 
 
-        private static readonly ZoneLoc invalid = new ZoneLoc(-1, new SegLoc(-1, -1), -1);
+        private static readonly ZoneLoc invalid = new ZoneLoc("", new SegLoc(-1, -1), -1);
 
         public static ZoneLoc Invalid { get { return invalid; } }
 
         public bool IsValid()
         {
-            return (ID > -1) && StructID.IsValid();
+            return (ID != "") && StructID.IsValid();
         }
     }
 }

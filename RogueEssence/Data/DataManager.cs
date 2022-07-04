@@ -903,7 +903,7 @@ namespace RogueEssence.Data
 
         }
 
-        public void BeginPlay(string filePath, int zoneId, bool rogue, bool seeded)
+        public void BeginPlay(string filePath, string zoneId, bool rogue, bool seeded)
         {
             try
             {

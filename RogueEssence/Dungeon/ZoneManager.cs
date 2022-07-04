@@ -71,7 +71,7 @@ namespace RogueEssence.Dungeon
         }
 
         public Zone CurrentZone { get; private set; }
-        public int CurrentZoneID { get; private set; }
+        public string CurrentZoneID { get; private set; }
         public SegLoc CurrentMapID { get { return CurrentZone.CurrentMapID; } }
         public Map CurrentMap { get { return (CurrentZone == null) ? null : CurrentZone.CurrentMap; } }
         public GroundMap CurrentGround { get { return (CurrentZone == null) ? null : CurrentZone.CurrentGround; } }

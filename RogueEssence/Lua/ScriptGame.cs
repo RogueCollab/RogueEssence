@@ -79,7 +79,7 @@ namespace RogueEssence.Script
 
 
         public LuaFunction EnterDungeon;
-        public Coroutine _EnterDungeon(int dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public Coroutine _EnterDungeon(string dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), stakes, recorded, silentRestrict));
         }
@@ -102,14 +102,14 @@ namespace RogueEssence.Script
         }
 
         public LuaFunction ContinueDungeon;
-        public Coroutine _ContinueDungeon(int dungeonid, int structureid, int mapid, int entry)
+        public Coroutine _ContinueDungeon(string dungeonid, int structureid, int mapid, int entry)
         {
             return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), false));
         }
 
 
         public LuaFunction EndDungeonRun;
-        public Coroutine _EndDungeonRun(GameProgress.ResultType result, int destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
+        public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
         {
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
         }
@@ -129,7 +129,7 @@ namespace RogueEssence.Script
         /// <param name="zone"></param>
         /// <param name="structure"></param>
         /// <param name="id"></param>
-        public void EnterZone(int zone, int structure, int id, int entry)
+        public void EnterZone(string zone, int structure, int id, int entry)
         {
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(zone, new SegLoc(structure, id), entry));
         }
