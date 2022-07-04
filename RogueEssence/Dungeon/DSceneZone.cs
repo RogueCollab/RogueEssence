@@ -259,7 +259,7 @@ namespace RogueEssence.Dungeon
                             }
                         }
                         List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
-                        itemsToTake.Add(new WithdrawSlot(true, chosenIndex, 0));
+                        itemsToTake.Add(new WithdrawSlot(true, 0, chosenIndex));
                         ActiveTeam.TakeItems(itemsToTake);
                     }
                     else
