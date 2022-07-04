@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueEssence.Dungeon;
+using System.Text;
 
 namespace RogueEssence.Data
 {
@@ -63,6 +64,15 @@ namespace RogueEssence.Data
             int cmd = UICodes[CurrentUI];
             CurrentUI++;
             return cmd;
+        }
+
+        public string ReadUIString()
+        {
+            int count = ReadUI();
+            StringBuilder str = new StringBuilder();
+            for (int ii = 0; ii < count; ii++)
+                str.Append((char)ReadUI());
+            return str.ToString();
         }
     }
 

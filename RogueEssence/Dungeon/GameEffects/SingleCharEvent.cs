@@ -16,6 +16,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class SingleCharScriptEvent : SingleCharEvent
     {
+        [Dev.Sanitize(0)]
         public string Script;
         [Dev.Multiline(0)]
         public string ArgTable;

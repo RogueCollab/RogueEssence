@@ -227,21 +227,23 @@ namespace RogueEssence.Dungeon
             //fade white back with music
 
             //remove reward item
-            MapItem offeredItem = new MapItem((action[0] == 1), action[1]);
+            MapItem offeredItem = new MapItem();
+            offeredItem.IsMoney = (action[0] == 1);
+            offeredItem.Value = action[1];
             offeredItem.HiddenValue = action[2];
 
             if (offeredItem.Value > -1)
             {
                 if (offeredItem.IsMoney)
-                    ActiveTeam.Bank -= offeredItem.Value;
+                    ActiveTeam.Bank -= offeredItem.HiddenValue;
                 else
                 {
                     ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
                     if (entry.MaxStack > 1)
                     {
-                        List<int> itemsToTake = new List<int>();
+                        List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
                         for (int ii = 0; ii < offeredItem.HiddenValue; ii++)
-                            itemsToTake.Add(offeredItem.Value);
+                            itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
                         ActiveTeam.TakeItems(itemsToTake);
                     }
                     else if (entry.UsageType == ItemData.UseType.Box)
@@ -256,13 +258,14 @@ namespace RogueEssence.Dungeon
                                 break;
                             }
                         }
-                        List<int> itemsToTake = new List<int>();
-                        itemsToTake.Add(DataManager.Instance.DataIndices[DataManager.DataType.Item].Count + chosenIndex);
+                        List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                        itemsToTake.Add(new WithdrawSlot(true, chosenIndex, 0));
+                        ActiveTeam.TakeItems(itemsToTake);
                     }
                     else
                     {
-                        List<int> itemsToTake = new List<int>();
-                        itemsToTake.Add(offeredItem.Value);
+                        List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                        itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
                         ActiveTeam.TakeItems(itemsToTake);
                     }
                 }

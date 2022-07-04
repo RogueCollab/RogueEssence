@@ -363,15 +363,15 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public List<InvItem> TakeItems(List<int> indices, bool remove = true)
+        public List<InvItem> TakeItems(List<WithdrawSlot> indices, bool remove = true)
         {
             List<int> removedBoxSlots = new List<int>();
             List<InvItem> invToTake = new List<InvItem>();
             for (int ii = 0; ii < indices.Count; ii++)
             {
-                int index = indices[ii];
-                if (index < DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
+                if (!indices[ii].IsBox)
                 {
+                    int index = indices[ii].ItemID;
                     ItemData entry = DataManager.Instance.GetItem(index);
                     if (entry.MaxStack > 1)
                     {
@@ -396,8 +396,8 @@ namespace RogueEssence.Dungeon
                 }
                 else
                 {
-                    invToTake.Add(BoxStorage[index - DataManager.Instance.DataIndices[DataManager.DataType.Item].Count]);
-                    removedBoxSlots.Add(index - DataManager.Instance.DataIndices[DataManager.DataType.Item].Count);
+                    invToTake.Add(BoxStorage[indices[ii].BoxSlot]);
+                    removedBoxSlots.Add(indices[ii].BoxSlot);
                 }
             }
             removedBoxSlots.Sort();
@@ -572,6 +572,21 @@ namespace RogueEssence.Dungeon
             base.LoadLua();
             foreach (Character player in Assembly)
                 player.LoadLua();
+        }
+    }
+
+    [Serializable]
+    public struct WithdrawSlot
+    {
+        public bool IsBox;
+        public int ItemID;
+        public int BoxSlot;
+
+        public WithdrawSlot(bool isBox, int itemID, int boxSlot)
+        {
+            IsBox = isBox;
+            ItemID = itemID;
+            BoxSlot = boxSlot;
         }
     }
 

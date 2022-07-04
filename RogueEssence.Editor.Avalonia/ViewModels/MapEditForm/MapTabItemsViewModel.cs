@@ -14,7 +14,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public MapTabItemsViewModel()
         {
-            SelectedEntity = new MapItem();
+            SelectedEntity = MapItem.CreateMoney(1);
 
             ItemTypes = new ObservableCollection<string>();
             ItemTypes.Add("[Money]");
@@ -61,7 +61,6 @@ namespace RogueEssence.Dev.ViewModels
                 if (value == 0)
                 {
                     SelectedEntity.IsMoney = true;
-                    Amount = 1;
                     TabIndex = 0;
                 }
                 else
@@ -76,10 +75,10 @@ namespace RogueEssence.Dev.ViewModels
 
         public int Amount
         {
-            get { return SelectedEntity.Value; }
+            get { return SelectedEntity.HiddenValue; }
             set
             {
-                this.RaiseAndSet(ref SelectedEntity.Value, value);
+                this.RaiseAndSet(ref SelectedEntity.HiddenValue, value);
             }
         }
 
@@ -205,6 +204,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             SelectedEntity = ent;
             ChosenItem = ChosenItem;
+            Amount = Amount;
             HiddenValue = HiddenValue;
             Cursed = Cursed;
         }

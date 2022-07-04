@@ -45,6 +45,11 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
 
             TextBox txtValue = (TextBox)control.Children[controlIndex];
+
+            SanitizeAttribute attribute = ReflectionExt.FindAttribute<SanitizeAttribute>(attributes);
+            if (attribute != null)
+                return Text.Sanitize(txtValue.Text);
+
             return txtValue.Text;
         }
     }

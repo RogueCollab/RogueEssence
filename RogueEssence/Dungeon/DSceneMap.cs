@@ -331,8 +331,8 @@ namespace RogueEssence.Dungeon
             if (item.IsMoney)
             {
                 ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
-                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.GetDisplayName(false), Text.FormatKey("MONEY_AMOUNT", item.Value)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
-                ((ExplorerTeam)memberTeam).AddMoney(character, item.Value);
+                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.GetDisplayName(false), Text.FormatKey("MONEY_AMOUNT", item.HiddenValue)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
+                ((ExplorerTeam)memberTeam).AddMoney(character, item.HiddenValue);
             }
             else
             {
@@ -1012,7 +1012,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> DropMoney(int amount, Loc loc, Loc start)
         {
-            MapItem mapItem = new MapItem(true, amount);
+            MapItem mapItem = MapItem.CreateMoney(amount);
             yield return CoroutineManager.Instance.StartCoroutine(DropMapItem(mapItem, loc, start, false));
         }
 
@@ -1041,7 +1041,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!silent)
                 {
-                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize, loc * GraphicsManager.TileSize, item.IsMoney ? GraphicsManager.MoneySprite : Data.DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize, loc * GraphicsManager.TileSize, item.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
                     CreateAnim(itemAnim, DrawLayer.Normal);
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }

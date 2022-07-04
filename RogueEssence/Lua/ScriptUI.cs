@@ -479,7 +479,7 @@ namespace RogueEssence.Script
             }
         }
 
-        private void onChooseSlot(List<int> slots)
+        private void onChooseSlot(List<WithdrawSlot> slots)
         {
             //store item
             List<InvItem> items = DataManager.Instance.Save.ActiveTeam.TakeItems(slots);

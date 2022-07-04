@@ -203,7 +203,7 @@ namespace RogueEssence.LevelGen
         {
             if (!Map.GetLocInMapBounds(ref loc))
                 throw new ArgumentException("Loc out of bounds.");
-            MapItem newItem = new MapItem(true, item.Amount);
+            MapItem newItem = MapItem.CreateMoney(item.Amount);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }

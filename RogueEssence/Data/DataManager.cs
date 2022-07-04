@@ -1062,6 +1062,13 @@ namespace RogueEssence.Data
                 LogUIPlay(tempQueue.Dequeue());
         }
 
+        public void LogUIStringPlay(string str)
+        {
+            LogUIPlay(str.Length);
+            for (int ii = 0; ii < str.Length; ii++)
+                LogUIPlay((int)str[ii]);
+        }
+
         public void LogUIPlay(params int[] code)
         {
             if (uiQueue != null)

@@ -121,9 +121,9 @@ namespace RogueEssence.Menu
                     {
                         int chosenIndex = baseMenu.CurrentPage * baseMenu.SpacesPerPage + baseMenu.CurrentChoice;
 
-                        List<int> offerItems = new List<int>();
+                        List<WithdrawSlot> offerItems = new List<WithdrawSlot>();
                         foreach (InvItem item in CurrentOffer)
-                            offerItems.Add(item.ID);
+                            offerItems.Add(new WithdrawSlot(false, item.ID, 0));
                         DataManager.Instance.Save.ActiveTeam.TakeItems(offerItems);
 
                         DataManager.Instance.Save.ActiveTeam.StoreItems(tradeItem.OfferedItems);

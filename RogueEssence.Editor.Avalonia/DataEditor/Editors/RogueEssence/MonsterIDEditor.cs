@@ -172,11 +172,6 @@ namespace RogueEssence.Dev
             control.Children.Add(innerPanel3);
         }
 
-        private void CbSpecies_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public override MonsterID SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             MonsterID result = new MonsterID();
