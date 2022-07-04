@@ -20,6 +20,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The name of the script.  The resulting function will be ZONE_GEN_SCRIPT.[Script Name]
         /// </summary>
+        [Dev.Sanitize(0)]
         public string Script;
 
         /// <summary>

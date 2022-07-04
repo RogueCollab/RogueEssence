@@ -15,6 +15,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class StatusScriptEvent : StatusGivenEvent
     {
+        [Dev.Sanitize(0)]
         public string Script;
         [Dev.Multiline(0)]
         public string ArgTable;

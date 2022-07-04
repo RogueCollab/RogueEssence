@@ -293,6 +293,11 @@ namespace RogueEssence
             foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
                 strings.Add(LoadStringResx(path));
         }
+
+        public static string Sanitize(string input)
+        {
+            return Regex.Replace(input, "\\W", "_");
+        }
     }
 
 
