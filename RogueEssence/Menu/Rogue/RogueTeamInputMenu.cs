@@ -8,10 +8,10 @@ namespace RogueEssence.Menu
     {
         public override int MaxLength { get { return 96; } }
 
-        private int chosenDest;
+        private string chosenDest;
         private ulong? seed;
 
-        public RogueTeamInputMenu(int chosenDungeon, ulong? seed)
+        public RogueTeamInputMenu(string chosenDungeon, ulong? seed)
         {
             chosenDest = chosenDungeon;
             this.seed = seed;

@@ -238,7 +238,7 @@ namespace RogueEssence.LevelGen
     public class ZoneGenContext
     {
         public ulong Seed;
-        public int CurrentZone;
+        public string CurrentZone;
         public int CurrentSegment;
         public int CurrentID;
         public List<ZoneStep> ZoneSteps;

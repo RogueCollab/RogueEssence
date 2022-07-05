@@ -78,12 +78,12 @@ namespace RogueEssence.Dungeon
 
         public ZoneManager()
         {
-            CurrentZoneID = -1;
+            CurrentZoneID = "";
         }
 
         //include a current groundmap, with moveto methods included
 
-        public void MoveToZone(int zoneIndex, string mapname, ulong seed)
+        public void MoveToZone(string zoneIndex, string mapname, ulong seed)
         {
             if (CurrentZone != null)
                 CurrentZone.DoCleanup();
@@ -96,7 +96,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public void MoveToZone(int zoneIndex, SegLoc mapId, ulong seed)
+        public void MoveToZone(string zoneIndex, SegLoc mapId, ulong seed)
         {
             if (CurrentZone != null)
                 CurrentZone.DoCleanup();
@@ -111,7 +111,7 @@ namespace RogueEssence.Dungeon
 
         public void Cleanup()
         {
-            CurrentZoneID = -1;
+            CurrentZoneID = "";
             if (CurrentZone != null)
                 CurrentZone.DoCleanup();
             CurrentZone = null;
@@ -119,8 +119,8 @@ namespace RogueEssence.Dungeon
 
         public void MoveToDevZone(bool newGround, string name)
         {
-            CurrentZoneID = -1;
-            CurrentZone = new Zone(0, -1);
+            CurrentZoneID = "";
+            CurrentZone = new Zone(0, "");
             if (newGround)
             {
                 if (!String.IsNullOrEmpty(name))
@@ -140,7 +140,7 @@ namespace RogueEssence.Dungeon
         {
             get
             {
-                if (CurrentZoneID > -1)
+                if (CurrentZoneID != "")
                     return false;
                 if (CurrentZone == null)
                     return false;

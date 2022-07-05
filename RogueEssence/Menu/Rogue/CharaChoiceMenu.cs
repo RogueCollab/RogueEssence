@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         private string team;
-        private int chosenDest;
+        private string chosenDest;
         public int FormSetting;
         public int SkinSetting;
         public Gender GenderSetting;
@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
         private List<int> startChars;
         private ulong? seed;
 
-        public CharaChoiceMenu(string teamName, int chosenDungeon, ulong? seed)
+        public CharaChoiceMenu(string teamName, string chosenDungeon, ulong? seed)
         {
             GenderSetting = Gender.Unknown;
             SkinSetting = 0;

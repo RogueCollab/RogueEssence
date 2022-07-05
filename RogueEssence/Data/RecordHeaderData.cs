@@ -9,7 +9,7 @@ namespace RogueEssence.Data
         public string Name;
         public string DateTimeString;
         public string LocationString;
-        public int Zone;
+        public string Zone;
         public int Score;
         public string Path;
         public bool IsRogue;
@@ -32,9 +32,9 @@ namespace RogueEssence.Data
         /// Generate all high score tables in real time, organized by dungeon, by going through all replays
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<int, List<RecordHeaderData>> LoadHighScores()
+        public static Dictionary<string, List<RecordHeaderData>> LoadHighScores()
         {
-            Dictionary<int, List<RecordHeaderData>> highScores = new Dictionary<int, List<RecordHeaderData>>();
+            Dictionary<string, List<RecordHeaderData>> highScores = new Dictionary<string, List<RecordHeaderData>>();
 
             List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION);
             

@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
 
         }
 
-        public void SetDungeon(int index, bool isComplete, bool showRestrict)
+        public void SetDungeon(string index, bool isComplete, bool showRestrict)
         {
             //TODO: String Assets
             ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[index.ToString()] as ZoneEntrySummary;

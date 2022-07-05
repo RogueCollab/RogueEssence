@@ -84,6 +84,11 @@ namespace RogueEssence.Data
             All = 131071
         }
 
+        public string MapAssetName(DataType dataType, int asset)
+        {
+            throw new NotImplementedException();
+        }
+
         public enum LoadMode
         {
             None,
@@ -1116,7 +1121,7 @@ namespace RogueEssence.Data
                         //save the location string
                         replayWriter.Write(epitaph.Location);
                         //save the epitaph
-                        Data.GameProgress.SaveMainData(replayWriter, epitaph);
+                        GameProgress.SaveMainData(replayWriter, epitaph);
 
                         //pointers and score
                         replayWriter.BaseStream.Seek(sizeof(Int32) * 4, SeekOrigin.Begin);
@@ -1249,7 +1254,7 @@ namespace RogueEssence.Data
                         //read result
                         record.Result = (GameProgress.ResultType)reader.ReadInt32();
                         //read zone ID
-                        record.Zone = reader.ReadInt32();
+                        record.Zone = reader.ReadString();
                         record.IsRogue = reader.ReadBoolean();
                         record.IsSeeded = reader.ReadBoolean();
                         //name, date

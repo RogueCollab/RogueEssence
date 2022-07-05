@@ -74,11 +74,19 @@ namespace RogueEssence.Script
 
         public void EnterGroundMap(int zone, string name, string entrypoint, bool preserveMusic = false)
         {
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(DataManager.Instance.MapAssetName(DataManager.DataType.Zone, zone), name, entrypoint, preserveMusic);
+        }
+        public void EnterGroundMap(string zone, string name, string entrypoint, bool preserveMusic = false)
+        {
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(zone, name, entrypoint, preserveMusic);
         }
 
 
         public LuaFunction EnterDungeon;
+        public Coroutine _EnterDungeon(int dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        {
+            return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(DataManager.Instance.MapAssetName(DataManager.DataType.Zone, dungeonid), new SegLoc(structureid, mapid), entry), stakes, recorded, silentRestrict));
+        }
         public Coroutine _EnterDungeon(string dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), stakes, recorded, silentRestrict));
@@ -102,6 +110,10 @@ namespace RogueEssence.Script
         }
 
         public LuaFunction ContinueDungeon;
+        public Coroutine _ContinueDungeon(int dungeonid, int structureid, int mapid, int entry)
+        {
+            return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(DataManager.Instance.MapAssetName(DataManager.DataType.Zone, dungeonid), new SegLoc(structureid, mapid), entry), false));
+        }
         public Coroutine _ContinueDungeon(string dungeonid, int structureid, int mapid, int entry)
         {
             return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), false));
@@ -109,6 +121,10 @@ namespace RogueEssence.Script
 
 
         public LuaFunction EndDungeonRun;
+        public Coroutine _EndDungeonRun(GameProgress.ResultType result, int destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
+        {
+            return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(DataManager.Instance.MapAssetName(DataManager.DataType.Zone, destzoneid), new SegLoc(structureid, mapid), entryid), display, fanfare));
+        }
         public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
         {
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
@@ -793,10 +809,20 @@ namespace RogueEssence.Script
 
         public void UnlockDungeon(int dungeonid)
         {
+            DataManager.Instance.Save.UnlockDungeon(DataManager.Instance.MapAssetName(DataManager.DataType.Zone, dungeonid));
+        }
+
+        public void UnlockDungeon(string dungeonid)
+        {
             DataManager.Instance.Save.UnlockDungeon(dungeonid);
         }
 
         public bool DungeonUnlocked(int dungeonid)
+        {
+            return DataManager.Instance.Save.GetDungeonUnlock(DataManager.Instance.MapAssetName(DataManager.DataType.Zone, dungeonid)) != GameProgress.UnlockState.None;
+        }
+
+        public bool DungeonUnlocked(string dungeonid)
         {
             return DataManager.Instance.Save.GetDungeonUnlock(dungeonid) != GameProgress.UnlockState.None;
         }

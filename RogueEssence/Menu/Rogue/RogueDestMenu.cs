@@ -15,37 +15,35 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         DungeonSummary summaryMenu;
-        private List<int> dungeonIndices;
+        private List<string> dungeonIndices;
         private SeedSummary infoMenu;
         private ulong? seed;
 
         public RogueDestMenu()
         {
-            dungeonIndices = new List<int>();
+            dungeonIndices = new List<string>();
 
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
             {
-                //TODO: String Assets
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii.ToString()] as ZoneEntrySummary;
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[key] as ZoneEntrySummary;
                 if (!DiagManager.Instance.DevMode)
                 {
-                    if (DataManager.Instance.Save.GetDungeonUnlock(ii) == GameProgress.UnlockState.None)
+                    if (DataManager.Instance.Save.GetDungeonUnlock(key) == GameProgress.UnlockState.None)
                         continue;
                     if (summary == null)
                         continue;
                     if (summary.Rogue != RogueStatus.AllTransfer)
                         continue;
                 }
-                dungeonIndices.Add(ii);
+                dungeonIndices.Add(key);
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(dungeonIndices[MathUtils.Rand.Next(dungeonIndices.Count)]); }));
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
-                int zone = dungeonIndices[ii];
-                //TODO: String Assets
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone.ToString()] as ZoneEntrySummary;
+                string zone = dungeonIndices[ii];
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone] as ZoneEntrySummary;
                 flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
             }
 
@@ -96,7 +94,7 @@ namespace RogueEssence.Menu
             infoMenu.Draw(spriteBatch);
         }
 
-        private void choose(int choice)
+        private void choose(string choice)
         {
             MenuManager.Instance.AddMenu(new RogueTeamInputMenu(choice, seed), false);
         }

@@ -11,11 +11,11 @@ namespace RogueEssence.Menu
         public MenuText Title;
         public MenuDivider Div;
         public MenuText[] Scores;
-        private Dictionary<int, List<RecordHeaderData>> scoreDict;
-        private int chosenZone;
+        private Dictionary<string, List<RecordHeaderData>> scoreDict;
+        private string chosenZone;
         private string highlightedPath;
 
-        public ScoreMenu(Dictionary<int, List<RecordHeaderData>> scoreDict, int chosenZone, string highlightedPath)
+        public ScoreMenu(Dictionary<string, List<RecordHeaderData>> scoreDict, string chosenZone, string highlightedPath)
         {
             this.scoreDict = scoreDict;
             this.chosenZone = chosenZone;
@@ -62,10 +62,20 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                int newZone = chosenZone;
+                string newZone = chosenZone;
+                int curIndex = 0;
+                List<string> asset_names = new List<string>();
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
+                {
+                    if (newZone == key)
+                        curIndex = asset_names.Count;
+                    asset_names.Add(key);
+                }
+
                 do
                 {
-                    newZone = (newZone + DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count-1) % DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count;
+                    curIndex = (curIndex + asset_names.Count-1) % asset_names.Count;
+                    newZone = asset_names[curIndex];
                 }
                 while (!scoreDict.ContainsKey(newZone));
                 MenuManager.Instance.ReplaceMenu(new ScoreMenu(scoreDict, newZone, highlightedPath));
@@ -73,9 +83,20 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                int newZone = chosenZone;
-                do {
-                    newZone = (newZone + 1) % DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count;
+                string newZone = chosenZone;
+                int curIndex = 0;
+                List<string> asset_names = new List<string>();
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
+                {
+                    if (newZone == key)
+                        curIndex = asset_names.Count;
+                    asset_names.Add(key);
+                }
+
+                do
+                {
+                    curIndex = (curIndex + 1) % asset_names.Count;
+                    newZone = asset_names[curIndex];
                 }
                 while (!scoreDict.ContainsKey(newZone));
                 MenuManager.Instance.ReplaceMenu(new ScoreMenu(scoreDict, newZone, highlightedPath));

@@ -155,7 +155,7 @@ namespace RogueEssence.Data
         }
 
 
-        public Zone CreateActiveZone(ulong seed, int zoneIndex)
+        public Zone CreateActiveZone(ulong seed, string zoneIndex)
         {
             Zone zone = new Zone(seed, zoneIndex);
             zone.Name = Name;

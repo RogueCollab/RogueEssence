@@ -498,7 +498,7 @@ namespace RogueEssence
             BaseScene destScene = newGround ? (BaseScene)GroundEditScene.Instance : (BaseScene)DungeonEditScene.Instance;
 
             ZoneLoc destLoc = ZoneLoc.Invalid;
-            if (ZoneManager.Instance.CurrentZoneID > -1)
+            if (ZoneManager.Instance.CurrentZoneID != "")
                 destLoc = new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID);
 
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
@@ -559,7 +559,7 @@ namespace RogueEssence
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
             else
             {
-                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID));//NOTE: there are better ways to seed a multi-dungeon adventure
+                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 
@@ -653,7 +653,7 @@ namespace RogueEssence
                 ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
             else
             {
-                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone));//NOTE: there are better ways to seed a multi-dungeon adventure
+                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 

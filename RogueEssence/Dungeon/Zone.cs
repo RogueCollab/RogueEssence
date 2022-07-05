@@ -39,7 +39,7 @@ namespace RogueEssence.Dungeon
 
         public int MapCount { get { return maps.Count; } }
 
-        public int ID { get; private set; }
+        public string ID { get; private set; }
         public SegLoc CurrentMapID { get; private set; }
         public Map CurrentMap { get; private set; }
 
@@ -55,7 +55,7 @@ namespace RogueEssence.Dungeon
         /// </summary>
         private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents;
 
-        public Zone(ulong seed, int zoneIndex)
+        public Zone(ulong seed, string zoneIndex)
         {
             DiagManager.Instance.LogInfo("Zone Seed: " + seed);
             rand = new ReRandom(seed);
@@ -90,7 +90,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < (int)LuaEngine.EZoneCallbacks.Invalid; ii++)
             {
                 LuaEngine.EZoneCallbacks ev = (LuaEngine.EZoneCallbacks)ii;
-                string assetName = "zone_" + this.ID;
+                string assetName = this.ID;
                 string callback = LuaEngine.MakeZoneScriptCallbackName(assetName, ev);
                 if (!LuaEngine.Instance.DoesFunctionExists(callback))
                     continue;
@@ -299,10 +299,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnInit()
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             DiagManager.Instance.LogInfo("Zone.OnInit(): Initializing the zone..");
-            if (ZoneManager.Instance.CurrentZoneID >= 0)
+            if (ZoneManager.Instance.CurrentZoneID != "")
                 LuaEngine.Instance.RunZoneScript(assetName);
 
             LoadScriptEvents();
@@ -320,7 +320,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnEnterSegment(bool rescuing)
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
@@ -331,7 +331,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnExitSegment(GameProgress.ResultType result, bool rescuing)
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.ExitSegment, this, result, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
@@ -342,7 +342,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnRescued(string name, SOSMail mail)
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.Rescued, this, name, mail));
@@ -361,10 +361,10 @@ namespace RogueEssence.Dungeon
         {
             exitMap();
 
-            string assetName = "zone_" + ID;
+            string assetName = ID;
             DiagManager.Instance.LogInfo(String.Format("Zone.~Zone(): Finalizing {0}..", assetName));
 
-            if (ID > -1)
+            if (ID != "")
                 LuaEngine.Instance.CleanZoneScript(assetName);
         }
     }

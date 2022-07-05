@@ -104,7 +104,7 @@ namespace RogueEssence.Data
 
         public List<UnlockState> Dex;
         public List<bool> RogueStarters;
-        public List<UnlockState> DungeonUnlocks;
+        public Dictionary<string, UnlockState> DungeonUnlocks;
 
         //TODO: set dungeon unlocks and event flags to save variables
 
@@ -150,7 +150,7 @@ namespace RogueEssence.Data
 
             Dex = new List<UnlockState>();
             RogueStarters = new List<bool>();
-            DungeonUnlocks = new List<UnlockState>();
+            DungeonUnlocks = new Dictionary<string, UnlockState>();
 
             NextDest = ZoneLoc.Invalid;
 
@@ -279,18 +279,20 @@ namespace RogueEssence.Data
         {
             return CollectionExt.GetExtendList(RogueStarters, index);
         }
-        public UnlockState GetDungeonUnlock(int index)
+        public UnlockState GetDungeonUnlock(string index)
         {
-            return CollectionExt.GetExtendList(DungeonUnlocks, index);
+            UnlockState state = UnlockState.None;
+            DungeonUnlocks.TryGetValue(index, out state);
+            return state;
         }
-        public void UnlockDungeon(int index)
+        public void UnlockDungeon(string index)
         {
-            if (CollectionExt.GetExtendList(DungeonUnlocks, index) == UnlockState.None)
-                CollectionExt.AssignExtendList(DungeonUnlocks, index, UnlockState.Discovered);
+            if (GetDungeonUnlock(index) == UnlockState.None)
+                DungeonUnlocks[index] = UnlockState.Discovered;
         }
-        public void CompleteDungeon(int index)
+        public void CompleteDungeon(string index)
         {
-            CollectionExt.AssignExtendList(DungeonUnlocks, index, UnlockState.Completed);
+            DungeonUnlocks[index] = UnlockState.Completed;
         }
 
         public abstract IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
@@ -999,7 +1001,7 @@ namespace RogueEssence.Data
                 }
                 else
                 {
-                    int completedZone = ZoneManager.Instance.CurrentZoneID;
+                    string completedZone = ZoneManager.Instance.CurrentZoneID;
                     CompleteDungeon(completedZone);
 
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
@@ -1193,7 +1195,7 @@ namespace RogueEssence.Data
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
 
-                    Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
+                    Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
 
                 }
@@ -1211,7 +1213,7 @@ namespace RogueEssence.Data
             }
             else
             {
-                int completedZone = ZoneManager.Instance.CurrentZoneID;
+                string completedZone = ZoneManager.Instance.CurrentZoneID;
 
                 MidAdventure = true;
                 ClearDungeonItems();
@@ -1256,7 +1258,7 @@ namespace RogueEssence.Data
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
 
-                    Dictionary<int, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
+                    Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
                 }
 
