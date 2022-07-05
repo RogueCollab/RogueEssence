@@ -1019,9 +1019,9 @@ namespace RogueEssence
                     if (MetaInputManager[FrameInput.InputType.Ctrl])
                         SceneOutcome = RestartToTitle();
                     else if (MetaInputManager[FrameInput.InputType.ShowDebug])
-                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DebugZone, new SegLoc()), 0);
                     else
-                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc(-1, 0), 0), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DebugZone, new SegLoc(-1, 0), 0), 0);
                 }
             }
 

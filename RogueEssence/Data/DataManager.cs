@@ -163,6 +163,7 @@ namespace RogueEssence.Data
         public List<string> StartTeams;
         public int StartLevel;
         public int StartPersonality;
+        public string DebugZone;
         public ZoneLoc StartMap;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
@@ -364,8 +365,10 @@ namespace RogueEssence.Data
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
                     StartPersonality = Int32.Parse(startPersonality.InnerText);
 
+                    DebugZone = xmldoc.DocumentElement.SelectSingleNode("DebugZone").InnerText;
+
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
-                    StartMap = new ZoneLoc(Int32.Parse(startMap.SelectSingleNode("Zone").InnerText),
+                    StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
                         new SegLoc(Int32.Parse(startMap.SelectSingleNode("Segment").InnerText), Int32.Parse(startMap.SelectSingleNode("ID").InnerText)),
                         Int32.Parse(startMap.SelectSingleNode("Entry").InnerText));
                     return;
@@ -1524,7 +1527,7 @@ namespace RogueEssence.Data
                             string dateDefeated = reader.ReadString();
                             if (dateDefeated != mail.DateDefeated)
                                 continue;
-                            ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
+                            ZoneLoc goal = new ZoneLoc(reader.ReadString(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
                             if (goal.ID != mail.Goal.ID || goal.StructID.Segment != mail.Goal.StructID.Segment || goal.StructID.ID != mail.Goal.StructID.ID)
                                 continue;
                             int versionCount = reader.ReadInt32();
@@ -1574,7 +1577,7 @@ namespace RogueEssence.Data
                         ulong seed = reader.ReadUInt64();
                         int turnstaken = reader.ReadInt32();
                         string dateDefeated = reader.ReadString();
-                        ZoneLoc goal = new ZoneLoc(reader.ReadInt32(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
+                        ZoneLoc goal = new ZoneLoc(reader.ReadString(), new SegLoc(reader.ReadInt32(), reader.ReadInt32()));
                         int versionCount = reader.ReadInt32();
                         for (int ii = 0; ii < versionCount; ii++)
                         {

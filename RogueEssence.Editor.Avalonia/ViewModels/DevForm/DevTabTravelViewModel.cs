@@ -181,7 +181,12 @@ namespace RogueEssence.Dev.ViewModels
                 Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
                 if (DataManager.Instance.Save != null)
                     DataManager.Instance.Save.CutsceneMode = false;
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
+
+                List<string> entry_names = new List<string>();
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
+                    entry_names.Add(key);
+
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(entry_names[chosenZone], new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 
@@ -199,7 +204,12 @@ namespace RogueEssence.Dev.ViewModels
                 Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
                 if (DataManager.Instance.Save != null)
                     DataManager.Instance.Save.CutsceneMode = false;
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
+
+                List<string> entry_names = new List<string>();
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
+                    entry_names.Add(key);
+
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(entry_names[chosenZone], new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 

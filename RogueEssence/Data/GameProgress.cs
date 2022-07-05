@@ -977,7 +977,7 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+                        NextDest = DataManager.Instance.StartMap;
                 }
                 else if (result != ResultType.Cleared)
                 {
@@ -996,7 +996,7 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+                        NextDest = DataManager.Instance.StartMap;
 
                 }
                 else
@@ -1013,7 +1013,7 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = new ZoneLoc(1, new SegLoc(-1, 1));
+                        NextDest = DataManager.Instance.StartMap;
 
                 }
 
