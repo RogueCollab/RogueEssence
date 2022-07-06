@@ -84,11 +84,6 @@ namespace RogueEssence.Data
             All = 131071
         }
 
-        public string MapAssetName(DataType dataType, int asset)
-        {
-            throw new NotImplementedException();
-        }
-
         public enum LoadMode
         {
             None,
@@ -262,6 +257,7 @@ namespace RogueEssence.Data
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index.bin"));
             LoadStartParams();
 
+            LoadConversions();
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
             LoadIndex(DataType.Monster);
@@ -301,6 +297,36 @@ namespace RogueEssence.Data
         {
             Directory.CreateDirectory(PathMod.ModSavePath(SAVE_PATH));
             Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
+        }
+
+        public Dictionary<DataType, Dictionary<int, string>> Conversions;
+
+        public void LoadConversions()
+        {
+            Conversions = new Dictionary<DataType, Dictionary<int, string>>();
+
+            foreach (DataType type in Enum.GetValues(typeof(DataType)))
+            {
+                Dictionary<int, string> convMap = new Dictionary<int, string>();
+                if (type != DataManager.DataType.All && type != DataManager.DataType.None)
+                {
+                    foreach (string modPath in PathMod.FallforthPaths("CONVERSION/" + type.ToString() + ".txt"))
+                    {
+                        string[] lines = File.ReadAllLines(modPath);
+                        for (int ii = 0; ii < lines.Length; ii++)
+                        {
+                            if (!String.IsNullOrWhiteSpace(lines[ii]))
+                                convMap[ii] = lines[ii];
+                        }
+                    }
+                }
+                Conversions[type] = convMap;
+            }
+        }
+
+        public string MapAssetName(DataType dataType, int asset)
+        {
+            return Conversions[dataType][asset];
         }
 
 
