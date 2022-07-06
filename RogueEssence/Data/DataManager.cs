@@ -312,11 +312,14 @@ namespace RogueEssence.Data
                 {
                     foreach (string modPath in PathMod.FallforthPaths("CONVERSION/" + type.ToString() + ".txt"))
                     {
-                        string[] lines = File.ReadAllLines(modPath);
-                        for (int ii = 0; ii < lines.Length; ii++)
+                        if (File.Exists(modPath))
                         {
-                            if (!String.IsNullOrWhiteSpace(lines[ii]))
-                                convMap[ii] = lines[ii];
+                            string[] lines = File.ReadAllLines(modPath);
+                            for (int ii = 0; ii < lines.Length; ii++)
+                            {
+                                if (!String.IsNullOrWhiteSpace(lines[ii]))
+                                    convMap[ii] = lines[ii];
+                            }
                         }
                     }
                 }

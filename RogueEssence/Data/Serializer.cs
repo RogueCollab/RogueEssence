@@ -52,42 +52,45 @@ namespace RogueEssence.Data
             }
         }
 
+        public static Version GetVersion(string containerStr)
+        {
+            Version objVersion = new Version(0, 0);
+            try
+            {
+                using (JsonTextReader textReader = new JsonTextReader(new StringReader(containerStr)))
+                {
+                    textReader.Read();
+                    textReader.Read();
+                    while (true)
+                    {
+                        if (textReader.TokenType == JsonToken.PropertyName && (string)textReader.Value == "Version")
+                        {
+                            textReader.Read();
+                            objVersion = new Version((string)textReader.Value);
+                            break;
+                        }
+                        else
+                        {
+                            textReader.Skip();
+                            textReader.Read();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            return objVersion;
+        }
+
         public static object DeserializeData(Stream stream)
         {
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
             {
                 string containerStr = reader.ReadToEnd();
-
-                Version objVersion = new Version(0, 0);
-                try
-                {
-                    using (JsonTextReader textReader = new JsonTextReader(new StringReader(containerStr)))
-                    {
-                        textReader.Read();
-                        textReader.Read();
-                        while (true)
-                        {
-                            if (textReader.TokenType == JsonToken.PropertyName && (string)textReader.Value == "Version")
-                            {
-                                textReader.Read();
-                                objVersion = new Version((string)textReader.Value);
-                                break;
-                            }
-                            else
-                            {
-                                textReader.Skip();
-                                textReader.Read();
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex);
-                }
-
                 //Temporarily set global old version for converters in UpgradeConverters.cs to recognize the version.
-                OldVersion = objVersion;
+                OldVersion = GetVersion(containerStr);
                 SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
                 OldVersion = new Version();
                 return container.Object;

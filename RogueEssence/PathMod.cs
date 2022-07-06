@@ -183,6 +183,20 @@ namespace RogueEssence
             return hardMod("", basePath);
         }
 
+        public static string[] GetHardModFiles(string baseFolder, string search = "*")
+        {
+            if (Quest.IsValid())
+            {
+                string mod = Quest.Path;
+                string fullPath = hardMod(mod, baseFolder);
+                if (Directory.Exists(fullPath))
+                    return Directory.GetFiles(fullPath, search);
+                return new string[0];
+            }
+            else
+                return Directory.GetFiles(hardMod("", baseFolder), search);
+        }
+
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
