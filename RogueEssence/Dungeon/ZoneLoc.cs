@@ -59,7 +59,7 @@ namespace RogueEssence.Dungeon
 
         public bool IsValid()
         {
-            return (ID != "") && StructID.IsValid();
+            return (!String.IsNullOrEmpty(ID)) && StructID.IsValid();
         }
     }
 }

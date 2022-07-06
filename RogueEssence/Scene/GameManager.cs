@@ -498,7 +498,7 @@ namespace RogueEssence
             BaseScene destScene = newGround ? (BaseScene)GroundEditScene.Instance : (BaseScene)DungeonEditScene.Instance;
 
             ZoneLoc destLoc = ZoneLoc.Invalid;
-            if (ZoneManager.Instance.CurrentZoneID != "")
+            if (!String.IsNullOrEmpty(ZoneManager.Instance.CurrentZoneID))
                 destLoc = new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID);
 
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));

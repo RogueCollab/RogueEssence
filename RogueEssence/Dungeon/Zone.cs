@@ -302,7 +302,7 @@ namespace RogueEssence.Dungeon
             string assetName = ZoneManager.Instance.CurrentZoneID;
 
             DiagManager.Instance.LogInfo("Zone.OnInit(): Initializing the zone..");
-            if (ZoneManager.Instance.CurrentZoneID != "")
+            if (!String.IsNullOrEmpty(ZoneManager.Instance.CurrentZoneID))
                 LuaEngine.Instance.RunZoneScript(assetName);
 
             LoadScriptEvents();
@@ -364,7 +364,7 @@ namespace RogueEssence.Dungeon
             string assetName = ID;
             DiagManager.Instance.LogInfo(String.Format("Zone.~Zone(): Finalizing {0}..", assetName));
 
-            if (ID != "")
+            if (!String.IsNullOrEmpty(ID))
                 LuaEngine.Instance.CleanZoneScript(assetName);
         }
     }

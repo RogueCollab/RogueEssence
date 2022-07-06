@@ -140,7 +140,7 @@ namespace RogueEssence.Dungeon
         {
             get
             {
-                if (CurrentZoneID != "")
+                if (!String.IsNullOrEmpty(CurrentZoneID))
                     return false;
                 if (CurrentZone == null)
                     return false;
