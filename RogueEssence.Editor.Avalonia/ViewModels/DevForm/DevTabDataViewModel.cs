@@ -305,31 +305,59 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 }
             };
-            choices.SelectedAddEvent += () =>
+            choices.SelectedAddEvent += async () =>
             {
-                lock (GameBase.lockObj)
+                if (dataType == DataManager.DataType.Zone)
                 {
-                    //TODO: String Assets
-                    string entryNum = DataManager.Instance.DataIndices[dataType].Count.ToString();
-                    IEntryData data = createOp();
 
-                    DataEditForm editor = new DataEditRootForm();
-                    editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
-                    DataEditor.LoadDataControls(data, editor);
-                    editor.SelectedOKEvent += async () =>
+                    // Show a name entry window
+                    RenameWindow window = new RenameWindow();
+                    RenameViewModel vm = new RenameViewModel();
+                    window.DataContext = vm;
+
+                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+                    bool result = await window.ShowDialog<bool>(form);
+                    if (!result)
+                        return;
+
+                    lock (GameBase.lockObj)
                     {
-                        lock (GameBase.lockObj)
-                        {
-                            object obj = data;
-                            DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
-                            data = (IEntryData)obj;
-                            DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+                        string assetName = vm.Name;//FindNonConlictingName(vm.Name, Checker);
+                        DataManager.Instance.ContentChanged(dataType, assetName, createOp());
+                        string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
+                        choices.AddEntry(assetName, newName);
+                    }
+                }
+                else
+                {
+                    DataEditForm editor = new DataEditRootForm();
+                    IEntryData data;
+                    string entryNum;
+                    lock (GameBase.lockObj)
+                    {
+                        //TODO: String Assets
+                        entryNum = DataManager.Instance.DataIndices[dataType].Count.ToString();
+                        data = createOp();
 
-                            string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
-                            choices.AddEntry(entryNum, newName);
-                            return true;
-                        }
-                    };
+                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
+                        DataEditor.LoadDataControls(data, editor);
+
+                    }
+                    editor.SelectedOKEvent += async () =>
+                        {
+                            lock (GameBase.lockObj)
+                            {
+                                object obj = data;
+                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
+                                data = (IEntryData)obj;
+                                DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
+
+                                string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                choices.AddEntry(entryNum, newName);
+                                return true;
+                            }
+                        };
 
                     editor.Show();
                 }
