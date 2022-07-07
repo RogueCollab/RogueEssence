@@ -10,27 +10,6 @@ namespace RogueEssence.Dungeon
         public SegLoc StructID;
         public int EntryPoint;
 
-        public ZoneLoc(int id, int structure, int structId, int entryPoint)
-        {
-            ID = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, id);
-            StructID = new SegLoc(structure, structId);
-            EntryPoint = entryPoint;
-        }
-
-        public ZoneLoc(int id, SegLoc structId)
-        {
-            ID = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, id);
-            StructID = structId;
-            EntryPoint = 0;
-        }
-
-        public ZoneLoc(int id, SegLoc structId, int entryPoint)
-        {
-            ID = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, id);
-            StructID = structId;
-            EntryPoint = entryPoint;
-        }
-
         public ZoneLoc(string id, int structure, int structId, int entryPoint)
         {
             ID = id;

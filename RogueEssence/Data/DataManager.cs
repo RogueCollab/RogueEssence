@@ -550,11 +550,6 @@ namespace RogueEssence.Data
         }
 
 
-
-        public ZoneData GetZone(int index)
-        {
-            return GetZone(MapAssetName(DataType.Zone, index));
-        }
         public ZoneData GetZone(string index)
         {
             ZoneData data = null;
