@@ -63,7 +63,7 @@ namespace RogueEssence.Dev
                 catch (Exception ex)
                 {
                     LuaTable tbl = Script.LuaEngine.Instance.DeserializedLuaTable(s);
-                    return Script.LuaEngine.Instance.LuaTableToDict(tbl);
+                    return Script.LuaEngine.Instance.SaveLuaTable(tbl);
                 }
             }
         }

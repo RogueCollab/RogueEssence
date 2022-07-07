@@ -553,7 +553,7 @@ namespace RogueEssence.Data
 
         public ZoneData GetZone(int index)
         {
-            return GetZone(index.ToString());
+            return GetZone(MapAssetName(DataType.Zone, index));
         }
         public ZoneData GetZone(string index)
         {

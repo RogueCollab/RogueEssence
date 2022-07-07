@@ -200,7 +200,7 @@ namespace RogueEssence.Dungeon
 
         public void SaveLua()
         {
-            ScriptVars = Script.LuaEngine.Instance.LuaTableToDict(LuaDataTable);
+            ScriptVars = Script.LuaEngine.Instance.SaveLuaTable(LuaDataTable);
         }
 
         public void LoadLua()
@@ -211,7 +211,7 @@ namespace RogueEssence.Dungeon
                 return;
             }
 
-            LuaDataTable = Script.LuaEngine.Instance.DictToLuaTable(ScriptVars);
+            LuaDataTable = Script.LuaEngine.Instance.LoadLuaTable(ScriptVars);
             if (LuaDataTable == null)
             {
                 //Make sure thers is at least a table in the data table when done deserializing.

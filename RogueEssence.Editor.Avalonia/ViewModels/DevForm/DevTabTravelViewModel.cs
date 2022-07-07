@@ -108,7 +108,8 @@ namespace RogueEssence.Dev.ViewModels
                 int tempStructure = chosenStructure;
                 int tempGround = chosenGround;
 
-                ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
                 ObservableCollection<string> newStructures = new ObservableCollection<string>();
                 for (int ii = 0; ii < zone.Segments.Count; ii++)
                     newStructures.Add(ii.ToString("D2") + ": " + getSegmentString(zone.Segments[ii]));
@@ -143,8 +144,9 @@ namespace RogueEssence.Dev.ViewModels
 
                 int temp = chosenFloor;
                 floorIDs.Clear();
-                
-                ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
                 ObservableCollection<string> newFloors = new ObservableCollection<string>();
                 foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
                 {
@@ -182,11 +184,8 @@ namespace RogueEssence.Dev.ViewModels
                 if (DataManager.Instance.Save != null)
                     DataManager.Instance.Save.CutsceneMode = false;
 
-                List<string> entry_names = new List<string>();
-                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
-                    entry_names.Add(key);
-
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(entry_names[chosenZone], new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosen_entry, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 
@@ -205,11 +204,8 @@ namespace RogueEssence.Dev.ViewModels
                 if (DataManager.Instance.Save != null)
                     DataManager.Instance.Save.CutsceneMode = false;
 
-                List<string> entry_names = new List<string>();
-                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
-                    entry_names.Add(key);
-
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(entry_names[chosenZone], new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosen_entry, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 

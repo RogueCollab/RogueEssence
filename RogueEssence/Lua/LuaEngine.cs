@@ -770,7 +770,7 @@ namespace RogueEssence.Script
             }
             else
             {
-                LuaTable tbl = DictToLuaTable(loaded.ScriptVars);
+                LuaTable tbl = LoadLuaTable(loaded.ScriptVars);
                 LuaState[SCRIPT_VARS_NAME] = tbl;
             }
             if (loaded != null)
@@ -792,7 +792,7 @@ namespace RogueEssence.Script
             //Save script engine stuff here!
             DiagManager.Instance.LogInfo("LuaEngine.SaveData()..");
             LuaTable tbl = LuaState.GetTable(SCRIPT_VARS_NAME);
-            save.ScriptVars = LuaTableToDict(tbl);
+            save.ScriptVars = SaveLuaTable(tbl);
             save.ActiveTeam.SaveLua();
         }
 
@@ -802,7 +802,7 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public LuaTableContainer LuaTableToDict(LuaTable table)
+        public LuaTableContainer SaveLuaTable(LuaTable table)
         {
             Dictionary<object, object> dict = LuaState.GetTableDict(table);
             List<object[]> tbl_list = new List<object[]>();
@@ -811,7 +811,7 @@ namespace RogueEssence.Script
                 object val = dict[key];
                 if (val is LuaTable)
                 {
-                    LuaTableContainer subDict = LuaTableToDict(val as LuaTable);
+                    LuaTableContainer subDict = SaveLuaTable(val as LuaTable);
                     tbl_list.Add(new object[] { key, subDict });
                 }
                 else
@@ -821,7 +821,7 @@ namespace RogueEssence.Script
             return new LuaTableContainer(tbl_list);
         }
 
-        public LuaTable DictToLuaTable(LuaTableContainer dict)
+        public LuaTable LoadLuaTable(LuaTableContainer dict)
         {
             if (dict == null)
                 return null;
@@ -833,7 +833,7 @@ namespace RogueEssence.Script
                 object key = entry[0];
                 object val = entry[1];
                 if (val is LuaTableContainer)
-                    val = DictToLuaTable((LuaTableContainer)val);
+                    val = LoadLuaTable((LuaTableContainer)val);
                 addfn.Call(tbl, key, val);
             }
             return tbl;
@@ -1426,6 +1426,33 @@ namespace RogueEssence.Script
             }
         }
 
+
+        public LuaTable MakeTable(object obj)
+        {
+            if (obj == null)
+                return null;
+
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            if (obj is IList)
+            {
+                LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, itm) table.insert(tbl, itm) end").First() as LuaFunction;
+                IList dict = (IList)obj;
+                foreach (object val in dict)
+                    addfn.Call(tbl, val);
+            }
+            else if (obj is IDictionary)
+            {
+                LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, itm) tbl[key] = itm end").First() as LuaFunction;
+                IDictionary dict = (IDictionary)obj;
+                foreach (object key in dict.Keys)
+                {
+                    object val = dict[key];
+                    addfn.Call(tbl, key, val);
+                }
+            }
+
+            return tbl;
+        }
 
         /// <summary>
         /// Makes a .net Action to be used in lua
