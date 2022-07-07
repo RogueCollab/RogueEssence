@@ -1212,17 +1212,12 @@ namespace RogueEssence.Data
 
         public static string GetNonConflictingSavePath(string folderPath, string fileName, string fileExtension)
         {
-            if (!File.Exists(folderPath + fileName + fileExtension))
-                return fileName;
-
-            uint copy_index = 1;
-            while (copy_index < UInt32.MaxValue)
+            bool savePathExists(string name)
             {
-                if (!File.Exists(folderPath + fileName + "_" + copy_index.ToString() + fileExtension))
-                    return fileName + "_" + copy_index.ToString();
-                copy_index++;
-            }
-            return null;
+                return File.Exists(folderPath + name + fileExtension);
+            };
+
+            return Text.GetNonConflictingName(fileName, savePathExists);
         }
 
         public void SuspendPlay()

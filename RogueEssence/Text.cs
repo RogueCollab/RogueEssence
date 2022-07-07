@@ -298,6 +298,33 @@ namespace RogueEssence
         {
             return Regex.Replace(input, "\\W", "_");
         }
+
+        public static string GetNonConflictingName(string inputStr, Func<string, bool> getConflict)
+        {
+            string prefix = inputStr;
+            int origIndex;
+            int lastUnderscore = inputStr.LastIndexOf('_');
+            if (lastUnderscore > -1)
+            {
+                string substr = inputStr.Substring(lastUnderscore + 1);
+                if (int.TryParse(substr, out origIndex))
+                    prefix = inputStr.Substring(0, lastUnderscore);
+            }
+
+            if (!getConflict(inputStr))
+                return inputStr;
+
+            int copy_index = 1;
+            while (copy_index < Int32.MaxValue)
+            {
+                if (!getConflict(prefix + "_" + copy_index.ToString()))
+                    return prefix + "_" + copy_index.ToString();
+
+                copy_index++;
+            }
+
+            return null;
+        }
     }
 
 
