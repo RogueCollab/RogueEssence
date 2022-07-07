@@ -301,15 +301,15 @@ namespace RogueEssence.Script
 
         public void AddPlayerTeam(Character character)
         {
-            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-            {
-                DataManager.Instance.Save.ActiveTeam.Players.Add(character);
-            }
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, false, character);
                 character.RefreshTraits();
                 character.Tactic.Initialize(character);
+            }
+            else
+            {
+                DataManager.Instance.Save.ActiveTeam.Players.Add(character);
             }
         }
 
@@ -319,10 +319,10 @@ namespace RogueEssence.Script
         /// <param name="slot"></param>
         public void RemovePlayerTeam(int slot)
         {
+            Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
+
             if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
-                Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
-
                 if (player.EquippedItem.ID > -1)
                 {
                     InvItem heldItem = player.EquippedItem;
@@ -332,11 +332,8 @@ namespace RogueEssence.Script
 
                 GroundScene.Instance.RemoveChar(slot);
             }
-
-            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
-
                 if (player.EquippedItem.ID > -1)
                 {
                     InvItem heldItem = player.EquippedItem;
@@ -347,19 +344,36 @@ namespace RogueEssence.Script
 
                 DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, false, slot));
             }
+            else
+            {
+                if (player.EquippedItem.ID > -1)
+                {
+                    InvItem heldItem = player.EquippedItem;
+                    player.DequipItem();
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                }
+
+                ExplorerTeam team = DataManager.Instance.Save.ActiveTeam;
+
+                team.Players.RemoveAt(slot);
+
+                //update leader
+                if (slot < team.LeaderIndex)
+                    team.LeaderIndex--;
+            }
         }
 
         public void AddPlayerGuest(Character character)
         {
-            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-            {
-                DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
-            }
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, true, character);
                 character.RefreshTraits();
                 character.Tactic.Initialize(character);
+            }
+            else
+            {
+                DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
             }
         }
 
@@ -369,28 +383,18 @@ namespace RogueEssence.Script
         /// <param name="slot"></param>
         public void RemovePlayerGuest(int slot)
         {
-            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-            {
-                Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
+            Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
 
-                if (player.EquippedItem.ID > -1)
-                {
-                    player.DequipItem();
-                }
-
-                DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
-            }
+            if (player.EquippedItem.ID > -1)
+                player.DequipItem();
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
-
-                if (player.EquippedItem.ID > -1)
-                {
-                    player.DequipItem();
-                }
-
                 DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, true, slot));
+            }
+            else
+            {
+                DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
             }
         }
 
