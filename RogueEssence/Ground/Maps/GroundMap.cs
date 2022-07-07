@@ -891,47 +891,20 @@ namespace RogueEssence.Ground
         }
 
 
+        public bool EntityNameExists(string name)
+        {
+            //TODO: account for equivalent values such as with leading zeroes
+            foreach (GroundEntity c in IterateEntities())
+            {
+                if (String.Compare(c.EntName, name, true) == 0)
+                    return true;
+            }
+            return false;
+        }
 
         public string FindNonConflictingName(string inputStr)
         {
-            //TODO: account for equivalent values such as with leading zeroes
-
-            string prefix = inputStr;
-            int origIndex = -1;
-            int lastUnderscore = inputStr.LastIndexOf('_');
-            if (lastUnderscore > -1)
-            {
-                string substr = inputStr.Substring(lastUnderscore + 1);
-                if (int.TryParse(substr, out origIndex))
-                    prefix = inputStr.Substring(0, lastUnderscore);
-            }
-
-            Dictionary<int, GroundEntity> found = new Dictionary<int, GroundEntity>();
-            foreach (GroundEntity c in IterateEntities())
-            {
-                if (c.EntName == prefix)
-                    found[-1] = c;
-                else if (c.EntName.StartsWith(prefix + "_"))
-                {
-                    int val;
-                    if (Int32.TryParse(c.EntName.Substring(prefix.Length+1), out val))
-                        found[val] = c;
-                }
-            }
-
-            if (!found.ContainsKey(origIndex))
-                return inputStr;
-
-            int copy_index = 1;
-            while (copy_index < Int32.MaxValue)
-            {
-                if (!found.ContainsKey(copy_index))
-                    break;
-
-                copy_index++;
-            }
-
-            return prefix + "_" + copy_index.ToString();
+            return Text.GetNonConflictingName(inputStr, EntityNameExists);
         }
 
         public GroundEntity FindEntity(string name)
