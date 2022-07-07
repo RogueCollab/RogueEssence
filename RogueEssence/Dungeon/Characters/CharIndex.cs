@@ -11,7 +11,7 @@ namespace RogueEssence.Dungeon
     }
 
     [Serializable]
-    public struct CharIndex
+    public struct CharIndex : IComparable<CharIndex>, IEquatable<CharIndex>
     {
         public Faction Faction;
         public int Team;
@@ -52,6 +52,49 @@ namespace RogueEssence.Dungeon
         public static bool operator !=(CharIndex value1, CharIndex value2)
         {
             return !(value1 == value2);
+        }
+
+        public static bool operator >(CharIndex value1, CharIndex value2)
+        {
+            return value1.CompareTo(value2) > 0;
+        }
+
+        public static bool operator <(CharIndex value1, CharIndex value2)
+        {
+            return value1.CompareTo(value2) < 0;
+        }
+
+        public static bool operator >=(CharIndex value1, CharIndex value2)
+        {
+            return value1.CompareTo(value2) >= 0;
+        }
+
+        public static bool operator <=(CharIndex value1, CharIndex value2)
+        {
+            return value1.CompareTo(value2) <= 0;
+        }
+
+        public int CompareTo(CharIndex other)
+        {
+            // Invalid precedes everything else
+            int cmp = this.Faction.CompareTo(other.Faction);
+            if (cmp != 0)
+                return cmp;
+
+            cmp = this.Team.CompareTo(other.Team);
+            if (cmp != 0)
+                return cmp;
+
+            cmp = this.Guest.CompareTo(other.Guest);
+            if (cmp != 0)
+                return cmp;
+
+
+            cmp = this.Char.CompareTo(other.Char);
+            if (cmp != 0)
+                return cmp;
+
+            return 0;
         }
     }
 }
