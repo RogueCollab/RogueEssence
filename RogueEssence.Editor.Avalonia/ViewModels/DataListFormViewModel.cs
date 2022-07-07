@@ -37,6 +37,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public event Action SelectedOKEvent;
         public event Action SelectedAddEvent;
+        public event Action SelectedDeleteEvent;
 
         public ObservableCollection<DataOpContainer> OpList { get; }
 
@@ -92,15 +93,22 @@ namespace RogueEssence.Dev.ViewModels
             SearchList.AddItem(key + ": " + entry);
         }
 
+        public void DeleteEntry(string key)
+        {
+            int idx = keys.IndexOf(key);
+            keys.RemoveAt(idx);
+            SearchList.RemoveInternalAt(idx);
+        }
+
         public void btnAdd_Click()
         {
             SelectedAddEvent?.Invoke();
         }
 
-        //public void btnDelete_Click()
-        //{
-
-        //}
+        public void btnDelete_Click()
+        {
+            SelectedDeleteEvent?.Invoke();
+        }
 
         public void slbEntries_MouseDoubleClick(object sender, RoutedEventArgs e)
         {

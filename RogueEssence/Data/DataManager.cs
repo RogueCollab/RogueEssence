@@ -490,9 +490,17 @@ namespace RogueEssence.Data
 
         public void ContentChanged(DataType dataType, string entryNum, IEntryData data)
         {
-            SaveData(entryNum, dataType.ToString(), data);
-            EntrySummary entrySummary = data.GenerateEntrySummary();
-            DataIndices[dataType].Entries[entryNum] = entrySummary;
+            if (data != null)
+            {
+                SaveData(entryNum, dataType.ToString(), data);
+                EntrySummary entrySummary = data.GenerateEntrySummary();
+                DataIndices[dataType].Entries[entryNum] = entrySummary;
+            }
+            else
+            {
+                DeleteData(entryNum, dataType.ToString());
+                DataIndices[dataType].Entries.Remove(entryNum);
+            }
             SaveIndex(dataType);
             ClearCache(dataType);
 
@@ -547,6 +555,21 @@ namespace RogueEssence.Data
                 Serializer.SerializeData(stream, entry);
                 //}
             }
+        }
+
+
+        public static void DeleteData(string indexNum, string subPath)
+        {
+            string folder = PathMod.HardMod(DATA_PATH + subPath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            DeleteData(folder + "/" + indexNum + DATA_EXT);
+        }
+
+        public static void DeleteData(string path)
+        {
+            if (File.Exists(path))
+                File.Delete(path);
         }
 
 

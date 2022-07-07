@@ -62,7 +62,7 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DataListForm dataListForm = new DataListForm();
-                DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
+                DataListFormViewModel choices = createChoices(dataListForm, dataType, entryOp, createOp);
                 DataOpContainer reindexOp = createReindexOp(dataType, choices);
 
                 DataOpContainer.TaskAction importAction = async () => { await importDtef(dataListForm, choices); }; ;
@@ -235,14 +235,12 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                DataListFormViewModel choices = createChoices(dataType, entryOp, createOp);
+                DataListForm dataListForm = new DataListForm();
+                DataListFormViewModel choices = createChoices(dataListForm, dataType, entryOp, createOp);
                 DataOpContainer reindexOp = createReindexOp(dataType, choices);
                 choices.SetOps(reindexOp);
 
-                Views.DataListForm dataListForm = new Views.DataListForm
-                {
-                    DataContext = choices,
-                };
+                dataListForm.DataContext = choices;
                 dataListForm.Show();
             }
         }
@@ -268,7 +266,7 @@ namespace RogueEssence.Dev.ViewModels
             return new DataOpContainer("Re-Index", reindexAction);
         }
 
-        private DataListFormViewModel createChoices(DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
+        private DataListFormViewModel createChoices(DataListForm form, DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
         {
             DataListFormViewModel choices = new DataListFormViewModel();
             choices.Name = dataType.ToString();
@@ -305,6 +303,7 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 }
             };
+
             choices.SelectedAddEvent += async () =>
             {
                 if (dataType == DataManager.DataType.Zone)
@@ -315,15 +314,13 @@ namespace RogueEssence.Dev.ViewModels
                     RenameViewModel vm = new RenameViewModel();
                     window.DataContext = vm;
 
-                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
                     bool result = await window.ShowDialog<bool>(form);
                     if (!result)
                         return;
 
                     lock (GameBase.lockObj)
                     {
-                        string assetName = vm.Name;//FindNonConlictingName(vm.Name, Checker);
+                        string assetName = Text.Sanitize(vm.Name);//FindNonConlictingName(vm.Name, Checker);
                         DataManager.Instance.ContentChanged(dataType, assetName, createOp());
                         string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
                         choices.AddEntry(assetName, newName);
@@ -360,6 +357,30 @@ namespace RogueEssence.Dev.ViewModels
                         };
 
                     editor.Show();
+                }
+            };
+
+
+            choices.SelectedDeleteEvent += async () =>
+            {
+                if (dataType == DataManager.DataType.Zone)
+                {
+                    string assetName = choices.ChosenAsset;
+
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to delete the following "+dataType.ToString()+":\n" + assetName, "Delete " + dataType.ToString(),
+                        MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+
+                    lock (GameBase.lockObj)
+                    {
+                        DataManager.Instance.ContentChanged(dataType, assetName, null);
+                        choices.DeleteEntry(assetName);
+                    }
+                }
+                else
+                {
+                    await MessageBox.Show(form, "This feature doesn't work right now.", "Not Implemented", MessageBox.MessageBoxButtons.Ok);
                 }
             };
             return choices;

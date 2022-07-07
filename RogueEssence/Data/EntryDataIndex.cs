@@ -31,6 +31,7 @@ namespace RogueEssence.Data
                     curNames.Add(key);
             }
             legacyNames.Sort();
+            curNames.Sort();
 
             foreach (int num in legacyNames)
                 names[num.ToString()] = Entries[num.ToString()].GetLocalString(verbose);
