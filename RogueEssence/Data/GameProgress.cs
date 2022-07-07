@@ -104,10 +104,11 @@ namespace RogueEssence.Data
 
         public List<UnlockState> Dex;
         public List<bool> RogueStarters;
+
+        [JsonConverter(typeof(Dev.DungeonUnlockConverter))]
         public Dictionary<string, UnlockState> DungeonUnlocks;
 
         //TODO: set dungeon unlocks and event flags to save variables
-
         public string StartDate;
         public string UUID;
         public ProfilePic[] ProfilePics;

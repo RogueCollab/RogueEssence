@@ -184,4 +184,51 @@ namespace RogueEssence.Dev
             }
         }
     }
+
+    public class DungeonUnlockConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, GameProgress.UnlockState> dict = new Dictionary<string, GameProgress.UnlockState>();
+            if (Serializer.OldVersion <= new Version(0, 5, 18, 0))
+            {
+                JArray jArray = JArray.Load(reader);
+                List<GameProgress.UnlockState> container = new List<GameProgress.UnlockState>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                for (int ii = 0; ii < container.Count; ii++)
+                {
+                    if (container[ii] > GameProgress.UnlockState.None)
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, ii);
+                        dict[asset_name] = container[ii];
+                    }
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Script.LuaTableContainer);
+        }
+    }
 }
