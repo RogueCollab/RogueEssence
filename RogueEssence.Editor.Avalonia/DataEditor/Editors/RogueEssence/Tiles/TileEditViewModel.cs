@@ -52,7 +52,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void LoadTile(AutoTile autoTile)
         {
-            if (autoTile.AutoTileset > -1)
+            if (!String.IsNullOrEmpty(autoTile.AutoTileset))
             {
                 //switch to autotile tab
                 AutotileBrowser.SetBrush(autoTile);

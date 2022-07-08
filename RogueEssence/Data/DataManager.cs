@@ -676,12 +676,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-
-        public AutoTileData GetAutoTile(int index)
-        {
-            return GetAutoTile(index.ToString());
-        }
-
         public AutoTileData GetAutoTile(string index)
         {
             AutoTileData data;

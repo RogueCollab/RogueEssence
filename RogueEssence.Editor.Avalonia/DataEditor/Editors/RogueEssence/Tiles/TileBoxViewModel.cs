@@ -50,7 +50,7 @@ namespace RogueEssence.Dev.ViewModels
         private void updatePreview()
         {
             //TODO: draw all layers, and draw the animations too
-            if (Tile.AutoTileset > -1)
+            if (!String.IsNullOrEmpty(Tile.AutoTileset))
             {
                 AutoTileData autoTile = DataManager.Instance.GetAutoTile(Tile.AutoTileset);
                 List<TileLayer> layer = autoTile.Tiles.GetLayers(-1);

@@ -17,18 +17,18 @@ namespace RogueEssence.Dev.ViewModels
         private TileLayer layer;
         public Loc MultiSelect;
 
-        private int autotile;
-        private HashSet<int> associates;
+        private string autotile;
+        private HashSet<string> associates;
 
         public TileBrush(TileLayer layer, Loc multiSelect)
         {
-            autotile = -1;
-            associates = new HashSet<int>();
+            autotile = "";
+            associates = new HashSet<string>();
             this.layer = layer;
             MultiSelect = multiSelect;
         }
 
-        public TileBrush(int autotile, HashSet<int> bordertile)
+        public TileBrush(string autotile, HashSet<string> bordertile)
         {
             this.autotile = autotile;
             this.associates = bordertile;
@@ -43,7 +43,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public AutoTile GetSanitizedTile(Loc offset)
         {
-            if (autotile > -1)
+            if (!String.IsNullOrEmpty(autotile))
             {
                 AutoTile auto = new AutoTile(autotile, associates);
                 return auto;

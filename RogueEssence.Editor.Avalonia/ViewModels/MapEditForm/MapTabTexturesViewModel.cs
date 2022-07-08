@@ -138,7 +138,7 @@ namespace RogueEssence.Dev.ViewModels
 
             AutoTile autoTile = ZoneManager.Instance.CurrentMap.Layers[Layers.ChosenLayer].Tiles[loc.X][loc.Y];
 
-            if (autoTile.AutoTileset > -1)
+            if (!String.IsNullOrEmpty(autoTile.AutoTileset))
             {
                 //switch to autotile tab
                 AutotileBrowser.SetBrush(autoTile);

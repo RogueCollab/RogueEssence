@@ -3,6 +3,7 @@ using RogueEssence.Dungeon;
 using RogueElements;
 using RogueEssence.Data;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace RogueEssence.LevelGen
 {
@@ -17,20 +18,23 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The tileset used for walkable tiles.
         /// </summary>
+        [JsonConverter(typeof(Dev.AutotileConverter))]
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
-        public int GroundTileset;
+        public string GroundTileset;
 
         /// <summary>
         /// The tileset used for walls, both breakable and unbreakable.
         /// </summary>
+        [JsonConverter(typeof(Dev.AutotileConverter))]
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
-        public int BlockTileset;
+        public string BlockTileset;
 
         /// <summary>
         /// The tileset used for water, lava, etc.
         /// </summary>
+        [JsonConverter(typeof(Dev.AutotileConverter))]
         [Dev.DataType(0, DataManager.DataType.AutoTile, false)]
-        public int WaterTileset;
+        public string WaterTileset;
 
         /// <summary>
         /// Adds an additional ground texture beneath all textures.
@@ -86,10 +90,9 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            //TODO: String Assets
-            string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[GroundTileset.ToString()].Name.ToLocal();
-            string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[BlockTileset.ToString()].Name.ToLocal();
-            string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[WaterTileset.ToString()].Name.ToLocal();
+            string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[GroundTileset].Name.ToLocal();
+            string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[BlockTileset].Name.ToLocal();
+            string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[WaterTileset].Name.ToLocal();
             return String.Format("{0}: {1}/{2}/{3}", this.GetType().Name, ground, wall, secondary);
         }
     }
@@ -107,9 +110,10 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Maps the terrain type to the specified autotile.
         /// </summary>
+        [JsonConverter(typeof(Dev.AutotileTerrainDictConverter))]
         [Dev.DataType(1, DataManager.DataType.Terrain, false)]
         [Dev.DataType(2, DataManager.DataType.AutoTile, false)]
-        public Dictionary<int, int> TextureMap;
+        public Dictionary<int, string> TextureMap;
 
         /// <summary>
         /// The texture considered to be the ground for this map.
@@ -119,7 +123,8 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The repeated texture used for the border.
         /// </summary>
-        public int BlankBG;
+        [JsonConverter(typeof(Dev.AutotileConverter))]
+        public string BlankBG;
 
         /// <summary>
         /// Adds an additional ground texture beneath all textures.
@@ -138,7 +143,7 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public int GroundElement;
 
-        public MapDictTextureStep() { TextureMap = new Dictionary<int, int>(); }
+        public MapDictTextureStep() { TextureMap = new Dictionary<int, string>(); }
 
         public override void Apply(T map)
         {

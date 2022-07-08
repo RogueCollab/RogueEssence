@@ -28,7 +28,9 @@ namespace RogueEssence.Dev.ViewModels
             AssociateAutotiles.DataName = "Associate Autotiles:";
             AssociateAutotiles.SelectedIndexChanged += AssociateAutotiles_SelectedIndexChanged;
 
-            Associates = new ObservableCollection<int>();
+            Associates = new ObservableCollection<string>();
+
+            keys = new List<string>();
 
             UpdateAutotilesList();
         }
@@ -37,7 +39,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public SearchListBoxViewModel AssociateAutotiles { get; set; }
 
-        public ObservableCollection<int> Associates { get; }
+        public ObservableCollection<string> Associates { get; }
 
         private int chosenAssociate;
         public int ChosenAssociate
@@ -78,26 +80,27 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> keys;
 
         /// <summary>
         /// The full draw data to be used as a brush. Computed.
         /// </summary>
         public TileBrush GetBrush()
         {
-            HashSet<int> associates = new HashSet<int>();
-            foreach (int tile in Associates)
+            HashSet<string> associates = new HashSet<string>();
+            foreach (string tile in Associates)
                 associates.Add(tile);
-            return new TileBrush(Autotiles.InternalIndex - 1, associates);
+            return new TileBrush(keys[Autotiles.InternalIndex], associates);
         }
 
         public void SetBrush(AutoTile autotile)
         {
             Autotiles.SearchText = "";
-            Autotiles.SelectedSearchIndex = autotile.AutoTileset + 1;
+            Autotiles.SelectedSearchIndex = keys.IndexOf(autotile.AutoTileset);
             AssociateAutotiles.SearchText = "";
             AssociateAutotiles.SelectedSearchIndex = 0;
             Associates.Clear();
-            foreach (int tile in autotile.Associates)
+            foreach (string tile in autotile.Associates)
                 Associates.Add(tile);
         }
 
@@ -107,20 +110,22 @@ namespace RogueEssence.Dev.ViewModels
             if (Design.IsDesignMode)
                 return;
 
+            keys.Clear();
             Autotiles.Clear();
             AssociateAutotiles.Clear();
 
+            keys.Add("");
             Autotiles.AddItem("**EMPTY**");
 
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count; ii++)
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries.Keys)
             {
-                //TODO: String Assets
-                EntrySummary entry = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[ii.ToString()];
+                EntrySummary entry = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[key];
                 //TODO: autotiles need tile sizes too, to compare
                 if (24 == TileSize)
                 {
-                    Autotiles.AddItem(ii.ToString("D3") + ": " + entry.Name.ToLocal());
-                    AssociateAutotiles.AddItem(ii.ToString("D3") + ": " + entry.Name.ToLocal());
+                    keys.Add(key);
+                    Autotiles.AddItem(key + ": " + entry.Name.ToLocal());
+                    AssociateAutotiles.AddItem(key + ": " + entry.Name.ToLocal());
                 }
             }
             Associates.Clear();
@@ -134,7 +139,7 @@ namespace RogueEssence.Dev.ViewModels
                 Preview = TileFrame.Empty;
                 return;
             }
-            AutoTileData autoTile = DataManager.Instance.GetAutoTile(Autotiles.InternalIndex - 1);
+            AutoTileData autoTile = DataManager.Instance.GetAutoTile(keys[Autotiles.InternalIndex]);
             List<TileLayer> layer = autoTile.Tiles.GetLayers(-1);
             Preview = layer[0].Frames[0];
         }
@@ -146,16 +151,16 @@ namespace RogueEssence.Dev.ViewModels
                 AssociatePreview = TileFrame.Empty;
                 return;
             }
-            AutoTileData autoTile = DataManager.Instance.GetAutoTile(AssociateAutotiles.InternalIndex - 1);
+            AutoTileData autoTile = DataManager.Instance.GetAutoTile(keys[AssociateAutotiles.InternalIndex]);
             List<TileLayer> layer = autoTile.Tiles.GetLayers(-1);
             AssociatePreview = layer[0].Frames[0];
         }
 
         public void btnAddTile_Click()
         {
-            if (!Associates.Contains(AssociateAutotiles.InternalIndex))
+            if (!Associates.Contains(keys[AssociateAutotiles.InternalIndex]))
             {
-                Associates.Add(AssociateAutotiles.InternalIndex);
+                Associates.Add(keys[AssociateAutotiles.InternalIndex]);
                 ChosenAssociate = Associates.Count - 1;
             }
         }

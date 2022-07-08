@@ -480,7 +480,7 @@ namespace RogueEssence.Dungeon
             //does not calculate floor tiles.
             //in all known use cases, there is no need to autotile floor tiles.
             //if a use case is brought up that does, this can be changed.
-            HashSet<int> blocktilesets = new HashSet<int>();
+            HashSet<string> blocktilesets = new HashSet<string>();
             for (int ii = rectStart.X; ii < rectStart.X + rectSize.X; ii++)
             {
                 for (int jj = rectStart.Y; jj < rectStart.Y + rectSize.Y; jj++)
@@ -494,11 +494,11 @@ namespace RogueEssence.Dungeon
                     if (!Tiles[destLoc.X][destLoc.Y].Data.StableTex && TextureMap.TryGetValue(Tiles[destLoc.X][destLoc.Y].Data.ID, out outTile))
                         Tiles[destLoc.X][destLoc.Y].Data.TileTex = outTile.Copy();
 
-                    if (Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset > -1)
+                    if (!String.IsNullOrEmpty(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset))
                         blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
                 }
             }
-            foreach (int tileset in blocktilesets)
+            foreach (string tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
                 entry.Tiles.AutoTileArea(noise, rectStart, rectSize,

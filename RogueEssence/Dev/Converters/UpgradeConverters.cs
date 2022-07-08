@@ -228,7 +228,135 @@ namespace RogueEssence.Dev
 
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(Script.LuaTableContainer);
+            return objectType == typeof(Dictionary<string, GameProgress.UnlockState>);
+        }
+    }
+
+
+
+    public class AutotileConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Serializer.OldVersion <= new Version(0, 5, 18, 0))
+            {
+                int ii = (int)reader.Value;
+                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AutoTile, ii);
+                return asset_name;
+            }
+            else
+            {
+                string s = (string)reader.Value;
+                return s;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string);
+        }
+    }
+
+
+    public class AutotileSetConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            HashSet<string> dict = new HashSet<string>();
+            if (Serializer.OldVersion <= new Version(0, 5, 18, 0))
+            {
+                JObject jObject = JObject.Load(reader);
+                HashSet<int> container = new HashSet<int>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach(int ii in container)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AutoTile, ii);
+                    dict.Add(asset_name);
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(HashSet<string>);
+        }
+    }
+
+
+    public class AutotileTerrainDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<int, string> dict = new Dictionary<int, string>();
+            if (Serializer.OldVersion <= new Version(0, 5, 18, 0))
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, int> container = new Dictionary<int, int>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AutoTile, container[ii]);
+                    dict[ii] = asset_name;
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<int, string>);
         }
     }
 }

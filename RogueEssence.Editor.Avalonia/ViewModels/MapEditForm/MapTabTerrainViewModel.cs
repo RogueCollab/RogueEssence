@@ -167,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
 
             ChosenTerrain = terrainTile.ID;
             StableTex = terrainTile.StableTex;
-            if (terrainTile.TileTex.AutoTileset > -1)
+            if (!String.IsNullOrEmpty(terrainTile.TileTex.AutoTileset))
             {
                 //switch to autotile tab
                 AutotileBrowser.SetBrush(terrainTile.TileTex);
