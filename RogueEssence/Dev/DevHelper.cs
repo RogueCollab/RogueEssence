@@ -16,6 +16,41 @@ namespace RogueEssence.Dev
         //TODO: v0.6: remove this
         static int legacy = 0;
 
+        private static List<string> convertAssetType(DataManager.DataType dataType)
+        {
+            string convFolder = PathMod.HardMod("CONVERSION/");
+            string[] dirs = PathMod.GetHardModFiles(DataManager.DATA_PATH + dataType.ToString() + "/", "*.bin");
+            List<string> intToName = new List<string>();
+            foreach (string dir in dirs)
+            {
+                string folder = Path.GetDirectoryName(dir);
+                string file = Path.GetFileNameWithoutExtension(dir);
+                string resultName = file;
+                try
+                {
+                    int index = Int32.Parse(file);
+                    IEntryData data = LoadWithLegacySupport<IEntryData>(dir);
+                    while (intToName.Count <= index)
+                        intToName.Add("");
+                    if (data.Name.DefaultText != "")
+                    {
+                        string sanitizedName = Text.Sanitize(data.Name.DefaultText.Replace("'", "")).ToLower();
+                        if (!intToName.Contains(sanitizedName))
+                            resultName = sanitizedName;
+                    }
+                    intToName[index] = resultName;
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+                File.Move(dir, Path.Join(folder, resultName + ".bin"));
+            }
+
+            File.WriteAllLines(Path.Join(convFolder, dataType.ToString() + ".txt"), intToName);
+            return intToName;
+        }
+
         public static void ConvertAssetNames()
         {
             string path = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
@@ -36,58 +71,32 @@ namespace RogueEssence.Dev
 
             if (oldVersion < new Version(0, 5, 19))
             {
-                //rename all the zone files
-                string[] dirs = PathMod.GetHardModFiles(DataManager.DATA_PATH + DataManager.DataType.Zone.ToString() + "/", "*.bin");
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.AutoTile);
 
-                List<string> intToName = new List<string>();
-                foreach (string dir in dirs)
-                {
-                    string folder = Path.GetDirectoryName(dir);
-                    string file = Path.GetFileNameWithoutExtension(dir);
-                    string resultName = file;
-                    try
-                    {
-                        int index = Int32.Parse(file);
-                        ZoneData data = LoadWithLegacySupport<ZoneData>(dir);
-                        while (intToName.Count <= index)
-                            intToName.Add("");
-                        if (data.Name.DefaultText != "")
-                        {
-                            string sanitizedName = Text.Sanitize(data.Name.DefaultText.Replace("'", "")).ToLower();
-                            if (!intToName.Contains(sanitizedName))
-                                resultName = sanitizedName;
-                        }
-                        intToName[index] = resultName;
-                    }
-                    catch (Exception ex)
-                    {
-                        DiagManager.Instance.LogError(ex);
-                    }
-                    File.Move(dir, Path.Join(folder, resultName + ".bin"));
-                }
+                ////rename all the zone files
+                //List<string> intToName = convertAssetType(DataManager.DataType.Zone);
 
-                File.WriteAllLines(Path.Join(convFolder, DataManager.DataType.Zone.ToString() + ".txt"), intToName);
+                //string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
+                ////now rename the script paths
+                //for (int ii = 0; ii < intToName.Count; ii++)
+                //{
+                //    string srcName = "zone_" + ii;
+                //    string destName = intToName[ii];
 
-                string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
-                //now rename the script paths
-                for (int ii = 0; ii < intToName.Count; ii++)
-                {
-                    string srcName = "zone_" + ii;
-                    string destName = intToName[ii];
+                //    if (Directory.Exists(Path.Join(scriptFolder, srcName)))
+                //    {
+                //        foreach (string dir in Directory.GetFiles(Path.Join(scriptFolder, srcName + "/"), "*.lua"))
+                //        {
+                //            //open, replace, save
+                //            string input = File.ReadAllText(dir);
+                //            string output = input.Replace(srcName, destName);
+                //            File.WriteAllText(dir, output);
+                //        }
 
-                    if (Directory.Exists(Path.Join(scriptFolder, srcName)))
-                    {
-                        foreach (string dir in Directory.GetFiles(Path.Join(scriptFolder, srcName + "/"), "*.lua"))
-                        {
-                            //open, replace, save
-                            string input = File.ReadAllText(dir);
-                            string output = input.Replace(srcName, destName);
-                            File.WriteAllText(dir, output);
-                        }
-
-                        Directory.Move(Path.Join(scriptFolder, srcName), Path.Join(scriptFolder, destName));
-                    }
-                }
+                //        Directory.Move(Path.Join(scriptFolder, srcName), Path.Join(scriptFolder, destName));
+                //    }
+                //}
             }
         }
 
