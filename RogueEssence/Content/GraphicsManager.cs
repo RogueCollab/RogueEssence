@@ -608,8 +608,6 @@ namespace RogueEssence.Content
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
-                // Old format (auto tiles):
-                Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tile/", DataManager.DATA_PATH + "AutoTile/");
                 // New format (image data & auto tiles):
                 Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TileDtef/", PathMod.HardMod(TILE_PATTERN));
                 

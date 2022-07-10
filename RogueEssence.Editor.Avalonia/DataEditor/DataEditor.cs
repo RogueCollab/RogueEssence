@@ -150,27 +150,6 @@ namespace RogueEssence.Dev
             return editor.GetString(obj, type, attributes);
         }
 
-
-        public static string GetMemberTitle(string name)
-        {
-            StringBuilder separatedName = new StringBuilder();
-            for (int ii = 0; ii < name.Length; ii++)
-            {
-                if (ii > 0)
-                {
-                    bool space = false;
-                    if (char.IsDigit(name[ii]) && char.IsLetter(name[ii - 1]) || char.IsDigit(name[ii - 1]) && char.IsLetter(name[ii]))
-                        space = true;
-                    if (char.IsUpper(name[ii]) && char.IsLower(name[ii - 1]))
-                        space = true;
-                    if (space)
-                        separatedName.Append(' ');
-                }
-                separatedName.Append(name[ii]);
-            }
-            return separatedName.ToString();
-        }
-
         public static string GetWindowTitle(string parent, string name, object obj, Type type)
         {
             return GetWindowTitle(parent, name, obj, type, new object[0]);
@@ -178,8 +157,8 @@ namespace RogueEssence.Dev
 
         public static string GetWindowTitle(string parent, string name, object obj, Type type, object[] attributes)
         {
-            string parentStr = GetMemberTitle(parent);
-            string nameStr = GetMemberTitle(name);
+            string parentStr = Text.GetMemberTitle(parent);
+            string nameStr = Text.GetMemberTitle(name);
 
             //if (obj == null)
             //    return String.Format("{0}.{1}: New {2}", parentStr, nameStr, type.Name);

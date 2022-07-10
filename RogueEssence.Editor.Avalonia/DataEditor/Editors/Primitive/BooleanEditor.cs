@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
         {
             CheckBox chkValue = new CheckBox();
             chkValue.Margin = new Thickness(0, 4, 0, 0);
-            chkValue.Content = DataEditor.GetMemberTitle(name);
+            chkValue.Content = Text.GetMemberTitle(name);
             chkValue.IsChecked = member;
 
             string desc = DevDataManager.GetMemberDoc(parentType, name);

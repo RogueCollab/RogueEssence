@@ -325,6 +325,26 @@ namespace RogueEssence
 
             return null;
         }
+
+        public static string GetMemberTitle(string name)
+        {
+            StringBuilder separatedName = new StringBuilder();
+            for (int ii = 0; ii < name.Length; ii++)
+            {
+                if (ii > 0)
+                {
+                    bool space = false;
+                    if (char.IsDigit(name[ii]) && char.IsLetter(name[ii - 1]))
+                        space = true;
+                    if (char.IsUpper(name[ii]) && char.IsLower(name[ii - 1]) || char.IsUpper(name[ii]) && char.IsDigit(name[ii - 1]))
+                        space = true;
+                    if (space)
+                        separatedName.Append(' ');
+                }
+                separatedName.Append(name[ii]);
+            }
+            return separatedName.ToString();
+        }
     }
 
 

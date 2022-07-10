@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
         private const string XML_FN = "tileset.dtef.xml";
         private static readonly string[] VariantTitles = { VAR0_FN, VAR1_FN, VAR2_FN };
         private static readonly Regex[] VariantTitlesFrames = { Var0FFn, Var1FFn, Var2FFn };
-        public static readonly string[] TileTitles = { "Wall", "Floor", "Secondary" };
+        public static readonly string[] TileTitles = { "Wall", "Secondary", "Floor" };
         private const int MAX_VARIANTS = 3;
 
         /// This maps the internal tile IDs to the order in the DTEF templates:
@@ -47,7 +47,8 @@ namespace RogueEssence.Dev
             // Read XML for layer mapping
             XmlDocument document = new XmlDocument();
             document.Load(Path.Join(sourceDir, XML_FN));
-            int tileSize = int.Parse(document.DocumentElement.GetAttribute("dimensions"));
+            int tileSize = -1;
+            int tileTypes = -1;
 
             // Outer dict: Layer num; inner dict: frame num; tuple: (file name, frame length)
             var frameSpecs = new[] {
@@ -68,13 +69,22 @@ namespace RogueEssence.Dev
                     string path = Path.Join(sourceDir, variantFn);
                     if (!File.Exists(path))
                     {
-                        if (variantFn != VAR0_FN)
+                        if (variantFn == VAR0_FN)
                             throw new KeyNotFoundException($"Base variant missing for {fileName}.");
                         continue;
                     }
 
                     // Import main frame
                     BaseSheet tileset = BaseSheet.Import(path);
+                    int newTileSize = tileset.Height / 8;
+                    if (tileSize > 0 && newTileSize != tileSize)
+                        throw new InvalidDataException($"Bad dimensions for {fileName}.");
+                    tileSize = newTileSize;
+
+                    int newTileTypes = tileset.Width / tileSize / 6;
+                    if (tileTypes > 0 && newTileTypes != tileTypes)
+                        throw new InvalidDataException($"Bad dimensions for {fileName}.");
+                    tileTypes = newTileTypes;
                     tileArr.Add(tileset);
 
                     // List additional layers and their frames - We do it this way in two steps to make sure it's sorted
@@ -106,13 +116,18 @@ namespace RogueEssence.Dev
                     tileList.Add(tileArr.ToArray());
                 }
 
-                foreach (var tileTitle in TileTitles)
+                for (int tt = 0; tt < tileTypes; tt++)
                 {
+                    var tileTitle = TileTitles[tt];
 
                     var node = document.SelectSingleNode("//DungeonTileset/RogueEssence/" + tileTitle);
                     int index = -1;
                     if (node != null)
                         index = int.Parse(node.InnerText);
+
+                    // Didn't load anything?  Skip
+                    if (index == -1)
+                        continue;
 
                     AutoTileData autoTile = new AutoTileData();
                     AutoTileAdjacent entry = new AutoTileAdjacent();
@@ -121,24 +136,19 @@ namespace RogueEssence.Dev
 
                     for (int jj = 0; jj < FieldDtefMapping.Length; jj++)
                     {
-                        totalArray[jj] = new List<TileLayer>[3];
-                        for (int kk = 0; kk < MAX_VARIANTS; kk++)
+                        totalArray[jj] = new List<TileLayer>[tileList.Count];
+                        for (int kk = 0; kk < tileList.Count; kk++)
                             totalArray[jj][kk] = new List<TileLayer>();
                     }
 
                     for (int jj = 0; jj < FieldDtefMapping.Length; jj++)
                     {
-                        for (int kk = 0; kk < MAX_VARIANTS; kk++)
+                        for (int kk = 0; kk < tileList.Count; kk++)
                         {
                             if (FieldDtefMapping[jj] == -1)
                                 continue; // Skip empty tile
-                            var offIndex = tileTitle switch
-                            {
-                                "Secondary" => 1,
-                                "Floor" => 2,
-                                _ => 0
-                            };
-                            int tileX = 6 * offIndex + jj % 6;
+
+                            int tileX = 6 * tt + jj % 6;
                             int tileY = jj / 6;
 
                             // Base Layer
@@ -146,7 +156,7 @@ namespace RogueEssence.Dev
                             BaseSheet tileset = tileList[kk][0];
                             //keep adding more tiles to the anim until end of blank spot is found
                             if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
-                                baseLayer.Frames.Add(new TileFrame(new Loc(tileX + kk * 18, tileY), fileName));
+                                baseLayer.Frames.Add(new TileFrame(new Loc(tileX + kk * 6 * tileTypes, tileY), fileName));
                             if (baseLayer.Frames.Count < 1) continue;
                             totalArray[jj][kk].Add(baseLayer);
 
@@ -163,7 +173,7 @@ namespace RogueEssence.Dev
                                     tileset = tileList[kk][curFrame];
                                     //keep adding more tiles to the anim until end of blank spot is found
                                     if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
-                                        anim.Frames.Add(new TileFrame(new Loc(tileX + kk * 18, tileY + curFrame * 8), fileName));
+                                        anim.Frames.Add(new TileFrame(new Loc(tileX + kk * 6 * tileTypes, tileY + curFrame * 8), fileName));
 
                                     curFrame += 1;
                                 }
@@ -173,10 +183,6 @@ namespace RogueEssence.Dev
                             }
                         }
                     }
-
-                    // Didn't load anything?  Skip
-                    if (index == -1)
-                        continue;
 
                     // Import auto tiles
                     for (int ii = 0; ii < FieldDtefMapping.Length; ii++)
@@ -191,7 +197,10 @@ namespace RogueEssence.Dev
 
                     autoTile.Tiles = entry;
 
-                    autoTile.Name = new LocalText(fileName + tileTitle);
+                    if (tileTypes > 1)
+                        autoTile.Name = new LocalText(Text.GetMemberTitle(fileName) + " " + tileTitle);
+                    else
+                        autoTile.Name = new LocalText(Text.GetMemberTitle(fileName));
 
                     DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
                     Debug.WriteLine($"{index:D3}: {autoTile.Name}");
@@ -227,7 +236,7 @@ namespace RogueEssence.Dev
         private static void ImportTileVariant(List<List<TileLayer>> list, List<TileLayer>[] data)
         {
             //add the variant to the appropriate entry list
-            for (var kk = 0; kk < MAX_VARIANTS; kk++)
+            for (var kk = 0; kk < data.Length; kk++)
             {
                 if (data[kk].Count > 0)
                     list.Add(data[kk]);
