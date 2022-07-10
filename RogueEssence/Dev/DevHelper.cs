@@ -16,6 +16,22 @@ namespace RogueEssence.Dev
         //TODO: v0.6: remove this
         static int legacy = 0;
 
+        private static Version GetTypeVersion(DataManager.DataType dataType)
+        {
+            string[] dirs = PathMod.GetHardModFiles(DataManager.DATA_PATH + dataType.ToString() + "/", "*.bin");
+
+            Version oldVersion = new Version();
+            using (Stream stream = new FileStream(dirs[0], FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                {
+                    string containerStr = reader.ReadToEnd();
+                    oldVersion = Serializer.GetVersion(containerStr);
+                }
+            }
+            return oldVersion;
+        }
+
         private static List<string> convertAssetType(DataManager.DataType dataType)
         {
             string convFolder = PathMod.HardMod("CONVERSION/");
@@ -38,7 +54,7 @@ namespace RogueEssence.Dev
                         if (!intToName.Contains(sanitizedName))
                             resultName = sanitizedName;
                     }
-                    intToName[index] = resultName;
+                    intToName[index] = file+"\t"+resultName;
                 }
                 catch (Exception ex)
                 {
@@ -55,48 +71,44 @@ namespace RogueEssence.Dev
         {
             string path = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
 
-            Version oldVersion = new Version();
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
-                {
-                    string containerStr = reader.ReadToEnd();
-                    oldVersion = Serializer.GetVersion(containerStr);
-                }
-            }
 
             string convFolder = PathMod.HardMod("CONVERSION/");
             if (!Directory.Exists(convFolder))
                 Directory.CreateDirectory(convFolder);
 
+            Version oldVersion = GetTypeVersion(DataManager.DataType.AutoTile);
             if (oldVersion < new Version(0, 5, 19))
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.AutoTile);
+            }
 
-                ////rename all the zone files
-                //List<string> intToName = convertAssetType(DataManager.DataType.Zone);
+            oldVersion = GetTypeVersion(DataManager.DataType.Zone);
+            if (oldVersion < new Version(0, 5, 19))
+            {
+                //rename all the zone files
+                List<string> intToName = convertAssetType(DataManager.DataType.Zone);
 
-                //string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
-                ////now rename the script paths
-                //for (int ii = 0; ii < intToName.Count; ii++)
-                //{
-                //    string srcName = "zone_" + ii;
-                //    string destName = intToName[ii];
+                string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
+                //now rename the script paths
+                for (int ii = 0; ii < intToName.Count; ii++)
+                {
+                    string srcName = "zone_" + ii;
+                    string destName = intToName[ii];
 
-                //    if (Directory.Exists(Path.Join(scriptFolder, srcName)))
-                //    {
-                //        foreach (string dir in Directory.GetFiles(Path.Join(scriptFolder, srcName + "/"), "*.lua"))
-                //        {
-                //            //open, replace, save
-                //            string input = File.ReadAllText(dir);
-                //            string output = input.Replace(srcName, destName);
-                //            File.WriteAllText(dir, output);
-                //        }
+                    if (Directory.Exists(Path.Join(scriptFolder, srcName)))
+                    {
+                        foreach (string dir in Directory.GetFiles(Path.Join(scriptFolder, srcName + "/"), "*.lua"))
+                        {
+                            //open, replace, save
+                            string input = File.ReadAllText(dir);
+                            string output = input.Replace(srcName, destName);
+                            File.WriteAllText(dir, output);
+                        }
 
-                //        Directory.Move(Path.Join(scriptFolder, srcName), Path.Join(scriptFolder, destName));
-                //    }
-                //}
+                        Directory.Move(Path.Join(scriptFolder, srcName), Path.Join(scriptFolder, destName));
+                    }
+                }
             }
         }
 

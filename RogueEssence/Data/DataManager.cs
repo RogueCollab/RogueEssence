@@ -318,7 +318,10 @@ namespace RogueEssence.Data
                             for (int ii = 0; ii < lines.Length; ii++)
                             {
                                 if (!String.IsNullOrWhiteSpace(lines[ii]))
-                                    convMap[ii] = lines[ii];
+                                {
+                                    string[] split = lines[ii].Split('\t');
+                                    convMap[Int32.Parse(split[0])] = split[1];
+                                }
                             }
                         }
                     }
