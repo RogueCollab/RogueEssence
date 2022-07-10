@@ -44,9 +44,6 @@ namespace RogueEssence.Dev
         public static void ImportDtef(string sourceDir, string destFile)
         {
             string fileName = Path.GetFileName(sourceDir);
-            // Read XML for layer mapping
-            XmlDocument document = new XmlDocument();
-            document.Load(Path.Join(sourceDir, XML_FN));
             int tileSize = -1;
             int tileTypes = -1;
 
@@ -119,15 +116,6 @@ namespace RogueEssence.Dev
                 for (int tt = 0; tt < tileTypes; tt++)
                 {
                     var tileTitle = TileTitles[tt];
-
-                    var node = document.SelectSingleNode("//DungeonTileset/RogueEssence/" + tileTitle);
-                    int index = -1;
-                    if (node != null)
-                        index = int.Parse(node.InnerText);
-
-                    // Didn't load anything?  Skip
-                    if (index == -1)
-                        continue;
 
                     AutoTileData autoTile = new AutoTileData();
                     AutoTileAdjacent entry = new AutoTileAdjacent();
@@ -202,9 +190,10 @@ namespace RogueEssence.Dev
                     else
                         autoTile.Name = new LocalText(Text.GetMemberTitle(fileName));
 
+                    string index = Text.Sanitize(autoTile.Name.DefaultText);
                     //TODO: String Assets
                     DataManager.SaveData(index.ToString(), DataManager.DataType.AutoTile.ToString(), autoTile);
-                    Debug.WriteLine($"{index:D3}: {autoTile.Name}");
+                    Debug.WriteLine($"{index}: {autoTile.Name}");
                 }
                 ImportHelper.SaveTileSheet(tileList, destFile, tileSize);
                 foreach (BaseSheet[] arr in tileList)
