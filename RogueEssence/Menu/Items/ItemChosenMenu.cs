@@ -157,7 +157,10 @@ namespace RogueEssence.Menu
             if (entry.UsageType == ItemData.UseType.Learn)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), InfoAction));
             if (GameManager.Instance.CurrentScene != DungeonScene.Instance)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TRASH"), TrashAction));
+            {
+                if (!entry.CannotDrop)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TRASH"), TrashAction));
+            }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
             int choice_width = CalculateChoiceLength(choices, 72);
