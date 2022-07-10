@@ -508,6 +508,9 @@ namespace RogueEssence.Content
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path + "AnimData.xml");
                 int shadowSize = Convert.ToInt32(doc.SelectSingleNode("AnimData/ShadowSize").InnerText);
+                bool cutsceneIdle = false;
+                if (doc.SelectSingleNode("AnimData/CutsceneIdle") != null)
+                    cutsceneIdle = true;
 
                 Dictionary<int, (Loc size, CharAnimGroup group, List<int> endTimes)> sequenceList = new Dictionary<int, (Loc, CharAnimGroup, List<int>)>();
                 XmlNode animsNode = doc.SelectSingleNode("AnimData/Anims");
@@ -723,16 +726,22 @@ namespace RogueEssence.Content
                 // automatically add default animation
                 {
                     CharAnimGroup anim = new CharAnimGroup();
-                    CharAnimGroup parentGroup = animData[GraphicsManager.IdleAction];
-                    while(parentGroup.CopyOf > -1)
-                        parentGroup = animData[parentGroup.CopyOf];
-                    foreach (CharAnimSequence sequence in parentGroup.Sequences)
+                    int idleId = GraphicsManager.IdleAction;
+                    while(animData[idleId].CopyOf > -1)
+                        idleId = animData[idleId].CopyOf;
+                    CharAnimGroup parentGroup = animData[idleId];
+                    if (cutsceneIdle)
+                        anim.CopyOf = idleId;
+                    else
                     {
-                        CharAnimSequence newSequence = new CharAnimSequence();
-                        CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
-                        frame.EndTime = 1;
-                        newSequence.Frames.Add(frame);
-                        anim.Sequences.Add(newSequence);
+                        foreach (CharAnimSequence sequence in parentGroup.Sequences)
+                        {
+                            CharAnimSequence newSequence = new CharAnimSequence();
+                            CharAnimFrame frame = new CharAnimFrame(sequence.Frames[0]);
+                            frame.EndTime = 1;
+                            newSequence.Frames.Add(frame);
+                            anim.Sequences.Add(newSequence);
+                        }
                     }
                     animData[0] = anim;
                 }
@@ -964,10 +973,13 @@ namespace RogueEssence.Content
                 XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
                 doc.AppendChild(configNode);
 
+                bool cutsceneIdle = sheet.AnimData[0].CopyOf > -1;
 
                 XmlNode docNode = doc.CreateElement("AnimData");
                 docNode.AppendInnerTextChild(doc, "FrameWidth", sheet.TileWidth.ToString());
                 docNode.AppendInnerTextChild(doc, "FrameHeight", sheet.TileHeight.ToString());
+                if (cutsceneIdle)
+                    docNode.AppendChild(doc.CreateElement("CutsceneIdle"));
                 docNode.AppendInnerTextChild(doc, "ShadowSize", sheet.ShadowSize.ToString());
 
 
@@ -1169,7 +1181,11 @@ namespace RogueEssence.Content
                 XmlNode configNode = doc.CreateXmlDeclaration("1.0", null, null);
                 doc.AppendChild(configNode);
 
+                bool cutsceneIdle = sheet.AnimData[0].CopyOf > -1;
+
                 XmlNode docNode = doc.CreateElement("AnimData");
+                if (cutsceneIdle)
+                    docNode.AppendChild(doc.CreateElement("CutsceneIdle"));
                 docNode.AppendInnerTextChild(doc, "ShadowSize", sheet.ShadowSize.ToString());
 
                 XmlNode animsNode = doc.CreateElement("Anims");
