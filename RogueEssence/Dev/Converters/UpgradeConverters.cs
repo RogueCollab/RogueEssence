@@ -245,7 +245,7 @@ namespace RogueEssence.Dev
         {
             if (Serializer.OldVersion <= new Version(0, 5, 18, 0))
             {
-                int ii = (int)reader.Value;
+                int ii = Int32.Parse(reader.Value.ToString());
                 string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AutoTile, ii);
                 return asset_name;
             }
@@ -283,9 +283,9 @@ namespace RogueEssence.Dev
             HashSet<string> dict = new HashSet<string>();
             if (Serializer.OldVersion <= new Version(0, 5, 18, 0))
             {
-                JObject jObject = JObject.Load(reader);
+                JArray jArray = JArray.Load(reader);
                 HashSet<int> container = new HashSet<int>();
-                serializer.Populate(jObject.CreateReader(), container);
+                serializer.Populate(jArray.CreateReader(), container);
 
                 foreach(int ii in container)
                 {
@@ -295,8 +295,8 @@ namespace RogueEssence.Dev
             }
             else
             {
-                JObject jObject = JObject.Load(reader);
-                serializer.Populate(jObject.CreateReader(), dict);
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
             }
             return dict;
         }

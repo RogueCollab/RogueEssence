@@ -332,6 +332,8 @@ namespace RogueEssence.Data
 
         public string MapAssetName(DataType dataType, int asset)
         {
+            if (asset < 0)
+                return "";
             return Conversions[dataType][asset];
         }
 
