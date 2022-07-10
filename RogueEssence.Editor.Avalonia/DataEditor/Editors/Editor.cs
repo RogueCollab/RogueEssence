@@ -36,7 +36,7 @@ namespace RogueEssence.Dev
         {
             TextBlock lblName = new TextBlock();
             lblName.Margin = new Thickness(0, 4, 0, 0);
-            lblName.Text = DataEditor.GetMemberTitle(name) + ":";
+            lblName.Text = Text.GetMemberTitle(name) + ":";
 
             if (desc != null)
                 ToolTip.SetTip(lblName, desc);
