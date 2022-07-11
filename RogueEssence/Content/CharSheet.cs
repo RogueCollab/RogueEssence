@@ -726,14 +726,21 @@ namespace RogueEssence.Content
                 // automatically add default animation
                 {
                     CharAnimGroup anim = new CharAnimGroup();
-                    int idleId = GraphicsManager.IdleAction;
-                    while(animData[idleId].CopyOf > -1)
-                        idleId = animData[idleId].CopyOf;
-                    CharAnimGroup parentGroup = animData[idleId];
                     if (cutsceneIdle)
+                    {
+                        int idleId = GraphicsManager.IdleAction;
+                        while (animData[idleId].CopyOf > -1)
+                            idleId = animData[idleId].CopyOf;
+                        CharAnimGroup parentGroup = animData[idleId];
                         anim.CopyOf = idleId;
+                    }
                     else
                     {
+                        int idleId = GraphicsManager.WalkAction;
+                        while (animData[idleId].CopyOf > -1)
+                            idleId = animData[idleId].CopyOf;
+                        CharAnimGroup parentGroup = animData[idleId];
+
                         foreach (CharAnimSequence sequence in parentGroup.Sequences)
                         {
                             CharAnimSequence newSequence = new CharAnimSequence();
