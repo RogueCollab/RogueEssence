@@ -116,6 +116,7 @@ namespace RogueEssence.Dev
                 for (int tt = 0; tt < tileTypes; tt++)
                 {
                     var tileTitle = TileTitles[tt];
+                    bool hasTiles = false;
 
                     AutoTileData autoTile = new AutoTileData();
                     AutoTileAdjacent entry = new AutoTileAdjacent();
@@ -145,8 +146,10 @@ namespace RogueEssence.Dev
                             //keep adding more tiles to the anim until end of blank spot is found
                             if (!tileset.IsBlank(tileX * tileSize, tileY * tileSize, tileSize, tileSize))
                                 baseLayer.Frames.Add(new TileFrame(new Loc(tileX + kk * 6 * tileTypes, tileY), fileName));
-                            if (baseLayer.Frames.Count < 1) continue;
+                            if (baseLayer.Frames.Count < 1)
+                                continue;
                             totalArray[jj][kk].Add(baseLayer);
+                            hasTiles = true;
 
                             // Additional layers
                             int curFrame = 1;
@@ -172,6 +175,9 @@ namespace RogueEssence.Dev
                         }
                     }
 
+                    if (!hasTiles)
+                        continue;
+
                     // Import auto tiles
                     for (int ii = 0; ii < FieldDtefMapping.Length; ii++)
                     {
@@ -190,7 +196,7 @@ namespace RogueEssence.Dev
                     else
                         autoTile.Name = new LocalText(Text.GetMemberTitle(fileName));
 
-                    string index = Text.Sanitize(autoTile.Name.DefaultText);
+                    string index = Text.Sanitize(autoTile.Name.DefaultText.ToLower());
                     //TODO: String Assets
                     DataManager.SaveData(index.ToString(), DataManager.DataType.AutoTile.ToString(), autoTile);
                     Debug.WriteLine($"{index}: {autoTile.Name}");
@@ -217,6 +223,8 @@ namespace RogueEssence.Dev
             foreach (string dir in dirs)
             {
                 string fileName = Path.GetFileName(dir);
+                if (fileName != "ChasmCave1")
+                    continue;
                 string outputFnTiles = string.Format(cachePattern, fileName);
                 DiagManager.Instance.LoadMsg = "Importing " + fileName;
                 ImportDtef(dir, outputFnTiles);
