@@ -736,7 +736,7 @@ namespace RogueEssence.Content
                     }
                     else
                     {
-                        int idleId = GraphicsManager.WalkAction;
+                        int idleId = GraphicsManager.IdleAction;
                         while (animData[idleId].CopyOf > -1)
                             idleId = animData[idleId].CopyOf;
                         CharAnimGroup parentGroup = animData[idleId];
