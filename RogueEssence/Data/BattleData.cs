@@ -26,7 +26,8 @@ namespace RogueEssence.Data
             return GameEventPriority.EventCause.Skill;
         }
 
-        public override int GetID() { return ID; }
+        //TODO: String Assets
+        public override string GetID() { return ID.ToString(); }
         //TODO: later on, make child classes for skills, traps, item usages and throws?
         public override string GetDisplayName()
         {

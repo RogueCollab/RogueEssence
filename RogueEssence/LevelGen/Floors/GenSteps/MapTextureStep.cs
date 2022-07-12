@@ -58,20 +58,20 @@ namespace RogueEssence.LevelGen
         public override void Apply(T map)
         {
             map.Map.BlankBG = new AutoTile(BlockTileset);
-            map.Map.TextureMap[0] = new AutoTile(GroundTileset);
+            map.Map.TextureMap[DataManager.Instance.GenFloor] = new AutoTile(GroundTileset);
             if (IndependentGround)
             {
-                map.Map.TextureMap[1] = new AutoTile(BlockTileset, GroundTileset);
-                map.Map.TextureMap[2] = new AutoTile(BlockTileset, GroundTileset);
+                map.Map.TextureMap[DataManager.Instance.GenUnbreakable] = new AutoTile(BlockTileset, GroundTileset);
+                map.Map.TextureMap[DataManager.Instance.GenWall] = new AutoTile(BlockTileset, GroundTileset);
             }
             else
             {
-                map.Map.TextureMap[1] = new AutoTile(BlockTileset);
-                map.Map.TextureMap[2] = new AutoTile(BlockTileset);
+                map.Map.TextureMap[DataManager.Instance.GenUnbreakable] = new AutoTile(BlockTileset);
+                map.Map.TextureMap[DataManager.Instance.GenWall] = new AutoTile(BlockTileset);
             }
 
-            for(int ii = 3; ii < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count; ii++)
-                map.Map.TextureMap[ii] = new AutoTile(WaterTileset, GroundTileset);
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries.Keys)
+                map.Map.TextureMap[key] = new AutoTile(WaterTileset, GroundTileset);
 
             map.Map.Element = GroundElement;
             if (LayeredGround)
@@ -110,15 +110,15 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Maps the terrain type to the specified autotile.
         /// </summary>
-        [JsonConverter(typeof(Dev.AutotileTerrainDictConverter))]
+        [JsonConverter(typeof(Dev.TerrainDictAutotileDataConverter))]
         [Dev.DataType(1, DataManager.DataType.Terrain, false)]
         [Dev.DataType(2, DataManager.DataType.AutoTile, false)]
-        public Dictionary<int, string> TextureMap;
+        public Dictionary<string, string> TextureMap;
 
         /// <summary>
         /// The texture considered to be the ground for this map.
         /// </summary>
-        public int GroundTexture;
+        public string GroundTexture;
 
         /// <summary>
         /// The repeated texture used for the border.
@@ -143,14 +143,14 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public int GroundElement;
 
-        public MapDictTextureStep() { TextureMap = new Dictionary<int, string>(); }
+        public MapDictTextureStep() { TextureMap = new Dictionary<string, string>(); }
 
         public override void Apply(T map)
         {
             map.Map.BlankBG = new AutoTile(BlankBG);
-            foreach (int terrain in TextureMap.Keys)
+            foreach (string terrain in TextureMap.Keys)
             {
-                if (terrain == 0)//assume ground
+                if (terrain == DataManager.Instance.GenFloor)//assume ground
                     map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain]);
                 else
                     map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain], TextureMap[GroundTexture]);

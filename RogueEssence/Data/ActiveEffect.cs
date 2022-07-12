@@ -14,7 +14,7 @@ namespace RogueEssence.Data
             return GameEventPriority.EventCause.None;
         }
 
-        public override int GetID() { return -1; }
+        public override string GetID() { return ""; }
 
         public override string GetDisplayName()
         {

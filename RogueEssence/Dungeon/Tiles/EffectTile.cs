@@ -24,7 +24,8 @@ namespace RogueEssence.Dungeon
             Enemy
         }
 
-        public override int GetID() { return ID; }
+        //TODO: String Assets
+        public override string GetID() { return ID.ToString(); }
         public TileData GetData() { return DataManager.Instance.GetTile(ID); }
         public override string GetDisplayName() { return GetData().GetColoredName(); }
 

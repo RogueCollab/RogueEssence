@@ -14,7 +14,7 @@ namespace RogueEssence.Dungeon
         //traps, wonder tiles, stairs, etc. that can be removed
         public EffectTile Effect;
 
-        public int ID { get { return Data.ID; } set { Data.ID = value; } }
+        public string ID { get { return Data.ID; } set { Data.ID = value; } }
 
         public Tile()
         {
@@ -22,19 +22,19 @@ namespace RogueEssence.Dungeon
             Effect = new EffectTile();
         }
 
-        public Tile(int type)
+        public Tile(string type)
         {
             Data = new TerrainTile(type);
             Effect = new EffectTile();
         }
 
-        public Tile(int type, bool stableTex)
+        public Tile(string type, bool stableTex)
         {
             Data = new TerrainTile(type, stableTex);
             Effect = new EffectTile();
         }
 
-        public Tile(int type, Loc loc)
+        public Tile(string type, Loc loc)
         {
             Data = new TerrainTile(type);
             Effect = new EffectTile(loc);
@@ -59,7 +59,7 @@ namespace RogueEssence.Dungeon
         {
             List<string> values = new List<string>();
             //TODO: String Assets
-            if (Data.ID > -1)
+            if (!String.IsNullOrEmpty(Data.ID))
                 values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[Data.ID.ToString()].Name.ToLocal());
             if (Effect.ID > -1)
                 values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[Effect.ID.ToString()].Name.ToLocal());

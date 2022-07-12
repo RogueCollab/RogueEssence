@@ -160,6 +160,9 @@ namespace RogueEssence.Data
         public int StartPersonality;
         public string DebugZone;
         public ZoneLoc StartMap;
+        public string GenFloor;
+        public string GenWall;
+        public string GenUnbreakable;
         public int MaxLevel;
         public ActiveEffect UniversalEvent;
         public TypeDict<BaseData> UniversalData;
@@ -405,6 +408,10 @@ namespace RogueEssence.Data
                     StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
                         new SegLoc(Int32.Parse(startMap.SelectSingleNode("Segment").InnerText), Int32.Parse(startMap.SelectSingleNode("ID").InnerText)),
                         Int32.Parse(startMap.SelectSingleNode("Entry").InnerText));
+
+                    GenFloor = xmldoc.DocumentElement.SelectSingleNode("GenFloor").InnerText;
+                    GenWall = xmldoc.DocumentElement.SelectSingleNode("GenWall").InnerText;
+                    GenUnbreakable = xmldoc.DocumentElement.SelectSingleNode("GenUnbreakable").InnerText;
                     return;
                 }
                 catch (Exception ex)
@@ -814,10 +821,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-        public TerrainData GetTerrain(int index)
-        {
-            return GetTerrain(index.ToString());
-        }
         public TerrainData GetTerrain(string index)
         {
             TerrainData data = null;

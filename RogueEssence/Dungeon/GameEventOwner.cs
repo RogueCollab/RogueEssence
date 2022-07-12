@@ -9,7 +9,7 @@ namespace RogueEssence.Dungeon
     {
         public abstract GameEventPriority.EventCause GetEventCause();
 
-        public abstract int GetID();
+        public abstract string GetID();
         public abstract string GetDisplayName();
 
         public void AddEventsToQueue<T>(StablePriorityQueue<GameEventPriority, EventQueueElement<T>> queue, Priority maxPriority, ref Priority nextPriority, PriorityList<T> effectList, Character targetChar) where T : GameEvent
@@ -49,7 +49,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class PassiveActive : GameEventOwner
     {
-        public override int GetID() { return ID; }
+        public override string GetID() { return ID.ToString(); }
         public abstract PassiveData GetData();
         public abstract int ID { get; set; }
 

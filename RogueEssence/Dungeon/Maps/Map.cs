@@ -78,7 +78,9 @@ namespace RogueEssence.Dungeon
         public CategorySpawnChooser<InvItem> ItemSpawns;
 
         public AutoTile BlankBG;
-        public Dictionary<int, AutoTile> TextureMap;
+
+        [JsonConverter(typeof(Dev.TerrainDictAutotileConverter))]
+        public Dictionary<string, AutoTile> TextureMap;
         public int Element;
 
         public IBackgroundSprite Background;
@@ -157,7 +159,7 @@ namespace RogueEssence.Dungeon
 
             Status = new Dictionary<int, MapStatus>();
 
-            TextureMap = new Dictionary<int, AutoTile>();
+            TextureMap = new Dictionary<string, AutoTile>();
 
             CurrentTurnMap = new TurnState();
 
@@ -184,7 +186,7 @@ namespace RogueEssence.Dungeon
 
             //tiles
             Grid.LocAction changeOp = (Loc loc) => { Tiles[loc.X][loc.Y].Effect.UpdateTileLoc(loc); };
-            Grid.LocAction newOp = (Loc loc) => { Tiles[loc.X][loc.Y] = new Tile(0, loc); };
+            Grid.LocAction newOp = (Loc loc) => { Tiles[loc.X][loc.Y] = new Tile(DataManager.Instance.GenFloor, loc); };
 
             Loc diff = Grid.ResizeJustified(ref Tiles, width, height, anchorDir.Reverse(), changeOp, newOp);
 

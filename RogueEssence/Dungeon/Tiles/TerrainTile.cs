@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dev;
@@ -14,14 +15,15 @@ namespace RogueEssence.Dungeon
             return GameEventPriority.EventCause.Terrain;
         }
 
-        public override int GetID() { return ID; }
+        public override string GetID() { return ID; }
 
         public TerrainData GetData() { return DataManager.Instance.GetTerrain(ID); }
         public override string GetDisplayName() { return GetData().GetColoredName(); }
 
 
+        [JsonConverter(typeof(TerrainConverter))]
         [DataType(0, DataManager.DataType.Terrain, false)]
-        public int ID;
+        public string ID;
         public AutoTile TileTex;
         
         //TODO: make this an editable value in map editor... when someone wants it
@@ -32,23 +34,24 @@ namespace RogueEssence.Dungeon
 
         public TerrainTile()
         {
+            ID = "";
             TileTex = new AutoTile();
         }
-        public TerrainTile(int index) : this()
+        public TerrainTile(string index) : this()
         {
             ID = index;
         }
-        public TerrainTile(int index, bool stableTex) : this()
+        public TerrainTile(string index, bool stableTex) : this()
         {
             ID = index;
             StableTex = stableTex;
         }
-        public TerrainTile(int index, AutoTile tex)
+        public TerrainTile(string index, AutoTile tex)
         {
             ID = index;
             TileTex = tex;
         }
-        public TerrainTile(int index, AutoTile tex, bool stableTex)
+        public TerrainTile(string index, AutoTile tex, bool stableTex)
         {
             ID = index;
             TileTex = tex;
@@ -99,8 +102,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            //TODO: String Assets
-            if (ID > -1 && ID < DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Count)
+            if (!String.IsNullOrEmpty(ID))
                 return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID.ToString()].Name.ToLocal();
             else
                 return "[EMPTY]";

@@ -88,7 +88,7 @@ namespace RogueEssence.Dungeon
             {
                 Tiles[ii] = new Tile[height];
                 for (int jj = 0; jj < height; jj++)
-                    Tiles[ii][jj] = new Tile(0, new Loc(ii, jj));
+                    Tiles[ii][jj] = new Tile(DataManager.Instance.GenFloor, new Loc(ii, jj));
             }
 
             Layers.Clear();
