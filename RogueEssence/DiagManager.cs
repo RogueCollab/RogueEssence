@@ -695,7 +695,9 @@ namespace RogueEssence
             if (GamePadActive)
             {
                 GamePadMap gamePadMap = CurSettings.GamepadMaps[gamePadID];
-                return GetButtonString(gamePadMap.ActionButtons[(int)inputType]);
+                Buttons button = gamePadMap.ActionButtons[(int)inputType];
+                if (button > 0)
+                    return GetButtonString(button);
             }
             return GetKeyboardString(CurSettings.ActionKeys[(int)inputType]);
         }
