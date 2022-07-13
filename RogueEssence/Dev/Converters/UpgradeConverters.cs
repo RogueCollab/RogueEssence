@@ -195,7 +195,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, GameProgress.UnlockState> dict = new Dictionary<string, GameProgress.UnlockState>();
-            if (Serializer.OldVersion < new Version(0, 5, 18, 0))
+            if (Serializer.OldVersion < new Version(0, 5, 20, 0))
             {
                 JArray jArray = JArray.Load(reader);
                 List<GameProgress.UnlockState> container = new List<GameProgress.UnlockState>();
