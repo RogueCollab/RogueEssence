@@ -77,14 +77,21 @@ namespace RogueEssence.Dev
                 Directory.CreateDirectory(convFolder);
 
             Version oldVersion = GetTypeVersion(DataManager.DataType.AutoTile);
-            if (oldVersion < new Version(0, 5, 19))
+            if (oldVersion < new Version(0, 5, 20))
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.AutoTile);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Terrain);
+            if (oldVersion < new Version(0, 5, 20))
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.AutoTile);
             }
 
             oldVersion = GetTypeVersion(DataManager.DataType.Zone);
-            if (oldVersion < new Version(0, 5, 19))
+            if (oldVersion < new Version(0, 5, 20))
             {
                 //rename all the zone files
                 List<string> intToName = convertAssetType(DataManager.DataType.Zone);
