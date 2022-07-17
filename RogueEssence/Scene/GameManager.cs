@@ -75,9 +75,12 @@ namespace RogueEssence
         private float bgFadeAmount;
         private BGAnimData fadedBG;
 
+        public Dictionary<string, (float volume, float diff)> LoopingSE;
+
         public string Song;
         public string NextSong;
         public FrameTick MusicFadeTime;
+        public int MusicFadeTotal;
         public const int MUSIC_FADE_TOTAL = 120;
         public string QueuedFanfare;
         public FanfarePhase CurrentFanfarePhase;
@@ -94,6 +97,8 @@ namespace RogueEssence
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
+
+            LoopingSE = new Dictionary<string, (float volume, float diff)>();
 
             DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
 
@@ -129,13 +134,13 @@ namespace RogueEssence
             }
         }
 
-        public void LoopBattleSE(string newSE)
+        public void LoopBattleSE(string newSE, int fadeTime = 0)
         {
             if (newSE != "")
-                LoopSE("Battle/" + newSE);
+                LoopSE("Battle/" + newSE, fadeTime);
         }
 
-        public void LoopSE(string newSE)
+        public void LoopSE(string newSE, int fadeTime = 0)
         {
             try
             {
@@ -143,7 +148,13 @@ namespace RogueEssence
                     return;
 
                 if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
-                    SoundManager.PlayLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), 1);
+                {
+                    if (fadeTime > 0)
+                        LoopingSE[newSE] = (0f, 1f / fadeTime);
+                    else
+                        LoopingSE[newSE] = (1f, 0f);
+                    SoundManager.PlayLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), LoopingSE[newSE].volume);
+                }
             }
             catch (Exception ex)
             {
@@ -151,15 +162,28 @@ namespace RogueEssence
             }
         }
 
-        public void StopLoopBattleSE(string newSE)
+        public void StopLoopBattleSE(string newSE, int fadeTime = 0)
         {
             if (newSE != "")
-                StopLoopSE("Battle/" + newSE);
+                StopLoopSE("Battle/" + newSE, fadeTime);
         }
 
-        public void StopLoopSE(string newSE)
+        public void StopLoopSE(string newSE, int fadeTime = 0)
         {
-            SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
+            if (fadeTime > 0)
+            {
+                if (LoopingSE.ContainsKey(newSE))
+                {
+                    (float volume, float diff) cur = LoopingSE[newSE];
+                    float newDiff = -cur.volume / fadeTime;
+                    LoopingSE[newSE] = (cur.volume, newDiff);
+                }
+            }
+            else
+            {
+                LoopingSE.Remove(newSE);
+                SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
+            }
         }
 
 
@@ -216,6 +240,32 @@ namespace RogueEssence
                     FanfareTime = FrameTick.FromFrames((FANFARE_FADE_END - FanfareTime.DivOf(FANFARE_FADE_END)) * FANFARE_FADE_START / FANFARE_FADE_END);
                     QueuedFanfare = newSE;
                 }
+            }
+        }
+
+        public void BGM(string newBGM, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            if (DataManager.Instance.Loading != DataManager.LoadMode.None)
+                return;
+
+            if (Song != newBGM || (Song == newBGM && NextSong != null && NextSong != newBGM))
+            {
+                if (String.IsNullOrEmpty(Song) || !fade)//if the current song is empty, or the game doesn't want to fade it
+                {
+                    //immediately start
+                    MusicFadeTime = FrameTick.Zero;
+                }
+                else if (NextSong != null)
+                {
+                    //do nothing, and watch it tick down
+                }
+                else
+                {
+                    //otherwise, set up the tick-down
+                    MusicFadeTotal = fadeTime;
+                    MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
+                }
+                NextSong = newBGM;
             }
         }
 
@@ -363,31 +413,6 @@ namespace RogueEssence
                 return waitTime * 2;
             else
                 return waitTime;
-        }
-
-        public void BGM(string newBGM, bool fade)
-        {
-            if (DataManager.Instance.Loading != DataManager.LoadMode.None)
-                return;
-
-            if (Song != newBGM || (Song == newBGM && NextSong != null && NextSong != newBGM))
-            {
-                if (String.IsNullOrEmpty(Song) || !fade)//if the current song is empty, or the game doesn't want to fade it
-                {
-                    //immediately start
-                    MusicFadeTime = FrameTick.Zero;
-                }
-                else if (NextSong != null)
-                {
-                    //do nothing, and watch it tick down
-                }
-                else
-                {
-                    //otherwise, set up the tick-down
-                    MusicFadeTime = FrameTick.FromFrames(MUSIC_FADE_TOTAL);
-                }
-                NextSong = newBGM;
-            }
         }
 
         public bool IsInGame()
@@ -1137,7 +1162,7 @@ namespace RogueEssence
                     }
                 }
                 else
-                    musicFadeFraction *= MusicFadeTime.FractionOf(MUSIC_FADE_TOTAL);
+                    musicFadeFraction *= MusicFadeTime.FractionOf(MusicFadeTotal);
             }
             if (CurrentFanfarePhase != FanfarePhase.None)
             {
@@ -1173,6 +1198,29 @@ namespace RogueEssence
                 }
             }
             SoundManager.SetBGMVolume(musicFadeFraction);
+
+            //update sounds
+            List<string> seKeys = new List<string>();
+            foreach (string seKey in LoopingSE.Keys)
+                seKeys.Add(seKey);
+            
+            foreach (string key in seKeys)
+            {
+                (float volume, float diff) cur = LoopingSE[key];
+                if (cur.volume + cur.diff <= 0)
+                {
+                    LoopingSE.Remove(key);
+                    SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + key + ".ogg"));
+                }
+                else if (cur.volume + cur.diff > 1)
+                    LoopingSE[key] = (1f, 0f);
+                else
+                {
+                    LoopingSE[key] = (cur.volume + cur.diff, cur.diff);
+                    SoundManager.SetLoopedSEVolume(PathMod.ModPath(GraphicsManager.SOUND_PATH + key + ".ogg"), LoopingSE[key].volume);
+                }
+            }
+
             if (!thisFrameErrored)
                 framesErrored = 0;
             thisFrameErrored = false;
