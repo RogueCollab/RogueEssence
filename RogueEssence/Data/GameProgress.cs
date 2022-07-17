@@ -925,24 +925,29 @@ namespace RogueEssence.Data
             //reset location defeated
             ClearDefeatDest();
 
-            //create a copy (from save and load) of the current state and mark it with loss
+            //create a copy (from save and load) of the current state to ensure that no nonserialized variables linger
             DataManager.Instance.SaveMainGameState();
 
             GameState state = DataManager.Instance.LoadMainGameState(false);
-            if (state != null)
-            {
-                if (Stakes == DungeonStakes.Risk)
-                    LossPenalty(state.Save);
 
-                DataManager.Instance.SaveGameState(state);
-            }
+            DataManager.Instance.SetProgress(state.Save);
+            LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save);
+            ZoneManager.LoadFromState(state.Zone);
+            LuaEngine.Instance.UpdateZoneInstance();
+
+            //and load another copy to mark it with loss
+            state = DataManager.Instance.LoadMainGameState(false);
+            if (Stakes == DungeonStakes.Risk)
+                LossPenalty(state.Save);
+            DataManager.Instance.SaveGameState(state);
 
             //set everyone's levels and mark them for backreferral
+            //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, true, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.RestrictLevel(zone, true, false, false));
 
-            RestartLogs(seed);
-            RescuesLeft = zone.Rescues;
+            DataManager.Instance.Save.RestartLogs(seed);
+            DataManager.Instance.Save.RescuesLeft = zone.Rescues;
 
             if (recorded)
                 DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false);
@@ -1174,7 +1179,6 @@ namespace RogueEssence.Data
                     newRecruits = MergeDexTo(state.Save, false);
                     DataManager.Instance.SaveGameState(state);
                 }
-
 
                 if (recorded && display)
                 {

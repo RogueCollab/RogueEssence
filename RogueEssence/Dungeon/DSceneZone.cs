@@ -299,6 +299,10 @@ namespace RogueEssence.Dungeon
                 DataManager.Instance.LogPlay(action);
                 DataManager.Instance.DequeueLogUI();
             }
+            else if (DataManager.Instance.CurrentReplay != null)
+            {
+                DiagManager.Instance.LogError(new InvalidOperationException(String.Format("Recorded action failed: {0}", action.ToString())));
+            }
         }
 
         //the intention, and its result to that frame
