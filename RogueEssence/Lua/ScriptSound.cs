@@ -32,6 +32,16 @@ namespace RogueEssence.Script
         public LuaFunction WaitSE;
 
 
+        public void FadeInSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.LoopSE(name, fadeTime);
+        }
+
+        public void FadeInBattleSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.LoopBattleSE(name, fadeTime);
+        }
+
         public void LoopSE(string name)
         {
             GameManager.Instance.LoopSE(name);

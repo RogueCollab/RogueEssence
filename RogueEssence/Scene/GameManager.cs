@@ -134,13 +134,13 @@ namespace RogueEssence
             }
         }
 
-        public void LoopBattleSE(string newSE)
+        public void LoopBattleSE(string newSE, int fadeTime = 0)
         {
             if (newSE != "")
-                LoopSE("Battle/" + newSE);
+                LoopSE("Battle/" + newSE, fadeTime);
         }
 
-        public void LoopSE(string newSE)
+        public void LoopSE(string newSE, int fadeTime = 0)
         {
             try
             {
@@ -149,7 +149,10 @@ namespace RogueEssence
 
                 if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
                 {
-                    LoopingSE[newSE] = (1f, 0f);
+                    if (fadeTime > 0)
+                        LoopingSE[newSE] = (0f, 1f / fadeTime);
+                    else
+                        LoopingSE[newSE] = (1f, 0f);
                     SoundManager.PlayLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), LoopingSE[newSE].volume);
                 }
             }
@@ -172,7 +175,7 @@ namespace RogueEssence
                 if (LoopingSE.ContainsKey(newSE))
                 {
                     (float volume, float diff) cur = LoopingSE[newSE];
-                    float newDiff = -cur.volume / GameManager.MUSIC_FADE_TOTAL;
+                    float newDiff = -cur.volume / fadeTime;
                     LoopingSE[newSE] = (cur.volume, newDiff);
                 }
             }
@@ -1209,6 +1212,8 @@ namespace RogueEssence
                     LoopingSE.Remove(key);
                     SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + key + ".ogg"));
                 }
+                else if (cur.volume + cur.diff > 1)
+                    LoopingSE[key] = (1f, 0f);
                 else
                 {
                     LoopingSE[key] = (cur.volume + cur.diff, cur.diff);
