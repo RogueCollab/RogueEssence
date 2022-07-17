@@ -41,6 +41,17 @@ namespace RogueEssence.Script
         {
             GameManager.Instance.LoopBattleSE(name);
         }
+
+        public void FadeOutSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.StopLoopSE(name, fadeTime);
+        }
+
+        public void FadeOutBattleSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.StopLoopBattleSE(name, fadeTime);
+        }
+
         public void StopSE(string name)
         {
             GameManager.Instance.StopLoopSE(name);
