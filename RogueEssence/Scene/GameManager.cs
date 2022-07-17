@@ -78,6 +78,7 @@ namespace RogueEssence
         public string Song;
         public string NextSong;
         public FrameTick MusicFadeTime;
+        public int MusicFadeTotal;
         public const int MUSIC_FADE_TOTAL = 120;
         public string QueuedFanfare;
         public FanfarePhase CurrentFanfarePhase;
@@ -365,7 +366,7 @@ namespace RogueEssence
                 return waitTime;
         }
 
-        public void BGM(string newBGM, bool fade)
+        public void BGM(string newBGM, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
         {
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
@@ -384,7 +385,8 @@ namespace RogueEssence
                 else
                 {
                     //otherwise, set up the tick-down
-                    MusicFadeTime = FrameTick.FromFrames(MUSIC_FADE_TOTAL);
+                    MusicFadeTotal = fadeTime;
+                    MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
                 }
                 NextSong = newBGM;
             }
@@ -1137,7 +1139,7 @@ namespace RogueEssence
                     }
                 }
                 else
-                    musicFadeFraction *= MusicFadeTime.FractionOf(MUSIC_FADE_TOTAL);
+                    musicFadeFraction *= MusicFadeTime.FractionOf(MusicFadeTotal);
             }
             if (CurrentFanfarePhase != FanfarePhase.None)
             {

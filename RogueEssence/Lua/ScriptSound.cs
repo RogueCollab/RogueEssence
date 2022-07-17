@@ -69,14 +69,14 @@ namespace RogueEssence.Script
         //===========================
         //  Music
         //===========================
-        public void PlayBGM(string name, bool fade)
+        public void PlayBGM(string name, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
         {
-            GameManager.Instance.BGM(name, fade);
+            GameManager.Instance.BGM(name, fade, fadeTime);
         }
 
-        public void FadeOutBGM()
+        public void FadeOutBGM(int fadeTime = GameManager.MUSIC_FADE_TOTAL)
         {
-            GameManager.Instance.BGM("", true);
+            GameManager.Instance.BGM("", true, fadeTime);
         }
 
         public void StopBGM()
