@@ -865,10 +865,6 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public SkillGroupData GetSkillGroup(int index)
-        {
-            return GetSkillGroup(index.ToString());
-        }
         public SkillGroupData GetSkillGroup(string index)
         {
             SkillGroupData data = null;

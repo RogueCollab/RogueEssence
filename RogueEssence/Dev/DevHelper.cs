@@ -90,6 +90,13 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.GrowthGroup);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.SkillGroup);
+            if (oldVersion < new Version(0, 5, 20))
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.SkillGroup);
+            }
+
             oldVersion = GetTypeVersion(DataManager.DataType.Terrain);
             if (oldVersion < new Version(0, 5, 20))
             {

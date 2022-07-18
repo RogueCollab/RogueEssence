@@ -37,12 +37,14 @@ namespace RogueEssence.Data
         [Dev.DataType(0, DataManager.DataType.GrowthGroup, false)]
         public string EXPTable;
 
+        [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
-        public int SkillGroup1;
+        public string SkillGroup1;
 
+        [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.SharedRow]
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
-        public int SkillGroup2;
+        public string SkillGroup2;
 
         public int JoinRate;
 
@@ -59,6 +61,8 @@ namespace RogueEssence.Data
             Title = new LocalText();
             Comment = "";
             EXPTable = "";
+            SkillGroup1 = "";
+            SkillGroup2 = "";
             PromoteFrom = -1;
             Promotions = new List<PromoteBranch>();
             Forms = new List<BaseMonsterForm>();
