@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RogueEssence.Dev;
+using System;
 using System.Collections.Generic;
 
 
@@ -31,8 +33,9 @@ namespace RogueEssence.Data
         /// <summary>
         /// How fast this unit levels up.  Uses the Growth Group EXP tables.
         /// </summary>
+        [JsonConverter(typeof(GrowthGroupConverter))]
         [Dev.DataType(0, DataManager.DataType.GrowthGroup, false)]
-        public int EXPTable;
+        public string EXPTable;
 
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
         public int SkillGroup1;
@@ -55,6 +58,7 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Title = new LocalText();
             Comment = "";
+            EXPTable = "";
             PromoteFrom = -1;
             Promotions = new List<PromoteBranch>();
             Forms = new List<BaseMonsterForm>();

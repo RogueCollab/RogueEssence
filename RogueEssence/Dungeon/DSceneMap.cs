@@ -732,7 +732,7 @@ namespace RogueEssence.Dungeon
                 {
                     totalExp += GainedEXP[ii];
 
-                    int growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
+                    string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                     GrowthData growthData = DataManager.Instance.GetGrowth(growth);
                     while (player.Level + levelDiff < DataManager.Instance.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
                         levelDiff++;
@@ -761,7 +761,7 @@ namespace RogueEssence.Dungeon
 
                 Team levelTeam = ZoneManager.Instance.CurrentMap.GetTeam(index.Faction, index.Team);
                 Character player = levelTeam.Players[index.Char];
-                int growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
+                string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);
                 int oldLevel = player.Level;
                 int oldHP = player.MaxHP;

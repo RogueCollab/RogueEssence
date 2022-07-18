@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
             int expToNext = 0;
             if (character.Level < DataManager.Instance.MaxLevel)
             {
-                int growth = DataManager.Instance.GetMonster(character.BaseForm.Species).EXPTable;
+                string growth = DataManager.Instance.GetMonster(character.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);
                 expToNext = growthData.GetExpToNext(character.Level);
             }

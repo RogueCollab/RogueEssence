@@ -856,11 +856,6 @@ namespace RogueEssence.Data
             return null;
         }
 
-
-        public GrowthData GetGrowth(int index)
-        {
-            return GetGrowth(index.ToString());
-        }
         public GrowthData GetGrowth(string index)
         {
             GrowthData data = null;

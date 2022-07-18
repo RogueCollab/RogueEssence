@@ -538,7 +538,7 @@ namespace RogueEssence.Data
             try
             {
                 int removedEXP = 0;
-                int growth = monsterData.EXPTable;
+                string growth = monsterData.EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);
                 if (level <= charFrom.Level)
                 {
