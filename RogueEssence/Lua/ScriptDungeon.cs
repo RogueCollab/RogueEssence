@@ -73,11 +73,11 @@ namespace RogueEssence.Script
         /// <param name="chara"></param>
         /// <param name="emoteid"></param>
         /// <param name="cycles"></param>
-        public void CharSetEmote(Character chara, int emoteid, int cycles)
+        public void CharSetEmote(Character chara, string emoteid, int cycles)
         {
             if (chara != null)
             {
-                if (emoteid >= 0)
+                if (!String.IsNullOrEmpty(emoteid))
                 {
                     EmoteData emote = DataManager.Instance.GetEmote(emoteid);
                     chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));

@@ -830,10 +830,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-        public EmoteData GetEmote(int index)
-        {
-            return GetEmote(index.ToString());
-        }
         public EmoteData GetEmote(string index)
         {
             EmoteData data = null;

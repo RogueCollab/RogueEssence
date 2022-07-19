@@ -83,6 +83,13 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.AutoTile);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.Emote);
+            if (oldVersion < new Version(0, 5, 21))
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Emote);
+            }
+
             oldVersion = GetTypeVersion(DataManager.DataType.GrowthGroup);
             if (oldVersion < new Version(0, 5, 20))
             {
