@@ -109,13 +109,17 @@ namespace RogueEssence.Ground
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
-        public override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
+
+        public int Override;
+
+        public override int AnimFrameType { get { return Override > -1 ? Override : GraphicsManager.GlobalIdle; } }
         public override bool Complete => true;
 
         public IdleGroundAction(Loc loc, Dir8 dir)
         {
             MapLoc = loc;
             CharDir = dir;
+            Override = -1;
         }
 
         public override void UpdateInput(GameAction action)
