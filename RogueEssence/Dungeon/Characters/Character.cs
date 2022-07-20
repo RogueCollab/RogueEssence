@@ -335,6 +335,7 @@ namespace RogueEssence.Dungeon
             CharStates = new StateCollection<CharState>();
             WarpHistory = new List<Loc>();
             StatusEffects = new Dictionary<int, StatusEffect>();
+            IdleOverride = -1;
             currentCharAction = new EmptyCharAction(new CharAnimIdle(new Loc(), Dir8.Down));
             StatusesTargetingThis = new List<StatusRef>();
             TileSight = Map.SightRange.Any;
@@ -389,6 +390,7 @@ namespace RogueEssence.Dungeon
             CharStates = new StateCollection<CharState>();
             WarpHistory = new List<Loc>();
             StatusEffects = new Dictionary<int, StatusEffect>();
+            IdleOverride = -1;
             currentCharAction = new EmptyCharAction(new CharAnimIdle(newLoc, charDir));
             StatusesTargetingThis = new List<StatusRef>();
             TileSight = Map.SightRange.Any;
@@ -420,8 +422,12 @@ namespace RogueEssence.Dungeon
 
             Character new_mob = new Character(character);
             team.Players.Add(new_mob);
-            new_mob.CharLoc = this.CharLoc;
-            new_mob.CharDir = this.CharDir;
+
+            new_mob.IdleOverride = IdleOverride;
+            CharAnimIdle idleAction = new CharAnimIdle(this.CharLoc, this.CharDir);
+            if (IdleOverride > -1)
+                idleAction.Override = IdleOverride;
+            new_mob.currentCharAction = new EmptyCharAction(idleAction);
             new_mob.Tactic = new AITactic(this.Tactic);
             new_mob.EquippedItem = new InvItem(this.EquippedItem);
 
@@ -2215,6 +2221,9 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         private Emote currentEmote;
 
+        [NonSerialized]
+        public int IdleOverride;
+
         public Loc CharLocFrom { get { return currentCharAction.CharLocFrom; } }
         public bool ActionDone { get { return currentCharAction.ActionDone; } }
         private Loc drawOffset { get { return currentCharAction.DrawOffset; } }
@@ -2244,6 +2253,13 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> StartAnim(CharAnimation charAnim)
         {
+            if (IdleOverride > -1)
+            {
+                CharAnimIdle idleAction = charAnim as CharAnimIdle;
+                if (idleAction != null)
+                    idleAction.Override = IdleOverride;
+            }
+
             charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
             if (OccupiedwithAction())
             {
@@ -2341,7 +2357,10 @@ namespace RogueEssence.Dungeon
 
             if (currentCharAction.WantsToEnd())
             {
-                EmptyCharAction action = new EmptyCharAction(new CharAnimIdle(CharLoc, CharDir));
+                CharAnimIdle idleAction = new CharAnimIdle(CharLoc, CharDir);
+                if (IdleOverride > -1)
+                    idleAction.Override = IdleOverride;
+                EmptyCharAction action = new EmptyCharAction(idleAction);
                 action.PickUpFrom(Appearance, currentCharAction);
                 currentCharAction = action;
             }

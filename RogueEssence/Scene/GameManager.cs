@@ -81,7 +81,7 @@ namespace RogueEssence
         public string NextSong;
         public FrameTick MusicFadeTime;
         public int MusicFadeTotal;
-        public const int MUSIC_FADE_TOTAL = 120;
+        public const int MUSIC_FADE_TOTAL = 40;
         public string QueuedFanfare;
         public FanfarePhase CurrentFanfarePhase;
         public FrameTick FanfareTime;

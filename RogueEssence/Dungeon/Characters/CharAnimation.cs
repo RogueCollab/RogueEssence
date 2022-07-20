@@ -50,6 +50,11 @@ namespace RogueEssence.Dungeon
         public abstract bool ActionPassed { get; }
         public abstract bool ActionDone { get; }
 
+        /// <summary>
+        /// Dashing animations will not sweep forward.
+        /// </summary>
+        public virtual bool InPlace { get { return true; } }
+
         public Action OnFinish;
 
         public virtual bool WantsToEnd() { return ActionDone; }
@@ -158,14 +163,13 @@ namespace RogueEssence.Dungeon
         }
 
 
-
-        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        public void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
         {
             Loc drawLoc = GetDrawLoc(sheet, offset);
             drawLoc.Y -= LocHeight;
             
             //draw sprite at current frame
-            sheet.DrawChar(spriteBatch, charFrameType, true, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+            sheet.DrawChar(spriteBatch, charFrameType, InPlace, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
         }
         public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
@@ -270,28 +274,22 @@ namespace RogueEssence.Dungeon
         }
         public override bool ActionPassed { get { return true; } }
         public override bool ActionDone { get { return true; } }
+        public override bool InPlace { get { return false; } }
 
         protected override bool TakesMovementSpeed() { return true; }
 
         public override bool WantsToEnd() { return false; }
 
-        public CharAnimIdle(Loc loc, Dir8 dir) { AnimLoc = loc; CharDir = dir; }
+        public CharAnimIdle(Loc loc, Dir8 dir) { AnimLoc = loc; CharDir = dir; Override = -1; }
 
-        protected override int AnimFrameType { get { return GraphicsManager.GlobalIdle; } }
+        public int Override;
+        protected override int AnimFrameType { get { return Override > -1 ? Override : GraphicsManager.GlobalIdle; } }
         protected override void UpdateFrameInternal()
         {
             MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
         protected override bool AllowFrameTypeDrawEffects() { return true; }
 
-        public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
-        {
-            Loc drawLoc = GetDrawLoc(sheet, offset);
-            drawLoc.Y -= LocHeight;
-
-            //draw sprite at current frame
-            sheet.DrawChar(spriteBatch, charFrameType, false, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), determineFrame, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
-        }
         public override Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
             Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
@@ -335,9 +333,13 @@ namespace RogueEssence.Dungeon
         }
         public override bool ActionPassed { get { return ActionTime >= AnimHitTime; } }
         public override bool ActionDone { get { return ActionTime >= AnimTotalTime; } }
+        public override bool InPlace { get { return !ExtendAnim; } }
+        
+        public bool ExtendAnim;
 
         public CharAnimAction() { }
-        public CharAnimAction(Loc loc, Dir8 dir, int frameType) { AnimLoc = loc; CharDir = dir; BaseFrameType = frameType; }
+        public CharAnimAction(Loc loc, Dir8 dir, int frameType) : this(loc, dir, frameType, false) { }
+        public CharAnimAction(Loc loc, Dir8 dir, int frameType, bool extendAnim) { AnimLoc = loc; CharDir = dir; BaseFrameType = frameType; ExtendAnim = extendAnim; }
 
         public int BaseFrameType { get; set; }
         protected override int AnimFrameType { get { return BaseFrameType; } }

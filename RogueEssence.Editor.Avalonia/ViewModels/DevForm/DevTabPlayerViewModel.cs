@@ -45,6 +45,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
+
         public void UpdateLevel()
         {
             lock (GameBase.lockObj)
@@ -127,8 +128,123 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (!this.SetIfChanged(ref chosenAnim, value))
                     return;
-                lock (GameBase.lockObj)
-                    GraphicsManager.GlobalIdle = chosenAnim;
+
+                RestartAnim(false);
+            }
+        }
+
+        private bool justMe;
+        public bool JustMe
+        {
+            get => justMe;
+            set
+            {
+                this.RaiseAndSet(ref justMe, value);
+                RestartAnim(false);
+            }
+        }
+
+        private bool justOnce;
+        public bool JustOnce
+        {
+            get => justOnce;
+            set
+            {
+                this.RaiseAndSet(ref justOnce, value);
+                RestartAnim(false);
+            }
+        }
+
+        public void RestartAnim(bool refreshOthers)
+        {
+            lock (GameBase.lockObj)
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    Character chara = DungeonScene.Instance.FocusedCharacter;
+
+                    if (justOnce) //make it an action anim
+                    {
+                        if (justMe)
+                        {
+                            if (refreshOthers)
+                                DungeonScene.Instance.PendingDevEvent = AnimateOneRefreshOthers(chara, chosenAnim);
+                            else
+                                DungeonScene.Instance.PendingDevEvent = chara.StartAnim(new CharAnimAction(chara.CharLoc, chara.CharDir, chosenAnim, true));
+                        }
+                        else
+                            DungeonScene.Instance.PendingDevEvent = AnimateAll(chosenAnim, true, false, -1);
+                    }
+                    else
+                    {
+                        if (justMe)
+                        {
+                            chara.IdleOverride = chosenAnim;
+                            if (refreshOthers)
+                                DungeonScene.Instance.PendingDevEvent = AnimateAll(chosenAnim, false, false, -1);
+                            else
+                                DungeonScene.Instance.PendingDevEvent = chara.StartAnim(new CharAnimIdle(chara.CharLoc, chara.CharDir));
+                        }
+                        else
+                        {
+                            GraphicsManager.GlobalIdle = chosenAnim;
+                            DungeonScene.Instance.PendingDevEvent = AnimateAll(chosenAnim, false, true, -1);
+                        }
+                    }
+
+                }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    GroundChar chara = GroundScene.Instance.FocusedCharacter;
+
+                    if (justOnce)
+                    {
+                        if (justMe)
+                        {
+                            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, chosenAnim, false));
+                            if (refreshOthers)
+                            {
+                                foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                                {
+                                    if (groundChar != chara)
+                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                                groundChar.StartAction(new IdleAnimGroundAction(groundChar.Position, groundChar.Direction, chosenAnim, false));
+                        }
+                    }
+                    else
+                    {
+                        if (justMe)
+                        {
+                            chara.IdleOverride = chosenAnim;
+                            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
+                            if (refreshOthers)
+                            {
+                                foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                                {
+                                    if (groundChar != chara)
+                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            GraphicsManager.GlobalIdle = chosenAnim;
+
+                            foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                            {
+                                groundChar.IdleOverride = -1;
+                                groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                            }
+                        }
+                    }
+                }
+
             }
         }
 
@@ -169,6 +285,40 @@ namespace RogueEssence.Dev.ViewModels
                 }
                 else
                     GameManager.Instance.SE("Menu/Cancel");
+            }
+        }
+
+        public void btnResetAnim_Click()
+        {
+            RestartAnim(true);
+        }
+
+        public IEnumerator<YieldInstruction> AnimateAll(int charAnim, bool action, bool setOverride, int idleOverride)
+        {
+            foreach (Character chara in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                if (setOverride)
+                    chara.IdleOverride = idleOverride;
+
+                CharAnimation newAnim;
+                if (action)
+                    newAnim = new CharAnimAction(chara.CharLoc, chara.CharDir, charAnim, true);
+                else
+                    newAnim = new CharAnimIdle(chara.CharLoc, chara.CharDir);
+                yield return CoroutineManager.Instance.StartCoroutine(chara.StartAnim(newAnim));
+            }
+        }
+
+        public IEnumerator<YieldInstruction> AnimateOneRefreshOthers(Character chara, int charAnim)
+        {
+            foreach (Character groundChar in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                CharAnimation newAnim;
+                if (chara == groundChar)
+                    newAnim = new CharAnimAction(groundChar.CharLoc, groundChar.CharDir, charAnim, true);
+                else
+                    newAnim = new CharAnimIdle(groundChar.CharLoc, groundChar.CharDir);
+                yield return CoroutineManager.Instance.StartCoroutine(groundChar.StartAnim(newAnim));
             }
         }
 

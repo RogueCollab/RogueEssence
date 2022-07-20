@@ -218,10 +218,24 @@ namespace RogueEssence.Dev.Views
             lock (GameBase.lockObj)
             {
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
-                devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+
                 devViewModel.Player.UpdateLevel();
                 if (GameManager.Instance.IsInGame())
+                {
+                    if (!devViewModel.Player.JustOnce)
+                    {
+                        if (devViewModel.Player.JustMe)
+                        {
+                            int currentIdle = Dungeon.DungeonScene.Instance.FocusedCharacter.IdleOverride;
+                            if (currentIdle < 0)
+                                currentIdle = GraphicsManager.GlobalIdle;
+                            devViewModel.Player.ChosenAnim = currentIdle;
+                        }
+                        else
+                            devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+                    }
                     devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm);
+                }
                 if (GroundEditForm != null)
                 {
                     ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;

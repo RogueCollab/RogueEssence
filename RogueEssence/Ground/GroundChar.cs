@@ -30,6 +30,9 @@ namespace RogueEssence.Ground
         public GameAction CurrentCommand;
 
         [NonSerialized]
+        public int IdleOverride;
+
+        [NonSerialized]
         private GroundAction currentCharAction;
 
         [NonSerialized]
@@ -120,6 +123,7 @@ namespace RogueEssence.Ground
             //Events = new List<GroundEvent>();
             //ThinkEvents = new List<GroundEvent>();
 
+            IdleOverride = -1;
             currentCharAction = new IdleGroundAction(newLoc, charDir);
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
@@ -149,6 +153,7 @@ namespace RogueEssence.Ground
         {
             Data = new CharData(other.Data);
 
+            IdleOverride = -1;
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
 
@@ -170,6 +175,12 @@ namespace RogueEssence.Ground
 
         public void StartAction(GroundAction action)
         {
+            if (IdleOverride > -1)
+            {
+                IdleGroundAction idleAction = action as IdleGroundAction;
+                if (idleAction != null)
+                    idleAction.Override = IdleOverride;
+            }
             action.Begin(CurrentForm);
             currentCharAction = action;
 
@@ -242,6 +253,10 @@ namespace RogueEssence.Ground
             //transition to the new action
             if (currentCharAction.NextAction != null)
             {
+                IdleGroundAction idleAction = currentCharAction.NextAction as IdleGroundAction;
+                if (idleAction != null)
+                    idleAction.Override = IdleOverride;
+
                 currentCharAction.NextAction.Begin(CurrentForm);
                 currentCharAction = currentCharAction.NextAction;
             }
