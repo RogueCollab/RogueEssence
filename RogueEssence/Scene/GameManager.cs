@@ -993,7 +993,6 @@ namespace RogueEssence
             DataManager.Instance.Save.UpdateOptions();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-            DataManager.Instance.Save.ActiveTeam.SetRank(0);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
             DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);

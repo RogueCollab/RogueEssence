@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RogueEssence.Dev;
+using System;
 
 namespace RogueEssence.Data
 {
@@ -18,6 +19,9 @@ namespace RogueEssence.Data
         public int BagSize;
         public int FameToNext;
 
+        [DataType(0, DataManager.DataType.Rank, false)]
+        public string Next;
+
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
         public RankData()
@@ -26,10 +30,11 @@ namespace RogueEssence.Data
             Comment = "";
         }
 
-        public RankData(LocalText name, int bagSize, int fameToNext)
+        public RankData(LocalText name, int bagSize, int fameToNext, string next)
         {
             Name = name;
             Comment = "";
+            Next = next;
             BagSize = bagSize;
             FameToNext = fameToNext;
         }

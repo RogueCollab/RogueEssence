@@ -883,10 +883,6 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public RankData GetRank(int index)
-        {
-            return GetRank(index.ToString());
-        }
         public RankData GetRank(string index)
         {
             RankData data = null;

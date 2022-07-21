@@ -301,7 +301,9 @@ namespace RogueEssence.Dungeon
         public List<InvItem> BoxStorage;
         public int Bank;
         public int Money;
-        public int Rank { get; private set; }
+
+        [JsonConverter(typeof(Dev.RankConverter))]
+        public string Rank { get; private set; }
         public int Fame;
         public int RankExtra;
 
@@ -319,7 +321,7 @@ namespace RogueEssence.Dungeon
                 setMemberEvents();
         }
 
-        public void SetRank(int rank)
+        public void SetRank(string rank)
         {
             Rank = rank;
             MaxInv = DataManager.Instance.GetRank(rank).BagSize;

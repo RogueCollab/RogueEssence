@@ -13,6 +13,8 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
+        public static Version StringAssetVersion = new Version(0, 5, 20, 0);
+
         //TODO: v0.6: remove this
         static int legacy = 0;
 
@@ -77,42 +79,49 @@ namespace RogueEssence.Dev
                 Directory.CreateDirectory(convFolder);
 
             Version oldVersion = GetTypeVersion(DataManager.DataType.AutoTile);
-            if (oldVersion < new Version(0, 5, 20))
+            if (oldVersion < StringAssetVersion)
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.AutoTile);
             }
 
             oldVersion = GetTypeVersion(DataManager.DataType.Emote);
-            if (oldVersion < new Version(0, 5, 21))
+            if (oldVersion < StringAssetVersion)
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.Emote);
             }
 
             oldVersion = GetTypeVersion(DataManager.DataType.GrowthGroup);
-            if (oldVersion < new Version(0, 5, 20))
+            if (oldVersion < StringAssetVersion)
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.GrowthGroup);
             }
 
             oldVersion = GetTypeVersion(DataManager.DataType.SkillGroup);
-            if (oldVersion < new Version(0, 5, 20))
+            if (oldVersion < StringAssetVersion)
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.SkillGroup);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.Rank);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Rank);
+            }
+
             oldVersion = GetTypeVersion(DataManager.DataType.Terrain);
-            if (oldVersion < new Version(0, 5, 20))
+            if (oldVersion < StringAssetVersion)
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.AutoTile);
             }
 
             oldVersion = GetTypeVersion(DataManager.DataType.Zone);
-            if (oldVersion < new Version(0, 5, 20))
+            if (oldVersion < StringAssetVersion)
             {
                 //rename all the zone files
                 List<string> intToName = convertAssetType(DataManager.DataType.Zone);
