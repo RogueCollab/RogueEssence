@@ -158,7 +158,9 @@ namespace RogueEssence.Data
         public List<string> StartTeams;
         public int StartLevel;
         public int StartPersonality;
-        public string DebugZone;
+        public string DefaultZone;
+        public string DefaultRank;
+        public string DefaultAI;
         public ZoneLoc StartMap;
         public string GenFloor;
         public string GenWall;
@@ -402,7 +404,9 @@ namespace RogueEssence.Data
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
                     StartPersonality = Int32.Parse(startPersonality.InnerText);
 
-                    DebugZone = xmldoc.DocumentElement.SelectSingleNode("DebugZone").InnerText;
+                    DefaultZone = xmldoc.DocumentElement.SelectSingleNode("DefaultZone").InnerText;
+                    DefaultRank = xmldoc.DocumentElement.SelectSingleNode("DefaultRank").InnerText;
+                    DefaultAI = xmldoc.DocumentElement.SelectSingleNode("DefaultAI").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
@@ -870,10 +874,6 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public AITactic GetAITactic(int index)
-        {
-            return GetAITactic(index.ToString());
-        }
         public AITactic GetAITactic(string index)
         {
             AITactic data = null;
@@ -1864,7 +1864,7 @@ namespace RogueEssence.Data
                     if (player.Tactic != null)
                         ai = GetAITactic(player.Tactic.ID);
                     else
-                        ai = GetAITactic(0);
+                        ai = GetAITactic(DataManager.Instance.DefaultAI);
                     player.Tactic = new AITactic(ai);
                 }
                 foreach (Character player in state.Save.ActiveTeam.Assembly)
@@ -1873,7 +1873,7 @@ namespace RogueEssence.Data
                     if (player.Tactic != null)
                         ai = GetAITactic(player.Tactic.ID);
                     else
-                        ai = GetAITactic(0);
+                        ai = GetAITactic(DataManager.Instance.DefaultAI);
                     player.Tactic = new AITactic(ai);
                 }
             }

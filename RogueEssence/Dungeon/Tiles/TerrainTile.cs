@@ -103,7 +103,7 @@ namespace RogueEssence.Dungeon
         public override string ToString()
         {
             if (!String.IsNullOrEmpty(ID))
-                return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID.ToString()].Name.ToLocal();
+                return DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[ID].Name.ToLocal();
             else
                 return "[EMPTY]";
         }

@@ -701,7 +701,7 @@ namespace RogueEssence.Dev.ViewModels
                             chdata.BaseForm = new MonsterID();
                             chdata.Level = 1;
                             Character ch = new Character(chdata);
-                            AITactic tactic = DataManager.Instance.GetAITactic(0);
+                            AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
                             ch.Tactic = new AITactic(tactic);
 
                             GroundChar gch = new GroundChar(ch, Loc.Zero, Dir8.Down, entName);

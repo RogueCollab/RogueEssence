@@ -4,6 +4,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueElements;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace RogueEssence.LevelGen
 {
@@ -45,8 +46,9 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The mob's AI.
         /// </summary>
+        [JsonConverter(typeof(Dev.AIConverter))]
         [Dev.DataType(0, DataManager.DataType.AI, false)]
-        public int Tactic;
+        public string Tactic;
 
         /// <summary>
         /// Conditions that must be met in order for the mob to spawn.
@@ -63,6 +65,7 @@ namespace RogueEssence.LevelGen
             BaseForm = new MonsterID(0, 0, -1, Gender.Unknown);
             SpecifiedSkills = new List<int>();
             Intrinsic = -1;
+            Tactic = "";
             SpawnConditions = new List<MobSpawnCheck>();
             SpawnFeatures = new List<MobSpawnExtra>();
         }

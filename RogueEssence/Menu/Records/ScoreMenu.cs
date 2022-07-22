@@ -24,8 +24,7 @@ namespace RogueEssence.Menu
 
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 128, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 128, 224));
 
-            //TODO: String Assets
-            string zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[chosenZone.ToString()].GetColoredName();
+            string zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[chosenZone].GetColoredName();
             Title = new MenuText(Text.FormatKey("MENU_SCORES_TITLE") + ": " + zoneName, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 

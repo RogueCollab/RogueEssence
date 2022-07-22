@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
             MonsterTeam team = new MonsterTeam();
             SelectedEntity = new Character(new CharData());
             SelectedEntity.Level = 1;
-            SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
+            SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI));
             team.Players.Add(SelectedEntity);
 
             Directions = new ObservableCollection<string>();
@@ -29,8 +29,14 @@ namespace RogueEssence.Dev.ViewModels
 
             Tactics = new ObservableCollection<string>();
             Dictionary<string, string> tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
+
+            keys = new List<string>();
+
             foreach (string key in tactic_names.Keys)
+            {
+                keys.Add(key);
                 Tactics.Add(key + ": " + tactic_names[key]);
+            }
 
             Monsters = new ObservableCollection<string>();
             Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
@@ -97,14 +103,16 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> keys;
+
         public ObservableCollection<string> Tactics { get; }
 
         public int ChosenTactic
         {
-            get { return SelectedEntity.Tactic.ID; }
+            get { return keys.IndexOf(SelectedEntity.Tactic.ID); }
             set
             {
-                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(value));
+                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(keys[value]));
                 this.RaisePropertyChanged();
             }
         }
@@ -591,7 +599,7 @@ namespace RogueEssence.Dev.ViewModels
                 MonsterTeam team = new MonsterTeam();
                 SelectedEntity = new Character(new CharData());
                 SelectedEntity.Level = 1;
-                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
+                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI));
                 team.Players.Add(SelectedEntity);
                 setEntity(SelectedEntity);
             }

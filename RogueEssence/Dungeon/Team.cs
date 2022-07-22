@@ -520,7 +520,7 @@ namespace RogueEssence.Dungeon
                     skill.Element.Enabled = (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical);
                 }
             }
-            AITactic tactic = DataManager.Instance.GetAITactic(0);
+            AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
             player.Tactic = new AITactic(tactic);
 
             return player;

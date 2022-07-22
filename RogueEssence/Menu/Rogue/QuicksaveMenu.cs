@@ -20,8 +20,7 @@ namespace RogueEssence.Menu
                 string fileName = Path.GetFileNameWithoutExtension(record.Path);
                 if (record.Name != "")
                 {
-                    //TODO: String Assets
-                    LocalText zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[record.Zone.ToString()].Name;
+                    LocalText zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[record.Zone].Name;
                     string rogueSign = "";
                     if (record.IsRogue)
                     {

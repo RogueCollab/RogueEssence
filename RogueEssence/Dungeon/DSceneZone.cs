@@ -433,12 +433,20 @@ namespace RogueEssence.Dungeon
                     {
                         result.Success = ActionResult.ResultType.Success;
 
+                        List<string> eligibleAI = new List<string>();
+                        foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries.Keys)
+                        {
+                            AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[ai_asset] as AIEntrySummary;
+                            if (summary.Assignable)
+                                eligibleAI.Add(ai_asset);
+                        }
+
                         //saves all the settings to the characters
                         for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                         {
                             int choice = action[ii];
                             Character target = ActiveTeam.Players[ii];
-                            AITactic tactic = DataManager.Instance.GetAITactic(choice);
+                            AITactic tactic = DataManager.Instance.GetAITactic(eligibleAI[choice]);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
                             target.Tactic.Initialize(target);

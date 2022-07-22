@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using RogueElements;
 using RogueEssence.Dungeon;
 
@@ -23,8 +24,8 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary() { return new AIEntrySummary(Name, Released, Comment, Assignable); }
 
-
-        public int ID;
+        [JsonConverter(typeof(Dev.AIConverter))]
+        public string ID;
 
         /// <summary>
         /// Can be assigned via tactics menu
@@ -64,6 +65,7 @@ namespace RogueEssence.Data
 
         public AITactic()
         {
+            ID = "";
             Name = new LocalText();
             Comment = "";
             Plans = new List<BasePlan>();

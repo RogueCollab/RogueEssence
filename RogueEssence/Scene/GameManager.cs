@@ -993,6 +993,7 @@ namespace RogueEssence
             DataManager.Instance.Save.UpdateOptions();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+            DataManager.Instance.Save.ActiveTeam.SetRank(DataManager.Instance.DefaultRank);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
             DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, -1, 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
@@ -1043,9 +1044,9 @@ namespace RogueEssence
                     if (MetaInputManager[FrameInput.InputType.Ctrl])
                         SceneOutcome = RestartToTitle();
                     else if (MetaInputManager[FrameInput.InputType.ShowDebug])
-                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DebugZone, new SegLoc()), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc()), 0);
                     else
-                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DebugZone, new SegLoc(-1, 0), 0), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc(-1, 0), 0), 0);
                 }
             }
 

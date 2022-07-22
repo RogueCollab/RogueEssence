@@ -574,10 +574,47 @@ namespace RogueEssence.Dev
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (Serializer.OldVersion < new Version(0, 5, 20, 1))
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 int ii = Int32.Parse(reader.Value.ToString());
                 string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Rank, ii);
+                return asset_name;
+            }
+            else
+            {
+                string s = (string)reader.Value;
+                return s;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string);
+        }
+    }
+
+
+    public class AIConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                int ii = Int32.Parse(reader.Value.ToString());
+                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AI, ii);
                 return asset_name;
             }
             else
