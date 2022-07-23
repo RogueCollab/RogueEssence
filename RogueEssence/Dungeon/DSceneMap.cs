@@ -237,7 +237,7 @@ namespace RogueEssence.Dungeon
 
                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
                 Loc landTile = character.CharLoc;
-                if (tile.Effect.ID > -1)
+                if (!String.IsNullOrEmpty(tile.Effect.ID))
                 {
                     if (!character.WarpHistory.Contains(character.CharLoc))
                     {
@@ -278,7 +278,7 @@ namespace RogueEssence.Dungeon
             foreach (Loc pendingLoc in runningTraps)
             {
                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[pendingLoc.X][pendingLoc.Y];
-                if (tile.Effect.ID > -1)
+                if (!String.IsNullOrEmpty(tile.Effect.ID))
                     yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(activator));
             }
             yield break;
@@ -529,7 +529,7 @@ namespace RogueEssence.Dungeon
 
                 //read signs or objects
                 Tile tile = ZoneManager.Instance.CurrentMap.GetTile(frontLoc);
-                if (tile != null && tile.Effect.ID > -1)
+                if (tile != null && !String.IsNullOrEmpty(tile.Effect.ID))
                 {
                     TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
                     if (entry.StepType == TileData.TriggerType.Blocker || entry.StepType == TileData.TriggerType.Unlockable)
@@ -569,7 +569,7 @@ namespace RogueEssence.Dungeon
             }
 
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
-            if (tile.Effect.ID == -1)
+            if (String.IsNullOrEmpty(tile.Effect.ID))
                 throw new Exception("Attempted to trigger a nonexistent tile effect.  This should never happen.");
             else
             {
@@ -676,7 +676,7 @@ namespace RogueEssence.Dungeon
             if (itemSlot != -1)
                 return true;
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
-            if (tile.Effect.ID > -1)
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
             {
                 TileData tileData = DataManager.Instance.GetTile(tile.Effect.ID);
                 if (tileData.StepType != TileData.TriggerType.None)
@@ -695,7 +695,7 @@ namespace RogueEssence.Dungeon
             if (itemSlot > -1)
                 return new ItemUnderfootMenu(itemSlot);
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
-            if (tile.Effect.ID > -1)
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
                 return new TileUnderfootMenu(tile.Effect.ID, tile.Effect.Danger);
             
             return null;
@@ -1550,8 +1550,8 @@ namespace RogueEssence.Dungeon
             if (hasItem1 != hasItem2)
                 return true;
 
-            int effectId1 = -1;
-            int effectId2 = -1;
+            string effectId1 = "";
+            string effectId2 = "";
 
             Tile tile1 = ZoneManager.Instance.CurrentMap.GetTile(loc1);
             Tile tile2 = ZoneManager.Instance.CurrentMap.GetTile(loc2);

@@ -1006,7 +1006,7 @@ namespace RogueEssence.Dungeon
                                         mapSheet.DrawTile(spriteBatch, destVector, 1, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                 }
 
-                                if (discovery == Map.DiscoveryState.Traversed && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
+                                if (discovery == Map.DiscoveryState.Traversed && !String.IsNullOrEmpty(tile.Effect.ID) && (tile.Effect.Exposed || SeeAll))
                                 {
                                     TileData entry;
 
@@ -1014,7 +1014,7 @@ namespace RogueEssence.Dungeon
                                     if (tile.Effect.Revealed)
                                         entry = DataManager.Instance.GetTile(tile.Effect.ID);
                                     else
-                                        entry = DataManager.Instance.GetTile(0);
+                                        entry = DataManager.Instance.GetTile(DataManager.Instance.DefaultTile);
                                     mapSheet.DrawTile(spriteBatch, destVector, entry.MinimapIcon.X, entry.MinimapIcon.Y, entry.MinimapColor * mapVis);
                                 }
                             }

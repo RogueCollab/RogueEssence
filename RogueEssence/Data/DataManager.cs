@@ -157,15 +157,18 @@ namespace RogueEssence.Data
         public List<(MonsterID mon, string name)> StartChars;
         public List<string> StartTeams;
         public int StartLevel;
+        public int MaxLevel;
         public int StartPersonality;
+        public ZoneLoc StartMap;
+
+        public string DefaultTile;
         public string DefaultZone;
         public string DefaultRank;
         public string DefaultAI;
-        public ZoneLoc StartMap;
         public string GenFloor;
         public string GenWall;
         public string GenUnbreakable;
-        public int MaxLevel;
+
         public ActiveEffect UniversalEvent;
         public TypeDict<BaseData> UniversalData;
 
@@ -407,6 +410,7 @@ namespace RogueEssence.Data
                     DefaultZone = xmldoc.DocumentElement.SelectSingleNode("DefaultZone").InnerText;
                     DefaultRank = xmldoc.DocumentElement.SelectSingleNode("DefaultRank").InnerText;
                     DefaultAI = xmldoc.DocumentElement.SelectSingleNode("DefaultAI").InnerText;
+                    DefaultTile = xmldoc.DocumentElement.SelectSingleNode("DefaultTile").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
@@ -811,11 +815,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-
-        public TileData GetTile(int index)
-        {
-            return GetTile(index.ToString());
-        }
         public TileData GetTile(string index)
         {
             TileData data = null;

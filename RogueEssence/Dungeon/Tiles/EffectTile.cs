@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -24,14 +25,13 @@ namespace RogueEssence.Dungeon
             Enemy
         }
 
-        //TODO: String Assets
-        public override string GetID() { return ID.ToString(); }
+        public override string GetID() { return ID; }
         public TileData GetData() { return DataManager.Instance.GetTile(ID); }
         public override string GetDisplayName() { return GetData().GetColoredName(); }
 
-
+        [JsonConverter(typeof(Dev.TileConverter))]
         [DataType(0, DataManager.DataType.Tile, true)]
-        public int ID;
+        public string ID;
 
         public bool Exposed { get { return true; } }
         public bool Revealed;
@@ -51,21 +51,21 @@ namespace RogueEssence.Dungeon
 
         public EffectTile()
         {
-            ID = -1;
+            ID = "";
             TileStates = new StateCollection<TileState>();
         }
-        public EffectTile(int index, bool revealed) : this()
+        public EffectTile(string index, bool revealed) : this()
         {
             ID = index;
             Revealed = revealed;
         }
-        public EffectTile(int index, bool revealed, Loc loc) : this(index, revealed)
+        public EffectTile(string index, bool revealed, Loc loc) : this(index, revealed)
         {
             TileLoc = loc;
         }
         public EffectTile(Loc loc)
         {
-            ID = -1;
+            ID = "";
             TileStates = new StateCollection<TileState>();
             TileLoc = loc;
         }
@@ -148,8 +148,7 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            //TODO: String Assets
-            string local = (ID > -1) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[ID.ToString()].Name.ToLocal() : "NULL";
+            string local = (!String.IsNullOrEmpty(ID)) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[ID].Name.ToLocal() : "NULL";
             return string.Format("{0}: {1}", this.GetType().Name, local);
         }
     }
@@ -161,9 +160,9 @@ namespace RogueEssence.Dungeon
         public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
         public int LocHeight { get { return 0; } }
 
-        public int TileID;
+        public string TileID;
 
-        public DrawTile(Loc loc, int tileID)
+        public DrawTile(Loc loc, string tileID)
         {
             TileLoc = loc;
             TileID = tileID;

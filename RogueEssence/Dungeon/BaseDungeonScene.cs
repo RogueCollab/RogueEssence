@@ -123,7 +123,7 @@ namespace RogueEssence.Dungeon
             Loc wrappedLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
             ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, wrappedLoc, false);
             EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[wrappedLoc.X][wrappedLoc.Y].Effect;
-            if (effect.ID > -1 && effect.Exposed && !DataManager.Instance.HideObjects)
+            if (!String.IsNullOrEmpty(effect.ID) && effect.Exposed && !DataManager.Instance.HideObjects)
             {
                 List<(IDrawableSprite, Loc)> targetDraw;
                 if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
@@ -134,7 +134,7 @@ namespace RogueEssence.Dungeon
                 if (seeTrap || effect.Revealed)
                     AddToDraw(targetDraw, new DrawTile(visualLoc, effect.ID));
                 else
-                    AddToDraw(targetDraw, new DrawTile(visualLoc, 0));
+                    AddToDraw(targetDraw, new DrawTile(visualLoc, DataManager.Instance.DefaultTile));
             }
         }
 

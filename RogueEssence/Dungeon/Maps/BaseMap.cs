@@ -144,7 +144,7 @@ namespace RogueEssence.Dungeon
             TerrainData terrain = tile.Data.GetData();
             if (TerrainBlocked(terrain, mobility, diagonal))
                 return true;
-            if (tile.Effect.ID > -1)
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
             {
                 TileData effect = DataManager.Instance.GetTile(tile.Effect.ID);
                 if (EffectTileBlocked(effect, diagonal))
@@ -199,7 +199,7 @@ namespace RogueEssence.Dungeon
             if (TileBlocked(loc, mobility, false))
                 return false;
             loc = WrapLoc(loc);
-            if (Tiles[loc.X][loc.Y].Effect.ID > -1)
+            if (!String.IsNullOrEmpty(Tiles[loc.X][loc.Y].Effect.ID))
             {
                 TileData tileData = DataManager.Instance.GetTile(Tiles[loc.X][loc.Y].Effect.ID);
                 if (tileData.BlockItem)

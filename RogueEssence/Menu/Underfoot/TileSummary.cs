@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
             Elements.Add(Description);
         }
 
-        public void SetTile(int index)
+        public void SetTile(string index)
         {
             Data.TileData entry = Data.DataManager.Instance.GetTile(index);
             Description.SetAndFormatText(entry.Desc.ToLocal());

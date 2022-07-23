@@ -241,7 +241,7 @@ namespace RogueEssence.Dev
                     {
                         EffectTile existingEffect = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Effect;
                         //draw normally invisible tiles
-                        if (existingEffect.ID >= 0)
+                        if (!String.IsNullOrEmpty(existingEffect.ID))
                         {
                             TileData entry = DataManager.Instance.GetTile(existingEffect.ID);
                             if (entry.Anim.AnimIndex == "")
@@ -250,7 +250,7 @@ namespace RogueEssence.Dev
                         if (TileInProgress != null && TileInProgress.IncludesLoc(testLoc))
                         {
                             EffectTile tile = TileInProgress.GetBrush(testLoc);
-                            if (tile.ID < 0)
+                            if (String.IsNullOrEmpty(tile.ID))
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
                             else
                             {

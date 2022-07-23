@@ -18,8 +18,12 @@ namespace RogueEssence.Dev.ViewModels
         {
             TileTypes = new ObservableCollection<string>();
             Dictionary<string, string> tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray(true);
+            keys = new List<string>();
             foreach (string key in tile_names.Keys)
+            {
+                keys.Add(key);
                 TileTypes.Add(key + ": " + tile_names[key]);
+            }
 
             Owners = new ObservableCollection<string>();
             for (int ii = 0; ii < 3; ii++)
@@ -40,6 +44,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> keys;
 
         public ObservableCollection<string> TileTypes { get; }
 
@@ -176,7 +181,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private EffectTile getBrush()
         {
-            EffectTile brush = new EffectTile(ChosenTile, IsRevealed);
+            EffectTile brush = new EffectTile(keys[ChosenTile], IsRevealed);
             brush.Danger = IsDanger;
             brush.Owner = (EffectTile.TileOwner)ChosenOwner;
 
@@ -188,7 +193,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void setBrush(EffectTile brush)
         {
-            ChosenTile = brush.ID;
+            ChosenTile = keys.IndexOf(brush.ID);
             ChosenOwner = (int)brush.Owner;
             IsDanger = brush.Danger;
             IsRevealed = brush.Revealed;
@@ -220,7 +225,7 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             EffectTile effectTile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect;
-            if (effectTile.ID > -1)
+            if (!String.IsNullOrEmpty(effectTile.ID))
                 setBrush(effectTile);
         }
 

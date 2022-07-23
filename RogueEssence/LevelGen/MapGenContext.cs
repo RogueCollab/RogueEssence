@@ -141,7 +141,7 @@ namespace RogueEssence.LevelGen
             Tile tile = Map.GetTile(loc);
             if (tile == null)
                 return false;
-            return tile.Effect.ID > -1;
+            return !String.IsNullOrEmpty(tile.Effect.ID);
         }
 
         List<Loc> IPlaceableGenContext<MoneySpawn>.GetAllFreeTiles() { return getAllFreeTiles(getOpenItemTiles); }

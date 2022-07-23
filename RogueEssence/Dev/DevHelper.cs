@@ -120,6 +120,13 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.AI);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.Tile);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Tile);
+            }
+
             oldVersion = GetTypeVersion(DataManager.DataType.Terrain);
             if (oldVersion < StringAssetVersion)
             {
@@ -154,6 +161,13 @@ namespace RogueEssence.Dev
                     }
                 }
             }
+        }
+
+        public static string ReverseEndian(string str)
+        {
+            string[] words = str.Split(' ');
+            Array.Reverse(words);
+            return String.Join(' ', words);
         }
 
         public static void ReserializeBase()
