@@ -296,7 +296,14 @@ namespace RogueEssence
 
         public static string Sanitize(string input)
         {
-            return Regex.Replace(input, "\\W", "_");
+            StringBuilder sbReturn = new StringBuilder();
+            var arrayText = input.Normalize(NormalizationForm.FormD).ToCharArray();
+            foreach (char letter in arrayText)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(letter) != UnicodeCategory.NonSpacingMark)
+                    sbReturn.Append(letter);
+            }
+            return Regex.Replace(sbReturn.ToString().Replace("'", ""), "\\W", "_");
         }
 
         public static string GetNonConflictingName(string inputStr, Func<string, bool> getConflict)
