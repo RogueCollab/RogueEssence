@@ -46,7 +46,7 @@ namespace RogueEssence.Data
         }
 
         [NonSerialized]
-        public int ID;
+        public string ID;
 
         [DataType(0, DataManager.DataType.Element, false)]
         public int Element;
@@ -138,7 +138,7 @@ namespace RogueEssence.Data
 
         public BattleData()
         {
-            ID = -1;
+            ID = "";
 
             HitRate = -1;
 
