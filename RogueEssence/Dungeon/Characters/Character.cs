@@ -10,6 +10,7 @@ using RogueEssence.Script;
 using NLua;
 using Newtonsoft.Json;
 using QuadTrees.QTreePoint;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -164,8 +165,11 @@ namespace RogueEssence.Dungeon
 
         public List<BackReference<Skill>> Skills;
 
-        public int Element1 { get; private set; }
-        public int Element2 { get; private set; }
+        [JsonConverter(typeof(ElementConverter))]
+        public string Element1 { get; private set; }
+
+        [JsonConverter(typeof(ElementConverter))]
+        public string Element2 { get; private set; }
 
         public List<BackReference<Intrinsic>> Intrinsics;
 
@@ -311,8 +315,8 @@ namespace RogueEssence.Dungeon
                     Skills.Add(new BackReference<Skill>(new Skill()));
             }
 
-            Element1 = 00;
-            Element2 = 00;
+            Element1 = "";
+            Element2 = "";
 
             Intrinsics = new List<BackReference<Intrinsic>>();
             if (populateSlots)
@@ -534,7 +538,7 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public bool HasElement(int element)
+        public bool HasElement(string element)
         {
             return (element == Element1 || element == Element2);
         }
@@ -1325,12 +1329,12 @@ namespace RogueEssence.Dungeon
             return forgottenSkills;
         }
 
-        public IEnumerator<YieldInstruction> ChangeElement(int element1, int element2, bool msg = true, bool vfx = true)
+        public IEnumerator<YieldInstruction> ChangeElement(string element1, string element2, bool msg = true, bool vfx = true)
         {
-            if (element1 == 00 && element2 != 00)
+            if (element1 == DataManager.Instance.DefaultElement && element2 != DataManager.Instance.DefaultElement)
             {
                 element1 = element2;
-                element2 = 00;
+                element2 = DataManager.Instance.DefaultElement;
             }
 
             bool equal1 = (Element1 == element1);
@@ -1342,9 +1346,9 @@ namespace RogueEssence.Dungeon
             {
                 ElementData type1Data = DataManager.Instance.GetElement(element1);
                 ElementData type2Data = DataManager.Instance.GetElement(element2);
-                if (element1 != 00 && element2 != 00)
+                if (element1 != DataManager.Instance.DefaultElement && element2 != DataManager.Instance.DefaultElement)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE_DUAL", GetDisplayName(false), type1Data.GetIconName(), type2Data.GetIconName()));
-                else if (element1 != 00)
+                else if (element1 != DataManager.Instance.DefaultElement)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE", GetDisplayName(false), type1Data.GetIconName()));
             }
             if (vfx)

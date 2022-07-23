@@ -4,7 +4,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Dev;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
@@ -48,8 +48,9 @@ namespace RogueEssence.Data
         [NonSerialized]
         public string ID;
 
+        [JsonConverter(typeof(ElementConverter))]
         [DataType(0, DataManager.DataType.Element, false)]
-        public int Element;
+        public string Element;
 
         public SkillCategory Category;
 
@@ -141,6 +142,7 @@ namespace RogueEssence.Data
             ID = "";
 
             HitRate = -1;
+            Element = "";
 
             SkillStates = new StateCollection<SkillState>();
 

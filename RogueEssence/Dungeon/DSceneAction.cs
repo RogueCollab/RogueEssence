@@ -353,7 +353,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public static int GetEffectiveness(Character attacker, Character target, BattleData action, int element)
+        public static int GetEffectiveness(Character attacker, Character target, BattleData action, string element)
         {
             int effectiveness = 0;
 
@@ -383,7 +383,7 @@ namespace RogueEssence.Dungeon
             return effectiveness;
         }
 
-        public static int GetEffectiveness(Character attacker, Character target, int attacking, int defending)
+        public static int GetEffectiveness(Character attacker, Character target, string attacking, string defending)
         {
             int effectiveness = 0;
 

@@ -50,10 +50,11 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The map's elemental aligment.
         /// </summary>
+        [JsonConverter(typeof(Dev.ElementConverter))]
         [Dev.DataType(0, DataManager.DataType.Element, false)]
-        public int GroundElement;
+        public string GroundElement;
 
-        public MapTextureStep() { }
+        public MapTextureStep() { GroundElement = ""; }
 
         public override void Apply(T map)
         {
@@ -113,7 +114,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Maps the terrain type to the specified autotile.
         /// </summary>
-        [JsonConverter(typeof(Dev.TerrainDictAutotileDataConverter))]
+        [JsonConverter(typeof(Dev.TerrainAutotileDictConverter))]
         [Dev.DataType(1, DataManager.DataType.Terrain, false)]
         [Dev.DataType(2, DataManager.DataType.AutoTile, false)]
         public Dictionary<string, string> TextureMap;
@@ -138,13 +139,15 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The map's elemental aligment.
         /// </summary>
+        [JsonConverter(typeof(Dev.ElementConverter))]
         [Dev.DataType(0, DataManager.DataType.Element, false)]
-        public int GroundElement;
+        public string GroundElement;
 
         public MapDictTextureStep()
         {
             TextureMap = new Dictionary<string, string>();
             BlankBG = "";
+            GroundElement = "";
         }
 
         public override void Apply(T map)

@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
             skillCharges.Loc = new Loc(Bounds.Size.X / 2 + 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
         }
 
-        public void SetSkill(string skillName, int element, int charges, int max, bool skillSealed)
+        public void SetSkill(string skillName, string element, int charges, int max, bool skillSealed)
         {
             if (!String.IsNullOrWhiteSpace(skillName))
             {

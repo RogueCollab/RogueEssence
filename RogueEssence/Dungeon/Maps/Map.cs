@@ -81,7 +81,9 @@ namespace RogueEssence.Dungeon
 
         [JsonConverter(typeof(Dev.TerrainDictAutotileConverter))]
         public Dictionary<string, AutoTile> TextureMap;
-        public int Element;
+
+        [JsonConverter(typeof(Dev.ElementConverter))]
+        public string Element;
 
         public IBackgroundSprite Background;
 
@@ -160,6 +162,7 @@ namespace RogueEssence.Dungeon
             Status = new Dictionary<int, MapStatus>();
 
             TextureMap = new Dictionary<string, AutoTile>();
+            Element = "";
 
             CurrentTurnMap = new TurnState();
 

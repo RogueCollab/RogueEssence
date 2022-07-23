@@ -162,6 +162,7 @@ namespace RogueEssence.Data
         public ZoneLoc StartMap;
 
         public string DefaultSkill;
+        public string DefaultElement;
         public string DefaultTile;
         public string DefaultZone;
         public string DefaultRank;
@@ -412,6 +413,7 @@ namespace RogueEssence.Data
                     DefaultRank = xmldoc.DocumentElement.SelectSingleNode("DefaultRank").InnerText;
                     DefaultAI = xmldoc.DocumentElement.SelectSingleNode("DefaultAI").InnerText;
                     DefaultTile = xmldoc.DocumentElement.SelectSingleNode("DefaultTile").InnerText;
+                    DefaultElement = xmldoc.DocumentElement.SelectSingleNode("DefaultElement").InnerText;
                     DefaultSkill = xmldoc.DocumentElement.SelectSingleNode("DefaultSkill").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
@@ -844,10 +846,6 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public ElementData GetElement(int index)
-        {
-            return GetElement(index.ToString());
-        }
         public ElementData GetElement(string index)
         {
             ElementData data = null;

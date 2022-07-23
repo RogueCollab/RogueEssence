@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
             ElementData element1 = DataManager.Instance.GetElement(formData.Element1);
             ElementData element2 = DataManager.Instance.GetElement(formData.Element2);
             string typeString = element1.GetIconName();
-            if (formData.Element2 != 00)
+            if (formData.Element2 != DataManager.Instance.DefaultElement)
                 typeString += "/" + element2.GetIconName();
 
             Elements.SetText(typeString);

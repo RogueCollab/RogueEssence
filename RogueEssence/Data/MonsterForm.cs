@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using RogueElements;
-
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -15,11 +16,13 @@ namespace RogueEssence.Data
 
         public bool Temporary;
 
+        [JsonConverter(typeof(ElementConverter))]
         [Dev.DataType(0, DataManager.DataType.Element, false)]
-        public int Element1;
+        public string Element1;
 
+        [JsonConverter(typeof(ElementConverter))]
         [Dev.SharedRow, Dev.DataType(0, DataManager.DataType.Element, false)]
-        public int Element2;
+        public string Element2;
 
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
         public int Intrinsic1;
@@ -43,7 +46,8 @@ namespace RogueEssence.Data
         {
             FormName = new LocalText();
             LevelSkills = new List<LevelUpSkill>();
-
+            Element1 = "";
+            Element2 = "";
         }
 
 

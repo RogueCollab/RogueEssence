@@ -626,7 +626,7 @@ namespace RogueEssence.Dungeon
                                 ShownHotkeys[ii].SetSkill(skillData.GetColoredName(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
                             }
                             else
-                                ShownHotkeys[ii].SetSkill("", 00, 0, 0, false);
+                                ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
                         }
                     }
 

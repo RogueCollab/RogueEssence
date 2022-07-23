@@ -23,8 +23,13 @@ namespace RogueEssence.Dev.ViewModels
 
             Elements = new ObservableCollection<string>();
             Dictionary<string, string> element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray(true);
+            keys = new List<string>();
+
             foreach (string key in element_names.Keys)
+            {
+                keys.Add(key);
                 Elements.Add(key + ": " + element_names[key]);
+            }
 
             ScrollEdges = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)
@@ -81,14 +86,16 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        private List<string> keys;
+
         public ObservableCollection<string> Elements { get; }
 
         public int ChosenElement
         {
-            get { return ZoneManager.Instance.CurrentMap.Element; }
+            get { return keys.IndexOf(ZoneManager.Instance.CurrentMap.Element); }
             set
             {
-                ZoneManager.Instance.CurrentMap.Element = value;
+                ZoneManager.Instance.CurrentMap.Element = keys[value];
                 this.RaisePropertyChanged();
             }
         }

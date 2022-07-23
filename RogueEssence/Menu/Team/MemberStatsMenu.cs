@@ -72,7 +72,7 @@ namespace RogueEssence.Menu
             ElementData element2 = DataManager.Instance.GetElement(player.Element2);
 
             string typeString = element1.GetIconName();
-            if (player.Element2 != 00)
+            if (player.Element2 != DataManager.Instance.DefaultElement)
                 typeString += "/" + element2.GetIconName();
             BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
             bool origElements = (player.Element1 == monsterForm.Element1);
