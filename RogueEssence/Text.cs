@@ -303,7 +303,9 @@ namespace RogueEssence
                 if (CharUnicodeInfo.GetUnicodeCategory(letter) != UnicodeCategory.NonSpacingMark)
                     sbReturn.Append(letter);
             }
-            return Regex.Replace(sbReturn.ToString().Replace("'", ""), "\\W", "_");
+            string result = Regex.Replace(sbReturn.ToString(), "[':.]", "");
+            result = Regex.Replace(result, "\\W", "_");
+            return result;
         }
 
         public static string GetNonConflictingName(string inputStr, Func<string, bool> getConflict)

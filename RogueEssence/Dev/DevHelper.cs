@@ -52,7 +52,7 @@ namespace RogueEssence.Dev
                         intToName.Add("");
                     if (data.Name.DefaultText != "")
                     {
-                        string sanitizedName = Text.Sanitize(data.Name.DefaultText.Replace("'", "")).ToLower();
+                        string sanitizedName = Text.Sanitize(data.Name.DefaultText).ToLower();
                         if (!intToName.Contains(sanitizedName))
                             resultName = sanitizedName;
                     }
