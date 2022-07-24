@@ -947,19 +947,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            if (Serializer.OldVersion < new Version(0, 5, 20, 4))
-            {
-                JObject jObject = JObject.Load(reader);
-                Dictionary<int, string> container = new Dictionary<int, string>();
-                serializer.Populate(jObject.CreateReader(), container);
-
-                foreach (int ii in container.Keys)
-                {
-                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
-                    dict[item_name] = container[ii];
-                }
-            }
-            else if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -1005,19 +993,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            if (Serializer.OldVersion < new Version(0, 5, 20, 4))
-            {
-                JObject jObject = JObject.Load(reader);
-                Dictionary<string, int> container = new Dictionary<string, int>();
-                serializer.Populate(jObject.CreateReader(), container);
-
-                foreach (string ii in container.Keys)
-                {
-                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, container[ii]);
-                    dict[ii] = asset_name;
-                }
-            }
-            else if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();

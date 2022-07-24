@@ -13,7 +13,7 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
-        public static Version StringAssetVersion = new Version(0, 5, 20, 0);
+        public static Version StringAssetVersion = new Version(0, 5, 20, 4);
 
         //TODO: v0.6: remove this
         static int legacy = 0;
