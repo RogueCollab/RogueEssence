@@ -127,13 +127,6 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.AI);
             }
 
-            oldVersion = GetTypeVersion(DataManager.DataType.Tile);
-            if (oldVersion < StringAssetVersion)
-            {
-                //rename all autotile files
-                convertAssetType(DataManager.DataType.Tile);
-            }
-
             oldVersion = GetTypeVersion(DataManager.DataType.Terrain);
             if (oldVersion < StringAssetVersion)
             {
@@ -141,11 +134,25 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.AutoTile);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.Tile);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Tile);
+            }
+
             oldVersion = GetTypeVersion(DataManager.DataType.MapStatus);
             if (oldVersion < StringAssetVersion)
             {
                 //rename all autotile files
                 convertAssetType(DataManager.DataType.MapStatus);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Intrinsic);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Intrinsic);
             }
 
             oldVersion = GetTypeVersion(DataManager.DataType.Zone);

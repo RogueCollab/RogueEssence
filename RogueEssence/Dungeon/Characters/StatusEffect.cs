@@ -68,6 +68,7 @@ namespace RogueEssence.Dungeon
 
         public StatusEffect() : base()
         {
+            ID = -1;
             StatusStates = new StateCollection<StatusState>();
         }
         public StatusEffect(int index)
@@ -78,6 +79,8 @@ namespace RogueEssence.Dungeon
         //TODO: String Assets
         protected StatusEffect(StatusEffect other)// : base(other)
         {
+            //TODO: String Assets
+            ID = other.ID;
             StatusStates = other.StatusStates.Clone();
         }
         public StatusEffect Clone() { return new StatusEffect(this); }

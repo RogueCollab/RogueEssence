@@ -224,7 +224,7 @@ namespace RogueEssence.Menu
                 gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
             
             int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, IntrinsicSetting);
-            int intrinsic;
+            string intrinsic;
             if (intrinsicSlot == -1)
                 intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
             else if (intrinsicSlot == 0)

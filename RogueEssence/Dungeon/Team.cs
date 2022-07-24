@@ -470,7 +470,7 @@ namespace RogueEssence.Dungeon
             Assembly.Insert(idx, chara);
         }
 
-        public Character CreatePlayer(IRandom rand, MonsterID form, int level, int intrinsic, int personality)
+        public Character CreatePlayer(IRandom rand, MonsterID form, int level, string intrinsic, int personality)
         {
             MonsterID formData = form;
             MonsterData dex = DataManager.Instance.GetMonster(formData.Species);
@@ -488,7 +488,7 @@ namespace RogueEssence.Dungeon
             if (form.Gender == Gender.Unknown)
                 character.BaseForm.Gender = dex.Forms[formData.Form].RollGender(rand);
             
-            if (intrinsic == -1)
+            if (String.IsNullOrEmpty(intrinsic))
                 character.BaseIntrinsics[0] = formEntry.RollIntrinsic(rand, 2);
             else
                 character.BaseIntrinsics[0] = intrinsic;

@@ -40,8 +40,9 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The passive skill for the mob.
         /// </summary>
+        [JsonConverter(typeof(Dev.IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, true)]
-        public int Intrinsic;
+        public string Intrinsic;
 
         /// <summary>
         /// The mob's AI.
@@ -64,7 +65,7 @@ namespace RogueEssence.LevelGen
         {
             BaseForm = new MonsterID(0, 0, -1, Gender.Unknown);
             SpecifiedSkills = new List<int>();
-            Intrinsic = -1;
+            Intrinsic = "";
             Tactic = "";
             SpawnConditions = new List<MobSpawnCheck>();
             SpawnFeatures = new List<MobSpawnExtra>();
@@ -120,7 +121,7 @@ namespace RogueEssence.LevelGen
             for (int ii = 0; ii < final_skills.Count; ii++)
                 character.BaseSkills[ii] = new SlotSkill(final_skills[ii]);
 
-            if (Intrinsic == -1)
+            if (String.IsNullOrEmpty(Intrinsic))
                 character.BaseIntrinsics[0] = formEntry.RollIntrinsic(map.Rand, 2);
             else
                 character.BaseIntrinsics[0] = Intrinsic;

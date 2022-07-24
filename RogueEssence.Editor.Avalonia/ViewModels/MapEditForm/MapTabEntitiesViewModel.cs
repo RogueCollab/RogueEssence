@@ -55,10 +55,13 @@ namespace RogueEssence.Dev.ViewModels
                 Genders.Add(((Gender)ii).ToLocal());
 
             Intrinsics = new ObservableCollection<string>();
+            intrinsicKeys = new List<string>();
             Dictionary<string, string> intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
-            Intrinsics.Add("---: None");
             foreach (string key in intrinsic_names.Keys)
+            {
                 Intrinsics.Add(key + ": " + intrinsic_names[key]);
+                intrinsicKeys.Add(key);
+            }
 
             Equips = new ObservableCollection<string>();
             Equips.Add("---: None");
@@ -209,12 +212,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public ObservableCollection<string> Intrinsics { get; }
 
+        List<string> intrinsicKeys;
+
         public int ChosenIntrinsic
         {
-            get { return SelectedEntity.Intrinsics[0].Element.ID + 1; }
+            get { return intrinsicKeys.IndexOf(SelectedEntity.Intrinsics[0].Element.ID); }
             set
             {
-                SelectedEntity.LearnIntrinsic(value - 1, 0);
+                SelectedEntity.LearnIntrinsic(intrinsicKeys[value], 0);
                 this.RaisePropertyChanged();
             }
         }

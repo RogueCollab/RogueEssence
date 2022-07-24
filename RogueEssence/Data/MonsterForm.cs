@@ -24,12 +24,15 @@ namespace RogueEssence.Data
         [Dev.SharedRow, Dev.DataType(0, DataManager.DataType.Element, false)]
         public string Element2;
 
+        [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int Intrinsic1;
+        public string Intrinsic1;
+        [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int Intrinsic2;
+        public string Intrinsic2;
+        [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int Intrinsic3;
+        public string Intrinsic3;
 
 
         public List<LevelUpSkill> LevelSkills;
@@ -48,6 +51,9 @@ namespace RogueEssence.Data
             LevelSkills = new List<LevelUpSkill>();
             Element1 = "";
             Element2 = "";
+            Intrinsic1 = "";
+            Intrinsic2 = "";
+            Intrinsic3 = "";
         }
 
 
@@ -68,7 +74,7 @@ namespace RogueEssence.Data
         public abstract int GetPersonalityType(int discriminator);
         public abstract Gender RollGender(IRandom rand);
 
-        public abstract int RollIntrinsic(IRandom rand, int bounds);
+        public abstract string RollIntrinsic(IRandom rand, int bounds);
 
         public abstract List<Gender> GetPossibleGenders();
 

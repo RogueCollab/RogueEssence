@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
             List<MenuTextChoice> intrinsics = new List<MenuTextChoice>();
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
             {
-                if (player.BaseIntrinsics[ii] > -1)
+                if (!String.IsNullOrEmpty(player.BaseIntrinsics[ii]))
                     intrinsics.Add(new MenuTextChoice(Data.DataManager.Instance.GetIntrinsic(player.BaseIntrinsics[ii]).GetColoredName(), () => { choose(ii); }));
             }
             

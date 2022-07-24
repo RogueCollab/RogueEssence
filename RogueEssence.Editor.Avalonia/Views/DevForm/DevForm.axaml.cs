@@ -105,8 +105,12 @@ namespace RogueEssence.Dev.Views
                 {
                     Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
                     devViewModel.Game.Intrinsics.Clear();
+                    devViewModel.Game.IntrinsicKeys.Clear();
                     foreach (string key in entry_names.Keys)
+                    {
                         devViewModel.Game.Intrinsics.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.IntrinsicKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenIntrinsic = -1;
                     devViewModel.Game.ChosenIntrinsic = Math.Min(Math.Max(GetConfig("IntrinsicChoice", 0), 0), devViewModel.Game.Intrinsics.Count - 1);
                 }

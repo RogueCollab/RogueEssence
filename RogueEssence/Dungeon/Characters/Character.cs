@@ -543,7 +543,7 @@ namespace RogueEssence.Dungeon
             return (element == Element1 || element == Element2);
         }
 
-        public bool HasIntrinsic(int intrinsic)
+        public bool HasIntrinsic(string intrinsic)
         {
             foreach (BackReference<Intrinsic> checkIntrinsic in Intrinsics)
             {
@@ -583,9 +583,9 @@ namespace RogueEssence.Dungeon
             MonsterData newDex = DataManager.Instance.GetMonster(CurrentForm.Species);
             BaseMonsterForm newForm = newDex.Forms[CurrentForm.Form];
 
-            if (prevIndex == 2 && newForm.Intrinsic3 == 0)
+            if (prevIndex == 2 && newForm.Intrinsic3 == DataManager.Instance.DefaultIntrinsic)
                 prevIndex = 0;
-            if (prevIndex == 1 && newForm.Intrinsic2 == 0)
+            if (prevIndex == 1 && newForm.Intrinsic2 == DataManager.Instance.DefaultIntrinsic)
                 prevIndex = 0;
 
             Intrinsics.Clear();
@@ -1091,7 +1091,7 @@ namespace RogueEssence.Dungeon
         public void DeleteIntrinsic(int slot)
         {
             BaseIntrinsics.RemoveAt(slot);
-            BaseIntrinsics.Add(-1);
+            BaseIntrinsics.Add("");
             for (int ii = Intrinsics.Count; ii >= 0; ii--)
             {
                 if (Intrinsics[ii].BackRef == slot)
@@ -1104,13 +1104,13 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public void LearnIntrinsic(int intrinsicNum, int slot = -1)
+        public void LearnIntrinsic(string intrinsicNum, int slot = -1)
         {
             if (slot == -1)
             {
                 for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
                 {
-                    if (BaseIntrinsics[ii] == -1)
+                    if (String.IsNullOrEmpty(BaseIntrinsics[ii]))
                     {
                         slot = ii;
                         break;
@@ -1357,7 +1357,7 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public IEnumerator<YieldInstruction> ReplaceIntrinsic(int slot, int intrinsic, bool msg = true, bool vfx = true)
+        public IEnumerator<YieldInstruction> ReplaceIntrinsic(int slot, string intrinsic, bool msg = true, bool vfx = true)
         {
             if (intrinsic == Intrinsics[slot].Element.ID)
             {
@@ -1368,7 +1368,7 @@ namespace RogueEssence.Dungeon
 
             if (msg)
             {
-                if (intrinsic > 0)
+                if (intrinsic != DataManager.Instance.DefaultIntrinsic)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_GAIN", GetDisplayName(false), DataManager.Instance.GetIntrinsic(intrinsic).GetColoredName()));
                 else
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_LOST", GetDisplayName(false), DataManager.Instance.GetIntrinsic(Intrinsics[slot].Element.ID).GetColoredName()));
@@ -1551,7 +1551,7 @@ namespace RogueEssence.Dungeon
             {
                 foreach (BackReference<Intrinsic> intrinsic in Intrinsics)
 				{
-                    if (intrinsic.Element.ID > -1)
+                    if (!String.IsNullOrEmpty(intrinsic.Element.ID))
                         yield return new PassiveContext(intrinsic.Element, intrinsic.Element.GetData(), defaultPortPriority, this);
 				}
             }
@@ -1650,7 +1650,7 @@ namespace RogueEssence.Dungeon
             {
                 foreach (BackReference<Intrinsic> intrinsic in Intrinsics)
                 {
-                    if (intrinsic.Element.ID > -1)
+                    if (!String.IsNullOrEmpty(intrinsic.Element.ID))
                     {
 						ProximityPassive proximity = (ProximityPassive)intrinsic.Element.GetData();
 						if (proximity.ProximityEvent.Radius > -1)

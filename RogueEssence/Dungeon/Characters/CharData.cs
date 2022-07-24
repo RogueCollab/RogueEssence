@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using NLua;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -64,7 +65,8 @@ namespace RogueEssence.Dungeon
 
         public List<SlotSkill> BaseSkills;
 
-        public List<int> BaseIntrinsics;
+        [JsonConverter(typeof(IntrinsicListConverter))]
+        public List<string> BaseIntrinsics;
 
         public List<bool> Relearnables;
 
@@ -110,11 +112,11 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
                     BaseSkills.Add(new SlotSkill());
             }
-            BaseIntrinsics = new List<int>();
+            BaseIntrinsics = new List<string>();
             if (populateSlots)
             {
                 for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                    BaseIntrinsics.Add(-1);
+                    BaseIntrinsics.Add("");
             }
             Relearnables = new List<bool>();
 
@@ -143,7 +145,7 @@ namespace RogueEssence.Dungeon
             BaseSkills = new List<SlotSkill>();
             foreach (SlotSkill skill in other.BaseSkills)
                 BaseSkills.Add(new SlotSkill(skill));
-            BaseIntrinsics = new List<int>();
+            BaseIntrinsics = new List<string>();
             BaseIntrinsics.AddRange(other.BaseIntrinsics);
             Relearnables = new List<bool>();
             Relearnables.AddRange(other.Relearnables);
@@ -185,9 +187,9 @@ namespace RogueEssence.Dungeon
             MonsterData newDex = DataManager.Instance.GetMonster(BaseForm.Species);
             BaseMonsterForm newForm = newDex.Forms[BaseForm.Form];
 
-            if (prevIndex == 2 && newForm.Intrinsic3 == 0)
+            if (prevIndex == 2 && newForm.Intrinsic3 == DataManager.Instance.DefaultIntrinsic)
                 prevIndex = 0;
-            if (prevIndex == 1 && newForm.Intrinsic2 == 0)
+            if (prevIndex == 1 && newForm.Intrinsic2 == DataManager.Instance.DefaultIntrinsic)
                 prevIndex = 0;
 
             if (prevIndex == 0)

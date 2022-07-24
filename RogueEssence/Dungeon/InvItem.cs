@@ -23,7 +23,7 @@ namespace RogueEssence.Dungeon
         public int Price;
 
         public InvItem() : base()
-        { }
+        { ID = -1; }
 
         public InvItem(int index)
         {
@@ -51,6 +51,8 @@ namespace RogueEssence.Dungeon
         //TODO: String Assets
         public InvItem(InvItem other)// : base(other)
         {
+            //TODO: String Assets
+            ID = other.ID;
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;
             Price = other.Price;

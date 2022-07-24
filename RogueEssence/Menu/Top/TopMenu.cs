@@ -371,7 +371,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.StartLevel, -1, DataManager.Instance.StartPersonality);
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.StartLevel, "", DataManager.Instance.StartPersonality);
             newChar.Nickname = name;
             newChar.IsFounder = true;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);

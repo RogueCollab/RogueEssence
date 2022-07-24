@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using RogueEssence.Data;
 using RogueEssence.Dev;
 
@@ -16,13 +17,16 @@ namespace RogueEssence.Dungeon
 
         public override string GetID() { return ID.ToString(); }
 
+        [JsonConverter(typeof(IntrinsicConverter))]
         [DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int ID { get; set; }
+        public string ID { get; set; }
 
         public Intrinsic() : base()
-        { }
+        {
+            ID = "";
+        }
 
-        public Intrinsic(int index)
+        public Intrinsic(string index)
         {
             ID = index;
         }
