@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                string weather = DataManager.Instance.GetMapStatus(0).GetColoredName();
+                string weather = DataManager.Instance.GetMapStatus(DataManager.Instance.DefaultMapStatus).GetColoredName();
                 foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     if (status.StatusStates.Contains<MapWeatherState>())

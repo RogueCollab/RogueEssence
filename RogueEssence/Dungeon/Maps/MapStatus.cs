@@ -4,6 +4,7 @@ using RogueEssence.Content;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dev;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -17,8 +18,11 @@ namespace RogueEssence.Dungeon
         public override PassiveData GetData() { return DataManager.Instance.GetMapStatus(ID); }
         public override string GetDisplayName() { return DataManager.Instance.GetMapStatus(ID).Name.ToLocal(); }
 
+        public override string GetID() { return ID; }
+
+        [JsonConverter(typeof(MapStatusConverter))]
         [DataType(0, DataManager.DataType.MapStatus, false)]
-        public override int ID { get; set; }
+        public string ID { get; set; }
         public StateCollection<MapStatusState> StatusStates;
 
         public SwitchOffEmitter Emitter;
@@ -26,10 +30,11 @@ namespace RogueEssence.Dungeon
 
         public MapStatus() : base()
         {
+            ID = "";
             StatusStates = new StateCollection<MapStatusState>();
             Emitter = new Content.EmptySwitchOffEmitter();
         }
-        public MapStatus(int index) : this()
+        public MapStatus(string index) : this()
         {
             ID = index;
         }

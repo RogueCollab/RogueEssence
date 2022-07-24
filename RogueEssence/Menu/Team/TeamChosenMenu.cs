@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
             bool inGround = GameManager.Instance.CurrentScene == GroundScene.Instance;
             if (inDungeon)
             {
-                foreach (int status in ZoneManager.Instance.CurrentMap.Status.Keys)
+                foreach (string status in ZoneManager.Instance.CurrentMap.Status.Keys)
                 {
                     if (!ZoneManager.Instance.CurrentMap.Status[status].Hidden)
                     {

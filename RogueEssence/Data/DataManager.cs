@@ -162,6 +162,7 @@ namespace RogueEssence.Data
         public ZoneLoc StartMap;
 
         public string DefaultSkill;
+        public string DefaultMapStatus;
         public string DefaultElement;
         public string DefaultTile;
         public string DefaultZone;
@@ -414,6 +415,7 @@ namespace RogueEssence.Data
                     DefaultAI = xmldoc.DocumentElement.SelectSingleNode("DefaultAI").InnerText;
                     DefaultTile = xmldoc.DocumentElement.SelectSingleNode("DefaultTile").InnerText;
                     DefaultElement = xmldoc.DocumentElement.SelectSingleNode("DefaultElement").InnerText;
+                    DefaultMapStatus = xmldoc.DocumentElement.SelectSingleNode("DefaultMapStatus").InnerText;
                     DefaultSkill = xmldoc.DocumentElement.SelectSingleNode("DefaultSkill").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
@@ -792,11 +794,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-
-        public MapStatusData GetMapStatus(int index)
-        {
-            return GetMapStatus(index.ToString());
-        }
         public MapStatusData GetMapStatus(string index)
         {
             MapStatusData data;

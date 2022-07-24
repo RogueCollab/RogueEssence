@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using RogueEssence.Script;
 using QuadTrees;
 using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -64,8 +65,8 @@ namespace RogueEssence.Dungeon
         public SightRange TileSight;
         public SightRange CharSight;
 
-
-        public Dictionary<int, MapStatus> Status;
+        [JsonConverter(typeof(MapStatusDictConverter))]
+        public Dictionary<string, MapStatus> Status;
 
         public ActiveEffect MapEffect;
 
@@ -159,7 +160,7 @@ namespace RogueEssence.Dungeon
 
             MapEffect = new ActiveEffect();
 
-            Status = new Dictionary<int, MapStatus>();
+            Status = new Dictionary<string, MapStatus>();
 
             TextureMap = new Dictionary<string, AutoTile>();
             Element = "";

@@ -887,7 +887,7 @@ namespace RogueEssence.Dev
 
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(List<string>);
+            return objectType == typeof(string[]);
         }
     }
 
@@ -946,8 +946,20 @@ namespace RogueEssence.Dev
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            Dictionary<int, string> dict = new Dictionary<int, string>();
-            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            if (Serializer.OldVersion < new Version(0, 5, 20, 4))
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, string> container = new Dictionary<int, string>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -955,9 +967,9 @@ namespace RogueEssence.Dev
 
                 foreach (int ii in container.Keys)
                 {
-                    //string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
                     string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Element, container[ii]);
-                    dict[ii] = asset_name;
+                    dict[item_name] = asset_name;
                 }
             }
             else
@@ -992,8 +1004,20 @@ namespace RogueEssence.Dev
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            Dictionary<string, int> dict = new Dictionary<string, int>();
-            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            if (Serializer.OldVersion < new Version(0, 5, 20, 4))
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<string, int> container = new Dictionary<string, int>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (string ii in container.Keys)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, container[ii]);
+                    dict[ii] = asset_name;
+                }
+            }
+            else if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -1002,8 +1026,8 @@ namespace RogueEssence.Dev
                 foreach (int ii in container.Keys)
                 {
                     string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.Element, ii);
-                    //string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, container[ii]);
-                    dict[item_name] = container[ii];
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, container[ii]);
+                    dict[item_name] = asset_name;
                 }
             }
             else
@@ -1162,6 +1186,406 @@ namespace RogueEssence.Dev
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(Dictionary<string, BattleEvent>);
+        }
+    }
+
+
+    public class MapStatusConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                int ii = Int32.Parse(reader.Value.ToString());
+                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                return asset_name;
+            }
+            else
+            {
+                string s = (string)reader.Value;
+                return s;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string);
+        }
+    }
+
+
+    public class MapStatusArrayConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            List<string> dict = new List<string>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<int> container = new List<int>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                foreach (int ii in container)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict.Add(asset_name);
+                }
+            }
+            else
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
+            }
+            return dict.ToArray();
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string[]);
+        }
+    }
+
+
+    public class MapStatusDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, MapStatus> dict = new Dictionary<string, MapStatus>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, MapStatus> container = new Dictionary<int, MapStatus>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, MapStatus>);
+        }
+    }
+
+
+    public class MapStatusIntDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, int> container = new Dictionary<int, int>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, int>);
+        }
+    }
+
+
+    public class MapStatusListConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            List<string> dict = new List<string>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<int> container = new List<int>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                foreach (int ii in container)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict.Add(asset_name);
+                }
+            }
+            else
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(List<string>);
+        }
+    }
+
+
+
+    public class MapStatusBattleDataDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, BattleData> dict = new Dictionary<string, BattleData>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, BattleData> container = new Dictionary<int, BattleData>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, BattleData>);
+        }
+    }
+
+    public class MapStatusSkillDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, int> container = new Dictionary<int, int>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    //string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, container[ii]);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, int>);
+        }
+    }
+
+
+
+    public class MapStatusBattleEventDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, BattleEvent> dict = new Dictionary<string, BattleEvent>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, BattleEvent> container = new Dictionary<int, BattleEvent>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, BattleEvent>);
+        }
+    }
+
+
+
+    public class MapStatusBoolDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, bool> dict = new Dictionary<string, bool>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                Dictionary<int, bool> container = new Dictionary<int, bool>();
+                serializer.Populate(jObject.CreateReader(), container);
+
+                foreach (int ii in container.Keys)
+                {
+                    string item_name = DataManager.Instance.MapAssetName(DataManager.DataType.MapStatus, ii);
+                    dict[item_name] = container[ii];
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, bool>);
         }
     }
 }

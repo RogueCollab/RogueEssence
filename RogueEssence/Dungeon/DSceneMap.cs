@@ -1122,7 +1122,7 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar, status, msg));
         }
         
-        public IEnumerator<YieldInstruction> RemoveMapStatus(int id, bool msg = true)
+        public IEnumerator<YieldInstruction> RemoveMapStatus(string id, bool msg = true)
         {
             MapStatus statusToRemove;
             if (ZoneManager.Instance.CurrentMap.Status.TryGetValue(id, out statusToRemove))

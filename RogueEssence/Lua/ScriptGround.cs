@@ -348,14 +348,14 @@ namespace RogueEssence.Script
             GroundScene.Instance.SetScreenShake(new ScreenMover(mover));
         }
 
-        public void AddMapStatus(int statusIdx)
+        public void AddMapStatus(string statusIdx)
         {
             MapStatus status = new MapStatus(statusIdx);
             status.LoadFromData();
             GroundScene.Instance.AddMapStatus(status);
         }
 
-        public void RemoveMapStatus(int statusIdx)
+        public void RemoveMapStatus(string statusIdx)
         {
             GroundScene.Instance.RemoveMapStatus(statusIdx);
         }

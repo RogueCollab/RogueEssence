@@ -49,18 +49,20 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class PassiveActive : GameEventOwner
     {
-        public override string GetID() { return ID.ToString(); }
         public abstract PassiveData GetData();
-        public abstract int ID { get; set; }
+
+        //TODO: String Assets
+        //public override string GetID() { return ID; }
+        //public abstract string ID { get; set; }
 
         public PassiveActive()
         {
-            ID = -1;
+            //ID = "";
         }
-        public PassiveActive(PassiveActive other)
-        {
-            ID = other.ID;
-        }
+        //public PassiveActive(PassiveActive other)
+        //{
+        //    ID = other.ID;
+        //}
     }
 
     public class EventQueueElement<T>

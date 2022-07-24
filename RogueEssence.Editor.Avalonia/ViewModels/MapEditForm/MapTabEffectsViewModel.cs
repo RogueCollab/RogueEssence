@@ -60,7 +60,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Statuses_Changed()
         {
-            Dictionary<int, MapStatus> statuses = new Dictionary<int, MapStatus>();
+            Dictionary<string, MapStatus> statuses = new Dictionary<string, MapStatus>();
             List<MapStatus> states = Statuses.GetList<List<MapStatus>>();
             for (int ii = 0; ii < states.Count; ii++)
                 statuses[states[ii].ID] = states[ii];

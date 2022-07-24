@@ -14,8 +14,10 @@ namespace RogueEssence.Dungeon
         public override PassiveData GetData() { return DataManager.Instance.GetIntrinsic(ID); }
         public override string GetDisplayName() { return DataManager.Instance.GetIntrinsic(ID).GetColoredName(); }
 
+        public override string GetID() { return ID.ToString(); }
+
         [DataType(0, DataManager.DataType.Intrinsic, false)]
-        public override int ID { get; set; }
+        public int ID { get; set; }
 
         public Intrinsic() : base()
         { }

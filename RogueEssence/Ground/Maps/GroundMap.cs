@@ -11,6 +11,7 @@ using System.Linq;
 using RogueEssence.Script;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Ground
 {
@@ -25,7 +26,8 @@ namespace RogueEssence.Ground
         protected IRandom rand;
         public IRandom Rand { get { return rand; } }
 
-        public Dictionary<int, MapStatus> Status;
+        [JsonConverter(typeof(MapStatusDictConverter))]
+        public Dictionary<string, MapStatus> Status;
 
         [NonSerialized]
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> scriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
@@ -90,7 +92,7 @@ namespace RogueEssence.Ground
 
             Entities = new List<EntityLayer>();
 
-            Status = new Dictionary<int, MapStatus>();
+            Status = new Dictionary<string, MapStatus>();
 
             Background = new MapBG();
             BlankBG = new AutoTile();

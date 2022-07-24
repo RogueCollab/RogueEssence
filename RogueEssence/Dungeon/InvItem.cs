@@ -14,8 +14,10 @@ namespace RogueEssence.Dungeon
         }
         public override PassiveData GetData() { return DataManager.Instance.GetItem(ID); }
 
+        public override string GetID() { return ID.ToString(); }
+
         [DataType(0, DataManager.DataType.Item, false)]
-        public override int ID { get; set; }
+        public int ID { get; set; }
         public bool Cursed;
         public int HiddenValue;
         public int Price;
@@ -46,7 +48,8 @@ namespace RogueEssence.Dungeon
             HiddenValue = hiddenValue;
             Price = price;
         }
-        public InvItem(InvItem other) : base(other)
+        //TODO: String Assets
+        public InvItem(InvItem other)// : base(other)
         {
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;

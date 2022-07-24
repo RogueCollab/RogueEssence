@@ -13,15 +13,15 @@ namespace RogueEssence.Menu
         SummaryMenu summaryMenu;
         DialogueText Description;
 
-        List<int> mapIndices;
+        List<string> mapIndices;
         List<int> indices;
 
         public StatusMenu(int teamSlot)
         {
             int menuWidth = 168;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            mapIndices = new List<int>();
-            foreach (int status in ZoneManager.Instance.CurrentMap.Status.Keys)
+            mapIndices = new List<string>();
+            foreach (string status in ZoneManager.Instance.CurrentMap.Status.Keys)
             {
                 MapStatus statusInstance = ZoneManager.Instance.CurrentMap.Status[status];
                 if (!statusInstance.Hidden)
@@ -86,7 +86,7 @@ namespace RogueEssence.Menu
             int index = CurrentChoiceTotal;
             if (index < mapIndices.Count)
             {
-                int entryIndex = mapIndices[index];
+                string entryIndex = mapIndices[index];
                 Data.MapStatusData entry = Data.DataManager.Instance.GetMapStatus(entryIndex);
                 Description.SetAndFormatText(entry.Desc.ToLocal());
             }

@@ -56,8 +56,10 @@ namespace RogueEssence.Dungeon
         public override PassiveData GetData() { return DataManager.Instance.GetStatus(ID); }
         public override string GetDisplayName() { return DataManager.Instance.GetStatus(ID).GetColoredName(); }
 
+        public override string GetID() { return ID.ToString(); }
+
         [DataType(0, DataManager.DataType.Status, false)]
-        public override int ID { get; set; }
+        public int ID { get; set; }
         //handles stuff like stacking, sealing, movement speed, etc.
         public StateCollection<StatusState> StatusStates;
 
@@ -73,8 +75,8 @@ namespace RogueEssence.Dungeon
         {
             ID = index;
         }
-
-        protected StatusEffect(StatusEffect other) : base(other)
+        //TODO: String Assets
+        protected StatusEffect(StatusEffect other)// : base(other)
         {
             StatusStates = other.StatusStates.Clone();
         }

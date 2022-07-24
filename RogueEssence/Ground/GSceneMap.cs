@@ -254,7 +254,7 @@ namespace RogueEssence.Ground
             }
         }
 
-        public void RemoveMapStatus(int id)
+        public void RemoveMapStatus(string id)
         {
             MapStatus statusToRemove;
             if (ZoneManager.Instance.CurrentGround.Status.TryGetValue(id, out statusToRemove))
