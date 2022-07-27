@@ -485,7 +485,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Statuses_Changed()
         {
-            Dictionary<int, StatusEffect> statuses = new Dictionary<int, StatusEffect>();
+            Dictionary<string, StatusEffect> statuses = new Dictionary<string, StatusEffect>();
             List<StatusEffect> states = Statuses.GetList<List<StatusEffect>>();
             for (int ii = 0; ii < states.Count; ii++)
                 statuses[states[ii].ID] = states[ii];

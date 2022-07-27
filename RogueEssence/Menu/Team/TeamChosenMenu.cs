@@ -36,9 +36,9 @@ namespace RogueEssence.Menu
                         break;
                     }
                 }
-                foreach (int status in DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects.Keys)
+                foreach (string status in DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects.Keys)
                 {
-                    if (Data.DataManager.Instance.GetStatus(status).MenuName)
+                    if (DataManager.Instance.GetStatus(status).MenuName)
                     {
                         hasStatus = true;
                         break;

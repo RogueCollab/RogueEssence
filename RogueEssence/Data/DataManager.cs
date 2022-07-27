@@ -744,10 +744,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-        public StatusData GetStatus(int index)
-        {
-            return GetStatus(index.ToString());
-        }
         public StatusData GetStatus(string index)
         {
             StatusData data;
@@ -1886,7 +1882,7 @@ namespace RogueEssence.Data
                     int teamIndex = reader.ReadInt32();//team
                     bool guest = reader.ReadBoolean();//guest
                     int player = reader.ReadInt32();//player
-                    int statusID = reader.ReadInt32();//status ID
+                    string statusID = reader.ReadString();//status ID
                     Faction targetFaction = (Faction)reader.ReadInt32();//target faction index
                     int targetTeamIndex = reader.ReadInt32();//target team index
                     bool targetGuest = reader.ReadBoolean();//target guest status

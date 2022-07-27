@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using RogueEssence.Data;
 using RogueEssence.Dev;
 
@@ -56,10 +57,11 @@ namespace RogueEssence.Dungeon
         public override PassiveData GetData() { return DataManager.Instance.GetStatus(ID); }
         public override string GetDisplayName() { return DataManager.Instance.GetStatus(ID).GetColoredName(); }
 
-        public override string GetID() { return ID.ToString(); }
+        public override string GetID() { return ID; }
 
+        [JsonConverter(typeof(StatusConverter))]
         [DataType(0, DataManager.DataType.Status, false)]
-        public int ID { get; set; }
+        public string ID { get; set; }
         //handles stuff like stacking, sealing, movement speed, etc.
         public StateCollection<StatusState> StatusStates;
 
@@ -68,10 +70,10 @@ namespace RogueEssence.Dungeon
 
         public StatusEffect() : base()
         {
-            ID = -1;
+            ID = "";
             StatusStates = new StateCollection<StatusState>();
         }
-        public StatusEffect(int index)
+        public StatusEffect(string index)
             : this()
         {
             ID = index;
@@ -101,11 +103,11 @@ namespace RogueEssence.Dungeon
     {
         public StatusData GetStatusEntry() { return DataManager.Instance.GetStatus(ID); }
 
-        public int ID;
+        public string ID;
 
         public Character TargetChar;
 
-        public StatusRef(int index, Character targetChar)
+        public StatusRef(string index, Character targetChar)
         {
             ID = index;
             TargetChar = targetChar;

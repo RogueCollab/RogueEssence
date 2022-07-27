@@ -119,8 +119,12 @@ namespace RogueEssence.Dev.Views
                 {
                     Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
                     devViewModel.Game.Statuses.Clear();
+                    devViewModel.Game.StatusKeys.Clear();
                     foreach (string key in entry_names.Keys)
+                    {
                         devViewModel.Game.Statuses.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.StatusKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenStatus = -1;
                     devViewModel.Game.ChosenStatus = Math.Min(Math.Max(GetConfig("StatusChoice", 0), 0), devViewModel.Game.Statuses.Count - 1);
                 }

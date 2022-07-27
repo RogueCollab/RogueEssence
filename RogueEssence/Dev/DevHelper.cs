@@ -148,6 +148,13 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.MapStatus);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.Status);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Status);
+            }
+
             oldVersion = GetTypeVersion(DataManager.DataType.Intrinsic);
             if (oldVersion < StringAssetVersion)
             {

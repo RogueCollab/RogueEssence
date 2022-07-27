@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         DialogueText Description;
 
         List<string> mapIndices;
-        List<int> indices;
+        List<string> indices;
 
         public StatusMenu(int teamSlot)
         {
@@ -36,8 +36,8 @@ namespace RogueEssence.Menu
                         flatChoices.Add(new MenuElementChoice(() => { }, true, statusName));
                 }
             }
-            indices = new List<int>();
-            foreach (int status in DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects.Keys)
+            indices = new List<string>();
+            foreach (string status in DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects.Keys)
             {
                 if (Data.DataManager.Instance.GetStatus(status).MenuName)
                 {
@@ -92,7 +92,7 @@ namespace RogueEssence.Menu
             }
             else
             {
-                int entryIndex = indices[index - mapIndices.Count];
+                string entryIndex = indices[index - mapIndices.Count];
                 Data.StatusData entry = Data.DataManager.Instance.GetStatus(entryIndex);
                 Description.SetAndFormatText(entry.Desc.ToLocal());
             }

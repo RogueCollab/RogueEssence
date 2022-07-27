@@ -19,6 +19,7 @@ namespace RogueEssence.Dev.ViewModels
             IntrinsicKeys = new List<string>();
 
             Statuses = new ObservableCollection<string>();
+            StatusKeys = new List<string>();
             Items = new ObservableCollection<string>();
         }
 
@@ -43,6 +44,8 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public ObservableCollection<string> Statuses { get; }
+
+        public List<string> StatusKeys;
 
         private int chosenStatus;
         public int ChosenStatus
@@ -143,7 +146,7 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm.SetConfig("StatusChoice", chosenStatus);
-                StatusData entry = DataManager.Instance.GetStatus(chosenStatus);
+                StatusData entry = DataManager.Instance.GetStatus(StatusKeys[chosenStatus]);
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
                     if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
@@ -153,11 +156,11 @@ namespace RogueEssence.Dev.ViewModels
                             DungeonScene.Instance.LogMsg(String.Format("This is a targeted status."), false, true);
                         else
                         {
-                            if (player.StatusEffects.ContainsKey(chosenStatus))
-                                DungeonScene.Instance.PendingDevEvent = player.RemoveStatusEffect(chosenStatus);
+                            if (player.StatusEffects.ContainsKey(StatusKeys[chosenStatus]))
+                                DungeonScene.Instance.PendingDevEvent = player.RemoveStatusEffect(StatusKeys[chosenStatus]);
                             else
                             {
-                                StatusEffect status = new StatusEffect(chosenStatus);
+                                StatusEffect status = new StatusEffect(StatusKeys[chosenStatus]);
                                 status.LoadFromData();
                                 DungeonScene.Instance.PendingDevEvent = player.AddStatusEffect(status);
                             }

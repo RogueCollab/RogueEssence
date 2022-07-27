@@ -224,7 +224,8 @@ namespace RogueEssence.Dungeon
 
         public bool Dead;
 
-        public Dictionary<int, StatusEffect> StatusEffects;
+        [JsonConverter(typeof(StatusDictConverter))]
+        public Dictionary<string, StatusEffect> StatusEffects;
 
         public bool MustHitNext;
 
@@ -338,7 +339,7 @@ namespace RogueEssence.Dungeon
             ProxySpeed = -1;
             CharStates = new StateCollection<CharState>();
             WarpHistory = new List<Loc>();
-            StatusEffects = new Dictionary<int, StatusEffect>();
+            StatusEffects = new Dictionary<string, StatusEffect>();
             IdleOverride = -1;
             currentCharAction = new EmptyCharAction(new CharAnimIdle(new Loc(), Dir8.Down));
             StatusesTargetingThis = new List<StatusRef>();
@@ -393,7 +394,7 @@ namespace RogueEssence.Dungeon
             ProxySpeed = -1;
             CharStates = new StateCollection<CharState>();
             WarpHistory = new List<Loc>();
-            StatusEffects = new Dictionary<int, StatusEffect>();
+            StatusEffects = new Dictionary<string, StatusEffect>();
             IdleOverride = -1;
             currentCharAction = new EmptyCharAction(new CharAnimIdle(newLoc, charDir));
             StatusesTargetingThis = new List<StatusRef>();
@@ -444,7 +445,7 @@ namespace RogueEssence.Dungeon
         public void OnRemove()
         {
             //remove all status from this character without saying anything
-            List<int> keys = new List<int>();
+            List<string> keys = new List<string>();
             keys.AddRange(StatusEffects.Keys);
             for (int ii = 0; ii < keys.Count; ii++)
             {
@@ -518,7 +519,7 @@ namespace RogueEssence.Dungeon
             ProxyMDef = -1;
             ProxySpeed = -1;
 
-            StatusEffects = new Dictionary<int, StatusEffect>();
+            StatusEffects = new Dictionary<string, StatusEffect>();
 
             return skillIndices;
         }
@@ -984,7 +985,7 @@ namespace RogueEssence.Dungeon
                 BaseSkills[Skills[slot].BackRef].Charges = Skills[slot].Element.Charges;
         }
 
-        public StatusEffect GetStatusEffect(int id)
+        public StatusEffect GetStatusEffect(string id)
         {
             StatusEffect value;
             if (StatusEffects.TryGetValue(id, out value))
@@ -1043,7 +1044,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public void SilentRemoveStatus(int id)
+        public void SilentRemoveStatus(string id)
         {
             StatusEffect statusToRemove;
             if (StatusEffects.TryGetValue(id, out statusToRemove))
@@ -1055,7 +1056,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public IEnumerator<YieldInstruction> RemoveStatusEffect(int id, bool msg = true)
+        public IEnumerator<YieldInstruction> RemoveStatusEffect(string id, bool msg = true)
         {
             StatusEffect statusToRemove;
             if (StatusEffects.TryGetValue(id, out statusToRemove))
