@@ -1169,6 +1169,16 @@ namespace RogueEssence.Dungeon
             }
         }
 
+
+        public MapStatus GetMapStatus(string id)
+        {
+            MapStatus value;
+            if (ZoneManager.Instance.CurrentMap.Status.TryGetValue(id, out value))
+                return value;
+            return null;
+        }
+
+
         public IEnumerator<YieldInstruction> PointWarp(Character character, Loc loc, bool msg)
         {
             if (msg)
