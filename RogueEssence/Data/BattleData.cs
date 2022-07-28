@@ -26,12 +26,17 @@ namespace RogueEssence.Data
             return GameEventPriority.EventCause.Skill;
         }
 
-        //TODO: String Assets
-        public override string GetID() { return ID.ToString(); }
-        //TODO: later on, make child classes for skills, traps, item usages and throws?
+        public override string GetID() { return ID; }
+        //TODO: make this more nuanced for skills, traps, item usages and throws?
         public override string GetDisplayName()
         {
-            return DataManager.Instance.GetSkill(ID).GetIconName();
+            if (DataType == DataManager.DataType.Skill)
+                return DataManager.Instance.GetSkill(ID).GetIconName();
+            else
+            {
+                EntrySummary summary = DataManager.Instance.DataIndices[DataType].Entries[ID];
+                return summary.GetColoredName();
+            }
         }
 
         public override string ToString()
@@ -47,6 +52,9 @@ namespace RogueEssence.Data
 
         [NonSerialized]
         public string ID;
+
+        [NonSerialized]
+        public DataManager.DataType DataType;
 
         [JsonConverter(typeof(ElementConverter))]
         [DataType(0, DataManager.DataType.Element, false)]
@@ -164,6 +172,7 @@ namespace RogueEssence.Data
         public BattleData(BattleData other)
         {
             ID = other.ID;
+            DataType = other.DataType;
 
             Element = other.Element;
             Category = other.Category;
