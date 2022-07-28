@@ -178,6 +178,7 @@ namespace RogueEssence.Dungeon
             DiscoveryArray = new DiscoveryState[width][];
             for (int ii = 0; ii < width; ii++)
                 DiscoveryArray[ii] = new DiscoveryState[height];
+            Element = DataManager.Instance.DefaultElement;
 
             this.lookup = new Dictionary<Loc, List<Character>>();
         }

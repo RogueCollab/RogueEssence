@@ -1934,8 +1934,8 @@ namespace RogueEssence.Dev
             }
             else
             {
-                JArray jArray = JArray.Load(reader);
-                serializer.Populate(jArray.CreateReader(), dict);
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
             }
             return dict;
         }

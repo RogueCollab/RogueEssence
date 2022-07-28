@@ -69,6 +69,25 @@ namespace RogueEssence.Dev
             return intToName;
         }
 
+
+
+        private static void convertAssetTypeFromTxt(DataManager.DataType dataType)
+        {
+            string convFolder = PathMod.HardMod("CONVERSION/");
+            string dataFolder = PathMod.HardMod(Path.Join(DataManager.DATA_PATH, dataType.ToString()));
+
+            string[] lines = File.ReadAllLines(Path.Join(convFolder, dataType.ToString() + ".txt"));
+            foreach (string line in lines)
+            {
+                string[] before_after = line.Trim().Split();
+                string firstName = before_after[0];
+                string resultName = before_after[1];
+                File.Move(Path.Join(dataFolder, firstName + ".bin"), Path.Join(dataFolder, resultName + ".bin"));
+            }
+        }
+
+
+
         public static void ConvertAssetNames()
         {
             string path = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");

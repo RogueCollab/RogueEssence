@@ -37,10 +37,14 @@ namespace RogueEssence.Data
 
         public static object Deserialize(Stream stream, Type type)
         {
+            object obj;
+            OldVersion = Versioning.GetVersion();
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
             {
-                return JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
+                obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
             }
+            OldVersion = new Version();
+            return obj;
         }
 
         public static void Serialize(Stream stream, object entry)
