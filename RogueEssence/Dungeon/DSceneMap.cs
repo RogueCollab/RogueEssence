@@ -822,9 +822,9 @@ namespace RogueEssence.Dungeon
 
 
 
-        public static List<int> GetLevelSkills(Character player, int oldLevel)
+        public static List<string> GetLevelSkills(Character player, int oldLevel)
         {
-            List<int> skills = new List<int>();
+            List<string> skills = new List<string>();
             BaseMonsterForm entry = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
             int startLevel = 0;
             int endLevel = 0;
@@ -835,7 +835,7 @@ namespace RogueEssence.Dungeon
             }
             for (int ii = startLevel; ii <= endLevel; ii++)
             {
-                foreach (int skill in entry.GetSkillsAtLevel(ii, false))
+                foreach (string skill in entry.GetSkillsAtLevel(ii, false))
                     skills.Add(skill);
             }
             return skills;
@@ -846,7 +846,7 @@ namespace RogueEssence.Dungeon
             if (!ActiveTeam.Players.Contains(player))
                 yield break;
 
-            foreach (int skill in GetLevelSkills(player, oldLevel))
+            foreach (string skill in GetLevelSkills(player, oldLevel))
             {
                 int learn = -1;
 
@@ -862,11 +862,11 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public static IEnumerator<YieldInstruction> LearnSkillWithFanfare(Character player, int skill, int slot)
+        public static IEnumerator<YieldInstruction> LearnSkillWithFanfare(Character player, string skill, int slot)
         {
             GameManager.Instance.SE("Fanfare/LearnSkill");
             string oldSkill = "";
-            if (player.BaseSkills[slot].SkillNum > -1)
+            if (!String.IsNullOrEmpty(player.BaseSkills[slot].SkillNum))
             {
                 SkillData oldEntry = DataManager.Instance.GetSkill(player.BaseSkills[slot].SkillNum);
                 oldSkill = oldEntry.GetIconName();
@@ -881,7 +881,7 @@ namespace RogueEssence.Dungeon
         }
 
         
-        public static IEnumerator<YieldInstruction> TryLearnSkill(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        public static IEnumerator<YieldInstruction> TryLearnSkill(Character player, string skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             int totalSkills = 0;
             for (int ii = 0; ii < player.BaseSkills.Count; ii++)
@@ -891,7 +891,7 @@ namespace RogueEssence.Dungeon
                     passAction();
                     yield break;
                 }
-                if (player.BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(player.BaseSkills[ii].SkillNum))
                     totalSkills++;
             }
             if (totalSkills < CharData.MAX_SKILL_SLOTS)
@@ -910,7 +910,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        private static DialogueBox createLearnQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        private static DialogueBox createLearnQuestion(Character player, string skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             return MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SKILL_DELETE", DataManager.Instance.GetSkill(skillIndex).GetIconName()),
                 () =>
@@ -922,7 +922,7 @@ namespace RogueEssence.Dungeon
                 () => { MenuManager.Instance.AddMenu(createRefuseQuestion(player, skillIndex, learnAction, passAction), false); });
         }
 
-        private static DialogueBox createRefuseQuestion(Character player, int skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
+        private static DialogueBox createRefuseQuestion(Character player, string skillIndex, VertChoiceMenu.OnChooseSlot learnAction, Action passAction)
         {
             return MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SKILL_STOP_LEARN", DataManager.Instance.GetSkill(skillIndex).GetIconName()),
                 () =>

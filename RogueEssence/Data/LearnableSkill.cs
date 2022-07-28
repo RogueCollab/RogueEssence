@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RogueEssence.Dev;
+using System;
 
 namespace RogueEssence.Data
 {
@@ -11,7 +13,7 @@ namespace RogueEssence.Data
         {
         }
 
-        public LevelUpSkill(int skill, int level) : base(skill)
+        public LevelUpSkill(string skill, int level) : base(skill)
         {
             Level = level;
         }
@@ -38,14 +40,16 @@ namespace RogueEssence.Data
     [Serializable]
     public class LearnableSkill
     {
-        [Dev.DataType(0, DataManager.DataType.Skill, false)]
-        public int Skill;
+        [JsonConverter(typeof(SkillConverter))]
+        [DataType(0, DataManager.DataType.Skill, false)]
+        public string Skill;
 
         public LearnableSkill()
         {
+            Skill = "";
         }
 
-        public LearnableSkill(int skill)
+        public LearnableSkill(string skill)
         {
             Skill = skill;
         }

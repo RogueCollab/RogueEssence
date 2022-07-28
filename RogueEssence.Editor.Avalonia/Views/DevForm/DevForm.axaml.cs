@@ -95,8 +95,12 @@ namespace RogueEssence.Dev.Views
                 {
                     Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
                     devViewModel.Game.Skills.Clear();
-                    foreach(string key in entry_names.Keys)
+                    devViewModel.Game.SkillKeys.Clear();
+                    foreach (string key in entry_names.Keys)
+                    {
                         devViewModel.Game.Skills.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.SkillKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenSkill = -1;
                     devViewModel.Game.ChosenSkill = Math.Min(Math.Max(GetConfig("SkillChoice", 0), 0), devViewModel.Game.Skills.Count - 1);
                 }

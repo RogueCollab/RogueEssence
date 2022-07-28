@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
                 string skillString = "-----";
                 string skillCharges = "--";
                 string totalCharges = "/--";
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                     skillString = data.GetIconName();

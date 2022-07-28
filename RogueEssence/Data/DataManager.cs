@@ -653,10 +653,6 @@ namespace RogueEssence.Data
         }
 
 
-        public SkillData GetSkill(int index)
-        {
-            return GetSkill(index.ToString());
-        }
         public SkillData GetSkill(string index)
         {
             SkillData data;

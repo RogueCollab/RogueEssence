@@ -22,6 +22,17 @@ namespace RogueEssence.Dungeon
 
 
     [Serializable]
+    public class ItemIDState : ItemState
+    {
+        public string ID;
+        public ItemIDState() { ID = ""; }
+        public ItemIDState(string idx) { ID = idx; }
+        protected ItemIDState(ItemIDState other) { ID = other.ID; }
+        public override GameplayState Clone() { return new ItemIDState(this); }
+    }
+
+
+    [Serializable]
     public class MaterialState : ItemState
     {
         public override GameplayState Clone() { return new MaterialState(); }

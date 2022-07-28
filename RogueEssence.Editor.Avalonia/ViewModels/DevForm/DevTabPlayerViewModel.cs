@@ -259,10 +259,10 @@ namespace RogueEssence.Dev.ViewModels
                         Character character = DungeonScene.Instance.FocusedCharacter;
                         BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                        while (character.BaseSkills[0].SkillNum > -1)
+                        while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                             character.DeleteSkill(0);
-                        List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                        foreach (int skill in final_skills)
+                        List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+                        foreach (string skill in final_skills)
                             character.LearnSkill(skill, true);
 
                         DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
@@ -275,10 +275,10 @@ namespace RogueEssence.Dev.ViewModels
                         Character character = DataManager.Instance.Save.ActiveTeam.Leader;
                         BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                        while (character.BaseSkills[0].SkillNum > -1)
+                        while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                             character.DeleteSkill(0);
-                        List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                        foreach (int skill in final_skills)
+                        List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+                        foreach (string skill in final_skills)
                             character.LearnSkill(skill, true);
                         GameManager.Instance.SE("Menu/Sort");
                     }

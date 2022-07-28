@@ -366,7 +366,7 @@ namespace RogueEssence.Dungeon
             for(int ii = 0; ii < BaseSkills.Count; ii++)
             {
                 Skill newState = null;
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                     newState = new Skill(BaseSkills[ii].SkillNum, DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges);
                 else
                     newState = new Skill();
@@ -495,7 +495,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < BaseSkills.Count; ii++)
             {
                 Skill newState = null;
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
                     int baseCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
                     BaseSkills[ii].Charges = baseCharges;
@@ -623,7 +623,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < BaseSkills.Count; ii++)
             {
                 Skill newState = null;
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                     newState = new Skill(BaseSkills[ii].SkillNum, BaseSkills[ii].Charges, turnOn[ii]);
                 else
                     newState = new Skill();
@@ -861,7 +861,7 @@ namespace RogueEssence.Dungeon
         {
             for (int ii = 0; ii < Skills.Count; ii++)
             {
-                if (Skills[ii].Element.SkillNum > -1)
+                if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                 {
                     if (skillSlot == ii || skillSlot == -1)
                     {
@@ -909,7 +909,7 @@ namespace RogueEssence.Dungeon
             {
                 for (int ii = 0; ii < Skills.Count; ii++)
                 {
-                    if (Skills[ii].Element.SkillNum > -1)
+                    if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                     {
                         if (Skills[ii].Element.Charges > 0)
                         {
@@ -1133,9 +1133,9 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void ChangeSkill(int slot, int skillNum)
+        public void ChangeSkill(int slot, string skillNum)
         {
-            if (skillNum > -1)
+            if (!String.IsNullOrEmpty(skillNum))
                 Skills[slot] = new BackReference<Skill>(new Skill(skillNum, DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost), -1);
             else
                 Skills[slot] = new BackReference<Skill>(new Skill(), -1);
@@ -1176,17 +1176,17 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public void LearnSkill(int skillNum, bool enabled)
+        public void LearnSkill(string skillNum, bool enabled)
         {
             int newSlot = 0;
             foreach (SlotSkill skill in BaseSkills)
             {
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                     newSlot++;
             }
             ReplaceSkill(skillNum, newSlot, enabled);
         }
-        public void ReplaceSkill(int skillNum, int newSlot, bool enabled)
+        public void ReplaceSkill(string skillNum, int newSlot, bool enabled)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
 
@@ -1195,7 +1195,7 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        private List<int> baseReplaceSkill(int skillNum, int newSlot, bool enabled)
+        private List<int> baseReplaceSkill(string skillNum, int newSlot, bool enabled)
         {
             List<int> skillIndices = new List<int>();
             for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
@@ -1206,7 +1206,7 @@ namespace RogueEssence.Dungeon
 
             BaseSkills[newSlot] = new SlotSkill(skillNum);
             BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
-            CollectionExt.AssignExtendList(Relearnables, skillNum, true);
+            Relearnables[skillNum] = true;
 
             int owningSlot = -1;
             for(int ii = 0; ii < Skills.Count; ii++)
@@ -1233,13 +1233,13 @@ namespace RogueEssence.Dungeon
         /// <param name="skillNum"></param>
         /// <param name="newSlot"></param>
         /// <param name="enabled"></param>
-        public void EditSkill(int skillNum, int newSlot, bool enabled)
+        public void EditSkill(string skillNum, int newSlot, bool enabled)
         {
             if (newSlot >= MAX_SKILL_SLOTS)
                 return;
 
             BaseSkills[newSlot] = new SlotSkill(skillNum);
-            if (skillNum > -1)
+            if (!String.IsNullOrEmpty(skillNum))
                 BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
 
             int owningSlot = -1;
@@ -1292,11 +1292,11 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public List<int> GetRelearnableSkills()
+        public List<string> GetRelearnableSkills()
         {
             BaseMonsterForm entry = DataManager.Instance.GetMonster(BaseForm.Species).Forms[BaseForm.Form];
-            List<int> forgottenSkills = new List<int>();
-            foreach (int skill in entry.GetSkillsAtLevel(Level, true))
+            List<string> forgottenSkills = new List<string>();
+            foreach (string skill in entry.GetSkillsAtLevel(Level, true))
             {
                 bool hasSkill = false;
                 foreach (SlotSkill learnedSkill in BaseSkills)
@@ -1310,22 +1310,20 @@ namespace RogueEssence.Dungeon
                 if (!hasSkill && !forgottenSkills.Contains(skill))
                     forgottenSkills.Add(skill);
             }
-            for (int ii = 0; ii < Relearnables.Count; ii++)
+
+            foreach(string key in Relearnables.Keys)
             {
-                if (Relearnables[ii])
+                bool hasSkill = false;
+                foreach (SlotSkill learnedSkill in BaseSkills)
                 {
-                    bool hasSkill = false;
-                    foreach (SlotSkill learnedSkill in BaseSkills)
+                    if (learnedSkill.SkillNum == key)
                     {
-                        if (learnedSkill.SkillNum == ii)
-                        {
-                            hasSkill = true;
-                            break;
-                        }
+                        hasSkill = true;
+                        break;
                     }
-                    if (!hasSkill && !forgottenSkills.Contains(ii))
-                        forgottenSkills.Add(ii);
                 }
+                if (!hasSkill && !forgottenSkills.Contains(key))
+                    forgottenSkills.Add(key);
             }
             return forgottenSkills;
         }
@@ -1480,7 +1478,7 @@ namespace RogueEssence.Dungeon
         {
             for (int ii = 0; ii < Skills.Count; ii++)
             {
-                if (Skills[ii].Element.SkillNum > -1)
+                if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                 {
                     int maxCharges = DataManager.Instance.GetSkill(Skills[ii].Element.SkillNum).BaseCharges + ChargeBoost;
                     //bring charges up to maximum if maximum is enforced
@@ -1494,7 +1492,7 @@ namespace RogueEssence.Dungeon
             }
             for (int ii = 0; ii < BaseSkills.Count; ii++)
             {
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
                     int maxCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
 

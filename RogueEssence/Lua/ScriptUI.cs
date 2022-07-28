@@ -596,18 +596,20 @@ namespace RogueEssence.Script
 
         public void RelearnMenu(Character chara)
         {
-            if (DataManager.Instance.CurrentReplay != null)
-            {
-                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
-                return;
-            }
 
             try
             {
+                List<string> forgottenSkills = chara.GetRelearnableSkills();
+
+                if (DataManager.Instance.CurrentReplay != null)
+                {
+                    m_choiceresult = forgottenSkills[DataManager.Instance.CurrentReplay.ReadUI()];
+                    return;
+                }
+
                 m_choiceresult = -1;
-                List<int> forgottenSkills = chara.GetRelearnableSkills();
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
-                (int skillNum) => { m_choiceresult = skillNum; DataManager.Instance.LogUIPlay(skillNum); },
+                (int skillSlot) => { m_choiceresult = forgottenSkills[skillSlot]; DataManager.Instance.LogUIPlay(skillSlot); },
                 () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
@@ -617,7 +619,7 @@ namespace RogueEssence.Script
         }
 
 
-        public void LearnMenu(Character chara, int moveNum)
+        public void LearnMenu(Character chara, string moveNum)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {

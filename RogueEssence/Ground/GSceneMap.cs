@@ -43,8 +43,8 @@ namespace RogueEssence.Ground
             {
                 case ItemData.UseType.Learn:
                     {
-                        ItemIndexState effect = itemEntry.ItemStates.GetWithDefault<ItemIndexState>();
-                        int skill = effect.Index;
+                        ItemIDState effect = itemEntry.ItemStates.GetWithDefault<ItemIDState>();
+                        string skill = effect.ID;
 
                         int learn = -1;
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(target, skill, (int slot) => { learn = slot; }, () => { }));

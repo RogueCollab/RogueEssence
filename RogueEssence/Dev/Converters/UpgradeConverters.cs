@@ -1868,4 +1868,133 @@ namespace RogueEssence.Dev
             return objectType == typeof(string[]);
         }
     }
+
+
+    public class SkillConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                int ii = Int32.Parse(reader.Value.ToString());
+                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, ii);
+                return asset_name;
+            }
+            else
+            {
+                string s = (string)reader.Value;
+                return s;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string);
+        }
+    }
+
+
+    public class RelearnableConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, bool> dict = new Dictionary<string, bool>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<bool> container = new List<bool>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                for(int ii = 0; ii < container.Count; ii++)
+                {
+                    if (container[ii])
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, ii);
+                        dict[asset_name] = true;
+                    }
+                }
+            }
+            else
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, bool>);
+        }
+    }
+
+    public class SkillListConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            List<string> dict = new List<string>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<int> container = new List<int>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                foreach (int ii in container)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, ii);
+                    dict.Add(asset_name);
+                }
+            }
+            else
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(List<string>);
+        }
+    }
 }

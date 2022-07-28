@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < player.BaseSkills.Count; ii++)
             {
                 SlotSkill skill = player.BaseSkills[ii];
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                     string skillString = data.GetColoredName();

@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
             Elements.Add(MenuDiv);
         }
 
-        public void SetSkill(int index)
+        public void SetSkill(string index)
         {
             SkillData skillEntry = DataManager.Instance.GetSkill(index);
             ElementData elementEntry = DataManager.Instance.GetElement(skillEntry.Data.Element);

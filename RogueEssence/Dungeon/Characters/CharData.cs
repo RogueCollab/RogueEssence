@@ -68,7 +68,8 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(IntrinsicListConverter))]
         public List<string> BaseIntrinsics;
 
-        public List<bool> Relearnables;
+        [JsonConverter(typeof(RelearnableConverter))]
+        public Dictionary<string, bool> Relearnables;
 
         public int Discriminator;
 
@@ -118,7 +119,7 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
                     BaseIntrinsics.Add("");
             }
-            Relearnables = new List<bool>();
+            Relearnables = new Dictionary<string, bool>();
 
             MetAt = "";
             MetLoc = ZoneLoc.Invalid;
@@ -147,8 +148,9 @@ namespace RogueEssence.Dungeon
                 BaseSkills.Add(new SlotSkill(skill));
             BaseIntrinsics = new List<string>();
             BaseIntrinsics.AddRange(other.BaseIntrinsics);
-            Relearnables = new List<bool>();
-            Relearnables.AddRange(other.Relearnables);
+            Relearnables = new Dictionary<string, bool>();
+            foreach (string key in other.Relearnables.Keys)
+                Relearnables[key] = other.Relearnables[key];
 
             OriginalUUID = other.OriginalUUID;
             OriginalTeam = other.OriginalTeam;

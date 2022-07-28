@@ -6,6 +6,7 @@ using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Ground;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -72,20 +73,19 @@ namespace RogueEssence.Menu
             }
                 
             ItemData itemData = DataManager.Instance.GetItem(itemNum);
-            ItemIndexState effect = itemData.ItemStates.GetWithDefault<ItemIndexState>();
+            ItemIDState effect = itemData.ItemStates.GetWithDefault<ItemIDState>();
 
             //check for already knowing the skill
             for(int ii = 0; ii < character.BaseSkills.Count; ii++)
             {
-                if (character.BaseSkills[ii].SkillNum == effect.Index)
+                if (character.BaseSkills[ii].SkillNum == effect.ID)
                     return false;
             }
 
-            //TODO: String Assets
-            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[effect.Index.ToString()].Released)
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[effect.ID].Released)
                 return false;
 
-            return entry.CanLearnSkill(effect.Index);
+            return entry.CanLearnSkill(effect.ID);
         }
 
         protected override void ChoiceChanged()
@@ -94,7 +94,7 @@ namespace RogueEssence.Menu
             SummaryTitle.SetText(Text.FormatKey("MENU_SKILLS_TITLE", character.GetDisplayName(true)));
             for (int ii = 0; ii < Skills.Length; ii++)
             {
-                if (character.BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(character.BaseSkills[ii].SkillNum))
                 {
                     SkillData data = DataManager.Instance.GetSkill(character.BaseSkills[ii].SkillNum);
                     Skills[ii].SetText(data.GetColoredName());

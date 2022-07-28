@@ -68,7 +68,7 @@ namespace RogueEssence.Data
         public abstract int GetMaxStat(Stat stat);
         public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
-        public abstract bool CanLearnSkill(int skill);
+        public abstract bool CanLearnSkill(string skill);
 
         public abstract int RollSkin(IRandom rand);
         public abstract int GetPersonalityType(int discriminator);
@@ -83,22 +83,21 @@ namespace RogueEssence.Data
         public abstract List<int> GetPossibleIntrinsicSlots();
 
 
-        public IEnumerable<int> GetSkillsAtLevel(int levelLearned, bool relearn)
+        public IEnumerable<string> GetSkillsAtLevel(int levelLearned, bool relearn)
         {
             for (int ii = 0; ii < LevelSkills.Count; ii++)
             {
                 if (LevelSkills[ii].Level == levelLearned || LevelSkills[ii].Level <= levelLearned && relearn)
                 {
-                    //TODO: String Assets
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill.ToString()].Released)
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill].Released)
                         yield return LevelSkills[ii].Skill;
                 }
             }
         }
 
-        public List<int> RollLatestSkills(int level, List<int> specifiedSkills)
+        public List<string> RollLatestSkills(int level, List<string> specifiedSkills)
         {
-            List<int> skills = new List<int>();
+            List<string> skills = new List<string>();
             skills.AddRange(specifiedSkills);
 
             for (int ii = LevelSkills.Count - 1; ii >= 0 && Dungeon.CharData.MAX_SKILL_SLOTS - skills.Count > 0; ii--)

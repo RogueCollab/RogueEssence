@@ -481,7 +481,7 @@ namespace RogueEssence.Dungeon
 
             BaseMonsterForm formEntry = dex.Forms[formData.Form];
 
-            List<int> final_skills = formEntry.RollLatestSkills(character.Level, new List<int>());
+            List<string> final_skills = formEntry.RollLatestSkills(character.Level, new List<string>());
             for(int ii = 0; ii < final_skills.Count; ii++)
                 character.BaseSkills[ii] = new SlotSkill(final_skills[ii]);
 
@@ -514,7 +514,7 @@ namespace RogueEssence.Dungeon
             Character player = new Character(character);
             foreach (BackReference<Skill> skill in player.Skills)
             {
-                if (skill.Element.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.Element.SkillNum))
                 {
                     SkillData entry = DataManager.Instance.GetSkill(skill.Element.SkillNum);
                     skill.Element.Enabled = (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical);

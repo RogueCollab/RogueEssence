@@ -62,7 +62,7 @@ namespace RogueEssence.Dungeon
         public ExplosionData Explosion { get; set; }
         public BattleData Data { get; set; }
         public InvItem Item;//the item that is used, and most likely dropped
-        public int SkillUsedUp;//the skill whose last charge was used up
+        public string SkillUsedUp;//the skill whose last charge was used up
         public AbortStatus TurnCancel;
 
         private bool actionSilent;
@@ -79,7 +79,7 @@ namespace RogueEssence.Dungeon
             TurnCancel = new AbortStatus();
             this.ActionType = actionType;
             UsageSlot = BattleContext.DEFAULT_ATTACK_SLOT;
-            SkillUsedUp = -1;
+            SkillUsedUp = "";
             StrikeLandTiles = new List<Loc>();
             actionMsg = "";
             GlobalContextStates = new StateCollection<ContextState>();

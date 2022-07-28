@@ -447,7 +447,7 @@ namespace RogueEssence.Script
         {
             foreach (SlotSkill skill in character.BaseSkills)
             {
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                     return true;
             }
             return false;
@@ -457,7 +457,7 @@ namespace RogueEssence.Script
         {
             foreach (SlotSkill skill in character.BaseSkills)
             {
-                if (skill.SkillNum == -1)
+                if (String.IsNullOrEmpty(skill.SkillNum))
                     return true;
             }
             return false;
@@ -474,7 +474,7 @@ namespace RogueEssence.Script
         {
             DungeonScene.GetLevelSkills(chara, oldLevel);
 
-            foreach (int skill in DungeonScene.GetLevelSkills(chara, oldLevel))
+            foreach (string skill in DungeonScene.GetLevelSkills(chara, oldLevel))
             {
                 int learn = -1;
                 if (DataManager.Instance.CurrentReplay != null)
@@ -491,12 +491,12 @@ namespace RogueEssence.Script
 
 
         public LuaFunction TryLearnSkill;
-        public Coroutine _TryLearnSkill(Character chara, int skill)
+        public Coroutine _TryLearnSkill(Character chara, string skill)
         {
             return new Coroutine(__TryLearnSkill(chara, skill));
         }
 
-        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, int skill)
+        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, string skill)
         {
             int learn = -1;
             if (DataManager.Instance.CurrentReplay != null)
@@ -510,7 +510,7 @@ namespace RogueEssence.Script
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
         }
 
-        public void LearnSkill(Character chara, int skillNum)
+        public void LearnSkill(Character chara, string skillNum)
         {
             chara.LearnSkill(skillNum, true);
         }
@@ -520,13 +520,13 @@ namespace RogueEssence.Script
             chara.DeleteSkill(slot);
         }
 
-        public void SetCharacterSkill(Character character, int skillId, int slot)
+        public void SetCharacterSkill(Character character, string skillId, int slot)
         {
             character.ReplaceSkill(skillId, slot, true);
         }
 
 
-        public int GetCharacterSkill(Character chara, int slot)
+        public string GetCharacterSkill(Character chara, int slot)
         {
             return chara.BaseSkills[slot].SkillNum;
         }

@@ -29,7 +29,7 @@ namespace RogueEssence.Dungeon
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteSkill));
 
-            if (context.SkillUsedUp > -1 && !context.User.Dead)
+            if (!String.IsNullOrEmpty(context.SkillUsedUp) && !context.User.Dead)
             {
                 SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
                 LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));

@@ -467,7 +467,7 @@ namespace RogueEssence.Dungeon
                         if (skillIndex > -1)
                         {
                             Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
-                            if (skillState.SkillNum > -1 && skillState.Charges > 0 && !skillState.Sealed)
+                            if (!String.IsNullOrEmpty(skillState.SkillNum) && skillState.Charges > 0 && !skillState.Sealed)
                                 action = new GameAction(GameAction.ActionType.UseSkill, Dir8.None, skillIndex);
                             else
                                 GameManager.Instance.SE("Menu/Cancel");
@@ -620,7 +620,7 @@ namespace RogueEssence.Dungeon
                         {
                             Skill skill = FocusedCharacter.Skills[ii].Element;
                             ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive);
-                            if (skill.SkillNum > -1)
+                            if (!String.IsNullOrEmpty(skill.SkillNum))
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
                                 ShownHotkeys[ii].SetSkill(skillData.GetColoredName(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);

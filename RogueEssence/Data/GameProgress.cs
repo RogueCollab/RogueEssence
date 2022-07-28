@@ -198,9 +198,9 @@ namespace RogueEssence.Data
             }
         }
 
-        public bool GetDefaultEnable(int moveIndex)
+        public bool GetDefaultEnable(string moveIndex)
         {
-            if (moveIndex < 0)
+            if (String.IsNullOrEmpty(moveIndex))
                 return false;
 
             if (DefaultSkill == Settings.SkillDefault.All)
@@ -486,12 +486,12 @@ namespace RogueEssence.Data
             //reroll skills
             BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-            while (character.BaseSkills[0].SkillNum > -1)
+            while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                 character.DeleteSkill(0);
-            List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-            foreach (int skill in final_skills)
+            List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+            foreach (string skill in final_skills)
                 character.LearnSkill(skill, GetDefaultEnable(skill));
-            character.Relearnables = new List<bool>();
+            character.Relearnables = new Dictionary<string, bool>();
         }
 
         public void RestoreLevel()
@@ -592,11 +592,11 @@ namespace RogueEssence.Data
             try
             {
                 //restore skills
-                while (character.BaseSkills[0].SkillNum > -1)
+                while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                     character.DeleteSkill(0);
                 for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
                 {
-                    if (charFrom.BaseSkills[ii].SkillNum > -1)
+                    if (!String.IsNullOrEmpty(charFrom.BaseSkills[ii].SkillNum))
                     {
                         bool enabled = false;
                         foreach (BackReference<Skill> skill in charFrom.Skills)
@@ -612,12 +612,8 @@ namespace RogueEssence.Data
                 }
 
                 //restore remembered skills
-                for (int ii = 0; ii < charFrom.Relearnables.Count; ii++)
-                {
-                    if (ii >= character.Relearnables.Count)
-                        character.Relearnables.Add(false);
-                    character.Relearnables[ii] |= charFrom.Relearnables[ii];
-                }
+                foreach (string key in charFrom.Relearnables.Keys)
+                    character.Relearnables[key] |= charFrom.Relearnables[key];
             }
             catch (Exception ex)
             {

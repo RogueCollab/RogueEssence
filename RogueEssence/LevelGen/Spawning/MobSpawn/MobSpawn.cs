@@ -5,6 +5,7 @@ using RogueEssence.Data;
 using RogueElements;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
@@ -34,8 +35,9 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The skills for the mob.  Empty spaces will be filled based on its current level.
         /// </summary>
+        [JsonConverter(typeof(SkillListConverter))]
         [Dev.DataType(1, DataManager.DataType.Skill, false)]
-        public List<int> SpecifiedSkills;
+        public List<string> SpecifiedSkills;
 
         /// <summary>
         /// The passive skill for the mob.
@@ -64,7 +66,7 @@ namespace RogueEssence.LevelGen
         public MobSpawn()
         {
             BaseForm = new MonsterID(0, 0, -1, Gender.Unknown);
-            SpecifiedSkills = new List<int>();
+            SpecifiedSkills = new List<string>();
             Intrinsic = "";
             Tactic = "";
             SpawnConditions = new List<MobSpawnCheck>();
@@ -117,7 +119,7 @@ namespace RogueEssence.LevelGen
             character.BaseForm = formData;
             character.Level = Level.Pick(map.Rand);
             
-            List<int> final_skills = formEntry.RollLatestSkills(character.Level, SpecifiedSkills);
+            List<string> final_skills = formEntry.RollLatestSkills(character.Level, SpecifiedSkills);
             for (int ii = 0; ii < final_skills.Count; ii++)
                 character.BaseSkills[ii] = new SlotSkill(final_skills[ii]);
 

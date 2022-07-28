@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
                 for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.Players[ii].Skills.Count; jj++)
                 {
                     Skill skill = DataManager.Instance.Save.ActiveTeam.Players[ii].Skills[jj].Element;
-                    if (skill.SkillNum > -1)
+                    if (!String.IsNullOrEmpty(skill.SkillNum))
                     {
                         SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                         string skillString = (skill.Enabled ? "\uE10A " : "") + data.GetColoredName();

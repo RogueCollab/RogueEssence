@@ -21,7 +21,7 @@ namespace RogueEssence.Menu
             this.skillSlot = skillSlot;
 
             bool shiftUp = (skillSlot > 0);
-            bool shiftDown = (skillSlot < DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills.Count - 1) && (DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills[skillSlot + 1].Element.SkillNum > -1);
+            bool shiftDown = (skillSlot < DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills.Count - 1) && !String.IsNullOrEmpty(DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills[skillSlot + 1].Element.SkillNum);
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)

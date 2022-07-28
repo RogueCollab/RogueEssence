@@ -306,7 +306,7 @@ namespace RogueEssence.Dev.ViewModels
 
             choices.SelectedAddEvent += async () =>
             {
-                if ((dataType & (DataManager.DataType.Monster | DataManager.DataType.Skill | DataManager.DataType.Skin | DataManager.DataType.Item)) == DataManager.DataType.None)
+                if ((dataType & (DataManager.DataType.Monster | DataManager.DataType.Skin | DataManager.DataType.Item)) == DataManager.DataType.None)
                 {
                     // Show a name entry window
                     RenameWindow window = new RenameWindow();
@@ -362,7 +362,7 @@ namespace RogueEssence.Dev.ViewModels
 
             choices.SelectedDeleteEvent += async () =>
             {
-                if ((dataType & (DataManager.DataType.Monster | DataManager.DataType.Skill | DataManager.DataType.Skin | DataManager.DataType.Item)) != DataManager.DataType.None)
+                if ((dataType & (DataManager.DataType.Monster | DataManager.DataType.Skin | DataManager.DataType.Item)) != DataManager.DataType.None)
                 {
                     string assetName = choices.ChosenAsset;
 

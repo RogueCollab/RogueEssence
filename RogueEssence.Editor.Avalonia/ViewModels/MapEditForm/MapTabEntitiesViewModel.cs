@@ -30,11 +30,11 @@ namespace RogueEssence.Dev.ViewModels
             Tactics = new ObservableCollection<string>();
             Dictionary<string, string> tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
 
-            keys = new List<string>();
+            tacticKeys = new List<string>();
 
             foreach (string key in tactic_names.Keys)
             {
-                keys.Add(key);
+                tacticKeys.Add(key);
                 Tactics.Add(key + ": " + tactic_names[key]);
             }
 
@@ -70,10 +70,15 @@ namespace RogueEssence.Dev.ViewModels
                 Equips.Add(key + ": " + item_names[key]);
 
             Skills = new ObservableCollection<string>();
-            Skills.Add("---: None");
+            skillKeys = new List<string>();
+            Skills.Add("**Empty**");
+            skillKeys.Add("");
             Dictionary<string, string> skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
             foreach (string key in skill_names.Keys)
+            {
                 Skills.Add(key + ": " + skill_names[key]);
+                skillKeys.Add(key);
+            }
 
             speciesChanged();
 
@@ -106,16 +111,16 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private List<string> keys;
+        private List<string> tacticKeys;
 
         public ObservableCollection<string> Tactics { get; }
 
         public int ChosenTactic
         {
-            get { return keys.IndexOf(SelectedEntity.Tactic.ID); }
+            get { return tacticKeys.IndexOf(SelectedEntity.Tactic.ID); }
             set
             {
-                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(keys[value]));
+                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(tacticKeys[value]));
                 this.RaisePropertyChanged();
             }
         }
@@ -248,45 +253,46 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> skillKeys;
         public ObservableCollection<string> Skills { get; }
 
         //TODO: replace with observable collection- it MUST sync with the original model
         public int ChosenSkill0
         {
-            get { return SelectedEntity.BaseSkills[0].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[0].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 0, SelectedEntity.Skills[0].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
 
         public int ChosenSkill1
         {
-            get { return SelectedEntity.BaseSkills[1].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[1].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 1, SelectedEntity.Skills[1].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
 
         public int ChosenSkill2
         {
-            get { return SelectedEntity.BaseSkills[2].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[2].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 2, SelectedEntity.Skills[2].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
 
         public int ChosenSkill3
         {
-            get { return SelectedEntity.BaseSkills[3].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[3].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 3, SelectedEntity.Skills[3].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
