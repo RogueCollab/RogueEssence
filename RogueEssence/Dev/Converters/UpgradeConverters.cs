@@ -1085,19 +1085,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            if (Serializer.OldVersion < new Version(0, 5, 20, 7))
-            {
-                JObject jObject = JObject.Load(reader);
-                Dictionary<string, int> container = new Dictionary<string, int>();
-                serializer.Populate(jObject.CreateReader(), container);
-
-                foreach (string ii in container.Keys)
-                {
-                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, container[ii]);
-                    dict[ii] = asset_name;
-                }
-            }
-            else if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -1450,19 +1438,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            if (Serializer.OldVersion < new Version(0, 5, 20, 7))
-            {
-                JObject jObject = JObject.Load(reader);
-                Dictionary<string, int> container = new Dictionary<string, int>();
-                serializer.Populate(jObject.CreateReader(), container);
-
-                foreach (string ii in container.Keys)
-                {
-                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, container[ii]);
-                    dict[ii] = asset_name;
-                }
-            }
-            else if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -2019,6 +1995,52 @@ namespace RogueEssence.Dev
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(List<string>);
+        }
+    }
+
+
+
+    public class SkillArrayConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            List<string> dict = new List<string>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<int> container = new List<int>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                foreach (int ii in container)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skill, ii);
+                    dict.Add(asset_name);
+                }
+            }
+            else
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
+            }
+            return dict.ToArray();
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string[]);
         }
     }
 }
