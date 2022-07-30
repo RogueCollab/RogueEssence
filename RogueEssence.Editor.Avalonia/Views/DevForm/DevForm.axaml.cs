@@ -148,8 +148,12 @@ namespace RogueEssence.Dev.Views
                 {
                     Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
                     devViewModel.Player.Monsters.Clear();
+                    devViewModel.Player.MonsterKeys.Clear();
                     foreach (string key in entry_names.Keys)
+                    {
                         devViewModel.Player.Monsters.Add(key + ": " + entry_names[key]);
+                        devViewModel.Player.MonsterKeys.Add(key);
+                    }
                     devViewModel.Player.ChosenMonster = -1;
                     devViewModel.Player.ChosenMonster = 0;
 
@@ -158,8 +162,12 @@ namespace RogueEssence.Dev.Views
 
                     Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
                     devViewModel.Player.Skins.Clear();
+                    devViewModel.Player.SkinKeys.Clear();
                     foreach (string key in skin_names.Keys)
+                    {
                         devViewModel.Player.Skins.Add(key + ": " + entry_names[key]);
+                        devViewModel.Player.SkinKeys.Add(key);
+                    }
                     devViewModel.Player.ChosenSkin = -1;
                     devViewModel.Player.ChosenSkin = 0;
 

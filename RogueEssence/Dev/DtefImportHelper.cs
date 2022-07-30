@@ -196,9 +196,8 @@ namespace RogueEssence.Dev
                     else
                         autoTile.Name = new LocalText(Text.GetMemberTitle(fileName));
 
-                    string index = Text.Sanitize(autoTile.Name.DefaultText.ToLower());
-                    //TODO: String Assets
-                    DataManager.SaveData(index.ToString(), DataManager.DataType.AutoTile.ToString(), autoTile);
+                    string index = Text.Sanitize(autoTile.Name.DefaultText).ToLower();
+                    DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
                     Debug.WriteLine($"{index}: {autoTile.Name}");
                 }
                 ImportHelper.SaveTileSheet(tileList, destFile, tileSize);

@@ -10,6 +10,7 @@ using RogueEssence.Content;
 using RogueEssence.Script;
 using RogueEssence.Menu;
 using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -102,10 +103,12 @@ namespace RogueEssence.Data
         public ExplorerTeam ActiveTeam;
         public ReRandom Rand;
 
-        public List<UnlockState> Dex;
-        public List<bool> RogueStarters;
+        [JsonConverter(typeof(MonsterUnlockConverter))]
+        public Dictionary<string, UnlockState> Dex;
+        [JsonConverter(typeof(MonsterUnlockConverter))]
+        public Dictionary<string, bool> RogueStarters;
 
-        [JsonConverter(typeof(Dev.DungeonUnlockConverter))]
+        [JsonConverter(typeof(DungeonUnlockConverter))]
         public Dictionary<string, UnlockState> DungeonUnlocks;
 
         //TODO: set dungeon unlocks and event flags to save variables
@@ -149,8 +152,8 @@ namespace RogueEssence.Data
             Quest = ModHeader.Invalid;
             Mods = new List<ModHeader>();
 
-            Dex = new List<UnlockState>();
-            RogueStarters = new List<bool>();
+            Dex = new Dictionary<string, UnlockState>();
+            RogueStarters = new Dictionary<string, bool>();
             DungeonUnlocks = new Dictionary<string, UnlockState>();
 
             NextDest = ZoneLoc.Invalid;
@@ -245,40 +248,44 @@ namespace RogueEssence.Data
             ProfilePics = teamProfile.ToArray();
         }
 
-        public UnlockState GetMonsterUnlock(int index)
+        public UnlockState GetMonsterUnlock(string index)
         {
-            return CollectionExt.GetExtendList(Dex, index);
+            UnlockState state = UnlockState.None;
+            Dex.TryGetValue(index, out state);
+            return state;
         }
 
         public int GetTotalMonsterUnlock(UnlockState state)
         {
             int total = 0;
-            for (int ii = 0; ii < Dex.Count; ii++)
+            foreach(string key in Dex.Keys)
             {
-                if (Dex[ii] == state)
+                if (Dex[key] == state)
                     total++;
             }
             return total;
         }
 
-        public virtual void RegisterMonster(int index)
+        public virtual void RegisterMonster(string index)
         {
-            CollectionExt.AssignExtendList(Dex, index, UnlockState.Completed);
+            Dex[index] = UnlockState.Completed;
         }
 
-        public virtual void SeenMonster(int index)
+        public virtual void SeenMonster(string index)
         {
-            if (CollectionExt.GetExtendList(Dex, index) == UnlockState.None)
-                CollectionExt.AssignExtendList(Dex, index, UnlockState.Discovered);
+            if (GetMonsterUnlock(index) == UnlockState.None)
+                Dex[index] = UnlockState.Discovered;
         }
 
-        public virtual void RogueUnlockMonster(int index)
+        public virtual void RogueUnlockMonster(string index)
         {
-            CollectionExt.AssignExtendList(RogueStarters, index, true);
+            RogueStarters[index] = true;
         }
-        public bool GetRogueUnlock(int index)
+        public bool GetRogueUnlock(string index)
         {
-            return CollectionExt.GetExtendList(RogueStarters, index);
+            bool state = false;
+            RogueStarters.TryGetValue(index, out state);
+            return state;
         }
         public UnlockState GetDungeonUnlock(string index)
         {
@@ -734,26 +741,26 @@ namespace RogueEssence.Data
             Rescue = null;
         }
 
-        public List<int> MergeDexTo(GameProgress destProgress, bool completion)
+        public List<string> MergeDexTo(GameProgress destProgress, bool completion)
         {
             //monster encounters
-            List<int> newRecruits = new List<int>();
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+            List<string> newRecruits = new List<string>();
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries.Keys)
             {
-                if (GetMonsterUnlock(ii) == UnlockState.Completed && destProgress.GetMonsterUnlock(ii) != UnlockState.Completed)
+                if (GetMonsterUnlock(key) == UnlockState.Completed && destProgress.GetMonsterUnlock(key) != UnlockState.Completed)
                 {
                     if (completion)
-                        destProgress.RegisterMonster(ii);
+                        destProgress.RegisterMonster(key);
                 }
-                if (GetMonsterUnlock(ii) == UnlockState.Discovered && destProgress.GetMonsterUnlock(ii) == UnlockState.None)
+                if (GetMonsterUnlock(key) == UnlockState.Discovered && destProgress.GetMonsterUnlock(key) == UnlockState.None)
                 {
                     if (completion)
-                        destProgress.SeenMonster(ii);
+                        destProgress.SeenMonster(key);
                 }
-                if (GetRogueUnlock(ii) && !destProgress.GetRogueUnlock(ii))
+                if (GetRogueUnlock(key) && !destProgress.GetRogueUnlock(key))
                 {
-                    destProgress.RogueUnlockMonster(ii);
-                    newRecruits.Add(ii);
+                    destProgress.RogueUnlockMonster(key);
+                    newRecruits.Add(key);
                 }
             }
             return newRecruits;
@@ -1124,15 +1131,6 @@ namespace RogueEssence.Data
             Seeded = seeded;
         }
 
-        public override void SeenMonster(int index)
-        {
-            base.SeenMonster(index);
-        }
-        public override void RegisterMonster(int index)
-        {
-            base.RegisterMonster(index);
-        }
-
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             ZoneData zone = DataManager.Instance.GetZone(zoneID);
@@ -1172,7 +1170,7 @@ namespace RogueEssence.Data
                 MenuBase.Transparent = false;
                 //save to the main file
                 GameState state = DataManager.Instance.LoadMainGameState(false);
-                List<int> newRecruits = new List<int>();
+                List<string> newRecruits = new List<string>();
                 if (state != null)
                 {
                     newRecruits = MergeDexTo(state.Save, false);

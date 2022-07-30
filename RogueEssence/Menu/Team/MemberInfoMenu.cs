@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
                 new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
 
             string speciesName = dexEntry.GetColoredName();
-            if (player.BaseForm.Skin > 0)
+            if (player.BaseForm.Skin != DataManager.Instance.DefaultSkin)
                 speciesName += " (" + DataManager.Instance.GetSkin(player.BaseForm.Skin).GetColoredName() + ")";
             if (player.BaseForm.Gender != Gender.Genderless)
                 speciesName += (player.BaseForm.Gender == Gender.Male) ? " (\u2642)" : " (\u2640)";
@@ -66,8 +66,7 @@ namespace RogueEssence.Menu
             bool inDungeon = (GameManager.Instance.CurrentScene == DungeonScene.Instance);
             for (int ii = 0; ii < dexEntry.Promotions.Count; ii++)
             {
-                //TODO: String Assets
-                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[dexEntry.Promotions[ii].Result.ToString()].Released)
+                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[dexEntry.Promotions[ii].Result].Released)
                     continue;
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {

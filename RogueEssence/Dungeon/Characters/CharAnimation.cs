@@ -79,7 +79,7 @@ namespace RogueEssence.Dungeon
 
         protected virtual bool TakesPrevActionTime() { return false; }
         protected virtual FrameTick AddPrevActionTime() { return (ActionTime + PrevActionTime); }
-        public void PickUpFrom(MonsterID appearance, CharAnimation prevAnim)
+        public void PickUpFrom(CharID appearance, CharAnimation prevAnim)
         {
             AnimRushTime = GraphicsManager.GetChara(appearance).GetRushTime(AnimFrameType, CharDir);
             AnimHitTime = GraphicsManager.GetChara(appearance).GetHitTime(AnimFrameType, CharDir);

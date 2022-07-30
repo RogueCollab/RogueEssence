@@ -87,7 +87,7 @@ namespace RogueEssence.Dungeon
         public Loc GetDrawLoc(Loc offset, CharSheet sheet) { return currentAnim.GetDrawLoc(sheet, offset); }
         public void GetCurrentSprite(CharSheet sheet, out int anim, out int currentTime, out int currentFrame) { currentAnim.GetCurrentSprite(sheet, out anim, out currentTime, out currentFrame); }
 
-        public void PickUpFrom(MonsterID appearance, CharAction prevAction)
+        public void PickUpFrom(CharID appearance, CharAction prevAction)
         {
             currentAnim.PickUpFrom(appearance, prevAction.currentAnim);
         }
@@ -159,7 +159,7 @@ namespace RogueEssence.Dungeon
         {
             charAnim.SetLocWithoutVisual(owner.MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
             currentAnim = charAnim;
-            PickUpFrom(owner.Appearance, prevAction);
+            PickUpFrom(owner.Appearance.ToCharID(), prevAction);
         }
         public virtual void BeginAction(Character owner, CharAction prevAction) { }
         public IEnumerator<YieldInstruction> OnIntro(Character owner)

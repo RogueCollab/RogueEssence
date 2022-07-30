@@ -2043,4 +2043,170 @@ namespace RogueEssence.Dev
             return objectType == typeof(string[]);
         }
     }
+
+    public class SkinConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                int ii = Int32.Parse(reader.Value.ToString());
+                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Skin, ii);
+                return asset_name;
+            }
+            else
+            {
+                string s = (string)reader.Value;
+                return s;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string);
+        }
+    }
+
+    public class MonsterConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                int ii = Int32.Parse(reader.Value.ToString());
+                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Monster, ii);
+                return asset_name;
+            }
+            else
+            {
+                string s = (string)reader.Value;
+                return s;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(string);
+        }
+    }
+
+
+    public class MonsterListConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            List<string> dict = new List<string>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<int> container = new List<int>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                foreach (int ii in container)
+                {
+                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Monster, ii);
+                    dict.Add(asset_name);
+                }
+            }
+            else
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(List<string>);
+        }
+    }
+
+
+    public class MonsterUnlockConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<string, GameProgress.UnlockState> dict = new Dictionary<string, GameProgress.UnlockState>();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JArray jArray = JArray.Load(reader);
+                List<GameProgress.UnlockState> container = new List<GameProgress.UnlockState>();
+                serializer.Populate(jArray.CreateReader(), container);
+
+                for (int ii = 0; ii < container.Count; ii++)
+                {
+                    if (container[ii] > GameProgress.UnlockState.None)
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Monster, ii);
+                        dict[asset_name] = container[ii];
+                    }
+                }
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), dict);
+            }
+            return dict;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<string, GameProgress.UnlockState>);
+        }
+    }
+
 }

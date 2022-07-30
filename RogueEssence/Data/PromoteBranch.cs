@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Data
@@ -7,8 +9,9 @@ namespace RogueEssence.Data
     [Serializable]
     public class PromoteBranch
     {
+        [JsonConverter(typeof(MonsterConverter))]
         [Dev.DataType(0, DataManager.DataType.Monster, false)]
-        public int Result;
+        public string Result;
         public List<PromoteDetail> Details;
 
         public PromoteBranch()

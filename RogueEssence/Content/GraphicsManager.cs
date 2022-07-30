@@ -236,8 +236,8 @@ namespace RogueEssence.Content
         private static Texture2D defaultTex;
         public static BaseSheet Pixel { get; private set; }
 
-        private static LRUCache<MonsterID, CharSheet> spriteCache;
-        private static LRUCache<MonsterID, PortraitSheet> portraitCache;
+        private static LRUCache<CharID, CharSheet> spriteCache;
+        private static LRUCache<CharID, PortraitSheet> portraitCache;
         private static LRUCache<string, IEffectAnim> vfxCache;
         private static LRUCache<string, DirSheet> iconCache;
         private static LRUCache<string, DirSheet> itemCache;
@@ -480,9 +480,9 @@ namespace RogueEssence.Content
             DiagManager.Instance.LoadMsg = "Loading Headers";
 
             //initialize caches
-            spriteCache = new LRUCache<MonsterID, CharSheet>(CHARA_CACHE_SIZE);
+            spriteCache = new LRUCache<CharID, CharSheet>(CHARA_CACHE_SIZE);
             spriteCache.OnItemRemoved = DisposeCachedObject;
-            portraitCache = new LRUCache<MonsterID, PortraitSheet>(PORTRAIT_CACHE_SIZE);
+            portraitCache = new LRUCache<CharID, PortraitSheet>(PORTRAIT_CACHE_SIZE);
             portraitCache.OnItemRemoved = DisposeCachedObject;
             vfxCache = new LRUCache<string, IEffectAnim>(VFX_CACHE_SIZE);
             vfxCache.OnItemRemoved = DisposeCachedObject;
@@ -783,10 +783,10 @@ namespace RogueEssence.Content
             return fullGuide;
         }
 
-        public static MonsterID GetFallbackForm(CharaIndexNode guide, MonsterID data)
+        public static CharID GetFallbackForm(CharaIndexNode guide, CharID data)
         {
-            MonsterID fallback = MonsterID.Invalid;
-            MonsterID buffer = MonsterID.Invalid;
+            CharID fallback = CharID.Invalid;
+            CharID buffer = CharID.Invalid;
             if (guide.Nodes.ContainsKey(data.Species))
             {
                 buffer.Species = data.Species;
@@ -805,10 +805,10 @@ namespace RogueEssence.Content
                             buffer.Skin = trialSkin;
                             if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Position > 0)
                                 fallback = buffer;
-                            if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes.ContainsKey((int)data.Gender))
+                            if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes.ContainsKey(data.Gender))
                             {
                                 buffer.Gender = data.Gender;
-                                if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes[(int)data.Gender].Position > 0)
+                                if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes[data.Gender].Position > 0)
                                     fallback = buffer;
                             }
                             break;
@@ -818,11 +818,11 @@ namespace RogueEssence.Content
                 }
             }
             if (!fallback.IsValid())
-                fallback = new MonsterID(0, -1, -1, Gender.Unknown);
+                fallback = new CharID(0, -1, -1, -1);
             return fallback;
         }
 
-        public static CharSheet GetChara(MonsterID data)
+        public static CharSheet GetChara(CharID data)
         {
             data = GetFallbackForm(CharaIndex, data);
 
@@ -838,7 +838,7 @@ namespace RogueEssence.Content
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
-                            long position = CharaIndex.GetPosition(data.Species, data.Form, (int)data.Skin, (int)data.Gender);
+                            long position = CharaIndex.GetPosition(data.Species, data.Form, data.Skin, data.Gender);
                             // Jump to the correct position
                             stream.Seek(position, SeekOrigin.Begin);
                             sheet = CharSheet.Load(reader);
@@ -861,7 +861,7 @@ namespace RogueEssence.Content
 
 
 
-        public static PortraitSheet GetPortrait(MonsterID data)
+        public static PortraitSheet GetPortrait(CharID data)
         {
             data = GetFallbackForm(PortraitIndex, data);
 
@@ -877,7 +877,7 @@ namespace RogueEssence.Content
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
-                            long position = PortraitIndex.GetPosition(data.Species, data.Form, (int)data.Skin, (int)data.Gender);
+                            long position = PortraitIndex.GetPosition(data.Species, data.Form, data.Skin, data.Gender);
                             // Jump to the correct position
                             stream.Seek(position, SeekOrigin.Begin);
                             sheet = PortraitSheet.Load(reader);

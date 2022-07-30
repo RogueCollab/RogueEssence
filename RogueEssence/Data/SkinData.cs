@@ -17,12 +17,18 @@ namespace RogueEssence.Data
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
+        public int IndexNum;
         public char Symbol;
         public Color MinimapColor;
         public BattleFX LeaderFX;
         public bool Challenge;
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public EntrySummary GenerateEntrySummary()
+        {
+            SkinEntrySummary summary = new SkinEntrySummary(Name, Released, Comment);
+            summary.IndexNum = IndexNum;
+            return summary;
+        }
 
         public SkinData()
         {
@@ -41,6 +47,27 @@ namespace RogueEssence.Data
         public string GetColoredName()
         {
             return String.Format("{0}", Name.ToLocal());
+        }
+    }
+
+    [Serializable]
+    public class SkinEntrySummary : EntrySummary
+    {
+        public int IndexNum;
+
+        public SkinEntrySummary() : base()
+        {
+        }
+
+        public SkinEntrySummary(LocalText name, bool released, string comment) : base(name, released, comment)
+        {
+
+        }
+
+
+        public override int GetSortOrder()
+        {
+            return IndexNum;
         }
     }
 }

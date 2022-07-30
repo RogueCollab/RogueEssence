@@ -16,8 +16,10 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabPlayerViewModel()
         {
             Monsters = new ObservableCollection<string>();
+            MonsterKeys = new List<string>();
             Forms = new ObservableCollection<string>();
             Skins = new ObservableCollection<string>();
+            SkinKeys = new List<string>();
             Genders = new ObservableCollection<string>();
             Anims = new ObservableCollection<string>();
         }
@@ -66,6 +68,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public List<string> MonsterKeys;
+
         public ObservableCollection<string> Monsters { get; }
 
         private int chosenMonster;
@@ -94,6 +98,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+        public List<string> SkinKeys;
         public ObservableCollection<string> Skins { get; }
 
         private int chosenSkin;
@@ -332,7 +338,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 int tempForm = chosenForm;
                 Forms.Clear();
-                MonsterData monster = DataManager.Instance.GetMonster(chosenMonster);
+                MonsterData monster = DataManager.Instance.GetMonster(MonsterKeys[chosenMonster]);
                 for (int ii = 0; ii < monster.Forms.Count; ii++)
                     Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
 
@@ -348,9 +354,9 @@ namespace RogueEssence.Dev.ViewModels
             bool prevUpdate = updating;
             updating = true;
 
-            ChosenMonster = id.Species;
+            ChosenMonster = MonsterKeys.IndexOf(id.Species);
             ChosenForm = id.Form;
-            ChosenSkin = id.Skin;
+            ChosenSkin = SkinKeys.IndexOf(id.Skin);
             ChosenGender = (int)id.Gender;
 
             updating = prevUpdate;
@@ -364,20 +370,20 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 if (GameManager.Instance.IsInGame())
-                    DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                    DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(MonsterKeys[chosenMonster], chosenForm, SkinKeys[chosenSkin], (Gender)chosenGender));
 
 
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
                     if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-                        DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                        DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(MonsterKeys[chosenMonster], chosenForm, SkinKeys[chosenSkin], (Gender)chosenGender));
                 }
                 else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                 {
                     if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0 && GroundScene.Instance.FocusedCharacter != null)
                     {
                         Character character = DataManager.Instance.Save.ActiveTeam.Leader;
-                        character.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                        character.Promote(new MonsterID(MonsterKeys[chosenMonster], chosenForm, SkinKeys[chosenSkin], (Gender)chosenGender));
                         GroundChar leaderChar = GroundScene.Instance.FocusedCharacter;
                         ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader, leaderChar.MapLoc, leaderChar.CharDir, "PLAYER"));
                     }

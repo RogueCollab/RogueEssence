@@ -181,7 +181,7 @@ namespace RogueEssence.Ground
                 if (idleAction != null)
                     idleAction.Override = IdleOverride;
             }
-            action.Begin(CurrentForm);
+            action.Begin(CurrentForm.ToCharID());
             currentCharAction = action;
 
             UpdateFrame();
@@ -257,7 +257,7 @@ namespace RogueEssence.Ground
                 if (idleAction != null)
                     idleAction.Override = IdleOverride;
 
-                currentCharAction.NextAction.Begin(CurrentForm);
+                currentCharAction.NextAction.Begin(CurrentForm.ToCharID());
                 currentCharAction = currentCharAction.NextAction;
             }
 
@@ -325,7 +325,7 @@ namespace RogueEssence.Ground
 
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset)
         {
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
 
             Loc shadowType = new Loc(0, 2 + sheet.ShadowSize * 3);
             Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
@@ -349,7 +349,7 @@ namespace RogueEssence.Ground
                 blank.Draw(spriteBatch, new Rectangle(Bounds.X - offset.X, Bounds.Y - offset.Y,
                     Bounds.Width, Bounds.Height), null, Color.Yellow * 0.7f);
             }
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
             Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);
             Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
             Loc leftHand = currentCharAction.GetActionPoint(sheet, ActionPointType.LeftHand);
@@ -370,7 +370,7 @@ namespace RogueEssence.Ground
         }
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
             currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
@@ -381,23 +381,23 @@ namespace RogueEssence.Ground
         }
 
 
-        public void GetCurrentSprite(out MonsterID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
+        public void GetCurrentSprite(out CharID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
         {
-            currentForm = CurrentForm;
+            currentForm = CurrentForm.ToCharID();
             currentOffset = drawOffset;
             currentHeight = LocHeight;
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
             currentCharAction.GetCurrentSprite(sheet, out currentAnim, out currentTime, out currentFrame);
         }
 
         public override Loc GetDrawLoc(Loc offset)
         {
-            return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm));
+            return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm.ToCharID()));
         }
 
         public override Loc GetDrawSize()
         {
-            return new Loc(GraphicsManager.GetChara(CurrentForm).TileWidth, GraphicsManager.GetChara(CurrentForm).TileHeight);
+            return new Loc(GraphicsManager.GetChara(CurrentForm.ToCharID()).TileWidth, GraphicsManager.GetChara(CurrentForm.ToCharID()).TileHeight);
         }
 
         /// <summary>

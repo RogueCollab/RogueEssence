@@ -45,7 +45,7 @@ namespace RogueEssence.Ground
         }
 
         public virtual void UpdateInput(GameAction action) { }
-        public void Begin(MonsterID appearance)
+        public void Begin(CharID appearance)
         {
             AnimRushTime = GraphicsManager.GetChara(appearance).GetRushTime(AnimFrameType, CharDir);
             AnimHitTime = GraphicsManager.GetChara(appearance).GetHitTime(AnimFrameType, CharDir);

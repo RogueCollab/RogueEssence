@@ -161,6 +161,8 @@ namespace RogueEssence.Data
         public int StartPersonality;
         public ZoneLoc StartMap;
 
+        public MonsterID DefaultMonsterID { get { return new MonsterID(DefaultMonster, 0, DefaultSkin, Gender.Genderless); } }
+        public string DefaultMonster;
         public string DefaultSkill;
         public string DefaultIntrinsic;
         public string DefaultMapStatus;
@@ -169,6 +171,7 @@ namespace RogueEssence.Data
         public string DefaultZone;
         public string DefaultRank;
         public string DefaultAI;
+        public string DefaultSkin;
         public string GenFloor;
         public string GenWall;
         public string GenUnbreakable;
@@ -287,7 +290,7 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.AI, aiCache);
             LoadIndexFull(DataType.Rank, rankCache);
             LoadIndexFull(DataType.Skin, skinCache);
-            LoadUniversalData();
+            LoadUniversalIndices();
         }
 
 
@@ -350,8 +353,9 @@ namespace RogueEssence.Data
         }
 
 
-        public void LoadUniversalData()
+        public void LoadUniversalIndices()
         {
+            //Universal indices on the implementer's side
             foreach (BaseData baseData in UniversalData)
             {
                 try
@@ -384,11 +388,11 @@ namespace RogueEssence.Data
                     foreach (XmlNode startChar in startChars.SelectNodes("StartChar"))
                     {
                         XmlNode startSpecies = startChar.SelectSingleNode("Species");
-                        int species = Int32.Parse(startSpecies.InnerText);
+                        string species = startSpecies.InnerText;
                         XmlNode startForm = startChar.SelectSingleNode("Form");
                         int form = Int32.Parse(startForm.InnerText);
                         XmlNode startSkin = startChar.SelectSingleNode("Skin");
-                        int skin = Int32.Parse(startSkin.InnerText);
+                        string skin = startSkin.InnerText;
                         XmlNode startGender = startChar.SelectSingleNode("Gender");
                         Gender gender = Enum.Parse<Gender>(startGender.InnerText);
 
@@ -413,12 +417,14 @@ namespace RogueEssence.Data
 
                     DefaultZone = xmldoc.DocumentElement.SelectSingleNode("DefaultZone").InnerText;
                     DefaultRank = xmldoc.DocumentElement.SelectSingleNode("DefaultRank").InnerText;
+                    DefaultSkin = xmldoc.DocumentElement.SelectSingleNode("DefaultSkin").InnerText;
                     DefaultAI = xmldoc.DocumentElement.SelectSingleNode("DefaultAI").InnerText;
                     DefaultTile = xmldoc.DocumentElement.SelectSingleNode("DefaultTile").InnerText;
                     DefaultElement = xmldoc.DocumentElement.SelectSingleNode("DefaultElement").InnerText;
                     DefaultMapStatus = xmldoc.DocumentElement.SelectSingleNode("DefaultMapStatus").InnerText;
                     DefaultIntrinsic = xmldoc.DocumentElement.SelectSingleNode("DefaultIntrinsic").InnerText;
                     DefaultSkill = xmldoc.DocumentElement.SelectSingleNode("DefaultSkill").InnerText;
+                    DefaultMonster = xmldoc.DocumentElement.SelectSingleNode("DefaultMonster").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
                     StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
@@ -718,10 +724,6 @@ namespace RogueEssence.Data
             return data;
         }
 
-        public MonsterData GetMonster(int index)
-        {
-            return GetMonster(index.ToString());
-        }
         public MonsterData GetMonster(string index)
         {
             MonsterData data;
@@ -878,10 +880,6 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public SkinData GetSkin(int index)
-        {
-            return GetSkin(index.ToString());
-        }
         public SkinData GetSkin(string index)
         {
             SkinData data = null;

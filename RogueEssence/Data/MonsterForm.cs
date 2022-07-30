@@ -70,7 +70,7 @@ namespace RogueEssence.Data
         public abstract int GetMaxStatBonus(Stat stat);
         public abstract bool CanLearnSkill(string skill);
 
-        public abstract int RollSkin(IRandom rand);
+        public abstract string RollSkin(IRandom rand);
         public abstract int GetPersonalityType(int discriminator);
         public abstract Gender RollGender(IRandom rand);
 
@@ -78,7 +78,7 @@ namespace RogueEssence.Data
 
         public abstract List<Gender> GetPossibleGenders();
 
-        public abstract List<int> GetPossibleSkins();
+        public abstract List<string> GetPossibleSkins();
 
         public abstract List<int> GetPossibleIntrinsicSlots();
 
@@ -104,8 +104,7 @@ namespace RogueEssence.Data
             {
                 if (LevelSkills[ii].Level <= level && !skills.Contains(LevelSkills[ii].Skill))
                 {
-                    //TODO: String Assets
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill.ToString()].Released)
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill].Released)
                         skills.Insert(specifiedSkills.Count, LevelSkills[ii].Skill);
                 }
             }

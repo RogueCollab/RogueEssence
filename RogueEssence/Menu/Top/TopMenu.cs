@@ -35,7 +35,7 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(null); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { StartFlow(new MonsterID(-1, -1, -1, Gender.Unknown), null, -1); }));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { StartFlow(MonsterID.Invalid, null, -1); }));
 
             if (DiagManager.Instance.DevMode || DataManager.Instance.Save != null)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
@@ -272,7 +272,7 @@ namespace RogueEssence.Menu
 
         private static void StartFlow(MonsterID monId, string name, int backPhase)
         {
-            if (monId.Species == -1 || backPhase == 0)
+            if (String.IsNullOrEmpty(monId.Species) || backPhase == 0)
             {
                 if (DataManager.Instance.StartChars.Count > 1)
                 {
@@ -299,7 +299,7 @@ namespace RogueEssence.Menu
                 else
                 {
                     MenuManager.Instance.ClearMenus();
-                    GameManager.Instance.SceneOutcome = Begin(new MonsterID(0, 0, 0, Gender.Genderless), "");
+                    GameManager.Instance.SceneOutcome = Begin(DataManager.Instance.DefaultMonsterID, "");
                     return;
                 }
             }

@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
                 return;
             base.Draw(spriteBatch);
 
-            if (Portrait.Speaker.Species > 0)
+            if (!String.IsNullOrEmpty(Portrait.Speaker.Species))
                 Portrait.Draw(spriteBatch, new Loc());
         }
 

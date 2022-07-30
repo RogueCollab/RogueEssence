@@ -94,7 +94,7 @@ namespace RogueEssence.Dev
 
 
 
-        public delegate void BakeSpecies(string spriteDir, Dictionary<MonsterID, byte[]> spriteData, MonsterID formData);
+        public delegate void BakeSpecies(string spriteDir, Dictionary<CharID, byte[]> spriteData, CharID formData);
 
         public static void ImportAllChars(string spriteRootDirectory, string cachePattern)
         {
@@ -107,7 +107,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void BakeCharSheet(string spriteDir, Dictionary<MonsterID, byte[]> spriteData, MonsterID formData)
+        public static void BakeCharSheet(string spriteDir, Dictionary<CharID, byte[]> spriteData, CharID formData)
         {
             //check to see if files exist
             string[] pngs = Directory.GetFiles(spriteDir, "*.png", SearchOption.TopDirectoryOnly);
@@ -141,7 +141,7 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void BakePortrait(string spriteDir, Dictionary<MonsterID, byte[]> spriteData, MonsterID formData)
+        public static void BakePortrait(string spriteDir, Dictionary<CharID, byte[]> spriteData, CharID formData)
         {
             //check to see if files exist
             string[] pngs = Directory.GetFiles(spriteDir, "*.png", SearchOption.TopDirectoryOnly);
@@ -171,27 +171,27 @@ namespace RogueEssence.Dev
                 if (Directory.Exists(spriteDir))
                 {
                     //check main folder
-                    Dictionary<MonsterID, byte[]> spriteData = new Dictionary<MonsterID, byte[]>();
+                    Dictionary<CharID, byte[]> spriteData = new Dictionary<CharID, byte[]>();
 
-                    bakeMethod(spriteDir, spriteData, new MonsterID(index, -1, -1, (Gender)(-1)));
+                    bakeMethod(spriteDir, spriteData, new CharID(index, -1, -1, -1));
 
                     //check all subfolders
                     foreach (int formDirs in GetAllNumberedDirs(spriteDir, ""))
                     {
                         //get subframes (discount if negative)
-                        bakeMethod(spriteDir + formDirs.ToString("D4") + "/", spriteData, new MonsterID(index, formDirs, -1, (Gender)(-1)));
+                        bakeMethod(spriteDir + formDirs.ToString("D4") + "/", spriteData, new CharID(index, formDirs, -1, -1));
 
                         foreach (int skinDirs in GetAllNumberedDirs(spriteDir + formDirs.ToString("D4") + "/", ""))
                         {
                             //get subframes
                             bakeMethod(spriteDir + formDirs.ToString("D4") + "/" + skinDirs.ToString("D4") + "/",
-                                spriteData, new MonsterID(index, formDirs, skinDirs, (Gender)(-1)));
+                                spriteData, new CharID(index, formDirs, skinDirs, -1));
 
                             foreach (int genderDirs in GetAllNumberedDirs(spriteDir + formDirs.ToString("D4") + "/" + skinDirs.ToString("D4") + "/", ""))
                             {
                                 //get subframes
                                 bakeMethod(spriteDir + formDirs.ToString("D4") + "/" + skinDirs.ToString("D4") + "/" + genderDirs.ToString("D4") + "/",
-                                    spriteData, new MonsterID(index, formDirs, skinDirs, (Gender)genderDirs));
+                                    spriteData, new CharID(index, formDirs, skinDirs, genderDirs));
                             }
                         }
                     }
@@ -208,7 +208,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void SaveSpecies(string destinationPath, Dictionary<MonsterID, byte[]> spriteData)
+        public static void SaveSpecies(string destinationPath, Dictionary<CharID, byte[]> spriteData)
         {
             if (spriteData.Count == 0)
             {
@@ -218,14 +218,14 @@ namespace RogueEssence.Dev
 
             //generate formtree
             CharaIndexNode guide = new CharaIndexNode();
-            Dictionary<MonsterID, long> spritePositions = new Dictionary<MonsterID, long>();
+            Dictionary<CharID, long> spritePositions = new Dictionary<CharID, long>();
             long currentPosition = 0;
-            foreach (MonsterID key in spriteData.Keys)
+            foreach (CharID key in spriteData.Keys)
             {
                 spritePositions[key] = currentPosition;
                 currentPosition += spriteData[key].LongLength;
             }
-            foreach (MonsterID key in spritePositions.Keys)
+            foreach (CharID key in spritePositions.Keys)
                 guide.AddSubValue(0, key.Form, key.Skin, (int)key.Gender);
 
             using (FileStream stream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
@@ -236,7 +236,7 @@ namespace RogueEssence.Dev
                     guide.Save(writer);
 
                     //update how much space it takes
-                    foreach (MonsterID key in spritePositions.Keys)
+                    foreach (CharID key in spritePositions.Keys)
                         guide.AddSubValue(spritePositions[key] + writer.BaseStream.Position, key.Form, key.Skin, (int)key.Gender);
 
                     //save it again

@@ -50,11 +50,11 @@ namespace RogueEssence.Dev.ViewModels
             set => this.SetIfChanged(ref name, value);
         }
 
-        public MonsterID ID;
+        public CharID ID;
 
         public ObservableCollection<MonsterNodeViewModel> Nodes { get; }
 
-        public MonsterNodeViewModel(string name, MonsterID id, bool filled)
+        public MonsterNodeViewModel(string name, CharID id, bool filled)
         {
             this.name = name;
             this.ID = id;
@@ -78,6 +78,10 @@ namespace RogueEssence.Dev.ViewModels
             get { return checkSprites ? GraphicsManager.AssetType.Chara.ToString() : GraphicsManager.AssetType.Portrait.ToString(); }
             set { }
         }
+
+        private List<string> monsterKeys;
+        private List<string> skinKeys;
+
         public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
         public ObservableCollection<SpeciesOpContainer> OpList { get; }
 
@@ -110,7 +114,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private bool hasSprite(CharaIndexNode parent, MonsterID id)
+        private bool hasSprite(CharaIndexNode parent, CharID id)
         {
             return GraphicsManager.GetFallbackForm(parent, id) == id;
         }
@@ -118,7 +122,7 @@ namespace RogueEssence.Dev.ViewModels
         private async void applyOpToCharSheet(CharSheetOp op)
         {
             //get current sprite
-            MonsterID currentForm = chosenMonster.ID;
+            CharID currentForm = chosenMonster.ID;
             string fileName = GetFilename(currentForm.Species);
             if (!Directory.Exists(Path.GetDirectoryName(fileName)))
                 Directory.CreateDirectory(Path.GetDirectoryName(fileName));
@@ -146,7 +150,7 @@ namespace RogueEssence.Dev.ViewModels
             DevForm.ExecuteOrPend(() => { tryApplyOpToCharSheet(op, currentForm, fileName, chosenAnim); });
         }
 
-        private void tryApplyOpToCharSheet(CharSheetOp op, MonsterID currentForm, string fileName, int chosenAnim)
+        private void tryApplyOpToCharSheet(CharSheetOp op, CharID currentForm, string fileName, int chosenAnim)
         {
             lock (GameBase.lockObj)
             {
@@ -155,7 +159,7 @@ namespace RogueEssence.Dev.ViewModels
                 op.Apply(sheet, chosenAnim);
 
                 //load data
-                Dictionary<MonsterID, byte[]> data = LoadSpeciesData(currentForm.Species);
+                Dictionary<CharID, byte[]> data = LoadSpeciesData(currentForm.Species);
 
                 //write sprite data
                 WriteSpeciesData(data, currentForm, sheet);
@@ -181,6 +185,9 @@ namespace RogueEssence.Dev.ViewModels
                 foreach (CharSheetOp op in DevDataManager.CharSheetOps)
                     OpList.Add(new SpeciesOpContainer(op, () => applyOpToCharSheet(op)));
             }
+
+            monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetMappedKeys();
+            skinKeys = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetMappedKeys();
 
             reloadFullList();
         }
@@ -266,7 +273,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnImport_Click()
         {
             //get current sprite
-            MonsterID formdata = chosenMonster.ID;
+            CharID formdata = chosenMonster.ID;
 
             if (chosenMonster.Filled)
             {
@@ -338,7 +345,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void ExportFlow(bool singleSheet)
         {
             //get current sprite
-            MonsterID formdata = chosenMonster.ID;
+            CharID formdata = chosenMonster.ID;
 
             if (!chosenMonster.Filled)
             {
@@ -382,7 +389,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             //get current sprite
-            MonsterID formdata = chosenMonster.ID;
+            CharID formdata = chosenMonster.ID;
 
             MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + GetFormString(formdata), "Delete Sprite Sheet.",
                 MessageBox.MessageBoxButtons.YesNo);
@@ -401,27 +408,26 @@ namespace RogueEssence.Dev.ViewModels
             {
                 Monsters.Clear();
                 CharaIndexNode charaNode = GetIndexNode();
-                for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+                for (int ii = 0; ii < monsterKeys.Count; ii++)
                 {
-                    //TODO: String Assets
-                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()];
+                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[monsterKeys[ii]];
 
-                    MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
+                    CharID dexID = new CharID(ii, -1, -1, -1);
                     MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
                     for (int jj = 0; jj < dex.Forms.Count; jj++)
                     {
-                        MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
+                        CharID formID = new CharID(ii, jj, -1, -1);
                         MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
-                        for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
+                        for (int kk = 0; kk < skinKeys.Count; kk++)
                         {
-                            SkinData skinData = DataManager.Instance.GetSkin(kk);
+                            SkinData skinData = DataManager.Instance.GetSkin(skinKeys[kk]);
                             if (!skinData.Challenge)
                             {
-                                MonsterID skinID = new MonsterID(ii, jj, kk, Gender.Unknown);
+                                CharID skinID = new CharID(ii, jj, kk, -1);
                                 MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
                                 for (int mm = 0; mm < 3; mm++)
                                 {
-                                    MonsterID genderID = new MonsterID(ii, jj, kk, (Gender)mm);
+                                    CharID genderID = new CharID(ii, jj, kk, mm);
                                     MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
                                     skinNode.Nodes.Add(genderNode);
                                 }
@@ -483,14 +489,14 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void Import(string currentPath, MonsterID currentForm)
+        private void Import(string currentPath, CharID currentForm)
         {
             DevForm.ExecuteOrPend(() => { tryImport(currentPath, currentForm); });
 
             chosenMonster.Filled = true;
         }
 
-        private void tryImport(string currentPath, MonsterID currentForm)
+        private void tryImport(string currentPath, CharID currentForm)
         {
             lock (GameBase.lockObj)
             {
@@ -499,7 +505,7 @@ namespace RogueEssence.Dev.ViewModels
                     Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
                 //load data
-                Dictionary<MonsterID, byte[]> data = LoadSpeciesData(currentForm.Species);
+                Dictionary<CharID, byte[]> data = LoadSpeciesData(currentForm.Species);
 
                 //write sprite data
                 if (checkSprites)
@@ -525,12 +531,11 @@ namespace RogueEssence.Dev.ViewModels
         {
             bool success = true;
             CharaIndexNode charaNode = GetIndexNode();
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+            for (int ii = 0; ii < monsterKeys.Count; ii++)
             {
-                //TODO: String Assets
-                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()];
+                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[monsterKeys[ii]];
 
-                MonsterID dexID = new MonsterID(ii, -1, -1, Gender.Unknown);
+                CharID dexID = new CharID(ii, -1, -1, -1);
                 if (hasSprite(charaNode, dexID))
                 {
                     try
@@ -545,7 +550,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
                 for (int jj = 0; jj < dex.Forms.Count; jj++)
                 {
-                    MonsterID formID = new MonsterID(ii, jj, -1, Gender.Unknown);
+                    CharID formID = new CharID(ii, jj, -1, -1);
                     if (hasSprite(charaNode, formID))
                     {
                         try
@@ -558,12 +563,12 @@ namespace RogueEssence.Dev.ViewModels
                             success = false;
                         }
                     }
-                    for (int kk = 0; kk < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; kk++)
+                    for (int kk = 0; kk < skinKeys.Count; kk++)
                     {
-                        SkinData skinData = DataManager.Instance.GetSkin(kk);
+                        SkinData skinData = DataManager.Instance.GetSkin(skinKeys[kk]);
                         if (!skinData.Challenge)
                         {
-                            MonsterID skinID = new MonsterID(ii, jj, kk, Gender.Unknown);
+                            CharID skinID = new CharID(ii, jj, kk, -1);
                             if (hasSprite(charaNode, skinID))
                             {
                                 try
@@ -578,7 +583,7 @@ namespace RogueEssence.Dev.ViewModels
                             }
                             for (int mm = 0; mm < 3; mm++)
                             {
-                                MonsterID genderID = new MonsterID(ii, jj, kk, (Gender)mm);
+                                CharID genderID = new CharID(ii, jj, kk, mm);
                                 if (hasSprite(charaNode, genderID))
                                 {
                                     try
@@ -599,7 +604,7 @@ namespace RogueEssence.Dev.ViewModels
             return success;
         }
 
-        private void Export(string currentPath, MonsterID currentForm, bool singleSheet)
+        private void Export(string currentPath, CharID currentForm, bool singleSheet)
         {
             lock (GameBase.lockObj)
             {
@@ -624,14 +629,14 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void Delete(MonsterID formdata)
+        private void Delete(CharID formdata)
         {
             DevForm.ExecuteOrPend(() => { tryDelete(formdata); });
 
             chosenMonster.Filled = false;
         }
 
-        private void tryDelete(MonsterID formdata)
+        private void tryDelete(CharID formdata)
         {
             lock (GameBase.lockObj)
             {
@@ -639,7 +644,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (!Directory.Exists(Path.GetDirectoryName(fileName)))
                     Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
-                Dictionary<MonsterID, byte[]> data = LoadSpeciesData(formdata.Species);
+                Dictionary<CharID, byte[]> data = LoadSpeciesData(formdata.Species);
 
                 //delete sprite data
                 data.Remove(formdata);
@@ -654,7 +659,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void WriteSpeciesData(Dictionary<MonsterID, byte[]> spriteData, MonsterID formData, CharSheet sprite)
+        private void WriteSpeciesData(Dictionary<CharID, byte[]> spriteData, CharID formData, CharSheet sprite)
         {
             using (MemoryStream stream = new MemoryStream())
             {
@@ -666,32 +671,31 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private Dictionary<MonsterID, byte[]> LoadSpeciesData(int num)
+        private Dictionary<CharID, byte[]> LoadSpeciesData(int num)
         {
-            Dictionary<MonsterID, byte[]> dict = new Dictionary<MonsterID, byte[]>();
+            Dictionary<CharID, byte[]> dict = new Dictionary<CharID, byte[]>();
 
-            MonsterData dex = DataManager.Instance.GetMonster(num);
             CharaIndexNode charaNode = GetIndexNode();
 
             if (charaNode.Nodes.ContainsKey(num))
             {
                 if (charaNode.Nodes[num].Position > 0)
-                    LoadSpeciesFormData(dict, new MonsterID(num, -1, -1, Gender.Unknown));
+                    LoadSpeciesFormData(dict, new CharID(num, -1, -1, -1));
 
                 foreach (int form in charaNode.Nodes[num].Nodes.Keys)
                 {
                     if (charaNode.Nodes[num].Nodes[form].Position > 0)
-                        LoadSpeciesFormData(dict, new MonsterID(num, form, -1, Gender.Unknown));
+                        LoadSpeciesFormData(dict, new CharID(num, form, -1, -1));
 
                     foreach (int skin in charaNode.Nodes[num].Nodes[form].Nodes.Keys)
                     {
                         if (charaNode.Nodes[num].Nodes[form].Nodes[skin].Position > 0)
-                            LoadSpeciesFormData(dict, new MonsterID(num, form, skin, Gender.Unknown));
+                            LoadSpeciesFormData(dict, new CharID(num, form, skin, -1));
 
                         foreach (int gender in charaNode.Nodes[num].Nodes[form].Nodes[skin].Nodes.Keys)
                         {
                             if (charaNode.Nodes[num].Nodes[form].Nodes[skin].Nodes[gender].Position > 0)
-                                LoadSpeciesFormData(dict, new MonsterID(num, form, skin, (Gender)gender));
+                                LoadSpeciesFormData(dict, new CharID(num, form, skin, gender));
                         }
                     }
                 }
@@ -700,7 +704,7 @@ namespace RogueEssence.Dev.ViewModels
             return dict;
         }
 
-        private void LoadSpeciesFormData(Dictionary<MonsterID, byte[]> data, MonsterID formData)
+        private void LoadSpeciesFormData(Dictionary<CharID, byte[]> data, CharID formData)
         {
             using (MemoryStream stream = new MemoryStream())
             {
@@ -716,15 +720,15 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private string GetFormString(MonsterID formdata)
+        private string GetFormString(CharID formdata)
         {
-            string name = DataManager.Instance.GetMonster(formdata.Species).Name.ToLocal();
+            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[monsterKeys[formdata.Species]].Name.ToLocal();
             if (formdata.Form > -1)
-                name += ", " + DataManager.Instance.GetMonster(formdata.Species).Forms[formdata.Form].FormName.ToLocal() + " form";
+                name += ", " + DataManager.Instance.GetMonster(monsterKeys[formdata.Species]).Forms[formdata.Form].FormName.ToLocal() + " form";
             if (formdata.Skin > -1)
-                name += ", " + formdata.Skin + " skin";
-            if (formdata.Gender != Gender.Unknown)
-                name += ", " + formdata.Gender + " gender";
+                name += ", " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries[skinKeys[formdata.Skin]].Name.ToLocal() + " skin";
+            if (formdata.Gender > -1)
+                name += ", " + (Gender)formdata.Gender + " gender";
             return name;
         }
 

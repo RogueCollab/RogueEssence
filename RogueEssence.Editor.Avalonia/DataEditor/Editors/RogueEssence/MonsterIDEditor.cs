@@ -38,21 +38,23 @@ namespace RogueEssence.Dev
                 ComboBox cbForms = new ComboBox();
 
                 cbSpecies.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenSpecies = member.Species;
+
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                List<string> monsterKeys = nameIndex.GetOrderedKeys(false);
+                int chosenSpecies = monsterKeys.IndexOf(member.Species);
 
                 List<string> species = new List<string>();
                 List<string> forms = new List<string>();
 
                 if (dataAtt.InvalidSpecies)
                 {
+                    monsterKeys.Insert(0, "");
                     species.Add("**EMPTY**");
                     chosenSpecies++;
                 }
 
-                //TODO: String Assets
-                for (int ii = 0; ii < nameIndex.Count; ii++)
-                    species.Add(ii.ToString() + ": " + nameIndex.Entries[ii.ToString()].GetLocalString(false));
+                for (int ii = 0; ii < monsterKeys.Count; ii++)
+                    species.Add(monsterKeys[ii] + ": " + nameIndex.Entries[monsterKeys[ii]].GetLocalString(false));
 
                 var speciesSubject = new Subject<List<string>>();
                 var formSubject = new Subject<List<string>>();
@@ -62,7 +64,7 @@ namespace RogueEssence.Dev
                 cbSpecies.SelectedIndex = Math.Min(Math.Max(0, chosenSpecies), species.Count - 1);
                 cbSpecies.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
-                    loadForms(dataAtt, cbSpecies.SelectedIndex, forms);
+                    loadForms(dataAtt, monsterKeys[cbSpecies.SelectedIndex], forms);
                     cbForms.SelectedIndex = -1;
                     cbForms.SelectedIndex = Math.Min(Math.Max(0, cbForms.SelectedIndex), forms.Count - 1);
                     formSubject.OnNext(forms);
@@ -115,19 +117,19 @@ namespace RogueEssence.Dev
 
                 ComboBox cbSkin = new ComboBox();
                 cbSkin.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenIndex = member.Skin;
-                EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Skin];
 
                 List<string> items = new List<string>();
                 if (dataAtt.InvalidSkin)
-                {
                     items.Add("**EMPTY**");
-                    chosenIndex++;
-                }
 
-                //TODO: String Assets
-                for (int ii = 0; ii < nameIndex.Count; ii++)
-                    items.Add(ii.ToString() + ": " + nameIndex.Entries[ii.ToString()].GetLocalString(false));
+                int chosenIndex = 0;
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries.Keys)
+                {
+                    if (key == member.Skin)
+                        chosenIndex = items.Count;
+
+                    items.Add(key + ": " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries[key].GetLocalString(false));
+                }
 
                 var subject = new Subject<List<string>>();
                 cbSkin.Bind(ComboBox.ItemsProperty, subject);
@@ -184,9 +186,11 @@ namespace RogueEssence.Dev
             int innerControlIndex = 0;
             innerControlIndex++;
             ComboBox cbSpecies = (ComboBox)innerControl1.Children[innerControlIndex];
-            result.Species = cbSpecies.SelectedIndex;
+
+            List<string> monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(false);
             if (dataAtt.InvalidSpecies)
-                result.Species--;
+                monsterKeys.Insert(0, "");
+            result.Species = monsterKeys[cbSpecies.SelectedIndex];
 
             controlIndex++;
             Avalonia.Controls.Grid innerControl2 = (Avalonia.Controls.Grid)control.Children[controlIndex];
@@ -203,9 +207,9 @@ namespace RogueEssence.Dev
             innerControlIndex = 0;
             innerControlIndex++;
             ComboBox cbSkin = (ComboBox)innerControl3.Children[innerControlIndex];
-            result.Skin = cbSkin.SelectedIndex;
-            if (dataAtt.InvalidSkin)
-                result.Skin--;
+
+            List<string> skinKeys = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(false);
+            result.Skin = skinKeys[cbSkin.SelectedIndex];
 
             innerControlIndex++;
             innerControlIndex++;
@@ -221,7 +225,7 @@ namespace RogueEssence.Dev
         {
             string name = "???";
 
-            if (obj.Species > -1)
+            if (!String.IsNullOrEmpty(obj.Species))
             {
                 MonsterData data = DataManager.Instance.GetMonster(obj.Species);
                 if (obj.Form > -1)
@@ -232,7 +236,7 @@ namespace RogueEssence.Dev
                 else
                     name = data.Name.ToLocal();
             }
-            if (obj.Skin > -1)
+            if (!String.IsNullOrEmpty(obj.Skin))
             {
                 SkinData data = DataManager.Instance.GetSkin(obj.Skin);
                 name = String.Format("[{0}] ", data.Name.ToLocal()) + name;
@@ -260,7 +264,7 @@ namespace RogueEssence.Dev
             return name;
         }
 
-        private void loadForms(MonsterIDAttribute dataAtt, int species, List<string> forms)
+        private void loadForms(MonsterIDAttribute dataAtt, string species, List<string> forms)
         {
             forms.Clear();
             MonsterData monsterData = DataManager.Instance.GetMonster(species);

@@ -1334,7 +1334,7 @@ namespace RogueEssence.Dungeon
 
             if (FocusedCharacter != null)
             {
-                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm);
+                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm.ToCharID());
                 sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
                 Color frameColor = Color.White;
                 string emoteName = GraphicsManager.Emotions[DebugEmote].Name;
@@ -1348,13 +1348,13 @@ namespace RogueEssence.Dungeon
                 }
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
 
-                MonsterID monId;
+                CharID monId;
                 Loc offset;
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
 
-                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance.ToCharID());
                 frameColor = Color.White;
                 string animName = GraphicsManager.Actions[anim].Name;
                 int resultAnim = charSheet.GetReferencedAnimIndex(anim);

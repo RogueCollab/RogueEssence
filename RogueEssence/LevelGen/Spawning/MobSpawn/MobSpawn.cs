@@ -65,7 +65,7 @@ namespace RogueEssence.LevelGen
         
         public MobSpawn()
         {
-            BaseForm = new MonsterID(0, 0, -1, Gender.Unknown);
+            BaseForm = new MonsterID("", 0, "", Gender.Unknown);
             SpecifiedSkills = new List<string>();
             Intrinsic = "";
             Tactic = "";
@@ -112,7 +112,7 @@ namespace RogueEssence.LevelGen
             if (formData.Gender == Gender.Unknown)
                 formData.Gender = formEntry.RollGender(map.Rand);
 
-            if (formData.Skin == -1)
+            if (String.IsNullOrEmpty(formData.Skin))
                 formData.Skin = formEntry.RollSkin(map.Rand);
 
             CharData character = new CharData();

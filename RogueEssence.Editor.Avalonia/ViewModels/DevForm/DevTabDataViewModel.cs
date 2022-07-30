@@ -143,7 +143,7 @@ namespace RogueEssence.Dev.ViewModels
                 DevHelper.RunIndexing(DataManager.DataType.AutoTile);
                 DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
                 DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);
-                DataManager.Instance.LoadUniversalData();
+                DataManager.Instance.LoadUniversalIndices();
                 DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
                 DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
                 Dictionary<string, string> entries = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetLocalStringArray(true);
@@ -256,7 +256,7 @@ namespace RogueEssence.Dev.ViewModels
                     DevHelper.RunIndexing(dataType);
                     DevHelper.RunExtraIndexing(dataType);
                     DataManager.Instance.LoadIndex(dataType);
-                    DataManager.Instance.LoadUniversalData();
+                    DataManager.Instance.LoadUniversalIndices();
                     DataManager.Instance.ClearCache(dataType);
                     DiagManager.Instance.DevEditor.ReloadData(dataType);
                     Dictionary<string, string> entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
@@ -306,7 +306,7 @@ namespace RogueEssence.Dev.ViewModels
 
             choices.SelectedAddEvent += async () =>
             {
-                if ((dataType & (DataManager.DataType.Monster | DataManager.DataType.Skin | DataManager.DataType.Item)) == DataManager.DataType.None)
+                if ((dataType & DataManager.DataType.Item) == DataManager.DataType.None)
                 {
                     // Show a name entry window
                     RenameWindow window = new RenameWindow();
@@ -362,7 +362,7 @@ namespace RogueEssence.Dev.ViewModels
 
             choices.SelectedDeleteEvent += async () =>
             {
-                if ((dataType & (DataManager.DataType.Monster | DataManager.DataType.Skin | DataManager.DataType.Item)) != DataManager.DataType.None)
+                if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
                 {
                     string assetName = choices.ChosenAsset;
 

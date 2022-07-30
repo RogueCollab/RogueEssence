@@ -18,42 +18,41 @@ namespace RogueEssence.Menu
         private string team;
         private string chosenDest;
         public int FormSetting;
-        public int SkinSetting;
+        public string SkinSetting;
         public Gender GenderSetting;
         public int IntrinsicSetting;
         private SummaryMenu titleMenu;
         private CharaSummary infoMenu;
         public SpeakerPortrait Portrait;
-        private List<int> startChars;
+        private List<string> startChars;
         private ulong? seed;
 
         public CharaChoiceMenu(string teamName, string chosenDungeon, ulong? seed)
         {
             GenderSetting = Gender.Unknown;
-            SkinSetting = 0;
+            SkinSetting = DataManager.Instance.DefaultSkin;
             IntrinsicSetting = -1;
             FormSetting = -1;
             
-            startChars = new List<int>();
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+            startChars = new List<string>();
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries.Keys)
             {
                 if (DiagManager.Instance.DevMode)
-                    startChars.Add(ii);
-                //TODO: String Assets
-                else if (DataManager.Instance.Save.GetRogueUnlock(ii) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()].Released)
-                    startChars.Add(ii);
-                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == ii) > -1)
-                    startChars.Add(ii);
+                    startChars.Add(key);
+
+                else if (DataManager.Instance.Save.GetRogueUnlock(key) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[key].Released)
+                    startChars.Add(key);
+                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == key) > -1)
+                    startChars.Add(key);
             }
 
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(startChars[MathUtils.Rand.Next(startChars.Count)]); }));
+            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(MathUtils.Rand.Next(startChars.Count)); }));
             for (int ii = 0; ii < startChars.Count; ii++)
             {
-                int startChar = startChars[ii];
-                //TODO: String Assets
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChar.ToString()].GetColoredName(), () => { choose(startChar); }));
+                int startSlot = ii;
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[startChars[ii]].GetColoredName(), () => { choose(startSlot); }));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
@@ -91,7 +90,7 @@ namespace RogueEssence.Menu
 
             titleMenu.Draw(spriteBatch);
 
-            if (Portrait.Speaker.Species > 0)
+            if (!String.IsNullOrEmpty(Portrait.Speaker.Species))
                 Portrait.Draw(spriteBatch, new Loc());
 
             if (!Inactive)
@@ -126,7 +125,7 @@ namespace RogueEssence.Menu
                 if (totalChoice > 0)
                 {
                     GameManager.Instance.SE("Menu/Confirm");
-                    CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : -1, this);
+                    CharaDetailMenu menu = new CharaDetailMenu(totalChoice > 0 ? startChars[totalChoice - 1] : "", this);
                     MenuManager.Instance.AddMenu(menu, true);
                 }
                 else//TODO: allow editing on the random spot
@@ -142,7 +141,7 @@ namespace RogueEssence.Menu
             
             if (totalChoice > 0)
             {
-                int species = startChars[totalChoice - 1];
+                string species = startChars[totalChoice - 1];
                 MonsterData monsterData = DataManager.Instance.GetMonster(species);
                 int formSlot = FormSetting;
                 List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
@@ -182,7 +181,7 @@ namespace RogueEssence.Menu
             else
             {
                 Portrait.Speaker = new MonsterID();
-                infoMenu.SetDetails("", -1, Gender.Unknown, "");
+                infoMenu.SetDetails("", "", Gender.Unknown, "");
             }
             
         }
@@ -208,7 +207,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.Name = team;
 
-            MonsterData monsterData = DataManager.Instance.GetMonster(choice);
+            MonsterData monsterData = DataManager.Instance.GetMonster(startChars[choice]);
 
             int formSlot = FormSetting;
             List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
@@ -234,7 +233,7 @@ namespace RogueEssence.Menu
             else
                 intrinsic = monsterData.Forms[formIndex].Intrinsic3;
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(choice, formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(startChars[choice], formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
             newChar.Nickname = name;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
 

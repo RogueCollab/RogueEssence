@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
@@ -14,34 +15,46 @@ namespace RogueEssence.Menu
 
         SummaryMenu summaryMenu;
         SpeakerPortrait portrait;
-        
+        List<string> numericKeys;
+
         public DexMenu()
         {
             int lastEntry = -1;
             int seen = 0;
             int befriended = 0;
-            for (int ii = 1; ii < DataManager.Instance.DataIndices[DataManager.DataType.Monster].Count; ii++)
+
+            numericKeys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetMappedKeys();
+            for (int ii = 0; ii < numericKeys.Count; ii++)
             {
-                if (DataManager.Instance.Save.GetMonsterUnlock(ii) > GameProgress.UnlockState.None)
+                if (numericKeys[ii] == null)
+                    continue;
+                if (numericKeys[ii] == DataManager.Instance.DefaultMonster)
+                    continue;
+
+                if (DataManager.Instance.Save.GetMonsterUnlock(numericKeys[ii]) > GameProgress.UnlockState.None)
                 {
                     lastEntry = ii;
                     seen++;
-                    if (DataManager.Instance.Save.GetMonsterUnlock(ii) == GameProgress.UnlockState.Completed)
+                    if (DataManager.Instance.Save.GetMonsterUnlock(numericKeys[ii]) == GameProgress.UnlockState.Completed)
                         befriended++;
                 }
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            for (int ii = 1; ii <= lastEntry; ii++)
+            for (int ii = 0; ii < lastEntry; ii++)
             {
-                if (DataManager.Instance.Save.GetMonsterUnlock(ii) > GameProgress.UnlockState.None)
+                if (numericKeys[ii] == null)
+                    continue;
+                if (numericKeys[ii] == DataManager.Instance.DefaultMonster)
+                    continue;
+
+                if (DataManager.Instance.Save.GetMonsterUnlock(numericKeys[ii]) > GameProgress.UnlockState.None)
                 {
-                    Color color = (DataManager.Instance.Save.GetMonsterUnlock(ii) == GameProgress.UnlockState.Completed) ? Color.White : Color.Gray;
+                    Color color = (DataManager.Instance.Save.GetMonsterUnlock(numericKeys[ii]) == GameProgress.UnlockState.Completed) ? Color.White : Color.Gray;
                     
                     //name
                     MenuText dexNum = new MenuText(ii.ToString("D3"), new Loc(2, 1), color);
-                    //TODO: String Assets
-                    MenuText dexName = new MenuText(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[ii.ToString()].Name.ToLocal(), new Loc(24, 1), color);
+                    MenuText dexName = new MenuText(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[numericKeys[ii]].Name.ToLocal(), new Loc(24, 1), color);
                     flatChoices.Add(new MenuElementChoice(() => { choose(ii); }, true, dexNum, dexName));
                 }
                 else
@@ -74,7 +87,7 @@ namespace RogueEssence.Menu
             
             summaryMenu.Draw(spriteBatch);
 
-            if (portrait.Speaker.Species > 0)
+            if (!String.IsNullOrEmpty(portrait.Speaker.Species))
                 portrait.Draw(spriteBatch, new Loc());
 
         }
@@ -82,8 +95,8 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             int totalChoice = CurrentChoiceTotal + 1;
-            if (DataManager.Instance.Save.GetMonsterUnlock(totalChoice) > GameProgress.UnlockState.None)
-                portrait.Speaker = new MonsterID(totalChoice, 0, -1, Gender.Unknown);
+            if (DataManager.Instance.Save.GetMonsterUnlock(numericKeys[totalChoice]) > GameProgress.UnlockState.None)
+                portrait.Speaker = new MonsterID(numericKeys[totalChoice], 0, "", Gender.Unknown);
             else
                 portrait.Speaker = new MonsterID();
             base.ChoiceChanged();

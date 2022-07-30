@@ -210,7 +210,7 @@ namespace RogueEssence.Script
         /// <param name="form"></param>
         /// <param name="skin"></param>
         /// <param name="gender"></param>
-        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender)
+        public void SetSpeaker(string name, bool keysound, string specie, int form, string skin, Gender gender)
         {
             m_curspeakerID = new MonsterID(specie, form, skin, gender);
             m_curspeakerName = name;

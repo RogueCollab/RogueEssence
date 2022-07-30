@@ -27,8 +27,11 @@ namespace RogueEssence.Data
             MonsterEntrySummary summary = new MonsterEntrySummary(Name, Released, Comment);
             foreach (BaseMonsterForm form in Forms)
                 summary.Forms.Add(form.GenerateEntrySummary());
+            summary.IndexNum = IndexNum;
             return summary;
         }
+
+        public int IndexNum;
 
         /// <summary>
         /// How fast this unit levels up.  Uses the Growth Group EXP tables.
@@ -49,8 +52,9 @@ namespace RogueEssence.Data
         public int JoinRate;
 
 
-        [Dev.DataType(0, DataManager.DataType.Monster, true)]
-        public int PromoteFrom;
+        [JsonConverter(typeof(MonsterConverter))]
+        [Dev.DataType(0, DataManager.DataType.Monster, false)]
+        public string PromoteFrom;
         public List<PromoteBranch> Promotions;
 
         public List<BaseMonsterForm> Forms;
@@ -63,7 +67,7 @@ namespace RogueEssence.Data
             EXPTable = "";
             SkillGroup1 = "";
             SkillGroup2 = "";
-            PromoteFrom = -1;
+            PromoteFrom = "";
             Promotions = new List<PromoteBranch>();
             Forms = new List<BaseMonsterForm>();
         }
@@ -82,6 +86,7 @@ namespace RogueEssence.Data
     public class MonsterEntrySummary : EntrySummary
     {
         public List<BaseFormSummary> Forms;
+        public int IndexNum;
 
         public MonsterEntrySummary() : base()
         {
@@ -97,6 +102,12 @@ namespace RogueEssence.Data
         public override string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
+
+
+        public override int GetSortOrder()
+        {
+            return IndexNum;
         }
     }
 

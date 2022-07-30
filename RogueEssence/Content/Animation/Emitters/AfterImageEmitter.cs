@@ -32,7 +32,7 @@ namespace RogueEssence.Content
         private FrameTick CurrentBurstTime;
 
         [NonSerialized]
-        private Dungeon.MonsterID CurrentForm;
+        private CharID CurrentForm;
         [NonSerialized]
         private int CurrentAnim;
         [NonSerialized]
