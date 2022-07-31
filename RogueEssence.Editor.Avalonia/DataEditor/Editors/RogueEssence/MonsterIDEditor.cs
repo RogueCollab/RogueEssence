@@ -176,7 +176,7 @@ namespace RogueEssence.Dev
 
         public override MonsterID SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            MonsterID result = new MonsterID();
+            MonsterID result = MonsterID.Invalid;
             MonsterIDAttribute dataAtt = ReflectionExt.FindAttribute<MonsterIDAttribute>(attributes);
 
             int controlIndex = 0;

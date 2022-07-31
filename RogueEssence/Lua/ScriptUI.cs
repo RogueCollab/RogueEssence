@@ -25,7 +25,7 @@ namespace RogueEssence.Script
 
         //Variables for storing multi-step operations, like setting the speaker in a dialog
         private object                 m_choiceresult = -1;
-        private MonsterID       m_curspeakerID = new MonsterID();
+        private MonsterID       m_curspeakerID = MonsterID.Invalid;
         private string              m_curspeakerName= "";
         private bool m_curcenter_h = false;
         private bool m_curcenter_v = false;

@@ -107,13 +107,13 @@ namespace RogueEssence.Ground
         }
 
 
-        public GroundChar() : this(new MonsterID(), new Loc(), Dir8.Down, "GroundChar")
+        public GroundChar() : this(new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), new Loc(), Dir8.Down, "GroundChar")
         {
             //!#FIXME : Give a default unique name please fix this when we have editor/template names!
         }
 
         [JsonConstructor]
-        public GroundChar(bool populateSlots) : this(new MonsterID(), new Loc(), Dir8.Down, "", "GroundChar", populateSlots)
+        public GroundChar(bool populateSlots) : this(new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), new Loc(), Dir8.Down, "", "GroundChar", populateSlots)
         {
         }
 

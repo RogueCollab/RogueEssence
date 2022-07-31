@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
             Bounds = bounds;
             this.baseMenu = baseMenu;
 
-            Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0),
+            Portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0),
                 new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), false);
 
             Nickname = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight));

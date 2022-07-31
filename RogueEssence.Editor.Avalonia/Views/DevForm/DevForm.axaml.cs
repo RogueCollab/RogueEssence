@@ -165,7 +165,7 @@ namespace RogueEssence.Dev.Views
                     devViewModel.Player.SkinKeys.Clear();
                     foreach (string key in skin_names.Keys)
                     {
-                        devViewModel.Player.Skins.Add(key + ": " + entry_names[key]);
+                        devViewModel.Player.Skins.Add(key + ": " + skin_names[key]);
                         devViewModel.Player.SkinKeys.Add(key);
                     }
                     devViewModel.Player.ChosenSkin = -1;

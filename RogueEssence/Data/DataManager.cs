@@ -1346,7 +1346,7 @@ namespace RogueEssence.Data
                         //read result
                         reader.ReadInt32();
                         //read zone
-                        reader.ReadInt32();
+                        reader.ReadString();
                         //read rogue mode
                         reader.ReadBoolean();
                         //seeded run
@@ -1454,7 +1454,7 @@ namespace RogueEssence.Data
                         //read result
                         writer.Write(reader.ReadInt32());
                         //read zone
-                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadString());
                         //read rogue mode
                         writer.Write(reader.ReadBoolean());
                         //seeded run

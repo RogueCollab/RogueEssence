@@ -584,7 +584,7 @@ namespace RogueEssence
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
             else
             {
-                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
+                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 
@@ -995,7 +995,7 @@ namespace RogueEssence
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(DataManager.Instance.DefaultRank);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, "", 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), DataManager.Instance.StartLevel, "", 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 

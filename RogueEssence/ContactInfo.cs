@@ -26,7 +26,7 @@ namespace RogueEssence
 
         public string GetLocalRankStr()
         {
-            if (!String.IsNullOrEmpty(Rank))
+            if (String.IsNullOrEmpty(Rank))
                 return "**Empty**";
             return /*Rank.ToLocal() + */new string('\uE10C', RankStars);
         }

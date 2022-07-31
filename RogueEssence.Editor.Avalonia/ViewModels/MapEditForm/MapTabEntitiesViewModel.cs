@@ -64,6 +64,8 @@ namespace RogueEssence.Dev.ViewModels
 
             Intrinsics = new ObservableCollection<string>();
             intrinsicKeys = new List<string>();
+            Intrinsics.Add("---: None");
+            intrinsicKeys.Add("");
             Dictionary<string, string> intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
             foreach (string key in intrinsic_names.Keys)
             {
@@ -256,10 +258,10 @@ namespace RogueEssence.Dev.ViewModels
                         ItemData entry = (ItemData)item.GetData();
                         if (entry.MaxStack > 1)
                             item.HiddenValue = entry.MaxStack;
-                        SelectedEntity.EquipItem(item);
+                        SelectedEntity.EquippedItem = item;
                     }
                     else
-                        SelectedEntity.DequipItem();
+                        SelectedEntity.EquippedItem = new InvItem();
                 }
                 this.RaisePropertyChanged();
             }

@@ -105,7 +105,7 @@ namespace RogueEssence.Data
 
         [JsonConverter(typeof(MonsterUnlockConverter))]
         public Dictionary<string, UnlockState> Dex;
-        [JsonConverter(typeof(MonsterUnlockConverter))]
+        [JsonConverter(typeof(MonsterBoolDictConverter))]
         public Dictionary<string, bool> RogueStarters;
 
         [JsonConverter(typeof(DungeonUnlockConverter))]

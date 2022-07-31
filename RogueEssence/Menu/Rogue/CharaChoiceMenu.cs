@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
             chosenDest = chosenDungeon;
             this.seed = seed;
 
-            Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 64), true);
+            Portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(200, 64), true);
 
             infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
 
@@ -180,8 +180,8 @@ namespace RogueEssence.Menu
             }
             else
             {
-                Portrait.Speaker = new MonsterID();
-                infoMenu.SetDetails("", "", Gender.Unknown, "");
+                Portrait.Speaker = MonsterID.Invalid;
+                infoMenu.SetDetails("", DataManager.Instance.DefaultSkin, Gender.Unknown, "");
             }
             
         }

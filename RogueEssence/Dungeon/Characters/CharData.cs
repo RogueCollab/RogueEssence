@@ -98,7 +98,9 @@ namespace RogueEssence.Dungeon
 
 
         public CharData() : this(true)
-        { }
+        {
+            BaseForm = new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless);
+        }
 
         [JsonConstructor]
         public CharData(bool populateSlots)

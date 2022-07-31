@@ -709,7 +709,7 @@ namespace RogueEssence.Dev.ViewModels
 
                             CharData chdata = new CharData();
                             chdata.Nickname = "";
-                            chdata.BaseForm = new MonsterID();
+                            chdata.BaseForm = new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless);
                             chdata.Level = 1;
                             Character ch = new Character(chdata);
                             AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
