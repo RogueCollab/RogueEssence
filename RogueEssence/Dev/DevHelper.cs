@@ -202,6 +202,14 @@ namespace RogueEssence.Dev
                 convertAssetType(DataManager.DataType.Monster);
             }
 
+            oldVersion = GetTypeVersion(DataManager.DataType.Item);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetType(DataManager.DataType.Item);
+            }
+
+
             oldVersion = GetTypeVersion(DataManager.DataType.Zone);
             if (oldVersion < StringAssetVersion)
             {

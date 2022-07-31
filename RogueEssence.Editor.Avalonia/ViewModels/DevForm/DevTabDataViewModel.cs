@@ -306,80 +306,38 @@ namespace RogueEssence.Dev.ViewModels
 
             choices.SelectedAddEvent += async () =>
             {
-                if ((dataType & DataManager.DataType.Item) == DataManager.DataType.None)
+                // Show a name entry window
+                RenameWindow window = new RenameWindow();
+                RenameViewModel vm = new RenameViewModel();
+                window.DataContext = vm;
+
+                bool result = await window.ShowDialog<bool>(form);
+                if (!result)
+                    return;
+
+                lock (GameBase.lockObj)
                 {
-                    // Show a name entry window
-                    RenameWindow window = new RenameWindow();
-                    RenameViewModel vm = new RenameViewModel();
-                    window.DataContext = vm;
-
-                    bool result = await window.ShowDialog<bool>(form);
-                    if (!result)
-                        return;
-
-                    lock (GameBase.lockObj)
-                    {
-                        string assetName = Text.GetNonConflictingName(Text.Sanitize(vm.Name), DataManager.Instance.DataIndices[dataType].Entries.ContainsKey);
-                        DataManager.Instance.ContentChanged(dataType, assetName, createOp());
-                        string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
-                        choices.AddEntry(assetName, newName);
-                    }
-                }
-                else
-                {
-                    DataEditForm editor = new DataEditRootForm();
-                    IEntryData data;
-                    string entryNum;
-                    lock (GameBase.lockObj)
-                    {
-                        //TODO: String Assets
-                        entryNum = DataManager.Instance.DataIndices[dataType].Count.ToString();
-                        data = createOp();
-
-                        editor.Title = DataEditor.GetWindowTitle(String.Format("{0} #{1:D3}", dataType.ToString(), entryNum), data.Name.ToLocal(), data, data.GetType()); data.ToString();
-                        DataEditor.LoadDataControls(data, editor);
-
-                    }
-                    editor.SelectedOKEvent += async () =>
-                        {
-                            lock (GameBase.lockObj)
-                            {
-                                object obj = data;
-                                DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
-                                data = (IEntryData)obj;
-                                DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
-
-                                string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
-                                choices.AddEntry(entryNum, newName);
-                                return true;
-                            }
-                        };
-
-                    editor.Show();
+                    string assetName = Text.GetNonConflictingName(Text.Sanitize(vm.Name), DataManager.Instance.DataIndices[dataType].Entries.ContainsKey);
+                    DataManager.Instance.ContentChanged(dataType, assetName, createOp());
+                    string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
+                    choices.AddEntry(assetName, newName);
                 }
             };
 
 
             choices.SelectedDeleteEvent += async () =>
             {
-                if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
-                {
-                    string assetName = choices.ChosenAsset;
+                string assetName = choices.ChosenAsset;
 
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to delete the following "+dataType.ToString()+":\n" + assetName, "Delete " + dataType.ToString(),
-                        MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
-                        return;
+                MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to delete the following " + dataType.ToString() + ":\n" + assetName, "Delete " + dataType.ToString(),
+                    MessageBox.MessageBoxButtons.YesNo);
+                if (result == MessageBox.MessageBoxResult.No)
+                    return;
 
-                    lock (GameBase.lockObj)
-                    {
-                        DataManager.Instance.ContentChanged(dataType, assetName, null);
-                        choices.DeleteEntry(assetName);
-                    }
-                }
-                else
+                lock (GameBase.lockObj)
                 {
-                    await MessageBox.Show(form, "This feature doesn't work right now.", "Not Implemented", MessageBox.MessageBoxButtons.Ok);
+                    DataManager.Instance.ContentChanged(dataType, assetName, null);
+                    choices.DeleteEntry(assetName);
                 }
             };
             return choices;

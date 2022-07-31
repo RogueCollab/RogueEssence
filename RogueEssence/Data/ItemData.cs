@@ -50,8 +50,11 @@ namespace RogueEssence.Data
             ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, UsageType);
             foreach (ItemState state in ItemStates)
                 summary.States.Add(new FlagType(state.GetType()));
+            summary.SortCategory = SortCategory;
             return summary;
         }
+
+        public int SortCategory;
 
         /// <summary>
         /// How much the item sells for.
@@ -157,6 +160,7 @@ namespace RogueEssence.Data
     {
         public ItemData.UseType UsageType;
         public List<FlagType> States;
+        public int SortCategory;
 
         public ItemEntrySummary() : base()
         {
@@ -172,6 +176,11 @@ namespace RogueEssence.Data
         public override string GetColoredName()
         {
             return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+        }
+
+        public override int GetSortOrder()
+        {
+            return SortCategory;
         }
 
         public bool ContainsState<T>() where T : ItemState

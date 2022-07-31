@@ -66,22 +66,10 @@ namespace RogueEssence.Data
         {
             Dictionary<string, string> names = new Dictionary<string, string>();
 
-            //TODO: string assets
-            List<int> legacyNames = new List<int>();
             List<string> curNames = new List<string>();
             foreach (string key in Entries.Keys)
-            {
-                int num;
-                if (Int32.TryParse(key, out num))
-                    legacyNames.Add(num);
-                else
-                    curNames.Add(key);
-            }
-            legacyNames.Sort();
+                curNames.Add(key);
             curNames.Sort();
-
-            foreach (int num in legacyNames)
-                names[num.ToString()] = Entries[num.ToString()].GetLocalString(verbose);
 
             foreach (string name in curNames)
                 names[name] = Entries[name].GetLocalString(verbose);
