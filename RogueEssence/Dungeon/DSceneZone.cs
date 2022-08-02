@@ -228,11 +228,18 @@ namespace RogueEssence.Dungeon
 
             //remove reward item
             MapItem offeredItem = new MapItem();
-            offeredItem.IsMoney = (action[0] == 1);
-            offeredItem.Value = action[1];
-            offeredItem.HiddenValue = action[2];
+            int nn = 0;
+            offeredItem.IsMoney = (action[nn] == 1);
+            nn++;
+            int itemLength = action[nn];
+            nn++;
+            string itemName = "";
+            for (int ii = 0; ii < itemLength; ii++)
+                itemName += (char)action[nn + ii];
+            nn += itemLength;
+            offeredItem.Value = itemName;
 
-            if (offeredItem.Value > -1)
+            if (!String.IsNullOrEmpty(offeredItem.Value))
             {
                 if (offeredItem.IsMoney)
                     ActiveTeam.Bank -= offeredItem.HiddenValue;
@@ -259,7 +266,7 @@ namespace RogueEssence.Dungeon
                             }
                         }
                         List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
-                        itemsToTake.Add(new WithdrawSlot(true, 0, chosenIndex));
+                        itemsToTake.Add(new WithdrawSlot(true, "", chosenIndex));
                         ActiveTeam.TakeItems(itemsToTake);
                     }
                     else
@@ -271,10 +278,11 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            int nameLength = action[3];
+            int nameLength = action[nn];
+            nn++;
             string name = "";
             for (int ii = 0; ii < nameLength; ii++)
-                name += (char)action[4 + ii];
+                name += (char)action[nn + ii];
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(name, mail));
 

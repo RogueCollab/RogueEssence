@@ -223,7 +223,7 @@ namespace RogueEssence.Dungeon
                             }
                             else if (memberTeam is MonsterTeam)
                             {
-                                if (item.Price > 0 || item.IsMoney || character.EquippedItem.ID > -1)
+                                if (item.Price > 0 || item.IsMoney || !String.IsNullOrEmpty(character.EquippedItem.ID))
                                     wantItem = false;
                                 else
                                     PickupHoldItem(character);
@@ -392,7 +392,7 @@ namespace RogueEssence.Dungeon
 
             bool teamCharacter = ActiveTeam.Players.Contains(character) || ActiveTeam.Guests.Contains(character);
             GameManager.Instance.SE(teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE);
-            if (character.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(character.EquippedItem.ID))
             {
                 LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.GetDisplayName(false), item.GetDisplayName(), character.EquippedItem.GetDisplayName()));
                 //spawn item on floor
@@ -621,7 +621,7 @@ namespace RogueEssence.Dungeon
 
                 GameManager.Instance.SE(GraphicsManager.EquipSE);
 
-                if (itemChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(itemChar.EquippedItem.ID))
                 {
                     LogMsg(Text.FormatKey("MSG_ITEM_SWAP", itemChar.GetDisplayName(false), item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName()));
                     //put item in inv
@@ -962,7 +962,7 @@ namespace RogueEssence.Dungeon
             if (!player.Dead)
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(player, player, DataManager.Instance.SendHomeFX));
 
-            if (player.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
                 player.DequipItem();
@@ -987,7 +987,7 @@ namespace RogueEssence.Dungeon
         {
             Character player = ActiveTeam.Players[index];
 
-            if (player.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
                 player.DequipItem();

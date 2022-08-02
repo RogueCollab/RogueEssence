@@ -22,6 +22,7 @@ namespace RogueEssence.Dev.ViewModels
             Statuses = new ObservableCollection<string>();
             StatusKeys = new List<string>();
             Items = new ObservableCollection<string>();
+            ItemKeys = new List<string>();
         }
 
         public ObservableCollection<string> Skills { get; }
@@ -57,6 +58,7 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref chosenStatus, value); }
         }
 
+        public List<string> ItemKeys;
         public ObservableCollection<string> Items { get; }
 
         private int chosenItem;
@@ -123,7 +125,7 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 DevForm.SetConfig("ItemChoice", chosenItem);
-                InvItem item = new InvItem(chosenItem);
+                InvItem item = new InvItem(ItemKeys[chosenItem]);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1)
                     item.HiddenValue = entry.MaxStack;

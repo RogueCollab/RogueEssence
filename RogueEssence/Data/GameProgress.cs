@@ -345,7 +345,7 @@ namespace RogueEssence.Data
                     int heldSlots = 0;
                     foreach (Character player in ActiveTeam.Players)
                     {
-                        if (player.EquippedItem.ID > -1)
+                        if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                             heldSlots++;
                     }
                     List<InvItem> itemsToStore = new List<InvItem>();
@@ -360,7 +360,7 @@ namespace RogueEssence.Data
                     {
                         foreach (Character player in ActiveTeam.Players)
                         {
-                            if (player.EquippedItem.ID > -1)
+                            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                             {
                                 removedItems = true;
                                 itemsToStore.Add(player.EquippedItem);
@@ -640,7 +640,7 @@ namespace RogueEssence.Data
             {
                 foreach (Character character in ActiveTeam.EnumerateChars())
                 {
-                    if (character.EquippedItem.ID > -1)
+                    if (!String.IsNullOrEmpty(character.EquippedItem.ID))
                     {
                         character.EquippedItem.Cursed = false;
                         ItemData entry = DataManager.Instance.GetItem(character.EquippedItem.ID);
@@ -865,7 +865,9 @@ namespace RogueEssence.Data
 
         public List<CharData> CharsToStore;
         public List<InvItem> ItemsToStore;
-        public int[] StorageToStore;
+
+        [JsonConverter(typeof(ItemStorageConverter))]
+        public Dictionary<string, int> StorageToStore;
         public int MoneyToStore;
 
         [JsonConstructor]
@@ -873,7 +875,7 @@ namespace RogueEssence.Data
         {
             CharsToStore = new List<CharData>();
             ItemsToStore = new List<InvItem>();
-            StorageToStore = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            StorageToStore = new Dictionary<string, int>();
         }
 
         public MainProgress(ulong seed, string uuid)
@@ -883,7 +885,7 @@ namespace RogueEssence.Data
 
             CharsToStore = new List<CharData>();
             ItemsToStore = new List<InvItem>();
-            StorageToStore = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            StorageToStore = new Dictionary<string, int>();
         }
 
 
@@ -904,7 +906,7 @@ namespace RogueEssence.Data
                 //remove equips
                 foreach (Character player in save.ActiveTeam.EnumerateChars())
                 {
-                    if (player.EquippedItem.ID > -1)
+                    if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                     {
                         ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
                         if (!entry.CannotDrop)
@@ -1105,10 +1107,10 @@ namespace RogueEssence.Data
             ItemsToStore.Clear();
 
             //just add storage values
-            for (int ii = 0; ii < StorageToStore.Length; ii++)
+            foreach(string key in StorageToStore.Keys)
             {
-                destProgress.ActiveTeam.Storage[ii] += StorageToStore[ii];
-                StorageToStore[ii] = 0;
+                destProgress.ActiveTeam.Storage[key] = StorageToStore[key] + destProgress.ActiveTeam.Storage.GetValueOrDefault(key, 0);
+                StorageToStore[key] = 0;
             }
 
             //put the money in the bank
@@ -1277,7 +1279,7 @@ namespace RogueEssence.Data
                         {
                             if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
                             {
-                                if (character.EquippedItem.ID > -1)
+                                if (!String.IsNullOrEmpty(character.EquippedItem.ID))
                                     mainSave.ItemsToStore.Add(character.EquippedItem);
                                 mainSave.CharsToStore.Add(new CharData(character));
                             }

@@ -20,6 +20,7 @@ namespace RogueEssence.Dungeon
         public const int FAKE_ATTACK_SLOT = -2;
         public const int EQUIP_ITEM_SLOT = -1;
         public const int FLOOR_ITEM_SLOT = -2;
+        public const int NO_ITEM_SLOT = -3;
         public const int FORCED_SLOT = -3;
 
         /// <summary>

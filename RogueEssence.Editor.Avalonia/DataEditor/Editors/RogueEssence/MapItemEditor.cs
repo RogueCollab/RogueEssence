@@ -29,8 +29,10 @@ namespace RogueEssence.Dev
                 ComboBox cbItem = new ComboBox();
 
                 cbItem.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenItem = member.IsMoney ? -1 : member.Value;
+
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                List<string> itemKeys = nameIndex.GetOrderedKeys(false);
+                int chosenItem = itemKeys.IndexOf(member.Value);
 
                 List<string> items = new List<string>();
                 {
@@ -38,8 +40,8 @@ namespace RogueEssence.Dev
                     chosenItem++;
                 }
 
-                for (int ii = 0; ii < nameIndex.Count; ii++)
-                    items.Add(ii.ToString() + ": " + nameIndex.Entries[ii.ToString()].GetLocalString(false));
+                for (int ii = 0; ii < itemKeys.Count; ii++)
+                    items.Add(itemKeys[ii] + ": " + nameIndex.Entries[itemKeys[ii]].GetLocalString(false));
 
                 var itemsSubject = new Subject<List<string>>();
 
@@ -116,8 +118,12 @@ namespace RogueEssence.Dev
             int innerControlIndex = 0;
             innerControlIndex++;
             ComboBox cbItem = (ComboBox)innerControl1.Children[innerControlIndex];
+
+            List<string> itemKeys = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(false);
+            itemKeys.Insert(0, "");
+
             if (cbItem.SelectedIndex > 0)
-                result.Value = cbItem.SelectedIndex - 1;
+                result.Value = itemKeys[cbItem.SelectedIndex];
             else
                 result.IsMoney = true;
 
@@ -140,7 +146,7 @@ namespace RogueEssence.Dev
         {
             if (obj.IsMoney)
                 return String.Format("{0}P", obj.HiddenValue);
-            else if (obj.Value > -1)
+            else if (!String.IsNullOrEmpty(obj.Value))
             {
                 ItemData entry = DataManager.Instance.GetItem(obj.Value);
                 if (entry.MaxStack > 1)

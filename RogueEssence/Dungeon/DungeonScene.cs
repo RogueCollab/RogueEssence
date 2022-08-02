@@ -412,7 +412,7 @@ namespace RogueEssence.Dungeon
                     bool heldItems = false;
                     foreach (Character character in ActiveTeam.Players)
                     {
-                        if (!character.Dead && character.EquippedItem.ID > -1)
+                        if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
                         {
                             heldItems = true;
                             break;

@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using RogueElements;
 using RogueEssence.LevelGen;
 using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -183,6 +184,9 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Sorts items in the inventory STABLELY
+        /// </summary>
         public void SortItems()
         {
             List<InvItem> newInv = new List<InvItem>();
@@ -192,7 +196,7 @@ namespace RogueEssence.Dungeon
                 //find its new place
                 for (int ii = newInv.Count; ii >= 0; ii--)
                 {
-                    if (ii == 0 || SucceedsInvItem(inventory[kk], newInv[ii - 1]))
+                    if (ii == 0 || succeedsInvItem(inventory[kk], newInv[ii - 1]))
                     {
                         newInv.Insert(ii, inventory[kk]);
                         break;
@@ -202,15 +206,9 @@ namespace RogueEssence.Dungeon
             inventory = newInv;
         }
 
-        private bool SucceedsInvItem(InvItem inv1, InvItem inv2)
+        private bool succeedsInvItem(InvItem inv1, InvItem inv2)
         {
-            ItemData entry1 = DataManager.Instance.GetItem(inv1.ID);
-            ItemData entry2 = DataManager.Instance.GetItem(inv2.ID);
-            if (entry1.UsageType > entry2.UsageType)
-                return true;
-            else if (entry1.UsageType < entry2.UsageType)
-                return false;
-            return (inv1.ID >= inv2.ID);
+            return DataManager.Instance.DataIndices[DataManager.DataType.Item].CompareWithSort(inv1.ID, inv2.ID) > 0;
         }
 
         public int GetInvValue()
@@ -297,7 +295,9 @@ namespace RogueEssence.Dungeon
 
         public string Name;
         public EventedList<Character> Assembly;
-        public int[] Storage;
+
+        [JsonConverter(typeof(ItemStorageConverter))]
+        public Dictionary<string, int> Storage;
         public List<InvItem> BoxStorage;
         public int Bank;
         public int Money;
@@ -315,7 +315,7 @@ namespace RogueEssence.Dungeon
             Name = "";
             Assembly = new EventedList<Character>();
             BoxStorage = new List<InvItem>();
-            Storage = new int[10000];//TODO: remove this magic number and make it an adjustable value
+            Storage = new Dictionary<string, int>();
 
             if (initEvents)
                 setMemberEvents();
@@ -334,7 +334,7 @@ namespace RogueEssence.Dungeon
                 slots = zone.BagSize;
             foreach (Character player in Players)
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                     slots--;
             }
             return slots;
@@ -373,7 +373,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!indices[ii].IsBox)
                 {
-                    int index = indices[ii].ItemID;
+                    string index = indices[ii].ItemID;
                     ItemData entry = DataManager.Instance.GetItem(index);
                     if (entry.MaxStack > 1)
                     {
@@ -445,10 +445,10 @@ namespace RogueEssence.Dungeon
             int invValue = 0;
             foreach (InvItem item in BoxStorage)
                 invValue += item.GetSellValue();
-            for (int ii = 0; ii < Storage.Length; ii++)
+            foreach(string key in Storage.Keys)
             {
-                if (Storage[ii] > 0)
-                    invValue += DataManager.Instance.GetItem(ii).Price;
+                if (Storage.GetValueOrDefault(key, 0) > 0)
+                    invValue += DataManager.Instance.GetItem(key).Price;
             }
             return invValue;
         }
@@ -581,10 +581,10 @@ namespace RogueEssence.Dungeon
     public struct WithdrawSlot
     {
         public bool IsBox;
-        public int ItemID;
+        public string ItemID;
         public int BoxSlot;
 
-        public WithdrawSlot(bool isBox, int itemID, int boxSlot)
+        public WithdrawSlot(bool isBox, string itemID, int boxSlot)
         {
             IsBox = isBox;
             ItemID = itemID;

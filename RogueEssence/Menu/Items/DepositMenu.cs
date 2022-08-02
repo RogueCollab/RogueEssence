@@ -23,7 +23,7 @@ namespace RogueEssence.Menu
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 int index = ii;
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                     flatChoices.Add(new MenuTextChoice((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), () => { choose(new InvSlot(true, index)); }));
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
@@ -58,7 +58,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                     heldIDs.Add(ii);
             }
 
@@ -97,7 +97,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
                     if (countedHeld == menuIndex)
                         return activeChar.EquippedItem;

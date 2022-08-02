@@ -15,7 +15,7 @@ namespace RogueEssence.Data
             Entries = new Dictionary<string, EntrySummary>();
         }
 
-        private int compareNum(string key1, string key2)
+        public int CompareWithSort(string key1, string key2)
         {
             int cmp = Math.Sign(Entries[key1].GetSortOrder() - Entries[key2].GetSortOrder());
             if (cmp != 0)
@@ -55,7 +55,7 @@ namespace RogueEssence.Data
                 keys.Add(key);
 
             if (numeric)
-                keys.Sort(compareNum);
+                keys.Sort(CompareWithSort);
             else
                 keys.Sort();
 

@@ -56,7 +56,7 @@ namespace RogueEssence.Menu
         public static bool CanLearnSkill(Character character, Character user, int slot, bool held)
         {
             BaseMonsterForm entry = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
-            int itemNum = -1;
+            string itemNum = "";
             if (slot == BattleContext.FLOOR_ITEM_SLOT)
             {
                 //item on the ground

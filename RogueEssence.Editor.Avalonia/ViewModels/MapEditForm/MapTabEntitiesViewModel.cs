@@ -75,9 +75,13 @@ namespace RogueEssence.Dev.ViewModels
 
             Equips = new ObservableCollection<string>();
             Equips.Add("---: None");
+            itemKeys.Add("");
             Dictionary<string, string> item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             foreach (string key in item_names.Keys)
+            {
                 Equips.Add(key + ": " + item_names[key]);
+                itemKeys.Add(key);
+            }
 
             Skills = new ObservableCollection<string>();
             skillKeys = new List<string>();
@@ -245,16 +249,18 @@ namespace RogueEssence.Dev.ViewModels
 
         public ObservableCollection<string> Equips { get; }
 
+        List<string> itemKeys;
+
         public int ChosenEquip
         {
-            get { return SelectedEntity.EquippedItem.ID + 1; }
+            get { return itemKeys.IndexOf(SelectedEntity.EquippedItem.ID); }
             set
             {
                 lock (GameBase.lockObj)
                 {
                     if (value > 0)
                     {
-                        InvItem item = new InvItem(value - 1);
+                        InvItem item = new InvItem(itemKeys[value]);
                         ItemData entry = (ItemData)item.GetData();
                         if (entry.MaxStack > 1)
                             item.HiddenValue = entry.MaxStack;

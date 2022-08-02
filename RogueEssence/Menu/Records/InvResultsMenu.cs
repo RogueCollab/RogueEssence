@@ -3,6 +3,7 @@ using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -29,7 +30,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < ending.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = ending.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                     flatChoices.Add(activeChar.EquippedItem.GetDisplayName());
             }
             for (int ii = 0; ii < ending.ActiveTeam.GetInvCount(); ii++)

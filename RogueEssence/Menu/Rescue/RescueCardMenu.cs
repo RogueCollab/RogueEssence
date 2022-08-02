@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -43,7 +44,7 @@ namespace RogueEssence.Menu
             Name.SetText(Text.FormatKey("MENU_SOS_CLIENT", sos.TeamName));
             LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", sos.DateDefeated));
             Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", sos.GoalText.ToLocal().Replace('\n', ' ')));
-            Reward.SetText(sos.OfferedItem.Value > 0 ? Text.FormatKey("MENU_SOS_REWARD", sos.OfferedItem.GetDungeonName()) : "");
+            Reward.SetText(!String.IsNullOrEmpty(sos.OfferedItem.Value) ? Text.FormatKey("MENU_SOS_REWARD", sos.OfferedItem.GetDungeonName()) : "");
 
         }
 
@@ -58,7 +59,7 @@ namespace RogueEssence.Menu
             Name.SetText(Text.FormatKey("MENU_AOK_TEAM", aok.RescuingTeam));
             LastSeen.SetText(Text.FormatKey("MENU_SOS_DATE", aok.DateRescued));
             Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", aok.GoalText.ToLocal().Replace('\n', ' ')));
-            Reward.SetText(aok.OfferedItem.Value > 0 ? Text.FormatKey("MENU_SOS_REWARD", aok.OfferedItem.GetDungeonName()) : "");
+            Reward.SetText(!String.IsNullOrEmpty(aok.OfferedItem.Value) ? Text.FormatKey("MENU_SOS_REWARD", aok.OfferedItem.GetDungeonName()) : "");
 
         }
 

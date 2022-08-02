@@ -3,6 +3,7 @@ using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -22,7 +23,7 @@ namespace RogueEssence.Menu
             Elements.Add(MenuDiv);
         }
 
-        public void SetTrade(int[] tradeIns, int price, bool[] itemPresence, int presenceCount)
+        public void SetTrade(string[] tradeIns, int price, HashSet<string> itemPresence, int presenceCount)
         {
             while (Elements.Count > 2)
                 Elements.RemoveAt(2);
@@ -30,14 +31,14 @@ namespace RogueEssence.Menu
             List<MenuText> reqs = new List<MenuText>();
 
             int wildcards = 0;
-            foreach (int reqItem in tradeIns)
+            foreach (string reqItem in tradeIns)
             {
-                if (reqItem == -1)
+                if (String.IsNullOrEmpty(reqItem))
                     wildcards++;
                 else
                 {
                     ItemData entry = DataManager.Instance.GetItem(reqItem);
-                    reqs.Add(new MenuText(entry.GetIconName(), Loc.Zero, itemPresence[reqItem] ? Color.White : Color.Red));
+                    reqs.Add(new MenuText(entry.GetIconName(), Loc.Zero, itemPresence.Contains(reqItem) ? Color.White : Color.Red));
                 }
             }
             if (wildcards > 0)

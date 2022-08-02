@@ -680,10 +680,6 @@ namespace RogueEssence.Data
 
 
 
-        public ItemData GetItem(int index)
-        {
-            return GetItem(index.ToString());
-        }
         public ItemData GetItem(string index)
         {
             ItemData data;

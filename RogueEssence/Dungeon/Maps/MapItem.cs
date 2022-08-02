@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text;
 using RogueEssence.Data;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,7 +15,12 @@ namespace RogueEssence.Dungeon
     {
         public bool IsMoney;
         public bool Cursed;
-        public int Value;
+
+
+        [JsonConverter(typeof(ItemConverter))]
+        public string Value;
+
+        [JsonConverter(typeof(ItemConverter))]
         public int HiddenValue;
         public int Price;
 
@@ -34,22 +41,22 @@ namespace RogueEssence.Dungeon
 
         public MapItem()
         {
-            Value = -1;
+            Value = "";
             TileLoc = new Loc();
         }
 
-        public MapItem(int value)
+        public MapItem(string value)
         {
             Value = value;
         }
 
-        public MapItem(int value, int hiddenValue)
+        public MapItem(string value, int hiddenValue)
             : this(value)
         {
             HiddenValue = hiddenValue;
         }
 
-        public MapItem(int value, int hiddenValue, int price)
+        public MapItem(string value, int hiddenValue, int price)
             : this(value, hiddenValue)
         {
             Price = price;

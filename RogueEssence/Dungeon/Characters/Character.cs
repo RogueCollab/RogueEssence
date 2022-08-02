@@ -809,7 +809,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 InvItem heldItem = EquippedItem;
-                if (heldItem.ID > -1)
+                if (!String.IsNullOrEmpty(heldItem.ID))
                 {
                     DequipItem();
                     MapItem mapItem = new MapItem(heldItem);
@@ -836,7 +836,7 @@ namespace RogueEssence.Dungeon
                 else
                 {
                     InvItem heldItem = EquippedItem;
-                    if (heldItem.ID > -1)
+                    if (!String.IsNullOrEmpty(heldItem.ID))
                     {
                         DequipItem();
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
@@ -1520,8 +1520,8 @@ namespace RogueEssence.Dungeon
                 yield return new PassiveContext(statusRef.TargetChar.GetStatusEffect(statusRef.ID), statusRef.GetStatusEntry().TargetPassive, defaultPortPriority, statusRef.TargetChar);
 
             //check equipped item
-            Dictionary<int, int> activeItems = new Dictionary<int, int>();
-            if (EquippedItem.ID > -1 && !ItemDisabled)
+            Dictionary<string, int> activeItems = new Dictionary<string, int>();
+            if (!String.IsNullOrEmpty(EquippedItem.ID) && !ItemDisabled)
             {
                 yield return new PassiveContext(EquippedItem, EquippedItem.GetData(), defaultPortPriority, this);
                 activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
@@ -1539,7 +1539,7 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                foreach (int key in activeItems.Keys)
+                foreach (string key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
                         yield return new PassiveContext(MemberTeam.GetInv(activeItems[key]), MemberTeam.GetInv(activeItems[key]).GetData(), defaultPortPriority, this);
@@ -1608,8 +1608,8 @@ namespace RogueEssence.Dungeon
             }
 
             //check eqipped item
-            Dictionary<int, int> activeItems = new Dictionary<int, int>();
-            if (EquippedItem.ID > -1 && !ItemDisabled)
+            Dictionary<string, int> activeItems = new Dictionary<string, int>();
+            if (!String.IsNullOrEmpty(EquippedItem.ID) && !ItemDisabled)
             {
                 ProximityPassive proximity = (ProximityPassive)EquippedItem.GetData();
                 if (proximity.ProximityEvent.Radius > -1)
@@ -1632,7 +1632,7 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                foreach (int key in activeItems.Keys)
+                foreach (string key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
                     {

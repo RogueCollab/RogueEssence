@@ -5,6 +5,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Network;
 using System.IO;
 using RogueEssence.Script;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -100,16 +101,16 @@ namespace RogueEssence.Menu
             bool canOfferItem = DataManager.Instance.Save.ActiveTeam.BoxStorage.Count > 0;
             if (!canOfferItem)
             {
-                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
+                foreach(string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                    if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
                     {
                         canOfferItem = true;
                         break;
                     }
                 }
             }
-            bool canRemoveItem = DataManager.Instance.Save.Rescue.SOS.OfferedItem.Value > -1;
+            bool canRemoveItem = !String.IsNullOrEmpty(DataManager.Instance.Save.Rescue.SOS.OfferedItem.Value);
 
             List <DialogueChoice> choices = new List<DialogueChoice>();
             choices.Add(new DialogueChoice(Text.FormatKey("MENU_REWARD_MONEY"), () => { MenuManager.Instance.AddMenu(new BankMenu(0, setRewardMoney), false); }, canOfferMoney));

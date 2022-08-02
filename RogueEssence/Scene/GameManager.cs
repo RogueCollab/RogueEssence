@@ -814,7 +814,9 @@ namespace RogueEssence
 
                         rescued = new GameAction(GameAction.ActionType.Rescue, Dir8.None);
                         rescued.AddArg(mail.OfferedItem.IsMoney ? 1 : 0);
-                        rescued.AddArg(mail.OfferedItem.Value);
+                        rescued.AddArg(mail.OfferedItem.Value.Length);
+                        for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
+                            rescued.AddArg(mail.OfferedItem.Value[ii]);
                         rescued.AddArg(mail.OfferedItem.HiddenValue);
 
                         rescued.AddArg(mail.RescuedBy.Length);

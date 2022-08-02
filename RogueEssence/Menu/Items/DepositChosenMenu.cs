@@ -72,7 +72,7 @@ namespace RogueEssence.Menu
             //refresh base menu
             bool hasItems = (DataManager.Instance.Save.ActiveTeam.GetInvCount() > 0);
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
-                hasItems |= (player.EquippedItem.ID > -1);
+                hasItems |= !String.IsNullOrEmpty(player.EquippedItem.ID);
 
             if (hasItems)
                 MenuManager.Instance.ReplaceMenu(new DepositMenu(origIndex));

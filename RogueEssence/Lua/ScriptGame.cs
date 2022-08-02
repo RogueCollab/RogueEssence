@@ -323,7 +323,7 @@ namespace RogueEssence.Script
 
             if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 {
                     InvItem heldItem = player.EquippedItem;
                     player.DequipItem();
@@ -334,7 +334,7 @@ namespace RogueEssence.Script
             }
             else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 {
                     InvItem heldItem = player.EquippedItem;
                     player.DequipItem();
@@ -346,7 +346,7 @@ namespace RogueEssence.Script
             }
             else
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 {
                     InvItem heldItem = player.EquippedItem;
                     player.DequipItem();
@@ -385,7 +385,7 @@ namespace RogueEssence.Script
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
 
-            if (player.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 player.DequipItem();
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -556,7 +556,7 @@ namespace RogueEssence.Script
             return false;
         }
 
-        public LuaTable GetAvailablePromotions(Character character, int bypassItem)
+        public LuaTable GetAvailablePromotions(Character character, string bypassItem)
         {
             MonsterData entry = DataManager.Instance.GetMonster(character.BaseForm.Species);
             bool bypass = character.EquippedItem.ID == bypassItem;
@@ -589,7 +589,7 @@ namespace RogueEssence.Script
             return tbl;
         }
 
-        public void PromoteCharacter(Character character, PromoteBranch branch, int bypassItem)
+        public void PromoteCharacter(Character character, PromoteBranch branch, string bypassItem)
         {
             MonsterData entry = DataManager.Instance.GetMonster(branch.Result);
             //exception item bypass
@@ -611,7 +611,7 @@ namespace RogueEssence.Script
         //===================================
         // Inventory
         //===================================
-        public object FindPlayerItem(int id, bool held, bool inv)
+        public object FindPlayerItem(string id, bool held, bool inv)
         {
             if (held)
             {
@@ -640,7 +640,7 @@ namespace RogueEssence.Script
             int nbitems = 0;
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                     nbitems++;
             }
 
@@ -672,7 +672,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.AddToInv(item);
         }
 
-        public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
+        public void GivePlayerItem(string id, int count = 1, bool cursed = false, int hiddenval = 0)
         {
             for (int i = 0; i < count; ++i)
             {
@@ -707,12 +707,12 @@ namespace RogueEssence.Script
         public int GetPlayerStorageCount()
         {
             int count = DataManager.Instance.Save.ActiveTeam.BoxStorage.Count;
-            foreach (int nb in DataManager.Instance.Save.ActiveTeam.Storage )
-                count += nb;
+            foreach (string nb in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
+                count += DataManager.Instance.Save.ActiveTeam.Storage[nb];
             return count;
         }
 
-        public int GetPlayerStorageItemCount(int id)
+        public int GetPlayerStorageItemCount(string id)
         {
             return DataManager.Instance.Save.ActiveTeam.Storage[id];
         }
@@ -722,7 +722,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
         }
 
-        public void GivePlayerStorageItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
+        public void GivePlayerStorageItem(string id, int count = 1, bool cursed = false, int hiddenval = 0)
         {
             for (int ii = 0; ii < count; ii++)
             {
@@ -731,7 +731,7 @@ namespace RogueEssence.Script
                 DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
             }
         }
-        public void TakePlayerStorageItem(int id)
+        public void TakePlayerStorageItem(string id)
         {
             DataManager.Instance.Save.ActiveTeam.TakeItems(new List<WithdrawSlot> { new WithdrawSlot(false, id, 0) });
         }

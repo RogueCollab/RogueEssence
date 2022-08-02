@@ -33,7 +33,7 @@ namespace RogueEssence.Data
         {
             foreach (PromoteDetail detail in Details)
             {
-                if (noGive && detail.GiveItem > -1)
+                if (noGive && !String.IsNullOrEmpty(detail.GiveItem))
                     continue;
                 if (inDungeon)
                     detail.OnPromote(character);
@@ -63,7 +63,7 @@ namespace RogueEssence.Data
     [Serializable]
     public abstract class PromoteDetail
     {
-        public virtual int GiveItem { get { return -1; } }
+        public virtual string GiveItem { get { return ""; } }
         public virtual string GetReqString() { return ""; }
         public virtual bool IsHardReq() { return false; }
         public virtual bool GetGroundReq(Character character) { return GetReq(character); }

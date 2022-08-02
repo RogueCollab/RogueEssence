@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
             bool equippedItems = false;
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
-                if (!character.Dead && character.EquippedItem.ID > -1)
+                if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
                 {
                     equippedItems = true;
                     break;

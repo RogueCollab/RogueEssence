@@ -26,22 +26,25 @@ namespace RogueEssence.Menu
             this.storageChoice = storageChoice;
             availableItems = new List<WithdrawSlot>();
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
+            List<string> sortedKeys = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(true);
+            for (int ii = 0; ii < sortedKeys.Count; ii++)
             {
                 int index = ii;
-                if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                string key = sortedKeys[ii];
+                int qty = DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0);
+                if (qty > 0)
                 {
-                    WithdrawSlot slot = new WithdrawSlot(false, index, 0);
+                    WithdrawSlot slot = new WithdrawSlot(false, key, 0);
                     availableItems.Add(slot);
-                    ItemData entry = DataManager.Instance.GetItem(ii);
-                    MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
-                    MenuText menuCount = new MenuText("(" + DataManager.Instance.Save.ActiveTeam.Storage[ii] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
+                    ItemData entry = DataManager.Instance.GetItem(key);
+                    MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                    MenuText menuCount = new MenuText("(" + qty + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                     flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                 }
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.BoxStorage.Count; ii++)
             {
-                WithdrawSlot slot = new WithdrawSlot(true, 0, ii);
+                WithdrawSlot slot = new WithdrawSlot(true, "", ii);
                 availableItems.Add(slot);
                 flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetDisplayName(), () => { choose(slot); }));
             }

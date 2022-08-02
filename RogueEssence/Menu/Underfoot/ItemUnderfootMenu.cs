@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
@@ -20,7 +21,7 @@ namespace RogueEssence.Menu
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
             bool invFull = (DungeonScene.Instance.ActiveTeam.GetInvCount() >= DungeonScene.Instance.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
-            bool hasItem = (DungeonScene.Instance.FocusedCharacter.EquippedItem.ID > -1);
+            bool hasItem = !String.IsNullOrEmpty(DungeonScene.Instance.FocusedCharacter.EquippedItem.ID);
 
             if (mapItem.IsMoney)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_GET"), PickupAction));

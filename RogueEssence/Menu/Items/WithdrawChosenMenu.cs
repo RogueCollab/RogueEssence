@@ -31,7 +31,7 @@ namespace RogueEssence.Menu
             else
             {
                 WithdrawSlot selectionIndex = selections[0];
-                int itemID;
+                string itemID;
                 if (selectionIndex.IsBox)
                     itemID = DataManager.Instance.Save.ActiveTeam.BoxStorage[selectionIndex.BoxSlot].ID;
                 else
@@ -73,7 +73,7 @@ namespace RogueEssence.Menu
             else if (!continueOnChoose)
             {
                 WithdrawSlot selectionIndex = selections[0];
-                int itemID;
+                string itemID;
                 if (selectionIndex.IsBox)
                     itemID = DataManager.Instance.Save.ActiveTeam.BoxStorage[selectionIndex.BoxSlot].ID;
                 else
@@ -133,9 +133,9 @@ namespace RogueEssence.Menu
             {
                 //refresh base menu
                 bool hasStorage = (DataManager.Instance.Save.ActiveTeam.BoxStorage.Count > 0);
-                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
+                foreach (string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                    if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
                     {
                         hasStorage = true;
                         break;

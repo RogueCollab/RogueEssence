@@ -143,7 +143,7 @@ namespace RogueEssence.Ground
 
             GameManager.Instance.SE(GraphicsManager.EquipSE);
 
-            if (itemChar.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(itemChar.EquippedItem.ID))
             {
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.GetDisplayName(false), item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName())));
                 //put item in inv
@@ -207,7 +207,7 @@ namespace RogueEssence.Ground
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[index];
 
-            if (player.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
                 player.DequipItem();

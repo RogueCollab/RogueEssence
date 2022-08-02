@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using RogueEssence.Dungeon;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
@@ -17,7 +19,7 @@ namespace RogueEssence.LevelGen
         {
         }
 
-        public BoxSpawner(int id, IStepSpawner<TGenContext, MapItem> spawner)
+        public BoxSpawner(string id, IStepSpawner<TGenContext, MapItem> spawner)
         {
             this.BaseSpawner = spawner;
             this.BoxID = id;
@@ -26,8 +28,9 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The item ID of the box containing the item.
         /// </summary>
-        [Dev.DataType(0, Data.DataManager.DataType.Item, false)]
-        public int BoxID { get; set; }
+        [JsonConverter(typeof(ItemConverter))]
+        [DataType(0, Data.DataManager.DataType.Item, false)]
+        public string BoxID { get; set; }
 
         /// <summary>
         /// The spawner that decides what item the box holds.
@@ -42,8 +45,8 @@ namespace RogueEssence.LevelGen
             List<MapItem> baseItems = this.BaseSpawner.GetSpawns(map);
             List<MapItem> copyResults = new List<MapItem>();
 
-            foreach (MapItem item in baseItems)
-                copyResults.Add(new MapItem(BoxID, item.Value));
+            foreach (MapItem item in baseItems)//TODO: string asset
+                copyResults.Add(new MapItem(BoxID, int.Parse(item.Value)));
 
             return copyResults;
         }

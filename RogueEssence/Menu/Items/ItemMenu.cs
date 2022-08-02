@@ -35,7 +35,7 @@ namespace RogueEssence.Menu
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 int index = ii;
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
                     MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), new Loc(2, 1), !enableHeld ? Color.Red : Color.White);
                     MenuText itemPrice = new MenuText(activeChar.EquippedItem.GetPriceString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, !enableHeld ? Color.Red : Color.White);
@@ -114,7 +114,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
                     if (countedHeld == menuIndex)
                         return activeChar.EquippedItem;

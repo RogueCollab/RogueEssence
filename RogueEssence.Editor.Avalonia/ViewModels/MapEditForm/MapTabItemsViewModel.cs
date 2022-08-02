@@ -17,11 +17,15 @@ namespace RogueEssence.Dev.ViewModels
             SelectedEntity = MapItem.CreateMoney(1);
 
             ItemTypes = new ObservableCollection<string>();
+            itemKeys = new List<string>();
             ItemTypes.Add("[Money]");
+            itemKeys.Add("");
             Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
             foreach (string key in monster_names.Keys)
+            {
                 ItemTypes.Add(key + ": " + monster_names[key]);
-
+                itemKeys.Add(key);
+            }
         }
 
         private EntEditMode entMode;
@@ -45,6 +49,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        List<string> itemKeys;
+
         public ObservableCollection<string> ItemTypes { get; }
 
         public int ChosenItem
@@ -54,7 +60,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (SelectedEntity.IsMoney)
                     return 0;
                 else
-                    return SelectedEntity.Value + 1;
+                    return itemKeys.IndexOf(SelectedEntity.Value);
             }
             set
             {
@@ -66,7 +72,7 @@ namespace RogueEssence.Dev.ViewModels
                 else
                 {
                     SelectedEntity.IsMoney = false;
-                    SelectedEntity.Value = value - 1;
+                    SelectedEntity.Value = itemKeys[value];
                     TabIndex = 1;
                 }
                 this.RaisePropertyChanged();

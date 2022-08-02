@@ -20,7 +20,7 @@ namespace RogueEssence.Menu
         MenuText SkillHitRate;
         MenuText SkillTargets;
 
-        public TeachInfoMenu(int itemNum)
+        public TeachInfoMenu(string itemNum)
         {
             Bounds = Rect.FromPoints(new Loc(16, 24), new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 72));
             

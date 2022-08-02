@@ -682,16 +682,16 @@ namespace RogueEssence.Script
 
         public bool CanSwapMenu(LuaTable goods)
         {
-            List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+            List<Tuple<string, string[]>> goodsList = new List<Tuple<string, string[]>>();
             foreach (object key in goods.Keys)
             {
                 LuaTable entry = goods[key] as LuaTable;
-                int item = (int)((Int64)entry["Item"]);
-                List<int> reqs = new List<int>();
+                string item = (string)entry["Item"];
+                List<string> reqs = new List<string>();
                 LuaTable luaReqs = entry["ReqItem"] as LuaTable;
                 foreach (object tradeIn in luaReqs.Values)
-                    reqs.Add((int)((Int64)tradeIn));
-                goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+                    reqs.Add((string)tradeIn);
+                goodsList.Add(new Tuple<string, string[]>(item, reqs.ToArray()));
             }
             return SwapShopMenu.CanView(goodsList);
         }
@@ -701,16 +701,16 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
-                List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+                List<Tuple<string, string[]>> goodsList = new List<Tuple<string, string[]>>();
                 foreach (object key in goods.Keys)
                 {
                     LuaTable entry = goods[key] as LuaTable;
-                    int item = (int)((Int64)entry["Item"]);
-                    List<int> reqs = new List<int>();
+                    string item = (string)entry["Item"];
+                    List<string> reqs = new List<string>();
                     LuaTable luaReqs = entry["ReqItem"] as LuaTable;
                     foreach (object tradeIn in luaReqs.Values)
-                        reqs.Add((int)((Int64)tradeIn));
-                    goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+                        reqs.Add((string)tradeIn);
+                    goodsList.Add(new Tuple<string, string[]>(item, reqs.ToArray()));
                 }
                 List<int> priceList = new List<int>();
                 priceList.Add(0);
@@ -735,12 +735,15 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
-                m_curchoice = new SwapGiveMenu(0, spaces, (List<int> chosenGoods) =>
+
+                SwapGiveMenu menu = null;
+                menu = new SwapGiveMenu(0, spaces, (List<int> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
                     foreach (int chosenGood in chosenGoods)
-                        addfn.Call(m_choiceresult, chosenGood);
+                        addfn.Call(m_choiceresult, menu.AllowedGoods[chosenGood]);
                 });
+                m_curchoice = menu;
             }
             catch (Exception e)
             {

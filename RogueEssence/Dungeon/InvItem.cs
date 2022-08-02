@@ -2,6 +2,7 @@
 using RogueEssence.Data;
 using RogueElements;
 using RogueEssence.Dev;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -16,32 +17,33 @@ namespace RogueEssence.Dungeon
 
         public override string GetID() { return ID.ToString(); }
 
+        [JsonConverter(typeof(ItemConverter))]
         [DataType(0, DataManager.DataType.Item, false)]
-        public int ID { get; set; }
+        public string ID { get; set; }
         public bool Cursed;
         public int HiddenValue;
         public int Price;
 
         public InvItem() : base()
-        { ID = -1; }
+        { ID = ""; }
 
-        public InvItem(int index)
+        public InvItem(string index)
         {
             ID = index;
         }
 
-        public InvItem(int index, bool cursed)
+        public InvItem(string index, bool cursed)
         {
             ID = index;
             Cursed = cursed;
         }
-        public InvItem(int index, bool cursed, int hiddenValue)
+        public InvItem(string index, bool cursed, int hiddenValue)
         {
             ID = index;
             Cursed = cursed;
             HiddenValue = hiddenValue;
         }
-        public InvItem(int index, bool cursed, int hiddenValue, int price)
+        public InvItem(string index, bool cursed, int hiddenValue, int price)
         {
             ID = index;
             Cursed = cursed;
