@@ -185,6 +185,7 @@ namespace RogueEssence.Dev
         }
     }
 
+    //TODO: Created v0.5.20, delete on v1.1
     public class DungeonUnlockConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
