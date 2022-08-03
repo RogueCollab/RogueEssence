@@ -644,16 +644,16 @@ namespace RogueEssence.Data
                     {
                         character.EquippedItem.Cursed = false;
                         ItemData entry = DataManager.Instance.GetItem(character.EquippedItem.ID);
-                        if (entry.MaxStack <= 1 && entry.UsageType != ItemData.UseType.Box)
-                            character.EquippedItem.HiddenValue = 0;
+                        if (entry.UsageType != ItemData.UseType.Box)
+                            character.EquippedItem.HiddenValue = "";
                     }
                 }
                 foreach (InvItem item in ActiveTeam.EnumerateInv())
                 {
                     item.Cursed = false;
                     ItemData entry = DataManager.Instance.GetItem(item.ID);
-                    if (entry.MaxStack <= 1 && entry.UsageType != ItemData.UseType.Box)
-                        item.HiddenValue = 0;
+                    if (entry.UsageType != ItemData.UseType.Box)
+                        item.HiddenValue = "";
                 }
             }
             catch (Exception ex)

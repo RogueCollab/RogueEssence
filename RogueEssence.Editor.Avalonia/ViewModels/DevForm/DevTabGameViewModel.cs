@@ -128,7 +128,7 @@ namespace RogueEssence.Dev.ViewModels
                 InvItem item = new InvItem(ItemKeys[chosenItem]);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1)
-                    item.HiddenValue = entry.MaxStack;
+                    item.Amount = entry.MaxStack;
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                     DungeonScene.Instance.PendingDevEvent = DungeonScene.Instance.DropItem(item, DungeonScene.Instance.FocusedCharacter.CharLoc);
                 else if (GameManager.Instance.CurrentScene == GroundScene.Instance)

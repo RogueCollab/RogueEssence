@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
                     //find an inventory slot that isn't full stack
                     foreach (InvItem item in DungeonScene.Instance.ActiveTeam.EnumerateInv())
                     {
-                        if (item.ID == mapItem.Value && item.Cursed == mapItem.Cursed && item.HiddenValue < entry.MaxStack)
+                        if (item.ID == mapItem.Value && item.Cursed == mapItem.Cursed && item.Amount < entry.MaxStack)
                         {
                             canGet = true;
                             break;
@@ -101,7 +101,7 @@ namespace RogueEssence.Menu
             {
                 summaryMenu = new ItemSummary(Rect.FromPoints(new Loc(16, GraphicsManager.ScreenHeight - 8 - 4 * VERT_SPACE - GraphicsManager.MenuBG.TileHeight * 2),
                     new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
-                summaryMenu.SetItem(new InvItem(mapItem.Value, mapItem.Cursed, mapItem.HiddenValue, mapItem.Price));
+                summaryMenu.SetItem(mapItem.MakeInvItem());
             }
 
             int menuwidth = CalculateChoiceLength(choices, 72);

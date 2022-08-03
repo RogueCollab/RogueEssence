@@ -380,14 +380,14 @@ namespace RogueEssence.Dungeon
                         int existingStack = -1;
                         for (int jj = 0; jj < invToTake.Count; jj++)
                         {
-                            if (invToTake[jj].ID == index && invToTake[jj].HiddenValue < entry.MaxStack)
+                            if (invToTake[jj].ID == index && invToTake[jj].Amount < entry.MaxStack)
                             {
                                 existingStack = jj;
                                 break;
                             }
                         }
                         if (existingStack > -1)
-                            invToTake[existingStack].HiddenValue++;
+                            invToTake[existingStack].Amount++;
                         else
                             invToTake.Add(new InvItem(index, false, 1));
                     }
@@ -418,7 +418,7 @@ namespace RogueEssence.Dungeon
             {
                 ItemData entry = DataManager.Instance.GetItem(item.ID);
                 if (entry.MaxStack > 1)
-                    Storage[item.ID] += item.HiddenValue;
+                    Storage[item.ID] += item.Amount;
                 else if (entry.UsageType == ItemData.UseType.Box)
                     BoxStorage.Add(item);
                 else

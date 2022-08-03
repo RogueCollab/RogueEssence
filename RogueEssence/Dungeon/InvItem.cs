@@ -21,35 +21,47 @@ namespace RogueEssence.Dungeon
         [DataType(0, DataManager.DataType.Item, false)]
         public string ID { get; set; }
         public bool Cursed;
-        public int HiddenValue;
+        [JsonConverter(typeof(ItemConverter))]
+        public string HiddenValue;
+        public int Amount;
         public int Price;
 
         public InvItem() : base()
-        { ID = ""; }
+        {
+            ID = "";
+            HiddenValue = "";
+        }
 
         public InvItem(string index)
         {
             ID = index;
+            HiddenValue = "";
         }
 
         public InvItem(string index, bool cursed)
         {
             ID = index;
+            HiddenValue = "";
             Cursed = cursed;
         }
-        public InvItem(string index, bool cursed, int hiddenValue)
+
+        public InvItem(string index, bool cursed, int amount)
         {
             ID = index;
             Cursed = cursed;
-            HiddenValue = hiddenValue;
+            HiddenValue = "";
+            Amount = amount;
         }
-        public InvItem(string index, bool cursed, int hiddenValue, int price)
+
+        public InvItem(string index, bool cursed, int amount, int price)
         {
             ID = index;
             Cursed = cursed;
-            HiddenValue = hiddenValue;
+            HiddenValue = "";
+            Amount = amount;
             Price = price;
         }
+
         //TODO: String Assets
         public InvItem(InvItem other)// : base(other)
         {
@@ -57,10 +69,21 @@ namespace RogueEssence.Dungeon
             ID = other.ID;
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;
+            Amount = other.Amount;
             Price = other.Price;
         }
         public ISpawnable Copy() { return new InvItem(this); }
 
+
+        public static InvItem CreateBox(string value, string hiddenValue, int price = 0, bool cursed = false)
+        {
+            InvItem item = new InvItem();
+            item.ID = value;
+            item.HiddenValue = hiddenValue;
+            item.Cursed = cursed;
+            item.Price = price;
+            return item;
+        }
 
         public string GetPriceString()
         {
@@ -103,7 +126,7 @@ namespace RogueEssence.Dungeon
         {
             ItemData entry = DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
-                return entry.Price * HiddenValue;
+                return entry.Price * Amount;
             else
                 return entry.Price;
         }

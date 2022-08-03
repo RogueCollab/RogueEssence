@@ -81,19 +81,19 @@ namespace RogueEssence.Dev.ViewModels
 
         public int Amount
         {
-            get { return SelectedEntity.HiddenValue; }
+            get { return SelectedEntity.Amount; }
             set
             {
-                this.RaiseAndSet(ref SelectedEntity.HiddenValue, value);
+                this.RaiseAndSet(ref SelectedEntity.Amount, value);
             }
         }
 
         public int HiddenValue
         {
-            get { return SelectedEntity.HiddenValue; }
+            get { return SelectedEntity.Amount; }
             set
             {
-                this.RaiseAndSet(ref SelectedEntity.HiddenValue, value);
+                this.RaiseAndSet(ref SelectedEntity.Amount, value);
             }
         }
 

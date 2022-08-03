@@ -492,7 +492,7 @@ namespace RogueEssence.Script
                 {
                     for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                     {
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
                         {
                             existingStack = jj;
                             break;

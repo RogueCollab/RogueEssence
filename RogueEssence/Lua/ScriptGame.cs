@@ -672,7 +672,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.AddToInv(item);
         }
 
-        public void GivePlayerItem(string id, int count = 1, bool cursed = false, int hiddenval = 0)
+        public void GivePlayerItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
             for (int i = 0; i < count; ++i)
             {
@@ -722,7 +722,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
         }
 
-        public void GivePlayerStorageItem(string id, int count = 1, bool cursed = false, int hiddenval = 0)
+        public void GivePlayerStorageItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
             for (int ii = 0; ii < count; ii++)
             {

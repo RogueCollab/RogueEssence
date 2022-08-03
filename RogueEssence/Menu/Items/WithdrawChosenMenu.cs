@@ -47,7 +47,7 @@ namespace RogueEssence.Menu
                     {
                         //should we allow refills into held item slots?
                         //ehhh it probably doesn't even matter
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == itemID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == itemID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
                         {
                             fitsInBag = true;
                             break;
@@ -100,8 +100,8 @@ namespace RogueEssence.Menu
                         int residualSlots = 0;
                         for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                         {
-                            if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selectionIndex.ItemID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
-                                residualSlots += entry.MaxStack - DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue;
+                            if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selectionIndex.ItemID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
+                                residualSlots += entry.MaxStack - DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount;
                         }
                         openSlots = openSlots * entry.MaxStack + residualSlots;
                     }

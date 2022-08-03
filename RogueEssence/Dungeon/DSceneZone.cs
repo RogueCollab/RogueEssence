@@ -242,14 +242,14 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(offeredItem.Value))
             {
                 if (offeredItem.IsMoney)
-                    ActiveTeam.Bank -= offeredItem.HiddenValue;
+                    ActiveTeam.Bank -= offeredItem.Amount;
                 else
                 {
                     ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
                     if (entry.MaxStack > 1)
                     {
                         List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
-                        for (int ii = 0; ii < offeredItem.HiddenValue; ii++)
+                        for (int ii = 0; ii < offeredItem.Amount; ii++)
                             itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
                         ActiveTeam.TakeItems(itemsToTake);
                     }

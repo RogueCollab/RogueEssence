@@ -817,7 +817,10 @@ namespace RogueEssence
                         rescued.AddArg(mail.OfferedItem.Value.Length);
                         for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
                             rescued.AddArg(mail.OfferedItem.Value[ii]);
-                        rescued.AddArg(mail.OfferedItem.HiddenValue);
+                        rescued.AddArg(mail.OfferedItem.HiddenValue.Length);
+                        for (int ii = 0; ii < mail.OfferedItem.HiddenValue.Length; ii++)
+                            rescued.AddArg(mail.OfferedItem.HiddenValue[ii]);
+                        rescued.AddArg(mail.OfferedItem.Amount);
 
                         rescued.AddArg(mail.RescuedBy.Length);
                         for (int ii = 0; ii < mail.RescuedBy.Length; ii++)

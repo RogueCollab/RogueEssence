@@ -65,17 +65,17 @@ namespace RogueEssence.Dev
                 lblAmount.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 lblAmount.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
 
-                NumericUpDown nudHiddenVal = new NumericUpDown();
-                nudHiddenVal.Margin = new Thickness(4, 0, 0, 0);
-                nudHiddenVal.Minimum = Int32.MinValue;
-                nudHiddenVal.Maximum = Int32.MaxValue;
-                nudHiddenVal.Value = member.HiddenValue;
+                NumericUpDown nudAmount = new NumericUpDown();
+                nudAmount.Margin = new Thickness(4, 0, 0, 0);
+                nudAmount.Minimum = Int32.MinValue;
+                nudAmount.Maximum = Int32.MaxValue;
+                nudAmount.Value = member.Amount;
 
                 innerPanel2.ColumnDefinitions[0].Width = new GridLength(70);
                 lblAmount.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
                 innerPanel2.Children.Add(lblAmount);
-                nudHiddenVal.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
-                innerPanel2.Children.Add(nudHiddenVal);
+                nudAmount.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
+                innerPanel2.Children.Add(nudAmount);
                 control.Children.Add(innerPanel2);
 
                 CheckBox chkCursed = new CheckBox();
@@ -91,13 +91,13 @@ namespace RogueEssence.Dev
                     if (cbItem.SelectedIndex == 0)
                     {
                         lblAmount.Text = "Amount:";
-                        nudHiddenVal.Minimum = 1;
+                        nudAmount.Minimum = 1;
                         chkCursed.IsVisible = false;
                     }
                     else
                     {
                         lblAmount.Text = "Hidden Val:";
-                        nudHiddenVal.Minimum = Int32.MinValue;
+                        nudAmount.Minimum = Int32.MinValue;
                         chkCursed.IsVisible = true;
                     }
                 };
@@ -131,8 +131,8 @@ namespace RogueEssence.Dev
             Avalonia.Controls.Grid innerControl2 = (Avalonia.Controls.Grid)control.Children[controlIndex];
             innerControlIndex = 0;
             innerControlIndex++;
-            NumericUpDown nudHiddenVal = (NumericUpDown)innerControl2.Children[innerControlIndex];
-            result.HiddenValue = (int)nudHiddenVal.Value;
+            NumericUpDown nudAmount = (NumericUpDown)innerControl2.Children[innerControlIndex];
+            result.Amount = (int)nudAmount.Value;
 
             controlIndex++;
             CheckBox chkCursed = (CheckBox)control.Children[controlIndex];
@@ -145,12 +145,12 @@ namespace RogueEssence.Dev
         public override string GetString(MapItem obj, Type type, object[] attributes)
         {
             if (obj.IsMoney)
-                return String.Format("{0}P", obj.HiddenValue);
+                return String.Format("{0}P", obj.Amount);
             else if (!String.IsNullOrEmpty(obj.Value))
             {
                 ItemData entry = DataManager.Instance.GetItem(obj.Value);
                 if (entry.MaxStack > 1)
-                    return (obj.Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + obj.HiddenValue + ")";
+                    return (obj.Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + obj.Amount + ")";
                 else
                     return (obj.Cursed ? "[X]" : "") + entry.Name.ToLocal();
             }

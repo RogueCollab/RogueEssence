@@ -263,7 +263,7 @@ namespace RogueEssence.Dev.ViewModels
                         InvItem item = new InvItem(itemKeys[value]);
                         ItemData entry = (ItemData)item.GetData();
                         if (entry.MaxStack > 1)
-                            item.HiddenValue = entry.MaxStack;
+                            item.Amount = entry.MaxStack;
                         SelectedEntity.EquippedItem = item;
                     }
                     else

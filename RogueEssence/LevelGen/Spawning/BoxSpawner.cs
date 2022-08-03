@@ -45,8 +45,8 @@ namespace RogueEssence.LevelGen
             List<MapItem> baseItems = this.BaseSpawner.GetSpawns(map);
             List<MapItem> copyResults = new List<MapItem>();
 
-            foreach (MapItem item in baseItems)//TODO: string asset
-                copyResults.Add(new MapItem(BoxID, int.Parse(item.Value)));
+            foreach (MapItem item in baseItems)
+                copyResults.Add(MapItem.CreateBox(BoxID, item.Value));
 
             return copyResults;
         }

@@ -157,7 +157,7 @@ namespace RogueEssence.Menu
                         if (!String.IsNullOrEmpty(aok.OfferedItem.Value))
                         {
                             if (aok.OfferedItem.IsMoney)
-                                DataManager.Instance.Save.ActiveTeam.Bank += aok.OfferedItem.HiddenValue;
+                                DataManager.Instance.Save.ActiveTeam.Bank += aok.OfferedItem.Amount;
                             else
                             {
                                 List<InvItem> itemsToStore = new List<InvItem>();

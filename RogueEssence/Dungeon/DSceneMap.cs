@@ -203,7 +203,7 @@ namespace RogueEssence.Dungeon
                                             //find an inventory slot that isn't full stack
                                             foreach (InvItem inv in explorerTeam.EnumerateInv())
                                             {
-                                                if (inv.ID == item.Value && inv.Cursed == item.Cursed && inv.HiddenValue < entry.MaxStack)
+                                                if (inv.ID == item.Value && inv.Cursed == item.Cursed && inv.Amount < entry.MaxStack)
                                                 {
                                                     canGet = true;
                                                     break;
@@ -331,8 +331,8 @@ namespace RogueEssence.Dungeon
             if (item.IsMoney)
             {
                 ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
-                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.GetDisplayName(false), Text.FormatKey("MONEY_AMOUNT", item.HiddenValue)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
-                ((ExplorerTeam)memberTeam).AddMoney(character, item.HiddenValue);
+                LogPickup(new PickupItem(Text.FormatKey("MSG_PICKUP_MONEY", character.GetDisplayName(false), Text.FormatKey("MONEY_AMOUNT", item.Amount)), item.SpriteIndex, GraphicsManager.MoneySE, item.TileLoc, character, false));
+                ((ExplorerTeam)memberTeam).AddMoney(character, item.Amount);
             }
             else
             {
@@ -343,22 +343,22 @@ namespace RogueEssence.Dungeon
                     MapItem nameItem = new MapItem(item);
                     foreach (InvItem inv in ((ExplorerTeam)memberTeam).EnumerateInv())
                     {
-                        if (inv.ID == item.Value && inv.Cursed == item.Cursed && inv.HiddenValue < entry.MaxStack)
+                        if (inv.ID == item.Value && inv.Cursed == item.Cursed && inv.Amount < entry.MaxStack)
                         {
-                            int addValue = Math.Min(entry.MaxStack - inv.HiddenValue, item.HiddenValue);
-                            inv.HiddenValue += addValue;
-                            item.HiddenValue -= addValue;
-                            if (item.HiddenValue <= 0)
+                            int addValue = Math.Min(entry.MaxStack - inv.Amount, item.Amount);
+                            inv.Amount += addValue;
+                            item.Amount -= addValue;
+                            if (item.Amount <= 0)
                                 break;
                         }
                     }
                     //still some stacks left to take care of
-                    if (item.HiddenValue > 0 && ((ExplorerTeam)memberTeam).GetInvCount() < ((ExplorerTeam)memberTeam).GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+                    if (item.Amount > 0 && ((ExplorerTeam)memberTeam).GetInvCount() < ((ExplorerTeam)memberTeam).GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                     {
                         ((ExplorerTeam)memberTeam).AddToInv(item.MakeInvItem());
-                        item.HiddenValue = 0;
+                        item.Amount = 0;
                     }
-                    if (item.HiddenValue == 0)
+                    if (item.Amount == 0)
                     {
                         ZoneManager.Instance.CurrentMap.Items.RemoveAt(itemSlot);
                         msg = Text.FormatKey("MSG_PICKUP_ITEM", character.GetDisplayName(false), nameItem.GetDungeonName());

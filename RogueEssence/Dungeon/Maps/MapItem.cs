@@ -21,7 +21,8 @@ namespace RogueEssence.Dungeon
         public string Value;
 
         [JsonConverter(typeof(ItemConverter))]
-        public int HiddenValue;
+        public string HiddenValue;
+        public int Amount;
         public int Price;
 
         public string SpriteIndex
@@ -42,22 +43,24 @@ namespace RogueEssence.Dungeon
         public MapItem()
         {
             Value = "";
+            HiddenValue = "";
             TileLoc = new Loc();
         }
 
         public MapItem(string value)
         {
             Value = value;
+            HiddenValue = "";
         }
 
-        public MapItem(string value, int hiddenValue)
+        public MapItem(string value, int amount)
             : this(value)
         {
-            HiddenValue = hiddenValue;
+            Amount = amount;
         }
 
-        public MapItem(string value, int hiddenValue, int price)
-            : this(value, hiddenValue)
+        public MapItem(string value, int amount, int price)
+            : this(value, amount)
         {
             Price = price;
         }
@@ -78,6 +81,7 @@ namespace RogueEssence.Dungeon
         {
             Value = item.ID;
             Cursed = item.Cursed;
+            Amount = item.Amount;
             HiddenValue = item.HiddenValue;
             Price = item.Price;
             TileLoc = loc;
@@ -85,14 +89,28 @@ namespace RogueEssence.Dungeon
 
         public InvItem MakeInvItem()
         {
-            return new InvItem(Value, Cursed, HiddenValue, Price);
+            InvItem item = new InvItem(Value, Cursed);
+            item.Amount = Amount;
+            item.HiddenValue = HiddenValue;
+            item.Price = Price;
+            return item;
         }
 
         public static MapItem CreateMoney(int amt)
         {
             MapItem item = new MapItem();
             item.IsMoney = true;
-            item.HiddenValue = amt;
+            item.Amount = amt;
+            return item;
+        }
+
+        public static MapItem CreateBox(string value, string hiddenValue, int price = 0, bool cursed = false)
+        {
+            MapItem item = new MapItem();
+            item.Value = value;
+            item.HiddenValue = hiddenValue;
+            item.Cursed = cursed;
+            item.Price = price;
             return item;
         }
 
@@ -103,7 +121,7 @@ namespace RogueEssence.Dungeon
 
             ItemData entry = DataManager.Instance.GetItem(Value);
             if (entry.MaxStack > 1)
-                return entry.Price * HiddenValue;
+                return entry.Price * Amount;
             else
                 return entry.Price;
         }
@@ -144,7 +162,7 @@ namespace RogueEssence.Dungeon
         public string GetDungeonName()
         {
             if (IsMoney)
-                return Text.FormatKey("MONEY_AMOUNT", HiddenValue);
+                return Text.FormatKey("MONEY_AMOUNT", Amount);
             else
             {
                 ItemData entry = DataManager.Instance.GetItem(Value);
@@ -157,7 +175,7 @@ namespace RogueEssence.Dungeon
 
                 string nameStr = entry.Name.ToLocal();
                 if (entry.MaxStack > 1)
-                    nameStr += " (" + HiddenValue + ")";
+                    nameStr += " (" + Amount + ")";
 
                 return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
             }
