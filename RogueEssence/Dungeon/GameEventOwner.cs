@@ -51,7 +51,7 @@ namespace RogueEssence.Dungeon
     {
         public abstract PassiveData GetData();
 
-        //TODO: String Assets
+        //TODO: Created v0.5.20, revert on v1.1
         //public override string GetID() { return ID; }
         //public abstract string ID { get; set; }
 

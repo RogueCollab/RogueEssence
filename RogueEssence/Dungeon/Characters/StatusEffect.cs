@@ -78,10 +78,11 @@ namespace RogueEssence.Dungeon
         {
             ID = index;
         }
-        //TODO: String Assets
+
+        //TODO: Created v0.5.20, revert on v1.1
         protected StatusEffect(StatusEffect other)// : base(other)
         {
-            //TODO: String Assets
+            //TODO: Created v0.5.20, revert on v1.1
             ID = other.ID;
             StatusStates = other.StatusStates.Clone();
         }

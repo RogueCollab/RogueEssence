@@ -3,6 +3,7 @@ using RogueEssence.Data;
 using RogueElements;
 using RogueEssence.Dev;
 using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -21,7 +22,7 @@ namespace RogueEssence.Dungeon
         [DataType(0, DataManager.DataType.Item, false)]
         public string ID { get; set; }
         public bool Cursed;
-        [JsonConverter(typeof(ItemConverter))]
+
         public string HiddenValue;
         public int Amount;
         public int Price;
@@ -62,10 +63,10 @@ namespace RogueEssence.Dungeon
             Price = price;
         }
 
-        //TODO: String Assets
+        //TODO: Created v0.5.20, revert on v1.1
         public InvItem(InvItem other)// : base(other)
         {
-            //TODO: String Assets
+            //TODO: Created v0.5.20, revert on v1.1
             ID = other.ID;
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;
@@ -129,6 +130,31 @@ namespace RogueEssence.Dungeon
                 return entry.Price * Amount;
             else
                 return entry.Price;
+        }
+
+        //TODO: Created v0.5.20, delete on v1.1
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (!String.IsNullOrEmpty(ID))
+            {
+                ItemData item = DataManager.Instance.GetItem(ID);
+
+                int amt;
+                if (int.TryParse(HiddenValue, out amt))
+                {
+                    if (item.MaxStack > 0)
+                    {
+                        Amount = amt;
+                        HiddenValue = "";
+                    }
+                    else
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
+                        HiddenValue = asset_name;
+                    }
+                }
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Text;
 using RogueEssence.Data;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -20,7 +21,6 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(ItemConverter))]
         public string Value;
 
-        [JsonConverter(typeof(ItemConverter))]
         public string HiddenValue;
         public int Amount;
         public int Price;
@@ -207,5 +207,41 @@ namespace RogueEssence.Dungeon
                 GraphicsManager.GetItem(SpriteIndex).TileHeight);
         }
 
+        //TODO: Created v0.5.20, delete on v1.1
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (IsMoney)
+            {
+                int amt;
+                if (int.TryParse(HiddenValue, out amt))
+                {
+                    Amount = amt;
+                    HiddenValue = "";
+                }
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(Value))
+                {
+                    ItemData item = DataManager.Instance.GetItem(Value);
+
+                    int amt;
+                    if (int.TryParse(HiddenValue, out amt))
+                    {
+                        if (item.MaxStack > 0)
+                        {
+                            Amount = amt;
+                            HiddenValue = "";
+                        }
+                        else
+                        {
+                            string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
+                            HiddenValue = asset_name;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

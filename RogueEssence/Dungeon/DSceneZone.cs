@@ -239,42 +239,51 @@ namespace RogueEssence.Dungeon
             nn += itemLength;
             offeredItem.Value = itemName;
 
-            if (!String.IsNullOrEmpty(offeredItem.Value))
+            itemLength = action[nn];
+            nn++;
+            itemName = "";
+            for (int ii = 0; ii < itemLength; ii++)
+                itemName += (char)action[nn + ii];
+            nn += itemLength;
+            offeredItem.HiddenValue = itemName;
+
+            offeredItem.Amount = action[nn];
+            nn++;
+
+
+            if (offeredItem.IsMoney)
+                ActiveTeam.Bank -= offeredItem.Amount;
+            else if (!String.IsNullOrEmpty(offeredItem.Value))
             {
-                if (offeredItem.IsMoney)
-                    ActiveTeam.Bank -= offeredItem.Amount;
+                ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
+                if (entry.MaxStack > 1)
+                {
+                    List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                    for (int ii = 0; ii < offeredItem.Amount; ii++)
+                        itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
+                    ActiveTeam.TakeItems(itemsToTake);
+                }
+                else if (entry.UsageType == ItemData.UseType.Box)
+                {
+                    int chosenIndex = 0;
+                    for (int ii = 0; ii < ActiveTeam.BoxStorage.Count; ii++)
+                    {
+                        if (ActiveTeam.BoxStorage[ii].ID == offeredItem.Value
+                            && ActiveTeam.BoxStorage[ii].HiddenValue == offeredItem.HiddenValue)
+                        {
+                            chosenIndex = ii;
+                            break;
+                        }
+                    }
+                    List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                    itemsToTake.Add(new WithdrawSlot(true, "", chosenIndex));
+                    ActiveTeam.TakeItems(itemsToTake);
+                }
                 else
                 {
-                    ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
-                    if (entry.MaxStack > 1)
-                    {
-                        List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
-                        for (int ii = 0; ii < offeredItem.Amount; ii++)
-                            itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
-                        ActiveTeam.TakeItems(itemsToTake);
-                    }
-                    else if (entry.UsageType == ItemData.UseType.Box)
-                    {
-                        int chosenIndex = 0;
-                        for (int ii = 0; ii < ActiveTeam.BoxStorage.Count; ii++)
-                        {
-                            if (ActiveTeam.BoxStorage[ii].ID == offeredItem.Value
-                                && ActiveTeam.BoxStorage[ii].HiddenValue == offeredItem.HiddenValue)
-                            {
-                                chosenIndex = ii;
-                                break;
-                            }
-                        }
-                        List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
-                        itemsToTake.Add(new WithdrawSlot(true, "", chosenIndex));
-                        ActiveTeam.TakeItems(itemsToTake);
-                    }
-                    else
-                    {
-                        List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
-                        itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
-                        ActiveTeam.TakeItems(itemsToTake);
-                    }
+                    List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                    itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
+                    ActiveTeam.TakeItems(itemsToTake);
                 }
             }
 
