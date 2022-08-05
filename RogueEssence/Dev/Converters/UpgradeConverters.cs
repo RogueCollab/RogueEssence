@@ -2331,7 +2331,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, int> dict = new Dictionary<string, int>();
-            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < new Version(0, 5, 20, 10))
             {
                 JArray jArray = JArray.Load(reader);
                 List<int> container = new List<int>();
@@ -2339,8 +2339,11 @@ namespace RogueEssence.Dev
 
                 for (int ii = 0; ii < container.Count; ii++)
                 {
-                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, ii);
-                    dict[asset_name] = container[ii];
+                    if (DataManager.Instance.Conversions[DataManager.DataType.Item].ContainsKey(ii))
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, ii);
+                        dict[asset_name] = container[ii];
+                    }
                 }
             }
             else
@@ -2376,7 +2379,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             List<string> dict = new List<string>();
-            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < new Version(0, 5, 20, 10))
             {
                 JArray jArray = JArray.Load(reader);
                 List<int> container = new List<int>();
@@ -2422,7 +2425,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             List<string> dict = new List<string>();
-            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < new Version(0, 5, 20, 10))
             {
                 JObject jObject = JObject.Load(reader);
                 IntRange container = new IntRange();

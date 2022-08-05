@@ -38,12 +38,13 @@ namespace RogueEssence.Data
         public static object Deserialize(Stream stream, Type type)
         {
             object obj;
+            Version pastVersion = OldVersion;
             OldVersion = Versioning.GetVersion();
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
             {
                 obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
             }
-            OldVersion = new Version();
+            OldVersion = pastVersion;
             return obj;
         }
 
@@ -94,9 +95,10 @@ namespace RogueEssence.Data
             {
                 string containerStr = reader.ReadToEnd();
                 //Temporarily set global old version for converters in UpgradeConverters.cs to recognize the version.
+                Version pastVersion = OldVersion;
                 OldVersion = GetVersion(containerStr);
                 SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
-                OldVersion = new Version();
+                OldVersion = pastVersion;
                 return container.Object;
             }
         }
