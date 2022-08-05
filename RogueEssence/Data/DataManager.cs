@@ -1745,14 +1745,14 @@ namespace RogueEssence.Data
                     {
                         CharIndex charIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(status.TargetChar);
                         writer.Write((int)faction);//team
-                        writer.Write(teamIndex);//team
+                        writer.Write(teamIndex);//team index
                         writer.Write(guest);//guest
-                        writer.Write(jj);//player
+                        writer.Write(jj);//player index
                         writer.Write(status.ID);//status ID
                         writer.Write((int)charIndex.Faction);//target team index
                         writer.Write(charIndex.Team);//target team index
+                        writer.Write(charIndex.Guest);//target guest status
                         writer.Write(charIndex.Char);//target char index
-                        writer.Write(charIndex.Guest);//target char index
 
                         totalStatusRefs++;
                     }
@@ -1835,26 +1835,33 @@ namespace RogueEssence.Data
             ZoneManager.LoadToState(reader, state);
             if (allowUpgrade && state.Save.IsOldVersion())
             {
-                //ZoneManager.LoadDefaultState(state);
+                try
+                {
+                    //ZoneManager.LoadDefaultState(state);
 
-                //reload AI
-                foreach (Character player in state.Save.ActiveTeam.Players)
-                {
-                    AITactic ai;
-                    if (player.Tactic != null)
-                        ai = GetAITactic(player.Tactic.ID);
-                    else
+                    //reload AI
+                    foreach (Character player in state.Save.ActiveTeam.Players)
+                    {
+                        AITactic ai;
+                        if (player.Tactic != null)
+                            ai = GetAITactic(player.Tactic.ID);
+                        else
                         ai = GetAITactic(DataManager.Instance.DefaultAI);
-                    player.Tactic = new AITactic(ai);
+                        player.Tactic = new AITactic(ai);
+                    }
+                    foreach (Character player in state.Save.ActiveTeam.Assembly)
+                    {
+                        AITactic ai;
+                        if (player.Tactic != null)
+                            ai = GetAITactic(player.Tactic.ID);
+                        else
+                        ai = GetAITactic(DataManager.Instance.DefaultAI);
+                        player.Tactic = new AITactic(ai);
+                    }
                 }
-                foreach (Character player in state.Save.ActiveTeam.Assembly)
+                catch (Exception ex)
                 {
-                    AITactic ai;
-                    if (player.Tactic != null)
-                        ai = GetAITactic(player.Tactic.ID);
-                    else
-                        ai = GetAITactic(DataManager.Instance.DefaultAI);
-                    player.Tactic = new AITactic(ai);
+                    DiagManager.Instance.LogError(ex);
                 }
             }
 
@@ -1864,51 +1871,58 @@ namespace RogueEssence.Data
                 //need to reset the map's activeteam
                 state.Zone.CurrentMap.ActiveTeam = state.Save.ActiveTeam;
 
-                //on top level: reconnect status references
-                int totalStatusRefs = reader.ReadInt32();
-                for (int ii = 0; ii < totalStatusRefs; ii++)
+                try
                 {
-                    Faction faction = (Faction)reader.ReadInt32();//faction
-                    int teamIndex = reader.ReadInt32();//team
-                    bool guest = reader.ReadBoolean();//guest
-                    int player = reader.ReadInt32();//player
+                    //on top level: reconnect status references
+                    int totalStatusRefs = reader.ReadInt32();
+                    for (int ii = 0; ii < totalStatusRefs; ii++)
+                    {
+                        Faction faction = (Faction)reader.ReadInt32();//faction
+                        int teamIndex = reader.ReadInt32();//team
+                        bool guest = reader.ReadBoolean();//guest
+                        int player = reader.ReadInt32();//player
                     string statusID = reader.ReadString();//status ID
-                    Faction targetFaction = (Faction)reader.ReadInt32();//target faction index
-                    int targetTeamIndex = reader.ReadInt32();//target team index
-                    bool targetGuest = reader.ReadBoolean();//target guest status
-                    int targetChar = reader.ReadInt32();//target char index
-                    Team team = null;
-                    switch (faction)
-                    {
-                        case Faction.Foe:
-                            team = state.Zone.CurrentMap.MapTeams[teamIndex];
-                            break;
-                        case Faction.Friend:
-                            team = state.Zone.CurrentMap.AllyTeams[teamIndex];
-                            break;
-                        default:
-                            team = state.Save.ActiveTeam;
-                            break;
-                    }
-                    EventedList<Character> playerList = guest ? team.Guests : team.Players;
-                    StatusEffect status = playerList[player].StatusEffects[statusID];
+                        Faction targetFaction = (Faction)reader.ReadInt32();//target faction index
+                        int targetTeamIndex = reader.ReadInt32();//target team index
+                        bool targetGuest = reader.ReadBoolean();//target guest status
+                        int targetChar = reader.ReadInt32();//target char index
+                        Team team = null;
+                        switch (faction)
+                        {
+                            case Faction.Foe:
+                                team = state.Zone.CurrentMap.MapTeams[teamIndex];
+                                break;
+                            case Faction.Friend:
+                                team = state.Zone.CurrentMap.AllyTeams[teamIndex];
+                                break;
+                            default:
+                                team = state.Save.ActiveTeam;
+                                break;
+                        }
+                        EventedList<Character> playerList = guest ? team.Guests : team.Players;
+                        StatusEffect status = playerList[player].StatusEffects[statusID];
 
-                    Team targetTeam = null;
-                    switch (targetFaction)
-                    {
-                        case Faction.Foe:
-                            targetTeam = state.Zone.CurrentMap.MapTeams[targetTeamIndex];
-                            break;
-                        case Faction.Friend:
-                            targetTeam = state.Zone.CurrentMap.AllyTeams[targetTeamIndex];
-                            break;
-                        default:
-                            targetTeam = state.Save.ActiveTeam;
-                            break;
+                        Team targetTeam = null;
+                        switch (targetFaction)
+                        {
+                            case Faction.Foe:
+                                targetTeam = state.Zone.CurrentMap.MapTeams[targetTeamIndex];
+                                break;
+                            case Faction.Friend:
+                                targetTeam = state.Zone.CurrentMap.AllyTeams[targetTeamIndex];
+                                break;
+                            default:
+                                targetTeam = state.Save.ActiveTeam;
+                                break;
+                        }
+                        EventedList<Character> targetPlayerList = targetGuest ? targetTeam.Guests : targetTeam.Players;
+                        status.TargetChar = targetPlayerList[targetChar];
+                        status.TargetChar.StatusesTargetingThis.Add(new StatusRef(status.ID, playerList[player]));
                     }
-                    EventedList<Character> targetPlayerList = targetGuest ? targetTeam.Guests : targetTeam.Players;
-                    status.TargetChar = targetPlayerList[targetChar];
-                    status.TargetChar.StatusesTargetingThis.Add(new StatusRef(status.ID, playerList[player]));
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
                 }
             }
             
