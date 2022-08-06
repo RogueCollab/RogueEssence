@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,6 +26,7 @@ namespace RogueEssence.Data
             ContractResolver = new SerializerContractResolver(),
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.Indented,
             //NOTE: What do these converters do?  Are they just for the top level class?  They weren't working for class members of type matching the converter...
             //Converters = new List<JsonConverter>() { new TestConverter() },
         };
@@ -110,11 +112,28 @@ namespace RogueEssence.Data
                 SerializationContainer container = new SerializationContainer();
                 container.Object = entry;
                 container.Version = Versioning.GetVersion();
-                string val = JsonConvert.SerializeObject(container, Settings);
+                string val = SerializeObjectInternal(container, Settings);
                 writer.Write(val);
             }
         }
-        
+
+        private static string SerializeObjectInternal(object value, JsonSerializerSettings settings)
+        {
+            JsonSerializer jsonSerializer = JsonSerializer.CreateDefault(settings);
+            StringBuilder sb = new StringBuilder(256);
+            StringWriter sw = new StringWriter(sb, CultureInfo.InvariantCulture);
+            using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
+            {
+                jsonWriter.Formatting = jsonSerializer.Formatting;
+                jsonWriter.Indentation = 0;
+                jsonWriter.IndentChar = '\t';
+
+                jsonSerializer.Serialize(jsonWriter, value, null);
+            }
+
+            return sw.ToString();
+        }
+
         private class SerializerContractResolver : DefaultContractResolver
         {
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)

@@ -14,7 +14,7 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev
 {
-    //TODO: Created v0.5.2, delete on v0.6.1
+    //TODO: Created v0.5.2, delete on v1.1
     public class ScriptVarsConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -82,7 +82,7 @@ namespace RogueEssence.Dev
         }
     }
 
-    //TODO: Created v0.5.3, delete on v0.6.1
+    //TODO: Created v0.5.3, delete on v1.1
     public class LuaTableContainerDictConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -120,7 +120,7 @@ namespace RogueEssence.Dev
     }
 
 
-    //TODO: Created v0.5.2, delete on v0.6.1
+    //TODO: Created v0.5.2, delete on v1.1
     public class IRandomConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -151,7 +151,7 @@ namespace RogueEssence.Dev
         }
     }
 
-    //TODO: Created v0.5.10, delete on v0.6.1
+    //TODO: Created v0.5.10, delete on v1.1
     public class MapBGConverter : JsonConverter<MapBG>
     {
         public override void WriteJson(JsonWriter writer, MapBG value, JsonSerializer serializer)
@@ -185,7 +185,7 @@ namespace RogueEssence.Dev
         }
     }
 
-    //TODO: Created v0.5.20, delete on v1.1
+    //TODO: Created v0.6.0, delete on v1.1
     public class DungeonUnlockConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

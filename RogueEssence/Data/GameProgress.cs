@@ -684,36 +684,8 @@ namespace RogueEssence.Data
         {
             long oldOffset = reader.BaseStream.Position;
             long length = reader.ReadInt64();
-            try
-            {
-                using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
-                {
-                    return (GameProgress)Serializer.DeserializeData(classStream);
-                }
-            }
-            catch (Exception)
-            {
-                reader.BaseStream.Seek(oldOffset, SeekOrigin.Begin);
-                return LegacyLoadMainData(reader);
-            }
-
-        }
-
-        //TODO: v0.6 Delete this
-        public static GameProgress LegacyLoadMainData(BinaryReader reader)
-        {
-            long length = reader.ReadInt64();
             using (MemoryStream classStream = new MemoryStream(reader.ReadBytes((int)length)))
-            {
-                IFormatter formatter = new BinaryFormatter();
-                if (DiagManager.Instance.UpgradeBinder != null)
-                    formatter.Binder = DiagManager.Instance.UpgradeBinder;
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                GameProgress outsave = (GameProgress)formatter.Deserialize(classStream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-                return outsave;
-            }
-
+                return (GameProgress)Serializer.DeserializeData(classStream);
         }
 
         public void RestartLogs(ulong seed)
@@ -845,13 +817,13 @@ namespace RogueEssence.Data
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            //TODO: v0.6 delete this
+            //TODO: v1.1 delete this
             if (GameVersion == null)
                 GameVersion = new Version();
-            //TODO: v0.6 delete this
+            //TODO: v1.1 delete this
             if (!Quest.IsValid())
                 Quest = ModHeader.Invalid;
-            //TODO: v0.6 delete this
+            //TODO: v1.1 delete this
             if (Mods == null)
                 Mods = new List<ModHeader>();
         }

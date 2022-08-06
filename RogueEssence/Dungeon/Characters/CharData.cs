@@ -224,13 +224,5 @@ namespace RogueEssence.Dungeon
             }
         }
 
-
-        //TODO: Created v0.5.3, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ActionEvents == null)
-                ActionEvents = new List<BattleEvent>();
-        }
     }
 }

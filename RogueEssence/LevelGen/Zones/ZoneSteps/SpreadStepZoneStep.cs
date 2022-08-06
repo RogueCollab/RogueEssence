@@ -120,14 +120,6 @@ namespace RogueEssence.LevelGen
             }
             return string.Format("{0}[{1}]", this.GetType().Name, count);
         }
-
-        //TODO: Created v0.5.2, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ModStates == null)
-                ModStates = new List<FlagType>();
-        }
     }
 
     /// <summary>
@@ -239,14 +231,6 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             return string.Format("{0}[{1}]", this.GetType().Name, Spawns.Count.ToString());
-        }
-
-        //TODO: Created v0.5.2, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ModStates == null)
-                ModStates = new List<FlagType>();
         }
     }
 }

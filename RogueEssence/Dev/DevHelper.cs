@@ -13,22 +13,22 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
-        public static Version StringAssetVersion = new Version(0, 5, 20, 4);
-
-        //TODO: v0.6: remove this
-        static int legacy = 0;
+        public static Version StringAssetVersion = new Version(0, 6, 0);
 
         private static Version GetTypeVersion(DataManager.DataType dataType)
         {
             string[] dirs = PathMod.GetHardModFiles(DataManager.DATA_PATH + dataType.ToString() + "/", "*.bin");
 
-            Version oldVersion = new Version();
-            using (Stream stream = new FileStream(dirs[0], FileMode.Open, FileAccess.Read, FileShare.Read))
+            Version oldVersion = Versioning.GetVersion();
+            if (dirs.Length > 0)
             {
-                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                using (Stream stream = new FileStream(dirs[0], FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    string containerStr = reader.ReadToEnd();
-                    oldVersion = Serializer.GetVersion(containerStr);
+                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                    {
+                        string containerStr = reader.ReadToEnd();
+                        oldVersion = Serializer.GetVersion(containerStr);
+                    }
                 }
             }
             return oldVersion;
@@ -47,7 +47,7 @@ namespace RogueEssence.Dev
                 try
                 {
                     int index = Int32.Parse(file);
-                    IEntryData data = LoadWithLegacySupport<IEntryData>(dir);
+                    IEntryData data = DataManager.LoadData<IEntryData>(dir);
                     while (intToName.Count <= index)
                         intToName.Add("");
                     if (data.Name.DefaultText != "")
@@ -248,82 +248,56 @@ namespace RogueEssence.Dev
 
         public static void ReserializeBase()
         {
-            if (legacy == 2)
             {
-                string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
-                object data = LegacyLoad(dir);
-                LegacySave(dir, data);
+                //TODO: Created v0.5.20, delete on v1.1
+                string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal.bin");
+                if (File.Exists(dir))
+                {
+                    object data = DataManager.LoadData<ActiveEffect>(dir);
+
+                    DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), data);
+                    File.Delete(dir);
+                }
             }
-            else if (legacy == 1)
+
             {
-                string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
-                object data = LegacyLoad(dir);
-                DataManager.SaveData(dir, data);
-                DataManager.LoadData<ActiveEffect>(dir);
-                LegacySave(dir, data);
-            }
-            else
-            {
-                string dir = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
-                object data = LoadWithLegacySupport<ActiveEffect>(dir);
+                //TODO: Created v0.5.20, delete on v1.1
+                string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
+                object data = DataManager.LoadData<ActiveEffect>(dir);
                 DataManager.SaveData(dir, data);
             }
 
-            foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*.fx"))
+            //TODO: Created v0.5.20, delete on v1.1
+            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*.fx"))
             {
                 object data;
-                if (legacy == 2)
-                {
-                    if (Path.GetFileName(dir) == "NoCharge.fx")
-                        data = LegacyLoad(dir);
-                    else
-                        data = LegacyLoad(dir);
-                    LegacySave(dir, data);
-                }
-                else if (legacy == 1)
-                {
-                    if (Path.GetFileName(dir) == "NoCharge.fx")
-                        data = LegacyLoad(dir);
-                    else
-                        data = LegacyLoad(dir);
-                    DataManager.SaveData(dir, data);
-                    if (Path.GetFileName(dir) == "NoCharge.fx")
-                        data = DataManager.LoadData<EmoteFX>(dir);
-                    else
-                        data = DataManager.LoadData<BattleFX>(dir);
-                    LegacySave(dir, data);
-                }
+                if (Path.GetFileName(dir) == "NoCharge.fx")
+                    data = DataManager.LoadData<EmoteFX>(dir);
                 else
-                {
-                    if (Path.GetFileName(dir) == "NoCharge.fx")
-                        data = LoadWithLegacySupport<EmoteFX>(dir);
-                    else
-                        data = LoadWithLegacySupport<BattleFX>(dir);
-                    DataManager.SaveData(dir, data);
-                }
+                    data = DataManager.LoadData<BattleFX>(dir);
+
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.FX_PATH, fileName + DataManager.DATA_EXT)), data);
+
+                File.Delete(PathMod.HardMod(Path.Join(DataManager.FX_PATH, fileName + ".fx")));
+            }
+
+            foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*" + DataManager.DATA_EXT))
+            {
+                object data;
+                if (Path.GetFileName(dir) == "NoCharge" + DataManager.DATA_EXT)
+                    data = DataManager.LoadData<EmoteFX>(dir);
+                else
+                    data = DataManager.LoadData<BattleFX>(dir);
+                DataManager.SaveData(dir, data);
             }
 
 
             foreach (string dir in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
                 object data;
-                if (legacy == 2)
-                {
-                    data = LegacyLoad(dir);
-                    LegacySave(dir, data);
-                }
-                else if (legacy == 1)
-                {
-                    data = LegacyLoad(dir);
-                    DataManager.SaveData(dir, data);
-                    data = DataManager.LoadData<CharSheetOp>(dir);
-                    LegacySave(dir, data);
-                }
-                else
-                {
-                    data = LoadWithLegacySupport<CharSheetOp>(dir);
-                    DataManager.SaveData(dir, data);
-                }
+                data = DataManager.LoadData<CharSheetOp>(dir);
+                DataManager.SaveData(dir, data);
             }
         }
 
@@ -333,6 +307,19 @@ namespace RogueEssence.Dev
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
                 {
+                    //TODO: Created v0.5.20, delete on v1.1
+                    foreach (string dir in PathMod.GetHardModFiles(DataManager.DATA_PATH + type.ToString() + "/", "*.bin"))
+                    {
+                        object data = DataManager.LoadData(dir, type.GetClassType());
+                        if (data != null)
+                        {
+                            string fileName = Path.GetFileNameWithoutExtension(dir);
+                            DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + DataManager.DATA_EXT)), data);
+
+                            File.Delete(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + ".bin")));
+                        }
+                    }
+
                     ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, type.GetClassType());
                 }
             }
@@ -347,27 +334,9 @@ namespace RogueEssence.Dev
         {
             foreach (string dir in PathMod.GetHardModFiles(dataPath, "*" + ext))
             {
-                if (legacy == 2)
-                {
-                    object data = LegacyLoad(dir);
-                    if (data != null)
-                        LegacySave(dir, data);
-                }
-                else if (legacy == 1)
-                {
-                    object data = LegacyLoad(dir);
-                    if (data != null)
-                        DataManager.SaveData(dir, data);
-                    object json = DataManager.LoadData(dir, t);
-                    if (json != null)
-                        LegacySave(dir, json);
-                }
-                else
-                {
-                    object data = LoadWithLegacySupport(dir, t);
-                    if (data != null)
-                        DataManager.SaveData(dir, data);
-                }
+                object data = DataManager.LoadData(dir, t);
+                if (data != null)
+                    DataManager.SaveData(dir, data);
             }
         }
 
@@ -393,9 +362,15 @@ namespace RogueEssence.Dev
                 {
                     baseData.ReIndex();
                     DataManager.SaveData(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
+
+                    //TODO: Created v0.5.20, delete on v1.1
+                    File.Delete(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + ".bin"));
                 }
             }
-            DataManager.SaveData(PathMod.HardMod(DataManager.MISC_PATH + "Index.bin"), DataManager.Instance.UniversalData);
+            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), DataManager.Instance.UniversalData);
+
+            //TODO: Created v0.5.20, delete on v1.1
+            File.Delete(PathMod.HardMod(DataManager.MISC_PATH + "Index.bin"));
         }
 
 
@@ -408,7 +383,7 @@ namespace RogueEssence.Dev
                 foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
-                    IEntryData data = (IEntryData)LoadWithLegacySupport(dir, t);
+                    IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
                     entries[file] = data.GenerateEntrySummary();
                 }
                 fullGuide.Entries = entries;
@@ -443,64 +418,13 @@ namespace RogueEssence.Dev
         {
             foreach (string dir in PathMod.GetModFiles(dataPath, "*" + ext))
             {
-                IEntryData data = (IEntryData)LoadWithLegacySupport(dir, t);
+                IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
                 if (!data.Released)
                     data = (IEntryData)ReflectionExt.CreateMinimalInstance(data.GetType());
                 DataManager.SaveData(dir, data);
             }
         }
 
-        //TODO: v0.6 Delete this
-        private static T LoadWithLegacySupport<T>(string path)
-        {
-            return (T)LoadWithLegacySupport(path, typeof(T));
-        }
-
-        //TODO: v0.6 Delete this
-        public static object LoadWithLegacySupport(string path, Type t)
-        {
-            try
-            {
-                return DataManager.LoadData(path, t);
-            }
-            catch (Exception)
-            {
-                return LegacyLoad(path);
-            }
-        }
-
-        //TODO: v0.6 Delete this
-        public static object LegacyLoad(string path)
-        {
-            try
-            {
-                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                    IFormatter formatter = new BinaryFormatter();
-                    return formatter.Deserialize(stream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-            return null;
-        }
-
-        //Needed to use this for testing.
-        //TODO: v0.6 Delet this
-        public static void LegacySave(string path, object entry)
-        {
-            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                IFormatter formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                formatter.Serialize(stream, entry);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-            }
-        }
 
         public static void MergeQuest(string quest)
         {
