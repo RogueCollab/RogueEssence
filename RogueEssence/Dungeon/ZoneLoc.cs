@@ -1,4 +1,6 @@
-﻿using RogueEssence.Data;
+﻿using Newtonsoft.Json;
+using RogueEssence.Data;
+using RogueEssence.Dev;
 using System;
 
 namespace RogueEssence.Dungeon
@@ -6,6 +8,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public struct ZoneLoc
     {
+        [JsonConverter(typeof(DungeonConverter))]
         public string ID;
         public SegLoc StructID;
         public int EntryPoint;

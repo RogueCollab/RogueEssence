@@ -620,7 +620,7 @@ namespace RogueEssence.Data
 
                 //restore remembered skills
                 foreach (string key in charFrom.Relearnables.Keys)
-                    character.Relearnables[key] |= charFrom.Relearnables[key];
+                    character.Relearnables[key] = charFrom.Relearnables[key];
             }
             catch (Exception ex)
             {
