@@ -190,9 +190,8 @@ namespace RogueEssence.Dungeon
             MonsterData newDex = DataManager.Instance.GetMonster(BaseForm.Species);
             BaseMonsterForm newForm = newDex.Forms[BaseForm.Form];
 
-            if (prevIndex == 2 && newForm.Intrinsic3 == DataManager.Instance.DefaultIntrinsic)
-                prevIndex = 0;
-            if (prevIndex == 1 && newForm.Intrinsic2 == DataManager.Instance.DefaultIntrinsic)
+            List<int> possibles = newForm.GetPossibleIntrinsicSlots();
+            if (!possibles.Contains(prevIndex))
                 prevIndex = 0;
 
             if (prevIndex == 0)

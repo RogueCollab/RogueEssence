@@ -201,7 +201,7 @@ namespace RogueEssence.Menu
                 if (legalIntrinsics[jj] == origIntrinsicSetting)
                     origChosenIndex = jj;
             }
-            if (-1 == origIntrinsicSetting)
+            if (origIntrinsicSetting == -1)
                 origChosenIndex = -1;
 
             return new MenuSetting(Text.FormatKey("MENU_CHARA_DETAIL_INTRINSIC"), 48, 72, choices, chosenIndex + 1, origChosenIndex + 1, confirmAction);

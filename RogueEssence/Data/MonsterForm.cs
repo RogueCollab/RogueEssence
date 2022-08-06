@@ -49,8 +49,12 @@ namespace RogueEssence.Data
         {
             FormName = new LocalText();
             LevelSkills = new List<LevelUpSkill>();
+
+            // TODO: Initialize to default element, when we can guarantee that DataManager.Instance.DefaultElement itself is initialized
             Element1 = "";
             Element2 = "";
+            
+            // TODO: Make invalid intrinsic represent no-ability, not default
             Intrinsic1 = "";
             Intrinsic2 = "";
             Intrinsic3 = "";
