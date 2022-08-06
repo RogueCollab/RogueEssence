@@ -674,12 +674,9 @@ namespace RogueEssence.Script
 
         public void GivePlayerItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
-            for (int i = 0; i < count; ++i)
-            {
-                InvItem item = new InvItem(id, cursed);
-                item.HiddenValue = hiddenval;
-                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
-            }
+            InvItem item = new InvItem(id, cursed, count);
+            item.HiddenValue = hiddenval;
+            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
         }
 
 

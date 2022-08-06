@@ -73,6 +73,7 @@ namespace RogueEssence.Dev
 
         private void populateStack(StackPanel groupBoxPanel, MapItem member)
         {
+            groupBoxPanel.Children.Clear();
             {
                 Avalonia.Controls.Grid innerPanel = getSharedRowPanel(2);
 
@@ -97,28 +98,6 @@ namespace RogueEssence.Dev
 
             if (member.IsMoney)
                 return;
-
-            {
-                Avalonia.Controls.Grid innerPanel = getSharedRowPanel(2);
-
-                TextBlock lblAmount = new TextBlock();
-                lblAmount.Text = "Amount:";
-                lblAmount.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-                lblAmount.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
-
-                NumericUpDown nudAmount = new NumericUpDown();
-                nudAmount.Margin = new Thickness(4, 0, 0, 0);
-                nudAmount.Minimum = 1;
-                nudAmount.Maximum = Int32.MaxValue;
-                nudAmount.Value = member.Amount;
-
-                innerPanel.ColumnDefinitions[0].Width = new GridLength(70);
-                lblAmount.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
-                innerPanel.Children.Add(lblAmount);
-                nudAmount.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
-                innerPanel.Children.Add(nudAmount);
-                groupBoxPanel.Children.Add(innerPanel);
-            }
 
             {
                 Avalonia.Controls.Grid innerPanel = getSharedRowPanel(2);

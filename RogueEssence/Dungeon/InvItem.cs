@@ -103,7 +103,7 @@ namespace RogueEssence.Dungeon
 
             string nameStr = entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                nameStr += " (" + HiddenValue + ")";
+                nameStr += " (" + Amount + ")";
 
             return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
         }
@@ -118,7 +118,7 @@ namespace RogueEssence.Dungeon
 
             nameStr += entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                nameStr += " (" + HiddenValue + ")";
+                nameStr += " (" + Amount + ")";
 
             return nameStr;
         }
@@ -148,10 +148,14 @@ namespace RogueEssence.Dungeon
                         Amount = amt;
                         HiddenValue = "";
                     }
-                    else
+                    else if (amt > 0)
                     {
                         string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
                         HiddenValue = asset_name;
+                    }
+                    else
+                    {
+                        HiddenValue = "";
                     }
                 }
             }

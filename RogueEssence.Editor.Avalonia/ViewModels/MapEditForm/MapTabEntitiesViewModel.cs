@@ -74,6 +74,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             Equips = new ObservableCollection<string>();
+            itemKeys = new List<string>();
             Equips.Add("---: None");
             itemKeys.Add("");
             Dictionary<string, string> item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);

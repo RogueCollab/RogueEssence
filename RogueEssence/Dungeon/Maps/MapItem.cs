@@ -71,6 +71,7 @@ namespace RogueEssence.Dungeon
             Cursed = other.Cursed;
             Value = other.Value;
             HiddenValue = other.HiddenValue;
+            Amount = other.Amount;
             Price = other.Price;
         }
         public ISpawnable Copy() { return new MapItem(this); }
@@ -234,10 +235,14 @@ namespace RogueEssence.Dungeon
                             Amount = amt;
                             HiddenValue = "";
                         }
-                        else
+                        else if (amt > 0)
                         {
                             string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
                             HiddenValue = asset_name;
+                        }
+                        else
+                        {
+                            HiddenValue = "";
                         }
                     }
                 }

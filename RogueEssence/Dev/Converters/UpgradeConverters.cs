@@ -2342,6 +2342,9 @@ namespace RogueEssence.Dev
                     if (DataManager.Instance.Conversions[DataManager.DataType.Item].ContainsKey(ii))
                     {
                         string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, ii);
+                        int val;
+                        if (int.TryParse(asset_name, out val))
+                            continue;
                         dict[asset_name] = container[ii];
                     }
                 }
