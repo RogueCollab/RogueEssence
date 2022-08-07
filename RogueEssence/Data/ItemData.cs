@@ -47,10 +47,9 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary()
         {
-            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, UsageType);
+            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, SortCategory, UsageType);
             foreach (ItemState state in ItemStates)
                 summary.States.Add(new FlagType(state.GetType()));
-            summary.SortCategory = SortCategory;
             return summary;
         }
 
@@ -160,14 +159,13 @@ namespace RogueEssence.Data
     {
         public ItemData.UseType UsageType;
         public List<FlagType> States;
-        public int SortCategory;
 
         public ItemEntrySummary() : base()
         {
             States = new List<FlagType>();
         }
 
-        public ItemEntrySummary(LocalText name, bool released, string comment, ItemData.UseType useType) : base(name, released, comment)
+        public ItemEntrySummary(LocalText name, bool released, string comment, int sort, ItemData.UseType useType) : base(name, released, comment, sort)
         {
             UsageType = useType;
             States = new List<FlagType>();
@@ -176,11 +174,6 @@ namespace RogueEssence.Data
         public override string GetColoredName()
         {
             return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
-        }
-
-        public override int GetSortOrder()
-        {
-            return SortCategory;
         }
 
         public bool ContainsState<T>() where T : ItemState

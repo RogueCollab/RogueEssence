@@ -24,10 +24,9 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary()
         {
-            MonsterEntrySummary summary = new MonsterEntrySummary(Name, Released, Comment);
+            MonsterEntrySummary summary = new MonsterEntrySummary(Name, Released, Comment, IndexNum);
             foreach (BaseMonsterForm form in Forms)
                 summary.Forms.Add(form.GenerateEntrySummary());
-            summary.IndexNum = IndexNum;
             return summary;
         }
 
@@ -86,14 +85,13 @@ namespace RogueEssence.Data
     public class MonsterEntrySummary : EntrySummary
     {
         public List<BaseFormSummary> Forms;
-        public int IndexNum;
 
         public MonsterEntrySummary() : base()
         {
             Forms = new List<BaseFormSummary>();
         }
 
-        public MonsterEntrySummary(LocalText name, bool released, string comment) : base(name, released, comment)
+        public MonsterEntrySummary(LocalText name, bool released, string comment, int sort) : base(name, released, comment, sort)
         {
             Forms = new List<BaseFormSummary>();
         }
@@ -102,12 +100,6 @@ namespace RogueEssence.Data
         public override string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
-        }
-
-
-        public override int GetSortOrder()
-        {
-            return IndexNum;
         }
     }
 

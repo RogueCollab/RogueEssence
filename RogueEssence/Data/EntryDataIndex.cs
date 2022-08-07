@@ -17,7 +17,7 @@ namespace RogueEssence.Data
 
         public int CompareWithSort(string key1, string key2)
         {
-            int cmp = Math.Sign(Entries[key1].GetSortOrder() - Entries[key2].GetSortOrder());
+            int cmp = Math.Sign(Entries[key1].SortOrder - Entries[key2].SortOrder);
             if (cmp != 0)
                 return cmp;
             return String.Compare(key1, key2);
@@ -33,7 +33,7 @@ namespace RogueEssence.Data
 
             foreach (string key in Entries.Keys)
             {
-                int idx = Entries[key].GetSortOrder();
+                int idx = Entries[key].SortOrder;
                 while (idx >= keys.Count)
                     keys.Add(null);
                 keys[idx] = key;
@@ -85,6 +85,7 @@ namespace RogueEssence.Data
         public LocalText Name;
         public bool Released;
         public string Comment;
+        public int SortOrder;
 
         public EntrySummary()
         {
@@ -92,21 +93,17 @@ namespace RogueEssence.Data
             Comment = "";
         }
 
-        public EntrySummary(LocalText name, bool released, string comment)
+        public EntrySummary(LocalText name, bool released, string comment, int sort = 0)
         {
             Name = name;
             Released = released;
             Comment = comment;
+            SortOrder = sort;
         }
 
         public virtual string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
-        }
-
-        public virtual int GetSortOrder()
-        {
-            return 0;
         }
 
         public string GetLocalString(bool verbose)

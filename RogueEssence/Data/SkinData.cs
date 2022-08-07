@@ -25,9 +25,7 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary()
         {
-            SkinEntrySummary summary = new SkinEntrySummary(Name, Released, Comment);
-            summary.IndexNum = IndexNum;
-            return summary;
+            return new EntrySummary(Name, Released, Comment, IndexNum);
         }
 
         public SkinData()
@@ -47,27 +45,6 @@ namespace RogueEssence.Data
         public string GetColoredName()
         {
             return String.Format("{0}", Name.ToLocal());
-        }
-    }
-
-    [Serializable]
-    public class SkinEntrySummary : EntrySummary
-    {
-        public int IndexNum;
-
-        public SkinEntrySummary() : base()
-        {
-        }
-
-        public SkinEntrySummary(LocalText name, bool released, string comment) : base(name, released, comment)
-        {
-
-        }
-
-
-        public override int GetSortOrder()
-        {
-            return IndexNum;
         }
     }
 }

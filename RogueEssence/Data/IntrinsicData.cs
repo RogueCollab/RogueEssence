@@ -18,7 +18,9 @@ namespace RogueEssence.Data
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public int IndexNum;
+
+        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment, IndexNum); }
 
         public IntrinsicData()
         {
