@@ -206,8 +206,14 @@ namespace RogueEssence.Dev
                 {
                     if (container[ii] > GameProgress.UnlockState.None)
                     {
-                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, ii);
-                        dict[asset_name] = container[ii];
+                        if (DataManager.Instance.Conversions[DataManager.DataType.Zone].ContainsKey(ii))
+                        {
+                            string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, ii);
+                            int val;
+                            if (int.TryParse(asset_name, out val))
+                                continue;
+                            dict[asset_name] = container[ii];
+                        }
                     }
                 }
             }
@@ -2219,8 +2225,14 @@ namespace RogueEssence.Dev
                 {
                     if (container[ii] > GameProgress.UnlockState.None)
                     {
-                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Monster, ii);
-                        dict[asset_name] = container[ii];
+                        if (DataManager.Instance.Conversions[DataManager.DataType.Monster].ContainsKey(ii))
+                        {
+                            string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Monster, ii);
+                            int val;
+                            if (int.TryParse(asset_name, out val))
+                                continue;
+                            dict[asset_name] = container[ii];
+                        }
                     }
                 }
             }
