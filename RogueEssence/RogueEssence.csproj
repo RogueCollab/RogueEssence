@@ -13,7 +13,6 @@
     <PackageReference Include="NLua" Version="1.4.32" />
 	<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	<PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
-    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
     <PackageReference Include="System.Resources.Extensions" Version="4.6.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>

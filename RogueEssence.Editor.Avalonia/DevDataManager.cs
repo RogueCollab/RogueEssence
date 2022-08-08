@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Media.Imaging;
 using RogueElements;
 using RogueEssence.Content;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev
@@ -298,61 +299,29 @@ namespace RogueEssence.Dev
 
             try
             {
-                Loc tileDims = GraphicsManager.TileIndex.GetTileDims(tileset);
-                int tileSize = GraphicsManager.TileIndex.GetTileSize(tileset);
+                DevForm.ExecuteOrPend(() => { loadCacheTileset(tileset); });
 
-                System.Drawing.Bitmap baseBitmap = new System.Drawing.Bitmap(tileDims.X * tileSize, tileDims.Y * tileSize);
-
-                using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(baseBitmap))
-                {
-                    for (int xx = 0; xx < tileDims.X; xx++)
-                    {
-                        for (int yy = 0; yy < tileDims.Y; yy++)
-                        {
-                            long tilePos = GraphicsManager.TileIndex.GetPosition(tileset, new Loc(xx, yy));
-
-                            if (tilePos > 0)
-                            {
-                                using (FileStream stream = new FileStream(PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, tileset)), FileMode.Open, FileAccess.Read, FileShare.Read))
-                                {
-                                    // Seek to the location of the tile
-                                    stream.Seek(tilePos, SeekOrigin.Begin);
-
-                                    using (BinaryReader reader = new BinaryReader(stream))
-                                    {
-                                        //usually handled by basesheet, cheat a little here
-                                        long length = reader.ReadInt64();
-                                        byte[] tileBytes = reader.ReadBytes((int)length);
-
-                                        using (MemoryStream tileStream = new MemoryStream(tileBytes))
-                                        {
-                                            System.Drawing.Bitmap tile = new System.Drawing.Bitmap(tileStream);
-
-                                            graphics.DrawImage(tile, xx * tileSize, yy * tileSize);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-
-                using (MemoryStream tileStream = new MemoryStream())
-                {
-                    baseBitmap.Save(tileStream, System.Drawing.Imaging.ImageFormat.Png);
-                    tileStream.Seek(0, SeekOrigin.Begin);
-                    sheet = new Bitmap(tileStream);
-                }
-                tilesetCache.Add(tileset, sheet);
-                return sheet;
+                if (tilesetCache.TryGetValue(tileset, out sheet))
+                    return sheet;
             }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(new Exception("Error retrieving Tileset #" + tileset + "\n", ex));
             }
             return null;
+        }
+
+        private static void loadCacheTileset(string tileset)
+        {
+            Bitmap sheet;
+            using (MemoryStream tileStream = new MemoryStream())
+            {
+                ImportHelper.WriteFullTilesetTexture(PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, tileset)), tileStream);
+                tileStream.Seek(0, SeekOrigin.Begin);
+                sheet = new Bitmap(tileStream);
+            }
+
+            tilesetCache.Add(tileset, sheet);
         }
 
         public static Dictionary<int, string> GetAlias(string name)

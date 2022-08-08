@@ -507,6 +507,41 @@ namespace RogueEssence.Dev
             }
         }
 
+
+        public static void WriteFullTilesetTexture(string inputPath, MemoryStream outStream)
+        {
+            if (File.Exists(inputPath))
+            {
+                using (FileStream stream = File.OpenRead(inputPath))
+                {
+                    using (BinaryReader reader = new BinaryReader(stream))
+                    {
+                        TileIndexNode guide = TileIndexNode.Load(reader);
+                        Loc maxPositions = Loc.Zero;
+                        Dictionary<Loc, Color[]> tiles = new Dictionary<Loc, Color[]>();
+                        foreach (Loc loc in guide.Positions.Keys)
+                        {
+                            maxPositions = new Loc(Math.Max(loc.X, maxPositions.X), Math.Max(loc.Y, maxPositions.Y));
+                            long tilePos = guide.Positions[loc];
+                            reader.BaseStream.Seek(tilePos, SeekOrigin.Begin);
+                            using (BaseSheet sheet = BaseSheet.Load(reader))
+                                tiles.Add(loc, BaseSheet.GetData(sheet));
+                        }
+                        maxPositions = maxPositions + Loc.One;
+                        Point imgSize = new Point(maxPositions.X * guide.TileSize, maxPositions.Y * guide.TileSize);
+                        Color[] tilesetColors = new Color[imgSize.X * imgSize.Y];
+                        foreach (Loc loc in tiles.Keys)
+                        {
+                            BaseSheet.Blit(tiles[loc], tilesetColors, new Point(guide.TileSize, guide.TileSize), imgSize,
+                            new Point(loc.X * guide.TileSize, loc.Y * guide.TileSize), SpriteEffects.None);
+                        }
+
+                        BaseSheet.ExportColors(outStream, tilesetColors, imgSize);
+                    }
+                }
+            }
+        }
+
         public static void ImportAllBeams(string sourceDir, string cachePattern)
         {
             string[] dirs = Directory.GetDirectories(sourceDir);

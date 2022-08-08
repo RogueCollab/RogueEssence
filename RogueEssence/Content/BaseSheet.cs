@@ -201,12 +201,18 @@ namespace RogueEssence.Content
         }
 
 
+
         public static void ExportColors(string fileName, Color[] colors, Point imgSize)
+        {
+            using (Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                ExportColors(stream, colors, imgSize);
+        }
+
+        public static void ExportColors(Stream stream, Color[] colors, Point imgSize)
         {
             Texture2D animImg = new Texture2D(device, imgSize.X, imgSize.Y);
             animImg.SetData<Color>(0, null, colors, 0, colors.Length);
-            using (Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                ExportTex(stream, animImg);
+            ExportTex(stream, animImg);
             animImg.Dispose();
         }
 
