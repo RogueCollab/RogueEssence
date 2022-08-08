@@ -347,9 +347,17 @@ namespace RogueEssence.Data
 
         public string MapAssetName(DataType dataType, int asset)
         {
-            if (asset < 0)
+            try
+            {
+                if (asset < 0)
+                    return "";
+                return Conversions[dataType][asset];
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
                 return "";
-            return Conversions[dataType][asset];
+            }
         }
 
 

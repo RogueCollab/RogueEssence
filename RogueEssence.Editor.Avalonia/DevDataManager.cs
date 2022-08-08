@@ -282,6 +282,8 @@ namespace RogueEssence.Dev
                     DiagManager.Instance.LogError(new Exception("Error retrieving tile " + tileTex.TexLoc.X + ", " + tileTex.TexLoc.Y + " from Tileset #" + tileTex.Sheet + "\n", ex));
                 }
             }
+
+            tileCache.Add(addr, null);
             return null;
         }
 
@@ -308,6 +310,8 @@ namespace RogueEssence.Dev
             {
                 DiagManager.Instance.LogError(new Exception("Error retrieving Tileset #" + tileset + "\n", ex));
             }
+
+            tilesetCache.Add(tileset, null);
             return null;
         }
 
