@@ -39,6 +39,7 @@ namespace RogueEssence.Dev
             string convFolder = PathMod.HardMod("CONVERSION/");
             string[] dirs = PathMod.GetHardModFiles(DataManager.DATA_PATH + dataType.ToString() + "/", "*.bin");
             List<string> intToName = new List<string>();
+            HashSet<string> resultNames = new HashSet<string>();
             foreach (string dir in dirs)
             {
                 string folder = Path.GetDirectoryName(dir);
@@ -52,17 +53,26 @@ namespace RogueEssence.Dev
                         intToName.Add("");
                     if (data.Name.DefaultText != "")
                     {
-                        string sanitizedName = Text.Sanitize(data.Name.DefaultText).ToLower();
-                        if (!intToName.Contains(sanitizedName))
-                            resultName = sanitizedName;
+                        resultName = Text.Sanitize(data.Name.DefaultText).ToLower();
+
+                        if (resultNames.Contains(resultName))
+                            resultName = Text.GetNonConflictingName(resultName, resultNames.Contains);
                     }
+
                     intToName[index] = file+"\t"+resultName;
+                    resultNames.Add(resultName);
                 }
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex);
                 }
                 File.Move(dir, Path.Join(folder, resultName + ".bin"));
+            }
+
+            for (int ii = intToName.Count - 1; ii >= 0; ii--)
+            {
+                if (String.IsNullOrWhiteSpace(intToName[ii]))
+                    intToName.RemoveAt(ii);
             }
 
             File.WriteAllLines(Path.Join(convFolder, dataType.ToString() + ".txt"), intToName);
@@ -263,8 +273,11 @@ namespace RogueEssence.Dev
             {
                 //TODO: Created v0.5.20, delete on v1.1
                 string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
-                object data = DataManager.LoadData<ActiveEffect>(dir);
-                DataManager.SaveData(dir, data);
+                if (File.Exists(dir))
+                {
+                    object data = DataManager.LoadData<ActiveEffect>(dir);
+                    DataManager.SaveData(dir, data);
+                }
             }
 
             //TODO: Created v0.5.20, delete on v1.1
@@ -314,6 +327,20 @@ namespace RogueEssence.Dev
                         if (data != null)
                         {
                             string fileName = Path.GetFileNameWithoutExtension(dir);
+                            if (data is MonsterData)
+                            {
+                                MonsterData monData = data as MonsterData;
+                                int dexNum = 0;
+                                foreach (int key in DataManager.Instance.Conversions[DataManager.DataType.Monster].Keys)
+                                {
+                                    if (DataManager.Instance.Conversions[DataManager.DataType.Monster][key] == fileName)
+                                    {
+                                        dexNum = key;
+                                        break;
+                                    }
+                                }
+                                monData.IndexNum = dexNum;
+                            }
                             DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + DataManager.DATA_EXT)), data);
 
                             File.Delete(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + ".bin")));
