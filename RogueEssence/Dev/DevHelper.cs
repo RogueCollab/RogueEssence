@@ -34,7 +34,7 @@ namespace RogueEssence.Dev
             return oldVersion;
         }
 
-        private static List<string> convertAssetType(DataManager.DataType dataType)
+        private static void convertAssetType(DataManager.DataType dataType)
         {
             string convFolder = PathMod.HardMod("CONVERSION/");
             string[] dirs = PathMod.GetHardModFiles(DataManager.DATA_PATH + dataType.ToString() + "/", "*.bin");
@@ -66,7 +66,6 @@ namespace RogueEssence.Dev
                 {
                     DiagManager.Instance.LogError(ex);
                 }
-                File.Move(dir, Path.Join(folder, resultName + ".bin"));
             }
 
             for (int ii = intToName.Count - 1; ii >= 0; ii--)
@@ -76,15 +75,17 @@ namespace RogueEssence.Dev
             }
 
             File.WriteAllLines(Path.Join(convFolder, dataType.ToString() + ".txt"), intToName);
-            return intToName;
         }
 
 
 
-        private static void convertAssetTypeFromTxt(DataManager.DataType dataType)
+        private static string[] convertAssetTypeFromTxt(DataManager.DataType dataType)
         {
             string convFolder = PathMod.HardMod("CONVERSION/");
             string dataFolder = PathMod.HardMod(Path.Join(DataManager.DATA_PATH, dataType.ToString()));
+
+            if (!File.Exists(Path.Join(convFolder, dataType.ToString() + ".txt")))
+                throw new Exception("Missing conversion text.  Run -preconvert first.");
 
             string[] lines = File.ReadAllLines(Path.Join(convFolder, dataType.ToString() + ".txt"));
             foreach (string line in lines)
@@ -94,15 +95,12 @@ namespace RogueEssence.Dev
                 string resultName = before_after[1];
                 File.Move(Path.Join(dataFolder, firstName + ".bin"), Path.Join(dataFolder, resultName + ".bin"));
             }
+            return lines;
         }
 
-
-
-        public static void ConvertAssetNames()
+        public static void PrepareAssetConversion()
         {
-            string path = PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin");
-
-
+            
             string convFolder = PathMod.HardMod("CONVERSION/");
             if (!Directory.Exists(convFolder))
                 Directory.CreateDirectory(convFolder);
@@ -224,14 +222,137 @@ namespace RogueEssence.Dev
             if (oldVersion < StringAssetVersion)
             {
                 //rename all the zone files
-                List<string> intToName = convertAssetType(DataManager.DataType.Zone);
+                convertAssetType(DataManager.DataType.Zone);
+            }
+        }
+
+        public static void ConvertAssetNames()
+        {
+            Version oldVersion = GetTypeVersion(DataManager.DataType.AutoTile);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.AutoTile);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Emote);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Emote);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.GrowthGroup);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.GrowthGroup);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.SkillGroup);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.SkillGroup);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Rank);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Rank);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Element);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Element);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.AI);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.AI);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Skin);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Skin);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Terrain);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.AutoTile);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Tile);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Tile);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.MapStatus);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.MapStatus);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Status);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Status);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Intrinsic);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Intrinsic);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Skill);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Skill);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Monster);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Monster);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Item);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all autotile files
+                convertAssetTypeFromTxt(DataManager.DataType.Item);
+            }
+
+            oldVersion = GetTypeVersion(DataManager.DataType.Zone);
+            if (oldVersion < StringAssetVersion)
+            {
+                //rename all the zone files
+                string[] intToName = convertAssetTypeFromTxt(DataManager.DataType.Zone);
 
                 string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
                 //now rename the script paths
-                for (int ii = 0; ii < intToName.Count; ii++)
+                for (int ii = 0; ii < intToName.Length; ii++)
                 {
-                    string srcName = "zone_" + ii;
-                    string destName = intToName[ii];
+                    string[] destPair = intToName[ii].Split('\t');
+                    string srcName = "zone_" + destPair[0];
+                    string destName = destPair[1];
 
                     if (Directory.Exists(Path.Join(scriptFolder, srcName)))
                     {
