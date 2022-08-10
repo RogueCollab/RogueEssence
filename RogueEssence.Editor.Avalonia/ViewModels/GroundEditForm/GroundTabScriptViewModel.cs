@@ -43,7 +43,14 @@ namespace RogueEssence.Dev.ViewModels
                 string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
                 try
                 {
-                    Process.Start("explorer.exe", mapscriptdir);
+                    if (OperatingSystem.IsWindows())
+                        Process.Start("explorer.exe", mapscriptdir);
+                    else if (OperatingSystem.IsLinux())
+                        Process.Start("mimeopen", mapscriptdir);
+                    else if (OperatingSystem.IsMacOS())
+                        Process.Start("open", mapscriptdir);
+                    else
+                        throw new NotSupportedException("File open not supported on current system.");
                 }
                 catch (Exception e)
                 {
