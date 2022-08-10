@@ -104,7 +104,7 @@ namespace RogueEssence.Dev.ViewModels
             if (!result)
                 return;
             
-            string newName = Regex.Replace(vm.Name, "\\W", "_");
+            string newName = Text.Sanitize(vm.Name);
 
             //sanitize name and check for name conflicts
             if (newName == "")
@@ -122,7 +122,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
 
-            ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(chosenNode.FullPath, PathMod.MODS_FOLDER, newName));
+            ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(PathMod.MODS_PATH, newName));
             //add all asset folders
             Directory.CreateDirectory(newNode.FullPath);
             //create the mod xml
@@ -189,7 +189,7 @@ namespace RogueEssence.Dev.ViewModels
             ModsNodeViewModel baseNode = new ModsNodeViewModel(null, null, "");
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             foreach (string modPath in modsPath)
-                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(PathMod.GetModDetails(modPath)), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(PathMod.GetModDetails(modPath)), modPath));
             Mods.Add(baseNode);
         }
 

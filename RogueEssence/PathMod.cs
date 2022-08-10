@@ -28,9 +28,6 @@ namespace RogueEssence
         public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
         public static string MODS_FOLDER = "MODS/";
 
-        /// <summary>
-        /// Filename of mod relative to executable
-        /// </summary>
         public static ModHeader[] Mods = new ModHeader[0];
 
         public static ModHeader Quest = ModHeader.Invalid;
@@ -236,18 +233,18 @@ namespace RogueEssence
         }
 
 
-        public static ModHeader GetModDetails(string path)
+        public static ModHeader GetModDetails(string fullPath)
         {
             ModHeader header = ModHeader.Invalid;
             try
             {
-                if (!String.IsNullOrEmpty(path))
+                if (!String.IsNullOrEmpty(fullPath))
                 {
-                    if (Directory.Exists(path))
+                    if (Directory.Exists(fullPath))
                     {
-                        header.Path = Path.Join(MODS_FOLDER, Path.GetFileName(path));
+                        header.Path = fullPath;
 
-                        string filePath = Path.Join(path, "Mod.xml");
+                        string filePath = Path.Join(fullPath, "Mod.xml");
                         if (File.Exists(filePath))
                         {
                             XmlDocument xmldoc = new XmlDocument();
@@ -268,7 +265,7 @@ namespace RogueEssence
             return header;
         }
 
-        public static void SaveModDetails(string path, ModHeader header)
+        public static void SaveModDetails(string fullPath, ModHeader header)
         {
             XmlDocument xmldoc = new XmlDocument();
 
@@ -280,7 +277,7 @@ namespace RogueEssence
             docNode.AppendInnerTextChild(xmldoc, "Version", header.Version.ToString());
             docNode.AppendInnerTextChild(xmldoc, "ModType", header.ModType.ToString());
 
-            xmldoc.Save(Path.Join(path, "Mod.xml"));
+            xmldoc.Save(Path.Join(fullPath, "Mod.xml"));
         }
 
 

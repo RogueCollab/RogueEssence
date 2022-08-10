@@ -40,7 +40,7 @@ namespace RogueEssence.Menu
                     ModHeader header = PathMod.GetModDetails(modPath);
 
                     if (header.IsValid() && header.ModType == PathMod.ModType.Quest)
-                        mods.Add((header.Name, Path.Join(PathMod.MODS_FOLDER, mod)));
+                        mods.Add((header.Name, modPath));
                 }
             }
             return mods;
