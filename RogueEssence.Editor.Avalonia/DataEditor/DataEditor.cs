@@ -52,10 +52,10 @@ namespace RogueEssence.Dev
             editors.Add(editor);
         }
 
-        public static void LoadDataControls(object obj, DataEditForm editor)
+        public static void LoadDataControls(string assetName, object obj, DataEditForm editor)
         {
             Type editType = obj.GetType();
-            LoadClassControls(editor.ControlPanel, "Test", null, obj.ToString(), editType, new object[0], obj, true, new Type[0]);
+            LoadClassControls(editor.ControlPanel, assetName, null, obj.ToString(), editType, new object[0], obj, true, new Type[0]);
             TrackTypeSize(editor, editType);
         }
 

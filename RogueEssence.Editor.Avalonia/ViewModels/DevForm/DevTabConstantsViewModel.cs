@@ -115,7 +115,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 Views.DataEditForm editor = new Views.DataEditRootForm();
                 editor.Title = DataEditor.GetWindowTitle("", name, data, data.GetType());
-                DataEditor.LoadDataControls(data, editor);
+                DataEditor.LoadDataControls("", data, editor);
                 editor.SelectedOKEvent += async () =>
                 {
                     lock (GameBase.lockObj)

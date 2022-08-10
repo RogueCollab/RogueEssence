@@ -39,10 +39,11 @@ namespace RogueEssence.Dev.ViewModels
             {
                 DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-                string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
-                string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
                 try
                 {
+                    string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
+                    string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
+
                     if (OperatingSystem.IsWindows())
                         Process.Start("explorer.exe", mapscriptdir);
                     else if (OperatingSystem.IsLinux())
