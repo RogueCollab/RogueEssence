@@ -150,7 +150,7 @@ namespace RogueEssence.Dungeon
 
         public void LuaEngineReload()
         {
-            if (CurrentZone != null)
+            if (CurrentZone != null && !InDevZone)
                 CurrentZone.LuaEngineReload();
         }
         public void SaveLua()
