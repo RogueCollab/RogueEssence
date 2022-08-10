@@ -317,7 +317,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 lock (GameBase.lockObj)
                 {
-                    string assetName = Text.GetNonConflictingName(Text.Sanitize(vm.Name), DataManager.Instance.DataIndices[dataType].Entries.ContainsKey);
+                    string assetName = Text.GetNonConflictingName(Text.Sanitize(vm.Name).ToLower(), DataManager.Instance.DataIndices[dataType].Entries.ContainsKey);
                     DataManager.Instance.ContentChanged(dataType, assetName, createOp());
                     string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
                     choices.AddEntry(assetName, newName);
