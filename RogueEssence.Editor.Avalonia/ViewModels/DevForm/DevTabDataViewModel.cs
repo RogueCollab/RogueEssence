@@ -321,6 +321,9 @@ namespace RogueEssence.Dev.ViewModels
                     DataManager.Instance.ContentChanged(dataType, assetName, createOp());
                     string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
                     choices.AddEntry(assetName, newName);
+
+                    if (dataType == DataManager.DataType.Zone)
+                        LuaEngine.Instance.CreateZoneScriptDir(assetName);
                 }
             };
 
@@ -338,6 +341,12 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     DataManager.Instance.ContentChanged(dataType, assetName, null);
                     choices.DeleteEntry(assetName);
+
+                    if (dataType == DataManager.DataType.Zone)
+                    {
+                        string str = LuaEngine.MakeZoneScriptPath(true, assetName, "");
+                        Directory.Delete(str, true);
+                    }
                 }
             };
             return choices;
