@@ -41,7 +41,14 @@ namespace RogueEssence.Dev.ViewModels
 
                 string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
                 string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
-                Process.Start("explorer.exe", mapscriptdir);
+                try
+                {
+                    Process.Start("explorer.exe", mapscriptdir);
+                }
+                catch (Exception e)
+                {
+                    DiagManager.Instance.LogError(e);
+                }
             }
         }
         public void btnReloadScripts_Click()
