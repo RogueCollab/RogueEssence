@@ -7,6 +7,7 @@ using RogueEssence.Script;
 using System.Collections.ObjectModel;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -52,6 +53,11 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public void btnReloadScripts_Click()
+        {
+            DevForm.ExecuteOrPend(scriptReload);
+        }
+
+        private void scriptReload()
         {
             lock (GameBase.lockObj)
             {

@@ -83,6 +83,11 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.Cancel)
                 return;
 
+            DevForm.ExecuteOrPend(doSwitch);
+        }
+
+        private void doSwitch()
+        {
             //modify and reload
             lock (GameBase.lockObj)
             {

@@ -58,13 +58,20 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
+        
         public void btnReloadScripts_Click()
+        {
+            DevForm.ExecuteOrPend(scriptReload);
+            LoadScripts();
+        }
+
+        private void scriptReload()
         {
             lock (GameBase.lockObj)
             {
+                //Reload everything
                 LuaEngine.Instance.Reset();
                 LuaEngine.Instance.ReInit();
-                LoadScripts();
             }
         }
 
