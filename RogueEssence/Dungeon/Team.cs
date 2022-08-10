@@ -394,7 +394,16 @@ namespace RogueEssence.Dungeon
                     else
                         invToTake.Add(new InvItem(index));
                     if (remove)
-                        Storage[index]--;
+                    {
+                        int val;
+                        if (Storage.TryGetValue(index, out val))
+                        {
+                            if (val - 1 > 0)
+                                Storage[index] = val - 1;
+                            else
+                                Storage.Remove(index);
+                        }
+                    }
                 }
                 else
                 {
@@ -417,12 +426,18 @@ namespace RogueEssence.Dungeon
             foreach(InvItem item in invToStore)
             {
                 ItemData entry = DataManager.Instance.GetItem(item.ID);
-                if (entry.MaxStack > 1)
-                    Storage[item.ID] += item.Amount;
-                else if (entry.UsageType == ItemData.UseType.Box)
+                if (entry.UsageType == ItemData.UseType.Box)
                     BoxStorage.Add(item);
                 else
-                    Storage[item.ID]++;
+                {
+                    if (!Storage.ContainsKey(item.ID))
+                        Storage[item.ID] = 0;
+
+                    if (entry.MaxStack > 1)
+                        Storage[item.ID] += item.Amount;
+                    else
+                        Storage[item.ID]++;
+                }
             }
         }
 
