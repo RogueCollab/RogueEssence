@@ -28,6 +28,9 @@ namespace RogueEssence
         public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
         public static string MODS_FOLDER = "MODS/";
 
+        /// <summary>
+        /// Filename of mod relative to executable
+        /// </summary>
         public static ModHeader[] Mods = new ModHeader[0];
 
         public static ModHeader Quest = ModHeader.Invalid;
@@ -242,7 +245,7 @@ namespace RogueEssence
                 {
                     if (Directory.Exists(fullPath))
                     {
-                        header.Path = fullPath;
+                        header.Path = Path.Join(MODS_FOLDER, Path.GetFileName(fullPath));
 
                         string filePath = Path.Join(fullPath, "Mod.xml");
                         if (File.Exists(filePath))

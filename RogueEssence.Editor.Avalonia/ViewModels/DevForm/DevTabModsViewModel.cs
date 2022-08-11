@@ -25,16 +25,14 @@ namespace RogueEssence.Dev.ViewModels
             set => this.SetIfChanged(ref name, value);
         }
 
-        public string FullPath;
-        public ModsNodeViewModel Parent;
+        public string Path;
 
         public ObservableCollection<ModsNodeViewModel> Nodes { get; }
 
-        public ModsNodeViewModel(ModsNodeViewModel parent, string name, string fullPath)
+        public ModsNodeViewModel(string name, string fullPath)
         {
-            this.Parent = parent;
             this.name = name;
-            this.FullPath = fullPath;
+            this.Path = fullPath;
             Nodes = new ObservableCollection<ModsNodeViewModel>();
         }
 
@@ -74,7 +72,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnSwitch_Click()
         {
             //check to be sure it isn't the current mod
-            if (chosenMod.FullPath == PathMod.Quest.Path)
+            if (chosenMod.Path == PathMod.Quest.Path)
                 return;
 
             //give a pop up warning that the game will be reloaded and wait for confirmation
@@ -93,7 +91,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SetQuest(PathMod.GetModDetails(chosenMod.FullPath), new ModHeader[0] { });
+                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromExe(chosenMod.Path)), new ModHeader[0] { });
             }
         }
 
@@ -115,9 +113,8 @@ namespace RogueEssence.Dev.ViewModels
             if (newName == "")
                 return;
 
-            ModsNodeViewModel chosenNode = Mods[0];// ChosenMod;
             //check for children name conflicts
-            foreach (ModsNodeViewModel child in chosenNode.Nodes)
+            foreach (ModsNodeViewModel child in Mods)
             {
                 if (String.Equals(child.Name, newName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -127,24 +124,25 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
 
-            ModsNodeViewModel newNode = new ModsNodeViewModel(chosenNode, newName, Path.Combine(PathMod.MODS_PATH, newName));
+            ModsNodeViewModel newNode = new ModsNodeViewModel(newName, Path.Combine(PathMod.MODS_FOLDER, newName));
+            string fullPath = PathMod.FromExe(newNode.Path);
             //add all asset folders
-            Directory.CreateDirectory(newNode.FullPath);
+            Directory.CreateDirectory(fullPath);
             //create the mod xml
-            ModHeader newHeader = new ModHeader(newNode.FullPath, vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
-            PathMod.SaveModDetails(newNode.FullPath, newHeader);
+            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
+            PathMod.SaveModDetails(fullPath, newHeader);
 
             //add Strings
-            Directory.CreateDirectory(Path.Join(newNode.FullPath, "Strings"));
+            Directory.CreateDirectory(Path.Join(fullPath, "Strings"));
             //Content
-            GraphicsManager.InitContentFolders(newNode.FullPath);
+            GraphicsManager.InitContentFolders(fullPath);
             //Data
-            DataManager.InitDataDirs(newNode.FullPath);
+            DataManager.InitDataDirs(fullPath);
             //Script
-            LuaEngine.InitScriptFolders(newNode.FullPath);
+            LuaEngine.InitScriptFolders(fullPath);
 
             //add node
-            chosenNode.Nodes.Add(newNode);
+            Mods.Add(newNode);
         }
 
         public async void btnDelete_Click()
@@ -156,16 +154,16 @@ namespace RogueEssence.Dev.ViewModels
                 return;
             }
             //ask for confirmation
-            MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "Are you sure you want to delete the mod in directory:\n" + chosenMod.FullPath, "Are you sure?",
+            MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "Are you sure you want to delete the mod in directory:\n" + chosenMod.Path, "Are you sure?",
                 MessageBox.MessageBoxButtons.YesNo);
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
             //delete folder
-            Directory.Delete(chosenMod.FullPath, true);
+            Directory.Delete(chosenMod.Path, true);
 
             //and then delete node
-            chosenMod.Parent.Nodes.Remove(chosenMod);
+            Mods.Remove(chosenMod);
         }
 
         public async void btnEdit_Click()
@@ -191,11 +189,10 @@ namespace RogueEssence.Dev.ViewModels
         private void reloadMods()
         {
             Mods.Clear();
-            ModsNodeViewModel baseNode = new ModsNodeViewModel(null, null, "");
+            Mods.Add(new ModsNodeViewModel(null, ""));
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             foreach (string modPath in modsPath)
-                baseNode.Nodes.Add(new ModsNodeViewModel(baseNode, getModName(PathMod.GetModDetails(modPath)), modPath));
-            Mods.Add(baseNode);
+                Mods.Add(new ModsNodeViewModel(getModName(PathMod.GetModDetails(modPath)), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
         }
 
         private static string getModName(ModHeader mod)

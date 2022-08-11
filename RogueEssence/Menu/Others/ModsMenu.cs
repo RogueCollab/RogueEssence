@@ -64,7 +64,7 @@ namespace RogueEssence.Menu
                     ModHeader header = PathMod.GetModDetails(modPath);
                     
                     if (header.IsValid() && header.ModType == PathMod.ModType.Mod)
-                        mods.Add((header.Name, modPath));
+                        mods.Add((header.Name, Path.Join(PathMod.MODS_FOLDER, mod)));
                 }
             }
             return mods;
@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < modStatus.Length; ii++)
             {
                 if (modStatus[ii])
-                    chosenMods.Add(PathMod.GetModDetails(modDirs[ii]));
+                    chosenMods.Add(PathMod.GetModDetails(PathMod.FromExe(modDirs[ii])));
             }
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.Quest, chosenMods.ToArray());
         }
