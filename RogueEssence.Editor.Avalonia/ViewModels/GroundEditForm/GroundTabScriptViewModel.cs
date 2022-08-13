@@ -33,16 +33,21 @@ namespace RogueEssence.Dev.ViewModels
 
         public ObservableCollection<ScriptItem> ScriptItems { get; }
 
-        public void btnOpenScriptDir_Click()
+        public async void btnOpenScriptDir_Click()
         {
-            lock (GameBase.lockObj)
-            {
-                DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
+            string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
+            string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
+
+            if (!Directory.Exists(mapscriptdir))
+            {
+                await MessageBox.Show(form.GroundEditForm, String.Format("This map has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            }
+            else
+            {
                 try
                 {
-                    string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
-                    string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
 
                     if (OperatingSystem.IsWindows())
                         Process.Start("explorer.exe", mapscriptdir);

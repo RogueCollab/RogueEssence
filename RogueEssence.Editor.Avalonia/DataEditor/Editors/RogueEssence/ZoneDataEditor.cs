@@ -10,6 +10,7 @@ using RogueEssence.Dev.Views;
 using RogueEssence.Script;
 using Avalonia;
 using System.Diagnostics;
+using System.IO;
 
 namespace RogueEssence.Dev
 {
@@ -25,24 +26,31 @@ namespace RogueEssence.Dev
             Button btnTest = new Button();
             btnTest.Margin = new Thickness(0, 4, 0, 0);
             btnTest.Content = "Open Script Folder";
-            btnTest.Click += (object sender, RoutedEventArgs e) =>
+            btnTest.Click += async (object sender, RoutedEventArgs e) =>
             {
-                try
-                {
-                    string zonescriptdir = LuaEngine.MakeZoneScriptPath(true, parent, "");
+                string zonescriptdir = LuaEngine.MakeZoneScriptPath(true, parent, "");
 
-                    if (OperatingSystem.IsWindows())
-                        Process.Start("explorer.exe", zonescriptdir);
-                    else if (OperatingSystem.IsLinux())
-                        Process.Start("mimeopen", zonescriptdir);
-                    else if (OperatingSystem.IsMacOS())
-                        Process.Start("open", zonescriptdir);
-                    else
-                        throw new NotSupportedException("File open not supported on current system.");
-                }
-                catch (Exception ex)
+                if (!Directory.Exists(zonescriptdir))
                 {
-                    DiagManager.Instance.LogError(ex);
+                    await MessageBox.Show(control.GetOwningForm(), String.Format("This zone has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                }
+                else
+                {
+                    try
+                    {
+                        if (OperatingSystem.IsWindows())
+                            Process.Start("explorer.exe", zonescriptdir);
+                        else if (OperatingSystem.IsLinux())
+                            Process.Start("mimeopen", zonescriptdir);
+                        else if (OperatingSystem.IsMacOS())
+                            Process.Start("open", zonescriptdir);
+                        else
+                            throw new NotSupportedException("File open not supported on current system.");
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
                 }
             };
             control.Children.Add(btnTest);
