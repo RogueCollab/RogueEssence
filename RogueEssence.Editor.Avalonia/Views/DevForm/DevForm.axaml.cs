@@ -517,9 +517,9 @@ namespace RogueEssence.Dev.Views
             //MacOS actually uses a different folder for config data, traditionally
             //I guess it's the odd one out...
             if (OperatingSystem.IsMacOS())
-                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
+                return PathMod.FromExe("./devConfig");//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
             else
-                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
+                return PathMod.FromExe("./devConfig");//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
         }
     }
 }
