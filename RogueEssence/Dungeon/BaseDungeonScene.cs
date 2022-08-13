@@ -274,7 +274,7 @@ namespace RogueEssence.Dungeon
             while (charIndex < groundDraw.Count)
             {
                 groundDraw[charIndex].sprite.Draw(spriteBatch, groundDraw[charIndex].viewOffset);
-                if (GameManager.Instance.ShowDebug)
+                if (GameManager.Instance.ShowDebug && DiagManager.Instance.DevMode)
                     groundDraw[charIndex].sprite.DrawDebug(spriteBatch, groundDraw[charIndex].viewOffset);
                 charIndex++;
             }
@@ -299,7 +299,7 @@ namespace RogueEssence.Dungeon
             while (charIndex < backDraw.Count)
             {
                 backDraw[charIndex].sprite.Draw(spriteBatch, backDraw[charIndex].viewOffset);
-                if (GameManager.Instance.ShowDebug)
+                if (GameManager.Instance.ShowDebug && DiagManager.Instance.DevMode)
                     backDraw[charIndex].sprite.DrawDebug(spriteBatch, backDraw[charIndex].viewOffset);
                 charIndex++;
             }
@@ -329,7 +329,7 @@ namespace RogueEssence.Dungeon
             while (charIndex < frontDraw.Count)
             {
                 frontDraw[charIndex].sprite.Draw(spriteBatch, frontDraw[charIndex].viewOffset);
-                if (GameManager.Instance.ShowDebug)
+                if (GameManager.Instance.ShowDebug && DiagManager.Instance.DevMode)
                     frontDraw[charIndex].sprite.DrawDebug(spriteBatch, frontDraw[charIndex].viewOffset);
                 charIndex++;
             }
@@ -342,7 +342,7 @@ namespace RogueEssence.Dungeon
             while (charIndex < foregroundDraw.Count)
             {
                 foregroundDraw[charIndex].sprite.Draw(spriteBatch, foregroundDraw[charIndex].viewOffset);
-                if (GameManager.Instance.ShowDebug)
+                if (GameManager.Instance.ShowDebug && DiagManager.Instance.DevMode)
                     foregroundDraw[charIndex].sprite.DrawDebug(spriteBatch, foregroundDraw[charIndex].viewOffset);
                 charIndex++;
             }

@@ -348,7 +348,7 @@ namespace RogueEssence.Ground
             if (ZoneManager.Instance.CurrentGround != null)
             {
 
-                if (GameManager.Instance.ShowDebug)
+                if (GameManager.Instance.ShowDebug && DiagManager.Instance.DevMode)
                 {
                     foreach ((IDrawableSprite sprite, Loc viewOffset) group in groundDraw)
                         group.sprite.DrawDebug(spriteBatch, group.viewOffset);
