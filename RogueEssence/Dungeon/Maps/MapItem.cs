@@ -248,6 +248,10 @@ namespace RogueEssence.Dungeon
                             }
                         }
                     }
+                    else
+                    {
+                        Value = "empty";
+                    }
                 }
             }
         }
