@@ -669,14 +669,40 @@ namespace RogueEssence.Script
 
         public void GivePlayerItem(InvItem item)
         {
-            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+            ItemData entry = DataManager.Instance.GetItem(item.ID);
+            if (entry.MaxStack > 1)
+            {
+                int amount = item.Amount;
+                foreach (InvItem inv in DataManager.Instance.Save.ActiveTeam.EnumerateInv())
+                {
+                    if (inv.ID == item.ID && inv.Cursed == item.Cursed && inv.Amount < entry.MaxStack)
+                    {
+                        int addValue = Math.Min(entry.MaxStack - inv.Amount, item.Amount);
+                        inv.Amount += addValue;
+                        amount -= addValue;
+                        if (amount <= 0)
+                            break;
+                    }
+                }
+                if (amount > 0 && DataManager.Instance.Save.ActiveTeam.GetInvCount() < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+                {
+                    InvItem newInv = new InvItem(item);
+                    newInv.Amount = amount;
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(newInv);
+                }
+            }
+            else
+                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
         }
 
         public void GivePlayerItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
-            InvItem item = new InvItem(id, cursed, count);
-            item.HiddenValue = hiddenval;
-            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+            for (int ii = 0; ii < count; ii++)
+            {
+                InvItem item = new InvItem(id, cursed, 1);
+                item.HiddenValue = hiddenval;
+                GivePlayerItem(item);
+            }
         }
 
 
