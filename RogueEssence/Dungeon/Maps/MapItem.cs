@@ -227,22 +227,25 @@ namespace RogueEssence.Dungeon
                 {
                     ItemData item = DataManager.Instance.GetItem(Value);
 
-                    int amt;
-                    if (int.TryParse(HiddenValue, out amt))
+                    if (item != null)
                     {
-                        if (item.MaxStack > 0)
+                        int amt;
+                        if (int.TryParse(HiddenValue, out amt))
                         {
-                            Amount = amt;
-                            HiddenValue = "";
-                        }
-                        else if (amt > 0)
-                        {
-                            string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
-                            HiddenValue = asset_name;
-                        }
-                        else
-                        {
-                            HiddenValue = "";
+                            if (item.MaxStack > 0)
+                            {
+                                Amount = amt;
+                                HiddenValue = "";
+                            }
+                            else if (amt > 0)
+                            {
+                                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
+                                HiddenValue = asset_name;
+                            }
+                            else
+                            {
+                                HiddenValue = "";
+                            }
                         }
                     }
                 }

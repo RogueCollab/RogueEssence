@@ -326,14 +326,17 @@ namespace RogueEssence.Dev
             HashSet<string> dict = new HashSet<string>();
             if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
-                JArray jArray = JArray.Load(reader);
-                HashSet<int> container = new HashSet<int>();
-                serializer.Populate(jArray.CreateReader(), container);
-
-                foreach(int ii in container)
+                if (reader.TokenType == JsonToken.StartArray)
                 {
-                    string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AutoTile, ii);
-                    dict.Add(asset_name);
+                    JArray jArray = JArray.Load(reader);
+                    HashSet<int> container = new HashSet<int>();
+                    serializer.Populate(jArray.CreateReader(), container);
+
+                    foreach (int ii in container)
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.AutoTile, ii);
+                        dict.Add(asset_name);
+                    }
                 }
             }
             else
