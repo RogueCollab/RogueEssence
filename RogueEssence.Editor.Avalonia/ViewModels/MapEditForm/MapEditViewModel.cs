@@ -315,14 +315,14 @@ namespace RogueEssence.Dev.ViewModels
         {
             DevForm.ExecuteOrPend(() => { tryImportPng(filePath); });
 
+            string sheetName = Path.GetFileNameWithoutExtension(filePath);
             lock (GameBase.lockObj)
             {
-                string sheetName = Path.GetFileNameWithoutExtension(filePath);
                 Textures.TileBrowser.UpdateTilesList();
-                Textures.TileBrowser.SelectTileset(sheetName);
                 Terrain.TileBrowser.UpdateTilesList();
-                Terrain.TileBrowser.SelectTileset(sheetName);
             }
+            Textures.TileBrowser.SelectTileset(sheetName);
+            Terrain.TileBrowser.SelectTileset(sheetName);
         }
 
         private void tryImportPng(string filePath)
