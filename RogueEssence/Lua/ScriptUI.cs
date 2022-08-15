@@ -607,7 +607,7 @@ namespace RogueEssence.Script
                     return;
                 }
 
-                m_choiceresult = -1;
+                m_choiceresult = "";
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
                 (int skillSlot) => { m_choiceresult = forgottenSkills[skillSlot]; DataManager.Instance.LogUIPlay(skillSlot); },
                 () => { DataManager.Instance.LogUIPlay(-1); });

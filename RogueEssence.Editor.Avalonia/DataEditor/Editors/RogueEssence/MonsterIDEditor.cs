@@ -56,12 +56,14 @@ namespace RogueEssence.Dev
                 for (int ii = 0; ii < monsterKeys.Count; ii++)
                     species.Add(monsterKeys[ii] + ": " + nameIndex.Entries[monsterKeys[ii]].GetLocalString(false));
 
+                chosenSpecies = Math.Min(Math.Max(0, chosenSpecies), species.Count - 1);
+
                 var speciesSubject = new Subject<List<string>>();
                 var formSubject = new Subject<List<string>>();
 
                 cbSpecies.Bind(ComboBox.ItemsProperty, speciesSubject);
                 speciesSubject.OnNext(species);
-                cbSpecies.SelectedIndex = Math.Min(Math.Max(0, chosenSpecies), species.Count - 1);
+                cbSpecies.SelectedIndex = chosenSpecies;
                 cbSpecies.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
                     loadForms(dataAtt, monsterKeys[cbSpecies.SelectedIndex], forms);
@@ -90,7 +92,7 @@ namespace RogueEssence.Dev
                 cbForms.VirtualizationMode = ItemVirtualizationMode.Simple;
                 int chosenForm = member.Form;
 
-                loadForms(dataAtt, member.Species, forms);
+                loadForms(dataAtt, (chosenSpecies < 0) ? "" : monsterKeys[chosenSpecies], forms);
 
                 if (dataAtt.InvalidForm)
                     chosenForm++;
@@ -267,13 +269,16 @@ namespace RogueEssence.Dev
         private void loadForms(MonsterIDAttribute dataAtt, string species, List<string> forms)
         {
             forms.Clear();
-            MonsterData monsterData = DataManager.Instance.GetMonster(species);
-
             if (dataAtt.InvalidForm)
                 forms.Add("**EMPTY**");
 
-            for (int ii = 0; ii < monsterData.Forms.Count; ii++)
-                forms.Add(monsterData.Forms[ii].FormName.ToLocal());
+            if (!String.IsNullOrEmpty(species))
+            {
+                MonsterData monsterData = DataManager.Instance.GetMonster(species);
+
+                for (int ii = 0; ii < monsterData.Forms.Count; ii++)
+                    forms.Add(monsterData.Forms[ii].FormName.ToLocal());
+            }
 
         }
     }
