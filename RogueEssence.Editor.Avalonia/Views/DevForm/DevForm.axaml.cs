@@ -359,6 +359,8 @@ namespace RogueEssence.Dev.Views
         }
 
         /// <summary>
+        /// A method intended to be called from the editor thread, that sends a function pointer to the Game thread,
+        /// waits for it to complete (blocking the thread), and then continues execution.
         /// This call cannot be performed within a lock!!
         /// </summary>
         /// <param name="action"></param>
