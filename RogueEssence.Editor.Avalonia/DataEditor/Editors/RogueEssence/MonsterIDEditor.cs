@@ -46,15 +46,15 @@ namespace RogueEssence.Dev
                 List<string> species = new List<string>();
                 List<string> forms = new List<string>();
 
+                for (int ii = 0; ii < monsterKeys.Count; ii++)
+                    species.Add(monsterKeys[ii] + ": " + nameIndex.Entries[monsterKeys[ii]].GetLocalString(false));
+
                 if (dataAtt.InvalidSpecies)
                 {
                     monsterKeys.Insert(0, "");
-                    species.Add("**EMPTY**");
+                    species.Insert(0, "**EMPTY**");
                     chosenSpecies++;
                 }
-
-                for (int ii = 0; ii < monsterKeys.Count; ii++)
-                    species.Add(monsterKeys[ii] + ": " + nameIndex.Entries[monsterKeys[ii]].GetLocalString(false));
 
                 chosenSpecies = Math.Min(Math.Max(0, chosenSpecies), species.Count - 1);
 
@@ -125,7 +125,8 @@ namespace RogueEssence.Dev
                     items.Add("**EMPTY**");
 
                 int chosenIndex = 0;
-                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries.Keys)
+                List<string> monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(false);
+                foreach (string key in monsterKeys)
                 {
                     if (key == member.Skin)
                         chosenIndex = items.Count;
@@ -211,6 +212,8 @@ namespace RogueEssence.Dev
             ComboBox cbSkin = (ComboBox)innerControl3.Children[innerControlIndex];
 
             List<string> skinKeys = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(false);
+            if (dataAtt.InvalidSkin)
+                skinKeys.Insert(0, "");
             result.Skin = skinKeys[cbSkin.SelectedIndex];
 
             innerControlIndex++;

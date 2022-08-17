@@ -32,18 +32,18 @@ namespace RogueEssence.Dev
 
 
             List<string> items = new List<string>();
-            if (dataAtt.IncludeInvalid)
-                items.Add("**EMPTY**");
-
-            int chosenIndex = 0;
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataAtt.DataType];
+            List<string> orderedKeys = nameIndex.GetOrderedKeys(false);
 
-            foreach (string key in nameIndex.Entries.Keys)
+            int chosenIndex = orderedKeys.IndexOf(member);
+            if (dataAtt.IncludeInvalid)
             {
-                if (key == member)
-                    chosenIndex = items.Count;
-                items.Add(key + ": " + nameIndex.Entries[key].GetLocalString(true));
+                items.Insert(0, "**EMPTY**");
+                chosenIndex++;
             }
+
+            foreach (string key in orderedKeys)
+                items.Add(key + ": " + nameIndex.Entries[key].GetLocalString(true));
 
             var subject = new Subject<List<string>>();
             cbValue.Bind(ComboBox.ItemsProperty, subject);
@@ -60,19 +60,13 @@ namespace RogueEssence.Dev
             DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
 
             ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-            int chosenIndex = cbValue.SelectedIndex;
-            if (dataAtt.IncludeInvalid)
-                chosenIndex--;
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataAtt.DataType];
-            int curIndex = 0;
-            foreach (string key in nameIndex.Entries.Keys)
-            {
-                if (curIndex == chosenIndex)
-                    return key;
-            }
+            List<string> orderedKeys = nameIndex.GetOrderedKeys(false);
+            if (dataAtt.IncludeInvalid)
+                orderedKeys.Insert(0, "");
 
-            return "";
+            return orderedKeys[cbValue.SelectedIndex];
         }
 
         public override string GetString(string obj, Type type, object[] attributes)
