@@ -393,10 +393,16 @@ namespace RogueEssence.Dev.Views
 
         void LoadGameDelegate()
         {
-            DiagManager.Instance.DevEditor = this;
-            using (GameBase game = new GameBase())
-                game.Run();
-
+            try
+            {
+                DiagManager.Instance.DevEditor = this;
+                using (GameBase game = new GameBase())
+                    game.Run();
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
             ExecuteOrInvoke(Close);
         }
 
