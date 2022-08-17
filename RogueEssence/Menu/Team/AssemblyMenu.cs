@@ -134,7 +134,7 @@ namespace RogueEssence.Menu
                 Character chara = DataManager.Instance.Save.ActiveTeam.Assembly[currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count];
                 chara.IsFavorite = !chara.IsFavorite;
                 DataManager.Instance.Save.ActiveTeam.Assembly.RemoveAt(currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count);
-                DataManager.Instance.Save.ActiveTeam.Assembly.Insert(0, chara);
+                DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(chara);
             }
             MenuManager.Instance.ReplaceMenu(new AssemblyMenu(DataManager.Instance.Save.ActiveTeam.Players.Count, teamChanged));
         }
