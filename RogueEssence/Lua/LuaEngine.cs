@@ -78,7 +78,7 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EZoneCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeZoneScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", zonename, callback.ToString());
+            return String.Format("{0}.{1}", ZoneCurrentScriptSym, callback.ToString());
         }
 
         #endregion
@@ -126,7 +126,7 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeMapScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", mapname, callback.ToString());
+            return String.Format("{0}.{1}", MapCurrentScriptSym, callback.ToString());
         }
         #endregion
 
@@ -177,7 +177,7 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EDungeonMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeDungeonMapScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", floorname, callback.ToString());
+            return String.Format("{0}.{1}", DungeonMapCurrentScriptSym, callback.ToString());
         }
 
         /// <summary>
@@ -1066,7 +1066,6 @@ namespace RogueEssence.Script
                         end
                         package.loaded.{0} = nil
                         {1} = nil
-                        {0} = nil
                         collectgarbage()", zoneassetname, ZoneCurrentScriptSym, String.Format(ZoneCleanupFun, ZoneCurrentScriptSym)),
                       "CleanZoneScript");
 
@@ -1136,7 +1135,6 @@ namespace RogueEssence.Script
                         end
                         package.loaded.{0} = nil
                         {1} = nil
-                        {0} = nil
                         collectgarbage()", mapassetname, DungeonMapCurrentScriptSym, String.Format(DungeonMapCleanupFun, DungeonMapCurrentScriptSym)),
                       "CleanDungeonMapScript");
 
@@ -1166,11 +1164,10 @@ namespace RogueEssence.Script
         private void RunAssetScript(string abspath, string assetname, string importpath, string globalsymbol)
         {
             LuaState.LoadFile(abspath);
-            RunString(String.Format("{0} = require('{1}');", assetname, importpath), abspath);
-            object state = LuaState[assetname];
+            RunString(String.Format("{0} = require('{1}');", globalsymbol, importpath), abspath);
+            object state = LuaState[globalsymbol];
             if (state is not LuaTable)
-                throw new InvalidDataException(String.Format("Script did not load a table to variable '{0}'", assetname));
-            RunString(String.Format("{1} = {0}", assetname, globalsymbol), abspath);
+                throw new InvalidDataException(String.Format("Script did not load a table to variable '{0}'", globalsymbol));
         }
 
         /// <summary>
@@ -1213,7 +1210,6 @@ namespace RogueEssence.Script
                         end
                         package.loaded.{0} = nil
                         {1} = nil
-                        {0} = nil
                         collectgarbage()", mapassetname, MapCurrentScriptSym, String.Format(MapCleanupFun, MapCurrentScriptSym)),
                       "CleanMapScript");
 
