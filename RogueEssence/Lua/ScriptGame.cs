@@ -697,6 +697,7 @@ namespace RogueEssence.Script
 
         public void GivePlayerItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
+            count = Math.Max(1, count);
             for (int ii = 0; ii < count; ii++)
             {
                 InvItem item = new InvItem(id, cursed, 1);
