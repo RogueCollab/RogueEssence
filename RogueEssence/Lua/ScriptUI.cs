@@ -340,8 +340,8 @@ namespace RogueEssence.Script
                 }
                 else
                 {
-                    m_curchoice = MenuManager.Instance.CreateQuestion(message,
-                        m_curspeakerSnd,
+                    m_curchoice = MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message,
+                        m_curspeakerSnd, false, m_curcenter_h, m_curcenter_v,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                         () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }

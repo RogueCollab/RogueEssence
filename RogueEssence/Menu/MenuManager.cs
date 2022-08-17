@@ -284,7 +284,7 @@ namespace RogueEssence.Menu
             choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), yes);
             choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), no);
 
-            DialogueBox box = new QuestionDialog(break_str[break_str.Length-1], sound, false, false, choices, defaultNo ? 1 : 0, 1);
+            DialogueBox box = new QuestionDialog(break_str[break_str.Length-1], sound, centerH, centerV, choices, defaultNo ? 1 : 0, 1);
             box.SetSpeaker(speaker, speakerName, emotion);
             if (autoFinish)
                 box.FinishText();
