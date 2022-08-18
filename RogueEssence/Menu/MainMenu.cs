@@ -58,7 +58,10 @@ namespace RogueEssence.Menu
             }
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(new OthersMenu(), false); }));
-            if (!inReplay)
+
+            if (ZoneManager.Instance.InDevZone)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
+            else if (!inReplay)
             {
                 if (((GameManager.Instance.CurrentScene == DungeonScene.Instance)) || DataManager.Instance.Save is RogueProgress)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
@@ -179,6 +182,12 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
             GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+        }
+
+        private void ReturnToEditorAction()
+        {
+            MenuManager.Instance.ClearMenus();
+            MenuManager.Instance.NextAction = GameManager.Instance.ReturnToEditor();
         }
     }
 }

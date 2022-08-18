@@ -103,6 +103,11 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> SaveGame()
         {
+            if (ZoneManager.Instance.InDevZone)
+            {
+                DiagManager.Instance.LogInfo("Skipping Save in editor testing.");
+                yield break;
+            }
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnGameSave());
             DataManager.Instance.SaveMainGameState();
         }
