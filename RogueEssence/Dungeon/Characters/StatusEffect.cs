@@ -43,7 +43,11 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// Semi-transparent
         /// </summary>
-        Transparent
+        Transparent,
+        /// <summary>
+        /// Animates normally, but with one-pixel shake
+        /// </summary>
+        Trembling,
     }
 
     

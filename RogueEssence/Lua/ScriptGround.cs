@@ -247,6 +247,22 @@ namespace RogueEssence.Script
             }
         }
 
+        public void CharSetDrawEffect(GroundChar chara, DrawEffect effect)
+        {
+            if (chara != null)
+            {
+                chara.SetDrawEffect(effect);
+            }
+        }
+
+        public void CharEndDrawEffect(GroundChar chara, DrawEffect effect)
+        {
+            if (chara != null)
+            {
+                chara.RemoveDrawEffect(effect);
+            }
+        }
+
         /// <summary>
         /// Set a character's animation
         /// </summary>

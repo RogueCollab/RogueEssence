@@ -155,6 +155,11 @@ namespace RogueEssence.Dungeon
                 int sway = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % 8);
                 drawOffset.X += (sway > 4) ? (6 - sway) : (sway - 2);
             }
+            if (drawEffects.Contains(DrawEffect.Trembling))
+            {
+                int sway = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(2) % 2);
+                drawOffset.X += sway;
+            }
             if (drawEffects.Contains(DrawEffect.Spinning))
                 dirOffset = (Dir8)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(2) % 8);
 

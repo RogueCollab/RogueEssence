@@ -29,7 +29,9 @@ namespace RogueEssence.Ground
 
         protected Dir8 dirOffset;
         protected int opacity;
-        public Loc DrawOffset { get; protected set; }
+
+        protected Loc drawOffset;
+        public Loc DrawOffset { get { return drawOffset; } }
 
 
         public int AnimRushTime { get; private set; }
@@ -62,11 +64,34 @@ namespace RogueEssence.Ground
         protected virtual void UpdateFrameInternal() { }
         public void UpdateFrame()
         {
-            DrawOffset = new Loc();
+            drawOffset = new Loc();
             dirOffset = Dir8.Down;
             opacity = 255;
 
             UpdateFrameInternal();
+        }
+
+        public void UpdateDrawEffects(HashSet<DrawEffect> drawEffects)
+        {
+            // Support the other draw effects later?
+
+            if (drawEffects.Contains(DrawEffect.Absent))
+                opacity = 0;
+            else if (drawEffects.Contains(DrawEffect.Transparent))
+                opacity = 128;
+
+            if (drawEffects.Contains(DrawEffect.Shaking))
+            {
+                int sway = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(1) % 8);
+                drawOffset.X += (sway > 4) ? (6 - sway) : (sway - 2);
+            }
+            if (drawEffects.Contains(DrawEffect.Trembling))
+            {
+                int sway = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(2) % 2);
+                drawOffset.X += sway;
+            }
+            if (drawEffects.Contains(DrawEffect.Spinning))
+                dirOffset = (Dir8)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(2) % 8);
         }
 
 

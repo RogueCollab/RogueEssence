@@ -33,6 +33,9 @@ namespace RogueEssence.Ground
         public int IdleOverride;
 
         [NonSerialized]
+        private HashSet<DrawEffect> drawEffects;
+
+        [NonSerialized]
         private GroundAction currentCharAction;
 
         [NonSerialized]
@@ -125,6 +128,7 @@ namespace RogueEssence.Ground
 
             IdleOverride = -1;
             currentCharAction = new IdleGroundAction(newLoc, charDir);
+            drawEffects = new HashSet<DrawEffect>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
             TriggerType = EEntityTriggerTypes.Action;
@@ -155,6 +159,7 @@ namespace RogueEssence.Ground
 
             IdleOverride = -1;
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
+            drawEffects = new HashSet<DrawEffect>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
 
             //from base
@@ -227,6 +232,14 @@ namespace RogueEssence.Ground
             return movement;
         }
 
+        public void SetDrawEffect(DrawEffect effect)
+        {
+            drawEffects.Add(effect);
+        }
+        public void RemoveDrawEffect(DrawEffect effect)
+        {
+            drawEffects.Remove(effect);
+        }
 
         /// <summary>
         /// Update for editor view
@@ -321,6 +334,8 @@ namespace RogueEssence.Ground
         public void UpdateFrame()
         {
             currentCharAction.UpdateFrame();
+
+            currentCharAction.UpdateDrawEffects(drawEffects);
         }
 
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset)

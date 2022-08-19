@@ -2392,7 +2392,6 @@ namespace RogueEssence.Dungeon
                 drawEffects.Add(DrawEffect.Transparent);
 
             currentCharAction.UpdateDrawEffects(drawEffects);
-
         }
 
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset, int terrainShadow)
