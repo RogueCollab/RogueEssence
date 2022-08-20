@@ -696,7 +696,15 @@ namespace RogueEssence.Dev
 
         object IEditor.SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            return SaveWindowControls(control, name, type, attributes, subGroupStack);
+            try
+            {
+                return SaveWindowControls(control, name, type, attributes, subGroupStack);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            return default(T);
         }
 
         object IEditor.SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)

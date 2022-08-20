@@ -266,6 +266,22 @@ namespace RogueEssence
                             header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
                             header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
                             header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
+
+                            //TODO: v1.1 remove this
+                            XmlNode relationNode = xmldoc.SelectSingleNode("Header/Relationships");
+                            if (relationNode != null)
+                            {
+                                List<RelatedMod> relations = new List<RelatedMod>();
+                                foreach (XmlNode relatedNode in relationNode.SelectNodes("RelatedMod"))
+                                {
+                                    RelatedMod relation = new RelatedMod();
+                                    relation.UUID = Guid.Parse(relatedNode.SelectSingleNode("UUID").InnerText);
+                                    relation.Namespace = relatedNode.SelectSingleNode("Namespace").InnerText;
+                                    relation.Relationship = Enum.Parse<ModRelationship>(relatedNode.SelectSingleNode("Relationship").InnerText);
+                                    relations.Add(relation);
+                                }
+                                header.Relationships = relations.ToArray();
+                            }
                         }
                     }
                 }
@@ -290,6 +306,18 @@ namespace RogueEssence
             docNode.AppendInnerTextChild(xmldoc, "UUID", header.UUID.ToString().ToUpper());
             docNode.AppendInnerTextChild(xmldoc, "Version", header.Version.ToString());
             docNode.AppendInnerTextChild(xmldoc, "ModType", header.ModType.ToString());
+
+
+            XmlNode relationships = xmldoc.CreateElement("Relationships");
+            foreach (RelatedMod relation in header.Relationships)
+            {
+                XmlNode node = xmldoc.CreateElement("RelatedMod");
+                node.AppendInnerTextChild(xmldoc, "UUID", relation.UUID.ToString().ToUpper());
+                node.AppendInnerTextChild(xmldoc, "Namespace", relation.Namespace);
+                node.AppendInnerTextChild(xmldoc, "Relationship", relation.Relationship.ToString());
+                relationships.AppendChild(node);
+            }
+            docNode.AppendChild(relationships);
 
             xmldoc.Save(Path.Join(fullPath, "Mod.xml"));
         }
@@ -402,6 +430,27 @@ namespace RogueEssence
         }
     }
 
+    public enum ModRelationship
+    {
+        Incompatible,
+        LoadAfter,
+        LoadBefore,
+        DependsOn
+    }
+
+    public struct RelatedMod
+    {
+        public Guid UUID;
+        [NonEdited]
+        public string Namespace;
+        public ModRelationship Relationship;
+
+        public override string ToString()
+        {
+            return String.Format("{0}: {1}", Relationship.ToString(), UUID.ToString().ToUpper());
+        }
+    }
+
     public struct ModHeader
     {
         /// <summary>
@@ -413,10 +462,11 @@ namespace RogueEssence
         public Guid UUID;
         public Version Version;
         public PathMod.ModType ModType;
+        public RelatedMod[] Relationships;
 
-        public static readonly ModHeader Invalid = new ModHeader("", "", "", Guid.Empty, new Version(), PathMod.ModType.None);
+        public static readonly ModHeader Invalid = new ModHeader("", "", "", Guid.Empty, new Version(), PathMod.ModType.None, new RelatedMod[0] { });
 
-        public ModHeader(string path, string name, string newNamespace, Guid uuid, Version version, PathMod.ModType modType)
+        public ModHeader(string path, string name, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
         {
             Path = path;
             Name = name;
@@ -424,6 +474,7 @@ namespace RogueEssence
             UUID = uuid;
             Version = version;
             ModType = modType;
+            Relationships = relationships;
         }
 
         public bool IsValid()

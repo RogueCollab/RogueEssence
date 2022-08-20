@@ -7,6 +7,7 @@ using RogueEssence.Ground;
 using RogueEssence.Data;
 using ReactiveUI;
 using System.Collections.ObjectModel;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -23,6 +24,10 @@ namespace RogueEssence.Dev.ViewModels
             for (int ii = 0; ii < (int)PathMod.ModType.Count; ii++)
                 ModTypes.Add(((PathMod.ModType)ii).ToLocal());
             ChosenModType = (int)header.ModType;
+
+            Relationships = new CollectionBoxViewModel(new StringConv(typeof(RelatedMod), new object[0]));
+            Relationships.OnEditItem += Relationships_EditItem;
+            Relationships.LoadFromList(header.Relationships);
         }
 
         private string name;
@@ -63,6 +68,56 @@ namespace RogueEssence.Dev.ViewModels
             set => this.SetIfChanged(ref chosenModType, value);
         }
 
+        public CollectionBoxViewModel Relationships { get; set; }
+
+
+        public void Relationships_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        {
+            string elementName = "Relationship[" + index + "]";
+            DataEditForm frmData = new DataEditRootForm();
+            frmData.Title = DataEditor.GetWindowTitle("Relationship", elementName, element, typeof(RelatedMod), new object[0]);
+
+            //TODO: make this a member and reference it that way
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Relationship", null, elementName, typeof(RelatedMod), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(RelatedMod));
+
+            frmData.SelectedOKEvent += async () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(RelatedMod), new object[0], true, new Type[0]);
+
+                bool itemExists = false;
+
+                List<RelatedMod> relations = Relationships.GetList<List<RelatedMod>>();
+                for (int ii = 0; ii < relations.Count; ii++)
+                {
+                    if (ii != index)
+                    {
+                        if (relations[ii].UUID == ((RelatedMod)element).UUID)
+                            itemExists = true;
+                    }
+                }
+
+                if (itemExists)
+                {
+                    await MessageBox.Show(frmData, "Cannot add duplicate entries.", "Entry with UUID already exists.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
+                }
+                else
+                {
+                    op(index, element);
+                    return true;
+                }
+            };
+
+            //this.RegisterChild(frmData);
+            frmData.Show();
+        }
+
+        public RelatedMod[] GetRelationshipArray()
+        {
+            List<RelatedMod> relationships = Relationships.GetList<List<RelatedMod>>();
+            return relationships.ToArray();
+        }
 
         public void btnRegenUUID_Click()
         {
