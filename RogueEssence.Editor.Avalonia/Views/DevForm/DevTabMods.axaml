@@ -28,7 +28,14 @@
     <TreeView Items="{Binding Mods}" SelectedItem="{Binding ChosenMod}" SelectionMode="AlwaysSelected" Margin="4" Grid.Row="1" Grid.ColumnSpan="3">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:ModsNodeViewModel" ItemsSource="{Binding Nodes}">
-          <TextBlock Text="{Binding Name, Converter={StaticResource NullableToStringConverter}}" VerticalAlignment="Center"/>
+          <TextBlock VerticalAlignment="Center">
+            <TextBlock.Text>
+              <MultiBinding StringFormat="{} {0} / {1}">
+                <Binding Path="Name" Converter="{StaticResource NullableToStringConverter}"/>
+                <Binding Path="Namespace"/>
+              </MultiBinding>
+            </TextBlock.Text>
+          </TextBlock>
         </TreeDataTemplate>
       </TreeView.DataTemplates>
     </TreeView>

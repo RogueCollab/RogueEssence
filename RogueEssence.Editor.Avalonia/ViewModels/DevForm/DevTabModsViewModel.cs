@@ -25,13 +25,21 @@ namespace RogueEssence.Dev.ViewModels
             set => this.SetIfChanged(ref name, value);
         }
 
+        private string editNamespace;
+        public string Namespace
+        {
+            get => editNamespace;
+            set => this.SetIfChanged(ref editNamespace, value);
+        }
+
         public string Path;
 
         public ObservableCollection<ModsNodeViewModel> Nodes { get; }
 
-        public ModsNodeViewModel(string name, string fullPath)
+        public ModsNodeViewModel(string name, string newNamespace, string fullPath)
         {
             this.name = name;
+            this.editNamespace = newNamespace;
             this.Path = fullPath;
             Nodes = new ObservableCollection<ModsNodeViewModel>();
         }
@@ -98,7 +106,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnAdd_Click()
         {
             ModConfigWindow window = new ModConfigWindow();
-            ModHeader header = new ModHeader("", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod);
+            ModHeader header = new ModHeader("", "", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod);
             ModConfigViewModel vm = new ModConfigViewModel(header);
             window.DataContext = vm;
 
@@ -106,11 +114,14 @@ namespace RogueEssence.Dev.ViewModels
             bool result = await window.ShowDialog<bool>(form);
             if (!result)
                 return;
-            
+
             string newName = Text.Sanitize(vm.Name);
+            string newNamespace = Text.Sanitize(vm.Namespace).ToLower();
 
             //sanitize name and check for name conflicts
             if (newName == "")
+                return;
+            if (newNamespace == "")
                 return;
 
             //check for children name conflicts
@@ -122,14 +133,20 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show((Window)DiagManager.Instance.DevEditor, newName + " already exists!", "Add Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
+                if (String.Equals(child.Namespace, newNamespace, StringComparison.OrdinalIgnoreCase))
+                {
+                    //already exists, pop up message
+                    await MessageBox.Show((Window)DiagManager.Instance.DevEditor, newName + " (Namespace) already exists!", "Add Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
             }
 
-            ModsNodeViewModel newNode = new ModsNodeViewModel(newName, Path.Combine(PathMod.MODS_FOLDER, newName));
+            ModsNodeViewModel newNode = new ModsNodeViewModel(newName, newNamespace, Path.Combine(PathMod.MODS_FOLDER, newName));
             string fullPath = PathMod.FromExe(newNode.Path);
             //add all asset folders
             Directory.CreateDirectory(fullPath);
             //create the mod xml
-            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
+            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType);
             PathMod.SaveModDetails(fullPath, newHeader);
 
             //add Strings
@@ -179,7 +196,7 @@ namespace RogueEssence.Dev.ViewModels
             if (result)
             {
                 //save the mod data
-                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, viewModel.Name.Trim(), Guid.Parse(viewModel.UUID), Version.Parse(viewModel.Version), (PathMod.ModType)viewModel.ChosenModType);
+                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, viewModel.Name.Trim(), Text.Sanitize(viewModel.Namespace).ToLower(), Guid.Parse(viewModel.UUID), Version.Parse(viewModel.Version), (PathMod.ModType)viewModel.ChosenModType);
                 PathMod.SaveModDetails(PathMod.Quest.Path, resultHeader);
 
                 reloadMods();
@@ -189,10 +206,13 @@ namespace RogueEssence.Dev.ViewModels
         private void reloadMods()
         {
             Mods.Clear();
-            Mods.Add(new ModsNodeViewModel(null, ""));
+            Mods.Add(new ModsNodeViewModel(null, PathMod.BaseNamespace, ""));
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             foreach (string modPath in modsPath)
-                Mods.Add(new ModsNodeViewModel(getModName(PathMod.GetModDetails(modPath)), Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+            {
+                ModHeader header = PathMod.GetModDetails(modPath);
+                Mods.Add(new ModsNodeViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+            }
         }
 
         private static string getModName(ModHeader mod)

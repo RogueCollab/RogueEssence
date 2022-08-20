@@ -28,6 +28,8 @@ namespace RogueEssence
         public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
         public static string MODS_FOLDER = "MODS/";
 
+        public static string BaseNamespace { get; private set; }
+
         /// <summary>
         /// Filename of mod relative to executable
         /// </summary>
@@ -35,12 +37,13 @@ namespace RogueEssence
 
         public static ModHeader Quest = ModHeader.Invalid;
 
-        public static void InitExePath(string path)
+        public static void InitPathMod(string path, string baseNamespace)
         {
             ExeName = Path.GetFileName(path);
             ExePath = Path.GetDirectoryName(path) + "/";
             ASSET_PATH = ExePath;
             DEV_PATH = ExePath + "RawAsset/";
+            BaseNamespace = baseNamespace;
         }
 
         /// <summary>
@@ -253,6 +256,13 @@ namespace RogueEssence
                             XmlDocument xmldoc = new XmlDocument();
                             xmldoc.Load(filePath);
                             header.Name = xmldoc.SelectSingleNode("Header/Name").InnerText;
+
+                            //TODO: v1.1 remove this
+                            XmlNode namespaceNode = xmldoc.SelectSingleNode("Header/Namespace");
+                            if (namespaceNode != null)
+                                header.Namespace = xmldoc.SelectSingleNode("Header/Namespace").InnerText;
+                            else
+                                header.Namespace = Text.Sanitize(header.Name).ToLower();
                             header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
                             header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
                             header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
@@ -276,6 +286,7 @@ namespace RogueEssence
             xmldoc.AppendChild(docNode);
 
             docNode.AppendInnerTextChild(xmldoc, "Name", header.Name);
+            docNode.AppendInnerTextChild(xmldoc, "Namespace", header.Namespace);
             docNode.AppendInnerTextChild(xmldoc, "UUID", header.UUID.ToString().ToUpper());
             docNode.AppendInnerTextChild(xmldoc, "Version", header.Version.ToString());
             docNode.AppendInnerTextChild(xmldoc, "ModType", header.ModType.ToString());
@@ -398,16 +409,18 @@ namespace RogueEssence
         /// </summary>
         public string Path;
         public string Name;
+        public string Namespace;
         public Guid UUID;
         public Version Version;
         public PathMod.ModType ModType;
 
-        public static readonly ModHeader Invalid = new ModHeader("", "", Guid.Empty, new Version(), PathMod.ModType.None);
+        public static readonly ModHeader Invalid = new ModHeader("", "", "", Guid.Empty, new Version(), PathMod.ModType.None);
 
-        public ModHeader(string path, string name, Guid uuid, Version version, PathMod.ModType modType)
+        public ModHeader(string path, string name, string newNamespace, Guid uuid, Version version, PathMod.ModType modType)
         {
             Path = path;
             Name = name;
+            Namespace = newNamespace;
             UUID = uuid;
             Version = version;
             ModType = modType;
@@ -420,7 +433,7 @@ namespace RogueEssence
 
         public bool IsFilled()
         {
-            return !String.IsNullOrEmpty(Path) && !String.IsNullOrEmpty(Name) && !UUID.Equals(Guid.Empty) && ModType != PathMod.ModType.None;
+            return !String.IsNullOrEmpty(Path) && !String.IsNullOrEmpty(Name) && !String.IsNullOrEmpty(Namespace) && !UUID.Equals(Guid.Empty) && ModType != PathMod.ModType.None;
         }
 
         public string GetMenuName()

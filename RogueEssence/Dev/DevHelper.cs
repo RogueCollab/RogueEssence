@@ -228,6 +228,13 @@ namespace RogueEssence.Dev
 
         public static void ConvertAssetNames()
         {
+            //load mod xml and resave it
+            if (PathMod.Quest.IsValid())
+            {
+                string modPath = PathMod.FromExe(PathMod.Quest.Path);
+                PathMod.SaveModDetails(modPath, PathMod.Quest);
+            }
+
             Version oldVersion = GetTypeVersion(DataManager.DataType.AutoTile);
             if (oldVersion < StringAssetVersion)
             {

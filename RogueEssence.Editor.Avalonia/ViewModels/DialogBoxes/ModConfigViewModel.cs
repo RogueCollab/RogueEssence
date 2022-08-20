@@ -15,6 +15,7 @@ namespace RogueEssence.Dev.ViewModels
         public ModConfigViewModel(ModHeader header)
         {
             Name = header.Name;
+            Namespace = header.Namespace;
             UUID = header.UUID.ToString().ToUpper();
             Version = header.Version.ToString();
 
@@ -29,6 +30,13 @@ namespace RogueEssence.Dev.ViewModels
         {
             get => name;
             set => this.SetIfChanged(ref name, value);
+        }
+
+        private string editNamespace;
+        public string Namespace
+        {
+            get => editNamespace;
+            set => this.SetIfChanged(ref editNamespace, value);
         }
 
         private string uuid;
