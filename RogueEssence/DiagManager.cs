@@ -636,6 +636,8 @@ namespace RogueEssence
                     }
 
                     PathMod.Mods = modList.ToArray();
+
+                    //TODO: Set order
                 }
                 catch (Exception ex)
                 {

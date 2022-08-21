@@ -46,6 +46,7 @@ namespace RogueEssence
             ASSET_PATH = ExePath;
             DEV_PATH = ExePath + "RawAsset/";
             BaseNamespace = baseNamespace;
+            LoadOrder = new List<int>();
         }
 
         /// <summary>
@@ -142,19 +143,14 @@ namespace RogueEssence
 
         public static IEnumerable<string> FallbackPaths(string basePath)
         {
-            foreach(ModHeader mod in Mods)
+            for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
             {
+                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
                 string fullPath = hardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
             }
-            if (Quest.IsValid())
-            {
-                string mod = Quest.Path;
-                string fullPath = hardMod(mod, basePath);
-                if (File.Exists(fullPath) || Directory.Exists(fullPath))
-                    yield return fullPath;
-            }
+
             yield return hardMod("", basePath);
         }
 
@@ -205,19 +201,14 @@ namespace RogueEssence
         public static string[] GetModFiles(string baseFolder, string search = "*")
         {
             List<string[]> files = new List<string[]>();
-            foreach (ModHeader mod in Mods)
+            for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
             {
+                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
                 string fullPath = hardMod(mod.Path, baseFolder);
                 if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
             }
-            if (Quest.IsValid())
-            {
-                string mod = Quest.Path;
-                string fullPath = hardMod(mod, baseFolder);
-                if (Directory.Exists(fullPath))
-                    files.Add(Directory.GetFiles(fullPath, search));
-            }
+
             files.Add(Directory.GetFiles(hardMod("", baseFolder), search));
 
             Dictionary<string, string> file_mappings = new Dictionary<string, string>();
@@ -309,7 +300,6 @@ namespace RogueEssence
                 }
             }
 
-            //DP solution
             //iterate the list of items for the ones without dependencies
             //place them in the result list.  mark them as managed
             //iterate the list of items for the ones that refer to only marked items
@@ -346,11 +336,15 @@ namespace RogueEssence
             for (int ii = 0; ii < preOrder.Count; ii++)
             {
                 if (!marked.Contains(preOrder[ii]))
+                {
                     cycleHeaders.Add(getModHeader(quest, mods, preOrder[ii]));
+                    loadOrder.Add(preOrder[ii]);
+                }
             }
             if (cycleHeaders.Count > 0)
                 loadErrors.Add((ModRelationship.LoadAfter, cycleHeaders));
         }
+
 
         public static ModHeader GetModDetails(string fullPath)
         {
