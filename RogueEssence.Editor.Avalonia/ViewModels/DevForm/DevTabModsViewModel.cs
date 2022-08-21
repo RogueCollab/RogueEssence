@@ -99,7 +99,10 @@ namespace RogueEssence.Dev.ViewModels
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromExe(chosenMod.Path)), new ModHeader[0] { });
+                if (!String.IsNullOrEmpty(chosenMod.Path))
+                    GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromExe(chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
+                else
+                    GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
             }
         }
 
@@ -197,9 +200,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //save the mod data
                 string fullPath = PathMod.FromExe(PathMod.Quest.Path);
-                ModHeader resultHeader = new ModHeader(fullPath, vm.Name.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
+                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
                 PathMod.SaveModDetails(fullPath, resultHeader);
-
+                PathMod.Quest = resultHeader;
                 reloadMods();
             }
         }

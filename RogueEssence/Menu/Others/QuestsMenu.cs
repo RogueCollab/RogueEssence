@@ -49,8 +49,17 @@ namespace RogueEssence.Menu
 
         private void choose(string dir)
         {
+            List<int> loadOrder = new List<int>();
+            List<(ModRelationship, List<ModHeader>)> loadErrors = new List<(ModRelationship, List<ModHeader>)>();
+            PathMod.ValidateModLoad(PathMod.GetModDetails(PathMod.FromExe(dir)), PathMod.Mods, loadOrder, loadErrors);
+            if (loadErrors.Count > 0)
+            {
+                MenuManager.Instance.AddMenu(new ModLogMenu(loadErrors), false);
+                return;
+            }
+
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.GetModDetails(PathMod.FromExe(dir)), PathMod.Mods);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.GetModDetails(PathMod.FromExe(dir)), PathMod.Mods, loadOrder);
         }
     }
 }

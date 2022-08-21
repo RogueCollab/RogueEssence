@@ -37,6 +37,8 @@ namespace RogueEssence
 
         public static ModHeader Quest = ModHeader.Invalid;
 
+        public static List<int> LoadOrder;
+
         public static void InitPathMod(string path, string baseNamespace)
         {
             ExeName = Path.GetFileName(path);
@@ -238,6 +240,117 @@ namespace RogueEssence
             return result_files.ToArray();
         }
 
+        private static ModHeader getModHeader(ModHeader quest, ModHeader[] mods, int idx)
+        {
+            if (idx == -1)
+                return quest;
+            return mods[idx];
+        }
+
+        public static void ValidateModLoad(ModHeader quest, ModHeader[] mods, List<int> loadOrder, List<(ModRelationship, List<ModHeader>)> loadErrors)
+        {
+            Dictionary<Guid, int> guidLookup = new Dictionary<Guid, int>();
+            Dictionary<int, HashSet<int>> localOrders = new Dictionary<int, HashSet<int>>();
+
+            List<int> preOrder = new List<int>();
+            if (quest.IsValid())
+            {
+                preOrder.Add(-1);
+                guidLookup[quest.UUID] = -1;
+                localOrders[-1] = new HashSet<int>();
+            }
+            for (int ii = 0; ii < mods.Length; ii++)
+            {
+                preOrder.Add(ii);
+                guidLookup[mods[ii].UUID] = ii;
+                localOrders[ii] = new HashSet<int>();
+            }
+
+            //construct the dependency table
+            //and also take out the simple missing dependency/incompatibilities
+            for (int ii = 0; ii < preOrder.Count; ii++)
+            {
+                ModHeader header = getModHeader(quest, mods, preOrder[ii]);
+                foreach (RelatedMod rel in header.Relationships)
+                {
+                    switch (rel.Relationship)
+                    {
+                        case ModRelationship.Incompatible:
+                            {
+                                int depIdx;
+                                if (guidLookup.TryGetValue(rel.UUID, out depIdx))
+                                    loadErrors.Add((ModRelationship.Incompatible, new List<ModHeader>() { header, getModHeader(quest, mods, depIdx) }));
+                            }
+                            break;
+                        case ModRelationship.LoadBefore:
+                            {
+                                int depIdx;
+                                if (guidLookup.TryGetValue(rel.UUID, out depIdx))
+                                    localOrders[depIdx].Add(preOrder[ii]);
+                            }
+                            break;
+                        case ModRelationship.LoadAfter:
+                            {
+                                int depIdx;
+                                if (guidLookup.TryGetValue(rel.UUID, out depIdx))
+                                    localOrders[preOrder[ii]].Add(depIdx);
+                            }
+                            break;
+                        case ModRelationship.DependsOn:
+                            {
+                                int depIdx;
+                                if (guidLookup.TryGetValue(rel.UUID, out depIdx))
+                                    localOrders[preOrder[ii]].Add(depIdx);
+                                else
+                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", rel.Namespace, rel.UUID, new Version(), ModType.None, new RelatedMod[0] { }) }));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            //DP solution
+            //iterate the list of items for the ones without dependencies
+            //place them in the result list.  mark them as managed
+            //iterate the list of items for the ones that refer to only marked items
+            //place them in the result list
+            //keep doing this until all items are marked, or all unmarked items have at least one unmarked dep
+            HashSet<int> marked = new HashSet<int>();
+
+            bool added = true;
+            while (added)
+            {
+                added = false;
+                for (int ii = 0; ii < preOrder.Count; ii++)
+                {
+                    if (!marked.Contains(preOrder[ii]))
+                    {
+                        bool allMarked = true;
+                        foreach (int dep in localOrders[preOrder[ii]])
+                        {
+                            if (!marked.Contains(dep))
+                                allMarked = false;
+                        }
+                        if (allMarked)
+                        {
+                            loadOrder.Add(preOrder[ii]);
+                            marked.Add(preOrder[ii]);
+                            added = true;
+                        }
+                    }
+                }
+            }
+
+            //we're done with all the dependencies we can.  the rest are parts of a cycle
+            List<ModHeader> cycleHeaders = new List<ModHeader>();
+            for (int ii = 0; ii < preOrder.Count; ii++)
+            {
+                if (!marked.Contains(preOrder[ii]))
+                    cycleHeaders.Add(getModHeader(quest, mods, preOrder[ii]));
+            }
+            if (cycleHeaders.Count > 0)
+                loadErrors.Add((ModRelationship.LoadAfter, cycleHeaders));
+        }
 
         public static ModHeader GetModDetails(string fullPath)
         {
@@ -441,13 +554,12 @@ namespace RogueEssence
     public struct RelatedMod
     {
         public Guid UUID;
-        [NonEdited]
         public string Namespace;
         public ModRelationship Relationship;
 
         public override string ToString()
         {
-            return String.Format("{0}: {1}", Relationship.ToString(), UUID.ToString().ToUpper());
+            return String.Format("{0}: {1}", Relationship.ToString(), Namespace);
         }
     }
 

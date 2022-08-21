@@ -456,21 +456,22 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> MoveToQuest(ModHeader quest, ModHeader[] mods)
+        public IEnumerator<YieldInstruction> MoveToQuest(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
         {
             yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
 
-            SetQuest(quest, mods);
+            SetQuest(quest, mods, loadOrder);
 
             DiagManager.Instance.SaveModSettings();
 
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
-        public void SetQuest(ModHeader quest, ModHeader[] mods)
+        public void SetQuest(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
         {
             cleanup();
             PathMod.Quest = quest;
             PathMod.Mods = mods;
+            PathMod.LoadOrder = loadOrder;
             Text.Init();
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";

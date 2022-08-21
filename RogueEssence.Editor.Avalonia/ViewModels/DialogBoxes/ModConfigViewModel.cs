@@ -97,6 +97,11 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 }
 
+                if (String.IsNullOrEmpty(((RelatedMod)element).Namespace))
+                {
+                    await MessageBox.Show(frmData, "Related mod needs a namespace!", "Namespace needed.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
+                }
                 if (itemExists)
                 {
                     await MessageBox.Show(frmData, "Cannot add duplicate entries.", "Entry with UUID already exists.", MessageBox.MessageBoxButtons.Ok);

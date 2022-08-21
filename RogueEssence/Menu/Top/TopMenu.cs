@@ -91,8 +91,16 @@ namespace RogueEssence.Menu
 
         private void exitQuest()
         {
+            List<int> loadOrder = new List<int>();
+            List<(ModRelationship, List<ModHeader>)> loadErrors = new List<(ModRelationship, List<ModHeader>)>();
+            PathMod.ValidateModLoad(ModHeader.Invalid, PathMod.Mods, loadOrder, loadErrors);
+            if (loadErrors.Count > 0)
+            {
+                MenuManager.Instance.AddMenu(new ModLogMenu(loadErrors), false);
+                return;
+            }
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(ModHeader.Invalid, PathMod.Mods);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(ModHeader.Invalid, PathMod.Mods, loadOrder);
         }
 
 
