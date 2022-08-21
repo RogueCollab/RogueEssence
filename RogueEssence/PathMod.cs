@@ -33,11 +33,11 @@ namespace RogueEssence
         /// <summary>
         /// Filename of mod relative to executable
         /// </summary>
-        public static ModHeader[] Mods = new ModHeader[0];
+        public static ModHeader[] Mods { get; private set; }
 
-        public static ModHeader Quest = ModHeader.Invalid;
+        public static ModHeader Quest { get; private set; }
 
-        public static List<int> LoadOrder;
+        public static List<int> LoadOrder { get; private set; }
 
         public static void InitPathMod(string path, string baseNamespace)
         {
@@ -46,7 +46,17 @@ namespace RogueEssence
             ASSET_PATH = ExePath;
             DEV_PATH = ExePath + "RawAsset/";
             BaseNamespace = baseNamespace;
+
+            Quest = ModHeader.Invalid;
+            Mods = new ModHeader[0];
             LoadOrder = new List<int>();
+        }
+
+        public static void SetMods(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
+        {
+            Quest = quest;
+            Mods = mods;
+            LoadOrder = loadOrder;
         }
 
         /// <summary>

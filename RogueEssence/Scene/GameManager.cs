@@ -469,9 +469,7 @@ namespace RogueEssence
         public void SetQuest(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
         {
             cleanup();
-            PathMod.Quest = quest;
-            PathMod.Mods = mods;
-            PathMod.LoadOrder = loadOrder;
+            PathMod.SetMods(quest, mods, loadOrder);
             Text.Init();
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";

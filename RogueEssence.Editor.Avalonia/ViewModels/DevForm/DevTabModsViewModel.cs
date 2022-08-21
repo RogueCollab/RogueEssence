@@ -202,8 +202,9 @@ namespace RogueEssence.Dev.ViewModels
                 string fullPath = PathMod.FromExe(PathMod.Quest.Path);
                 ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
                 PathMod.SaveModDetails(fullPath, resultHeader);
-                PathMod.Quest = resultHeader;
+
                 reloadMods();
+                doSwitch();
             }
         }
 

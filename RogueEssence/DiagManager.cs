@@ -610,7 +610,7 @@ namespace RogueEssence
             }
         }
 
-        public void LoadModSettings()
+        public (ModHeader, ModHeader[]) LoadModSettings()
         {
             string path = CONFIG_PATH + "ModConfig.xml";
             if (File.Exists(path))
@@ -621,9 +621,10 @@ namespace RogueEssence
                     xmldoc.Load(path);
 
                     string quest = xmldoc.SelectSingleNode("Config/Quest").InnerText;
+                    ModHeader newQuest = ModHeader.Invalid;
                     ModHeader questHeader = PathMod.GetModDetails(quest);
                     if (questHeader.IsValid())
-                        PathMod.Quest = questHeader;
+                        newQuest = questHeader;
 
                     List<ModHeader> modList = new List<ModHeader>();
                     XmlNode modsNode = xmldoc.SelectSingleNode("Config/Mods");
@@ -635,16 +636,14 @@ namespace RogueEssence
                             modList.Add(modHeader);
                     }
 
-                    PathMod.Mods = modList.ToArray();
-
-                    //TODO: Set order
+                    return (newQuest, modList.ToArray());
                 }
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex);
                 }
             }
-
+            return (ModHeader.Invalid, new ModHeader[0] { });
         }
 
         public void SaveModSettings()
