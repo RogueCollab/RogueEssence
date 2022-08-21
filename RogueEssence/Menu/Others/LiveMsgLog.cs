@@ -41,34 +41,15 @@ namespace RogueEssence.Menu
         public void LogAdded(string msg)
         {
             if (msg == Text.DIVIDER_STR)
-                LogAdded(entries, dividers, START_VERT, msg);
+                LogMenu.LogAdded(entries, dividers, START_VERT, msg);
             else
             {
 
                 string[] lines = MenuText.BreakIntoLines(msg, GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2 - SIDE_BUFFER * 2);
                 foreach (string line in lines)
-                    LogAdded(entries, dividers, START_VERT, line);
+                    LogMenu.LogAdded(entries, dividers, START_VERT, line);
                 timeSinceUpdate = new FrameTick();
                 Visible = true;
-            }
-        }
-
-        public static void LogAdded(List<MenuText> entries, List<MenuDivider> dividers, int startVert, string msgLine)
-        {
-            //methodize this for message log
-            if (msgLine == Text.DIVIDER_STR)
-            {
-                if (entries.Count > 0)
-                    dividers[dividers.Count - 1] = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, entries[entries.Count - 1].Loc.Y + 12),
-                               GraphicsManager.ScreenWidth - GraphicsManager.MenuBG.TileWidth * 2);
-            }
-            else
-            {
-                if (entries.Count > 0)
-                    entries.Add(new MenuText(msgLine, entries[entries.Count - 1].Loc + new Loc(0, VERT_SPACE)));
-                else
-                    entries.Add(new MenuText(msgLine, new Loc(GraphicsManager.MenuBG.TileWidth, startVert)));
-                dividers.Add(null);
             }
         }
 
