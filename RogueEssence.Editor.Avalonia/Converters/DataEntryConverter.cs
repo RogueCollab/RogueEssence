@@ -19,9 +19,8 @@ namespace RogueEssence.Dev.Converters
             {
                 DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataType];
-                EntrySummary summary;
-                if (nameIndex.Entries.TryGetValue(idx, out summary))
-                    return summary.Name.ToLocal();
+                if (nameIndex.ContainsKey(idx))
+                    return nameIndex.Get(idx).Name.ToLocal();
                 return "**EMPTY**";
             }
             return value;

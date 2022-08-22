@@ -71,7 +71,7 @@ namespace RogueEssence.LevelGen
                 map.Map.TextureMap[DataManager.Instance.GenWall] = new AutoTile(BlockTileset);
             }
 
-            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries.Keys)
+            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Terrain].GetOrderedKeys(true))
             {
                 if (key != DataManager.Instance.GenFloor && key != DataManager.Instance.GenUnbreakable && key != DataManager.Instance.GenWall)
                     map.Map.TextureMap[key] = new AutoTile(WaterTileset, GroundTileset);
@@ -94,9 +94,9 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[GroundTileset].Name.ToLocal();
-            string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[BlockTileset].Name.ToLocal();
-            string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[WaterTileset].Name.ToLocal();
+            string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(GroundTileset).Name.ToLocal();
+            string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(BlockTileset).Name.ToLocal();
+            string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(WaterTileset).Name.ToLocal();
             return String.Format("{0}: {1}/{2}/{3}", this.GetType().Name, ground, wall, secondary);
         }
     }

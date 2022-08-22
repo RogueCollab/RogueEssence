@@ -410,7 +410,7 @@ namespace RogueEssence.Dev.ViewModels
                 CharaIndexNode charaNode = GetIndexNode();
                 for (int ii = 0; ii < monsterKeys.Count; ii++)
                 {
-                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[monsterKeys[ii]];
+                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                     CharID dexID = new CharID(ii, -1, -1, -1);
                     MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
@@ -533,7 +533,7 @@ namespace RogueEssence.Dev.ViewModels
             CharaIndexNode charaNode = GetIndexNode();
             for (int ii = 0; ii < monsterKeys.Count; ii++)
             {
-                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[monsterKeys[ii]];
+                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                 CharID dexID = new CharID(ii, -1, -1, -1);
                 if (hasSprite(charaNode, dexID))
@@ -722,11 +722,11 @@ namespace RogueEssence.Dev.ViewModels
 
         private string GetFormString(CharID formdata)
         {
-            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[monsterKeys[formdata.Species]].Name.ToLocal();
+            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[formdata.Species]).Name.ToLocal();
             if (formdata.Form > -1)
                 name += ", " + DataManager.Instance.GetMonster(monsterKeys[formdata.Species]).Forms[formdata.Form].FormName.ToLocal() + " form";
             if (formdata.Skin > -1)
-                name += ", " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries[skinKeys[formdata.Skin]].Name.ToLocal() + " skin";
+                name += ", " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(skinKeys[formdata.Skin]).Name.ToLocal() + " skin";
             if (formdata.Gender > -1)
                 name += ", " + (Gender)formdata.Gender + " gender";
             return name;

@@ -40,7 +40,7 @@ namespace RogueEssence.Dev
             }
 
             for (int ii = 0; ii < itemKeys.Count; ii++)
-                items.Add(itemKeys[ii] + ": " + nameIndex.Entries[itemKeys[ii]].GetLocalString(false));
+                items.Add(itemKeys[ii] + ": " + nameIndex.Get(itemKeys[ii]).GetLocalString(false));
 
             var itemsSubject = new Subject<List<string>>();
 

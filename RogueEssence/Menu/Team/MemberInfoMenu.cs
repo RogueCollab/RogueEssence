@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
             bool inDungeon = (GameManager.Instance.CurrentScene == DungeonScene.Instance);
             for (int ii = 0; ii < dexEntry.Promotions.Count; ii++)
             {
-                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[dexEntry.Promotions[ii].Result].Released)
+                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(dexEntry.Promotions[ii].Result).Released)
                     continue;
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {

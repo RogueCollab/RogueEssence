@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
             AllowedGoods = new List<int>();
 
             itemPresence = new HashSet<string>();
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries.Keys)
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(true))
             {
                 if (DataManager.Instance.Save.ActiveTeam.Storage[key] > 0)
                     updatePresence(itemPresence, ref presenceCount, key);
@@ -105,7 +105,7 @@ namespace RogueEssence.Menu
             HashSet<string> itemPresence = new HashSet<string>();
             int presenceCount = 0;
 
-            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries.Keys)
+            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(true))
             {
                 if (DataManager.Instance.Save.ActiveTeam.Storage[key] > 0)
                     updatePresence(itemPresence, ref presenceCount, key);
@@ -153,7 +153,7 @@ namespace RogueEssence.Menu
             if (!itemPresence.Contains(index))
             {
                 itemPresence.Add(index);
-                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(index) as ItemEntrySummary;
 
                 if (itemEntry.ContainsState<MaterialState>())
                     presenceCount++;

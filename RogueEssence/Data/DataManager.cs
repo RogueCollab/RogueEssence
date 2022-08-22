@@ -100,8 +100,10 @@ namespace RogueEssence.Data
 
         public const string DATA_PATH = "Data/";
         public const string MISC_PATH = DATA_PATH + "Misc/";
-        public const string MAP_PATH = DATA_PATH + "Map/";
-        public const string GROUND_PATH = DATA_PATH + "Ground/";
+        public const string MAP_FOLDER = "Map/";
+        public const string GROUND_FOLDER = "Ground/";
+        public const string MAP_PATH = DATA_PATH + MAP_FOLDER;
+        public const string GROUND_PATH = DATA_PATH + GROUND_FOLDER;
         public const string DATA_EXT = ".json";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
@@ -478,18 +480,16 @@ namespace RogueEssence.Data
         {
             try
             {
-                Dictionary<string, EntrySummary> summaries = new Dictionary<string, EntrySummary>();
-                foreach (string modPath in PathMod.FallforthPaths(DATA_PATH + type.ToString() + "/index.idx"))
+                EntryDataIndex compositeIndex = new EntryDataIndex();
+                foreach ((ModHeader, string) modWithPath in PathMod.FallforthPathsWithHeader(DATA_PATH + type.ToString() + "/index.idx"))
                 {
-                    using (Stream stream = new FileStream(modPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (Stream stream = new FileStream(modWithPath.Item2, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        EntryDataIndex result = (EntryDataIndex)Serializer.DeserializeData(stream);
-                        foreach(string key in result.Entries.Keys)
-                            summaries[key] = result.Entries[key];
+                        Dictionary<string, EntrySummary> result = (Dictionary<string, EntrySummary>)Serializer.DeserializeData(stream);
+                        foreach(string key in result.Keys)
+                            compositeIndex.Set(modWithPath.Item1.UUID, key, result[key]);
                     }
                 }
-                EntryDataIndex compositeIndex = new EntryDataIndex();
-                compositeIndex.Entries = summaries;
                 return compositeIndex;
             }
             catch
@@ -507,12 +507,21 @@ namespace RogueEssence.Data
             try
             {
                 cache.Clear();
-                foreach (string key in DataIndices[type].Entries.Keys)
+                foreach (string key in DataIndices[type].GetOrderedKeys(true))
                 {
-                    if (File.Exists(PathMod.ModPath(DATA_PATH + type.ToString() + "/" + key + DataManager.DATA_EXT)))
+                    bool firstIdx = false;
+                    foreach ((Guid, EntrySummary) tuple in DataIndices[type].IterateKey(key))
                     {
-                        T data = LoadData<T>(key, type.ToString());
-                        cache.Add(key, data);
+                        ModHeader mod = PathMod.GetModFromUuid(tuple.Item1);
+                        T data = LoadModData<T>(mod, key, type.ToString());
+                        if (data != null)
+                        {
+                            cache.Add(mod.Namespace + ":" + key, data);
+
+                            if (!firstIdx)
+                                cache.Add(key, data);
+                            firstIdx = true;
+                        }
                     }
                 }
             }
@@ -526,7 +535,8 @@ namespace RogueEssence.Data
         {
             using (Stream stream = new FileStream(PathMod.HardMod(DATA_PATH + type.ToString() + "/index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                Serializer.SerializeData(stream, DataIndices[type]);
+                Dictionary<string, EntrySummary> thisModIndex = DataIndices[type].GetModIndex(PathMod.Quest.UUID);
+                Serializer.SerializeData(stream, thisModIndex);
             }
         }
 
@@ -536,12 +546,12 @@ namespace RogueEssence.Data
             {
                 SaveData(entryNum, dataType.ToString(), data);
                 EntrySummary entrySummary = data.GenerateEntrySummary();
-                DataIndices[dataType].Entries[entryNum] = entrySummary;
+                DataIndices[dataType].Set(PathMod.Quest.UUID, entryNum, entrySummary);
             }
             else
             {
                 DeleteData(entryNum, dataType.ToString());
-                DataIndices[dataType].Entries.Remove(entryNum);
+                DataIndices[dataType].Remove(PathMod.Quest.UUID, entryNum);
             }
             SaveIndex(dataType);
             ClearCache(dataType);
@@ -558,9 +568,32 @@ namespace RogueEssence.Data
             DiagManager.Instance.DevEditor.ReloadData(dataType);
         }
 
-        public static T LoadData<T>(string indexNum, string subPath) where T : IEntryData
+        public static T LoadNamespacedData<T>(string namespacedNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
-            return LoadData<T>(PathMod.ModPath(DATA_PATH + subPath + "/" + indexNum + DATA_EXT));
+            string[] components = namespacedNum.Split(':');
+            if (components.Length > 1)
+            {
+                ModHeader mod = PathMod.GetModFromNamespace(components[0]);
+                return LoadModData<T>(mod, components[1], subPath, ext);
+            }
+            else
+                return LoadData<T>(components[0], subPath, ext);
+        }
+
+        public static T LoadModData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        {
+            string filePath = PathMod.HardMod(mod.Path, Path.Join(DATA_PATH + subPath, indexNum + ext));
+            if (File.Exists(filePath))
+                return LoadData<T>(filePath);
+            return default(T);
+        }
+
+        public static T LoadData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        {
+            string filePath = PathMod.ModPath(Path.Join(DATA_PATH + subPath, indexNum + ext));
+            if (File.Exists(filePath))
+                return LoadData<T>(filePath);
+            return default(T);
         }
 
         public static T LoadData<T>(string path)
@@ -614,18 +647,14 @@ namespace RogueEssence.Data
                 File.Delete(path);
         }
 
-
         public ZoneData GetZone(string index)
         {
             ZoneData data = null;
 
             try
             {
-                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Zone.ToString() + "/" + index + DATA_EXT)))
-                {
-                    data = LoadData<ZoneData>(index, DataType.Zone.ToString());
-                    return data;
-                }
+                data = LoadNamespacedData<ZoneData>(index, DataType.Zone.ToString());
+                return data;
             }
             catch (Exception ex)
             {
@@ -639,7 +668,7 @@ namespace RogueEssence.Data
             Map mapData = null;
             try
             {
-                mapData = LoadData<Map>(PathMod.ModPath(MAP_PATH + name + ".rsmap"));
+                mapData = LoadNamespacedData<Map>(name, MAP_FOLDER, ".rsmap");
                 return mapData;
             }
             catch (Exception ex)
@@ -655,7 +684,7 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
-                mapData = LoadData<GroundMap>(PathMod.ModPath(GROUND_PATH + name + ".rsground"));
+                mapData = LoadData<GroundMap>(name, GROUND_FOLDER, ".rsground");
                 return mapData;
             }
             catch (Exception ex)
@@ -673,10 +702,9 @@ namespace RogueEssence.Data
             if (skillCache.TryGetValue(index, out data))
                 return data;
 
-
             try
             {
-                data = LoadData<SkillData>(index, DataType.Skill.ToString());
+                data = LoadNamespacedData<SkillData>(index, DataType.Skill.ToString());
                 skillCache.Add(index, data);
             }
             catch (Exception ex)
@@ -696,12 +724,8 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Item.ToString() + "/" + index + DATA_EXT)))
-                {
-                    data = LoadData<ItemData>(index, DataType.Item.ToString());
-                    itemCache.Add(index, data);
-                    return data;
-                }
+                data = LoadNamespacedData<ItemData>(index, DataType.Item.ToString());
+                itemCache.Add(index, data);
             }
             catch (Exception ex)
             {
@@ -718,7 +742,7 @@ namespace RogueEssence.Data
 
             try
             {
-                data = LoadData<AutoTileData>(index, "AutoTile");
+                data = LoadNamespacedData<AutoTileData>(index, "AutoTile");
                 autoTileCache.Add(index, data);
             }
             catch (Exception ex)
@@ -736,7 +760,7 @@ namespace RogueEssence.Data
 
             try
             {
-                data = LoadData<MonsterData>(index, "Monster");
+                data = LoadNamespacedData<MonsterData>(index, "Monster");
                 monsterCache.Add(index, data);
             }
             catch (Exception ex)
@@ -754,12 +778,8 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Status.ToString() + "/" + index + DataManager.DATA_EXT)))
-                {
-                    data = LoadData<StatusData>(index, DataType.Status.ToString());
-                    statusCache.Add(index, data);
-                    return data;
-                }
+                data = LoadNamespacedData<StatusData>(index, DataType.Status.ToString());
+                statusCache.Add(index, data);
             }
             catch (Exception ex)
             {
@@ -776,12 +796,8 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.Intrinsic.ToString() + "/" + index + DATA_EXT)))
-                {
-                    data = LoadData<IntrinsicData>(index, DataType.Intrinsic.ToString());
-                    intrinsicCache.Add(index, data);
-                    return data;
-                }
+                data = LoadNamespacedData<IntrinsicData>(index, DataType.Intrinsic.ToString());
+                intrinsicCache.Add(index, data);
             }
             catch (Exception ex)
             {
@@ -798,12 +814,8 @@ namespace RogueEssence.Data
 
             try
             {
-                if (File.Exists(PathMod.ModPath(DATA_PATH + DataType.MapStatus.ToString() + "/" + index + DATA_EXT)))
-                {
-                    data = LoadData<MapStatusData>(index, DataType.MapStatus.ToString());
-                    mapStatusCache.Add(index, data);
-                    return data;
-                }
+                data = LoadNamespacedData<MapStatusData>(index, DataType.MapStatus.ToString());
+                mapStatusCache.Add(index, data);
             }
             catch (Exception ex)
             {

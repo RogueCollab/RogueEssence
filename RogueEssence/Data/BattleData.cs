@@ -34,7 +34,7 @@ namespace RogueEssence.Data
                 return DataManager.Instance.GetSkill(ID).GetIconName();
             else
             {
-                EntrySummary summary = DataManager.Instance.DataIndices[DataType].Entries[ID];
+                EntrySummary summary = DataManager.Instance.DataIndices[DataType].Get(ID);
                 return summary.GetColoredName();
             }
         }

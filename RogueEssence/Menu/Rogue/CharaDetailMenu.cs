@@ -126,7 +126,7 @@ namespace RogueEssence.Menu
             else
             {
                 legalSkins = new List<string>() { DataManager.Instance.DefaultSkin };
-                foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries.Keys)
+                foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(true))
                 {
                     if (DataManager.Instance.GetSkin(key).Challenge)
                         legalSkins.Add(key);

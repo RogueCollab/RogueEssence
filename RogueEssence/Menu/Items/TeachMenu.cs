@@ -82,7 +82,7 @@ namespace RogueEssence.Menu
                     return false;
             }
 
-            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[effect.ID].Released)
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Skill].Get(effect.ID).Released)
                 return false;
 
             return entry.CanLearnSkill(effect.ID);

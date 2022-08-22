@@ -47,7 +47,7 @@ namespace RogueEssence.Dev
                 List<string> forms = new List<string>();
 
                 for (int ii = 0; ii < monsterKeys.Count; ii++)
-                    species.Add(monsterKeys[ii] + ": " + nameIndex.Entries[monsterKeys[ii]].GetLocalString(false));
+                    species.Add(monsterKeys[ii] + ": " + nameIndex.Get(monsterKeys[ii]).GetLocalString(false));
 
                 if (dataAtt.InvalidSpecies)
                 {
@@ -131,7 +131,7 @@ namespace RogueEssence.Dev
                     if (key == member.Skin)
                         chosenIndex = items.Count;
 
-                    items.Add(key + ": " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Entries[key].GetLocalString(false));
+                    items.Add(key + ": " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(key).GetLocalString(false));
                 }
 
                 var subject = new Subject<List<string>>();

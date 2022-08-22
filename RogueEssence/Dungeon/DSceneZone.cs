@@ -451,9 +451,9 @@ namespace RogueEssence.Dungeon
                         result.Success = ActionResult.ResultType.Success;
 
                         List<string> eligibleAI = new List<string>();
-                        foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries.Keys)
+                        foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].GetOrderedKeys(true))
                         {
-                            AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[ai_asset] as AIEntrySummary;
+                            AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Get(ai_asset) as AIEntrySummary;
                             if (summary.Assignable)
                                 eligibleAI.Add(ai_asset);
                         }

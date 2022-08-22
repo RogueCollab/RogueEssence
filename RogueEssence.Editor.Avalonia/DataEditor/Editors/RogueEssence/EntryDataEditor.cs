@@ -43,7 +43,7 @@ namespace RogueEssence.Dev
             }
 
             foreach (string key in orderedKeys)
-                items.Add(key + ": " + nameIndex.Entries[key].GetLocalString(true));
+                items.Add(key + ": " + nameIndex.Get(key).GetLocalString(true));
 
             var subject = new Subject<List<string>>();
             cbValue.Bind(ComboBox.ItemsProperty, subject);
@@ -74,8 +74,8 @@ namespace RogueEssence.Dev
             DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataAtt.DataType];
-            if (nameIndex.Entries.ContainsKey(obj))
-                return nameIndex.Entries[obj].Name.ToLocal();
+            if (nameIndex.ContainsKey(obj))
+                return nameIndex.Get(obj).Name.ToLocal();
             return obj;
         }
     }

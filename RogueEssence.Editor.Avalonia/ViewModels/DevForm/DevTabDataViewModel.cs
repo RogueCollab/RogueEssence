@@ -293,7 +293,7 @@ namespace RogueEssence.Dev.ViewModels
                                 DataEditor.SaveDataControls(ref obj, editor.ControlPanel, new Type[0]);
                                 DataManager.Instance.ContentChanged(dataType, entryNum, (IEntryData)obj);
 
-                                string newName = DataManager.Instance.DataIndices[dataType].Entries[entryNum].GetLocalString(true);
+                                string newName = DataManager.Instance.DataIndices[dataType].Get(entryNum).GetLocalString(true);
                                 choices.ModifyEntry(entryNum, newName);
                                 return true;
                             }
@@ -317,9 +317,9 @@ namespace RogueEssence.Dev.ViewModels
 
                 lock (GameBase.lockObj)
                 {
-                    string assetName = Text.GetNonConflictingName(Text.Sanitize(vm.Name).ToLower(), DataManager.Instance.DataIndices[dataType].Entries.ContainsKey);
+                    string assetName = Text.GetNonConflictingName(Text.Sanitize(vm.Name).ToLower(), DataManager.Instance.DataIndices[dataType].ContainsKey);
                     DataManager.Instance.ContentChanged(dataType, assetName, createOp());
-                    string newName = DataManager.Instance.DataIndices[dataType].Entries[assetName].GetLocalString(true);
+                    string newName = DataManager.Instance.DataIndices[dataType].Get(assetName).GetLocalString(true);
                     choices.AddEntry(assetName, newName);
 
                     if (dataType == DataManager.DataType.Zone)
@@ -341,6 +341,11 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     DataManager.Instance.ContentChanged(dataType, assetName, null);
                     choices.DeleteEntry(assetName);
+                    if (DataManager.Instance.DataIndices[dataType].ContainsKey(assetName))
+                    {
+                        string newName = DataManager.Instance.DataIndices[dataType].Get(assetName).GetLocalString(true);
+                        choices.AddEntry(assetName, newName);
+                    }
 
                     if (dataType == DataManager.DataType.Zone)
                     {

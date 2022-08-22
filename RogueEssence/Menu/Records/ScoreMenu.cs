@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
 
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 128, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 128, 224));
 
-            string zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[chosenZone].GetColoredName();
+            string zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(chosenZone).GetColoredName();
             Title = new MenuText(Text.FormatKey("MENU_SCORES_TITLE") + ": " + zoneName, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
@@ -64,7 +64,7 @@ namespace RogueEssence.Menu
                 string newZone = chosenZone;
                 int curIndex = 0;
                 List<string> asset_names = new List<string>();
-                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetOrderedKeys(true))
                 {
                     if (newZone == key)
                         curIndex = asset_names.Count;
@@ -85,7 +85,7 @@ namespace RogueEssence.Menu
                 string newZone = chosenZone;
                 int curIndex = 0;
                 List<string> asset_names = new List<string>();
-                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries.Keys)
+                foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetOrderedKeys(true))
                 {
                     if (newZone == key)
                         curIndex = asset_names.Count;

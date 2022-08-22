@@ -35,7 +35,7 @@ namespace RogueEssence.Dungeon
 
         public static string GetFullFormName(MonsterID id)
         {
-            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[id.Species].Name.ToLocal();
+            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(id.Species).Name.ToLocal();
             SkinData data = DataManager.Instance.GetSkin(id.Skin);
             if (data.Symbol != '\0')
                 name = data.Symbol + name;

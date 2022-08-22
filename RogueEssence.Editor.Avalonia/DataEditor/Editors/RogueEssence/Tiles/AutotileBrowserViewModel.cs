@@ -117,9 +117,9 @@ namespace RogueEssence.Dev.ViewModels
             keys.Add("");
             Autotiles.AddItem("**EMPTY**");
 
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries.Keys)
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetOrderedKeys(false))
             {
-                EntrySummary entry = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[key];
+                EntrySummary entry = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(key);
                 //TODO: autotiles need tile sizes too, to compare
                 if (24 == TileSize)
                 {

@@ -44,7 +44,7 @@ namespace RogueEssence.Menu
             {
                 if (itemPresence[key] > 0)
                 {
-                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[key] as ItemEntrySummary;
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(key) as ItemEntrySummary;
                     if (itemEntry.ContainsState<MaterialState>())
                     {
                         AllowedGoods.Add(key);

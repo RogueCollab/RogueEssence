@@ -39,6 +39,10 @@ namespace RogueEssence
 
         public static List<int> LoadOrder { get; private set; }
 
+        private static Dictionary<string, ModHeader> namespaceLookup;
+
+        private static Dictionary<Guid, ModHeader> uuidLookup;
+
         public static void InitPathMod(string path, string baseNamespace)
         {
             ExeName = Path.GetFileName(path);
@@ -50,6 +54,8 @@ namespace RogueEssence
             Quest = ModHeader.Invalid;
             Mods = new ModHeader[0];
             LoadOrder = new List<int>();
+            namespaceLookup = new Dictionary<string, ModHeader>();
+            uuidLookup = new Dictionary<Guid, ModHeader>();
         }
 
         public static void SetMods(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
@@ -57,6 +63,37 @@ namespace RogueEssence
             Quest = quest;
             Mods = mods;
             LoadOrder = loadOrder;
+
+            namespaceLookup.Clear();
+            uuidLookup.Clear();
+            for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
+            {
+                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
+                namespaceLookup[mod.Namespace] = mod;
+                uuidLookup[mod.UUID] = mod;
+            }
+        }
+
+        public static ModHeader GetModFromNamespace(string namespaceStr)
+        {
+            ModHeader header;
+            if (namespaceLookup.TryGetValue(namespaceStr, out header))
+                return header;
+
+            header = ModHeader.Invalid;
+            header.Namespace = BaseNamespace;
+            return header;
+        }
+
+        public static ModHeader GetModFromUuid(Guid uuid)
+        {
+            ModHeader header;
+            if (uuidLookup.TryGetValue(uuid, out header))
+                return header;
+
+            header = ModHeader.Invalid;
+            header.Namespace = BaseNamespace;
+            return header;
         }
 
         /// <summary>
@@ -123,7 +160,7 @@ namespace RogueEssence
 
         public static string HardMod(string basePath)
         {
-            return hardMod(Quest.Path, basePath);
+            return HardMod(Quest.Path, basePath);
         }
         public static string NoMod(string basePath)
         {
@@ -133,7 +170,7 @@ namespace RogueEssence
         {
             return Path.Join(ExePath, basePath);
         }
-        private static string hardMod(string mod, string basePath)
+        public static string HardMod(string mod, string basePath)
         {
             if (mod == "")
                 return Path.Join(ASSET_PATH, basePath);
@@ -156,12 +193,25 @@ namespace RogueEssence
             for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
             {
                 ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
-                string fullPath = hardMod(mod.Path, basePath);
+                string fullPath = HardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     yield return fullPath;
             }
 
-            yield return hardMod("", basePath);
+            yield return HardMod("", basePath);
+        }
+
+        public static IEnumerable<(ModHeader, string)> FallforthPathsWithHeader(string basePath)
+        {
+            yield return (ModHeader.Invalid, HardMod("", basePath));
+
+            for (int ii = 0; ii < LoadOrder.Count; ii++)
+            {
+                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
+                string fullPath = HardMod(mod.Path, basePath);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                    yield return (mod, fullPath);
+            }
         }
 
         //Temporary fix specifically for lua: check quest path then mod path
@@ -171,19 +221,19 @@ namespace RogueEssence
             if (Quest.IsValid())
             {
                 string mod = Quest.Path;
-                string fullPath = hardMod(mod, basePath);
+                string fullPath = HardMod(mod, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
             }
 
             foreach (ModHeader mod in Mods)
             {
-                string fullPath = hardMod(mod.Path, basePath);
+                string fullPath = HardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
                     return fullPath;
             }
 
-            return hardMod("", basePath);
+            return HardMod("", basePath);
         }
 
         public static string ModPath(string basePath)
@@ -191,7 +241,7 @@ namespace RogueEssence
             foreach (string modPath in FallbackPaths(basePath))
                 return modPath;
 
-            return hardMod("", basePath);
+            return HardMod("", basePath);
         }
 
         public static string[] GetHardModFiles(string baseFolder, string search = "*")
@@ -199,13 +249,13 @@ namespace RogueEssence
             if (Quest.IsValid())
             {
                 string mod = Quest.Path;
-                string fullPath = hardMod(mod, baseFolder);
+                string fullPath = HardMod(mod, baseFolder);
                 if (Directory.Exists(fullPath))
                     return Directory.GetFiles(fullPath, search);
                 return new string[0];
             }
             else
-                return Directory.GetFiles(hardMod("", baseFolder), search);
+                return Directory.GetFiles(HardMod("", baseFolder), search);
         }
 
         public static string[] GetModFiles(string baseFolder, string search = "*")
@@ -214,12 +264,12 @@ namespace RogueEssence
             for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
             {
                 ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
-                string fullPath = hardMod(mod.Path, baseFolder);
+                string fullPath = HardMod(mod.Path, baseFolder);
                 if (Directory.Exists(fullPath))
                     files.Add(Directory.GetFiles(fullPath, search));
             }
 
-            files.Add(Directory.GetFiles(hardMod("", baseFolder), search));
+            files.Add(Directory.GetFiles(HardMod("", baseFolder), search));
 
             Dictionary<string, string> file_mappings = new Dictionary<string, string>();
             for (int ii = files.Count-1; ii >= 0; ii--)

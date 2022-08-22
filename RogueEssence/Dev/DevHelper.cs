@@ -533,7 +533,6 @@ namespace RogueEssence.Dev
         {
             try
             {
-                EntryDataIndex fullGuide = new EntryDataIndex();
                 Dictionary<string, EntrySummary> entries = new Dictionary<string, EntrySummary>();
                 foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
                 {
@@ -541,14 +540,11 @@ namespace RogueEssence.Dev
                     IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
                     entries[file] = data.GenerateEntrySummary();
                 }
-                fullGuide.Entries = entries;
 
                 if (entries.Count > 0)
                 {
                     using (Stream stream = new FileStream(PathMod.HardMod(dataPath + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        Serializer.SerializeData(stream, fullGuide);
-                    }
+                        Serializer.SerializeData(stream, entries);
                 }
                 else
                     File.Delete(PathMod.HardMod(dataPath + "index.idx"));

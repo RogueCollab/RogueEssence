@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
 
         public void SetDungeon(string index, bool isComplete, bool showRestrict)
         {
-            ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[index] as ZoneEntrySummary;
+            ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(index) as ZoneEntrySummary;
             if (zoneEntry == null)
                 Visible = false;
             else
