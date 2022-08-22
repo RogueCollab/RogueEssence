@@ -72,7 +72,7 @@ namespace RogueEssence.Content
             float alpha = 1f;
             if (frame < FadeIn)
                 alpha = Math.Min(alpha, (float)Math.Min(FadeIn, frame) / Math.Max(FadeIn, 1));
-            if (TotalTime - frame < FadeOut)
+            if (TotalTime > 0 && TotalTime - frame < FadeOut)
                 alpha = Math.Min(alpha, (float)Math.Min(FadeOut, TotalTime - frame) / Math.Max(FadeOut, 1));
 
             if (sheet.Width == 1 && sheet.Height == 1)

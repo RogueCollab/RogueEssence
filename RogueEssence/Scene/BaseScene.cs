@@ -129,7 +129,10 @@ namespace RogueEssence
 
             Loc drawSize = sprite.GetDrawSize();
             if (drawSize == new Loc(-1))
+            {
                 yield return ViewRect.Start;
+                yield break;
+            }
             if (drawSize == Loc.Zero)
                 yield break;
 
