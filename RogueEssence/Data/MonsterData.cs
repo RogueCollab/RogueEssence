@@ -52,7 +52,7 @@ namespace RogueEssence.Data
 
 
         [JsonConverter(typeof(MonsterConverter))]
-        [Dev.DataType(0, DataManager.DataType.Monster, false)]
+        [Dev.DataType(0, DataManager.DataType.Monster, true)]
         public string PromoteFrom;
         public List<PromoteBranch> Promotions;
 
