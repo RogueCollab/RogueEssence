@@ -29,6 +29,7 @@ namespace RogueEssence.Dev
                 Type baseType = dataAtt.BaseClass;
 
                 Type[] children = baseType.GetAssignableTypes();
+                control.DataContext = children;
 
                 Avalonia.Controls.Grid sharedRowPanel = getSharedRowPanel(2);
 
@@ -75,7 +76,7 @@ namespace RogueEssence.Dev
             {
                 Type baseType = dataAtt.BaseClass;
 
-                Type[] children = baseType.GetAssignableTypes();
+                Type[] children = (Type[])control.DataContext;
 
                 Avalonia.Controls.Grid subGrid = (Avalonia.Controls.Grid)control.Children[controlIndex];
                 ComboBox cbValue = (ComboBox)subGrid.Children[1];

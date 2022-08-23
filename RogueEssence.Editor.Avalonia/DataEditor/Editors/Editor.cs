@@ -322,6 +322,7 @@ namespace RogueEssence.Dev
                     children = new Type[1] { type };
                 else
                     children = type.GetAssignableTypes();
+                control.DataContext = children;
 
                 //handle null members by getting an instance of the FIRST instantiatable subclass (including itself) it can find
                 if (member == null)
@@ -623,10 +624,7 @@ namespace RogueEssence.Dev
             else
             {
                 Type[] children;
-                if (DefaultType)
-                    children = new Type[1] { type };
-                else
-                    children = type.GetAssignableTypes();
+                children = (Type[])control.DataContext;
 
                 //need to create a new instance
                 //note: considerations must be made when dealing with inheritance/polymorphism
