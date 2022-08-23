@@ -43,7 +43,7 @@ namespace RogueEssence.Menu
                 }
             }
 
-            Initialize(new Loc(LiveMsgLog.SIDE_BUFFER, 24), GraphicsManager.ScreenWidth - LiveMsgLog.SIDE_BUFFER, 13, Text.FormatKey("MENU_MOD_LOG_TITLE"));
+            Initialize(new Loc(LiveMsgLog.SIDE_BUFFER, 24), GraphicsManager.ScreenWidth - LiveMsgLog.SIDE_BUFFER * 2, 13, Text.FormatKey("MENU_MOD_LOG_TITLE"));
         }
 
         protected override IEnumerable<string> GetRecentMsgs(int entries)

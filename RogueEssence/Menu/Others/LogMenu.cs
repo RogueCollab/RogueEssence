@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             entries = new List<MenuText>();
             dividers = new List<MenuDivider>();
             totalLines = lines;
-            Bounds = Rect.FromPoints(start, new Loc(width, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * totalLines + 2));
+            Bounds = new Rect(start, new Loc(width, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * totalLines + 2));
             Title = new MenuText(title, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
             LoadMsgs();
