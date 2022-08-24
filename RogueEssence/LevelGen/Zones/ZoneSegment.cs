@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
@@ -16,7 +17,7 @@ namespace RogueEssence.LevelGen
         // LayeredSegment<T> where T : IFloorGen
         //Implementations in this project can use IProjectSegmentBase where the LayeredSegment uses IProjectFloorGen as a base
         //IProjectFloorGen will be implemented via a ProjectFloorGen that is like FloorGen but has the constraint of BaseMapGenContext
-        [Dev.RankedList(0, true)]
+        [RankedList(0, true)]
         public List<IFloorGen> Floors;
 
         public override int FloorCount { get { return Floors.Count; } }
@@ -138,6 +139,7 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class RangeDictSegment : ZoneSegmentBase
     {
+        [RangeBorder(0, true, true)]
         public RangeDict<IFloorGen> Floors;
         public override int FloorCount
         {
