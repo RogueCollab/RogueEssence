@@ -370,7 +370,7 @@ namespace RogueEssence.Content
                     {
                         foreach (string fallback in fallbacks[ii])
                         {
-                            int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                            int fallbackIndex = GraphicsManager.GetAnimIndex(fallback);
                             Actions[ii].Fallbacks.Add(fallbackIndex);
                         }
                     }
@@ -1123,6 +1123,11 @@ namespace RogueEssence.Content
             BaseSheet newSheet = BaseSheet.LoadError();
             tileCache.Add(addr, newSheet);
             return newSheet;
+        }
+
+        public static int GetAnimIndex(string anim)
+        {
+            return Actions.FindIndex((e) => { return (String.Compare(e.Name, anim, true) == 0); });
         }
 
         public static int CountPixels(BaseSheet obj)

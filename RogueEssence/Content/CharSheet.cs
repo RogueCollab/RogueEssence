@@ -397,7 +397,7 @@ namespace RogueEssence.Content
                 {
                     CharAnimGroup animGroup = new CharAnimGroup();
                     XmlNode nameNode = animGroupNode.SelectSingleNode("Name");
-                    int animIndex = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, nameNode.InnerText, true) == 0); });
+                    int animIndex = GraphicsManager.GetAnimIndex(nameNode.InnerText);
                     if (animIndex == -1)
                         throw new InvalidDataException(String.Format("Could not find index for anim named '{0}'!", nameNode.InnerText));
 
@@ -407,7 +407,7 @@ namespace RogueEssence.Content
 
                     XmlNode copyOfNode = animGroupNode.SelectSingleNode("CopyOf");
                     if (copyOfNode != null)
-                        animGroup.CopyOf = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, copyOfNode.InnerText, true) == 0); });
+                        animGroup.CopyOf = GraphicsManager.GetAnimIndex(copyOfNode.InnerText);
                     else
                     {
                         XmlNode rushFrame = animGroupNode.SelectSingleNode("RushFrame");
@@ -519,7 +519,7 @@ namespace RogueEssence.Content
                     CharAnimGroup animGroup = new CharAnimGroup();
                     List<int> endList = new List<int>();
                     XmlNode nameNode = animGroupNode.SelectSingleNode("Name");
-                    int animIndex = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, nameNode.InnerText, true) == 0); });
+                    int animIndex = GraphicsManager.GetAnimIndex(nameNode.InnerText);
                     if (animIndex == -1)
                         throw new InvalidDataException(String.Format("Could not find index for anim named '{0}'!", nameNode.InnerText));
 
@@ -529,7 +529,7 @@ namespace RogueEssence.Content
                     Loc animSize = Loc.Zero;
                     XmlNode copyOfNode = animGroupNode.SelectSingleNode("CopyOf");
                     if (copyOfNode != null)
-                        animGroup.CopyOf = GraphicsManager.Actions.FindIndex((e) => { return (String.Compare(e.Name, copyOfNode.InnerText, true) == 0); });
+                        animGroup.CopyOf = GraphicsManager.GetAnimIndex(copyOfNode.InnerText);
                     else
                     {
                         int tileWidth = Convert.ToInt32(animGroupNode.SelectSingleNode("FrameWidth").InnerText);

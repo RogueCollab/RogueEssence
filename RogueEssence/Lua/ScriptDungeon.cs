@@ -96,7 +96,7 @@ namespace RogueEssence.Script
         /// <param name="anim"></param>
         public Coroutine _CharStartAnim(Character chara, string anim, bool loop)
         {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+            int animIndex = GraphicsManager.GetAnimIndex(anim);
             if (loop)
                 return new Coroutine(chara.StartAnim(new IdleAnimAction(chara.CharLoc, chara.CharDir, animIndex)));
             else
@@ -117,7 +117,7 @@ namespace RogueEssence.Script
         }
         public IEnumerator<YieldInstruction> __CharWaitAnim(Character chara, string anim)
         {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+            int animIndex = GraphicsManager.GetAnimIndex(anim);
             yield return CoroutineManager.Instance.StartCoroutine(chara.StartAnim(new CharAnimAction(chara.CharLoc, chara.CharDir, animIndex)));
             yield return new WaitWhile(chara.OccupiedwithAction);
         }

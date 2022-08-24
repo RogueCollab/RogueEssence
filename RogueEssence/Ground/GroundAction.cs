@@ -344,6 +344,33 @@ namespace RogueEssence.Ground
         }
     }
 
+    [Serializable]
+    public class FrameGroundAction : GroundAction
+    {
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return Math.Clamp(Frame, 0, frames.Count - 1);
+        }
+        public override int AnimFrameType { get { return AnimID; } }
+        public override bool Complete { get { return true; } }
+
+        int AnimID;
+        int Frame;
+
+        public FrameGroundAction(Loc pos, Dir8 dir, int animid, int frame)
+        {
+            MapLoc = pos;
+            CharDir = dir;
+            AnimID = animid;
+            Frame = frame;
+        }
+
+        public override void UpdateInput(GameAction action)
+        {
+
+        }
+    }
+
 
     [Serializable]
     public class AnimateToPositionGroundAction : GroundAction

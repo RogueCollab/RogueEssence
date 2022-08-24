@@ -270,7 +270,7 @@ namespace RogueEssence.Script
         /// <param name="anim"></param>
         public void CharSetAnim(GroundChar chara, string anim, bool loop)
         {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+            int animIndex = GraphicsManager.GetAnimIndex(anim);
             chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, animIndex, loop));
         }
         public void CharEndAnim(GroundChar chara)
@@ -286,7 +286,7 @@ namespace RogueEssence.Script
                 if (ent is GroundChar)
                 {
                     GroundChar ch = (GroundChar)ent;
-                    int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                    int animIndex = GraphicsManager.GetAnimIndex(anim);
                     IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
                     ch.StartAction(action);
                     return new WaitUntil(() =>
@@ -307,19 +307,6 @@ namespace RogueEssence.Script
         {
             chara.StartAction(action);
         }
-
-        public void CharPoseAnim(GroundChar chara, string anim)
-        {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-            chara.StartAction(new PoseGroundAction(chara.Position, chara.Direction, animIndex));
-        }
-
-        public void CharHopAnim(GroundChar chara, string anim, int height, int duration)
-        {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-            chara.StartAction(new HopGroundAction(chara.Position, chara.Direction, animIndex, height, duration));
-        }
-
 
         public void ObjectSetAnim(GroundObject obj, int frameTime, int startFrame, int endFrame, Dir8 dir, int cycles)
         {
@@ -567,7 +554,7 @@ namespace RogueEssence.Script
                     GroundChar ch = (GroundChar)ent;
                     FrameTick prevTime = new FrameTick();
                     GroundAction prevAction = ch.GetCurrentAction();
-                    int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                    int animIndex = GraphicsManager.GetAnimIndex(anim);
                     if (prevAction is AnimateToPositionGroundAction)
                     {
                         if (animIndex == prevAction.AnimFrameType)
