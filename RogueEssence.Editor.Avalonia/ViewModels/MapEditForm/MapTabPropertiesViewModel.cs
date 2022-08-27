@@ -213,8 +213,8 @@ namespace RogueEssence.Dev.ViewModels
 
             frmKey.SelectedOKEvent += async () =>
             {
-                key = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[1] { attr }, true, new Type[0]);
-                op(key, element);
+                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[1] { attr }, true, new Type[0]);
+                op(key, newKey, element);
                 return true;
             };
 
@@ -235,7 +235,7 @@ namespace RogueEssence.Dev.ViewModels
             frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true, new Type[0]);
-                op(key, element);
+                op(key, key, element);
                 return true;
             };
 

@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using System.Collections;
 using RogueEssence.Dev.ViewModels;
+using Avalonia.Interactivity;
 
 namespace RogueEssence.Dev
 {
@@ -32,12 +33,12 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 180;
 
-            DictionaryBoxViewModel mv = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
-            lbxValue.DataContext = mv;
+            DictionaryBoxViewModel vm = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            lbxValue.DataContext = vm;
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
-            mv.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
@@ -49,7 +50,7 @@ namespace RogueEssence.Dev
                 frmData.SelectedOKEvent += async () =>
                 {
                     element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
-                    op(key, element);
+                    op(key, key, element);
                     return true;
                 };
 
@@ -57,7 +58,7 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            mv.OnEditKey += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
+            vm.OnEditKey += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "<Key>";
                 DataEditForm frmData = new DataEditForm();
@@ -68,8 +69,8 @@ namespace RogueEssence.Dev
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
-                    op(key, element);
+                    object newKey = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    op(key, newKey, element);
                     return true;
                 };
 
@@ -77,8 +78,34 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            mv.LoadFromDict(member);
+            vm.LoadFromDict(member);
+            lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
             control.Children.Add(lbxValue);
+        }
+
+        private ContextMenu createContextMenu(StackPanel control, Type type, DictionaryBoxViewModel vm)
+        {
+            Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
+
+            ContextMenu copyPasteStrip = new ContextMenu();
+
+            MenuItem renameToolStripMenuItem = new MenuItem();
+
+            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+            list.AddRange(new MenuItem[] {
+                            renameToolStripMenuItem});
+
+            renameToolStripMenuItem.Header = "Rename " + elementType.Name;
+
+            renameToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+            {
+                if (vm.SelectedIndex > -1)
+                    vm.EditKey(vm.SelectedIndex);
+                else
+                    await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            };
+            return copyPasteStrip;
         }
 
 

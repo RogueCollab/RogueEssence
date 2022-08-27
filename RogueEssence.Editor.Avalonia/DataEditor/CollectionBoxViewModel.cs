@@ -113,7 +113,7 @@ namespace RogueEssence.Dev.ViewModels
             OnMemberChanged?.Invoke();
         }
 
-        private void insertItem(int index, object element)
+        public void InsertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
@@ -142,7 +142,7 @@ namespace RogueEssence.Dev.ViewModels
             if (index < 0)
                 index = Collection.Count;
             object element = null;
-            OnEditItem?.Invoke(index, element, insertItem);
+            OnEditItem?.Invoke(index, element, InsertItem);
         }
 
         private void btnDelete_Click()

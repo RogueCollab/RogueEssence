@@ -41,5 +41,10 @@ namespace RogueEssence.Dev.Views
             viewModel.lbxCollection_DoubleClick(sender, e);
         }
 
+        public void SetListContextMenu(ContextMenu menu)
+        {
+            DataGrid lbx = this.FindControl<DataGrid>("gridItems");
+            lbx.ContextMenu = menu;
+        }
     }
 }
