@@ -316,15 +316,15 @@ namespace RogueEssence.Data
             Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
         }
 
-        public Dictionary<DataType, Dictionary<int, string>> Conversions;
+        public Dictionary<DataType, Dictionary<string, string>> Conversions;
 
         public void LoadConversions()
         {
-            Conversions = new Dictionary<DataType, Dictionary<int, string>>();
+            Conversions = new Dictionary<DataType, Dictionary<string, string>>();
 
             foreach (DataType type in Enum.GetValues(typeof(DataType)))
             {
-                Dictionary<int, string> convMap = new Dictionary<int, string>();
+                Dictionary<string, string> convMap = new Dictionary<string, string>();
                 if (type != DataManager.DataType.All && type != DataManager.DataType.None)
                 {
                     foreach (string modPath in PathMod.FallforthPaths("CONVERSION/" + type.ToString() + ".txt"))
@@ -337,7 +337,7 @@ namespace RogueEssence.Data
                                 if (!String.IsNullOrWhiteSpace(lines[ii]))
                                 {
                                     string[] split = lines[ii].Split('\t');
-                                    convMap[Int32.Parse(split[0])] = split[1];
+                                    convMap[split[0]] = split[1];
                                 }
                             }
                         }
@@ -352,6 +352,21 @@ namespace RogueEssence.Data
             try
             {
                 if (asset < 0)
+                    return "";
+                return Conversions[dataType][asset.ToString()];
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+                return "";
+            }
+        }
+
+        public string MapAssetName(DataType dataType, string asset)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(asset))
                     return "";
                 return Conversions[dataType][asset];
             }

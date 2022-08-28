@@ -206,7 +206,7 @@ namespace RogueEssence.Dev
                 {
                     if (container[ii] > GameProgress.UnlockState.None)
                     {
-                        if (DataManager.Instance.Conversions[DataManager.DataType.Zone].ContainsKey(ii))
+                        if (DataManager.Instance.Conversions[DataManager.DataType.Zone].ContainsKey(ii.ToString()))
                         {
                             string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Zone, ii);
                             int val;
@@ -2228,7 +2228,7 @@ namespace RogueEssence.Dev
                 {
                     if (container[ii] > GameProgress.UnlockState.None)
                     {
-                        if (DataManager.Instance.Conversions[DataManager.DataType.Monster].ContainsKey(ii))
+                        if (DataManager.Instance.Conversions[DataManager.DataType.Monster].ContainsKey(ii.ToString()))
                         {
                             string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Monster, ii);
                             int val;
@@ -2366,7 +2366,7 @@ namespace RogueEssence.Dev
 
                 for (int ii = 0; ii < container.Count; ii++)
                 {
-                    if (DataManager.Instance.Conversions[DataManager.DataType.Item].ContainsKey(ii))
+                    if (DataManager.Instance.Conversions[DataManager.DataType.Item].ContainsKey(ii.ToString()))
                     {
                         string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, ii);
                         int val;

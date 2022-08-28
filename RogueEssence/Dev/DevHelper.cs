@@ -459,11 +459,11 @@ namespace RogueEssence.Dev
                             {
                                 MonsterData monData = data as MonsterData;
                                 int dexNum = 0;
-                                foreach (int key in DataManager.Instance.Conversions[DataManager.DataType.Monster].Keys)
+                                foreach (string key in DataManager.Instance.Conversions[DataManager.DataType.Monster].Keys)
                                 {
                                     if (DataManager.Instance.Conversions[DataManager.DataType.Monster][key] == fileName)
                                     {
-                                        dexNum = key;
+                                        Int32.TryParse(key, out dexNum);
                                         break;
                                     }
                                 }
