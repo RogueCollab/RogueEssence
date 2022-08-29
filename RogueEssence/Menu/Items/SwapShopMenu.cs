@@ -105,7 +105,7 @@ namespace RogueEssence.Menu
             HashSet<string> itemPresence = new HashSet<string>();
             int presenceCount = 0;
 
-            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(true))
+            foreach (string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
             {
                 if (DataManager.Instance.Save.ActiveTeam.Storage[key] > 0)
                     updatePresence(itemPresence, ref presenceCount, key);

@@ -738,7 +738,10 @@ namespace RogueEssence.Script
 
         public int GetPlayerStorageItemCount(string id)
         {
-            return DataManager.Instance.Save.ActiveTeam.Storage[id];
+            int val;
+            if (DataManager.Instance.Save.ActiveTeam.Storage.TryGetValue(id, out val))
+                return val;
+            return 0;
         }
 
         public void GivePlayerStorageItem(InvItem item)
