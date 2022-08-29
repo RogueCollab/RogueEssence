@@ -69,10 +69,30 @@ namespace RogueEssence.Menu
         {
             if (input.JustPressed(FrameInput.InputType.SkillMenu))
                 MenuManager.Instance.ClearMenus();
-            else if (input.JustPressed(FrameInput.InputType.SelectItems))
+            else if (input.JustPressed(FrameInput.InputType.SortItems))
             {
                 GameManager.Instance.SE("Menu/Toggle");
                 MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, CurrentPage, CurrentChoice), CurrentPage, CurrentChoice);
+            }
+            else if (input[FrameInput.InputType.SelectItems] && input.Direction == Dir8.Up && input.PrevDirection != Dir8.Up)
+            {
+                if (CurrentChoice > 0)
+                {
+                    GameManager.Instance.SE("Menu/Toggle");
+                    MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, CurrentPage, CurrentChoice - 1), CurrentPage, CurrentChoice - 1);
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
+            }
+            else if (input[FrameInput.InputType.SelectItems] && input.Direction == Dir8.Down && input.PrevDirection != Dir8.Down)
+            {
+                if (CurrentChoice < Choices.Count - 1)
+                {
+                    GameManager.Instance.SE("Menu/Toggle");
+                    MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, CurrentPage, CurrentChoice), CurrentPage, CurrentChoice + 1);
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
             }
             else
                 base.UpdateKeys(input);
