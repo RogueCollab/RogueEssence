@@ -10,28 +10,60 @@
     <vm:RangeDictBoxViewModel/>
   </Design.DataContext>
   <UserControl.Resources>
+    <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
-      <RowDefinition/>
-      <RowDefinition Height="40"/>
+      <RowDefinition Height="42"/>
+      <RowDefinition Height="36"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
-      <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Start"
-                      Binding="{Binding DisplayStart}" />
-        <DataGridTextColumn Header="End"
-                      Binding="{Binding DisplayEnd}" />
-        <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=DisplayValue}" />
-      </DataGrid.Columns>
-    </DataGrid>
-    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
-    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
+    <Grid Grid.Row="0">
+      <Grid.RowDefinitions>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Start"
+                        Binding="{Binding DisplayStart}" />
+          <DataGridTextColumn Header="End"
+                        Binding="{Binding DisplayEnd}" />
+          <DataGridTextColumn Header="Value"
+                              Binding="{Binding Path=DisplayValue}" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Grid>
+    <Grid Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="30"/>
+        <ColumnDefinition/>
+        <ColumnDefinition Width="30"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0">Start:</TextBlock>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" Maximum="{Binding CurrentEnd}" Margin="4" Grid.Row="0" Grid.Column="1"/>
+      <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="2">End:</TextBlock>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentEnd}" Minimum="{Binding CurrentStart}" Margin="4" Grid.Row="0" Grid.Column="3"/>
+    </Grid>
+    <Grid Grid.Row="2">
+      <Grid.RowDefinitions>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+      <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1">Add</Button>
+      <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="1">Delete</Button>
+    </Grid>
   </Grid>
 </UserControl>

@@ -80,11 +80,54 @@ namespace RogueEssence.Dev.ViewModels
     {
         public ObservableCollection<RangeDictElement> Collection { get; }
 
-        private int selectedIndex;
-        public int SelectedIndex
+        private int currentElement;
+        public int CurrentElement
         {
-            get { return selectedIndex; }
-            set { this.SetIfChanged(ref selectedIndex, value); }
+            get { return currentElement; }
+            set
+            {
+                this.SetIfChanged(ref currentElement, value);
+                if (currentElement > -1)
+                {
+                    CurrentStart = Collection[currentElement].DisplayStart;
+                    CurrentEnd = Collection[currentElement].DisplayEnd;
+                }
+                else
+                {
+                    CurrentStart = 0 + AddMin;
+                    CurrentEnd = 1 + AddMax;
+                }
+            }
+        }
+
+        private int currentStart;
+        public int CurrentStart
+        {
+            get { return currentStart; }
+            set
+            {
+                this.SetIfChanged(ref currentStart, value);
+                if (currentElement > -1)
+                {
+                    Collection[currentElement].Start = currentStart - AddMin;
+                    EraseRange(new IntRange(Collection[currentElement].Start, Collection[currentElement].End), currentElement);
+                }
+            }
+        }
+
+        private int currentEnd;
+        public int CurrentEnd
+        {
+            get { return currentEnd; }
+            set
+            {
+                this.SetIfChanged(ref currentEnd, value);
+                if (currentElement > -1)
+                {
+                    Collection[currentElement].End = currentEnd - AddMax;
+                    EraseRange(new IntRange(Collection[currentElement].Start, Collection[currentElement].End), currentElement);
+                }
+            }
         }
 
 
@@ -169,7 +212,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void insertItem(IntRange key, object element)
         {
-            EraseRange(key);
+            EraseRange(key, -1);
             for (int ii = 0; ii <= Collection.Count; ii++)
             {
                 if (ii == Collection.Count || key.Min < Collection[ii].Start)
@@ -181,20 +224,22 @@ namespace RogueEssence.Dev.ViewModels
             OnMemberChanged?.Invoke();
         }
 
-        private void EraseRange(IntRange range)
+        private void EraseRange(IntRange range, int exceptionIdx)
         {
             for (int ii = Collection.Count - 1; ii >= 0; ii--)
             {
+                if (exceptionIdx == ii)
+                    continue;
                 if (range.Min <= Collection[ii].Start && Collection[ii].End <= range.Max)
                     Collection.RemoveAt(ii);
                 else if (Collection[ii].Start < range.Min && range.Max < Collection[ii].End)
                 {
                     Collection[ii] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
-                    Collection.Add(new RangeDictElement(StringConv, AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value));
+                    Collection.Insert(ii+1, new RangeDictElement(StringConv, AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value));
                 }
-                else if (range.Min <= Collection[ii].Start && range.Max < Collection[ii].End)
+                else if (range.Min <= Collection[ii].Start && Collection[ii].Start < range.Max)
                     Collection[ii] = new RangeDictElement(StringConv, AddMin, AddMax, range.Max, Collection[ii].End, Collection[ii].Value);
-                else if (Collection[ii].Start < range.Min && Collection[ii].End <= range.Max)
+                else if (range.Min < Collection[ii].End && Collection[ii].End <= range.Max)
                     Collection[ii] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[ii].Start, range.Min, Collection[ii].Value);
             }
         }
@@ -215,7 +260,7 @@ namespace RogueEssence.Dev.ViewModels
         public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int index = lbxDictionary.IndexFromPoint(e.X, e.Y);
-            int index = SelectedIndex;
+            int index = CurrentElement;
             if (index > -1)
             {
                 RangeDictElement item = Collection[index];
@@ -232,9 +277,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnDelete_Click()
         {
-            if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
+            if (CurrentElement > -1 && CurrentElement < Collection.Count)
             {
-                Collection.RemoveAt(SelectedIndex);
+                Collection.RemoveAt(CurrentElement);
                 OnMemberChanged?.Invoke();
             }
         }

@@ -43,11 +43,11 @@ namespace RogueEssence.LevelGen
                 else if (nodes[ii].Range.Min < range.Min && range.Max < nodes[ii].Range.Max)
                 {
                     nodes[ii] = new RangeNode(nodes[ii].Item, new IntRange(nodes[ii].Range.Min, range.Min));
-                    nodes.Add(new RangeNode(nodes[ii].Item, new IntRange(range.Max, nodes[ii].Range.Max)));
+                    nodes.Insert(ii+1, new RangeNode(nodes[ii].Item, new IntRange(range.Max, nodes[ii].Range.Max)));
                 }
-                else if (range.Min <= nodes[ii].Range.Min && range.Max < nodes[ii].Range.Max)
+                else if (range.Min <= nodes[ii].Range.Min && nodes[ii].Range.Min < range.Max)
                     nodes[ii] = new RangeNode(nodes[ii].Item, new IntRange(range.Max, nodes[ii].Range.Max));
-                else if (nodes[ii].Range.Min < range.Min && nodes[ii].Range.Max <= range.Max)
+                else if (range.Min < nodes[ii].Range.Max && nodes[ii].Range.Max <= range.Max)
                     nodes[ii] = new RangeNode(nodes[ii].Item, new IntRange(nodes[ii].Range.Min, range.Min));
             }
         }
