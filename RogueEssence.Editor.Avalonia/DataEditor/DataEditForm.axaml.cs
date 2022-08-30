@@ -84,5 +84,11 @@ namespace RogueEssence.Dev.Views
             Close();
         }
 
+        public void SetViewOnly()
+        {
+            Button button = this.FindControl<Button>("btnOK");
+            button.IsEnabled = false;
+        }
+
     }
 }

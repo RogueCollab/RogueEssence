@@ -11,16 +11,18 @@ using RogueEssence.Dev.Views;
 using System.Collections;
 using RogueEssence.Dev.ViewModels;
 using Avalonia.Interactivity;
+using RogueEssence.LevelGen;
+using Avalonia;
 
 namespace RogueEssence.Dev
 {
-    public class DictionaryEditor : Editor<IDictionary>
+    public class CategorySpawnEditor : Editor<Dictionary<string, CategorySpawn<InvItem>>>
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, IDictionary member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Dictionary<string, CategorySpawn<InvItem>> member, Type[] subGroupStack)
         {
             Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
@@ -79,43 +81,83 @@ namespace RogueEssence.Dev
             };
 
             vm.LoadFromDict(member);
-            lbxValue.SetListContextMenu(CreateContextMenu(control, type, vm));
+            lbxValue.SetListContextMenu(DictionaryEditor.CreateContextMenu(control, type, vm));
             control.Children.Add(lbxValue);
-        }
 
-        public static ContextMenu CreateContextMenu(StackPanel control, Type type, DictionaryBoxViewModel vm)
-        {
-            Type keyType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 0);
-            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IDictionary<,>), type, 1);
 
-            ContextMenu copyPasteStrip = new ContextMenu();
 
-            MenuItem renameToolStripMenuItem = new MenuItem();
+            Avalonia.Controls.Grid innerPanel = getSharedRowPanel(3);
 
-            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
-            list.AddRange(new MenuItem[] {
-                            renameToolStripMenuItem});
+            TextBlock lblX = new TextBlock();
+            lblX.Text = "Floor:";
+            lblX.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblX.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+            innerPanel.Children.Add(lblX);
+            innerPanel.ColumnDefinitions[0].Width = new GridLength(40);
+            lblX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-            renameToolStripMenuItem.Header = "Rename " + elementType.Name;
+            NumericUpDown nudValueTestFloor = new NumericUpDown();
+            nudValueTestFloor.Margin = new Thickness(4, 4, 0, 0);
+            nudValueTestFloor.Minimum = Int32.MinValue;
+            nudValueTestFloor.Maximum = Int32.MaxValue;
+            innerPanel.Children.Add(nudValueTestFloor);
+            nudValueTestFloor.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
-            renameToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+
+            Button btnTest = new Button();
+            btnTest.Margin = new Thickness(4, 4, 0, 0);
+            btnTest.Content = "Get Summary";
+            btnTest.Click += (object sender, RoutedEventArgs e) =>
             {
-                if (vm.SelectedIndex > -1)
-                    vm.EditKey(vm.SelectedIndex);
-                else
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                int floor = (int)nudValueTestFloor.Value;
+                Dictionary<string, CategorySpawn<InvItem>> curSave = (Dictionary<string, CategorySpawn<InvItem>>)vm.GetDict(type);
+                SpawnDict<string, SpawnList<InvItem>> spawns = new SpawnDict<string, SpawnList<InvItem>>();
+                //contains all LISTS that intersect the current ID
+                foreach (string key in curSave.Keys)
+                {
+                    //get all items within the spawnrangelist that intersect the current ID
+                    SpawnList<InvItem> slicedList = curSave[key].Spawns.GetSpawnList(floor);
+
+                    // add the spawnlist under the current key, with the key having the spawnrate for this id
+                    if (slicedList.CanPick && curSave[key].SpawnRates.ContainsItem(floor) && curSave[key].SpawnRates[floor] > 0)
+                        spawns.Add(key, slicedList, curSave[key].SpawnRates[floor]);
+                }
+
+                SpawnList<InvItem> flatSpawns = CategorySpawnHelper.CollapseSpawnDict<string, InvItem>(spawns);
+
+                DataEditForm frmData = new DataEditForm();
+                frmData.Title = "Spawn Summary";
+                StackPanel viewPanel = frmData.ControlPanel;
+
+                SpawnListViewBox lbxValue = new SpawnListViewBox();
+                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+                lbxValue.DataContext = mv;
+                lbxValue.MaxHeight = 400;
+                lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
+
+                mv.LoadFromList(flatSpawns);
+                viewPanel.Children.Add(lbxValue);
+
+                frmData.SetViewOnly();
+
+                frmData.RegisterChild(frmData);
+                frmData.Show();
             };
-            return copyPasteStrip;
+            btnTest.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
+            innerPanel.ColumnDefinitions[2].Width = new GridLength(120);
+            innerPanel.Children.Add(btnTest);
+
+            control.Children.Add(innerPanel);
         }
 
 
-        public override IDictionary SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
+        public override Dictionary<string, CategorySpawn<InvItem>> SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
 
             DictionaryBox lbxValue = (DictionaryBox)control.Children[controlIndex];
             DictionaryBoxViewModel mv = (DictionaryBoxViewModel)lbxValue.DataContext;
-            return mv.GetDict(type);
+            return (Dictionary<string, CategorySpawn<InvItem>>)mv.GetDict(type);
         }
     }
 }
