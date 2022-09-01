@@ -129,7 +129,7 @@ namespace RogueEssence.Menu
         {
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
-                if (replaceSlot == -2 && Data.DataManager.Instance.CurrentReplay == null)
+                if (replaceSlot < 0 && DataManager.Instance.CurrentReplay == null)
                 {
                     GameManager.Instance.SE("Menu/Sort");
                     MenuManager.Instance.NextAction = SortCommand();
