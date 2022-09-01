@@ -38,6 +38,19 @@ namespace RogueEssence.Dungeon
             inventory = new List<InvItem>();
         }
 
+        protected Team(Team other) : this()
+        {
+            foreach (Character chara in other.Players)
+                Players.Add(chara.Clone(this));
+            foreach (Character chara in other.Guests)
+                Guests.Add(chara.Clone(this));
+            LeaderIndex = other.LeaderIndex;
+            FoeConflict = other.FoeConflict;
+            foreach (InvItem item in other.inventory)
+                inventory.Add(new InvItem(item));
+        }
+        public abstract Team Clone();
+
         public Character Leader { get { return Players[LeaderIndex]; } }
 
         public int MemberGuestCount { get { return Players.Count + Guests.Count; } }
@@ -284,6 +297,13 @@ namespace RogueEssence.Dungeon
             if (initEvents)
                 setMemberEvents();
         }
+
+        protected MonsterTeam(MonsterTeam other) : base(other)
+        {
+            Unrecruitable = other.Unrecruitable;
+        }
+
+        public override Team Clone() { return new MonsterTeam(this); }
     }
 
     [Serializable]
@@ -320,6 +340,34 @@ namespace RogueEssence.Dungeon
             if (initEvents)
                 setMemberEvents();
         }
+
+        protected ExplorerTeam(ExplorerTeam other) : base(other)
+        {
+            MaxInv = other.MaxInv;
+            Name = other.Name;
+
+            Assembly = new EventedList<Character>();
+            foreach (Character chara in other.Assembly)
+                Assembly.Add(chara.Clone(this));
+
+            BoxStorage = new List<InvItem>();
+            foreach (InvItem item in other.BoxStorage)
+                BoxStorage.Add(new InvItem(item));
+
+            Storage = new Dictionary<string, int>();
+            foreach (string key in other.Storage.Keys)
+                Storage[key] = other.Storage[key];
+
+            Bank = other.Bank;
+            Money = other.Money;
+            Rank = other.Rank;
+            Fame = other.Fame;
+            RankExtra = other.RankExtra;
+
+            setMemberEvents();
+        }
+
+        public override Team Clone() { return new ExplorerTeam(this); }
 
         public void SetRank(string rank)
         {
