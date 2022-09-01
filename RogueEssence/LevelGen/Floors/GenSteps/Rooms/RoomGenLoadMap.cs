@@ -40,7 +40,7 @@ namespace RogueEssence.LevelGen
         public PostProcType PreventChanges { get; set; }
 
         [NonSerialized]
-        private Map map;
+        private Map roomMap;
 
         public RoomGenLoadMap()
         {
@@ -69,14 +69,14 @@ namespace RogueEssence.LevelGen
 
         public override Loc ProposeSize(IRandom rand)
         {
-            map = DataManager.Instance.GetMap(MapID);
-            return new Loc(this.map.Width, this.map.Height);
+            roomMap = DataManager.Instance.GetMap(MapID);
+            return new Loc(this.roomMap.Width, this.roomMap.Height);
         }
 
 
         public override void DrawOnMap(T map)
         {
-            if (this.Draw.Width != this.map.Width || this.Draw.Height != this.map.Height)
+            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
             {
                 this.DrawMapDefault(map);
                 return;
@@ -87,31 +87,32 @@ namespace RogueEssence.LevelGen
             //add needed layers
             Dictionary<int, int> layerMap = new Dictionary<int, int>();
             Dictionary<Content.DrawLayer, int> drawOrderDict = new Dictionary<Content.DrawLayer, int>();
-            for (int ii = 0; ii < this.map.Layers.Count; ii++)
+            for (int ii = 0; ii < this.roomMap.Layers.Count; ii++)
             {
-                if (!this.map.Layers[ii].Visible)
+                if (!this.roomMap.Layers[ii].Visible)
                     continue;
 
                 // find the next layer that has the same draw layer as this one
                 int layerStart;
-                if (!drawOrderDict.TryGetValue(this.map.Layers[ii].Layer, out layerStart))
+                if (!drawOrderDict.TryGetValue(this.roomMap.Layers[ii].Layer, out layerStart))
                     layerStart = 0;
                 for (; layerStart < map.Map.Layers.Count; layerStart++)
                 {
-                    if (map.Map.Layers[layerStart].Layer == this.map.Layers[ii].Layer)
+                    if (map.Map.Layers[layerStart].Layer == this.roomMap.Layers[ii].Layer)
+                    {
+                        //TODO: also check that the region is not drawn on already
                         break;
+                    }
                 }
                 //add it if it doesn't exist
                 if (layerStart == map.Map.Layers.Count)
                 {
-                    map.Map.AddLayer(this.map.Layers[ii].Name);
-                    map.Map.Layers[map.Map.Layers.Count - 1].Layer = this.map.Layers[ii].Layer;
+                    map.Map.AddLayer(this.roomMap.Layers[ii].Name);
+                    map.Map.Layers[map.Map.Layers.Count - 1].Layer = this.roomMap.Layers[ii].Layer;
                 }
                 //set the new layer start variable for which to continue checking from
                 layerMap[ii] = layerStart;
-                drawOrderDict[this.map.Layers[ii].Layer] = layerStart + 1;
-
-                map.Map.AddLayer(this.map.Layers[ii].Name);
+                drawOrderDict[this.roomMap.Layers[ii].Layer] = layerStart + 1;
             }
 
             //draw the tiles
@@ -119,15 +120,15 @@ namespace RogueEssence.LevelGen
             {
                 for (int yy = 0; yy < this.Draw.Height; yy++)
                 {
-                    map.SetTile(new Loc(this.Draw.X + xx, this.Draw.Y + yy), this.map.Tiles[xx][yy]);
-                    for (int ii = 0; ii < this.map.Layers.Count; ii++)
+                    map.SetTile(new Loc(this.Draw.X + xx, this.Draw.Y + yy), this.roomMap.Tiles[xx][yy]);
+                    for (int ii = 0; ii < this.roomMap.Layers.Count; ii++)
                     {
                         int layerTo;
                         if (layerMap.TryGetValue(ii, out layerTo))
                         {
                             Loc wrapLoc = this.Draw.Start + new Loc(xx, yy);
                             if (map.Map.GetLocInMapBounds(ref wrapLoc))
-                                map.Map.Layers[layerTo].Tiles[wrapLoc.X][wrapLoc.Y] = this.map.Layers[ii].Tiles[xx][yy];
+                                map.Map.Layers[layerTo].Tiles[wrapLoc.X][wrapLoc.Y] = this.roomMap.Layers[ii].Tiles[xx][yy];
                             else
                                 throw new IndexOutOfRangeException("Attempted to draw custom room graphics out of range!");
                         }
@@ -136,7 +137,7 @@ namespace RogueEssence.LevelGen
             }
 
             //place items
-            foreach (MapItem item in this.map.Items)
+            foreach (MapItem item in this.roomMap.Items)
             {
                 Loc wrapLoc = item.TileLoc + this.Draw.Start;
                 if (map.Map.GetLocInMapBounds(ref wrapLoc))
@@ -147,7 +148,7 @@ namespace RogueEssence.LevelGen
             }
 
             //place mobs
-            foreach (Team team in this.map.MapTeams)
+            foreach (Team team in this.roomMap.MapTeams)
             {
                 foreach (Character member in team.EnumerateChars())
                 {
@@ -161,7 +162,7 @@ namespace RogueEssence.LevelGen
             }
 
             //place map entrances
-            foreach (LocRay8 entrance in this.map.EntryPoints)
+            foreach (LocRay8 entrance in this.roomMap.EntryPoints)
             {
                 Loc wrapLoc = entrance.Loc + this.Draw.Start;
                 if (map.Map.GetLocInMapBounds(ref wrapLoc))
@@ -184,7 +185,7 @@ namespace RogueEssence.LevelGen
         {
             // NOTE: Because the context is not passed in when preparing borders,
             // the tile ID representing an opening must be specified on this class instead.
-            if (this.Draw.Width != this.map.Width || this.Draw.Height != this.map.Height)
+            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
             {
                 foreach (Dir4 dir in DirExt.VALID_DIR4)
                 {
@@ -196,14 +197,14 @@ namespace RogueEssence.LevelGen
             {
                 for (int ii = 0; ii < this.Draw.Width; ii++)
                 {
-                    this.FulfillableBorder[Dir4.Up][ii] = this.map.Tiles[ii][0].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Up][ii];
-                    this.FulfillableBorder[Dir4.Down][ii] = this.map.Tiles[ii][this.Draw.Height - 1].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Down][ii];
+                    this.FulfillableBorder[Dir4.Up][ii] = this.roomMap.Tiles[ii][0].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Up][ii];
+                    this.FulfillableBorder[Dir4.Down][ii] = this.roomMap.Tiles[ii][this.Draw.Height - 1].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Down][ii];
                 }
 
                 for (int ii = 0; ii < this.Draw.Height; ii++)
                 {
-                    this.FulfillableBorder[Dir4.Left][ii] = this.map.Tiles[0][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Left][ii];
-                    this.FulfillableBorder[Dir4.Right][ii] = this.map.Tiles[this.Draw.Width - 1][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Right][ii];
+                    this.FulfillableBorder[Dir4.Left][ii] = this.roomMap.Tiles[0][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Left][ii];
+                    this.FulfillableBorder[Dir4.Right][ii] = this.roomMap.Tiles[this.Draw.Width - 1][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Right][ii];
                 }
             }
         }

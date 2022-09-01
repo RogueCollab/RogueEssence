@@ -16,6 +16,8 @@ using Avalonia;
 
 namespace RogueEssence.Dev
 {
+    //TODO: Category zone spawns need to be refactored into their own class with their own interface
+    // from Dictionary<string, CategorySpawn<InvItem>> to ICategoryZoneSpawn.  This way it can catch other spawn methods
     public class CategorySpawnEditor : Editor<Dictionary<string, CategorySpawn<InvItem>>>
     {
         public override bool DefaultSubgroup => true;

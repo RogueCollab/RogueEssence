@@ -100,7 +100,10 @@ namespace RogueEssence.LevelGen
                 for (; layerStart < map.Map.Layers.Count; layerStart++)
                 {
                     if (map.Map.Layers[layerStart].Layer == mapBlob.Layers[ii].Layer)
+                    {
+                        //TODO: also check that the region is not drawn on already
                         break;
+                    }
                 }
                 //add it if it doesn't exist
                 if (layerStart == map.Map.Layers.Count)
@@ -111,8 +114,6 @@ namespace RogueEssence.LevelGen
                 //set the new layer start variable for which to continue checking from
                 layerMap[ii] = layerStart;
                 drawOrderDict[mapBlob.Layers[ii].Layer] = layerStart + 1;
-
-                map.Map.AddLayer(mapBlob.Layers[ii].Name);
             }
 
             //draw the tiles
