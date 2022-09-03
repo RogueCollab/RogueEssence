@@ -16,13 +16,31 @@ namespace RogueEssence.Dev.ViewModels
         public int Weight
         {
             get { return weight; }
-            set { this.SetIfChanged(ref weight, value); }
+            set
+            {
+                this.SetIfChanged(ref weight, value);
+                DisplayWeight = DisplayWeight;
+            }
+        }
+        public string DisplayWeight
+        {
+            get { return IntPrefix + weight; }
+            set { this.RaisePropertyChanged(); }
         }
         private double chance;
         public double Chance
         {
             get { return chance; }
-            set { this.SetIfChanged(ref chance, value); }
+            set
+            {
+                this.SetIfChanged(ref chance, value);
+                DisplayChance = DisplayChance;
+            }
+        }
+        public string DisplayChance
+        {
+            get { return IntPrefix + String.Format("{0:0.00}%", (double)chance * 100); }
+            set { this.RaisePropertyChanged(); }
         }
         private object val;
         public object Value
@@ -32,6 +50,10 @@ namespace RogueEssence.Dev.ViewModels
         public string DisplayValue
         {
             get { return Prefix + conv.GetString(val); }
+        }
+        public string IntPrefix
+        {
+            get { return (category ? "" : "  "); }
         }
         public string Prefix
         {

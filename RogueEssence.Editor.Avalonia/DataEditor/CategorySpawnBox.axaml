@@ -36,9 +36,9 @@
       <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Weight"
-                        Binding="{Binding Weight}" />
+                        Binding="{Binding DisplayWeight}" />
           <DataGridTextColumn Header="Chance"
-                        Binding="{Binding Path=Chance, Converter={StaticResource PercentConverter}, Mode=OneWay}" />
+                        Binding="{Binding Path=DisplayChance, Mode=OneWay}" />
           <DataGridTextColumn Header="Value"
                               Binding="{Binding Path=DisplayValue}" />
         </DataGrid.Columns>
