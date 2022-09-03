@@ -162,4 +162,87 @@ namespace RogueEssence.Dev
             return (Dictionary<string, CategorySpawn<InvItem>>)mv.GetDict(type);
         }
     }
+
+
+
+    public class DictSpawnEditor : Editor<SpawnDict<string, SpawnList<InvItem>>>
+    {
+        public override bool DefaultSubgroup => true;
+        public override bool DefaultDecoration => false;
+        public override bool DefaultType => true;
+
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, SpawnDict<string, SpawnList<InvItem>> member, Type[] subGroupStack)
+        {
+            Type keyType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnDict<,>), type, 0);
+            Type listType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnDict<,>), type, 1);
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnList<>), listType, 0);
+
+            CategorySpawnBox lbxValue = new CategorySpawnBox();
+
+            EditorHeightAttribute heightAtt = ReflectionExt.FindAttribute<EditorHeightAttribute>(attributes);
+            if (heightAtt != null)
+                lbxValue.MaxHeight = heightAtt.Height;
+            else
+                lbxValue.MaxHeight = 180;
+
+            CategorySpawnBoxViewModel vm = new CategorySpawnBoxViewModel(control.GetOwningForm(), new StringConv(keyType, ReflectionExt.GetPassableAttributes(1, attributes)), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes))));
+            lbxValue.DataContext = vm;
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
+
+            //add lambda expression for editing a single element
+            vm.OnEditItem += (int index, object element, CategorySpawnBoxViewModel.EditElementOp op) =>
+            {
+                string elementName = name + "[" + index + "]";
+                DataEditForm frmData = new DataEditForm();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)));
+
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), element, true, new Type[0]);
+                DataEditor.TrackTypeSize(frmData, elementType);
+
+                frmData.SelectedOKEvent += async () =>
+                {
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), true, new Type[0]);
+                    op(index, element);
+                    return true;
+                };
+
+                control.GetOwningForm().RegisterChild(frmData);
+                frmData.Show();
+            };
+
+            vm.OnEditKey += (int index, object key, CategorySpawnBoxViewModel.EditElementOp op) =>
+            {
+                string elementName = name + "[" + index + "]";
+                DataEditForm frmData = new DataEditForm();
+                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
+
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0]);
+                DataEditor.TrackTypeSize(frmData, keyType);
+
+                frmData.SelectedOKEvent += async () =>
+                {
+                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    op(index, key);
+                    return true;
+                };
+
+                control.GetOwningForm().RegisterChild(frmData);
+                frmData.Show();
+            };
+
+            vm.LoadFromDict(member);
+            control.Children.Add(lbxValue);
+
+        }
+
+
+        public override SpawnDict<string, SpawnList<InvItem>> SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
+        {
+            int controlIndex = 0;
+
+            CategorySpawnBox lbxValue = (CategorySpawnBox)control.Children[controlIndex];
+            CategorySpawnBoxViewModel mv = (CategorySpawnBoxViewModel)lbxValue.DataContext;
+            return (SpawnDict<string, SpawnList<InvItem>>)mv.GetDict(type);
+        }
+    }
 }

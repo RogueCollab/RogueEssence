@@ -95,8 +95,15 @@ namespace RogueEssence.Dev.ViewModels
             Collection[index] = new DictionaryElement(StringConv, Collection[index].Key, element);
             OnMemberChanged?.Invoke();
         }
-        private void editKey(object oldKey, object key, object element)
+        private async void editKey(object oldKey, object key, object element)
         {
+            int existingIndex = getIndexFromKey(key);
+            if (existingIndex > -1)
+            {
+                await MessageBox.Show(parent, "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
+                return;
+            }
+
             int index = getIndexFromKey(oldKey);
             Collection[index] = new DictionaryElement(StringConv, key, element);
             OnMemberChanged?.Invoke();
@@ -104,8 +111,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private async void insertKey(object oldKey, object key, object element)
         {
-            int index = getIndexFromKey(key);
-            if (index > -1)
+            int existingIndex = getIndexFromKey(key);
+            if (existingIndex > -1)
             {
                 await MessageBox.Show(parent, "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
                 return;

@@ -69,6 +69,16 @@ namespace RogueElements
                 yield return key;
         }
 
+        IEnumerable<TK> ISpawnDict<TK, TV>.GetKeys()
+        {
+            return GetKeys();
+        }
+
+        IEnumerable ISpawnDict.GetKeys()
+        {
+            return GetKeys();
+        }
+
 
         public TV Pick(IRandom random)
         {

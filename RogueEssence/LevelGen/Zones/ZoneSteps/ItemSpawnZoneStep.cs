@@ -16,7 +16,7 @@ namespace RogueEssence.LevelGen
         /// divided by the sum of all objects' spawn rates on that floor.
         /// </summary>
         [RangeBorder(0, true, true)]
-        [Dev.EditorHeight(0, 290)]
+        [EditorHeight(0, 290)]
         public SpawnRangeList<T> Spawns;
 
         /// <summary>
@@ -93,6 +93,58 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             return string.Format("{0}[{1}]", this.GetType().Name, this.Spawns.Count.ToString());
+        }
+    }
+
+
+    /// <summary>
+    /// Generates the table of items to spawn on all floors.  Breaks them into sections such that probability is easier.
+    /// </summary>
+    [Serializable]
+    public class ItemSectionedZoneStep : ZoneStep
+    {
+        /// <summary>
+        /// At what point in the map gen process to run the item spawning in.
+        /// </summary>
+        public Priority Priority;
+
+        /// <summary>
+        /// The spawn table, organized by category.
+        /// </summary>
+        [SubGroup]
+        [EditorHeight(0, 360)]
+        [EditorHeight(1, 360)]
+        [RangeBorder(0, true, true)]
+        public RangeDict<SpawnDict<string, SpawnList<InvItem>>> Spawns;
+
+        public ItemSectionedZoneStep()
+        {
+            Spawns = new RangeDict<SpawnDict<string, SpawnList<InvItem>>>();
+        }
+
+        protected ItemSectionedZoneStep(ItemSectionedZoneStep other, ulong seed) : this()
+        {
+            Spawns = other.Spawns;
+            Priority = other.Priority;
+        }
+        public override ZoneStep Instantiate(ulong seed) { return new ItemSectionedZoneStep(this, seed); }
+
+
+        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
+        {
+            SpawnDict<string, SpawnList<InvItem>> section;
+            //gets the section that intersect the current ID
+            if (Spawns.TryGetItem(zoneContext.CurrentID, out section))
+            {
+                ItemSpawnStep<BaseMapGenContext> spawnStep = new ItemSpawnStep<BaseMapGenContext>();
+                spawnStep.Spawns = section;
+                queue.Enqueue(Priority, spawnStep);
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}]", this.GetType().Name, this.Spawns.RangeCount.ToString());
         }
     }
 }

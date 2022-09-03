@@ -13,6 +13,7 @@ namespace RogueEssence.LevelGen
     public class ItemSpawnStep<T> : GenStep<T> where T : BaseMapGenContext
     {
         [SubGroup]
+        [EditorHeight(0, 360)]
         public SpawnDict<string, SpawnList<InvItem>> Spawns;
 
         public ItemSpawnStep()

@@ -19,6 +19,8 @@ namespace RogueElements
 
         void Clear();
 
+        IEnumerable<TK> GetKeys();
+
         TV GetSpawn(TK key);
 
         int GetSpawnRate(TK key);
@@ -41,6 +43,8 @@ namespace RogueElements
         void Add(object key, object spawn, int rate);
 
         void Clear();
+
+        IEnumerable GetKeys();
 
         object GetSpawn(object key);
 

@@ -13,6 +13,8 @@ namespace RogueEssence.LevelGen
 
         private readonly List<RangeNode> nodes;
 
+        public int RangeCount => nodes.Count;
+
         public RangeDict()
         {
             nodes = new List<RangeNode>();

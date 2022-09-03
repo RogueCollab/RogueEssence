@@ -37,6 +37,9 @@
     <Compile Update="DataEditor\ParentForm.cs">
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
+    <Compile Update="DataEditor\CategorySpawnBox.axaml.cs">
+      <DependentUpon>CategorySpawnBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DataEditor\SpawnListViewBox.axaml.cs">
       <DependentUpon>SpawnListViewBox.axaml</DependentUpon>
     </Compile>
