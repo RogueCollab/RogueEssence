@@ -126,7 +126,7 @@ namespace RogueEssence.Menu
             if (moved)
             {
                 GameManager.Instance.SE("Menu/Skip");
-                PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
+                cursor.ResetTimeOffset();
             }
             else if (input.JustPressed(FrameInput.InputType.Confirm))
             {

@@ -11,7 +11,16 @@ namespace RogueEssence.Menu
         public delegate void OnMultiChoice(List<int> slot);
 
         private int currentChoice;
-        public int CurrentChoice { get { return currentChoice; } protected set { currentChoice = value; ChoiceChanged(); } }
+        public int CurrentChoice
+        {
+            get { return currentChoice; }
+            protected set
+            {
+                currentChoice = value;
+                cursor.Loc = new Loc(GraphicsManager.MenuBG.TileWidth * 2 - 7, GraphicsManager.MenuBG.TileHeight + CurrentChoice * VERT_SPACE + ContentOffset);
+                ChoiceChanged();
+            }
+        }
 
         public virtual int ContentOffset { get { return 0; } }
 
@@ -23,14 +32,6 @@ namespace RogueEssence.Menu
         public virtual bool CanMenu { get { return true; } }
         public virtual bool CanCancel { get { return true; } }
 
-        public override Loc PickerPos
-        {
-            get
-            {
-                return new Loc(Bounds.X + GraphicsManager.MenuBG.TileWidth * 2 - 7,
-                    Bounds.Y + GraphicsManager.MenuBG.TileHeight + CurrentChoice * VERT_SPACE + ContentOffset);
-            }
-        }
         protected void Initialize(Loc start, int width, IChoosable[] choices, int defaultChoice)
         {
             Initialize(start, width, choices, defaultChoice, choices.Length, -1);
@@ -189,7 +190,7 @@ namespace RogueEssence.Menu
                     if (moved)
                     {
                         GameManager.Instance.SE("Menu/Select");
-                        PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
+                        cursor.ResetTimeOffset();
                     }
                 }
             }

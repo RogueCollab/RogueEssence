@@ -957,17 +957,16 @@ namespace RogueEssence.Script
 
 
 
-        public void ChooseCustomMenu(ChoiceMenu menu)
+        public void SetCustomMenu(InteractableMenu menu)
         {
             try
             {
                 m_choiceresult = null;
-
                 m_curchoice = menu;
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChooseCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SetCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
