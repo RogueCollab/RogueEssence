@@ -26,7 +26,7 @@ namespace RogueEssence.Dev
         {
             FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
 
-            ComboBox cbValue = new ComboBox();
+            ComboBox cbValue = new SearchComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             int chosenIndex = 0;
 

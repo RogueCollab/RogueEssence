@@ -38,7 +38,7 @@ namespace RogueEssence.Dev
             sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
             lblType.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-            ComboBox cbValue = new ComboBox();
+            ComboBox cbValue = new SearchComboBox();
             cbValue.Margin = new Thickness(4, 0, 0, 0);
             sharedRowPanel.Children.Add(cbValue);
             cbValue.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);

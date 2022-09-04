@@ -27,7 +27,7 @@ namespace RogueEssence.Dev
         {
             DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
 
-            ComboBox cbValue = new ComboBox();
+            ComboBox cbValue = new SearchComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
 
 

@@ -26,7 +26,7 @@ namespace RogueEssence.Dev
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
             AnimAttribute animAtt = ReflectionExt.FindAttribute<AnimAttribute>(attributes);
-            ComboBox cbValue = new ComboBox();
+            ComboBox cbValue = new SearchComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             string choice = member;
 

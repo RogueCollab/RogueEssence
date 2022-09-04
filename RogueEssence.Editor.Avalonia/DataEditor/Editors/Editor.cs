@@ -436,7 +436,7 @@ namespace RogueEssence.Dev
                     sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
                     lblType.SetValue(Grid.ColumnProperty, 0);
 
-                    ComboBox cbValue = new ComboBox();
+                    ComboBox cbValue = new SearchComboBox();
                     cbValue.Margin = new Thickness(4, 0, 0, 0);
                     cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
                     sharedRowPanel.Children.Add(cbValue);
@@ -499,7 +499,6 @@ namespace RogueEssence.Dev
                     var subject = new Subject<List<string>>();
                     cbValue.Bind(ComboBox.ItemsProperty, subject);
                     subject.OnNext(items);
-                    cbValue.KeyDown += ComboBox_ScrollToLetter(items);
                     cbValue.SelectedIndex = selection;
                     {
                         string typeDesc = DevDataManager.GetTypeDoc(children[cbValue.SelectedIndex]);
@@ -573,21 +572,6 @@ namespace RogueEssence.Dev
                     DataEditor.LoadWindowControls(controlParent, parent, parentType, name, children[selection], attributes, member, newStack);
                 }
             }
-        }
-
-        private EventHandler<Avalonia.Input.KeyEventArgs> ComboBox_ScrollToLetter(List<string> items)
-        {
-            return (object sender, Avalonia.Input.KeyEventArgs e) =>
-            {
-                if (e.Key >= Avalonia.Input.Key.A && e.Key <= Avalonia.Input.Key.Z)
-                {
-                    char letter = (char)((e.Key - Avalonia.Input.Key.A) + 'A');
-                    ComboBox box = (ComboBox)sender;
-                    int letterIndex = items.FindIndex((c) => c.StartsWith(letter.ToString(), StringComparison.InvariantCultureIgnoreCase));
-                    if (letterIndex > -1)
-                        box.ScrollIntoView(letterIndex);
-                }
-            };
         }
 
         void IEditor.LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)

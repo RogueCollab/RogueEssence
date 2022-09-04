@@ -59,7 +59,7 @@ namespace RogueEssence.Dev
             else
             {
                 //for enums, use a combobox
-                ComboBox cbValue = new ComboBox();
+                ComboBox cbValue = new SearchComboBox();
                 cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
 
                 List<string> items = new List<string>();

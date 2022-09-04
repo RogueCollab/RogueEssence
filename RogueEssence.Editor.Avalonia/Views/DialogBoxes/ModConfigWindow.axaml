@@ -35,7 +35,7 @@
     <TextBlock Margin="4,2" Text="Version:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="3"/>
     <TextBox Text="{Binding Version}" VerticalAlignment="Center" Margin="4" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"/>
     <TextBlock Margin="4,2" Text="Type:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="4"/>
-    <ComboBox Margin="4,2" Items="{Binding ModTypes}" SelectedIndex="{Binding ChosenModType}" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2"/>
+    <views:SearchComboBox Margin="4,2" Items="{Binding ModTypes}" SelectedIndex="{Binding ChosenModType}" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2"/>
     <TextBlock Margin="4" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Row="5">Relations:</TextBlock>
     <views:CollectionBox DataContext="{Binding Relationships}" Margin="4" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"/>
     <Button Click="btnOK_Click" Margin="4" Grid.Row="6" Grid.Column="0">OK</Button>

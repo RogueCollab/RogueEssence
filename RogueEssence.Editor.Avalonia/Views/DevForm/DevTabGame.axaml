@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
@@ -29,15 +30,15 @@
       <CheckBox Name="chkSprites" Margin="4" IsChecked="{Binding HideSprites}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1">Hide Sprites</CheckBox>
       <Button Name="btnSpawnClone" Command="{Binding btnSpawn_Click}" Margin="4" Grid.Row="1" Grid.Column="0">Create Clone</Button>
       <Button Name="btnDespawnAll" Command="{Binding btnDespawn_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Clear All Foes</Button>
-      <ComboBox Name="cbSkills" Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill}" VirtualizationMode="Simple" Margin="4" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
+      <views:SearchComboBox Name="cbSkills" Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill}" VirtualizationMode="Simple" Margin="4" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
       <Button Name="btnLearnSkill" Command="{Binding btnLearnSkill_Click}" Margin="4" Grid.Row="3" Grid.Column="0">Learn Skill</Button>
       <Button Name="btnGiveSkill" Command="{Binding btnGiveSkill_Click}" Margin="4" Grid.Row="3" Grid.Column="1">Teach Foes</Button>
-      <ComboBox Name="cbIntrinsics" Items="{Binding Intrinsics}" SelectedIndex="{Binding ChosenIntrinsic}" VirtualizationMode="Simple" Margin="4" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"/>
+      <views:SearchComboBox Name="cbIntrinsics" Items="{Binding Intrinsics}" SelectedIndex="{Binding ChosenIntrinsic}" VirtualizationMode="Simple" Margin="4" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"/>
       <Button Name="btnSetIntrinsic" Command="{Binding btnSetIntrinsic_Click}" Margin="4" Grid.Row="5" Grid.Column="0">Set Intrinsic</Button>
       <Button Name="btnGiveFoes" Command="{Binding btnGiveFoes_Click}" Margin="4" Grid.Row="5" Grid.Column="1">Give Foes</Button>
-      <ComboBox Name="cbStatus" Items="{Binding Statuses}" SelectedIndex="{Binding ChosenStatus}" VirtualizationMode="Simple" Margin="4" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"/>
+      <views:SearchComboBox Name="cbStatus" Items="{Binding Statuses}" SelectedIndex="{Binding ChosenStatus}" VirtualizationMode="Simple" Margin="4" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"/>
       <Button Name="btnToggleStatus" Command="{Binding btnToggleStatus_Click}" Margin="4" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">Toggle Status</Button>
-      <ComboBox Name="cbSpawnItem" Items="{Binding Items}" SelectedIndex="{Binding ChosenItem}" VirtualizationMode="Simple" Margin="4" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"/>
+      <views:SearchComboBox Name="cbSpawnItem" Items="{Binding Items}" SelectedIndex="{Binding ChosenItem}" VirtualizationMode="Simple" Margin="4" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"/>
       <Button Name="btnSpawnItem" Command="{Binding btnSpawnItem_Click}" Margin="4" Grid.Row="10" Grid.ColumnSpan="2">Create Item</Button>
     </Grid>
 </UserControl>

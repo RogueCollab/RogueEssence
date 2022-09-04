@@ -33,7 +33,7 @@ namespace RogueEssence.Dev
                 return;
             }
             
-            ComboBox cbValue = new ComboBox();
+            ComboBox cbValue = new SearchComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             int chosenIndex = -1;
 

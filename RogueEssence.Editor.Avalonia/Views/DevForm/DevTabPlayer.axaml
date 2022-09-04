@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
@@ -30,14 +31,14 @@
     <Button Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1">Form</TextBlock>
-    <ComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4" Grid.Row="3" Grid.Column="0"/>
-    <ComboBox Name="cbForm" Items="{Binding Forms}" SelectedIndex="{Binding ChosenForm}" Margin="4" Grid.Row="3" Grid.Column="1"/>
+    <views:SearchComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4" Grid.Row="3" Grid.Column="0"/>
+    <views:SearchComboBox Name="cbForm" Items="{Binding Forms}" SelectedIndex="{Binding ChosenForm}" Margin="4" Grid.Row="3" Grid.Column="1"/>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="0">Skin</TextBlock>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="1" >Gender</TextBlock>
-    <ComboBox Name="cbSkin" Items="{Binding Skins}" SelectedIndex="{Binding ChosenSkin}" Margin="4" Grid.Row="5" Grid.Column="0"/>
-    <ComboBox Name="cbGender" Items="{Binding Genders}" SelectedIndex="{Binding ChosenGender}" Margin="4" Grid.Row="5" Grid.Column="1"/>
+    <views:SearchComboBox Name="cbSkin" Items="{Binding Skins}" SelectedIndex="{Binding ChosenSkin}" Margin="4" Grid.Row="5" Grid.Column="0"/>
+    <views:SearchComboBox Name="cbGender" Items="{Binding Genders}" SelectedIndex="{Binding ChosenGender}" Margin="4" Grid.Row="5" Grid.Column="1"/>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="0">Animation</TextBlock>
-    <ComboBox Name="cbAnim" Items="{Binding Anims}" SelectedIndex="{Binding ChosenAnim}" Margin="4" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"/>
+    <views:SearchComboBox Name="cbAnim" Items="{Binding Anims}" SelectedIndex="{Binding ChosenAnim}" Margin="4" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"/>
     <CheckBox Name="chkJustMe" Margin="4" IsChecked="{Binding JustMe}" VerticalAlignment="Center" Grid.Row="8" Grid.Column="0">Just Me</CheckBox>
     <CheckBox Name="chkJustOnce" Margin="4" IsChecked="{Binding JustOnce}" VerticalAlignment="Center" Grid.Row="8" Grid.Column="1">Just Once</CheckBox>
     <Button Name="btnResetAnim" Command="{Binding btnResetAnim_Click}" Margin="4" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">Restart All Anims</Button>

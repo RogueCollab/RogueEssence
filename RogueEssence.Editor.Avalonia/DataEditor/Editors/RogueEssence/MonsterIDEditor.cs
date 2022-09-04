@@ -34,8 +34,8 @@ namespace RogueEssence.Dev
                 innerPanel1.ColumnDefinitions[0].Width = new GridLength(46);
                 lblSpecies.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-                ComboBox cbSpecies = new ComboBox();
-                ComboBox cbForms = new ComboBox();
+                ComboBox cbSpecies = new SearchComboBox();
+                ComboBox cbForms = new SearchComboBox();
 
                 cbSpecies.VirtualizationMode = ItemVirtualizationMode.Simple;
 
@@ -117,7 +117,7 @@ namespace RogueEssence.Dev
                 innerPanel3.ColumnDefinitions[0].Width = new GridLength(46);
                 lblSkin.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-                ComboBox cbSkin = new ComboBox();
+                ComboBox cbSkin = new SearchComboBox();
                 cbSkin.VirtualizationMode = ItemVirtualizationMode.Simple;
 
                 List<string> items = new List<string>();
@@ -152,7 +152,7 @@ namespace RogueEssence.Dev
                 innerPanel3.ColumnDefinitions[2].Width = new GridLength(46);
                 lblGender.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
-                ComboBox cbGender = new ComboBox();
+                ComboBox cbGender = new SearchComboBox();
                 cbGender.VirtualizationMode = ItemVirtualizationMode.Simple;
                 int chosenIndex = (int)member.Gender;
 

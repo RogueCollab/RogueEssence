@@ -25,7 +25,7 @@ namespace RogueEssence.Dev
             lblItem.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             lblItem.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
 
-            ComboBox cbItem = new ComboBox();
+            ComboBox cbItem = new SearchComboBox();
 
             cbItem.VirtualizationMode = ItemVirtualizationMode.Simple;
 
