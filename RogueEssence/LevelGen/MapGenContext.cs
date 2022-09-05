@@ -174,7 +174,9 @@ namespace RogueEssence.LevelGen
 
         protected bool isObstructed(Loc loc)
         {
-            return (!RoomTerrain.TileEquivalent(GetTile(loc)) || HasTileEffect(loc));
+            Tile tile = Map.GetTile(loc);
+            TerrainData data = tile.Data.GetData();
+            return (data.BlockType != TerrainData.Mobility.Passable || HasTileEffect(loc));
         }
 
         bool IPlaceableGenContext<MoneySpawn>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
@@ -228,6 +230,7 @@ namespace RogueEssence.LevelGen
             if (!Map.GetLocInMapBounds(ref loc))
                 throw new ArgumentException("Loc out of bounds.");
             Tile tile = Map.GetTile(loc);
+            tile.Data = ((Tile)RoomTerrain).Data.Copy();
             tile.Effect = new EffectTile(item);
         }
 

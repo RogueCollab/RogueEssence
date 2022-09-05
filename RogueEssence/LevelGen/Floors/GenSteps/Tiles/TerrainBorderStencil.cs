@@ -15,7 +15,7 @@ namespace RogueEssence
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class TerrainBorderStencil<T> : ITerrainStencil<T>
+    public class TerrainBorderStencil<T> : IBlobStencil<T>
         where T : class, ITiledGenContext
     {
         public TerrainBorderStencil()

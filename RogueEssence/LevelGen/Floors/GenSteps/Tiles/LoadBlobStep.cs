@@ -25,13 +25,14 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Determines which tiles are eligible to be painted on.
         /// </summary>
-        public ITerrainStencil<T> TerrainStencil { get; set; }
+        public IBlobStencil<T> TerrainStencil { get; set; }
 
         public RandRange Amount { get; set; }
 
         public LoadBlobStep()
         {
             Maps = new SpawnList<string>();
+            TerrainStencil = new DefaultBlobStencil<T>();
         }
 
 
