@@ -214,7 +214,8 @@ namespace RogueEssence.Dungeon
             {
                 foreach(Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
-                    TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                    TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data;
+                    TerrainData terrain = tile.GetData();
                     if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
                     {
                         if (showHiddenItem)
@@ -222,7 +223,7 @@ namespace RogueEssence.Dungeon
                     }
                     else if (showHiddenItem || ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                     {
-                        if (terrain.BlockType == TerrainData.Mobility.Passable)
+                        if (tile.ID == DataManager.Instance.GenFloor)
                             item.Draw(spriteBatch, viewLoc, Color.White);
                         else
                             item.Draw(spriteBatch, viewLoc, Color.White * 0.7f);
