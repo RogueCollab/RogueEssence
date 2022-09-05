@@ -94,6 +94,6 @@
       </Grid>
     </ScrollViewer>
     <views:SearchListBox DataContext="{Binding Tilesets}" Margin="4" Grid.Row="1" Grid.Column="1"/>
-    <Button Command="{Binding btnDeleteTileset}" Margin="4" Grid.Row="2" Grid.Column="1">Delete Selected Tileset</Button>
+    <Button Command="{Binding btnDeleteTileset_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete Selected Tileset</Button>
   </Grid>
 </UserControl>

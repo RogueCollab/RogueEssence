@@ -341,6 +341,33 @@ namespace RogueEssence.Dev.ViewModels
                 CurrentTileset = "";
         }
 
+        public void btnAddFrame_Click()
+        {
+            Frames.Add(Frames[Frames.Count - 1]);
+            ChosenFrame = Frames.Count - 1;
+        }
+
+
+        public void btnDeleteFrame_Click()
+        {
+            if (Frames.Count > 1)
+                Frames.RemoveAt(ChosenFrame);
+        }
+
+        public async void btnDeleteTileset_Click()
+        {
+            //get current sprite
+            int animIdx = Tilesets.InternalIndex;
+
+            MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + tileIndices[animIdx], "Delete Sprite Sheet.",
+                MessageBox.MessageBoxButtons.YesNo);
+            if (result == MessageBox.MessageBoxResult.No)
+                return;
+
+            DevForm.ExecuteOrPend(() => { Delete(animIdx); });
+
+        }
+
         // Get rid of this duplicated code
         private void Delete(int animIdx)
         {
@@ -360,33 +387,6 @@ namespace RogueEssence.Dev.ViewModels
                 tileIndices.RemoveAt(animIdx);
                 Tilesets.RemoveInternalAt(animIdx);
             }
-        }
-
-        public void btnAddFrame_Click()
-        {
-            Frames.Add(Frames[Frames.Count - 1]);
-            ChosenFrame = Frames.Count - 1;
-        }
-
-
-        public void btnDeleteFrame_Click()
-        {
-            if (Frames.Count > 1)
-                Frames.RemoveAt(ChosenFrame);
-        }
-
-        public async void btnDeleteTileset()
-        {
-            //get current sprite
-            int animIdx = Tilesets.InternalIndex;
-
-            MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + tileIndices[animIdx], "Delete Sprite Sheet.",
-                MessageBox.MessageBoxButtons.YesNo);
-            if (result == MessageBox.MessageBoxResult.No)
-                return;
-
-            DevForm.ExecuteOrPend(() => { Delete(animIdx); });
-
         }
     }
 }
