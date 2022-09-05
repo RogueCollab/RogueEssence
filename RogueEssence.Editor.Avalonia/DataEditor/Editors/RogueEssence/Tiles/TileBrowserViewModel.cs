@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using RogueElements;
+using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using ReactiveUI;
 using RogueEssence.Content;
+using System.IO;
 using Avalonia.Controls;
 using System.Collections.ObjectModel;
 using RogueEssence.Data;
@@ -73,6 +75,8 @@ namespace RogueEssence.Dev.ViewModels
     }
     public class TileBrowserViewModel : ViewModelBase
     {
+        private Window parent;
+
         public TileBrowserViewModel()
         {
             currentTileset = "";
@@ -337,6 +341,26 @@ namespace RogueEssence.Dev.ViewModels
                 CurrentTileset = "";
         }
 
+        // Get rid of this duplicated code
+        private void Delete(int animIdx)
+        {
+            lock (GameBase.lockObj)
+            {
+                string anim = tileIndices[animIdx];
+
+                string animPath = PathMod.ModPath(String.Format(GraphicsManager.TILE_PATTERN, anim));
+                if (File.Exists(animPath))
+                    File.Delete(animPath);
+
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+                DiagManager.Instance.LogInfo("Deleted frames for:" + anim);
+
+                tileIndices.RemoveAt(animIdx);
+                Tilesets.RemoveInternalAt(animIdx);
+            }
+        }
 
         public void btnAddFrame_Click()
         {
@@ -349,6 +373,20 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (Frames.Count > 1)
                 Frames.RemoveAt(ChosenFrame);
+        }
+
+        public async void btnDeleteTileset()
+        {
+            //get current sprite
+            int animIdx = Tilesets.InternalIndex;
+
+            MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + tileIndices[animIdx], "Delete Sprite Sheet.",
+                MessageBox.MessageBoxButtons.YesNo);
+            if (result == MessageBox.MessageBoxResult.No)
+                return;
+
+            DevForm.ExecuteOrPend(() => { Delete(animIdx); });
+
         }
     }
 }
