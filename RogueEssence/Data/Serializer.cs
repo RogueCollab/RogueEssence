@@ -21,15 +21,20 @@ namespace RogueEssence.Data
 
     public static class Serializer
     {
-        public static readonly JsonSerializerSettings Settings = new()
+        public static JsonSerializerSettings Settings { get; private set; }
+
+        public static void InitSettings(IContractResolver resolver, ISerializationBinder binder)
         {
-            ContractResolver = new SerializerContractResolver(),
-            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-            TypeNameHandling = TypeNameHandling.Auto,
-            Formatting = Formatting.Indented,
-            //NOTE: What do these converters do?  Are they just for the top level class?  They weren't working for class members of type matching the converter...
-            //Converters = new List<JsonConverter>() { new TestConverter() },
-        };
+            Settings = new JsonSerializerSettings()
+            {
+                ContractResolver = resolver,
+                SerializationBinder = binder,
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+                TypeNameHandling = TypeNameHandling.Auto,
+                Formatting = Formatting.Indented,
+            };
+
+        }
 
         /// <summary>
         /// A value that is temporarily set when deserializing a data object, serving as a global old version for converters in UpgradeConverters.cs to recognize the version.
@@ -134,18 +139,5 @@ namespace RogueEssence.Data
             return sw.ToString();
         }
 
-        private class SerializerContractResolver : DefaultContractResolver
-        {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-            {
-                FieldInfo[] fieldsLess = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                List<MemberInfo> fields = type.GetSerializableMembers();
-                List<JsonProperty> props = fields.Select(f => CreateProperty(f, memberSerialization))
-                    .ToList();
-                props.ForEach(p => { p.Writable = true; p.Readable = true; });
-                return props;
-                
-            }
-        }
     }
 }

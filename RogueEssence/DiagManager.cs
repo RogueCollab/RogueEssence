@@ -38,7 +38,6 @@ namespace RogueEssence
         private LogAdded errorAddedEvent;
         private ErrorTrace errorTraceEvent;
 
-        public SerializationBinder UpgradeBinder { get; set; }
         public bool RecordingInput { get { return (ActiveDebugReplay == null && inputWriter != null); } }
         private BinaryWriter inputWriter;
         public List<FrameInput> ActiveDebugReplay;

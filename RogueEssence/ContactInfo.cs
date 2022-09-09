@@ -68,7 +68,6 @@ namespace RogueEssence
                 StringBuilder builder = new StringBuilder();
                 stream.Write(bytes, 0, bytes.Length);
                 stream.Position = 0;
-                IFormatter formatter = new BinaryFormatter();
                 Data = (ContactData)Serializer.DeserializeData(stream);
             }
         }
