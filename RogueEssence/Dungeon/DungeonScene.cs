@@ -960,12 +960,12 @@ namespace RogueEssence.Dungeon
                     TileSheet mapSheet = GraphicsManager.MapSheet;
 
                     Vector2 mapStart = new Vector2(0, 16);
-                    uint mobility = 0;
+                    TerrainData.Mobility mobility = TerrainData.Mobility.Passable;
                     if (ShowMap == MinimapState.Detail)
                     {
-                        mobility |= (1U << (int)TerrainData.Mobility.Water);
-                        mobility |= (1U << (int)TerrainData.Mobility.Lava);
-                        mobility |= (1U << (int)TerrainData.Mobility.Abyss);
+                        mobility |= TerrainData.Mobility.Water;
+                        mobility |= TerrainData.Mobility.Lava;
+                        mobility |= TerrainData.Mobility.Abyss;
                     }
 
                     Loc centerLoc = new Loc();

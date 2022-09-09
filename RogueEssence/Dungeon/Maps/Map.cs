@@ -726,12 +726,12 @@ namespace RogueEssence.Dungeon
             return result;
         }
 
-        public bool IsBlocked(Loc loc, uint mobility)
+        public bool IsBlocked(Loc loc, TerrainData.Mobility mobility)
         {
             return IsBlocked(loc, mobility, true, false);
         }
 
-        public bool IsBlocked(Loc loc, uint mobility, bool checkPlayer, bool checkDiagonal)
+        public bool IsBlocked(Loc loc, TerrainData.Mobility mobility, bool checkPlayer, bool checkDiagonal)
         {
             if (TileBlocked(loc, mobility, checkDiagonal))
                 return true;
@@ -748,12 +748,12 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public bool DirBlocked(Dir8 dir, Loc loc, uint mobility)
+        public bool DirBlocked(Dir8 dir, Loc loc, TerrainData.Mobility mobility)
         {
             return DirBlocked(dir, loc, mobility, 1, true, true);
         }
 
-        public bool DirBlocked(Dir8 dir, Loc loc, uint mobility, int distance, bool blockedByPlayer, bool blockedByDiagonal)
+        public bool DirBlocked(Dir8 dir, Loc loc, TerrainData.Mobility mobility, int distance, bool blockedByPlayer, bool blockedByDiagonal)
         {
             return Grid.IsDirBlocked(loc, dir,
                 (Loc testLoc) =>

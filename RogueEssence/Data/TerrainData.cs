@@ -12,14 +12,17 @@ namespace RogueEssence.Data
         {
             return Name.ToLocal();
         }
+
+        [Flags]
         public enum Mobility
         {
             Impassable = -1,
-            Passable,
-            Water,
-            Lava,
-            Abyss,
-            Block
+            Passable = 0,
+            Water = 1,
+            Lava = 2,
+            Abyss = 4,
+            Block = 8,
+            All = 15
         }
 
         public LocalText Name { get; set; }

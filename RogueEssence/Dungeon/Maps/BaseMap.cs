@@ -127,15 +127,15 @@ namespace RogueEssence.Dungeon
 
         public bool TileBlocked(Loc loc, bool inclusive, bool diagonal)
         {
-            return TileBlocked(loc, inclusive ? UInt32.MaxValue : 0, diagonal);
+            return TileBlocked(loc, inclusive ? TerrainData.Mobility.All : TerrainData.Mobility.Passable, diagonal);
         }
 
-        public bool TileBlocked(Loc loc, uint mobility)
+        public bool TileBlocked(Loc loc, TerrainData.Mobility mobility)
         {
             return TileBlocked(loc, mobility, false);
         }
 
-        public bool TileBlocked(Loc loc, uint mobility, bool diagonal)
+        public bool TileBlocked(Loc loc, TerrainData.Mobility mobility, bool diagonal)
         {
             if (!GetLocInMapBounds(ref loc))
                 return true;
@@ -152,7 +152,7 @@ namespace RogueEssence.Dungeon
             }
             return false;
         }
-        public bool TerrainBlocked(Loc loc, uint mobility)
+        public bool TerrainBlocked(Loc loc, TerrainData.Mobility mobility)
         {
             if (!GetLocInMapBounds(ref loc))
                 return true;
@@ -162,7 +162,7 @@ namespace RogueEssence.Dungeon
             return TerrainBlocked(terrain, mobility, false);
         }
 
-        public bool TerrainBlocked(TerrainData terrain, uint mobility, bool diagonal)
+        public bool TerrainBlocked(TerrainData terrain, TerrainData.Mobility mobility, bool diagonal)
         {
             if (diagonal && !terrain.BlockDiagonal)
                 return false;
@@ -171,7 +171,7 @@ namespace RogueEssence.Dungeon
             if (terrain.BlockType == TerrainData.Mobility.Passable)
                 return false;
 
-            return ((1U << (int)terrain.BlockType) & mobility) == 0;
+            return (terrain.BlockType & mobility) == TerrainData.Mobility.Passable;
         }
 
         public bool EffectTileBlocked(TileData effect, bool diagonal)
@@ -189,12 +189,11 @@ namespace RogueEssence.Dungeon
 
         public bool CanItemLand(Loc loc, bool voluntary, bool ignoreItem)
         {
-            uint mobility = 0;
-            mobility |= (1U << (int)TerrainData.Mobility.Water);
+            TerrainData.Mobility mobility = TerrainData.Mobility.Water;
             if (!voluntary)
             {
-                mobility |= (1U << (int)TerrainData.Mobility.Lava);
-                mobility |= (1U << (int)TerrainData.Mobility.Abyss);
+                mobility |= TerrainData.Mobility.Lava;
+                mobility |= TerrainData.Mobility.Abyss;
             }
             if (TileBlocked(loc, mobility, false))
                 return false;

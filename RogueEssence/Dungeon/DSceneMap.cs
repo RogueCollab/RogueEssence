@@ -1492,12 +1492,10 @@ namespace RogueEssence.Dungeon
 
         public bool ShotBlocked(Character character, Loc loc, Dir8 dir, Alignment blockedAlignments, bool useMobility, bool blockedByWall, bool blockedByDiagonal)
         {
-            uint mobility = 0;
-            mobility |= (1U << (int)TerrainData.Mobility.Lava);
-            mobility |= (1U << (int)TerrainData.Mobility.Water);
-            mobility |= (1U << (int)TerrainData.Mobility.Abyss);
+            TerrainData.Mobility mobility = TerrainData.Mobility.Lava | TerrainData.Mobility.Water | TerrainData.Mobility.Abyss;
+
             if (!blockedByWall)
-                mobility |= (1U << (int)TerrainData.Mobility.Block);
+                mobility |= TerrainData.Mobility.Block;
             if (useMobility)
                 mobility |= character.Mobility;
 
@@ -1513,11 +1511,6 @@ namespace RogueEssence.Dungeon
 
         public bool VisionBlocked(Loc loc)
         {
-            HashSet<TerrainData.Mobility> mobility = new HashSet<TerrainData.Mobility>();
-            mobility.Add(TerrainData.Mobility.Lava);
-            mobility.Add(TerrainData.Mobility.Water);
-            mobility.Add(TerrainData.Mobility.Abyss);
-
             if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref loc))
                 return true;
 

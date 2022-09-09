@@ -250,7 +250,7 @@ namespace RogueEssence.Dungeon
         public AITactic Tactic;
 
         //calculable via save-loading
-        public uint Mobility;
+        public TerrainData.Mobility Mobility;
         public bool CantWalk;
         //will prevent the passive item effects, as well as the "stick" effect
         //does not affect active use
@@ -1433,7 +1433,7 @@ namespace RogueEssence.Dungeon
             CharSight = Map.SightRange.Any;
 
             //Mobility
-            Mobility = 0;
+            Mobility = TerrainData.Mobility.Passable;
 
             CharStates.Clear();
 

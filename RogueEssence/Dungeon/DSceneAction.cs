@@ -683,10 +683,7 @@ namespace RogueEssence.Dungeon
             if (tileAlignment == TileAlignment.Any)
                 return true;
 
-            uint mobility = 0;
-            mobility |= (1U << (int)TerrainData.Mobility.Lava);
-            mobility |= (1U << (int)TerrainData.Mobility.Water);
-            mobility |= (1U << (int)TerrainData.Mobility.Abyss);
+            TerrainData.Mobility mobility = TerrainData.Mobility.Lava | TerrainData.Mobility.Water | TerrainData.Mobility.Abyss;
             if (ZoneManager.Instance.CurrentMap.TileBlocked(tile, mobility))
                 return true;
             else
