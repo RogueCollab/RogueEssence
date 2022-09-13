@@ -1237,6 +1237,10 @@ namespace RogueEssence.Data
             }
         }
 
+        public bool ReplaysExist()
+        {
+            return FoundRecords(REPLAY_PATH, REPLAY_EXTENSION);
+        }
 
         public bool FoundRecords(string mainPath, string ext)
         {
@@ -1979,11 +1983,6 @@ namespace RogueEssence.Data
                 //    Directory.Delete(ROGUE_PATH, true);
                 //    Directory.CreateDirectory(ROGUE_PATH);
                 //}
-                //if (Directory.Exists(REPLAY_PATH))
-                //{
-                //    Directory.Delete(REPLAY_PATH, true);
-                //    Directory.CreateDirectory(REPLAY_PATH);
-                //}
             }
             catch (Exception ex)
             {
@@ -1992,6 +1991,22 @@ namespace RogueEssence.Data
             }
         }
 
+        public void DeleteReplayData()
+        {
+            try
+            {
+                if (Directory.Exists(REPLAY_PATH))
+                {
+                    Directory.Delete(REPLAY_PATH, true);
+                    Directory.CreateDirectory(REPLAY_PATH);
+                }
+            }
+            catch (Exception ex)
+            {
+                //In this case, the error will be presented clearly to the player.  Do not signal.
+                DiagManager.Instance.LogError(ex, false);
+            }
+        }
 
         public IEnumerable<string> GetRecentMsgs(int entries)
         {

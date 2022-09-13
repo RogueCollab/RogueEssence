@@ -33,11 +33,13 @@ namespace RogueEssence.Menu
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE_SAVE_TITLE"), DeleteAction));
             }
 
+            if (DataManager.Instance.ReplaysExist())
+            {
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE_REPLAY_TITLE"), DeleteReplayAction));
+            }
+
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
-
         }
-
-
 
         private void DeleteAction()
         {
@@ -53,6 +55,22 @@ namespace RogueEssence.Menu
                     }, () => { }, true), false);
                 },
                 -1, false, false, false, Text.FormatKey("DLG_DELETE_SAVE")), false);
+        }
+
+        private void DeleteReplayAction()
+        {
+            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(MonsterID.Invalid, null, new EmoteStyle(0), true,
+                () => {
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), Text.FormatKey("DLG_DELETE_CONFIRM"), true, false, false, false, () =>
+                    {
+                        MenuManager.Instance.ClearMenus();
+                        DataManager.Instance.DeleteReplayData();
+                        MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_DELETE_REPLAY_COMPLETE")), false);
+                        MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+                    }, () => { }, true), false);
+                },
+                -1, false, false, false, Text.FormatKey("DLG_DELETE_REPLAY")), false);
         }
     }
 }
