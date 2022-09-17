@@ -1239,7 +1239,7 @@ namespace RogueEssence.Data
 
         public bool ReplaysExist()
         {
-            return FoundRecords(REPLAY_PATH, REPLAY_EXTENSION);
+            return FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH), REPLAY_EXTENSION);
         }
 
         public bool FoundRecords(string mainPath, string ext)
@@ -1995,10 +1995,10 @@ namespace RogueEssence.Data
         {
             try
             {
-                if (Directory.Exists(REPLAY_PATH))
+                if (Directory.Exists(PathMod.ModSavePath(DataManager.REPLAY_PATH)))
                 {
-                    Directory.Delete(REPLAY_PATH, true);
-                    Directory.CreateDirectory(REPLAY_PATH);
+                    Directory.Delete(PathMod.ModSavePath(DataManager.REPLAY_PATH), true);
+                    Directory.CreateDirectory(PathMod.ModSavePath(DataManager.REPLAY_PATH));
                 }
             }
             catch (Exception ex)
