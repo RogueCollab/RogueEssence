@@ -114,7 +114,12 @@ namespace RogueEssence.Data
         /// Defines whether this item flies in an arc or in a straight line.
         /// </summary>
         public bool ArcThrow;
-        
+
+        /// <summary>
+        /// Defines whether this item will disappear if thrown, even if it doesnt hit a target.
+        /// </summary>
+        public bool BreakOnThrow;
+
         /// <summary>
         /// Defines the custom graphics for the item when it is thrown.
         /// Set to an empty anim to use the item's own sprite.
