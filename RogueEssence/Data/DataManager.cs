@@ -958,6 +958,14 @@ namespace RogueEssence.Data
 
         }
 
+        /// <summary>
+        /// Starts recording the quicksave for a new adventure.
+        /// From here on, the replayWriter will remain open as a way to continue writing game states and player inputs.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="zoneId"></param>
+        /// <param name="rogue"></param>
+        /// <param name="seeded"></param>
         public void BeginPlay(string filePath, string zoneId, bool rogue, bool seeded)
         {
             try
@@ -993,6 +1001,11 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Called when resuming an adventure from a quicksave.
+        /// The quicksave file is loaded and the stream position is set to the end, so that it can continue writing the replay.
+        /// </summary>
+        /// <param name="replay">The quicksave replay to resume from.</param>
         public void ResumePlay(ReplayData replay)
         {
             try
@@ -1017,6 +1030,10 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Writes the game state to the current replay.  The player must be in dungeon mode.
+        /// This is used when the player begins a new dungeon in their adventure. (One adventure can contain a trek through multiple dungeons)
+        /// </summary>
         public void LogState()
         {
             if (replayWriter != null)
@@ -1036,6 +1053,10 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Writes the game state to the current replay.  The player must be in ground mode.
+        /// This is used when a player saves in the middle of an adventure in a ground mode rest area.
+        /// </summary>
         public void LogGroundSave()
         {
             if (replayWriter != null)
@@ -1059,6 +1080,10 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Writes the entire game state for faster loading of quicksaves.
+        /// Currently not used due to quicksaves still loading from the start of the dungeon and replaying every step up to the current point.
+        /// </summary>
         public void LogQuicksave()
         {
             if (replayWriter != null)
@@ -1078,6 +1103,10 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Logs a player action to the current quicksave replay.
+        /// </summary>
+        /// <param name="play"></param>
         public void LogPlay(GameAction play)
         {
             if (replayWriter != null)
@@ -1100,30 +1129,9 @@ namespace RogueEssence.Data
             }
         }
 
-        Queue<int[]> uiQueue;
-        public void QueueLogUI()
-        {
-            uiQueue = new Queue<int[]>();
-        }
-
-        public void DequeueLogUI()
-        {
-            if (uiQueue == null)
-                return;
-            Queue<int[]> tempQueue = uiQueue;
-            uiQueue = null;
-
-            while (tempQueue.Count > 0)
-                LogUIPlay(tempQueue.Dequeue());
-        }
-
-        public void LogUIStringPlay(string str)
-        {
-            LogUIPlay(str.Length);
-            for (int ii = 0; ii < str.Length; ii++)
-                LogUIPlay((int)str[ii]);
-        }
-
+        /// <summary>
+        /// Logs a player UI action to the current quicksave replay.
+        /// </summary>
         public void LogUIPlay(params int[] code)
         {
             if (uiQueue != null)
@@ -1150,6 +1158,48 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Logs a string to the current quicksave replay.  Used for name inputs.
+        /// </summary>
+        public void LogUIStringPlay(string str)
+        {
+            LogUIPlay(str.Length);
+            for (int ii = 0; ii < str.Length; ii++)
+                LogUIPlay((int)str[ii]);
+        }
+
+        Queue<int[]> uiQueue;
+
+        /// <summary>
+        /// Starts queueing UI commands to the current replay quicksave.
+        /// UI commands need to be queued sometimes, because they may happen mid-action for an action that may fail later.
+        /// If a player action fails, it is not logged.  Thus, if queues didn't exist, UI actions would be logged for actions that didn't actually happen.
+        /// </summary>
+        public void QueueLogUI()
+        {
+            uiQueue = new Queue<int[]>();
+        }
+
+        /// <summary>
+        /// Stops queueing UI commands to the current replay quicksave and writes the current queue to the replay.
+        /// </summary>
+        public void DequeueLogUI()
+        {
+            if (uiQueue == null)
+                return;
+            Queue<int[]> tempQueue = uiQueue;
+            uiQueue = null;
+
+            while (tempQueue.Count > 0)
+                LogUIPlay(tempQueue.Dequeue());
+        }
+
+        /// <summary>
+        /// Called when an adventure is ended.  Closes the replay writing stream and saves the quicksave into a replay.
+        /// </summary>
+        /// <param name="epitaph"></param>
+        /// <param name="outFile"></param>
+        /// <returns></returns>
         public string EndPlay(GameProgress epitaph, string outFile)
         {
             try
@@ -1220,6 +1270,14 @@ namespace RogueEssence.Data
             return Text.GetNonConflictingName(fileName, savePathExists);
         }
 
+        /// <summary>
+        /// Called when an adventure is suspended.  Closes the replay writing stream to allow for clean exit.
+        /// Note how nothing else is done aside form closing the stream.
+        /// Quicksaves already save every action from the player as it happens, so even if they closed the game there is no lost data.
+        /// </summary>
+        /// <param name="epitaph"></param>
+        /// <param name="outFile"></param>
+        /// <returns></returns>
         public void SuspendPlay()
         {
             try
