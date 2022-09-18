@@ -103,6 +103,7 @@ namespace RogueEssence.Dungeon
                 {
                     activeTeam.ContainingMap = null;
                     activeTeam.MapFaction = Faction.None;
+                    activeTeam.MapIndex = -1;
 
                     //remove references from the lookup
                     removeTeamLookup(activeTeam);
@@ -112,6 +113,7 @@ namespace RogueEssence.Dungeon
                 {
                     activeTeam.ContainingMap = this;
                     activeTeam.MapFaction = Faction.Player;
+                    activeTeam.MapIndex = 0;
                     //add references to the lookup
                     addTeamLookup(activeTeam);
                 }
@@ -414,8 +416,6 @@ namespace RogueEssence.Dungeon
         }
 
 
-
-
         public Character LookupCharIndex(CharIndex charIndex)
         {
             Team team = GetTeam(charIndex.Faction, charIndex.Team);
@@ -433,23 +433,7 @@ namespace RogueEssence.Dungeon
             if (character.MemberTeam != null)
             {
                 CharIndex charIndex = character.MemberTeam.GetCharIndex(character);
-
-                if (character.MemberTeam.MapFaction == Faction.Player)
-                    return new CharIndex(Faction.Player, 0, charIndex.Guest, charIndex.Char);
-
-                if (character.MemberTeam.MapFaction == Faction.Friend)
-                {
-                    int idx = AllyTeams.IndexOf(character.MemberTeam);
-                    if (idx > -1)
-                        return new CharIndex(Faction.Friend, idx, charIndex.Guest, charIndex.Char);
-                }
-
-                if (character.MemberTeam.MapFaction == Faction.Foe)
-                {
-                    int idx = MapTeams.IndexOf(character.MemberTeam);
-                    if (idx > -1)
-                        return new CharIndex(Faction.Foe, idx, charIndex.Guest, charIndex.Char);
-                }
+                return new CharIndex(character.MemberTeam.MapFaction, character.MemberTeam.MapIndex, charIndex.Guest, charIndex.Char);
             }
 
             return CharIndex.Invalid;
@@ -785,8 +769,8 @@ namespace RogueEssence.Dungeon
             MapTeams.ItemAdding += addingMapTeam;
             AllyTeams.ItemChanging += settingAllies;
             MapTeams.ItemChanging += settingFoes;
-            AllyTeams.ItemRemoving += removingTeam;
-            MapTeams.ItemRemoving += removingTeam;
+            AllyTeams.ItemRemoving += removingAllyTeam;
+            MapTeams.ItemRemoving += removingMapTeam;
             AllyTeams.ItemsClearing += clearingAllies;
             MapTeams.ItemsClearing += clearingFoes;
         }
@@ -874,8 +858,10 @@ namespace RogueEssence.Dungeon
         {
             AllyTeams[index].ContainingMap = null;
             AllyTeams[index].MapFaction = Faction.None;
+            AllyTeams[index].MapIndex = -1;
             team.ContainingMap = this;
             team.MapFaction = Faction.Friend;
+            team.MapIndex = index;
             //update location caches
             removeTeamLookup(AllyTeams[index]);
             addTeamLookup(team);
@@ -884,8 +870,10 @@ namespace RogueEssence.Dungeon
         {
             MapTeams[index].ContainingMap = null;
             MapTeams[index].MapFaction = Faction.None;
+            MapTeams[index].MapIndex = -1;
             team.ContainingMap = this;
             team.MapFaction = Faction.Foe;
+            team.MapIndex = index;
             //update location caches
             removeTeamLookup(MapTeams[index]);
             addTeamLookup(team);
@@ -894,6 +882,9 @@ namespace RogueEssence.Dungeon
         {
             team.ContainingMap = this;
             team.MapFaction = Faction.Friend;
+            team.MapIndex = index;
+            for (int ii = index + 1; ii < AllyTeams.Count; ii++)
+                AllyTeams[ii].MapIndex++;
             //update location caches
             addTeamLookup(team);
         }
@@ -901,13 +892,29 @@ namespace RogueEssence.Dungeon
         {
             team.ContainingMap = this;
             team.MapFaction = Faction.Foe;
+            team.MapIndex = index;
+            for (int ii = index + 1; ii < MapTeams.Count; ii++)
+                MapTeams[ii].MapIndex++;
             //update location caches
             addTeamLookup(team);
         }
-        private void removingTeam(int index, Team team)
+        private void removingAllyTeam(int index, Team team)
         {
             team.ContainingMap = null;
             team.MapFaction = Faction.None;
+            team.MapIndex = -1;
+            for (int ii = index; ii < AllyTeams.Count; ii++)
+                AllyTeams[ii].MapIndex--;
+            //update location caches
+            removeTeamLookup(team);
+        }
+        private void removingMapTeam(int index, Team team)
+        {
+            team.ContainingMap = null;
+            team.MapFaction = Faction.None;
+            team.MapIndex = -1;
+            for (int ii = index; ii < MapTeams.Count; ii++)
+                MapTeams[ii].MapIndex--;
             //update location caches
             removeTeamLookup(team);
         }
@@ -917,6 +924,7 @@ namespace RogueEssence.Dungeon
             {
                 team.ContainingMap = null;
                 team.MapFaction = Faction.None;
+                team.MapIndex = -1;
                 //update location caches
                 removeTeamLookup(team);
             }
@@ -927,6 +935,7 @@ namespace RogueEssence.Dungeon
             {
                 team.ContainingMap = null;
                 team.MapFaction = Faction.None;
+                team.MapIndex = -1;
                 //update location caches
                 removeTeamLookup(team);
             }
@@ -1054,17 +1063,19 @@ namespace RogueEssence.Dungeon
         protected virtual void ReconnectMapReference()
         {
             //reconnect Teams' references
-            foreach (Team team in AllyTeams)
+            for(int ii = 0; ii < AllyTeams.Count; ii++)
             {
-                team.ContainingMap = this;
-                team.MapFaction = Faction.Friend;
-                addTeamLookup(team);
+                AllyTeams[ii].ContainingMap = this;
+                AllyTeams[ii].MapFaction = Faction.Friend;
+                AllyTeams[ii].MapIndex = ii;
+                addTeamLookup(AllyTeams[ii]);
             }
-            foreach (Team team in MapTeams)
+            for (int ii = 0; ii < MapTeams.Count; ii++)
             {
-                team.ContainingMap = this;
-                team.MapFaction = Faction.Foe;
-                addTeamLookup(team);
+                MapTeams[ii].ContainingMap = this;
+                MapTeams[ii].MapFaction = Faction.Foe;
+                MapTeams[ii].MapIndex = ii;
+                addTeamLookup(MapTeams[ii]);
             }
         }
     }
