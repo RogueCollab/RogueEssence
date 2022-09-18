@@ -191,6 +191,7 @@ namespace RogueEssence.Data
     {
         /// <summary>
         /// The radius of the effect.
+        /// DO NOT SET THIS OVER 5.
         /// </summary>
         public int Radius;
 

@@ -299,6 +299,7 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         public Team MemberTeam;
 
+        [NonSerialized]
         public int Proximity;
 
         public TempCharBackRef BackRef;
