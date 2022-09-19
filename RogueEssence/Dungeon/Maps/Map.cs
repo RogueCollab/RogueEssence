@@ -70,9 +70,6 @@ namespace RogueEssence.Dungeon
 
         public ActiveEffect MapEffect;
 
-        //if maps are to be separated into their own chunks, these members would be specific to each chunk
-        public int MaxFoes;
-        public int RespawnTime;
         public SpawnList<TeamSpawner> TeamSpawns;
 
         public MoneySpawnRange MoneyAmount;
@@ -317,71 +314,6 @@ namespace RogueEssence.Dungeon
                 },
                 EntryPoints[0].Loc);
             return freeTiles;
-        }
-
-        public List<Character> RespawnMob()
-        {
-            List<Character> respawns = new List<Character>();
-            if (TeamSpawns.CanPick)
-            {
-                List<Loc> freeTiles = GetFreeToSpawnTiles();
-                if (freeTiles.Count > 0)
-                {
-                    for (int ii = 0; ii < 10; ii++)
-                    {
-                        Team newTeam = TeamSpawns.Pick(Rand).Spawn(this);
-                        if (newTeam == null)
-                            continue;
-                        Loc trialLoc = freeTiles[Rand.Next(freeTiles.Count)];
-                        //find a way to place all members- needs to fit all of them in, or else fail the spawn
-
-                        Grid.LocTest checkOpen = (Loc testLoc) =>
-                        {
-                            if (TileBlocked(testLoc))
-                                return false;
-
-                            Character locChar = GetCharAtLoc(testLoc);
-                            if (locChar != null)
-                                return false;
-                            return true;
-                        };
-                        Grid.LocTest checkBlock = (Loc testLoc) =>
-                        {
-                            return TileBlocked(testLoc, true);
-                        };
-                        Grid.LocTest checkDiagBlock = (Loc testLoc) =>
-                        {
-                            return TileBlocked(testLoc, true, true);
-                        };
-
-                        List<Loc> resultLocs = new List<Loc>();
-                        foreach (Loc loc in Grid.FindClosestConnectedTiles(new Loc(), new Loc(Width, Height),
-                            checkOpen, checkBlock, checkDiagBlock, trialLoc, newTeam.Players.Count))
-                        {
-                            resultLocs.Add(loc);
-                        }
-
-
-                        if (resultLocs.Count >= newTeam.Players.Count + newTeam.Guests.Count)
-                        {
-                            for (int jj = 0; jj < newTeam.Players.Count; jj++)
-                                newTeam.Players[jj].CharLoc = resultLocs[jj];
-                            for (int jj = 0; jj < newTeam.Guests.Count; jj++)
-                                newTeam.Guests[jj].CharLoc = resultLocs[newTeam.Players.Count + jj];
-
-                            MapTeams.Add(newTeam);
-
-                            foreach (Character member in newTeam.EnumerateChars())
-                            {
-                                member.RefreshTraits();
-                                respawns.Add(member);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            return respawns;
         }
 
 

@@ -1015,34 +1015,6 @@ namespace RogueEssence.Dungeon
             ZoneManager.Instance.CurrentMap.MapTurns++;
             DataManager.Instance.Save.TotalTurns++;
 
-
-            //Map Respawns
-            if (ZoneManager.Instance.CurrentMap.RespawnTime > 0 && ZoneManager.Instance.CurrentMap.MapTurns % ZoneManager.Instance.CurrentMap.RespawnTime == 0)
-            {
-                int totalFoes = 0;
-                foreach (Team team in ZoneManager.Instance.CurrentMap.MapTeams)
-                {
-                    foreach (Character character in team.Players)
-                    {
-                        if (!character.Dead)
-                            totalFoes++;
-                    }
-                }
-                if (totalFoes < ZoneManager.Instance.CurrentMap.MaxFoes)
-                {
-                    List<Character> respawns = ZoneManager.Instance.CurrentMap.RespawnMob();
-                    foreach (Character respawn in respawns)
-                    {
-                        respawn.Tactic.Initialize(respawn);
-                        if (!respawn.Dead)
-                        {
-                            yield return CoroutineManager.Instance.StartCoroutine(respawn.OnMapStart());
-                            ZoneManager.Instance.CurrentMap.UpdateExploration(respawn);
-                        }
-                    }
-                }
-            }
-
             //check EXP because someone could've died
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
 

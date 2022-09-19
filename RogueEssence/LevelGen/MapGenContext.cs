@@ -36,8 +36,6 @@ namespace RogueEssence.LevelGen
         public int Width { get { return Map.Width; } }
         public int Height { get { return Map.Height; } }
         public bool Wrap { get { return Map.EdgeView == BaseMap.ScrollEdge.Wrap; } }
-        public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
-        public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
         public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
 
         public SpawnList<EffectTile> TileSpawns { get; set; }
