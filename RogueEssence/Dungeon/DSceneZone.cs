@@ -786,50 +786,35 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.AllyTeams.Count; jj++)
-                genericReorderDeadPlayerList(Faction.Friend, jj);
+            foreach(CharIndex deadTeamIdx in ZoneManager.Instance.CurrentMap.TeamsWithDead)
+                genericReorderDeadPlayerList(deadTeamIdx.Faction, deadTeamIdx.Team);
+            ZoneManager.Instance.CurrentMap.TeamsWithDead.Clear();
+        }
 
-            for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.MapTeams.Count; jj++)
-                genericReorderDeadPlayerList(Faction.Foe, jj);
+
+        private int deadTeamIndexCompare(CharIndex key1, CharIndex key2)
+        {
+            int cmp = Math.Sign((int)key2.Faction - (int)key1.Faction);
+            if (cmp != 0)
+                return cmp;
+            return Math.Sign(key2.Team - key1.Team);
         }
 
         public void RemoveDeadTeams()
         {
-            for (int ii = ZoneManager.Instance.CurrentMap.AllyTeams.Count - 1; ii >= 0; ii--)
+            List<CharIndex> sortedTeams = new List<CharIndex>();
+            foreach (CharIndex deadTeamIdx in ZoneManager.Instance.CurrentMap.DeadTeams)
+                sortedTeams.Add(deadTeamIdx);
+            sortedTeams.Sort(deadTeamIndexCompare);
+            foreach (CharIndex deadTeamIdx in sortedTeams)
             {
-                bool allDead = true;
-                Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
-                foreach (Character character in team.EnumerateChars())
-                {
-                    if (!character.Dead)
-                        allDead = false;
-                }
-                if (allDead)
-                {
-                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Friend, ii, true, jj));
-                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Friend, ii, false, jj));
-                }
+                Team deadTeam = ZoneManager.Instance.CurrentMap.GetTeam(deadTeamIdx.Faction, deadTeamIdx.Team);
+                for (int jj = deadTeam.Guests.Count - 1; jj >= 0; jj--)
+                    RemoveChar(new CharIndex(deadTeamIdx.Faction, deadTeamIdx.Team, true, jj));
+                for (int jj = deadTeam.Players.Count - 1; jj >= 0; jj--)
+                    RemoveChar(new CharIndex(deadTeamIdx.Faction, deadTeamIdx.Team, false, jj));
             }
-
-            for (int ii = ZoneManager.Instance.CurrentMap.MapTeams.Count - 1; ii >= 0; ii--)
-            {
-                bool allDead = true;
-                Team team = ZoneManager.Instance.CurrentMap.MapTeams[ii];
-                foreach (Character character in team.EnumerateChars())
-                {
-                    if (!character.Dead)
-                        allDead = false;
-                }
-                if (allDead)
-                {
-                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Foe, ii, true, jj));
-                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Foe, ii, false, jj));
-                }
-            }
+            ZoneManager.Instance.CurrentMap.DeadTeams.Clear();
         }
 
         public int GetSpeedMult(Character movingChar, Loc destTile)
@@ -908,10 +893,13 @@ namespace RogueEssence.Dungeon
                 }
                 while (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(CurrentCharacter));
 
-                if (!IsPlayerTurn())
-                    OrganizeAIMovement(0);
+                //reorder again in case something happened to deaths.
+                ReorderDeadLeaders();
 
                 RemoveDeadTeams();
+
+                if (!IsPlayerTurn())
+                    OrganizeAIMovement(0);
 
                 yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
             }

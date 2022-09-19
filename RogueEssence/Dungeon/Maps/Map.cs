@@ -120,6 +120,12 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        [NonSerialized]
+        public HashSet<CharIndex> TeamsWithDead;
+
+        [NonSerialized]
+        public HashSet<CharIndex> DeadTeams;
+
         public bool NoRescue;
         public bool NoSwitching;
 
@@ -156,6 +162,9 @@ namespace RogueEssence.Dungeon
 
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
+
+            TeamsWithDead = new HashSet<CharIndex>();
+            DeadTeams = new HashSet<CharIndex>();
 
             Background = new MapBG();
             BlankBG = new AutoTile();
@@ -883,7 +892,7 @@ namespace RogueEssence.Dungeon
             team.ContainingMap = this;
             team.MapFaction = Faction.Friend;
             team.MapIndex = index;
-            for (int ii = index + 1; ii < AllyTeams.Count; ii++)
+            for (int ii = index; ii < AllyTeams.Count; ii++)
                 AllyTeams[ii].MapIndex++;
             //update location caches
             addTeamLookup(team);
@@ -893,7 +902,7 @@ namespace RogueEssence.Dungeon
             team.ContainingMap = this;
             team.MapFaction = Faction.Foe;
             team.MapIndex = index;
-            for (int ii = index + 1; ii < MapTeams.Count; ii++)
+            for (int ii = index; ii < MapTeams.Count; ii++)
                 MapTeams[ii].MapIndex++;
             //update location caches
             addTeamLookup(team);
@@ -903,7 +912,7 @@ namespace RogueEssence.Dungeon
             team.ContainingMap = null;
             team.MapFaction = Faction.None;
             team.MapIndex = -1;
-            for (int ii = index; ii < AllyTeams.Count; ii++)
+            for (int ii = index + 1; ii < AllyTeams.Count; ii++)
                 AllyTeams[ii].MapIndex--;
             //update location caches
             removeTeamLookup(team);
@@ -913,7 +922,7 @@ namespace RogueEssence.Dungeon
             team.ContainingMap = null;
             team.MapFaction = Faction.None;
             team.MapIndex = -1;
-            for (int ii = index; ii < MapTeams.Count; ii++)
+            for (int ii = index + 1; ii < MapTeams.Count; ii++)
                 MapTeams[ii].MapIndex--;
             //update location caches
             removeTeamLookup(team);

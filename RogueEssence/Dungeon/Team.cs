@@ -143,6 +143,41 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public void CharacterDeathChanged()
+        {
+            CharIndex teamIndex = new CharIndex(MapFaction, MapIndex, false, -1);
+            bool allDead = true;
+            foreach (Character character in this.EnumerateChars())
+            {
+                if (!character.Dead)
+                    allDead = false;
+            }
+            if (allDead)
+            {
+                //add to DeadTeams
+                ContainingMap.DeadTeams.Add(teamIndex);
+            }
+            else
+            {
+                //remove from DeadTeams
+                ContainingMap.DeadTeams.Remove(teamIndex);
+            }
+
+            if (this.MapFaction != Faction.Player)
+            {
+                if (!allDead && this.Leader.Dead)
+                {
+                    //add to TeamsWithDead
+                    ContainingMap.TeamsWithDead.Add(teamIndex);
+                }
+                else
+                {
+                    //remove from TeamsWithDead
+                    ContainingMap.TeamsWithDead.Remove(teamIndex);
+                }
+            }
+        }
+
         public int GetInvCount()
         {
             return inventory.Count;

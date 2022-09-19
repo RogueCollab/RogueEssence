@@ -222,7 +222,16 @@ namespace RogueEssence.Dungeon
         public int FullnessRemainder;
         public int MaxFullness;
 
-        public bool Dead;
+        private bool dead;
+        public bool Dead
+        {
+            get { return dead; }
+            set
+            {
+                dead = value;
+                MemberTeam?.CharacterDeathChanged();
+            }
+        }
 
         [JsonConverter(typeof(StatusDictConverter))]
         public Dictionary<string, StatusEffect> StatusEffects;
