@@ -293,23 +293,9 @@ namespace RogueEssence.Dungeon
                             return;
                     }
 
-                    foreach (Team team in AllyTeams)
-                    {
-                        foreach (Character character in team.EnumerateChars())
-                        {
-                            if (!character.Dead && character.CharLoc == testLoc)
-                                return;
-                        }
-                    }
+                    if (GetCharAtLoc(testLoc) != null)
+                        return;
 
-                    foreach (Team team in MapTeams)
-                    {
-                        foreach (Character character in team.EnumerateChars())
-                        {
-                            if (!character.Dead && character.CharLoc == testLoc)
-                                return;
-                        }
-                    }
                     freeTiles.Add(testLoc);
                 },
                 EntryPoints[0].Loc);
@@ -545,7 +531,7 @@ namespace RogueEssence.Dungeon
         {
             //TODO: create a proximity lookup structure so we don't have to iterate all characters
             //For now, the hack is to assume the proximity is never over 5.
-            foreach(Character character in GetCharsInRect(new Rect(loc - new Loc(5), new Loc(11))))
+            foreach(Character character in GetCharsInRect(Rect.FromPointRadius(loc, 5)))
             {
                 if (InRange(character.CharLoc, loc, character.Proximity))
                     yield return character;
