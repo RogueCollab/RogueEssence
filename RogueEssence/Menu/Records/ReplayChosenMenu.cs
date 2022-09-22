@@ -89,16 +89,14 @@ namespace RogueEssence.Menu
         // FavoriteAction and UnFavoriteAction could be moved into one function
         private void FavoriteAction()
         {
-            // Move This below ReplaySetFavorite?
-            MenuManager.Instance.RemoveMenu();
             DataManager.Instance.ReplaySetFavorite(recordDir, true);
+            MenuManager.Instance.RemoveMenu();
         }
 
         private void UnFavoriteAction()
         {
-            // Move This below ReplaySetFavorite?
-            MenuManager.Instance.RemoveMenu();
             DataManager.Instance.ReplaySetFavorite(recordDir, false);
+            MenuManager.Instance.RemoveMenu();
         }
 
         private void DeleteAction()

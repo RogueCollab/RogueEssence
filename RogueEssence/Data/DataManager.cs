@@ -1444,6 +1444,7 @@ namespace RogueEssence.Data
                 {
                     using (BinaryWriter writer = new BinaryWriter(new FileStream(recordDir, FileMode.Create, FileAccess.Write, FileShare.None)))
                     {
+                        //read version
                         writer.Write(reader.ReadInt32());
                         writer.Write(reader.ReadInt32());
                         writer.Write(reader.ReadInt32());
@@ -1471,13 +1472,10 @@ namespace RogueEssence.Data
                         writer.Write(favorite_value);
                         //read language that the game was played in
                         writer.Write(reader.ReadString());
-                        //read commands
-
-                        // FIX ME
-                        byte value;
-                        while ((value = reader.ReadByte()) != null)
+                        //read the rest of the file
+                        while (memory.Position < memory.Length)
                         {
-                            writer.Write(value);
+                            writer.Write(reader.ReadByte());
                         }
                     }
                 }
