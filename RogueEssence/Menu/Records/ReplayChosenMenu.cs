@@ -26,6 +26,16 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_REPLAY"), ReplayAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_SEED"), SeedAction));
+
+            if (DataManager.Instance.GetRecordHeader(recordDir).IsFavorite)
+            {
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_UNFAVORITE"), UnFavoriteAction));
+            }
+            else
+            {
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_FAVORITE"), FavoriteAction));
+            }
+
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE"), DeleteAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
@@ -74,6 +84,21 @@ namespace RogueEssence.Menu
                 SDL.SDL_SetClipboardText(ending.Rand.FirstSeed.ToString("X"));
                 GameManager.Instance.SE("Menu/Sort");
             }
+        }
+
+        // FavoriteAction and UnFavoriteAction could be moved into one function
+        private void FavoriteAction()
+        {
+            // Move This below ReplaySetFavorite?
+            MenuManager.Instance.RemoveMenu();
+            DataManager.Instance.ReplaySetFavorite(recordDir, true);
+        }
+
+        private void UnFavoriteAction()
+        {
+            // Move This below ReplaySetFavorite?
+            MenuManager.Instance.RemoveMenu();
+            DataManager.Instance.ReplaySetFavorite(recordDir, false);
         }
 
         private void DeleteAction()
