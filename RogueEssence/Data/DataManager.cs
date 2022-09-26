@@ -991,6 +991,7 @@ namespace RogueEssence.Data
                 replayWriter.Write(Save.ActiveTeam.GetReferenceName());
                 replayWriter.Write(Save.StartDate);
                 replayWriter.Write(Save.Rand.FirstSeed);
+                replayWriter.Write(false);
                 replayWriter.Write(DiagManager.Instance.CurSettings.Language);
 
                 replayWriter.Flush();
@@ -1368,6 +1369,7 @@ namespace RogueEssence.Data
                         record.Name = reader.ReadString();
                         record.DateTimeString = reader.ReadString();
                         record.Seed = reader.ReadUInt64();
+                        record.IsFavorite = reader.ReadBoolean();
 
                         if (endPos > 0)
                         {
@@ -1418,6 +1420,68 @@ namespace RogueEssence.Data
             return null;
         }
 
+        public byte[] ReadReplayFile(string recordDir)
+        {
+            byte[] replay = null;
+            try
+            {
+                replay = File.ReadAllBytes(recordDir);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+            }
+            return replay;
+        }
+
+        public void ReplaySetFavorite(string recordDir, bool favorite_value)
+        {
+            byte[] file = ReadReplayFile(recordDir);
+
+            using (MemoryStream memory = new MemoryStream(file))
+            {
+                using (BinaryReader reader = new BinaryReader(memory))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(new FileStream(recordDir, FileMode.Create, FileAccess.Write, FileShare.None)))
+                    {
+                        //read version
+                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadInt32());
+                        writer.Write(reader.ReadInt32());
+                        //read the pointer for location of epitaph
+                        writer.Write(reader.ReadInt64());
+                        //read score
+                        writer.Write(reader.ReadInt32());
+                        //read result
+                        writer.Write(reader.ReadInt32());
+                        //read zone
+                        writer.Write(reader.ReadString());
+                        //read rogue mode
+                        writer.Write(reader.ReadBoolean());
+                        //seeded run
+                        writer.Write(reader.ReadBoolean());
+                        //read name
+                        writer.Write(reader.ReadString());
+                        //read startdate
+                        writer.Write(reader.ReadString());
+                        //read seed
+                        writer.Write(reader.ReadUInt64());
+                        //read Fave
+                        reader.ReadBoolean();
+                        writer.Write(favorite_value);
+                        //read language that the game was played in
+                        writer.Write(reader.ReadString());
+                        //read the rest of the file
+                        while (memory.Position < memory.Length)
+                        {
+                            writer.Write(reader.ReadByte());
+                        }
+                    }
+                }
+            }
+        }
+
         public ReplayData LoadReplay(string recordDir, bool quickload)
         {
             try
@@ -1450,6 +1514,8 @@ namespace RogueEssence.Data
                         reader.ReadString();
                         //read seed
                         reader.ReadUInt64();
+                        //read favorite
+                        reader.ReadBoolean();
                         //read language that the game was played in
                         replay.RecordLang = reader.ReadString();
                         //read commands
@@ -1558,6 +1624,8 @@ namespace RogueEssence.Data
                         writer.Write(reader.ReadString());
                         //read seed
                         writer.Write(reader.ReadUInt64());
+                        //read favorite, no need to write it though
+                        reader.ReadBoolean();
                         //read language that the game was played in
                         writer.Write(reader.ReadString());
                         //read commands

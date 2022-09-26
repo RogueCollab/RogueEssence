@@ -15,6 +15,7 @@ namespace RogueEssence.Data
         public bool IsRogue;
         public bool IsSeeded;
         public ulong Seed;
+        public bool IsFavorite;
         public GameProgress.ResultType Result;
 
         public RecordHeaderData(string path)
@@ -24,9 +25,6 @@ namespace RogueEssence.Data
             DateTimeString = "";
             LocationString = "";
         }
-
-
-
 
         /// <summary>
         /// Generate all high score tables in real time, organized by dungeon, by going through all replays
