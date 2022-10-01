@@ -324,7 +324,6 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class MonsterTeam : Team
     {
-        public bool Unrecruitable;
 
         public MonsterTeam() : this(true)
         { }
@@ -338,7 +337,7 @@ namespace RogueEssence.Dungeon
 
         protected MonsterTeam(MonsterTeam other) : base(other)
         {
-            Unrecruitable = other.Unrecruitable;
+            
         }
 
         public override Team Clone() { return new MonsterTeam(this); }
