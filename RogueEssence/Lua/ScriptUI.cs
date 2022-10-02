@@ -58,6 +58,7 @@ namespace RogueEssence.Script
         public LuaFunction WaitHideTitle;
         public LuaFunction WaitShowBG;
         public LuaFunction WaitHideBG;
+        
 
         //================================================================
         // Dialogue
@@ -479,6 +480,11 @@ namespace RogueEssence.Script
             }
         }
 
+        public void DepositAllMenu() {
+
+            DepositAllMenu test = new DepositAllMenu();
+        }
+
         private void onChooseSlot(List<WithdrawSlot> slots)
         {
             //store item
@@ -755,7 +761,7 @@ namespace RogueEssence.Script
         public void ShowMusicMenu(LuaTable spoilerUnlocks)
         {
             try
-            {
+     {
                 List<string> unlockedTags = new List<string>();
                 foreach (object key in spoilerUnlocks.Keys)
                 {
