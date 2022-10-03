@@ -58,6 +58,7 @@ namespace RogueEssence.Script
         public LuaFunction WaitHideTitle;
         public LuaFunction WaitShowBG;
         public LuaFunction WaitHideBG;
+        
 
         //================================================================
         // Dialogue
@@ -479,6 +480,25 @@ namespace RogueEssence.Script
             }
         }
 
+        public void DepositAll() {
+            List<InvItem> items = new List<InvItem>();
+            int item_count = DataManager.Instance.Save.ActiveTeam.GetInvCount();
+    
+            for (int i = 0; i < item_count; i++) {
+                // Get a list of inventory items.
+                InvItem item = DataManager.Instance.Save.ActiveTeam.GetInv(i);
+                items.Add(item);
+            };
+
+            // Store all items in the inventory.
+            DataManager.Instance.Save.ActiveTeam.StoreItems(items);
+
+            // Remove the items back to front to prevent removing them in the wrong order.
+            for (int i = items.Count - 1; i >= 0; i--) {
+                DataManager.Instance.Save.ActiveTeam.RemoveFromInv(i);
+            }
+        }
+
         private void onChooseSlot(List<WithdrawSlot> slots)
         {
             //store item
@@ -755,7 +775,7 @@ namespace RogueEssence.Script
         public void ShowMusicMenu(LuaTable spoilerUnlocks)
         {
             try
-            {
+     {
                 List<string> unlockedTags = new List<string>();
                 foreach (object key in spoilerUnlocks.Keys)
                 {
