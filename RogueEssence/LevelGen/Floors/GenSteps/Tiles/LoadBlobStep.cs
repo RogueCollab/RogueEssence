@@ -48,7 +48,6 @@ namespace RogueEssence.LevelGen
             {
                 for (int jj = 0; jj < 30; jj++)
                 {
-                    bool placed = false;
                     string chosenMapID = Maps.Pick(map.Rand);
                     Map placeMap;
                     if (!mapCache.TryGetValue(chosenMapID, out placeMap))
@@ -60,10 +59,10 @@ namespace RogueEssence.LevelGen
                     Loc offset = new Loc(map.Rand.Next(0, map.Width - placeMap.Width), map.Rand.Next(0, map.Height - placeMap.Height));
 
                     if (canDrawBlob(map, placeMap, offset))
+                    {
                         DrawBlob(map, placeMap, offset);
-
-                    if (placed)
                         break;
+                    }
                 }
             }
         }
