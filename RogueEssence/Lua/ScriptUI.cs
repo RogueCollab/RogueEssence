@@ -483,7 +483,14 @@ namespace RogueEssence.Script
         public void DepositAll() {
             List<InvItem> items = new List<InvItem>();
             int item_count = DataManager.Instance.Save.ActiveTeam.GetInvCount();
-    
+
+            // Get list from held items
+            foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                    items.Add(player.EquippedItem);
+            }
+
             for (int ii = 0; ii < item_count; ii++) {
                 // Get a list of inventory items.
                 InvItem item = DataManager.Instance.Save.ActiveTeam.GetInv(ii);
@@ -493,8 +500,15 @@ namespace RogueEssence.Script
             // Store all items in the inventory.
             DataManager.Instance.Save.ActiveTeam.StoreItems(items);
 
+            // Remove held items
+            foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                    player.DequipItem();
+            }
+
             // Remove the items back to front to prevent removing them in the wrong order.
-            for (int ii = items.Count - 1; ii >= 0; ii--) {
+            for (int ii = DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--) {
                 DataManager.Instance.Save.ActiveTeam.RemoveFromInv(ii);
             }
         }
