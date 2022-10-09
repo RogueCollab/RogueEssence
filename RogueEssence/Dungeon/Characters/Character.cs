@@ -1303,9 +1303,57 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public List<string> GetRelearnableSkills()
+        public List<string> GetRelearnableSkills(bool includePreEvo)
         {
-            BaseMonsterForm entry = DataManager.Instance.GetMonster(BaseForm.Species).Forms[BaseForm.Form];
+            List<BaseMonsterForm> entries = new List<BaseMonsterForm>();
+            string evolutionStage = BaseForm.Species;
+            MonsterData entryData;
+            BaseMonsterForm entryForm;
+
+            while (!string.IsNullOrEmpty(evolutionStage))
+            {
+                entryData = DataManager.Instance.GetMonster(evolutionStage);
+                entryForm = entryData.Forms[BaseForm.Form];
+                entries.Add(entryForm);
+                evolutionStage = includePreEvo ? entryData.PromoteFrom : string.Empty;
+            }
+
+            List<string> forgottenSkills = new List<string>();
+            foreach(BaseMonsterForm entry in entries)
+            {
+                foreach (string skill in entry.GetSkillsAtLevel(Level, true))
+                {
+                    bool hasSkill = false;
+                    foreach (SlotSkill learnedSkill in BaseSkills)
+                    {
+                        if (learnedSkill.SkillNum == skill)
+                        {
+                            hasSkill = true;
+                            break;
+                        }
+                    }
+                    if (!hasSkill && !forgottenSkills.Contains(skill))
+                        forgottenSkills.Add(skill);
+                }
+            }
+
+            foreach (string key in Relearnables.Keys)
+            {
+                bool hasSkill = false;
+                foreach (SlotSkill learnedSkill in BaseSkills)
+                {
+                    if (learnedSkill.SkillNum == key)
+                    {
+                        hasSkill = true;
+                        break;
+                    }
+                }
+                if (!hasSkill && !forgottenSkills.Contains(key))
+                    forgottenSkills.Add(key);
+            }
+            return forgottenSkills;
+
+            /*BaseMonsterForm entry = DataManager.Instance.GetMonster(BaseForm.Species).Forms[BaseForm.Form];
             List<string> forgottenSkills = new List<string>();
             foreach (string skill in entry.GetSkillsAtLevel(Level, true))
             {
@@ -1336,7 +1384,7 @@ namespace RogueEssence.Dungeon
                 if (!hasSkill && !forgottenSkills.Contains(key))
                     forgottenSkills.Add(key);
             }
-            return forgottenSkills;
+            return forgottenSkills;*/
         }
 
         public IEnumerator<YieldInstruction> ChangeElement(string element1, string element2, bool msg = true, bool vfx = true)

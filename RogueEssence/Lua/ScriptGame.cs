@@ -440,7 +440,7 @@ namespace RogueEssence.Script
         /// <param name="character"></param>
         public bool CanRelearn(Character character)
         {
-            return character.GetRelearnableSkills().Count > 0;
+            return character.GetRelearnableSkills(true).Count > 0;
         }
 
         public bool CanForget(Character character)
