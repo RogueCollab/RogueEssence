@@ -42,7 +42,7 @@ namespace RogueEssence.Data
         public override string ToString()
         {
             ElementData element = DataManager.Instance.GetElement(Element);
-            string type = Text.FormatKey("MENU_SKILLS_ELEMENT", element.Name.ToLocal());
+            string type = Text.FormatKey("MENU_SKILLS_ELEMENT", element != null ? element.Name.ToLocal() : "---");
             string category = Text.FormatKey("MENU_SKILLS_CATEGORY", Category.ToLocal());
             BasePowerState powerState = SkillStates.GetWithDefault<BasePowerState>();
             string power = Text.FormatKey("MENU_SKILLS_POWER", (powerState != null ? powerState.Power.ToString() : "---"));
