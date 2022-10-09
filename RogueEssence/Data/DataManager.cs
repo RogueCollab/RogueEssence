@@ -2134,6 +2134,21 @@ namespace RogueEssence.Data
             }
         }
 
+        public void DeleteNonFavReplayData()
+        {
+            string[] files = Directory.GetFiles(PathMod.ModSavePath(DataManager.REPLAY_PATH), "*" + REPLAY_EXTENSION);
+
+            foreach (string file in files)
+            {
+                if (!IsNonTrivialFile(file))
+                    continue;
+
+                RecordHeaderData record = GetRecordHeader(file);
+                if (!record.IsFavorite)
+                    File.Delete(file);
+            }
+        }
+
         public IEnumerable<string> GetRecentMsgs(int entries)
         {
             return GetRecentMsgs(MsgLog.Count - entries, MsgLog.Count);
