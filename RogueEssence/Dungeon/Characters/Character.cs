@@ -298,6 +298,7 @@ namespace RogueEssence.Dungeon
         public bool SeeItems;
         public bool SeeWallItems;
         public bool SeeTraps;
+        public bool Unrecruitable;
 
         //miscellaneous traits
         public StateCollection<CharState> CharStates;
