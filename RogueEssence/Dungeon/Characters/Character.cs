@@ -304,6 +304,7 @@ namespace RogueEssence.Dungeon
         public StateCollection<CharState> CharStates;
 
         //temporarily stores forced warp to prevent warp chains
+        [NonSerialized]
         public List<Loc> WarpHistory;
 
         [NonSerialized]
@@ -1302,7 +1303,7 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public List<string> GetRelearnableSkills()
+        public List<string> GetRelearnableSkills(bool includePreEvo)
         {
             List<BaseMonsterForm> entries = new List<BaseMonsterForm>();
             string evolutionStage = BaseForm.Species;
@@ -1314,7 +1315,7 @@ namespace RogueEssence.Dungeon
                 entryData = DataManager.Instance.GetMonster(evolutionStage);
                 entryForm = entryData.Forms[BaseForm.Form];
                 entries.Add(entryForm);
-                evolutionStage = entryData.PromoteFrom;
+                evolutionStage = includePreEvo ? entryData.PromoteFrom : string.Empty;
             }
 
             List<string> forgottenSkills = new List<string>();
@@ -1523,6 +1524,8 @@ namespace RogueEssence.Dungeon
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
         public void RefreshTraits()
         {
+            TerrainData.Mobility oldMobility = Mobility;
+
             baseRefresh();
 
             refreshProximity();
@@ -1530,6 +1533,9 @@ namespace RogueEssence.Dungeon
             OnRefresh();
 
             maintainMaximums();
+
+            if (Mobility != oldMobility)
+                MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
         }
 
         private void maintainMaximums()
@@ -2300,6 +2306,7 @@ namespace RogueEssence.Dungeon
                 return;
             //update location caches
             MemberTeam?.ContainingMap?.ModifyCharLookup(this, oldLoc);
+            MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
         }
 
         public void StartEmote(Emote emote)
