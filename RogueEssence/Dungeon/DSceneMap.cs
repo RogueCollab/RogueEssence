@@ -133,12 +133,13 @@ namespace RogueEssence.Dungeon
             LogMsg(Text.DIVIDER_STR);
 
             //check for mobility violation at the end of anyone's turn
-            //TODO: only do this when someone has changed location, or when someone has changed mobility
-            //foreach (Character standChar in ZoneManager.Instance.CurrentMap.IterateCharacters())
-            //{
-            //    if (!standChar.Dead && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
-            //        yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
-            //}
+            //only do this when someone has changed location, or when someone has changed mobility
+            foreach (Character standChar in ZoneManager.Instance.CurrentMap.DisplacedChars)
+            {
+                if (!standChar.Dead && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
+                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+            }
+            ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
 
             //end turn
             if (!character.Dead)

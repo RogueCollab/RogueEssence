@@ -303,6 +303,7 @@ namespace RogueEssence.Dungeon
         public StateCollection<CharState> CharStates;
 
         //temporarily stores forced warp to prevent warp chains
+        [NonSerialized]
         public List<Loc> WarpHistory;
 
         [NonSerialized]
@@ -1474,6 +1475,8 @@ namespace RogueEssence.Dungeon
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
         public void RefreshTraits()
         {
+            TerrainData.Mobility oldMobility = Mobility;
+
             baseRefresh();
 
             refreshProximity();
@@ -1481,6 +1484,9 @@ namespace RogueEssence.Dungeon
             OnRefresh();
 
             maintainMaximums();
+
+            if (Mobility != oldMobility)
+                MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
         }
 
         private void maintainMaximums()
@@ -2251,6 +2257,7 @@ namespace RogueEssence.Dungeon
                 return;
             //update location caches
             MemberTeam?.ContainingMap?.ModifyCharLookup(this, oldLoc);
+            MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
         }
 
         public void StartEmote(Emote emote)

@@ -186,7 +186,7 @@ namespace RogueEssence.Dungeon
             context.HitboxAction.Distance += Math.Min(Math.Max(-3, context.RangeMod), 3);
             yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformBattleAction(context.HitboxAction.Clone(), context));
             //if (context.User.CharLoc == context.StrikeEndTile && context.StrikeEndTile != context.StrikeStartTile)
-            //    yield return CoroutinesManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
+            //    yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
 
             //TODO: test to make sure everything is consistent with the erasure of handling movement in here
             //first, hopping needs to work properly, because the it will call its own tile landing
