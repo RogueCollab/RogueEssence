@@ -65,7 +65,7 @@ namespace RogueEssence.Menu
             choices.Add(new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () =>
             {
                 MenuManager.Instance.ClearMenus();
-                DataManager.Instance.DeleteReplayData();
+                DataManager.Instance.DeleteReplayData(true);
                 MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_DELETE_REPLAY_COMPLETE")), false);
                 MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
                 GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
@@ -74,7 +74,7 @@ namespace RogueEssence.Menu
             choices.Add(new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () =>
             {
                 MenuManager.Instance.ClearMenus();
-                DataManager.Instance.DeleteNonFavReplayData();
+                DataManager.Instance.DeleteReplayData(false);
                 MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_DELETE_REPLAY_COMPLETE")), false);
                 MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
                 GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();

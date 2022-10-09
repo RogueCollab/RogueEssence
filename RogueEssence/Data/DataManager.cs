@@ -2117,24 +2117,11 @@ namespace RogueEssence.Data
             }
         }
 
-        public void DeleteReplayData()
-        {
-            try
-            {
-                if (Directory.Exists(PathMod.ModSavePath(DataManager.REPLAY_PATH)))
-                {
-                    Directory.Delete(PathMod.ModSavePath(DataManager.REPLAY_PATH), true);
-                    Directory.CreateDirectory(PathMod.ModSavePath(DataManager.REPLAY_PATH));
-                }
-            }
-            catch (Exception ex)
-            {
-                //In this case, the error will be presented clearly to the player.  Do not signal.
-                DiagManager.Instance.LogError(ex, false);
-            }
-        }
-
-        public void DeleteNonFavReplayData()
+        /// <summary>
+        /// Deletes replays from the replay folder corresponding to the current mod.
+        /// </summary>
+        /// <param name="includeFav">Favorites will be deleted too.</param>
+        public void DeleteReplayData(bool includeFav)
         {
             string[] files = Directory.GetFiles(PathMod.ModSavePath(DataManager.REPLAY_PATH), "*" + REPLAY_EXTENSION);
 
@@ -2144,8 +2131,13 @@ namespace RogueEssence.Data
                     continue;
 
                 RecordHeaderData record = GetRecordHeader(file);
-                if (!record.IsFavorite)
-                    File.Delete(file);
+                // in order for a file to be spared,
+                // the record must be valid
+                // the record must be a fave
+                // includeFav must be FALSE
+                if (record != null && !includeFav && record.IsFavorite)
+                    continue;
+                File.Delete(file);
             }
         }
 
