@@ -59,18 +59,30 @@ namespace RogueEssence.Menu
 
         private void DeleteReplayAction()
         {
-            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(MonsterID.Invalid, null, new EmoteStyle(0), true,
-                () => {
-                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), Text.FormatKey("DLG_DELETE_CONFIRM"), true, false, false, false, () =>
-                    {
-                        MenuManager.Instance.ClearMenus();
-                        DataManager.Instance.DeleteReplayData();
-                        MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_DELETE_REPLAY_COMPLETE")), false);
-                        MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
-                        GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
-                    }, () => { }, true), false);
-                },
-                -1, false, false, false, Text.FormatKey("DLG_DELETE_REPLAY")), false);
+            MenuManager.Instance.ClearMenus();
+            List <DialogueChoice> choices = new List<DialogueChoice>();
+
+            choices.Add(new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () =>
+            {
+                MenuManager.Instance.ClearMenus();
+                DataManager.Instance.DeleteReplayData();
+                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_DELETE_REPLAY_COMPLETE")), false);
+                MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
+                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+            }));
+
+            choices.Add(new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () =>
+            {
+                MenuManager.Instance.ClearMenus();
+                DataManager.Instance.DeleteNonFavReplayData();
+                MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(false, Text.FormatKey("DLG_DELETE_REPLAY_COMPLETE")), false);
+                MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
+                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+            }));
+
+            choices.Add(new DialogueChoice(Text.FormatKey("MENU_CANCEL"), () => { }));
+
+            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateMultiQuestion(Text.FormatKey("DLG_DELETE_REPLAY"), false, choices, 2, 2), true);
         }
     }
 }
