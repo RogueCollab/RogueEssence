@@ -633,7 +633,7 @@ namespace RogueEssence.Script
 
             try
             {
-                List<string> forgottenSkills = chara.GetRelearnableSkills();
+                List<string> forgottenSkills = chara.GetRelearnableSkills(true);
 
                 if (DataManager.Instance.CurrentReplay != null)
                 {

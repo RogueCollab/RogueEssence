@@ -9,8 +9,6 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class RangeDict<T> : IRangeDict<T>, IRangeDict
     {
-        //TODO: make this use a binary tree for O(log(n)) access time
-
         private readonly List<RangeNode> nodes;
 
         public int RangeCount => nodes.Count;
@@ -27,6 +25,7 @@ namespace RogueEssence.LevelGen
 
         public void SetRange(T item, IntRange range)
         {
+            //TODO: make this use binary search for O(logn) access time
             EraseRange(range);
             nodes.Add(new RangeNode(item, range));
         }
@@ -38,6 +37,7 @@ namespace RogueEssence.LevelGen
 
         public void EraseRange(IntRange range)
         {
+            //TODO: make this use binary search for O(logn) access time
             for (int ii = nodes.Count - 1; ii >= 0; ii--)
             {
                 if (range.Min <= nodes[ii].Range.Min && nodes[ii].Range.Max <= range.Max)
@@ -56,6 +56,7 @@ namespace RogueEssence.LevelGen
 
         public T GetItem(int index)
         {
+            //TODO: make this use binary search for O(logn) access time
             foreach (RangeNode node in nodes)
             {
                 if (node.Range.Min <= index && index < node.Range.Max)
@@ -71,6 +72,7 @@ namespace RogueEssence.LevelGen
 
         public bool TryGetItem(int index, out T item)
         {
+            //TODO: make this use binary search for O(logn) access time
             foreach (RangeNode node in nodes)
             {
                 if (node.Range.Min <= index && index < node.Range.Max)
@@ -96,6 +98,7 @@ namespace RogueEssence.LevelGen
 
         public bool ContainsItem(int index)
         {
+            //TODO: make this use binary search for O(logn) access time
             foreach (RangeNode node in nodes)
             {
                 if (node.Range.Min <= index && index < node.Range.Max)

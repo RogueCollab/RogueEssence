@@ -30,11 +30,11 @@ namespace RogueEssence.Menu
 
             if (DataManager.Instance.GetRecordHeader(recordDir).IsFavorite)
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_UNFAVORITE"), UnFavoriteAction));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_FAVORITE_OFF"), UnFavoriteAction));
             }
             else
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_FAVORITE"), FavoriteAction));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_FAVORITE"), FavoriteAction));
             }
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE"), DeleteAction));
