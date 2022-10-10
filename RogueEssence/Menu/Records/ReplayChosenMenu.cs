@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
             
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_REPLAY"), ReplayAction));
-            choices.Add(new MenuTextChoice("CONTINUE ACTION", ProofAction));
+            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_VERIFY"), VerifyAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_SEED"), SeedAction));
 
             if (DataManager.Instance.GetRecordHeader(recordDir).IsFavorite)
@@ -71,67 +71,20 @@ namespace RogueEssence.Menu
                 TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
 
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = ReplayQuickSave(replay);
+                GameManager.Instance.SceneOutcome = Replay(replay);
             }
         }
 
-        private void ProofAction() {
+        private void VerifyAction() {
 
             ReplayData replay = DataManager.Instance.LoadReplay(recordDir, false);
 
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = ReplayQuickSave(replay);
-        }
 
-        private IEnumerator<YieldInstruction> ReplayQuickSave(ReplayData replay)
-        {
-            GameManager.Instance.BGM("", true);
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
-
-            DataManager.Instance.MsgLog.Clear();
-            GameState state = replay.ReadState();
-            DataManager.Instance.SetProgress(state.Save);
-            LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
-            ZoneManager.LoadFromState(state.Zone);
-            LuaEngine.Instance.UpdateZoneInstance();
-
-            //NOTE: In order to preserve debug consistency, you SHOULD set the language to that of the quicksave.
-            //HOWEVER, it would be too inconvenient for players sharing their quicksaves, thus this feature is LEFT OUT.
-
+            // By setting LoadMode to Loading, the game speed will be at its max and show us the results
+            // from the replay.
             DataManager.Instance.Loading = DataManager.LoadMode.Loading;
-
-            DataManager.Instance.CurrentReplay = replay;
-
-
-            if (DataManager.Instance.Save.NextDest.IsValid())
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
-            }
-            else
-            {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
-                DataManager.Instance.CurrentReplay = null;
-                DataManager.Instance.Save.UpdateOptions();
-
-                GameManager.Instance.SetFade(true, false);
-
-                DataManager.Instance.Loading = DataManager.LoadMode.None;
-
-                if (ZoneManager.Instance.CurrentMapID.Segment > -1)
-                {
-                    GameManager.Instance.MoveToScene(DungeonScene.Instance);
-                    GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
-                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
-                }
-                else
-                {
-                    GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
-                    GameManager.Instance.BGM(ZoneManager.Instance.CurrentGround.Music, true);
-                    yield return CoroutineManager.Instance.StartCoroutine(Ground.GroundScene.Instance.InitGround(false));
-                }
-
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
-            } 
+            GameManager.Instance.SceneOutcome = Replay(replay);
         }
 
         private void SeedAction()
