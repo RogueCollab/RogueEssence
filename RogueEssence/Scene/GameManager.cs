@@ -797,7 +797,13 @@ namespace RogueEssence
                         if (nextAction.Type == GameAction.ActionType.Rescue)
                             rescued = nextAction;
                         else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                            
+                            // Change dialogue message depending on the LoadMode.
+                            if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying) {
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                            } else {
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                            }
                     }
 
                     if (rescued != null) //run the action
@@ -858,6 +864,12 @@ namespace RogueEssence
                             //if failed, just show the death plaque
                             //if succeeded, run the script that follows.
                             SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
+                        }
+                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) {
+
+                            Console.WriteLine("Verified");
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
                         }
                         else //we've reached the end of the replay
                             yield return CoroutineManager.Instance.StartCoroutine(EndReplay());

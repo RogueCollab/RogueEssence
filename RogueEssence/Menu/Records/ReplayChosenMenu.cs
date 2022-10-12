@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
 
             // By setting LoadMode to Loading, the game speed will be at its max and show us the results
             // from the replay.
-            DataManager.Instance.Loading = DataManager.LoadMode.Loading;
+            DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
             GameManager.Instance.SceneOutcome = Replay(replay);
         }
 
