@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
                 TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
 
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = Replay(replay);
+                GameManager.Instance.SceneOutcome = Replay(replay, false);
             }
         }
 
@@ -81,10 +81,8 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.ClearMenus();
 
-            // By setting LoadMode to Loading, the game speed will be at its max and show us the results
-            // from the replay.
-            DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
-            GameManager.Instance.SceneOutcome = Replay(replay);
+            // Play the replay with LoadMode set to Verifying
+            GameManager.Instance.SceneOutcome = Replay(replay, true);
         }
 
         private void SeedAction()
@@ -133,12 +131,17 @@ namespace RogueEssence.Menu
             MenuManager.Instance.RemoveMenu();
         }
 
-        public IEnumerator<YieldInstruction> Replay(ReplayData replay)
+        public IEnumerator<YieldInstruction> Replay(ReplayData replay, Boolean is_verifying)
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             DataManager.Instance.MsgLog.Clear();
+
+            if (is_verifying) 
+            {
+                DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
+            }
 
             if (replay.States.Count > 0)
             {

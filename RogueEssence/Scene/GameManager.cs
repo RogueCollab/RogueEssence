@@ -865,9 +865,8 @@ namespace RogueEssence
                             //if succeeded, run the script that follows.
                             SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
                         }
-                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) {
-
-                            Console.WriteLine("Verified");
+                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) 
+                        {
                             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
                             yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
                         }
