@@ -88,7 +88,8 @@ namespace RogueEssence.Data
         {
             None,
             Loading,
-            Rescuing
+            Rescuing,
+            Verifying
         }
 
         private static DataManager instance;

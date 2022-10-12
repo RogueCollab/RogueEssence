@@ -25,6 +25,7 @@ namespace RogueEssence.Menu
             
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_REPLAY"), ReplayAction));
+            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_VERIFY"), VerifyAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_SEED"), SeedAction));
 
             if (DataManager.Instance.GetRecordHeader(recordDir).IsFavorite)
@@ -70,8 +71,18 @@ namespace RogueEssence.Menu
                 TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
 
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = Replay(replay);
+                GameManager.Instance.SceneOutcome = Replay(replay, false);
             }
+        }
+
+        private void VerifyAction() {
+
+            ReplayData replay = DataManager.Instance.LoadReplay(recordDir, false);
+
+            MenuManager.Instance.ClearMenus();
+
+            // Play the replay with LoadMode set to Verifying
+            GameManager.Instance.SceneOutcome = Replay(replay, true);
         }
 
         private void SeedAction()
@@ -120,12 +131,17 @@ namespace RogueEssence.Menu
             MenuManager.Instance.RemoveMenu();
         }
 
-        public IEnumerator<YieldInstruction> Replay(ReplayData replay)
+        public IEnumerator<YieldInstruction> Replay(ReplayData replay, Boolean is_verifying)
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             DataManager.Instance.MsgLog.Clear();
+
+            if (is_verifying) 
+            {
+                DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
+            }
 
             if (replay.States.Count > 0)
             {
