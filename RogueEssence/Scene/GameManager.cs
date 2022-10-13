@@ -799,11 +799,10 @@ namespace RogueEssence
                         else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
                             
                             // Change dialogue message depending on the LoadMode.
-                            if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying) {
+                            if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
                                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
-                            } else {
+                            else
                                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
-                            }
                     }
 
                     if (rescued != null) //run the action

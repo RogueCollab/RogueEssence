@@ -25,7 +25,8 @@ namespace RogueEssence.Menu
             
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_REPLAY"), ReplayAction));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_VERIFY"), VerifyAction));
+            if (DiagManager.Instance.DevMode)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_VERIFY"), VerifyAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_SEED"), SeedAction));
 
             if (DataManager.Instance.GetRecordHeader(recordDir).IsFavorite)
@@ -131,17 +132,12 @@ namespace RogueEssence.Menu
             MenuManager.Instance.RemoveMenu();
         }
 
-        public IEnumerator<YieldInstruction> Replay(ReplayData replay, Boolean is_verifying)
+        public IEnumerator<YieldInstruction> Replay(ReplayData replay, bool verifying)
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
             DataManager.Instance.MsgLog.Clear();
-
-            if (is_verifying) 
-            {
-                DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
-            }
 
             if (replay.States.Count > 0)
             {
@@ -153,6 +149,8 @@ namespace RogueEssence.Menu
                     ZoneManager.LoadFromState(state.Zone);
                     LuaEngine.Instance.UpdateZoneInstance();
 
+                    if (verifying)
+                        DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
                     DataManager.Instance.CurrentReplay = replay;
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
                     yield break;
