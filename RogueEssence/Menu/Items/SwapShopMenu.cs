@@ -32,9 +32,9 @@ namespace RogueEssence.Menu
             AllowedGoods = new List<int>();
 
             itemPresence = new HashSet<string>();
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(true))
+            foreach(string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
             {
-                if (DataManager.Instance.Save.ActiveTeam.Storage[key] > 0)
+                if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
                     updatePresence(itemPresence, ref presenceCount, key);
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
