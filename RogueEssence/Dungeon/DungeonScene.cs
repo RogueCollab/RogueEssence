@@ -192,17 +192,9 @@ namespace RogueEssence.Dungeon
 
             if (input.JustPressed(FrameInput.InputType.Test))
             {
-                if (DataManager.Instance.CurrentReplay == null)
-                {
-                    //For Test
-                    DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
-                    LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote].Name));
-                }
-                else
-                {
-                    DataManager.Instance.CreateQuicksaveFromReplay();
-                    LogMsg(String.Format("Created quicksave."));
-                }
+                //For Test
+                DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
+                LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote].Name));
                 //BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
                 //ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
                 //ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
