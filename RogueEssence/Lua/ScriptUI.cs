@@ -9,6 +9,7 @@ using RogueEssence.Content;
 using RogueEssence.Network;
 using RogueEssence.Data;
 using RogueEssence.Dev;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Script
 {
@@ -1012,7 +1013,10 @@ namespace RogueEssence.Script
         /// Then to recover the integer value indicating the result of the menu, ChoiceResult() must be called.
         /// </summary>
         /// <param name="message">The question to ask the user.</param>
-        public void BeginChoiceMenu(string message, LuaTable choicespairs, object defaultchoice, object cancelchoice)
+        /// <param name="choicesPairs"></param>
+        /// <param name="defaultChoice"></param>
+        /// <param name="cancelChoice"></param>
+        public void BeginChoiceMenu(string message, LuaTable choicesPairs, object defaultChoice, object cancelChoice)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -1027,7 +1031,7 @@ namespace RogueEssence.Script
                 int? mappedCancel = null;
                 //Intepret the choices from lua
                 List<DialogueChoice> choices = new List<DialogueChoice>();
-                IDictionaryEnumerator dict = choicespairs.GetEnumerator();
+                IDictionaryEnumerator dict = choicesPairs.GetEnumerator();
                 while (dict.MoveNext())
                 {
                     string choicetext = "";
@@ -1042,9 +1046,9 @@ namespace RogueEssence.Script
                     }
                     long choiceval = (long)dict.Key;
 
-                    if (defaultchoice.Equals(choiceval))
+                    if (defaultChoice.Equals(choiceval))
                         mappedDefault = choices.Count;
-                    if (cancelchoice.Equals(choiceval))
+                    if (cancelChoice.Equals(choiceval))
                         mappedCancel = choices.Count;
                     choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
@@ -1068,6 +1072,61 @@ namespace RogueEssence.Script
             catch (Exception e)
             {
                 DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BeginChoiceMenu({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+
+        public void BeginMultiPageMenu(int x, int y, int width, string title, LuaTable choicesPairs, int linesPerPage, object defaultChoice, object cancelChoice)
+        {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
+            try
+            {
+                m_choiceresult = null;
+                int? mappedDefault = null;
+                int? mappedCancel = null;
+                //Intepret the choices from lua
+                List<MenuTextChoice> choices = new List<MenuTextChoice>();
+                IDictionaryEnumerator dict = choicesPairs.GetEnumerator();
+                while (dict.MoveNext())
+                {
+                    string choicetext = "";
+                    bool enabled = true;
+                    if (dict.Value is string)
+                        choicetext = dict.Value as string;
+                    else if (dict.Value is LuaTable)
+                    {
+                        LuaTable tbl = dict.Value as LuaTable;
+                        choicetext = (string)tbl[1];
+                        enabled = (bool)tbl[2];
+                    }
+                    long choiceval = (long)dict.Key;
+
+                    if (defaultChoice.Equals(choiceval))
+                        mappedDefault = choices.Count;
+                    if (cancelChoice.Equals(choiceval))
+                        mappedCancel = choices.Count;
+
+                    choices.Add(new MenuTextChoice(choicetext, () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled, enabled ? Color.White : Color.Red));
+                }
+
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+
+                Action cancelAction = null;
+                if (mappedCancel != null)
+                    cancelAction = () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = (long)cancelChoice; DataManager.Instance.LogUIPlay((int)(long)cancelChoice); };
+
+                //Make a choice menu, and check if we display a speaker or not
+                m_curchoice = new CustomMultiPageMenu(new RogueElements.Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, null);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BeginMultiPageMenu({0}): Encountered exception.", title), e), DiagManager.Instance.DevMode);
             }
         }
 

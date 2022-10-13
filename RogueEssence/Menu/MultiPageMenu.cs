@@ -26,13 +26,11 @@ namespace RogueEssence.Menu
 
         protected override void MenuPressed()
         {
-            MenuManager.Instance.ClearToCheckpoint();
             onMenu();
         }
 
         protected override void Canceled()
         {
-            MenuManager.Instance.RemoveMenu();
             onCancel();
         }
 
