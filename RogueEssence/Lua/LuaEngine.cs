@@ -1543,6 +1543,18 @@ namespace RogueEssence.Script
             return new Action( ()=>{ fun.Call(param); } );
         }
 
+        public Array MakeLuaArray(ProxyType class_type, LuaTable table)
+        {
+            Array arr = Array.CreateInstance(class_type.UnderlyingSystemType, table.Values.Count);
+            int idx = 0;
+            foreach (object val in table.Values)
+            {
+                arr.SetValue(val, idx);
+                idx++;
+            }
+            return arr;
+        }
+
 
         private Type[] parseTypeArgs(LuaTable table)
         {
