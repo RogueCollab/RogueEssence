@@ -556,6 +556,42 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public IEnumerable<Character> GetCharsInFillRect(Loc origin, Rect rect)
+        {
+            List<Character> foundChars = new List<Character>();
+
+            bool[][] traversedGrid = new bool[rect.Width][];
+            for (int xx = 0; xx < rect.Width; xx++)
+                traversedGrid[xx] = new bool[rect.Height];
+
+            Grid.FloodFill(rect,
+            (Loc testLoc) =>
+            {
+                if (traversedGrid[testLoc.X - rect.X][testLoc.Y - rect.Y])
+                    return true;
+                if (ZoneManager.Instance.CurrentMap.TileBlocked(testLoc, true))
+                    return true;
+
+                return false;
+            },
+            (Loc testLoc) =>
+            {
+                return false;
+            },
+            (Loc fillLoc) =>
+            {
+                traversedGrid[fillLoc.X - rect.X][fillLoc.Y - rect.Y] = true;
+
+                Character chara = GetCharAtLoc(fillLoc);
+                if (chara != null)
+                    foundChars.Add(chara);
+            },
+            origin);
+
+            foreach (Character chara in foundChars)
+                yield return chara;
+        }
+
         public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
             if (!GetLocInMapBounds(ref loc))

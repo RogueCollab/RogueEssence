@@ -467,8 +467,6 @@ namespace RogueEssence.Dungeon
                     return true;
                 if (!IsInSquareHitbox(testLoc, Origin, MaxRadius, HitArea, Dir))
                     return true;
-                if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref testLoc))
-                    return true;
                 if (ZoneManager.Instance.CurrentMap.TileBlocked(testLoc, true))
                     return true;
 
