@@ -79,11 +79,16 @@ namespace RogueEssence.Menu
         private void VerifyAction() {
 
             ReplayData replay = DataManager.Instance.LoadReplay(recordDir, false);
+            if (replay == null)
+                cannotRead();
+            else
+            {
+                MenuManager.Instance.RemoveMenu();
+                TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
 
-            MenuManager.Instance.ClearMenus();
-
-            // Play the replay with LoadMode set to Verifying
-            GameManager.Instance.SceneOutcome = Replay(replay, true);
+                MenuManager.Instance.ClearMenus();
+                GameManager.Instance.SceneOutcome = Replay(replay, true);
+            }
         }
 
         private void SeedAction()

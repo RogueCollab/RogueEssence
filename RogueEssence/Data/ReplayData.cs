@@ -26,6 +26,7 @@ namespace RogueEssence.Data
         public int CurrentState;
         public int CurrentAction;
         public int CurrentUI;
+        public int Desyncs;
 
         public bool Paused;
         public bool OpenMenu;

@@ -797,12 +797,12 @@ namespace RogueEssence
                         if (nextAction.Type == GameAction.ActionType.Rescue)
                             rescued = nextAction;
                         else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
-                            
+                        {
                             // Change dialogue message depending on the LoadMode.
+                            DataManager.Instance.CurrentReplay.Desyncs++;
                             if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
                                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
-                            else
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                        }
                     }
 
                     if (rescued != null) //run the action
@@ -866,7 +866,10 @@ namespace RogueEssence
                         }
                         else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) 
                         {
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                            if (DataManager.Instance.CurrentReplay.Desyncs > 0)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                            else
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
                             yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
                         }
                         else //we've reached the end of the replay
@@ -1353,6 +1356,9 @@ namespace RogueEssence
                 GameBase.CurrentPhase = GameBase.LoadPhase.Error;
             if (ping)
                 SE("Menu/Error");
+
+            if (DataManager.Instance.CurrentReplay != null)
+                DataManager.Instance.CurrentReplay.Desyncs++;
         }
 
         private string ErrorTrace()
