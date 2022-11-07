@@ -153,10 +153,13 @@ namespace RogueEssence.Menu
             if (!itemPresence.Contains(index))
             {
                 itemPresence.Add(index);
-                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(index) as ItemEntrySummary;
+                if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(index))
+                {
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(index) as ItemEntrySummary;
 
-                if (itemEntry.ContainsState<MaterialState>())
-                    presenceCount++;
+                    if (itemEntry.ContainsState<MaterialState>())
+                        presenceCount++;
+                }
             }
         }
 
