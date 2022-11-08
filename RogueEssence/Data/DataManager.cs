@@ -1570,6 +1570,7 @@ namespace RogueEssence.Data
                             {
                                 //In this case, the error will be presented clearly to the player.  Do not signal.
                                 DiagManager.Instance.LogError(ex, false);
+                                break;
                             }
                         }
                     }

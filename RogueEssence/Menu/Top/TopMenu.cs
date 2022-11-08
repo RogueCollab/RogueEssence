@@ -124,9 +124,9 @@ namespace RogueEssence.Menu
             if (File.Exists(recordDir))
             {
                 replay = DataManager.Instance.LoadReplay(recordDir, true);
-                if (replay == null)
+                if (replay == null || replay.States.Count == 0)
                 {
-                    cannotRead(recordDir);
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(() => { continueMain(rescueMail); }, Text.FormatKey("DLG_ERR_READ_QUICKSAVE")), false);
                     return;
                 }
             }
@@ -139,11 +139,14 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SceneOutcome = continueReplay(replay, rescueMail);
                 return;
             }
+            continueMain(rescueMail);
+        }
 
+        private static void continueMain(SOSMail rescueMail)
+        {
             List<ModDiff> modDiffs = DataManager.Instance.Save.GetModDiffs();
             if (modDiffs.Count > 0)
                 DiagManager.Instance.LogInfo("Loading with version diffs:");
-
 
             List<ModDiff> removedMods = new List<ModDiff>();
             foreach (ModDiff diff in modDiffs)
