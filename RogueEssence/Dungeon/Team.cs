@@ -556,11 +556,6 @@ namespace RogueEssence.Dungeon
             return invValue;
         }
 
-        public int GetTotalScore()
-        {
-            return GetInvValue() + GetStorageValue() + Money + Bank;
-        }
-
         public void AddToSortedAssembly(Character chara)
         {
             int idx = 0;

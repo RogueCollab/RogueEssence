@@ -1228,7 +1228,7 @@ namespace RogueEssence.Data
                         //pointers and score
                         replayWriter.BaseStream.Seek(sizeof(Int32) * 4, SeekOrigin.Begin);
                         replayWriter.Write(epitaphPos);
-                        replayWriter.Write(epitaph.ActiveTeam.GetTotalScore());
+                        replayWriter.Write(epitaph.GetTotalScore());
                         replayWriter.Write((int)epitaph.Outcome);
                     }
 

@@ -306,6 +306,7 @@ namespace RogueEssence.Data
         public abstract IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
 
+        public abstract int GetTotalScore();
 
         public IEnumerator<YieldInstruction> RestrictTeam(ZoneData zone, bool silent)
         {
@@ -892,6 +893,8 @@ namespace RogueEssence.Data
             }
         }
 
+        public override int GetTotalScore() { return 0; }
+
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             ZoneData zone = DataManager.Instance.GetZone(zoneID);
@@ -1103,6 +1106,10 @@ namespace RogueEssence.Data
         public RogueProgress(ulong seed, string uuid, bool seeded) : base(seed, uuid)
         {
             Seeded = seeded;
+        }
+        public override int GetTotalScore()
+        {
+            return ActiveTeam.GetInvValue() + ActiveTeam.GetStorageValue() + ActiveTeam.Money + ActiveTeam.Bank;
         }
 
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
