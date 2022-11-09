@@ -18,6 +18,7 @@ namespace RogueEssence.Data
             OptionLog,
         }
         
+        [NonSerialized]
         public string RecordDir;
         public Version RecordVersion;
         public string RecordLang;
