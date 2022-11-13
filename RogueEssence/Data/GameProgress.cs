@@ -448,12 +448,6 @@ namespace RogueEssence.Data
                     RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, capOnly);
                     //no backref for guests
                 }
-                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
-                {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, capOnly);
-                    if (!permanent)
-                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
-                }
             }
             catch (Exception ex)
             {
@@ -924,6 +918,9 @@ namespace RogueEssence.Data
                 LossPenalty(state.Save);
             DataManager.Instance.SaveGameState(state);
 
+            //empty the player assembly
+            DataManager.Instance.Save.ActiveTeam.Assembly.Clear();
+
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
@@ -1067,8 +1064,19 @@ namespace RogueEssence.Data
         public void MergeDataTo(MainProgress destProgress)
         {
             if (this != destProgress)
+            {
                 MergeDexTo(destProgress, true);
 
+                foreach (CharData charData in ActiveTeam.Assembly)
+                {
+                    Character chara = new Character(charData);
+                    AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
+                    chara.Tactic = new AITactic(tactic);
+                    destProgress.ActiveTeam.Assembly.Add(chara);
+                }
+            }
+
+            //for merging data imported from roguelocke
             foreach (CharData charData in CharsToStore)
             {
                 Character chara = new Character(charData);
