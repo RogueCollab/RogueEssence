@@ -26,7 +26,7 @@
         
       </StackPanel>
     </ScrollViewer>
-    <Button Click="btnOK_Click" Margin="4" Grid.Row="1" Grid.Column="0">OK</Button>
-    <Button Click="btnCancel_Click" Margin="4" Grid.Row="1" Grid.Column="1">Cancel</Button>
+    <Button Name="btnOK" Click="btnOK_Click" Margin="4" Grid.Row="1" Grid.Column="0">OK</Button>
+    <Button Name="btnCancel" Click="btnCancel_Click" Margin="4" Grid.Row="1" Grid.Column="1">Cancel</Button>
   </Grid>
 </Window>

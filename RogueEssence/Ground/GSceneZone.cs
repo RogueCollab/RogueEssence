@@ -103,6 +103,11 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> SaveGame()
         {
+            if (ZoneManager.Instance.InDevZone)
+            {
+                DiagManager.Instance.LogInfo("Skipping Save in editor testing.");
+                yield break;
+            }
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnGameSave());
             DataManager.Instance.SaveMainGameState();
         }
@@ -153,7 +158,7 @@ namespace RogueEssence.Ground
                         //[1] = who to use it on (-1 for the user)
                         //others: which slot to delete,
                         //which intrinsic to have, which team member/item to send in, etc.
-                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1] != 0));
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1]));
                         break;
                     }
                 case GameAction.ActionType.ShiftTeam:
@@ -187,12 +192,20 @@ namespace RogueEssence.Ground
                     }
                 case GameAction.ActionType.Tactics:
                     {
+                        List<string> eligibleAI = new List<string>();
+                        foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].GetOrderedKeys(true))
+                        {
+                            AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Get(ai_asset) as AIEntrySummary;
+                            if (summary.Assignable)
+                                eligibleAI.Add(ai_asset);
+                        }
+
                         //saves all the settings to the characters
                         for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
                         {
                             int choice = action[ii];
                             Character target = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                            AITactic tactic = DataManager.Instance.GetAITactic(choice);
+                            AITactic tactic = DataManager.Instance.GetAITactic(eligibleAI[choice]);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
                             target.Tactic.Initialize(target);
@@ -207,19 +220,9 @@ namespace RogueEssence.Ground
                     }
                 case GameAction.ActionType.ShiftSkill:
                     {
-                        int slot = action[1];
                         Character targetChar = DataManager.Instance.Save.ActiveTeam.Players[action[0]];
-                        BackReference<Skill> upState = targetChar.Skills[slot];
-                        BackReference<Skill> downState = targetChar.Skills[slot + 1];
-                        targetChar.Skills[slot] = downState;
-                        targetChar.Skills[slot + 1] = upState;
-
-                        if (upState.BackRef > -1 && downState.BackRef > -1)
-                        {
-                            SlotSkill skill = targetChar.BaseSkills[slot];
-                            targetChar.BaseSkills.RemoveAt(slot);
-                            targetChar.BaseSkills.Insert(slot + 1, skill);
-                        }
+                        int slot = action[1];
+                        targetChar.SilentSwitchSkills(slot);
                         break;
                     }
                 case GameAction.ActionType.SortItems:

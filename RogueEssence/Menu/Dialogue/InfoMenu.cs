@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
 
@@ -11,8 +12,12 @@ namespace RogueEssence.Menu
 
         public DialogueText Info;
 
-        public InfoMenu(string title, string message)
+        private Action action;
+
+        public InfoMenu(string title, string message, Action action)
         {
+            this.action = action;
+
             Bounds = new Rect(new Loc(40, 32), new Loc(240, 176));
 
             Title = new MenuText(title, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
@@ -42,6 +47,12 @@ namespace RogueEssence.Menu
             {
                 GameManager.Instance.SE("Menu/Cancel");
                 MenuManager.Instance.RemoveMenu();
+            }
+            else if (input.JustPressed(FrameInput.InputType.Confirm))
+            {
+                GameManager.Instance.SE("Menu/Confirm");
+                MenuManager.Instance.RemoveMenu();
+                action();
             }
         }
     }

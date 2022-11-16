@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
             Bounds = bounds;
             this.baseMenu = baseMenu;
 
-            Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0),
+            Portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0),
                 new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), false);
 
             Nickname = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight));
@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
             ElementData element1 = DataManager.Instance.GetElement(formData.Element1);
             ElementData element2 = DataManager.Instance.GetElement(formData.Element2);
             string typeString = element1.GetIconName();
-            if (formData.Element2 != 00)
+            if (formData.Element2 != DataManager.Instance.DefaultElement)
                 typeString += "/" + element2.GetIconName();
 
             Elements.SetText(typeString);
@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
             {
                 SlotSkill skill = CurrentChar.BaseSkills[ii];
                 string skillString = "-----";
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                     skillString = data.GetIconName();
@@ -180,7 +180,7 @@ namespace RogueEssence.Menu
                     {
                         int chosenIndex = baseMenu.CurrentPage * baseMenu.SpacesPerPage + baseMenu.CurrentChoice;
 
-                        DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = new Character(tradeTeam.OfferedChar, DataManager.Instance.Save.ActiveTeam);
+                        DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = new Character(tradeTeam.OfferedChar);
                         DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
                         DataManager.Instance.Save.RogueUnlockMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
 

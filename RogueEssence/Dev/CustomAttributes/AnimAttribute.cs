@@ -2,7 +2,7 @@
 
 namespace RogueEssence.Dev
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public class AnimAttribute : PassableAttribute
     {
         public readonly string FolderPath;

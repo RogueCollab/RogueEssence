@@ -27,17 +27,15 @@ namespace RogueEssence.LevelGen
     {
         public Map Map { get; set; }
 
-        public ITile RoomTerrain { get { return new Tile(0); } }
-        public ITile WallTerrain { get { return new Tile(2); } }
-        public ITile UnbreakableTerrain { get { return new Tile(1); } }
+        public ITile RoomTerrain { get { return new Tile(DataManager.Instance.GenFloor); } }
+        public ITile WallTerrain { get { return new Tile(DataManager.Instance.GenWall); } }
+        public ITile UnbreakableTerrain { get { return new Tile(DataManager.Instance.GenUnbreakable); } }
 
         public int ID { get { return Map.ID; } }
 
         public int Width { get { return Map.Width; } }
         public int Height { get { return Map.Height; } }
-
-        public int MaxFoes { get { return Map.MaxFoes; } set { Map.MaxFoes = value; } }
-        public int RespawnTime { get { return Map.RespawnTime; } set { Map.RespawnTime = value; } }
+        public bool Wrap { get { return Map.EdgeView == BaseMap.ScrollEdge.Wrap; } }
         public SpawnList<TeamSpawner> TeamSpawns { get { return Map.TeamSpawns; } }
 
         public SpawnList<EffectTile> TileSpawns { get; set; }
@@ -53,30 +51,45 @@ namespace RogueEssence.LevelGen
         public bool DropTitle { get { return Map.DropTitle; } set { Map.DropTitle = value; } }
 
         public Tile[][] Tiles { get { return Map.Tiles; } }
-        public MapLayer Floor { get { return Map.Layers[0]; } }
 
-        public ITile GetTile(Loc loc) { return Map.Tiles[loc.X][loc.Y]; }
+        public ITile GetTile(Loc loc) { return Map.GetTile(loc); }
         public virtual bool CanSetTile(Loc loc, ITile tile)
         {
-            return !Map.Tiles[loc.X][loc.Y].TileEquivalent(UnbreakableTerrain);
+            if (UnbreakableTerrain.TileEquivalent(Map.GetTile(loc)))
+            {
+                if (!UnbreakableTerrain.TileEquivalent(tile))
+                    return false;
+            }
+            PostProcTile postProc = GetPostProc(loc);
+            if ((postProc.Status & PostProcType.Terrain) != PostProcType.None)
+                return false;
+            return true;
         }
         public bool TrySetTile(Loc loc, ITile tile)
         {
             if (!CanSetTile(loc, tile)) return false;
+            loc = Map.WrapLoc(loc);
             Map.Tiles[loc.X][loc.Y] = (Tile)tile;
             return true;
         }
         public void SetTile(Loc loc, ITile tile)
         {
-            if (!TrySetTile(loc, tile))
-                throw new InvalidOperationException("Can't place tile!");
+            loc = Map.WrapLoc(loc);
+            Map.Tiles[loc.X][loc.Y] = (Tile)tile;
         }
 
         public bool TilesInitialized { get { return Map.Tiles != null; } }
 
         public List<MapItem> Items { get { return Map.Items; } }
-        public List<Team> AllyTeams { get { return Map.AllyTeams; } }
-        public List<Team> MapTeams { get { return Map.MapTeams; } }
+        public EventedList<Team> AllyTeams { get { return Map.AllyTeams; } }
+        public EventedList<Team> MapTeams { get { return Map.MapTeams; } }
+
+        public PostProcTile GetPostProc(Loc loc)
+        {
+            if (!Map.GetLocInMapBounds(ref loc))
+                return null;
+            return PostProcGrid[loc.X][loc.Y];
+        }
 
         public PostProcTile[][] PostProcGrid { get; private set; }
 
@@ -96,9 +109,11 @@ namespace RogueEssence.LevelGen
             Map.LoadRand(rand);
         }
 
-        public virtual void CreateNew(int width, int height)
+        public virtual void CreateNew(int width, int height, bool wrap = false)
         {
             Map.CreateNew(width, height);
+            if (wrap)
+                Map.EdgeView = BaseMap.ScrollEdge.Wrap;
             PostProcGrid = new PostProcTile[width][];
             for (int ii = 0; ii < width; ii++)
             {
@@ -121,7 +136,10 @@ namespace RogueEssence.LevelGen
 
         public bool HasTileEffect(Loc loc)
         {
-            return Map.Tiles[loc.X][loc.Y].Effect.ID > -1;
+            Tile tile = Map.GetTile(loc);
+            if (tile == null)
+                return false;
+            return !String.IsNullOrEmpty(tile.Effect.ID);
         }
 
         List<Loc> IPlaceableGenContext<MoneySpawn>.GetAllFreeTiles() { return getAllFreeTiles(getOpenItemTiles); }
@@ -154,9 +172,9 @@ namespace RogueEssence.LevelGen
 
         protected bool isObstructed(Loc loc)
         {
-            if (!Collision.InBounds(Width, Height, loc))
-                return true;
-            return (!Tiles[loc.X][loc.Y].TileEquivalent(RoomTerrain) || HasTileEffect(loc));
+            Tile tile = Map.GetTile(loc);
+            TerrainData data = tile.Data.GetData();
+            return (data.BlockType != TerrainData.Mobility.Passable || HasTileEffect(loc));
         }
 
         bool IPlaceableGenContext<MoneySpawn>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
@@ -168,7 +186,7 @@ namespace RogueEssence.LevelGen
         {
             if (isObstructed(loc))
                 return false;
-            if (PostProcGrid[loc.X][loc.Y].Status[(int)PostProcType.Panel] || PostProcGrid[loc.X][loc.Y].Status[(int)PostProcType.Item])
+            if ((GetPostProc(loc).Status & (PostProcType.Panel | PostProcType.Item)) != PostProcType.None)
                 return false;
 
             if (Grid.GetForkDirs(loc, isObstructed, isObstructed).Count >= 2)
@@ -183,25 +201,34 @@ namespace RogueEssence.LevelGen
 
         void IPlaceableGenContext<MoneySpawn>.PlaceItem(Loc loc, MoneySpawn item)
         {
-            MapItem newItem = new MapItem(true, item.Amount);
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
+            MapItem newItem = MapItem.CreateMoney(item.Amount);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }
         void IPlaceableGenContext<InvItem>.PlaceItem(Loc loc, InvItem item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapItem newItem = new MapItem(item);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }
         void IPlaceableGenContext<MapItem>.PlaceItem(Loc loc, MapItem item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
             MapItem newItem = new MapItem(item);
             newItem.TileLoc = loc;
             Items.Add(newItem);
         }
         void IPlaceableGenContext<EffectTile>.PlaceItem(Loc loc, EffectTile item)
         {
-            Map.Tiles[loc.X][loc.Y].Effect = new EffectTile(item);
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
+            Tile tile = Map.GetTile(loc);
+            tile.Effect = new EffectTile(item);
         }
 
 
@@ -273,9 +300,19 @@ namespace RogueEssence.LevelGen
                 if (locs.Length != itemBatch.Team.MemberGuestCount)
                     throw new Exception("Team members not matching locations!");
                 for (int ii = 0; ii < itemBatch.Team.Players.Count; ii++)
-                    itemBatch.Team.Players[ii].CharLoc = locs[ii];
+                {
+                    Loc loc = locs[ii];
+                    if (!Map.GetLocInMapBounds(ref loc))
+                        throw new ArgumentException("Loc out of bounds.");
+                    itemBatch.Team.Players[ii].CharLoc = loc;
+                }
                 for (int ii = 0; ii < itemBatch.Team.Guests.Count; ii++)
-                    itemBatch.Team.Guests[ii].CharLoc = locs[itemBatch.Team.Players.Count + ii];
+                {
+                    Loc loc = locs[itemBatch.Team.Players.Count + ii];
+                    if (!Map.GetLocInMapBounds(ref loc))
+                        throw new ArgumentException("Loc out of bounds.");
+                    itemBatch.Team.Guests[ii].CharLoc = loc;
+                }
             }
 
             if (itemBatch.AllyFaction)
@@ -360,7 +397,7 @@ namespace RogueEssence.LevelGen
 
             Grid.LocTest checkLenient = (Loc testLoc) =>
             {
-                return Tiles[testLoc.X][testLoc.Y].TileEquivalent(RoomTerrain);
+                return RoomTerrain.TileEquivalent(GetTile(testLoc));
             };
 
             tiles = Grid.FindTilesInBox(rect.Start, rect.Size, checkLenient);
@@ -371,11 +408,19 @@ namespace RogueEssence.LevelGen
 
         void IPlaceableGenContext<MapGenEntrance>.PlaceItem(Loc loc, MapGenEntrance item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
+            Tile tile = Map.GetTile(loc);
+            tile.Data = ((Tile)RoomTerrain).Data.Copy();
             MapGenEntrance newItem = new MapGenEntrance(loc, item.Dir);
             GenEntrances.Add(newItem);
         }
         void IPlaceableGenContext<MapGenExit>.PlaceItem(Loc loc, MapGenExit item)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                throw new ArgumentException("Loc out of bounds.");
+            Tile tile = Map.GetTile(loc);
+            tile.Data = ((Tile)RoomTerrain).Data.Copy();
             MapGenExit newItem = new MapGenExit(loc, new EffectTile(item.Tile));
             GenExits.Add(newItem);
         }
@@ -414,7 +459,7 @@ namespace RogueEssence.LevelGen
 
             foreach (MapGenEntrance entrance in GenEntrances)
             {
-                if ((entrance.Loc - loc).Dist8() <= MIN_DIST_FROM_START)
+                if (Map.InRange(entrance.Loc, loc, MIN_DIST_FROM_START))
                     return false;
             }
             return true;

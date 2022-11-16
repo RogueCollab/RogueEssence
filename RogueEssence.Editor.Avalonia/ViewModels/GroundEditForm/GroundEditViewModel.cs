@@ -84,7 +84,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (results.Length > 0)
+            if (results != null && results.Length > 0)
             {
                 bool legalPath = false;
                 foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
@@ -108,8 +108,13 @@ namespace RogueEssence.Dev.ViewModels
                 return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+                string result = Path.Join(reqDir, Path.GetFileName(CurrentFile));
                 lock (GameBase.lockObj)
-                    DoSave(ZoneManager.Instance.CurrentGround, CurrentFile, CurrentFile);
+                {
+                    string oldFilename = CurrentFile;
+                    DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
+                }
                 return true;
             }
         }
@@ -128,9 +133,9 @@ namespace RogueEssence.Dev.ViewModels
 
             string result = await saveFileDialog.ShowAsync(form.GroundEditForm);
 
-            if (result != null)
+            if (!String.IsNullOrEmpty(result))
             {
-                string reqDir = PathMod.ModPath(DataManager.GROUND_PATH);
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
@@ -153,16 +158,15 @@ namespace RogueEssence.Dev.ViewModels
         {
             bool saved = await mnuSave_Click();
             if (saved)
-                GameManager.Instance.SceneOutcome = exitAndTest();
-        }
-
-        private IEnumerator<YieldInstruction> exitAndTest()
-        {
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.GroundEditForm.SilentClose();
-            form.GroundEditForm = null;
-
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentGround.AssetName, true, MathUtils.Rand.NextUInt64()));
+            {
+                lock (GameBase.lockObj)
+                {
+                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                    form.GroundEditForm.SilentClose();
+                    form.GroundEditForm = null;
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentGround.AssetName, true, MathUtils.Rand.NextUInt64());
+                }
+            }
         }
 
         public async void mnuImportFromPng_Click()
@@ -180,11 +184,8 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
 
-            lock (GameBase.lockObj)
-            {
-                if (results.Length > 0)
-                    DoImportPng(results[0]);
-            }
+            if (results != null && results.Length > 0)
+                DoImportPng(results[0]);
         }
 
 
@@ -342,24 +343,35 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoImportPng(string filePath)
         {
+            DevForm.ExecuteOrPend(() => { tryImportPng(filePath); });
+
             string sheetName = Path.GetFileNameWithoutExtension(filePath);
-            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
-
-
-            //load into tilesets
-            using (BaseSheet tileset = BaseSheet.Import(filePath))
+            lock (GameBase.lockObj)
             {
-                List<BaseSheet> tileList = new List<BaseSheet>();
-                tileList.Add(tileset);
-                ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+                Textures.TileBrowser.UpdateTilesList();
             }
-
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevGraphicsManager.ClearCaches();
-
-            Textures.TileBrowser.UpdateTilesList();
             Textures.TileBrowser.SelectTileset(sheetName);
+        }
+
+        private void tryImportPng(string filePath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string sheetName = Path.GetFileNameWithoutExtension(filePath);
+                string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+
+                //load into tilesets
+                using (BaseSheet tileset = BaseSheet.Import(filePath))
+                {
+                    List<BaseSheet[]> tileList = new List<BaseSheet[]>();
+                    tileList.Add(new BaseSheet[] { tileset });
+                    ImportHelper.SaveTileSheet(tileList, outputFile, ZoneManager.Instance.CurrentGround.TileSize);
+                }
+
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                DevDataManager.ClearCaches();
+            }
         }
 
         private void DoClearLayer()
@@ -474,8 +486,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private static bool comparePaths(string path1, string path2)
         {
-            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\'),
-                Path.GetFullPath(path2).TrimEnd('\\'),
+            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\').TrimEnd('/'),
+                Path.GetFullPath(path2).TrimEnd('\\').TrimEnd('/'),
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
@@ -487,17 +499,17 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="newfilepath"></param>
         private void createOrCopyScriptData(string oldfilepath, string newfilepath)
         {
-            string oldmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(oldfilepath));
-            string newmapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath));
+            string oldmapscriptdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, Path.GetFileNameWithoutExtension(oldfilepath), "/init.lua"));
+            string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
 
             //Check if we have anything to copy at all!
-            if (oldfilepath != newfilepath && !String.IsNullOrEmpty(oldfilepath) && Directory.Exists(oldfilepath))
+            if (oldmapscriptdir != newmapscriptdir && !String.IsNullOrEmpty(oldfilepath))
             {
                 Directory.CreateDirectory(newmapscriptdir);
                 foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
                 {
                     //Path to the sub-directory within the script folder containing this file
-                    string subdirpath = f.Remove(oldmapscriptdir.Count()); //Not Count - 1 because of the last path separator!
+                    string subdirpath = f.Substring(oldmapscriptdir.Length + 1); //Count + 1 because of the last path separator!
                     //Path to the sub-directory within the new script folder where we'll copy this file!
                     string destpath = Path.Combine(newmapscriptdir, subdirpath);
 
@@ -505,13 +517,14 @@ namespace RogueEssence.Dev.ViewModels
                     Directory.CreateDirectory(Path.GetDirectoryName(destpath));
 
                     //Copy the file itself
-                    File.Copy(f, destpath, false);
+                    if (File.Exists(f))
+                        File.Copy(f, destpath, false);
                 }
             }
             else
             {
                 //We just create a new one straight away!
-                LuaEngine.Instance.CreateNewMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
+                LuaEngine.Instance.CreateGroundMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
             }
         }
 

@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Flashes a background image once.
+    /// </summary>
     [Serializable]
     public class FlashEmitter : FiniteEmitter
     {

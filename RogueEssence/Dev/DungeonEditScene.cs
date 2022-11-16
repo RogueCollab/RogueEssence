@@ -56,7 +56,7 @@ namespace RogueEssence.Dev
             InputManager input = GameManager.Instance.MetaInputManager;
             var mapEditor = DiagManager.Instance.DevEditor.MapEditor;
 
-            if (mapEditor.Active)
+            if (mapEditor != null && mapEditor.Active)
                 mapEditor.ProcessInput(input);
         }
 
@@ -147,7 +147,7 @@ namespace RogueEssence.Dev
             //When in editor mode, we want to display an overlay over some entities
             //
 
-            if (DiagManager.Instance.DevEditor.MapEditor.Active && ZoneManager.Instance.CurrentMap != null)
+            if (DiagManager.Instance.DevEditor.MapEditor != null && DiagManager.Instance.DevEditor.MapEditor.Active && ZoneManager.Instance.CurrentMap != null)
                 DrawGame(spriteBatch);
         }
         protected override void PostDraw(SpriteBatch spriteBatch)
@@ -232,18 +232,25 @@ namespace RogueEssence.Dev
                 }
             }
 
-            if (TileInProgress != null)
+            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
-                for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                 {
-                    for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                    Loc testLoc = new Loc(ii, jj);
+                    if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
                     {
-                        Loc testLoc = new Loc(ii, jj);
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc) &&
-                            TileInProgress.IncludesLoc(testLoc))
+                        EffectTile existingEffect = ZoneManager.Instance.CurrentMap.Tiles[ii][jj].Effect;
+                        //draw normally invisible tiles
+                        if (!String.IsNullOrEmpty(existingEffect.ID))
+                        {
+                            TileData entry = DataManager.Instance.GetTile(existingEffect.ID);
+                            if (entry.Anim.AnimIndex == "")
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.White * 0.5f);
+                        }
+                        if (TileInProgress != null && TileInProgress.IncludesLoc(testLoc))
                         {
                             EffectTile tile = TileInProgress.GetBrush(testLoc);
-                            if (tile.ID < 0)
+                            if (String.IsNullOrEmpty(tile.ID))
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, Color.Black);
                             else
                             {

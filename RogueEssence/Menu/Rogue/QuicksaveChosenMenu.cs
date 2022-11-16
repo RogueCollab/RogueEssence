@@ -4,6 +4,8 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
+using System;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -26,7 +28,8 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(240, 0), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(240, GraphicsManager.ScreenWidth - choice_width), 0), choice_width, choices.ToArray(), 0);
         }
         
         private void cannotRead()
@@ -66,7 +69,7 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.RemoveMenu();
 
-            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
+            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.ROGUE_PATH), DataManager.QUICKSAVE_EXTENSION))
                 MenuManager.Instance.ReplaceMenu(new QuicksaveMenu());
             else
             {
@@ -108,6 +111,7 @@ namespace RogueEssence.Menu
             {
                 DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
+                DataManager.Instance.Save.UpdateOptions();
 
                 GameManager.Instance.SetFade(true, false);
 
@@ -115,7 +119,7 @@ namespace RogueEssence.Menu
 
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                 {
-                    GameManager.Instance.MoveToScene(Dungeon.DungeonScene.Instance);
+                    GameManager.Instance.MoveToScene(DungeonScene.Instance);
                     GameManager.Instance.BGM(ZoneManager.Instance.CurrentMap.Music, true);
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
                 }
@@ -152,6 +156,7 @@ namespace RogueEssence.Menu
             {
                 DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                 DataManager.Instance.CurrentReplay = null;
+                DataManager.Instance.Save.UpdateOptions();
 
                 GameManager.Instance.SetFade(true, false);
 

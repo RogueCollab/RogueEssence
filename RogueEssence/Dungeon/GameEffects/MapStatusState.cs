@@ -1,4 +1,7 @@
-﻿using NLua;
+﻿using Newtonsoft.Json;
+using NLua;
+using RogueEssence.Data;
+using RogueEssence.Dev;
 using System;
 using System.Collections.Generic;
 
@@ -33,6 +36,15 @@ namespace RogueEssence.Dungeon
         public MapIndexState(int index) { Index = index; }
         protected MapIndexState(MapIndexState other) { Index = other.Index; }
         public override GameplayState Clone() { return new MapIndexState(this); }
+    }
+    [Serializable]
+    public class MapIDState : MapStatusState
+    {
+        public string ID;
+        public MapIDState() { ID = ""; }
+        public MapIDState(string index) { ID = index; }
+        protected MapIDState(MapIDState other) { ID = other.ID; }
+        public override GameplayState Clone() { return new MapIDState(this); }
     }
     [Serializable]
     public class MapCheckState : MapStatusState

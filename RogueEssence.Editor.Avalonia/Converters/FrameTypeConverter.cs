@@ -19,7 +19,7 @@ namespace RogueEssence.Dev.Converters
             {
                 if (idx >= 0 && idx < GraphicsManager.Actions.Count)
                     return GraphicsManager.Actions[idx].Name;
-                return "---";
+                return "**EMPTY**";
             }
             return value;
         }

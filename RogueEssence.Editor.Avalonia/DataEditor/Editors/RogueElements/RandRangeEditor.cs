@@ -48,7 +48,7 @@ namespace RogueEssence.Dev
             RangeBorderAttribute.GetAddVals(index1, inclusive, out addMin, out addMax);
         }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, RandRange member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, RandRange member, Type[] subGroupStack)
         {
             int addMin, addMax;
             getMinMaxOffsets(attributes, out addMin, out addMax);
@@ -88,9 +88,19 @@ namespace RogueEssence.Dev
             innerPanel.Children.Add(nudValueY);
             nudValueY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 
+            nudValueX.ValueChanged += (object sender, NumericUpDownValueChangedEventArgs e) =>
+            {
+                if (nudValueX.Value > nudValueY.Value)
+                    nudValueY.Value = nudValueX.Value;
+            };
+            nudValueY.ValueChanged += (object sender, NumericUpDownValueChangedEventArgs e) =>
+            {
+                if (nudValueX.Value > nudValueY.Value)
+                    nudValueX.Value = nudValueY.Value;
+            };
+
             control.Children.Add(innerPanel);
         }
-
 
         public override RandRange SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {

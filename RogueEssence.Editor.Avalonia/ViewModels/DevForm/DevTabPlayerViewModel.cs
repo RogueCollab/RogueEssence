@@ -16,8 +16,10 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabPlayerViewModel()
         {
             Monsters = new ObservableCollection<string>();
+            MonsterKeys = new List<string>();
             Forms = new ObservableCollection<string>();
             Skins = new ObservableCollection<string>();
+            SkinKeys = new List<string>();
             Genders = new ObservableCollection<string>();
             Anims = new ObservableCollection<string>();
         }
@@ -45,6 +47,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
+
         public void UpdateLevel()
         {
             lock (GameBase.lockObj)
@@ -64,6 +67,8 @@ namespace RogueEssence.Dev.ViewModels
                 Level = upd;
             }
         }
+
+        public List<string> MonsterKeys;
 
         public ObservableCollection<string> Monsters { get; }
 
@@ -93,6 +98,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+        public List<string> SkinKeys;
         public ObservableCollection<string> Skins { get; }
 
         private int chosenSkin;
@@ -127,8 +134,123 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (!this.SetIfChanged(ref chosenAnim, value))
                     return;
-                lock (GameBase.lockObj)
-                    GraphicsManager.GlobalIdle = chosenAnim;
+
+                RestartAnim(false);
+            }
+        }
+
+        private bool justMe;
+        public bool JustMe
+        {
+            get => justMe;
+            set
+            {
+                this.RaiseAndSet(ref justMe, value);
+                RestartAnim(false);
+            }
+        }
+
+        private bool justOnce;
+        public bool JustOnce
+        {
+            get => justOnce;
+            set
+            {
+                this.RaiseAndSet(ref justOnce, value);
+                RestartAnim(false);
+            }
+        }
+
+        public void RestartAnim(bool refreshOthers)
+        {
+            lock (GameBase.lockObj)
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    Character chara = DungeonScene.Instance.FocusedCharacter;
+
+                    if (justOnce) //make it an action anim
+                    {
+                        if (justMe)
+                        {
+                            if (refreshOthers)
+                                DungeonScene.Instance.PendingDevEvent = AnimateOneRefreshOthers(chara, chosenAnim);
+                            else
+                                DungeonScene.Instance.PendingDevEvent = chara.StartAnim(new CharAnimAction(chara.CharLoc, chara.CharDir, chosenAnim, true));
+                        }
+                        else
+                            DungeonScene.Instance.PendingDevEvent = AnimateAll(chosenAnim, true, false, -1);
+                    }
+                    else
+                    {
+                        if (justMe)
+                        {
+                            chara.IdleOverride = chosenAnim;
+                            if (refreshOthers)
+                                DungeonScene.Instance.PendingDevEvent = AnimateAll(chosenAnim, false, false, -1);
+                            else
+                                DungeonScene.Instance.PendingDevEvent = chara.StartAnim(new CharAnimIdle(chara.CharLoc, chara.CharDir));
+                        }
+                        else
+                        {
+                            GraphicsManager.GlobalIdle = chosenAnim;
+                            DungeonScene.Instance.PendingDevEvent = AnimateAll(chosenAnim, false, true, -1);
+                        }
+                    }
+
+                }
+                else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    GroundChar chara = GroundScene.Instance.FocusedCharacter;
+
+                    if (justOnce)
+                    {
+                        if (justMe)
+                        {
+                            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, chosenAnim, false));
+                            if (refreshOthers)
+                            {
+                                foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                                {
+                                    if (groundChar != chara)
+                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                                groundChar.StartAction(new IdleAnimGroundAction(groundChar.Position, groundChar.Direction, chosenAnim, false));
+                        }
+                    }
+                    else
+                    {
+                        if (justMe)
+                        {
+                            chara.IdleOverride = chosenAnim;
+                            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
+                            if (refreshOthers)
+                            {
+                                foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                                {
+                                    if (groundChar != chara)
+                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            GraphicsManager.GlobalIdle = chosenAnim;
+
+                            foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
+                            {
+                                groundChar.IdleOverride = -1;
+                                groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                            }
+                        }
+                    }
+                }
+
             }
         }
 
@@ -143,10 +265,10 @@ namespace RogueEssence.Dev.ViewModels
                         Character character = DungeonScene.Instance.FocusedCharacter;
                         BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                        while (character.BaseSkills[0].SkillNum > -1)
+                        while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                             character.DeleteSkill(0);
-                        List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                        foreach (int skill in final_skills)
+                        List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+                        foreach (string skill in final_skills)
                             character.LearnSkill(skill, true);
 
                         DungeonScene.Instance.LogMsg(String.Format("Skills reloaded"), false, true);
@@ -159,16 +281,50 @@ namespace RogueEssence.Dev.ViewModels
                         Character character = DataManager.Instance.Save.ActiveTeam.Leader;
                         BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-                        while (character.BaseSkills[0].SkillNum > -1)
+                        while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                             character.DeleteSkill(0);
-                        List<int> final_skills = form.RollLatestSkills(character.Level, new List<int>());
-                        foreach (int skill in final_skills)
+                        List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+                        foreach (string skill in final_skills)
                             character.LearnSkill(skill, true);
                         GameManager.Instance.SE("Menu/Sort");
                     }
                 }
                 else
                     GameManager.Instance.SE("Menu/Cancel");
+            }
+        }
+
+        public void btnResetAnim_Click()
+        {
+            RestartAnim(true);
+        }
+
+        public IEnumerator<YieldInstruction> AnimateAll(int charAnim, bool action, bool setOverride, int idleOverride)
+        {
+            foreach (Character chara in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                if (setOverride)
+                    chara.IdleOverride = idleOverride;
+
+                CharAnimation newAnim;
+                if (action)
+                    newAnim = new CharAnimAction(chara.CharLoc, chara.CharDir, charAnim, true);
+                else
+                    newAnim = new CharAnimIdle(chara.CharLoc, chara.CharDir);
+                yield return CoroutineManager.Instance.StartCoroutine(chara.StartAnim(newAnim));
+            }
+        }
+
+        public IEnumerator<YieldInstruction> AnimateOneRefreshOthers(Character chara, int charAnim)
+        {
+            foreach (Character groundChar in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            {
+                CharAnimation newAnim;
+                if (chara == groundChar)
+                    newAnim = new CharAnimAction(groundChar.CharLoc, groundChar.CharDir, charAnim, true);
+                else
+                    newAnim = new CharAnimIdle(groundChar.CharLoc, groundChar.CharDir);
+                yield return CoroutineManager.Instance.StartCoroutine(groundChar.StartAnim(newAnim));
             }
         }
 
@@ -182,7 +338,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 int tempForm = chosenForm;
                 Forms.Clear();
-                MonsterData monster = DataManager.Instance.GetMonster(chosenMonster);
+                MonsterData monster = DataManager.Instance.GetMonster(MonsterKeys[chosenMonster]);
                 for (int ii = 0; ii < monster.Forms.Count; ii++)
                     Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
 
@@ -198,9 +354,9 @@ namespace RogueEssence.Dev.ViewModels
             bool prevUpdate = updating;
             updating = true;
 
-            ChosenMonster = id.Species;
+            ChosenMonster = MonsterKeys.IndexOf(id.Species);
             ChosenForm = id.Form;
-            ChosenSkin = id.Skin;
+            ChosenSkin = SkinKeys.IndexOf(id.Skin);
             ChosenGender = (int)id.Gender;
 
             updating = prevUpdate;
@@ -214,20 +370,20 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 if (GameManager.Instance.IsInGame())
-                    DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                    DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(MonsterKeys[chosenMonster], chosenForm, SkinKeys[chosenSkin], (Gender)chosenGender));
 
 
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
                     if (DungeonScene.Instance.ActiveTeam.Players.Count > 0 && DungeonScene.Instance.FocusedCharacter != null)
-                        DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                        DungeonScene.Instance.FocusedCharacter.Promote(new MonsterID(MonsterKeys[chosenMonster], chosenForm, SkinKeys[chosenSkin], (Gender)chosenGender));
                 }
                 else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                 {
                     if (DataManager.Instance.Save.ActiveTeam.Players.Count > 0 && GroundScene.Instance.FocusedCharacter != null)
                     {
                         Character character = DataManager.Instance.Save.ActiveTeam.Leader;
-                        character.Promote(new MonsterID(chosenMonster, chosenForm, chosenSkin, (Gender)chosenGender));
+                        character.Promote(new MonsterID(MonsterKeys[chosenMonster], chosenForm, SkinKeys[chosenSkin], (Gender)chosenGender));
                         GroundChar leaderChar = GroundScene.Instance.FocusedCharacter;
                         ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader, leaderChar.MapLoc, leaderChar.CharDir, "PLAYER"));
                     }

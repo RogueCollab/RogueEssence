@@ -18,24 +18,24 @@ namespace RogueEssence.Menu
         MoneySummary moneySummary;
         TradeSummary tradeSummary;
         private OnChooseSlot action;
-        public List<Tuple<int, int[]>> Goods;
+        public List<Tuple<string, string[]>> Goods;
         public int[] PriceList;
         public List<int> AllowedGoods;
-        bool[] itemPresence;
+        HashSet<string> itemPresence;
         int presenceCount;
 
-        public SwapShopMenu(List<Tuple<int, int[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot)
+        public SwapShopMenu(List<Tuple<string, string[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot)
         {
             Goods = goods;
             PriceList = priceList;
             action = chooseSlot;
             AllowedGoods = new List<int>();
 
-            itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
-            for (int ii = 0; ii < itemPresence.Length; ii++)
+            itemPresence = new HashSet<string>();
+            foreach(string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
             {
-                if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
-                    updatePresence(itemPresence, ref presenceCount, ii);
+                if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
+                    updatePresence(itemPresence, ref presenceCount, key);
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
                 updatePresence(itemPresence, ref presenceCount, DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
@@ -43,7 +43,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                     updatePresence(itemPresence, ref presenceCount, activeChar.EquippedItem.ID);
             }
 
@@ -55,15 +55,13 @@ namespace RogueEssence.Menu
                 bool canView = false;
                 bool canTrade = true;
                 int wildcards = 0;
-                int[] reqs = goods[ii].Item2;
+                string[] reqs = goods[ii].Item2;
                 for (int jj = 0; jj < reqs.Length; jj++)
                 {
-                    if (reqs[jj] > -1)
+                    if (!String.IsNullOrEmpty(reqs[jj]))
                     {
-                        if (!itemPresence[reqs[jj]])
-                        {
+                        if (!itemPresence.Contains(reqs[jj]))
                             canTrade = false;
-                        }
                         else
                             canView = true;
                     }
@@ -102,35 +100,36 @@ namespace RogueEssence.Menu
 
         }
 
-        public static bool CanView(List<Tuple<int, int[]>> goods)
+        public static bool CanView(List<Tuple<string, string[]>> goods)
         {
-            bool[] itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
+            HashSet<string> itemPresence = new HashSet<string>();
             int presenceCount = 0;
 
-            for (int ii = 0; ii < itemPresence.Length; ii++)
+            foreach (string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
             {
-                if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
-                    updatePresence(itemPresence, ref presenceCount, ii);
+                if (DataManager.Instance.Save.ActiveTeam.Storage[key] > 0)
+                    updatePresence(itemPresence, ref presenceCount, key);
             }
+
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
                 updatePresence(itemPresence, ref presenceCount, DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID);
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                     updatePresence(itemPresence, ref presenceCount, activeChar.EquippedItem.ID);
             }
 
             for (int ii = 0; ii < goods.Count; ii++)
             {
                 bool canView = false;
-                int[] reqs = goods[ii].Item2;
+                string[] reqs = goods[ii].Item2;
                 for (int jj = 0; jj < reqs.Length; jj++)
                 {
-                    if (reqs[jj] > -1)
+                    if (!String.IsNullOrEmpty(reqs[jj]))
                     {
-                        if (!itemPresence[reqs[jj]])
+                        if (!itemPresence.Contains(reqs[jj]))
                         {
 
                         }
@@ -149,15 +148,18 @@ namespace RogueEssence.Menu
             return false;
         }
 
-        private static void updatePresence(bool[] itemPresence, ref int presenceCount, int index)
+        private static void updatePresence(HashSet<string> itemPresence, ref int presenceCount, string index)
         {
-            if (!itemPresence[index])
+            if (!itemPresence.Contains(index))
             {
-                itemPresence[index] = true;
-                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                itemPresence.Add(index);
+                if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(index))
+                {
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(index) as ItemEntrySummary;
 
-                if (itemEntry.ContainsState<MaterialState>())
-                    presenceCount++;
+                    if (itemEntry.ContainsState<MaterialState>())
+                        presenceCount++;
+                }
             }
         }
 
@@ -173,7 +175,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Tuple<int, int[]> trade = Goods[AllowedGoods[CurrentChoiceTotal]];
+            Tuple<string, string[]> trade = Goods[AllowedGoods[CurrentChoiceTotal]];
             ItemData entry = DataManager.Instance.GetItem(trade.Item1);
             InvItem item = new InvItem(trade.Item1);
             summaryMenu.SetItem(item);

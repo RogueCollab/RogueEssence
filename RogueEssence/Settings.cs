@@ -5,6 +5,26 @@ using System.Collections.Generic;
 namespace RogueEssence
 {
     [Serializable]
+    public class GamePadMap
+    {
+        public string Name;
+        public Buttons[] ActionButtons;
+
+        public GamePadMap()
+        {
+            Name = "";
+            ActionButtons = new Buttons[(int)FrameInput.InputType.Wait];
+        }
+
+        public GamePadMap(GamePadMap other)
+        {
+            Name = other.Name;
+            ActionButtons = new Buttons[(int)FrameInput.InputType.Wait];
+            Array.Copy(other.ActionButtons, ActionButtons, ActionButtons.Length);
+        }
+    }
+
+    [Serializable]
     public class Settings
     {
         public enum BattleSpeed
@@ -15,17 +35,25 @@ namespace RogueEssence
             Fast,
             VeryFast
         }
+        public enum SkillDefault
+        {
+            None,
+            Attacks,
+            All
+        }
 
         public int BGMBalance;
         public int SEBalance;
         public BattleSpeed BattleFlow;
-        public int Window;
+        public SkillDefault DefaultSkills;
+        public int Minimap;
         public int Border;
+        public int Window;
         public string Language;
 
         public Keys[] DirKeys;
         public Keys[] ActionKeys;
-        public Buttons[] ActionButtons;
+        public Dictionary<string, GamePadMap> GamepadMaps;
         public bool Enter;
         public bool NumPad;
         public bool InactiveInput;
@@ -119,18 +147,23 @@ namespace RogueEssence
             BGMBalance = 5;
             SEBalance = 5;
             BattleFlow = BattleSpeed.Normal;
+            DefaultSkills = SkillDefault.Attacks;
             Language = "";
 
+            Minimap = 100;
             Window = 2;
 
             DirKeys = new Keys[4];
             ActionKeys = new Keys[(int)FrameInput.InputType.Wait];
-            ActionButtons = new Buttons[(int)FrameInput.InputType.Wait];
+            GamepadMaps = new Dictionary<string, GamePadMap>();
             ServerList = new List<ServerInfo>();
             ContactList = new List<ContactInfo>();
             PeerList = new List<PeerInfo>();
 
-            DefaultControls(DirKeys, ActionKeys, ActionButtons);
+            GamePadMap defaultMap = new GamePadMap();
+            defaultMap.Name = "Unknown";
+            DefaultControls(DirKeys, ActionKeys, defaultMap.ActionButtons);
+            GamepadMaps["default"] = defaultMap;
             Enter = true;
             NumPad = true;
             InactiveInput = false;
@@ -177,10 +210,10 @@ namespace RogueEssence
 
             if (actionButtons != null)
             {
-                actionButtons[(int)FrameInput.InputType.Confirm] = Buttons.B;
-                actionButtons[(int)FrameInput.InputType.Cancel] = Buttons.A;
-                actionButtons[(int)FrameInput.InputType.Attack] = Buttons.B;
-                actionButtons[(int)FrameInput.InputType.Run] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Confirm] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Cancel] = Buttons.B;
+                actionButtons[(int)FrameInput.InputType.Attack] = Buttons.A;
+                actionButtons[(int)FrameInput.InputType.Run] = Buttons.B;
                 actionButtons[(int)FrameInput.InputType.Skills] = Buttons.LeftTrigger;
                 actionButtons[(int)FrameInput.InputType.Turn] = Buttons.X;
                 actionButtons[(int)FrameInput.InputType.Diagonal] = Buttons.RightTrigger;

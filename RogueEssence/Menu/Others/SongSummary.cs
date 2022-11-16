@@ -66,7 +66,7 @@ namespace RogueEssence.Menu
             Name.SetText(name);
             OriginName.SetText(Text.FormatKey("MENU_SONG_ORIGIN_NAME", originName));
             Origin.SetText(Text.FormatKey("MENU_SONG_ORIGIN", origin));
-            Artist.SetFormattedText(Text.FormatKey("MENU_SONG_ARTIST", artist));
+            Artist.SetAndFormatText(Text.FormatKey("MENU_SONG_ARTIST", artist));
         }
     }
 }

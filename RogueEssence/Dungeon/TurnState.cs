@@ -121,7 +121,7 @@ namespace RogueEssence.Dungeon
                 loadTeamMemberTurnMap(faction, teamIndex, true, ii, team.Guests);
         }
 
-        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, List<Character> playerList)
+        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, EventedList<Character> playerList)
         {
             Character character = playerList[charIndex];
             if (!character.Dead)

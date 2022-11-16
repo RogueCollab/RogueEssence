@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using NLua;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -24,7 +25,7 @@ namespace RogueEssence.Dungeon
                 string name = Nickname;
                 if (String.IsNullOrEmpty(Nickname))
                     name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
-                
+
                 return name;
             }
         }
@@ -34,7 +35,7 @@ namespace RogueEssence.Dungeon
 
         public static string GetFullFormName(MonsterID id)
         {
-            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[id.Species].Name.ToLocal();
+            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(id.Species).Name.ToLocal();
             SkinData data = DataManager.Instance.GetSkin(id.Skin);
             if (data.Symbol != '\0')
                 name = data.Symbol + name;
@@ -63,18 +64,18 @@ namespace RogueEssence.Dungeon
 
         public List<SlotSkill> BaseSkills;
 
-        public List<int> BaseIntrinsics;
+        [JsonConverter(typeof(IntrinsicListConverter))]
+        public List<string> BaseIntrinsics;
 
-        public List<bool> Relearnables;
+        [JsonConverter(typeof(RelearnableConverter))]
+        public Dictionary<string, bool> Relearnables;
 
         public int Discriminator;
 
         public string MetAt;
-        //public int MetDungeon;
-        //public StructMap MetFloor;
+        public ZoneLoc MetLoc;
         public string DefeatAt;
-        //public int DefeatDungeon;
-        //public StructMap DefeatFloor;
+        public ZoneLoc DefeatLoc;
 
         /// <summary>
         /// Cannot be removed from assembly.
@@ -97,7 +98,9 @@ namespace RogueEssence.Dungeon
 
 
         public CharData() : this(true)
-        { }
+        {
+            BaseForm = new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless);
+        }
 
         [JsonConstructor]
         public CharData(bool populateSlots)
@@ -111,20 +114,18 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
                     BaseSkills.Add(new SlotSkill());
             }
-            BaseIntrinsics = new List<int>();
+            BaseIntrinsics = new List<string>();
             if (populateSlots)
             {
                 for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
-                    BaseIntrinsics.Add(-1);
+                    BaseIntrinsics.Add("");
             }
-            Relearnables = new List<bool>();
+            Relearnables = new Dictionary<string, bool>();
 
             MetAt = "";
-            //MetDungeon = -1;
-            //MetFloor = new StructMap(-1, -1);
+            MetLoc = ZoneLoc.Invalid;
             DefeatAt = "";
-            //DefeatedDungeon = -1;
-            //DefeatedFloor = new StructMap(-1,-1);
+            DefeatLoc = ZoneLoc.Invalid;
             ActionEvents = new List<BattleEvent>();
             LuaDataTable = Script.LuaEngine.Instance.RunString("return {}").First() as LuaTable;
         }
@@ -146,19 +147,18 @@ namespace RogueEssence.Dungeon
             BaseSkills = new List<SlotSkill>();
             foreach (SlotSkill skill in other.BaseSkills)
                 BaseSkills.Add(new SlotSkill(skill));
-            BaseIntrinsics = new List<int>();
+            BaseIntrinsics = new List<string>();
             BaseIntrinsics.AddRange(other.BaseIntrinsics);
-            Relearnables = new List<bool>();
-            Relearnables.AddRange(other.Relearnables);
+            Relearnables = new Dictionary<string, bool>();
+            foreach (string key in other.Relearnables.Keys)
+                Relearnables[key] = other.Relearnables[key];
 
             OriginalUUID = other.OriginalUUID;
             OriginalTeam = other.OriginalTeam;
             MetAt = other.MetAt;
-            //MetDungeon = other.MetDungeon;
-            //MetFloor = other.MetFloor;
+            MetLoc = other.MetLoc;
             DefeatAt = other.DefeatAt;
-            //FaintDungeon = other.FaintDungeon;
-            //FaintFloor = other.FaintFloor;
+            DefeatLoc = other.DefeatLoc;
             IsFounder = other.IsFounder;
             IsFavorite = other.IsFavorite;
             Discriminator = other.Discriminator;
@@ -190,9 +190,8 @@ namespace RogueEssence.Dungeon
             MonsterData newDex = DataManager.Instance.GetMonster(BaseForm.Species);
             BaseMonsterForm newForm = newDex.Forms[BaseForm.Form];
 
-            if (prevIndex == 2 && newForm.Intrinsic3 == 0)
-                prevIndex = 0;
-            if (prevIndex == 1 && newForm.Intrinsic2 == 0)
+            List<int> possibles = newForm.GetPossibleIntrinsicSlots();
+            if (!possibles.Contains(prevIndex))
                 prevIndex = 0;
 
             if (prevIndex == 0)
@@ -205,7 +204,7 @@ namespace RogueEssence.Dungeon
 
         public void SaveLua()
         {
-            ScriptVars = Script.LuaEngine.Instance.LuaTableToDict(LuaDataTable);
+            ScriptVars = Script.LuaEngine.Instance.SaveLuaTable(LuaDataTable);
         }
 
         public void LoadLua()
@@ -216,7 +215,7 @@ namespace RogueEssence.Dungeon
                 return;
             }
 
-            LuaDataTable = Script.LuaEngine.Instance.DictToLuaTable(ScriptVars);
+            LuaDataTable = Script.LuaEngine.Instance.LoadLuaTable(ScriptVars);
             if (LuaDataTable == null)
             {
                 //Make sure thers is at least a table in the data table when done deserializing.
@@ -225,13 +224,5 @@ namespace RogueEssence.Dungeon
             }
         }
 
-
-        //TODO: Created v0.5.3, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ActionEvents == null)
-                ActionEvents = new List<BattleEvent>();
-        }
     }
 }

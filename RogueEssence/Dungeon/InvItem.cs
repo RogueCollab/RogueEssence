@@ -2,6 +2,8 @@
 using RogueEssence.Data;
 using RogueElements;
 using RogueEssence.Dev;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -14,46 +16,75 @@ namespace RogueEssence.Dungeon
         }
         public override PassiveData GetData() { return DataManager.Instance.GetItem(ID); }
 
+        public override string GetID() { return ID.ToString(); }
+
+        [JsonConverter(typeof(ItemConverter))]
         [DataType(0, DataManager.DataType.Item, false)]
-        public override int ID { get; set; }
+        public string ID { get; set; }
         public bool Cursed;
-        public int HiddenValue;
+
+        public string HiddenValue;
+        public int Amount;
         public int Price;
 
         public InvItem() : base()
-        { }
-
-        public InvItem(int index)
         {
-            ID = index;
+            ID = "";
+            HiddenValue = "";
         }
 
-        public InvItem(int index, bool cursed)
+        public InvItem(string index)
         {
             ID = index;
+            HiddenValue = "";
+        }
+
+        public InvItem(string index, bool cursed)
+        {
+            ID = index;
+            HiddenValue = "";
             Cursed = cursed;
         }
-        public InvItem(int index, bool cursed, int hiddenValue)
+
+        public InvItem(string index, bool cursed, int amount)
         {
             ID = index;
             Cursed = cursed;
-            HiddenValue = hiddenValue;
+            HiddenValue = "";
+            Amount = amount;
         }
-        public InvItem(int index, bool cursed, int hiddenValue, int price)
+
+        public InvItem(string index, bool cursed, int amount, int price)
         {
             ID = index;
             Cursed = cursed;
-            HiddenValue = hiddenValue;
+            HiddenValue = "";
+            Amount = amount;
             Price = price;
         }
-        public InvItem(InvItem other) : base(other)
+
+        //TODO: Created v0.5.20, revert on v1.1
+        public InvItem(InvItem other)// : base(other)
         {
+            //TODO: Created v0.5.20, revert on v1.1
+            ID = other.ID;
             Cursed = other.Cursed;
             HiddenValue = other.HiddenValue;
+            Amount = other.Amount;
             Price = other.Price;
         }
         public ISpawnable Copy() { return new InvItem(this); }
 
+
+        public static InvItem CreateBox(string value, string hiddenValue, int price = 0, bool cursed = false)
+        {
+            InvItem item = new InvItem();
+            item.ID = value;
+            item.HiddenValue = hiddenValue;
+            item.Cursed = cursed;
+            item.Price = price;
+            return item;
+        }
 
         public string GetPriceString()
         {
@@ -72,7 +103,7 @@ namespace RogueEssence.Dungeon
 
             string nameStr = entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                nameStr += " (" + HiddenValue + ")";
+                nameStr += " (" + Amount + ")";
 
             return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
         }
@@ -87,7 +118,7 @@ namespace RogueEssence.Dungeon
 
             nameStr += entry.Name.ToLocal();
             if (entry.MaxStack > 1)
-                nameStr += " (" + HiddenValue + ")";
+                nameStr += " (" + Amount + ")";
 
             return nameStr;
         }
@@ -96,9 +127,38 @@ namespace RogueEssence.Dungeon
         {
             ItemData entry = DataManager.Instance.GetItem(ID);
             if (entry.MaxStack > 1)
-                return entry.Price * HiddenValue;
+                return entry.Price * Amount;
             else
                 return entry.Price;
+        }
+
+        //TODO: Created v0.5.20, delete on v1.1
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (!String.IsNullOrEmpty(ID))
+            {
+                ItemData item = DataManager.Instance.GetItem(ID);
+
+                int amt;
+                if (int.TryParse(HiddenValue, out amt))
+                {
+                    if (item.MaxStack > 0)
+                    {
+                        Amount = amt;
+                        HiddenValue = "";
+                    }
+                    else if (amt > 0)
+                    {
+                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
+                        HiddenValue = asset_name;
+                    }
+                    else
+                    {
+                        HiddenValue = "";
+                    }
+                }
+            }
         }
     }
 }

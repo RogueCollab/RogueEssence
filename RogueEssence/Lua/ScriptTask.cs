@@ -171,7 +171,7 @@ namespace RogueEssence.Script
             else if (obj is LuaFunction)
             {
                 LuaFunction luaFun = obj as LuaFunction;
-                return CoroutineManager.Instance.StartCoroutine(new Coroutine(callScriptFunction(luaFun)), true);
+                return CoroutineManager.Instance.StartCoroutine(new Coroutine(LuaEngine.Instance.CallScriptFunction(luaFun)), true);
             }
             return null;
         }
@@ -196,27 +196,6 @@ namespace RogueEssence.Script
                 if (coroutines.Count == 0)
                     yield break;
                 yield return new WaitForFrames(1);
-            }
-        }
-
-        private IEnumerator<YieldInstruction> callScriptFunction(LuaFunction luaFun)
-        {
-            //Create a lua iterator function for the lua coroutine
-            LuaFunction iter = LuaEngine.Instance.CreateCoroutineIterator(luaFun);
-
-            //Then call it until it returns null!
-            object[] allres = iter.Call();
-            object res = allres.First();
-            while (res != null)
-            {
-                if (res.GetType() == typeof(Coroutine)) //This handles waiting on coroutines
-                    yield return CoroutineManager.Instance.StartCoroutine(res as Coroutine, false);
-                else if (res.GetType().IsSubclassOf(typeof(YieldInstruction)))
-                    yield return res as YieldInstruction;
-
-                //Pick another yield from the lua coroutine
-                allres = iter.Call();
-                res = allres.First();
             }
         }
 

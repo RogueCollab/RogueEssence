@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Enum member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Enum member, Type[] subGroupStack)
         {
             Array enums = type.GetEnumValues();
             if (type.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0)
@@ -59,7 +59,7 @@ namespace RogueEssence.Dev
             else
             {
                 //for enums, use a combobox
-                ComboBox cbValue = new ComboBox();
+                ComboBox cbValue = new SearchComboBox();
                 cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
 
                 List<string> items = new List<string>();
@@ -75,6 +75,15 @@ namespace RogueEssence.Dev
                 cbValue.Bind(ComboBox.ItemsProperty, subject);
                 subject.OnNext(items);
                 cbValue.SelectedIndex = selection;
+                {
+                    string typeDesc = DevDataManager.GetMemberDoc(type, enums.GetValue(cbValue.SelectedIndex).ToString());
+                    ToolTip.SetTip(cbValue, typeDesc);
+                }
+                cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+                {
+                    string typeDesc = DevDataManager.GetMemberDoc(type, enums.GetValue(cbValue.SelectedIndex).ToString());
+                    ToolTip.SetTip(cbValue, typeDesc);
+                };
                 control.Children.Add(cbValue);
             }
         }
@@ -113,7 +122,7 @@ namespace RogueEssence.Dev
             else
             {
                 ComboBox cbValue = (ComboBox)control.Children[controlIndex];
-                return (Enum)Enum.ToObject(type, cbValue.SelectedIndex);
+                return (Enum)enums.GetValue(cbValue.SelectedIndex);
             }
         }
     }

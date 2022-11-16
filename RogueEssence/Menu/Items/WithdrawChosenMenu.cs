@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using System;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -11,11 +12,11 @@ namespace RogueEssence.Menu
     {
 
         private int origIndex;
-        private List<int> selections;
-        OnMultiChoice storageChoice;
+        private List<WithdrawSlot> selections;
+        WithdrawMenu.OnWithdrawChoice storageChoice;
         bool continueOnChoose;
 
-        public WithdrawChosenMenu(List<int> selections, int origIndex, bool continueOnChoose, OnMultiChoice storageChoice)
+        public WithdrawChosenMenu(List<WithdrawSlot> selections, int origIndex, bool continueOnChoose, WithdrawMenu.OnWithdrawChoice storageChoice)
         {
             this.origIndex = origIndex;
             this.selections = selections;
@@ -29,11 +30,14 @@ namespace RogueEssence.Menu
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_WITHDRAW"), TakeAction));
             else
             {
-                int selectionIndex = selections[0];
-                if (selectionIndex >= DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
-                    selectionIndex = DataManager.Instance.Save.ActiveTeam.BoxStorage[selectionIndex - DataManager.Instance.DataIndices[DataManager.DataType.Item].Count].ID;
+                WithdrawSlot selectionIndex = selections[0];
+                string itemID;
+                if (selectionIndex.IsBox)
+                    itemID = DataManager.Instance.Save.ActiveTeam.BoxStorage[selectionIndex.BoxSlot].ID;
+                else
+                    itemID = selectionIndex.ItemID;
 
-                ItemData entry = DataManager.Instance.GetItem(selectionIndex);
+                ItemData entry = DataManager.Instance.GetItem(itemID);
 
                 bool fitsInBag = DataManager.Instance.Save.ActiveTeam.GetInvCount() < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone);
                 if (entry.MaxStack > 1 && !fitsInBag)
@@ -43,7 +47,7 @@ namespace RogueEssence.Menu
                     {
                         //should we allow refills into held item slots?
                         //ehhh it probably doesn't even matter
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selectionIndex && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == itemID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
                         {
                             fitsInBag = true;
                             break;
@@ -58,7 +62,8 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(ItemMenu.ITEM_MENU_WIDTH + 16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(ItemMenu.ITEM_MENU_WIDTH + 16, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
 
         private void TakeAction()
@@ -67,7 +72,14 @@ namespace RogueEssence.Menu
                 takeItems(selections);
             else if (!continueOnChoose)
             {
-                ItemData entry = DataManager.Instance.GetItem(selections[0]);
+                WithdrawSlot selectionIndex = selections[0];
+                string itemID;
+                if (selectionIndex.IsBox)
+                    itemID = DataManager.Instance.Save.ActiveTeam.BoxStorage[selectionIndex.BoxSlot].ID;
+                else
+                    itemID = selectionIndex.ItemID;
+
+                ItemData entry = DataManager.Instance.GetItem(itemID);
 
                 if (entry.MaxStack > 1)
                     MenuManager.Instance.AddMenu(new ItemAmountMenu(new Loc(Bounds.X, Bounds.End.Y), entry.MaxStack, takeMultiple), true);
@@ -76,9 +88,10 @@ namespace RogueEssence.Menu
             }
             else
             {
-                if (selections[0] < DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
+                WithdrawSlot selectionIndex = selections[0];
+                if (!selectionIndex.IsBox)
                 {
-                    ItemData entry = DataManager.Instance.GetItem(selections[0]);
+                    ItemData entry = DataManager.Instance.GetItem(selectionIndex.ItemID);
 
                     int openSlots = DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone) - DataManager.Instance.Save.ActiveTeam.GetInvCount();
                     //stackable items need to be counted differently
@@ -87,13 +100,13 @@ namespace RogueEssence.Menu
                         int residualSlots = 0;
                         for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                         {
-                            if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selections[0] && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
-                                residualSlots += entry.MaxStack - DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue;
+                            if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == selectionIndex.ItemID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
+                                residualSlots += entry.MaxStack - DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount;
                         }
                         openSlots = openSlots * entry.MaxStack + residualSlots;
                     }
 
-                    openSlots = Math.Min(openSlots, DataManager.Instance.Save.ActiveTeam.Storage[selections[0]]);
+                    openSlots = Math.Min(openSlots, DataManager.Instance.Save.ActiveTeam.Storage[selectionIndex.ItemID]);
                     //show the amount dialogue
                     MenuManager.Instance.AddMenu(new ItemAmountMenu(new Loc(Bounds.X, Bounds.End.Y), openSlots, takeMultiple), true);
                 }
@@ -104,13 +117,13 @@ namespace RogueEssence.Menu
 
         private void takeMultiple(int amount)
         {
-            List<int> slots = new List<int>();
+            List<WithdrawSlot> slots = new List<WithdrawSlot>();
             for (int ii = 0; ii < amount; ii++)
                 slots.Add(selections[0]);
             takeItems(slots);
         }
 
-        private void takeItems(List<int> slots)
+        private void takeItems(List<WithdrawSlot> slots)
         {
             MenuManager.Instance.RemoveMenu();
 
@@ -120,9 +133,9 @@ namespace RogueEssence.Menu
             {
                 //refresh base menu
                 bool hasStorage = (DataManager.Instance.Save.ActiveTeam.BoxStorage.Count > 0);
-                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
+                foreach (string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                    if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
                     {
                         hasStorage = true;
                         break;
@@ -140,7 +153,7 @@ namespace RogueEssence.Menu
 
         private void InfoAction()
         {
-            MenuManager.Instance.AddMenu(new TeachInfoMenu(selections[0]), false);
+            MenuManager.Instance.AddMenu(new TeachInfoMenu(selections[0].ItemID), false);
         }
 
         private void ExitAction()

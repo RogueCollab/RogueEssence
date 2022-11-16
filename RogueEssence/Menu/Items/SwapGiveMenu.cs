@@ -14,42 +14,41 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 8;
 
         ItemSummary summaryMenu;
-        public List<int> AllowedGoods;
+        public List<string> AllowedGoods;
         private OnMultiChoice action;
 
         public SwapGiveMenu(int defaultChoice, int openSpaces, OnMultiChoice chooseSlots)
         {
             action = chooseSlots;
-            AllowedGoods = new List<int>();
+            AllowedGoods = new List<string>();
 
-            int[] itemPresence = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
-            for (int ii = 0; ii < itemPresence.Length; ii++)
-                itemPresence[ii] += DataManager.Instance.Save.ActiveTeam.Storage[ii];
+            Dictionary<string, int> itemPresence = new Dictionary<string, int>();
+            foreach (string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
+                itemPresence[key] = DataManager.Instance.Save.ActiveTeam.Storage[key];
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
-                itemPresence[DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID]++;
+                itemPresence[DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID] = itemPresence.GetValueOrDefault(DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID, 0);
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                     itemPresence[activeChar.EquippedItem.ID]++;
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            for (int ii = 0; ii < itemPresence.Length; ii++)
+            foreach (string key in itemPresence.Keys)
             {
-                int index = ii;
-                if (itemPresence[index] > 0)
+                if (itemPresence[key] > 0)
                 {
-                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[ii] as ItemEntrySummary;
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(key) as ItemEntrySummary;
 
                     if (itemEntry.ContainsState<MaterialState>())
                     {
-                        AllowedGoods.Add(index);
+                        AllowedGoods.Add(key);
 
-                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
-                        MenuText menuCount = new MenuText("(" + itemPresence[index] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
+                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                        MenuText menuCount = new MenuText("(" + itemPresence[key] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { }, true, menuText, menuCount));
                     }
                 }
@@ -72,13 +71,9 @@ namespace RogueEssence.Menu
         {
             int startIndex = CurrentChoiceTotal;
 
-            List<int> indices = new List<int>();
-            foreach (int slot in slots)
-                indices.Add(AllowedGoods[slot]);
-
             MenuManager.Instance.RemoveMenu();
 
-            action(indices);
+            action(slots);
         }
 
 

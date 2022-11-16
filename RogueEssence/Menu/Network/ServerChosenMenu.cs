@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
+using System;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -19,7 +21,8 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE"), DeleteAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(232, 8), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(232, GraphicsManager.ScreenWidth - choice_width), 8), choice_width, choices.ToArray(), 0);
         }
 
 

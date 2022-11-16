@@ -4,6 +4,7 @@ using System.Linq;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using NLua;
+using System.IO;
 
 namespace RogueEssence.Script
 {
@@ -51,9 +52,9 @@ namespace RogueEssence.Script
         {
             //We can get the path 3 ways.
             if (ZoneManager.Instance.CurrentGround != null)
-                return LuaEngine.MakeMapScriptPath(ZoneManager.Instance.CurrentGround.AssetName);
+                return Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, ZoneManager.Instance.CurrentGround.AssetName, "/init.lua"));
             else if (ZoneManager.Instance.CurrentMap != null)
-                return LuaEngine.MakeDungeonMapScriptPath(ZoneManager.Instance.CurrentMap.AssetName);
+                return Path.GetDirectoryName(LuaEngine.MakeDungeonMapScriptPath(false, ZoneManager.Instance.CurrentMap.AssetName, "/init.lua"));
             else
                 throw new Exception("ScriptServices.CurrentScriptDir(): No map lua package currently loaded! And no map currently loaded either! Cannot assemble the current package path!");
         }

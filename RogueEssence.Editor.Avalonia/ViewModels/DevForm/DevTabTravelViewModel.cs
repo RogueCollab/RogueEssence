@@ -9,6 +9,7 @@ using RogueEssence.Menu;
 using RogueEssence.Dev.Views;
 using RogueEssence.LevelGen;
 using RogueEssence.Script;
+using RogueElements;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -23,6 +24,17 @@ namespace RogueEssence.Dev.ViewModels
             floorIDs = new List<int>();
         }
 
+
+        private bool debugGen;
+        public bool DebugGen
+        {
+            get { return debugGen; }
+            set
+            {
+                this.SetIfChanged(ref debugGen, value);
+                DiagManager.Instance.ListenGen = value;
+            }
+        }
 
         public ObservableCollection<string> Zones { get; }
 
@@ -96,7 +108,8 @@ namespace RogueEssence.Dev.ViewModels
                 int tempStructure = chosenStructure;
                 int tempGround = chosenGround;
 
-                ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
                 ObservableCollection<string> newStructures = new ObservableCollection<string>();
                 for (int ii = 0; ii < zone.Segments.Count; ii++)
                     newStructures.Add(ii.ToString("D2") + ": " + getSegmentString(zone.Segments[ii]));
@@ -131,8 +144,9 @@ namespace RogueEssence.Dev.ViewModels
 
                 int temp = chosenFloor;
                 floorIDs.Clear();
-                
-                ZoneData zone = DataManager.Instance.GetZone(chosenZone);
+
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
                 ObservableCollection<string> newFloors = new ObservableCollection<string>();
                 foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
                 {
@@ -164,7 +178,14 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig("GroundChoice", chosenGround);
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
+                // Remove common cutscene variables
+                // While these should technically be untouched, in practice a travel attempt means breaking the cutscene and resetting the variables to normal.
+                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
+                if (DataManager.Instance.Save != null)
+                    DataManager.Instance.Save.CutsceneMode = false;
+
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosen_entry, new SegLoc(-1, chosenGround)), RogueElements.MathUtils.Rand.NextUInt64());
             }
         }
 
@@ -177,7 +198,40 @@ namespace RogueEssence.Dev.ViewModels
                 DevForm.SetConfig("FloorChoice", chosenFloor);
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosenZone, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
+                // Remove common cutscene variables
+                // While these should technically be untouched, in practice a travel attempt means breaking the cutscene and resetting the variables to normal.
+                Content.GraphicsManager.GlobalIdle = Content.GraphicsManager.IdleAction;
+                if (DataManager.Instance.Save != null)
+                    DataManager.Instance.Save.CutsceneMode = false;
+
+                string chosen_entry = Zones[chosenZone].Split(':')[0];
+                GameManager.Instance.SceneOutcome = GameManager.Instance.DebugWarp(new ZoneLoc(chosen_entry, new SegLoc(chosenStructure, floorIDs[chosenFloor])), RogueElements.MathUtils.Rand.NextUInt64());
+            }
+        }
+
+        public void btnReloadMap_Click()
+        {
+            lock (GameBase.lockObj)
+            {
+                //only if in a dungeon
+                if (ZoneManager.Instance.CurrentZone != null)
+                {
+                    if (ZoneManager.Instance.InDevZone)
+                    {
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64());
+                    }
+                    else if (ZoneManager.Instance.CurrentMapID.Segment > -1)
+                    {
+                        //reload the dungeon map
+                        ZoneManager.Instance.CurrentZone.MapsLoaded--;
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID));
+                    }
+                    else
+                    {
+                        //reload ground map
+                        GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID));
+                    }
+                }
             }
         }
 

@@ -23,14 +23,14 @@ namespace RogueEssence.Dev
 
         public override Type GetAttributeType() { return typeof(MusicAttribute); }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
-            ComboBox cbValue = new ComboBox();
+            ComboBox cbValue = new SearchComboBox();
             cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             string choice = member;
 
             List<string> items = new List<string>();
-            items.Add("---");
+            items.Add("**EMPTY**");
             int chosenIndex = 0;
 
             string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + "Music");

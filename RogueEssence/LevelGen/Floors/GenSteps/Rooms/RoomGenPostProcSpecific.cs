@@ -3,6 +3,11 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates a room with specific tiles, borders, and post-processing mask.
+    /// EDITOR UNFRIENDLY
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class RoomGenPostProcSpecific<T> : RoomGenSpecific<T> where T : ITiledGenContext, IPostProcGenContext
     {
@@ -15,10 +20,9 @@ namespace RogueEssence.LevelGen
             for (int xx = 0; xx < width; xx++)
                 PostProcMask[xx] = new PostProcTile[height];
         }
-        public RoomGenPostProcSpecific(int width, int height, ITile roomTerrain, bool fulfillAll) : this(width, height)
+        public RoomGenPostProcSpecific(int width, int height, ITile roomTerrain) : this(width, height)
         {
             RoomTerrain = roomTerrain;
-            FulfillAll = fulfillAll;
         }
 
         public override void DrawOnMap(T map)
@@ -34,7 +38,7 @@ namespace RogueEssence.LevelGen
             for (int xx = 0; xx < Draw.Width; xx++)
             {
                 for (int yy = 0; yy < Draw.Height; yy++)
-                    map.PostProcGrid[Draw.X + xx][Draw.Y + yy].AddMask(PostProcMask[xx][yy]);
+                    map.GetPostProc(new Loc(Draw.X + xx, Draw.Y + yy)).AddMask(PostProcMask[xx][yy]);
             }
         }
     }

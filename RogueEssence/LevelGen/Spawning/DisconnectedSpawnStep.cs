@@ -5,6 +5,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
+    /// Spawns objects on tiles that are not connected to the main path.
     /// Mostly obsolete; use regular spawning and pick rooms marked as disconnected
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -32,7 +33,7 @@ namespace RogueEssence.LevelGen
             Grid.FloodFill(new Rect(0, 0, map.Width, map.Height),
             (Loc testLoc) =>
             {
-                return (connectionGrid[testLoc.X][testLoc.Y] || !map.GetTile(testLoc).TileEquivalent(map.RoomTerrain));
+                return (connectionGrid[testLoc.X][testLoc.Y] || !map.RoomTerrain.TileEquivalent(map.GetTile(testLoc)));
             },
             (Loc testLoc) =>
             {

@@ -14,14 +14,18 @@ namespace RogueEssence.Dev.ViewModels
 
         public MapTabItemsViewModel()
         {
-            SelectedEntity = new MapItem();
+            SelectedEntity = MapItem.CreateMoney(1);
 
             ItemTypes = new ObservableCollection<string>();
-            ItemTypes.Add("---: Money");
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
-            for (int ii = 0; ii < monster_names.Length; ii++)
-                ItemTypes.Add(ii.ToString("D3") + ": " + monster_names[ii]);
-
+            itemKeys = new List<string>();
+            ItemTypes.Add("[Money]");
+            itemKeys.Add("");
+            Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+            foreach (string key in monster_names.Keys)
+            {
+                ItemTypes.Add(key + ": " + monster_names[key]);
+                itemKeys.Add(key);
+            }
         }
 
         private EntEditMode entMode;
@@ -45,6 +49,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        List<string> itemKeys;
+
         public ObservableCollection<string> ItemTypes { get; }
 
         public int ChosenItem
@@ -54,20 +60,19 @@ namespace RogueEssence.Dev.ViewModels
                 if (SelectedEntity.IsMoney)
                     return 0;
                 else
-                    return SelectedEntity.Value + 1;
+                    return itemKeys.IndexOf(SelectedEntity.Value);
             }
             set
             {
                 if (value == 0)
                 {
                     SelectedEntity.IsMoney = true;
-                    Amount = 1;
                     TabIndex = 0;
                 }
                 else
                 {
                     SelectedEntity.IsMoney = false;
-                    SelectedEntity.Value = value - 1;
+                    SelectedEntity.Value = itemKeys[value];
                     TabIndex = 1;
                 }
                 this.RaisePropertyChanged();
@@ -76,14 +81,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public int Amount
         {
-            get { return SelectedEntity.Value; }
+            get { return SelectedEntity.Amount; }
             set
             {
-                this.RaiseAndSet(ref SelectedEntity.Value, value);
+                this.RaiseAndSet(ref SelectedEntity.Amount, value);
             }
         }
 
-        public int HiddenValue
+        public string HiddenValue
         {
             get { return SelectedEntity.HiddenValue; }
             set
@@ -205,6 +210,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             SelectedEntity = ent;
             ChosenItem = ChosenItem;
+            Amount = Amount;
             HiddenValue = HiddenValue;
             Cursed = Cursed;
         }

@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
             bool equippedItems = false;
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
-                if (!character.Dead && character.EquippedItem.ID > -1)
+                if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
                 {
                     equippedItems = true;
                     break;
@@ -58,7 +58,10 @@ namespace RogueEssence.Menu
             }
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(new OthersMenu(), false); }));
-            if (!inReplay)
+
+            if (ZoneManager.Instance.InDevZone)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
+            else if (!inReplay)
             {
                 if (((GameManager.Instance.CurrentScene == DungeonScene.Instance)) || DataManager.Instance.Save is RogueProgress)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
@@ -83,7 +86,7 @@ namespace RogueEssence.Menu
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
-                string weather = DataManager.Instance.GetMapStatus(0).GetColoredName();
+                string weather = DataManager.Instance.GetMapStatus(DataManager.Instance.DefaultMapStatus).GetColoredName();
                 foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
                 {
                     if (status.StatusStates.Contains<MapWeatherState>())
@@ -179,6 +182,12 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.EndAction = GameManager.Instance.FadeOut(false);
             GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+        }
+
+        private void ReturnToEditorAction()
+        {
+            MenuManager.Instance.ClearMenus();
+            MenuManager.Instance.NextAction = GameManager.Instance.ReturnToEditor();
         }
     }
 }

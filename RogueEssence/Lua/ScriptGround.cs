@@ -233,17 +233,33 @@ namespace RogueEssence.Script
         /// <param name="chara"></param>
         /// <param name="emoteid"></param>
         /// <param name="cycles"></param>
-        public void CharSetEmote(GroundChar chara, int emoteid, int cycles)
+        public void CharSetEmote(GroundChar chara, string emoteid, int cycles)
         {
             if (chara != null)
             {
-                if (emoteid >= 0)
+                if (!String.IsNullOrEmpty(emoteid))
                 {
                     EmoteData emote = DataManager.Instance.GetEmote(emoteid);
                     chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));
                 }
                 else
                     chara.StartEmote(null);
+            }
+        }
+
+        public void CharSetDrawEffect(GroundChar chara, DrawEffect effect)
+        {
+            if (chara != null)
+            {
+                chara.SetDrawEffect(effect);
+            }
+        }
+
+        public void CharEndDrawEffect(GroundChar chara, DrawEffect effect)
+        {
+            if (chara != null)
+            {
+                chara.RemoveDrawEffect(effect);
             }
         }
 
@@ -254,7 +270,7 @@ namespace RogueEssence.Script
         /// <param name="anim"></param>
         public void CharSetAnim(GroundChar chara, string anim, bool loop)
         {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+            int animIndex = GraphicsManager.GetAnimIndex(anim);
             chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, animIndex, loop));
         }
         public void CharEndAnim(GroundChar chara)
@@ -270,12 +286,12 @@ namespace RogueEssence.Script
                 if (ent is GroundChar)
                 {
                     GroundChar ch = (GroundChar)ent;
-                    int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                    int animIndex = GraphicsManager.GetAnimIndex(anim);
                     IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
                     ch.StartAction(action);
                     return new WaitUntil(() =>
                     {
-                        return action.Complete;
+                        return action.Complete || (ch.GetCurrentAction() != action);
                     });
                 }
                 throw new ArgumentException("Entity is not a valid type.");
@@ -291,19 +307,6 @@ namespace RogueEssence.Script
         {
             chara.StartAction(action);
         }
-
-        public void CharPoseAnim(GroundChar chara, string anim)
-        {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-            chara.StartAction(new PoseGroundAction(chara.Position, chara.Direction, animIndex));
-        }
-
-        public void CharHopAnim(GroundChar chara, string anim, int height, int duration)
-        {
-            int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
-            chara.StartAction(new HopGroundAction(chara.Position, chara.Direction, animIndex, height, duration));
-        }
-
 
         public void ObjectSetAnim(GroundObject obj, int frameTime, int startFrame, int endFrame, Dir8 dir, int cycles)
         {
@@ -326,12 +329,21 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="chara"></param>
         /// <param name="anim"></param>
-        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir = Dir8.Down, int xTo = -1, int yTo = -1)
+        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir = Dir8.Down)
         {
             FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
-            Loc endLoc = (x > -1) ? new Loc(x, y) : Loc.Zero;
-            endEmitter.SetupEmit(new Loc(x, y), endLoc, dir);
+            endEmitter.SetupEmit(new Loc(x, y), new Loc(x, y), dir);
             GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
+        }
+        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir, int xTo, int yTo)
+        {
+            FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
+            endEmitter.SetupEmit(new Loc(x, y), new Loc(xTo, yTo), dir);
+            GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
+        }
+        public void PlayVFXAnim(BaseAnim anim, DrawLayer layer)
+        {
+            GroundScene.Instance.CreateAnim(anim, layer);
         }
 
         public void MoveScreen(ScreenMover mover)
@@ -339,14 +351,14 @@ namespace RogueEssence.Script
             GroundScene.Instance.SetScreenShake(new ScreenMover(mover));
         }
 
-        public void AddMapStatus(int statusIdx)
+        public void AddMapStatus(string statusIdx)
         {
             MapStatus status = new MapStatus(statusIdx);
             status.LoadFromData();
             GroundScene.Instance.AddMapStatus(status);
         }
 
-        public void RemoveMapStatus(int statusIdx)
+        public void RemoveMapStatus(string statusIdx)
         {
             GroundScene.Instance.RemoveMapStatus(statusIdx);
         }
@@ -542,7 +554,7 @@ namespace RogueEssence.Script
                     GroundChar ch = (GroundChar)ent;
                     FrameTick prevTime = new FrameTick();
                     GroundAction prevAction = ch.GetCurrentAction();
-                    int animIndex = GraphicsManager.Actions.FindIndex((CharFrameType element) => element.Name == anim);
+                    int animIndex = GraphicsManager.GetAnimIndex(anim);
                     if (prevAction is AnimateToPositionGroundAction)
                     {
                         if (animIndex == prevAction.AnimFrameType)
@@ -577,7 +589,7 @@ namespace RogueEssence.Script
                     ch.StartAction(action);
                     return new WaitUntil(() =>
                     {
-                        return action.Complete;
+                        return action.Complete || (ch.GetCurrentAction() != action);
                     });
                 }
                 throw new ArgumentException("Entity is not a valid type.");
@@ -621,7 +633,7 @@ namespace RogueEssence.Script
                     ch.StartAction(newAction);
                     return new WaitUntil(() =>
                     {
-                        return newAction.Complete;
+                        return newAction.Complete || (ch.GetCurrentAction() != newAction);
                     });
                 }
 
@@ -634,6 +646,7 @@ namespace RogueEssence.Script
             }
             return null;
         }
+        
 
         /// <summary>
         /// Makes an entity move to a marker.

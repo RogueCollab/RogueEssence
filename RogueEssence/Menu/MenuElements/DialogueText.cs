@@ -11,14 +11,32 @@ namespace RogueEssence.Menu
     public class DialogueText : IMenuElement
     {
         public int LineHeight;
-        public string Text { get; private set; }
         public Rect Rect;
         public int CurrentCharIndex;
         public bool CenterH;
         public bool CenterV;
-        private List<(int idx, Color color)> textColor;
         public float TextOpacity;
-        public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= Text.Length; } }
+        public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= formattedTextLength; } }
+
+        /// <summary>
+        /// Text color starts and stops.
+        /// </summary>
+        private List<(int idx, Color color)> textColor;
+
+        /// <summary>
+        /// The amount of space to trim when the lines were broken up.
+        /// </summary>
+        private List<int> trimmedStarts;
+
+        /// <summary>
+        /// Formatted lines after breaking the text down and trimming the spaces at the edges.
+        /// </summary>
+        private string[] fullLines;
+
+        /// <summary>
+        /// The sum of the length of all lines in fullLines.  Saves computation.
+        /// </summary>
+        private int formattedTextLength;
 
         public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
         {
@@ -29,7 +47,7 @@ namespace RogueEssence.Menu
             TextOpacity = 1f;
             CurrentCharIndex = startIndex;
             textColor = new List<(int idx, Color color)>();
-            SetFormattedText(text);
+            SetAndFormatText(text);
         }
         public DialogueText(string text, Rect rect, int lineHeight) : this(text, rect, lineHeight, false, false, -1)
         { }
@@ -49,8 +67,6 @@ namespace RogueEssence.Menu
                         continue;
                     switch (key)
                     {
-                        case "pause":
-                            break;
                         case "colorstart":
                             {
                                 string hex = match.Groups["colorval"].Value;
@@ -74,81 +90,181 @@ namespace RogueEssence.Menu
                 text = text.Remove(ranges[ii].Min, ranges[ii].Length);
 
             colors.Add((text.Length, Color.Transparent));
+        }
 
-            //manually discount all newlines from the color indices
-            int newLag = 0;
-            int colorIdx = 0;
-            for (int ii = 0; ii < text.Length; ii++)
+        /// <summary>
+        /// Splits the text into multiple textboxes worth of text, or just one if it can fit in the textbox.
+        /// </summary>
+        /// <param name="text"></param>
+        public static List<DialogueText> SplitFormattedText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
+        {
+            List<(int idx, Color color)> tempColor = new List<(int idx, Color color)>();
+            string tempText = text;
+            formatText(tempColor, ref tempText);
+
+            List<int> trimmedStarts;
+            string[] tempLines = GraphicsManager.TextFont.BreakIntoLines(tempText, rect.Width, tempText.Length, out trimmedStarts);
+
+            List<DialogueText> results = new List<DialogueText>();
+            int cutIdx = 0;
+            int endColorIndex = 0;
+            List<Color> colorStack = new List<Color>();
+            for (int ii = 0; ii < tempLines.Length + 1; ii++)
             {
-                while (colors[colorIdx].idx == ii)
+                if (ii == tempLines.Length || GraphicsManager.TextFont.CharHeight + (ii - cutIdx) * lineHeight > rect.Height)
                 {
-                    colors[colorIdx] = (colors[colorIdx].idx - newLag, colors[colorIdx].color);
-                    colorIdx++;
-                    if (colorIdx >= colors.Count)
-                        break;
+                    string[] initLines = new string[ii - cutIdx];
+                    Array.Copy(tempLines, cutIdx, initLines, 0, initLines.Length);
+
+                    List<int> initTrim = new List<int>();
+                    for (int nn = cutIdx; nn < ii; nn++)
+                        initTrim.Add(trimmedStarts[nn]);
+
+                    List<(int idx, Color color)> initColor = new List<(int idx, Color color)>();
+                    int startColorIndex = endColorIndex;
+                    for (int nn = 0; nn < initLines.Length; nn++)
+                        endColorIndex += initTrim[nn] + initLines[nn].Length;
+                    //pickup the tags from before
+                    for(int nn = 0; nn < colorStack.Count; nn++)
+                        initColor.Add((0, colorStack[nn]));
+                    //copy eligible colors for this dialogue box
+                    for (int nn = 0; nn < tempColor.Count; nn++)
+                    {
+                        if (startColorIndex <= tempColor[nn].idx && tempColor[nn].idx < endColorIndex)
+                        {
+                            initColor.Add((tempColor[nn].idx - startColorIndex, tempColor[nn].color));
+                            if (tempColor[nn].color == Color.Transparent)
+                                colorStack.RemoveAt(colorStack.Count - 1);
+                            else
+                                colorStack.Add(tempColor[nn].color);
+                        }
+                    }
+                    //close the tags cleanly
+                    for (int nn = colorStack.Count - 1; nn >= 0; nn--)
+                        initColor.Add((endColorIndex- startColorIndex, Color.Transparent));
+
+                    DialogueText newBox = new DialogueText("", rect, lineHeight, centerH, centerV, startIndex);
+                    newBox.textColor = initColor;
+                    newBox.fullLines = initLines;
+                    newBox.trimmedStarts = initTrim;
+                    newBox.updateFullTextLength();
+
+                    results.Add(newBox);
+                    cutIdx = ii;
                 }
-                if (text[ii] == '\n')
-                    newLag++;
+            }
+
+            return results;
+        }
+
+        public void SetPreFormattedText(string text, List<(int idx, Color color)> color)
+        {
+            textColor = color;
+
+            List<int> trimmedStarts;
+            fullLines = GraphicsManager.TextFont.BreakIntoLines(text, Rect.Width, text.Length, out trimmedStarts);
+            this.trimmedStarts = trimmedStarts;
+
+            updateFullTextLength();
+        }
+
+        private void updateFullTextLength()
+        {
+            formattedTextLength = 0;
+            if (fullLines != null)
+            {
+                foreach (string line in fullLines)
+                    formattedTextLength += line.Length;
             }
         }
 
-        public void SetFormattedText(string text)
+        /// <summary>
+        /// Sets the text and formats/spaces it properly.
+        /// </summary>
+        /// <param name="text"></param>
+        public void SetAndFormatText(string text)
         {
             textColor.Clear();
             formatText(textColor, ref text);
 
-            Text = text;
+            SetPreFormattedText(text, textColor);
         }
 
         public Loc GetTextProgress()
         {
-            string[] currLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length);
-            Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(currLines[currLines.Length - 1]), LineHeight * (currLines.Length - 1));
+            int curLineIndex = 0;
+            int curLineStart = 0;
+            foreach (string line in fullLines)
+            {
+                if (CurrentCharIndex == -1 || curLineStart + line.Length < CurrentCharIndex)
+                {
+                    curLineStart += line.Length;
+                    curLineIndex++;
+                }
+                else
+                    break;
+            }
+            int curLineProgress = CurrentCharIndex - curLineStart;
+            string substr = fullLines[curLineIndex].Substring(0, curLineProgress);
+            Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(substr), LineHeight * curLineIndex);
             
-            string[] allLines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
             if (CenterH)
-                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(allLines[currLines.Length - 1])) / 2, 0);
+                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(substr)) / 2, 0);
             if (CenterV)
-                loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (allLines.Length - 1) * LineHeight)) / 2);
+                loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight)) / 2);
             return loc;
         }
 
         public Loc GetTextSize()
         {
             int maxWidth = 0;
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
-            foreach (string line in lines)
+            foreach (string line in fullLines)
                 maxWidth = Math.Max(maxWidth, GraphicsManager.TextFont.SubstringWidth(line));
 
-            return new Loc(maxWidth, GraphicsManager.TextFont.CharHeight + (lines.Length - 1) * LineHeight);
+            return new Loc(maxWidth, GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight);
+        }
+
+        public int GetLineLength(int idx)
+        {
+            return fullLines[idx].Length;
+        }
+
+        /// <summary>
+        /// When a text is broken up into lines, some trimming occurs at the beginning.  This obtains that value so callers can keep in sync with the character position mappings.
+        /// </summary>
+        /// <returns></returns>
+        public int GetLineTrim(int idx)
+        {
+            return trimmedStarts[idx];
         }
 
         public int GetLineCount()
         {
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
-            
-            return lines.Length;
+            return fullLines.Length;
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : Text.Length;
+            int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : formattedTextLength;
             Stack<Color> colorStack = new Stack<Color>();
             colorStack.Push(textColor[0].color);
-            string[] lines = GraphicsManager.TextFont.BreakIntoLines(Text, Rect.Width, Text.Length);
-            if (lines != null)
+
+            if (fullLines != null)
             {
                 int startWidth = CenterH ? Rect.Center.X : Rect.X;
-                int startHeight = CenterV ? Rect.Center.Y - (GraphicsManager.TextFont.CharHeight + (lines.Length - 1) * LineHeight) / 2 : Rect.Y;
+                int startHeight = CenterV ? Rect.Center.Y - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight) / 2 : Rect.Y;
 
                 int curColor = 0;
                 int lineChars = 0;
-                for (int ii = 0; ii < lines.Length; ii++)
+                //offset to move the color tags by, since cutting string into lines removes extra spaces
+                int totalTrimmedOffset = 0;
+                for (int ii = 0; ii < fullLines.Length; ii++)
                 {
                     int curChar = 0;
-                    while (curChar < lines[ii].Length)
+                    totalTrimmedOffset += trimmedStarts[ii];
+                    while (curChar < fullLines[ii].Length)
                     {
-                        while (textColor[curColor + 1].idx - lineChars == curChar)
+                        while ((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars == curChar)
                         {
                             curColor++;
                             if (textColor[curColor].color == Color.Transparent && colorStack.Count > 1)
@@ -157,17 +273,17 @@ namespace RogueEssence.Menu
                                 colorStack.Push(textColor[curColor].color);
                         }
 
-                        int nextColorIdx = Math.Min(textColor[curColor + 1].idx - lineChars, Math.Min(lines[ii].Length, endIndex - lineChars));
+                        int nextColorIdx = Math.Min((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars, Math.Min(fullLines[ii].Length, endIndex - lineChars));
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
-                            lines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
+                            fullLines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
                             colorStack.Peek() * TextOpacity, curChar, nextColorIdx - curChar);
                         curChar = nextColorIdx;
 
                         if (curChar + lineChars >= endIndex)
                             break;
                     }
-                    lineChars += lines[ii].Length;
+                    lineChars += fullLines[ii].Length;
                     if (lineChars >= endIndex)
                         break;
                 }
@@ -176,7 +292,7 @@ namespace RogueEssence.Menu
 
         public void FinishText()
         {
-            CurrentCharIndex = Text.Length;
+            CurrentCharIndex = formattedTextLength;
         }
     }
 }

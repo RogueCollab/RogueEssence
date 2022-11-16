@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -10,7 +12,7 @@ namespace RogueEssence.Menu
         private List<int> selections;
         private OnMultiChoice action;
 
-        public BuyChosenMenu(List<int> selections, int origIndex, int itemID, OnMultiChoice chooseSlots)
+        public BuyChosenMenu(List<int> selections, int origIndex, string itemID, OnMultiChoice chooseSlots)
         {
             this.origIndex = origIndex;
             this.selections = selections;
@@ -29,7 +31,8 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(ItemMenu.ITEM_MENU_WIDTH + 16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(ItemMenu.ITEM_MENU_WIDTH + 16, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
 
         private void BuyAction()

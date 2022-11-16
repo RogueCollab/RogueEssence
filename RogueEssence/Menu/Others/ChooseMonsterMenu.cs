@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
 
             startIndex = Math.Clamp(startIndex, 0, flatChoices.Count - 1);
 
-            Portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(200, 32), true);
+            Portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(200, 32), true);
 
             Initialize(new Loc(16, 16), 112, title, box, 0, 0, totalSlots, false, -1);
         }
@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
                 return;
             base.Draw(spriteBatch);
 
-            if (Portrait.Speaker.Species > 0)
+            if (!String.IsNullOrEmpty(Portrait.Speaker.Species))
                 Portrait.Draw(spriteBatch, new Loc());
         }
 

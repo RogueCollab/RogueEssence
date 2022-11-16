@@ -8,6 +8,9 @@
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
@@ -16,20 +19,29 @@
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="DataEditor\DataEditRootForm.axaml.cs">
+      <DependentUpon>DataEditRootForm.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DataEditor\RankedCollectionBox.axaml.cs">
       <DependentUpon>RankedCollectionBox.axaml</DependentUpon>
     </Compile>
     <Compile Update="DataEditor\RangeDictBox.axaml.cs">
       <DependentUpon>RangeDictBox.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\TileEditForm.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileEditForm.axaml.cs">
       <DependentUpon>TileEditForm.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\TileBox.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBox.axaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
     <Compile Update="DataEditor\ParentForm.cs">
       <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\CategorySpawnBox.axaml.cs">
+      <DependentUpon>CategorySpawnBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DataEditor\SpawnListViewBox.axaml.cs">
+      <DependentUpon>SpawnListViewBox.axaml</DependentUpon>
     </Compile>
     <Compile Update="DataEditor\SpawnRangeListBox.axaml.cs">
       <DependentUpon>SpawnRangeListBox.axaml</DependentUpon>
@@ -63,6 +75,12 @@
     </Compile>
     <Compile Update="Views\DataListForm.axaml.cs">
       <DependentUpon>DataListForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\ModConfigWindow.axaml.cs">
+      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Testing\TextTestForm.axaml.cs">
+      <DependentUpon>TextTestForm.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\DevForm\DevTabConstants.axaml.cs">
       <DependentUpon>DevTabConstants.axaml</DependentUpon>
@@ -142,10 +160,10 @@
     <Compile Update="Views\GroundEditForm\EntityBrowser.axaml.cs">
       <DependentUpon>EntityBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\AutotileBrowser.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\AutotileBrowser.axaml.cs">
       <DependentUpon>AutotileBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\TileBrowser.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>
   </ItemGroup>

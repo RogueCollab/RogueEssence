@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using RogueElements;
-
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -15,18 +16,23 @@ namespace RogueEssence.Data
 
         public bool Temporary;
 
+        [JsonConverter(typeof(ElementConverter))]
         [Dev.DataType(0, DataManager.DataType.Element, false)]
-        public int Element1;
+        public string Element1;
 
+        [JsonConverter(typeof(ElementConverter))]
         [Dev.SharedRow, Dev.DataType(0, DataManager.DataType.Element, false)]
-        public int Element2;
+        public string Element2;
 
+        [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int Intrinsic1;
+        public string Intrinsic1;
+        [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int Intrinsic2;
+        public string Intrinsic2;
+        [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
-        public int Intrinsic3;
+        public string Intrinsic3;
 
 
         public List<LevelUpSkill> LevelSkills;
@@ -44,6 +50,14 @@ namespace RogueEssence.Data
             FormName = new LocalText();
             LevelSkills = new List<LevelUpSkill>();
 
+            // TODO: Initialize to default element, when we can guarantee that DataManager.Instance.DefaultElement itself is initialized
+            Element1 = "";
+            Element2 = "";
+            
+            // TODO: Make invalid intrinsic represent no-ability, not default
+            Intrinsic1 = "";
+            Intrinsic2 = "";
+            Intrinsic3 = "";
         }
 
 
@@ -58,43 +72,43 @@ namespace RogueEssence.Data
         public abstract int GetMaxStat(Stat stat);
         public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
-        public abstract bool CanLearnSkill(int skill);
+        public abstract bool CanLearnSkill(string skill);
 
-        public abstract int RollSkin(IRandom rand);
+        public abstract string RollSkin(IRandom rand);
         public abstract int GetPersonalityType(int discriminator);
         public abstract Gender RollGender(IRandom rand);
 
-        public abstract int RollIntrinsic(IRandom rand, int bounds);
+        public abstract string RollIntrinsic(IRandom rand, int bounds);
 
         public abstract List<Gender> GetPossibleGenders();
 
-        public abstract List<int> GetPossibleSkins();
+        public abstract List<string> GetPossibleSkins();
 
         public abstract List<int> GetPossibleIntrinsicSlots();
 
 
-        public IEnumerable<int> GetSkillsAtLevel(int levelLearned, bool relearn)
+        public IEnumerable<string> GetSkillsAtLevel(int levelLearned, bool relearn)
         {
             for (int ii = 0; ii < LevelSkills.Count; ii++)
             {
                 if (LevelSkills[ii].Level == levelLearned || LevelSkills[ii].Level <= levelLearned && relearn)
                 {
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill].Released)
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Get(LevelSkills[ii].Skill).Released)
                         yield return LevelSkills[ii].Skill;
                 }
             }
         }
 
-        public List<int> RollLatestSkills(int level, List<int> specifiedSkills)
+        public List<string> RollLatestSkills(int level, List<string> specifiedSkills)
         {
-            List<int> skills = new List<int>();
+            List<string> skills = new List<string>();
             skills.AddRange(specifiedSkills);
 
             for (int ii = LevelSkills.Count - 1; ii >= 0 && Dungeon.CharData.MAX_SKILL_SLOTS - skills.Count > 0; ii--)
             {
                 if (LevelSkills[ii].Level <= level && !skills.Contains(LevelSkills[ii].Skill))
                 {
-                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Entries[LevelSkills[ii].Skill].Released)
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Skill].Get(LevelSkills[ii].Skill).Released)
                         skills.Insert(specifiedSkills.Count, LevelSkills[ii].Skill);
                 }
             }

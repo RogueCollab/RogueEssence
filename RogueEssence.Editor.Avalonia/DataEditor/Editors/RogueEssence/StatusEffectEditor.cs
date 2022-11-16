@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
         public override string GetString(StatusEffect obj, Type type, object[] attributes)
         {
             StatusData statusData = DataManager.Instance.GetStatus(obj.ID);
-            string statusStr = String.Format("{0}: {1}", obj.ID.ToString("D3"), statusData.Name.ToLocal());
+            string statusStr = String.Format("{0}: {1}", obj.ID, statusData.Name.ToLocal());
             StackState stack = obj.StatusStates.GetWithDefault<StackState>();
             if (stack != null)
             {
@@ -44,7 +44,7 @@ namespace RogueEssence.Dev
         public override string GetString(MapStatus obj, Type type, object[] attributes)
         {
             MapStatusData statusData = DataManager.Instance.GetMapStatus(obj.ID);
-            string statusStr = String.Format("{0}: {1}", obj.ID.ToString("D3"), statusData.Name.ToLocal());
+            string statusStr = String.Format("{0}: {1}", obj.ID, statusData.Name.ToLocal());
 
             MapCountDownState countDown = obj.StatusStates.GetWithDefault<MapCountDownState>();
             if (countDown != null && countDown.Counter > 0)

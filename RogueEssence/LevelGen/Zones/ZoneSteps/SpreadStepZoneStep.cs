@@ -8,19 +8,33 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Spreads a map gen step randomly across the dungeon segment.
+    /// </summary>
     [Serializable]
     public class SpreadStepZoneStep : ZoneStep
     {
+        /// <summary>
+        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// </summary>
         public SpreadPlanBase SpreadPlan;
+
+        /// <summary>
+        /// The steps to distribute.
+        /// </summary>
         public IRandPicker<IGenPriority> Spawns;
 
-        [StringTypeConstraint(0, typeof(ModGenState))]
+        /// <summary>
+        /// Flags from the player's passives that will affect the appearance rate of the step.
+        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
+        /// The chance of the step appearing will be increased by the ModGenState's value.
+        /// </summary>
+        [StringTypeConstraint(1, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]
         public List<IGenPriority> DropItems;
-        //spreads an item through the floors
-        //ensures that the space in floors between occurrences is kept tame
+
         public SpreadStepZoneStep()
         {
             ModStates = new List<FlagType>();
@@ -106,22 +120,30 @@ namespace RogueEssence.LevelGen
             }
             return string.Format("{0}[{1}]", this.GetType().Name, count);
         }
-
-        //TODO: Created v0.5.2, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ModStates == null)
-                ModStates = new List<FlagType>();
-        }
     }
 
+    /// <summary>
+    /// Spreads a map gen step randomly across the dungeon segment, allowing precise control over the spawn rate across different floors.
+    /// </summary>
     [Serializable]
     public class SpreadStepRangeZoneStep : ZoneStep
     {
+        /// <summary>
+        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// </summary>
         public SpreadPlanBase SpreadPlan;
+
+        /// <summary>
+        /// The steps to distribute.  Probabilities can be customized across floors.
+        /// </summary>
         public SpawnRangeList<IGenPriority> Spawns;
-        [StringTypeConstraint(0, typeof(ModGenState))]
+
+        /// <summary>
+        /// Flags from the player's passives that will affect the appearance rate of the step.
+        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
+        /// The chance of the step appearing will be increased by the ModGenState's value.
+        /// </summary>
+        [StringTypeConstraint(1, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]
@@ -209,14 +231,6 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             return string.Format("{0}[{1}]", this.GetType().Name, Spawns.Count.ToString());
-        }
-
-        //TODO: Created v0.5.2, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ModStates == null)
-                ModStates = new List<FlagType>();
         }
     }
 }

@@ -4,7 +4,10 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Emits particles that spin around the origin in a changing radius.
+    /// Not very used.
+    /// </summary>
     [Serializable]
     public class VortexEmitter : FiniteEmitter
     {

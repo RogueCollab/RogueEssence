@@ -31,7 +31,8 @@ namespace RogueEssence.Dungeon
             SetSkill,
             SortItems,
             GiveUp,
-            Rescue
+            Rescue,
+            Option,
         };
 
         public ActionType Type;
@@ -46,6 +47,10 @@ namespace RogueEssence.Dungeon
         }
         public int ArgCount { get { return args.Count; } }
 
+        public GameAction()
+        {
+            this.args = new List<int>();
+        }
 
         public GameAction(ActionType type, Dir8 dir, params int[] args)
         {
@@ -56,6 +61,14 @@ namespace RogueEssence.Dungeon
             {
                 this.args.Add(args[ii]);
             }
+        }
+
+        public GameAction(GameAction other)
+        {
+            Type = other.Type;
+            Dir = other.Dir;
+            this.args = new List<int>();
+            this.args.AddRange(other.args);
         }
 
         public void AddArg(int arg)

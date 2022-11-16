@@ -19,11 +19,11 @@ namespace RogueEssence.Ground
         public IEnumerator<YieldInstruction> PendingDevEvent;
 
 
-        protected List<IDrawableSprite> groundDraw;
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> groundDraw;
 
-        protected List<IDrawableSprite> objectDraw;
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> objectDraw;
 
-        protected List<IDrawableSprite> foregroundDraw;
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> foregroundDraw;
 
         protected Rect viewTileRect;
         
@@ -33,17 +33,11 @@ namespace RogueEssence.Ground
         public BaseGroundScene()
         {
 
-            groundDraw = new List<IDrawableSprite>();
-            objectDraw = new List<IDrawableSprite>();
-            foregroundDraw = new List<IDrawableSprite>();
+            groundDraw = new List<(IDrawableSprite, Loc)>();
+            objectDraw = new List<(IDrawableSprite, Loc)>();
+            foregroundDraw = new List<(IDrawableSprite, Loc)>();
 
-            gameScreen = new RenderTarget2D(
-                GraphicsManager.GraphicsDevice,
-                GraphicsManager.ScreenWidth,
-                GraphicsManager.ScreenHeight,
-                false,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                DepthFormat.Depth24);
+            ZoomChanged();
         }
 
         public void ZoomChanged()
@@ -91,8 +85,9 @@ namespace RogueEssence.Ground
 
             ViewRect = new Rect((int)(focusedLoc.X - GraphicsManager.ScreenWidth / scale / 2), (int)(focusedLoc.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));
-            viewTileRect = new Rect((int)Math.Floor((float)ViewRect.X / ZoneManager.Instance.CurrentGround.TileSize), (int)Math.Floor((float)ViewRect.Y / ZoneManager.Instance.CurrentGround.TileSize),
-                (ViewRect.End.X - 1) / ZoneManager.Instance.CurrentGround.TileSize + 1 - (int)Math.Floor((float)ViewRect.X / ZoneManager.Instance.CurrentGround.TileSize), (ViewRect.End.Y - 1) / ZoneManager.Instance.CurrentGround.TileSize + 1 - (int)Math.Floor((float)ViewRect.Y / ZoneManager.Instance.CurrentGround.TileSize));
+            viewTileRect = new Rect(MathUtils.DivDown(ViewRect.X, ZoneManager.Instance.CurrentGround.TileSize), MathUtils.DivDown(ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize),
+                MathUtils.DivUp(ViewRect.End.X, ZoneManager.Instance.CurrentGround.TileSize) - MathUtils.DivDown(ViewRect.X, ZoneManager.Instance.CurrentGround.TileSize),
+                MathUtils.DivUp(ViewRect.End.Y, ZoneManager.Instance.CurrentGround.TileSize) - MathUtils.DivDown(ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize));
 
         }
 
@@ -116,7 +111,7 @@ namespace RogueEssence.Ground
                 spriteBatch.End();
 
 
-                GraphicsManager.GraphicsDevice.SetRenderTarget(null);
+                GraphicsManager.GraphicsDevice.SetRenderTarget(GameManager.Instance.GameScreen);
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Black);
 
@@ -137,20 +132,21 @@ namespace RogueEssence.Ground
 
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
+            bool wrapped = ZoneManager.Instance.CurrentGround.EdgeView == BaseMap.ScrollEdge.Wrap;
+
             //draw the background
-            ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, Loc.Zero);
+            ZoneManager.Instance.CurrentGround.Background.Draw(spriteBatch, ViewRect.Start);
 
-            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+            for (int yy = viewTileRect.Y; yy < viewTileRect.End.Y; yy++)
             {
-                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                for (int xx = viewTileRect.X; xx < viewTileRect.End.X; xx++)
                 {
+                    Loc visualLoc = new Loc(xx, yy);
                     //if it's a tile on the discovery array, show it
-                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
-
-                    if (outOfBounds)
-                        ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj));
+                    if (ZoneManager.Instance.CurrentGround.InMapBounds(visualLoc))
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, visualLoc, false);
                     else
-                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), false);
+                        ZoneManager.Instance.CurrentGround.DrawDefaultTile(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, visualLoc);
                 }
             }
 
@@ -160,33 +156,25 @@ namespace RogueEssence.Ground
                 if (layer.Visible)
                 {
                     foreach (IDrawableSprite effect in layer.Anims)
-                    {
-                        if (CanSeeSprite(ViewRect, effect))
-                            AddToDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, effect);
-                    }
+                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
                 }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(groundDraw, effect);
-            }
+                AddRelevantDraw(groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+
             int charIndex = 0;
             while (charIndex < groundDraw.Count)
             {
-                groundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                groundDraw[charIndex].sprite.Draw(spriteBatch, groundDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
-            List<GroundChar> shownShadows = new List<GroundChar>();
+            List<(GroundChar, Loc)> shownShadows = new List<(GroundChar, Loc)>();
 
             //draw effects in object space
             //get all back effects, see if they're in the screen, and put them in the list, sorted
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Back])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
-            }
+                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             if (!DataManager.Instance.HideChars)
             {
@@ -195,25 +183,22 @@ namespace RogueEssence.Ground
                 {
                     if (!character.EntEnabled)
                         continue;
-                    if (CanSeeSprite(ViewRect, character))
+                    foreach(Loc viewLoc in IterateRelevantDraw(wrapped, ZoneManager.Instance.CurrentGround.GroundSize, character))
                     {
-                        AddToDraw(objectDraw, character);
-                        shownShadows.Add(character);
+                        AddToDraw(objectDraw, character, viewLoc);
+                        shownShadows.Add((character, viewLoc));
                     }
                 }
             }
             //get all effects, see if they're in the screen, and put them in the list, sorted
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Normal])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
-            }
+                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             //draw shadows
-            foreach (GroundChar shadowChar in shownShadows)
+            foreach ((GroundChar sprite, Loc viewLoc) shadowChar in shownShadows)
             {
-                if (shadowChar.EntEnabled)
-                    shadowChar.DrawShadow(spriteBatch, ViewRect.Start);
+                if (shadowChar.sprite.EntEnabled)
+                    shadowChar.sprite.DrawShadow(spriteBatch, shadowChar.viewLoc);
             }
 
             //draw items
@@ -223,85 +208,57 @@ namespace RogueEssence.Ground
                 {
                     if (!item.EntEnabled)
                         continue;
-                    if (CanSeeSprite(ViewRect, item))
-                        AddToDraw(objectDraw, item);
+                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
+                }
+                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].TemporaryObjects)
+                {
+                    if (!item.EntEnabled)
+                        continue;
+                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
                 }
             }
 
             //draw object
             charIndex = 0;
-            for (int j = viewTileRect.Y; j < viewTileRect.End.Y; j++)
-            {
-                while (charIndex < objectDraw.Count)
-                {
-                    int charY = objectDraw[charIndex].MapLoc.Y;
-                    if (charY == j * ZoneManager.Instance.CurrentGround.TileSize)
-                    {
-                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-                    else
-                        break;
-                }
-
-                while (charIndex < objectDraw.Count)
-                {
-                    int charY = objectDraw[charIndex].MapLoc.Y;
-                    if (charY < (j + 1) * ZoneManager.Instance.CurrentGround.TileSize)
-                    {
-                        objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
-                        charIndex++;
-                    }
-                    else
-                        break;
-                }
-            }
-
             while (charIndex < objectDraw.Count)
             {
-                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].sprite.Draw(spriteBatch, objectDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
             //draw effects in top
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(objectDraw, effect);
-            }
+                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+
             charIndex = 0;
             while (charIndex < objectDraw.Count)
             {
-                objectDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                objectDraw[charIndex].sprite.Draw(spriteBatch, objectDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
             //draw tiles in front
-            for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+            for (int yy = viewTileRect.Y; yy < viewTileRect.End.Y; yy++)
             {
-                for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                for (int xx = viewTileRect.X; xx < viewTileRect.End.X; xx++)
                 {
                     //if it's a tile on the discovery array, show it
-                    bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj));
-
-                    if (!outOfBounds)
-                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, new Loc(ii, jj), true);
+                    Loc frontLoc = new Loc(xx, yy);
+                    if (ZoneManager.Instance.CurrentGround.InMapBounds(frontLoc))
+                        ZoneManager.Instance.CurrentGround.DrawLoc(spriteBatch, new Loc(xx * ZoneManager.Instance.CurrentGround.TileSize, yy * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start, frontLoc, true);
                 }
             }
 
             //draw effects in foreground
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Top])
-            {
-                if (CanSeeSprite(ViewRect, effect))
-                    AddToDraw(foregroundDraw, effect);
-            }
+                AddRelevantDraw(foregroundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+
             charIndex = 0;
             while (charIndex < foregroundDraw.Count)
             {
-                foregroundDraw[charIndex].Draw(spriteBatch, ViewRect.Start);
+                foregroundDraw[charIndex].sprite.Draw(spriteBatch, foregroundDraw[charIndex].viewOffset);
                 charIndex++;
             }
-
         }
 
         public virtual void DrawDev(SpriteBatch spriteBatch)

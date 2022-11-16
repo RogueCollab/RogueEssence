@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace RogueEssence
 {
+    /// <summary>
+    /// Finds all fully unreachable tiles that aren't impassable and turns them impassable.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class FillImpassableStep<T> : GenStep<T>
         where T : class, ITiledGenContext

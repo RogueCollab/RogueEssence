@@ -16,7 +16,10 @@ namespace RogueEssence.Data
         public int[] RescuingPersonalities;
         public int FinalStatement;
 
-        public SOSMail(GameProgress progress, ZoneLoc goal, LocalText goalText, string dateTime, Version version)
+        public SOSMail()
+        { }
+
+        public SOSMail(GameProgress progress, ZoneLoc goal, LocalText goalText, string dateTime, List<ModVersion> version)
         {
             TeamName = progress.ActiveTeam.Name;
             TeamID = progress.UUID;

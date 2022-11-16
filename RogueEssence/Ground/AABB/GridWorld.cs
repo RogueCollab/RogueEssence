@@ -11,8 +11,8 @@
 	{
         public GridWorld(int width, int height, int cellSize)
 		{
-			var iwidth = (width - 1) / cellSize + 1;
-			var iheight = (height - 1) / cellSize + 1;
+			var iwidth = MathUtils.DivUp(width, cellSize);
+			var iheight = MathUtils.DivUp(height, cellSize);
 
 			this.grid = new Grid(iwidth, iheight, cellSize);
 		}
@@ -26,7 +26,7 @@
         public IBox Create(int x, int y, int width, int height)
 		{
 			var box = new Box(this, x, y, width, height);
-			this.grid.Add(box);
+			this.grid.Add(box, false);
 			return box;
 		}
 
@@ -35,7 +35,7 @@
 			x = Math.Max(0, Math.Min(x, this.Bounds.Right - w));
 			y = Math.Max(0, Math.Min(y, this.Bounds.Bottom - h));
 
-			return this.grid.QueryBoxes(x, y, w, h);
+			return this.grid.QueryBoxes(x, y, w, h, false);
 		}
 
 		public IEnumerable<IObstacle> FindPossible(Rect area)
@@ -45,12 +45,12 @@
 
 		public bool Remove(IBox box)
 		{
-			return this.grid.Remove(box);
+			return this.grid.Remove(box, false);
 		}
 
 		public void Update(IBox box, Rect from)
 		{
-			this.grid.Update(box, from);
+			this.grid.Update(box, from, false);
 		}
 
 		#endregion
@@ -183,14 +183,14 @@
 		public void DrawDebug(int x, int y, int w, int h, Action<int,int,int,int,float> drawCell, Action<IObstacle> drawBox, Action<string,int,int, float> drawString)
 		{
 			// Drawing boxes
-			var boxes = this.grid.QueryBoxes(x, y, w, h);
+			var boxes = this.grid.QueryBoxes(x, y, w, h, false);
 			foreach (var box in boxes)
 			{
 				drawBox(box);
 			}
 
 			// Drawing cells
-			var cells = this.grid.QueryCells(x, y, w, h);
+			var cells = this.grid.QueryCells(x, y, w, h, false);
 			foreach (var cell in cells)
 			{
 				var count = cell.Count();

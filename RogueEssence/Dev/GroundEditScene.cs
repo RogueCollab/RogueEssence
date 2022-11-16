@@ -60,7 +60,7 @@ namespace RogueEssence.Dev
             InputManager input = GameManager.Instance.MetaInputManager;
             var groundEditor = DiagManager.Instance.DevEditor.GroundEditor;
 
-            if (groundEditor.Active)
+            if (groundEditor != null && groundEditor.Active)
                 groundEditor.ProcessInput(input);
         }
 
@@ -149,7 +149,7 @@ namespace RogueEssence.Dev
             base.DrawGame(spriteBatch);
 
 
-            if (DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
+            if (DiagManager.Instance.DevEditor.GroundEditor != null && DiagManager.Instance.DevEditor.GroundEditor.Active && ZoneManager.Instance.CurrentGround != null)
             {
                 if (AutoTileInProgress != null)
                 {

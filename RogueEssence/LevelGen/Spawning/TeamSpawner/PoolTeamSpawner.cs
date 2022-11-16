@@ -10,15 +10,34 @@ namespace RogueEssence.LevelGen
     {
         public enum MemberRole
         {
-            Normal, // Can be put in teams of any size at any quantity.
-            Support, // Only one can spawn in a team.  Team size > 1.
-            Leader, // Only one can spawn in a team.  Any size team.
-            Loner // Only one can spawn in a team.  Team of 1.
+            /// <summary>
+            /// Can be put in teams of any size at any quantity.
+            /// </summary>
+            Normal,
+            /// <summary>
+            /// Only one of this variety can spawn in a team.  Requires team size > 1.
+            /// </summary>
+            Support,
+            /// <summary>
+            /// Only one of this variety can spawn in a team.  Can be any team size.
+            /// </summary>
+            Leader,
+            /// <summary>
+            /// Only one of this variety can spawn in a team.  Requires team size = 1.
+            /// </summary>
+            Loner
         }
 
+        /// <summary>
+        /// The mob to spawn.
+        /// </summary>
         [SubGroup]
         public MobSpawn Spawn;
 
+        /// <summary>
+        /// The role of the mob in the team.
+        /// Determines how many can be spawned in a team and when.
+        /// </summary>
         public MemberRole Role;
 
         public TeamMemberSpawn()
@@ -44,6 +63,9 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// Spawns a team by randomly rolling a team size and filling it with randomly rolled team members.
+    /// </summary>
     [Serializable]
     public class PoolTeamSpawner : TeamSpawner
     {
@@ -53,6 +75,9 @@ namespace RogueEssence.LevelGen
         [SubGroup]
         public SpawnList<TeamMemberSpawn> Spawns;
 
+        /// <summary>
+        /// Possible team sizes.
+        /// </summary>
         [SubGroup]
         public SpawnList<int> TeamSizes;
 

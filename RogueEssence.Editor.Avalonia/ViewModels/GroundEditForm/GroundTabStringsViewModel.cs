@@ -61,7 +61,7 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="stringsdir">Directory in which string resx files are stored!</param>
         public void LoadStrings()
         {
-            string stringsdir = MakeCurrentStringsPath();
+            string stringsdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, ZoneManager.Instance.CurrentGround.AssetName, "/init.lua"));
             //Clear old strings
             Dictionary<string, Dictionary<string, string>> rawStrings = new Dictionary<string, Dictionary<string, string>>();
 
@@ -73,31 +73,17 @@ namespace RogueEssence.Dev.ViewModels
 
                 if (File.Exists(path))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    Dictionary<string, (string val, string comment)> xmlDict = Text.LoadDevStringResx(path);
+                    foreach (string name in xmlDict.Keys)
                     {
-                        if (xnode.Name == "data")
-                        {
-                            string value = null;
-                            string name = null;
-                            var atname = xnode.Attributes["name"];
-                            if (atname != null)
-                                name = atname.Value;
+                        if (!rawStrings.ContainsKey(name))
+                            rawStrings.Add(name, new Dictionary<string, string>());
 
-                            //Get value
-                            XmlNode valnode = xnode.SelectSingleNode("value");
-                            if (valnode != null)
-                                value = valnode.InnerText;
-
-                            if (!rawStrings.ContainsKey(name))
-                                rawStrings.Add(name, new Dictionary<string, string>());
-
-                            if (!rawStrings[name].ContainsKey(code))
-                                rawStrings[name].Add(code, value);
-                            else
-                                rawStrings[name][code] = value;
-                        }
+                        //TODO: support comments
+                        if (!rawStrings[name].ContainsKey(code))
+                            rawStrings[name].Add(code, xmlDict[name].val);
+                        else
+                            rawStrings[name][code] = xmlDict[name].val;
                     }
 
                     DiagManager.Instance.LogInfo(String.Format("GroundEditor.LoadStrings({0}): Loaded succesfully the \"{1}\" strings file for this map!", stringsdir, fname));
@@ -119,33 +105,26 @@ namespace RogueEssence.Dev.ViewModels
         /// </summary>
         public void SaveStrings()
         {
-            string stringsdir = MakeCurrentStringsPath();
+            string stringsdir = LuaEngine.MakeGroundMapScriptPath(true, ZoneManager.Instance.CurrentGround.AssetName, "");
 
             string FMTStr = String.Format("{0}{1}.{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
                 string path = Path.Combine(stringsdir, fname);
-                using (ResXResourceWriter resx = new ResXResourceWriter(path))
-                {
-                    //Add all strings matching the specified language code
-                    foreach (MapString str in MapStrings)
-                    {
-                        string tl;
-                        if (!str.Translations.TryGetValue(code, out tl))
-                            tl = "";
-                        if (tl != "" || code == "en")
-                            resx.AddResource(new ResXDataNode(str.Key, tl) { Comment = "" });
-                    }
-                    resx.Generate();
-                    resx.Close();
-                }
-            }
-        }
+                Dictionary<string, (string val, string comment)> stringDict = new Dictionary<string, (string val, string comment)>();
 
-        private string MakeCurrentStringsPath()
-        {
-            return String.Format("{0}{1}", PathMod.ModPath(LuaEngine.MAP_SCRIPT_DIR), ZoneManager.Instance.CurrentGround.AssetName);
+                foreach (MapString str in MapStrings)
+                {
+                    string tl;
+                    if (!str.Translations.TryGetValue(code, out tl))
+                        tl = "";
+                    //TODO: support comments
+                    if (tl != "" || code == "en")
+                        stringDict[str.Key] = (tl, "");
+                }
+                Text.SaveStringResx(path, stringDict);
+            }
         }
 
     }

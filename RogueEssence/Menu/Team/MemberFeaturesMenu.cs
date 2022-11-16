@@ -55,7 +55,7 @@ namespace RogueEssence.Menu
             ElementData element2 = DataManager.Instance.GetElement(player.Element2);
 
             string typeString = element1.GetIconName();
-            if (player.Element2 != 00)
+            if (player.Element2 != DataManager.Instance.DefaultElement)
                 typeString += "/" + element2.GetIconName();
             bool origElements = (player.Element1 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element1);
             origElements &= (player.Element2 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element2);
@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
                 string skillString = "-----";
                 string skillCharges = "--";
                 string totalCharges = "/--";
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                     skillString = data.GetIconName();

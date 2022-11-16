@@ -52,9 +52,28 @@ namespace RogueEssence.Dev
             editors.Add(editor);
         }
 
-        public static void LoadDataControls(object obj, StackPanel control)
+        public static void LoadDataControls(string assetName, object obj, DataEditForm editor)
         {
-            LoadClassControls(control, "Test", obj.ToString(), obj.GetType(), new object[0], obj, true, new Type[0]);
+            Type editType = obj.GetType();
+            LoadClassControls(editor.ControlPanel, assetName, null, obj.ToString(), editType, new object[0], obj, true, new Type[0]);
+            TrackTypeSize(editor, editType);
+        }
+
+        public static void TrackTypeSize(DataEditForm editor, Type editType)
+        {
+            Size savedSize;
+            if (DevDataManager.GetTypeSize(editType, out savedSize))
+            {
+                editor.Width = savedSize.Width;
+                editor.Height = savedSize.Height;
+            }
+
+            void editorWindow_SizeChanged(Size size)
+            {
+                DevDataManager.SetTypeSize(editType, size);
+            }
+
+            editor.GetObservable(TopLevel.ClientSizeProperty).Subscribe(editorWindow_SizeChanged);
         }
 
         private static IEditor findEditor(Type objType, object[] attributes)
@@ -80,16 +99,16 @@ namespace RogueEssence.Dev
             throw new ArgumentException("Unhandled type!");
         }
 
-        public static void LoadClassControls(StackPanel control, string parent, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
+        public static void LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            converter.LoadClassControls(control, parent, name, type, attributes, member, isWindow, subGroupStack);
+            converter.LoadClassControls(control, parent, parentType, name, type, attributes, member, isWindow, subGroupStack);
         }
 
-        public static void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
+        public static void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
         {
             IEditor converter = findEditor(type, attributes);
-            converter.LoadWindowControls(control, parent, name, type, attributes, obj, subGroupStack);
+            converter.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
         }
 
         public static void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
@@ -131,27 +150,6 @@ namespace RogueEssence.Dev
             return editor.GetString(obj, type, attributes);
         }
 
-
-        public static string GetMemberTitle(string name)
-        {
-            StringBuilder separatedName = new StringBuilder();
-            for (int ii = 0; ii < name.Length; ii++)
-            {
-                if (ii > 0)
-                {
-                    bool space = false;
-                    if (char.IsDigit(name[ii]) && char.IsLetter(name[ii - 1]) || char.IsDigit(name[ii - 1]) && char.IsLetter(name[ii]))
-                        space = true;
-                    if (char.IsUpper(name[ii]) && char.IsLower(name[ii - 1]))
-                        space = true;
-                    if (space)
-                        separatedName.Append(' ');
-                }
-                separatedName.Append(name[ii]);
-            }
-            return separatedName.ToString();
-        }
-
         public static string GetWindowTitle(string parent, string name, object obj, Type type)
         {
             return GetWindowTitle(parent, name, obj, type, new object[0]);
@@ -159,8 +157,8 @@ namespace RogueEssence.Dev
 
         public static string GetWindowTitle(string parent, string name, object obj, Type type, object[] attributes)
         {
-            string parentStr = GetMemberTitle(parent);
-            string nameStr = GetMemberTitle(name);
+            string parentStr = Text.GetMemberTitle(parent);
+            string nameStr = Text.GetMemberTitle(name);
 
             //if (obj == null)
             //    return String.Format("{0}.{1}: New {2}", parentStr, nameStr, type.Name);

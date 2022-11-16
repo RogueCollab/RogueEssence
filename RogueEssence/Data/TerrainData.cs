@@ -1,6 +1,7 @@
 ﻿using System;
 using RogueEssence.Dungeon;
 using RogueElements;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Data
 {
@@ -11,14 +12,17 @@ namespace RogueEssence.Data
         {
             return Name.ToLocal();
         }
+
+        [Flags]
         public enum Mobility
         {
             Impassable = -1,
-            Passable,
-            Water,
-            Lava,
-            Abyss,
-            Block
+            Passable = 0,
+            Water = 1,
+            Lava = 2,
+            Abyss = 4,
+            Block = 8,
+            All = 15
         }
 
         public LocalText Name { get; set; }
@@ -32,6 +36,7 @@ namespace RogueEssence.Data
         public int Element;
         public Mobility BlockType;
 
+        public Color MinimapColor;
         public bool BlockDiagonal;
         public bool BlockLight;
         public int ShadowType;

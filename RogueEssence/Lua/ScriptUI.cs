@@ -9,6 +9,7 @@ using RogueEssence.Content;
 using RogueEssence.Network;
 using RogueEssence.Data;
 using RogueEssence.Dev;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Script
 {
@@ -25,7 +26,7 @@ namespace RogueEssence.Script
 
         //Variables for storing multi-step operations, like setting the speaker in a dialog
         private object                 m_choiceresult = -1;
-        private MonsterID       m_curspeakerID = new MonsterID();
+        private MonsterID       m_curspeakerID = MonsterID.Invalid;
         private string              m_curspeakerName= "";
         private bool m_curcenter_h = false;
         private bool m_curcenter_v = false;
@@ -58,6 +59,7 @@ namespace RogueEssence.Script
         public LuaFunction WaitHideTitle;
         public LuaFunction WaitShowBG;
         public LuaFunction WaitHideBG;
+        
 
         //================================================================
         // Dialogue
@@ -210,7 +212,7 @@ namespace RogueEssence.Script
         /// <param name="form"></param>
         /// <param name="skin"></param>
         /// <param name="gender"></param>
-        public void SetSpeaker(string name, bool keysound, int specie, int form, int skin, Gender gender)
+        public void SetSpeaker(string name, bool keysound, string specie, int form, string skin, Gender gender)
         {
             m_curspeakerID = new MonsterID(specie, form, skin, gender);
             m_curspeakerName = name;
@@ -340,8 +342,8 @@ namespace RogueEssence.Script
                 }
                 else
                 {
-                    m_curchoice = MenuManager.Instance.CreateQuestion(message,
-                        m_curspeakerSnd,
+                    m_curchoice = MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message,
+                        m_curspeakerSnd, false, m_curcenter_h, m_curcenter_v,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                         () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
@@ -479,7 +481,40 @@ namespace RogueEssence.Script
             }
         }
 
-        private void onChooseSlot(List<int> slots)
+        public void DepositAll() {
+            List<InvItem> items = new List<InvItem>();
+            int item_count = DataManager.Instance.Save.ActiveTeam.GetInvCount();
+
+            // Get list from held items
+            foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                    items.Add(player.EquippedItem);
+            }
+
+            for (int ii = 0; ii < item_count; ii++) {
+                // Get a list of inventory items.
+                InvItem item = DataManager.Instance.Save.ActiveTeam.GetInv(ii);
+                items.Add(item);
+            };
+
+            // Store all items in the inventory.
+            DataManager.Instance.Save.ActiveTeam.StoreItems(items);
+
+            // Remove held items
+            foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                    player.DequipItem();
+            }
+
+            // Remove the items back to front to prevent removing them in the wrong order.
+            for (int ii = DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--) {
+                DataManager.Instance.Save.ActiveTeam.RemoveFromInv(ii);
+            }
+        }
+
+        private void onChooseSlot(List<WithdrawSlot> slots)
         {
             //store item
             List<InvItem> items = DataManager.Instance.Save.ActiveTeam.TakeItems(slots);
@@ -492,7 +527,7 @@ namespace RogueEssence.Script
                 {
                     for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
                     {
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).HiddenValue < entry.MaxStack)
+                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
                         {
                             existingStack = jj;
                             break;
@@ -596,18 +631,20 @@ namespace RogueEssence.Script
 
         public void RelearnMenu(Character chara)
         {
-            if (DataManager.Instance.CurrentReplay != null)
-            {
-                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
-                return;
-            }
 
             try
             {
-                m_choiceresult = -1;
-                List<int> forgottenSkills = chara.GetRelearnableSkills();
+                List<string> forgottenSkills = chara.GetRelearnableSkills(true);
+
+                if (DataManager.Instance.CurrentReplay != null)
+                {
+                    m_choiceresult = forgottenSkills[DataManager.Instance.CurrentReplay.ReadUI()];
+                    return;
+                }
+
+                m_choiceresult = "";
                 m_curchoice = new SkillRecallMenu(chara, forgottenSkills.ToArray(),
-                (int skillNum) => { m_choiceresult = skillNum; DataManager.Instance.LogUIPlay(skillNum); },
+                (int skillSlot) => { m_choiceresult = forgottenSkills[skillSlot]; DataManager.Instance.LogUIPlay(skillSlot); },
                 () => { DataManager.Instance.LogUIPlay(-1); });
             }
             catch (Exception e)
@@ -617,7 +654,7 @@ namespace RogueEssence.Script
         }
 
 
-        public void LearnMenu(Character chara, int moveNum)
+        public void LearnMenu(Character chara, string moveNum)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -680,16 +717,16 @@ namespace RogueEssence.Script
 
         public bool CanSwapMenu(LuaTable goods)
         {
-            List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+            List<Tuple<string, string[]>> goodsList = new List<Tuple<string, string[]>>();
             foreach (object key in goods.Keys)
             {
                 LuaTable entry = goods[key] as LuaTable;
-                int item = (int)((Int64)entry["Item"]);
-                List<int> reqs = new List<int>();
+                string item = (string)entry["Item"];
+                List<string> reqs = new List<string>();
                 LuaTable luaReqs = entry["ReqItem"] as LuaTable;
                 foreach (object tradeIn in luaReqs.Values)
-                    reqs.Add((int)((Int64)tradeIn));
-                goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+                    reqs.Add((string)tradeIn);
+                goodsList.Add(new Tuple<string, string[]>(item, reqs.ToArray()));
             }
             return SwapShopMenu.CanView(goodsList);
         }
@@ -699,16 +736,16 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = -1;
-                List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
+                List<Tuple<string, string[]>> goodsList = new List<Tuple<string, string[]>>();
                 foreach (object key in goods.Keys)
                 {
                     LuaTable entry = goods[key] as LuaTable;
-                    int item = (int)((Int64)entry["Item"]);
-                    List<int> reqs = new List<int>();
+                    string item = (string)entry["Item"];
+                    List<string> reqs = new List<string>();
                     LuaTable luaReqs = entry["ReqItem"] as LuaTable;
                     foreach (object tradeIn in luaReqs.Values)
-                        reqs.Add((int)((Int64)tradeIn));
-                    goodsList.Add(new Tuple<int, int[]>(item, reqs.ToArray()));
+                        reqs.Add((string)tradeIn);
+                    goodsList.Add(new Tuple<string, string[]>(item, reqs.ToArray()));
                 }
                 List<int> priceList = new List<int>();
                 priceList.Add(0);
@@ -733,12 +770,15 @@ namespace RogueEssence.Script
             try
             {
                 m_choiceresult = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
-                m_curchoice = new SwapGiveMenu(0, spaces, (List<int> chosenGoods) =>
+
+                SwapGiveMenu menu = null;
+                menu = new SwapGiveMenu(0, spaces, (List<int> chosenGoods) =>
                 {
                     LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, val) table.insert(tbl, val) end").First() as LuaFunction;
                     foreach (int chosenGood in chosenGoods)
-                        addfn.Call(m_choiceresult, chosenGood);
+                        addfn.Call(m_choiceresult, menu.AllowedGoods[chosenGood]);
                 });
+                m_curchoice = menu;
             }
             catch (Exception e)
             {
@@ -747,12 +787,19 @@ namespace RogueEssence.Script
         }
 
 
-        public void ShowMusicMenu()
+        public void ShowMusicMenu(LuaTable spoilerUnlocks)
         {
             try
-            {
+     {
+                List<string> unlockedTags = new List<string>();
+                foreach (object key in spoilerUnlocks.Keys)
+                {
+                    string entry = (string)spoilerUnlocks[key];
+                    unlockedTags.Add(entry);
+                }
+
                 m_choiceresult = null;
-                m_curchoice = new MusicMenu((string dir) => { m_choiceresult = dir; });
+                m_curchoice = new MusicMenu(unlockedTags, (string dir) => { m_choiceresult = dir; });
             }
             catch (Exception e)
             {
@@ -760,16 +807,16 @@ namespace RogueEssence.Script
             }
         }
 
-        public void DungeonChoice(int dungeonid)
+        public void DungeonChoice(string name, ZoneLoc dest)
         {
             try
             {
                 m_choiceresult = null;
-                ZoneData zoneEntry = DataManager.Instance.GetZone(dungeonid);
+                ZoneData zoneEntry = DataManager.Instance.GetZone(dest.ID);
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { m_choiceresult = true; });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { m_choiceresult = false; });
-                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", zoneEntry.GetColoredName()), dungeonid, false, choices, 0, 1);
+                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", name), dest, false, choices, 0, 1);
             }
             catch (Exception e)
             {
@@ -777,36 +824,25 @@ namespace RogueEssence.Script
             }
         }
 
-        public void DungeonMenu(LuaTable dungeons, LuaTable grounds)
+        public void DestinationMenu(LuaTable destinations)
         {
             try
             {
-                List<int> availableDungeons = new List<int>();
-                List<Tuple<int, int[]>> goodsList = new List<Tuple<int, int[]>>();
-                foreach (object key in dungeons.Keys)
+                List<string> names = new List<string>();
+                List<ZoneLoc> dests = new List<ZoneLoc>();
+                foreach (object key in destinations.Keys)
                 {
-                    int entry = (int)(Int64)dungeons[key];
-                    availableDungeons.Add(entry);
-                }
-
-                List<ZoneLoc> availableGrounds = new List<ZoneLoc>();
-                foreach (object key in grounds.Keys)
-                {
-                    LuaTable entry = grounds[key] as LuaTable;
-                    int zone = (int)(Int64)entry["Zone"];
-                    int id = (int)(Int64)entry["ID"];
-                    int entryPoint = (int)(Int64)entry["Entry"];
-                    availableGrounds.Add(new ZoneLoc(zone, new SegLoc(-1, id), entryPoint));
+                    LuaTable entry = destinations[key] as LuaTable;
+                    string name = (string)entry["Name"];
+                    ZoneLoc item = (ZoneLoc)entry["Dest"];
+                    names.Add(name);
+                    dests.Add(item);
                 }
 
                 //give the player the choice between all the possible dungeons
                 m_choiceresult = ZoneLoc.Invalid;
-                m_curchoice = new DungeonsMenu(availableDungeons, availableGrounds,
-                    (int choice) => { m_choiceresult = new ZoneLoc(availableDungeons[choice], new SegLoc(0, 0)); },
-                    (int choice) => {
-                        m_choiceresult = new ZoneLoc(availableGrounds[choice].ID,
-          new SegLoc(-1, availableGrounds[choice].StructID.ID), availableGrounds[choice].EntryPoint);
-                    });
+                m_curchoice = new DungeonsMenu(names, dests,
+                    (int choice) => { m_choiceresult = dests[choice]; });
             }
             catch (Exception e)
             {
@@ -956,17 +992,16 @@ namespace RogueEssence.Script
 
 
 
-        public void ChooseCustomMenu(ChoiceMenu menu)
+        public void SetCustomMenu(InteractableMenu menu)
         {
             try
             {
                 m_choiceresult = null;
-
                 m_curchoice = menu;
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChooseCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SetCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -978,7 +1013,10 @@ namespace RogueEssence.Script
         /// Then to recover the integer value indicating the result of the menu, ChoiceResult() must be called.
         /// </summary>
         /// <param name="message">The question to ask the user.</param>
-        public void BeginChoiceMenu(string message, LuaTable choicespairs, object defaultchoice, object cancelchoice)
+        /// <param name="choicesPairs"></param>
+        /// <param name="defaultChoice"></param>
+        /// <param name="cancelChoice"></param>
+        public void BeginChoiceMenu(string message, LuaTable choicesPairs, object defaultChoice, object cancelChoice)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -993,7 +1031,7 @@ namespace RogueEssence.Script
                 int? mappedCancel = null;
                 //Intepret the choices from lua
                 List<DialogueChoice> choices = new List<DialogueChoice>();
-                IDictionaryEnumerator dict = choicespairs.GetEnumerator();
+                IDictionaryEnumerator dict = choicesPairs.GetEnumerator();
                 while (dict.MoveNext())
                 {
                     string choicetext = "";
@@ -1008,9 +1046,9 @@ namespace RogueEssence.Script
                     }
                     long choiceval = (long)dict.Key;
 
-                    if (defaultchoice.Equals(choiceval))
+                    if (defaultChoice.Equals(choiceval))
                         mappedDefault = choices.Count;
-                    if (cancelchoice.Equals(choiceval))
+                    if (cancelChoice.Equals(choiceval))
                         mappedCancel = choices.Count;
                     choices.Add(new DialogueChoice(choicetext, () => { m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled));
                 }
@@ -1034,6 +1072,61 @@ namespace RogueEssence.Script
             catch (Exception e)
             {
                 DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BeginChoiceMenu({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+
+        public void BeginMultiPageMenu(int x, int y, int width, string title, LuaTable choicesPairs, int linesPerPage, object defaultChoice, object cancelChoice)
+        {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI();
+                return;
+            }
+
+            try
+            {
+                m_choiceresult = null;
+                int? mappedDefault = null;
+                int? mappedCancel = null;
+                //Intepret the choices from lua
+                List<MenuTextChoice> choices = new List<MenuTextChoice>();
+                IDictionaryEnumerator dict = choicesPairs.GetEnumerator();
+                while (dict.MoveNext())
+                {
+                    string choicetext = "";
+                    bool enabled = true;
+                    if (dict.Value is string)
+                        choicetext = dict.Value as string;
+                    else if (dict.Value is LuaTable)
+                    {
+                        LuaTable tbl = dict.Value as LuaTable;
+                        choicetext = (string)tbl[1];
+                        enabled = (bool)tbl[2];
+                    }
+                    long choiceval = (long)dict.Key;
+
+                    if (defaultChoice.Equals(choiceval))
+                        mappedDefault = choices.Count;
+                    if (cancelChoice.Equals(choiceval))
+                        mappedCancel = choices.Count;
+
+                    choices.Add(new MenuTextChoice(choicetext, () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = choiceval; DataManager.Instance.LogUIPlay((int)choiceval); }, enabled, enabled ? Color.White : Color.Red));
+                }
+
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+
+                Action cancelAction = null;
+                if (mappedCancel != null)
+                    cancelAction = () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = (long)cancelChoice; DataManager.Instance.LogUIPlay((int)(long)cancelChoice); };
+
+                //Make a choice menu, and check if we display a speaker or not
+                m_curchoice = new CustomMultiPageMenu(new RogueElements.Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, null);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.BeginMultiPageMenu({0}): Encountered exception.", title), e), DiagManager.Instance.DevMode);
             }
         }
 

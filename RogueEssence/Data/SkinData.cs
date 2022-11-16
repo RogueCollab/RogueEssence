@@ -17,12 +17,16 @@ namespace RogueEssence.Data
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
+        public int IndexNum;
         public char Symbol;
         public Color MinimapColor;
         public BattleFX LeaderFX;
         public bool Challenge;
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public EntrySummary GenerateEntrySummary()
+        {
+            return new EntrySummary(Name, Released, Comment, IndexNum);
+        }
 
         public SkinData()
         {

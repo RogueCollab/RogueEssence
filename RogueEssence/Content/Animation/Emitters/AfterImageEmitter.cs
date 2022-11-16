@@ -3,6 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Creates after-images of the moving character.
+    /// </summary>
     [Serializable]
     public class AfterImageEmitter : AttachPointEmitter
     {
@@ -29,7 +32,7 @@ namespace RogueEssence.Content
         private FrameTick CurrentBurstTime;
 
         [NonSerialized]
-        private Dungeon.MonsterID CurrentForm;
+        private CharID CurrentForm;
         [NonSerialized]
         private int CurrentAnim;
         [NonSerialized]

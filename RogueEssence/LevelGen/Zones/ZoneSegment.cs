@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
-    //A class that generates maps when given a map ID to generate
+    /// <summary>
+    /// A dungeon segment where each floor has its own map generator, with no gaps in between floors.
+    /// Players attempting to enter a floor in this segment will be served by the generator corresponding to the floor number they requested.
+    /// An error will occur if the requested floor is out of range.
+    /// </summary>
     [Serializable]
     public class LayeredSegment : ZoneSegmentBase
     {
@@ -12,7 +17,7 @@ namespace RogueEssence.LevelGen
         // LayeredSegment<T> where T : IFloorGen
         //Implementations in this project can use IProjectSegmentBase where the LayeredSegment uses IProjectFloorGen as a base
         //IProjectFloorGen will be implemented via a ProjectFloorGen that is like FloorGen but has the constraint of BaseMapGenContext
-        [Dev.RankedList(0, true)]
+        [RankedList(0, true)]
         public List<IFloorGen> Floors;
 
         public override int FloorCount { get { return Floors.Count; } }
@@ -92,6 +97,10 @@ namespace RogueEssence.LevelGen
 
     }
 
+    /// <summary>
+    /// A dungeon segment where each floor has the same map generator.
+    /// Players attempting to enter a floor in this segment will be served by the same generator no matter what.
+    /// </summary>
     [Serializable]
     public class SingularSegment : ZoneSegmentBase
     {
@@ -122,9 +131,15 @@ namespace RogueEssence.LevelGen
     }
 
 
+    /// <summary>
+    /// A dungeon segment where multiple floors can be mapped to the same map generator.
+    /// Players attempting to enter a floor in this segment will be served by the generator corresponding to the floor range that covers the number they requested.
+    /// An error will occur if the requested floor is out of range.
+    /// </summary>
     [Serializable]
     public class RangeDictSegment : ZoneSegmentBase
     {
+        [RangeBorder(0, true, true)]
         public RangeDict<IFloorGen> Floors;
         public override int FloorCount
         {
@@ -160,7 +175,11 @@ namespace RogueEssence.LevelGen
         }
     }
 
-
+    /// <summary>
+    /// A dungeon segment where each floor has its own map generator, with gaps between floors allowed.
+    /// Players attempting to enter a floor in this segment will be served by the generator corresponding to the floor number they requested.
+    /// An error will occur if the requested floor does not have a generator.
+    /// </summary>
     [Serializable]
     public class DictionarySegment : ZoneSegmentBase
     {
@@ -221,7 +240,7 @@ namespace RogueEssence.LevelGen
     public class ZoneGenContext
     {
         public ulong Seed;
-        public int CurrentZone;
+        public string CurrentZone;
         public int CurrentSegment;
         public int CurrentID;
         public List<ZoneStep> ZoneSteps;

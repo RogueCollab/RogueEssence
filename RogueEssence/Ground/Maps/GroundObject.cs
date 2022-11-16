@@ -190,23 +190,5 @@ namespace RogueEssence.Ground
         {
             ReloadEvents();
         }
-
-
-        [OnDeserialized]
-        internal new void OnDeserializedMethod(StreamingContext context)
-        {
-            scriptEvents = new Dictionary<LuaEngine.EEntLuaEventTypes, ScriptEvent>();
-
-            //TODO: Created v0.5.3, delete on v0.6.1
-            if (ObjectAnim != null)
-            {
-                Dir8 dir = ObjectAnim.AnimDir;
-                if (dir != Dir8.None)
-                {
-                    Direction = dir;
-                    ObjectAnim.AnimDir = Dir8.None;
-                }
-            }
-        }
     }
 }

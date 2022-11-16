@@ -20,14 +20,14 @@ namespace RogueEssence.Menu
         MenuText SkillHitRate;
         MenuText SkillTargets;
 
-        public TeachInfoMenu(int itemNum)
+        public TeachInfoMenu(string itemNum)
         {
             Bounds = Rect.FromPoints(new Loc(16, 24), new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 72));
             
             ItemData itemData = DataManager.Instance.GetItem(itemNum);
-            ItemIndexState effect = itemData.ItemStates.GetWithDefault<ItemIndexState>();
+            ItemIDState effect = itemData.ItemStates.GetWithDefault<ItemIDState>();
 
-            SkillData skillEntry = DataManager.Instance.GetSkill(effect.Index);
+            SkillData skillEntry = DataManager.Instance.GetSkill(effect.ID);
             ElementData elementEntry = DataManager.Instance.GetElement(skillEntry.Data.Element);
 
             SkillName = new MenuText(skillEntry.GetColoredName(), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));

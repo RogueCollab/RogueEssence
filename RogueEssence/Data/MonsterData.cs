@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RogueEssence.Dev;
+using System;
 using System.Collections.Generic;
 
 
@@ -22,28 +24,36 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary()
         {
-            MonsterEntrySummary summary = new MonsterEntrySummary(Name, Released, Comment);
+            MonsterEntrySummary summary = new MonsterEntrySummary(Name, Released, Comment, IndexNum);
             foreach (BaseMonsterForm form in Forms)
                 summary.Forms.Add(form.GenerateEntrySummary());
             return summary;
         }
 
+        public int IndexNum;
 
+        /// <summary>
+        /// How fast this unit levels up.  Uses the Growth Group EXP tables.
+        /// </summary>
+        [JsonConverter(typeof(GrowthGroupConverter))]
         [Dev.DataType(0, DataManager.DataType.GrowthGroup, false)]
-        public int EXPTable;
+        public string EXPTable;
 
+        [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
-        public int SkillGroup1;
+        public string SkillGroup1;
 
+        [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.SharedRow]
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
-        public int SkillGroup2;
+        public string SkillGroup2;
 
         public int JoinRate;
 
 
+        [JsonConverter(typeof(MonsterConverter))]
         [Dev.DataType(0, DataManager.DataType.Monster, true)]
-        public int PromoteFrom;
+        public string PromoteFrom;
         public List<PromoteBranch> Promotions;
 
         public List<BaseMonsterForm> Forms;
@@ -53,7 +63,10 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Title = new LocalText();
             Comment = "";
-            PromoteFrom = -1;
+            EXPTable = "";
+            SkillGroup1 = "";
+            SkillGroup2 = "";
+            PromoteFrom = "";
             Promotions = new List<PromoteBranch>();
             Forms = new List<BaseMonsterForm>();
         }
@@ -78,7 +91,7 @@ namespace RogueEssence.Data
             Forms = new List<BaseFormSummary>();
         }
 
-        public MonsterEntrySummary(LocalText name, bool released, string comment) : base(name, released, comment)
+        public MonsterEntrySummary(LocalText name, bool released, string comment, int sort) : base(name, released, comment, sort)
         {
             Forms = new List<BaseFormSummary>();
         }

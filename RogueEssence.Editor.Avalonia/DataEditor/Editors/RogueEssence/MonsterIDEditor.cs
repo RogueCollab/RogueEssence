@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, MonsterID member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, MonsterID member, Type[] subGroupStack)
         {
             MonsterIDAttribute dataAtt = ReflectionExt.FindAttribute<MonsterIDAttribute>(attributes);
 
@@ -34,34 +34,39 @@ namespace RogueEssence.Dev
                 innerPanel1.ColumnDefinitions[0].Width = new GridLength(46);
                 lblSpecies.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-                ComboBox cbSpecies = new ComboBox();
-                ComboBox cbForms = new ComboBox();
+                ComboBox cbSpecies = new SearchComboBox();
+                ComboBox cbForms = new SearchComboBox();
 
                 cbSpecies.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenSpecies = member.Species;
+
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                List<string> monsterKeys = nameIndex.GetOrderedKeys(false);
+                int chosenSpecies = monsterKeys.IndexOf(member.Species);
 
                 List<string> species = new List<string>();
                 List<string> forms = new List<string>();
 
+                for (int ii = 0; ii < monsterKeys.Count; ii++)
+                    species.Add(monsterKeys[ii] + ": " + nameIndex.Get(monsterKeys[ii]).GetLocalString(false));
+
                 if (dataAtt.InvalidSpecies)
                 {
-                    species.Add("---");
+                    monsterKeys.Insert(0, "");
+                    species.Insert(0, "**EMPTY**");
                     chosenSpecies++;
                 }
 
-                for (int ii = 0; ii < nameIndex.Count; ii++)
-                    species.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(false));
+                chosenSpecies = Math.Min(Math.Max(0, chosenSpecies), species.Count - 1);
 
                 var speciesSubject = new Subject<List<string>>();
                 var formSubject = new Subject<List<string>>();
 
                 cbSpecies.Bind(ComboBox.ItemsProperty, speciesSubject);
                 speciesSubject.OnNext(species);
-                cbSpecies.SelectedIndex = Math.Min(Math.Max(0, chosenSpecies), species.Count - 1);
+                cbSpecies.SelectedIndex = chosenSpecies;
                 cbSpecies.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
-                    loadForms(dataAtt, cbSpecies.SelectedIndex, forms);
+                    loadForms(dataAtt, monsterKeys[cbSpecies.SelectedIndex], forms);
                     cbForms.SelectedIndex = -1;
                     cbForms.SelectedIndex = Math.Min(Math.Max(0, cbForms.SelectedIndex), forms.Count - 1);
                     formSubject.OnNext(forms);
@@ -87,7 +92,7 @@ namespace RogueEssence.Dev
                 cbForms.VirtualizationMode = ItemVirtualizationMode.Simple;
                 int chosenForm = member.Form;
 
-                loadForms(dataAtt, member.Species, forms);
+                loadForms(dataAtt, (chosenSpecies < 0) ? "" : monsterKeys[chosenSpecies], forms);
 
                 if (dataAtt.InvalidForm)
                     chosenForm++;
@@ -112,20 +117,22 @@ namespace RogueEssence.Dev
                 innerPanel3.ColumnDefinitions[0].Width = new GridLength(46);
                 lblSkin.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-                ComboBox cbSkin = new ComboBox();
+                ComboBox cbSkin = new SearchComboBox();
                 cbSkin.VirtualizationMode = ItemVirtualizationMode.Simple;
-                int chosenIndex = member.Skin;
-                EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Skin];
 
                 List<string> items = new List<string>();
                 if (dataAtt.InvalidSkin)
-                {
-                    items.Add("---");
-                    chosenIndex++;
-                }
+                    items.Add("**EMPTY**");
 
-                for (int ii = 0; ii < nameIndex.Count; ii++)
-                    items.Add(ii.ToString() + ": " + nameIndex.Entries[ii].GetLocalString(false));
+                int chosenIndex = 0;
+                List<string> monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(false);
+                foreach (string key in monsterKeys)
+                {
+                    if (key == member.Skin)
+                        chosenIndex = items.Count;
+
+                    items.Add(key + ": " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(key).GetLocalString(false));
+                }
 
                 var subject = new Subject<List<string>>();
                 cbSkin.Bind(ComboBox.ItemsProperty, subject);
@@ -145,14 +152,14 @@ namespace RogueEssence.Dev
                 innerPanel3.ColumnDefinitions[2].Width = new GridLength(46);
                 lblGender.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
-                ComboBox cbGender = new ComboBox();
+                ComboBox cbGender = new SearchComboBox();
                 cbGender.VirtualizationMode = ItemVirtualizationMode.Simple;
                 int chosenIndex = (int)member.Gender;
 
                 List<string> items = new List<string>();
                 if (dataAtt.InvalidGender)
                 {
-                    items.Add("---");
+                    items.Add("**EMPTY**");
                     chosenIndex++;
                 }
 
@@ -170,14 +177,9 @@ namespace RogueEssence.Dev
             control.Children.Add(innerPanel3);
         }
 
-        private void CbSpecies_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public override MonsterID SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            MonsterID result = new MonsterID();
+            MonsterID result = MonsterID.Invalid;
             MonsterIDAttribute dataAtt = ReflectionExt.FindAttribute<MonsterIDAttribute>(attributes);
 
             int controlIndex = 0;
@@ -187,9 +189,11 @@ namespace RogueEssence.Dev
             int innerControlIndex = 0;
             innerControlIndex++;
             ComboBox cbSpecies = (ComboBox)innerControl1.Children[innerControlIndex];
-            result.Species = cbSpecies.SelectedIndex;
+
+            List<string> monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(false);
             if (dataAtt.InvalidSpecies)
-                result.Species--;
+                monsterKeys.Insert(0, "");
+            result.Species = monsterKeys[cbSpecies.SelectedIndex];
 
             controlIndex++;
             Avalonia.Controls.Grid innerControl2 = (Avalonia.Controls.Grid)control.Children[controlIndex];
@@ -206,9 +210,11 @@ namespace RogueEssence.Dev
             innerControlIndex = 0;
             innerControlIndex++;
             ComboBox cbSkin = (ComboBox)innerControl3.Children[innerControlIndex];
-            result.Skin = cbSkin.SelectedIndex;
+
+            List<string> skinKeys = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(false);
             if (dataAtt.InvalidSkin)
-                result.Skin--;
+                skinKeys.Insert(0, "");
+            result.Skin = skinKeys[cbSkin.SelectedIndex];
 
             innerControlIndex++;
             innerControlIndex++;
@@ -224,7 +230,7 @@ namespace RogueEssence.Dev
         {
             string name = "???";
 
-            if (obj.Species > -1)
+            if (!String.IsNullOrEmpty(obj.Species))
             {
                 MonsterData data = DataManager.Instance.GetMonster(obj.Species);
                 if (obj.Form > -1)
@@ -235,7 +241,7 @@ namespace RogueEssence.Dev
                 else
                     name = data.Name.ToLocal();
             }
-            if (obj.Skin > -1)
+            if (!String.IsNullOrEmpty(obj.Skin))
             {
                 SkinData data = DataManager.Instance.GetSkin(obj.Skin);
                 name = String.Format("[{0}] ", data.Name.ToLocal()) + name;
@@ -263,16 +269,19 @@ namespace RogueEssence.Dev
             return name;
         }
 
-        private void loadForms(MonsterIDAttribute dataAtt, int species, List<string> forms)
+        private void loadForms(MonsterIDAttribute dataAtt, string species, List<string> forms)
         {
             forms.Clear();
-            MonsterData monsterData = DataManager.Instance.GetMonster(species);
-
             if (dataAtt.InvalidForm)
-                forms.Add("---");
+                forms.Add("**EMPTY**");
 
-            for (int ii = 0; ii < monsterData.Forms.Count; ii++)
-                forms.Add(monsterData.Forms[ii].FormName.ToLocal());
+            if (!String.IsNullOrEmpty(species))
+            {
+                MonsterData monsterData = DataManager.Instance.GetMonster(species);
+
+                for (int ii = 0; ii < monsterData.Forms.Count; ii++)
+                    forms.Add(monsterData.Forms[ii].FormName.ToLocal());
+            }
 
         }
     }

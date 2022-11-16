@@ -1,6 +1,7 @@
 ﻿using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace RogueEssence.Content
 {
@@ -8,7 +9,7 @@ namespace RogueEssence.Content
     class OverlayAnim : BaseAnim
     {
 
-        public OverlayAnim(Loc mapLoc, BGAnimData anim, Color color, bool omnipresent, Loc movement, int totalTime/*, int fadeTime*/)
+        public OverlayAnim(Loc mapLoc, BGAnimData anim, Color color, bool omnipresent, Loc movement, int totalTime, int fadeIn, int fadeOut, bool repeatX, bool repeatY)
         {
             Anim = anim;
             this.mapLoc = mapLoc;
@@ -16,7 +17,10 @@ namespace RogueEssence.Content
             Omnipresent = omnipresent;
             Movement = movement;
             TotalTime = totalTime;
-            //FadeTime = fadeTime;
+            FadeIn = fadeIn;
+            FadeOut = fadeOut;
+            RepeatX = repeatX;
+            RepeatY = repeatY;
         }
 
         private BGAnimData Anim;
@@ -25,7 +29,9 @@ namespace RogueEssence.Content
         /// In frames
         /// </summary>
         public int TotalTime;
-        //private int FadeTime;//in render frames
+
+        public int FadeIn;//in render frames
+        public int FadeOut;//in render frames
 
         public FrameTick Time;
 
@@ -33,6 +39,11 @@ namespace RogueEssence.Content
         /// In pixels per second
         /// </summary>
         public Loc Movement;
+
+
+        public bool RepeatX;
+        public bool RepeatY;
+
 
         public Color Color;
 
@@ -56,19 +67,40 @@ namespace RogueEssence.Content
             DirSheet sheet = GraphicsManager.GetBackground(Anim.AnimIndex);
 
             int frame = Time.ToFrames();
-            Loc diff = Movement * frame / 60 - offset;
-            float fade = 1f;// (float)Math.Min(Math.Min(FadeTime, frame), (TotalTime > 0) ? Math.Min(FadeTime, TotalTime - frame) : FadeTime) / FadeTime;
+            Loc diff = MapLoc + Movement * frame / 60 - offset;
+
+            float alpha = 1f;
+            if (frame < FadeIn)
+                alpha = Math.Min(alpha, (float)Math.Min(FadeIn, frame) / Math.Max(FadeIn, 1));
+            if (TotalTime > 0 && TotalTime - frame < FadeOut)
+                alpha = Math.Min(alpha, (float)Math.Min(FadeOut, TotalTime - frame) / Math.Max(FadeOut, 1));
+
             if (sheet.Width == 1 && sheet.Height == 1)
-                sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color * ((float)Anim.Alpha * fade / 255f));
+                sheet.DrawTile(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), 0, 0, Color * ((float)Anim.Alpha * alpha / 255f));
             else
             {
-                for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
+                if (RepeatX)
                 {
-                    for (int y = diff.Y % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
-                        sheet.DrawDir(spriteBatch, new Vector2(x, y), Anim.GetCurrentFrame(Time, sheet.TotalFrames), Anim.GetDrawDir(Dir8.None), Color * ((float)Anim.Alpha * fade / 255f));
+                    for (int x = diff.X % sheet.TileWidth - sheet.TileWidth; x < GraphicsManager.ScreenWidth; x += sheet.TileWidth)
+                        drawTileY(spriteBatch, diff.Y, sheet, alpha, x);
                 }
+                else
+                    drawTileY(spriteBatch, diff.Y, sheet, alpha, diff.X);
+
             }
         }
+
+        private void drawTileY(SpriteBatch spriteBatch, int diffY, DirSheet sheet, float alpha, int x)
+        {
+            if (RepeatY)
+            {
+                for (int y = diffY % sheet.TileHeight - sheet.TileHeight; y < GraphicsManager.ScreenHeight; y += sheet.TileHeight)
+                    sheet.DrawDir(spriteBatch, new Vector2(x, y), Anim.GetCurrentFrame(Time, sheet.TotalFrames), Anim.GetDrawDir(Dir8.None), Color * ((float)Anim.Alpha * alpha / 255f));
+            }
+            else
+                sheet.DrawDir(spriteBatch, new Vector2(x, diffY), Anim.GetCurrentFrame(Time, sheet.TotalFrames), Anim.GetDrawDir(Dir8.None), Color * ((float)Anim.Alpha * alpha / 255f));
+        }
+
 
         public override Loc GetDrawLoc(Loc offset)
         {

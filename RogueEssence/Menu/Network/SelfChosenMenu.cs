@@ -3,6 +3,8 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using SDL2;
+using System;
+using RogueEssence.Content;
 
 
 namespace RogueEssence.Menu
@@ -31,7 +33,8 @@ namespace RogueEssence.Menu
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(204, 8), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(204, GraphicsManager.ScreenWidth - choice_width), 8), choice_width, choices.ToArray(), 0);
         }
 
 

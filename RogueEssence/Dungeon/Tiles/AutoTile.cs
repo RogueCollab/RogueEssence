@@ -5,50 +5,59 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
     [Serializable]
     public class AutoTile
     {
+        /// <summary>
+        /// If AutoTileSet is set to -1, this variable can be specified to make a hand-crafted texture.
+        /// </summary>
         public List<TileLayer> Layers;
 
+        [JsonConverter(typeof(Dev.AutotileConverter))]
         [Dev.DataType(0, DataManager.DataType.AutoTile, true)]
-        public int AutoTileset { get; private set; }
+        public string AutoTileset { get; private set; }
 
         /// <summary>
-        /// Tilesets that are considered this tileset for texture computing purposes.  Only used for Autotiles
+        /// Associates are autotiles that will be considered the same as the autotile this object is using.
+        /// Only used for texture computation, and only relevant for edge cases involving when two different autotiles meet.
         /// </summary>
+        [JsonConverter(typeof(Dev.AutotileSetConverter))]
         [Dev.DataType(1, DataManager.DataType.AutoTile, false)]
-        public HashSet<int> Associates { get; private set; }
+        public HashSet<string> Associates { get; private set; }
+
+        [Dev.NonEdited]
         public int NeighborCode;
 
         public AutoTile()
         {
             Layers = new List<TileLayer>();
-            AutoTileset = -1;
+            AutoTileset = "";
             NeighborCode = -1;
-            Associates = new HashSet<int>();
+            Associates = new HashSet<string>();
         }
         public AutoTile(params TileLayer[] layers)
         {
             Layers = new List<TileLayer>();
             Layers.AddRange(layers);
-            AutoTileset = -1;
+            AutoTileset = "";
             NeighborCode = -1;
-            Associates = new HashSet<int>();
+            Associates = new HashSet<string>();
         }
 
-        public AutoTile(int autotile, params int[] associates)
+        public AutoTile(string autotile, params string[] associates)
         {
             Layers = new List<TileLayer>();
             AutoTileset = autotile;
             NeighborCode = -1;
-            Associates = new HashSet<int>();
-            foreach (int tile in associates)
+            Associates = new HashSet<string>();
+            foreach (string tile in associates)
                 Associates.Add(tile);
         }
-        public AutoTile(int autotile, HashSet<int> associates)
+        public AutoTile(string autotile, HashSet<string> associates)
         {
             Layers = new List<TileLayer>();
             AutoTileset = autotile;
@@ -61,7 +70,7 @@ namespace RogueEssence.Dungeon
                 Layers.Add(new TileLayer(layer));
             AutoTileset = other.AutoTileset;
             NeighborCode = other.NeighborCode;
-            foreach (int tile in other.Associates)
+            foreach (string tile in other.Associates)
                 Associates.Add(tile);
         }
         public AutoTile Copy() { return new AutoTile(this); }
@@ -79,7 +88,7 @@ namespace RogueEssence.Dungeon
         private void draw(SpriteBatch spriteBatch, Loc pos, bool neighborCodeOverride, ulong randCode)
         {
             List<TileLayer> layers;
-            if (AutoTileset > -1)
+            if (!String.IsNullOrEmpty(AutoTileset))
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(AutoTileset);
                 int neighborCode = NeighborCode;
@@ -95,7 +104,7 @@ namespace RogueEssence.Dungeon
 
         public bool IsEmpty()
         {
-            if (AutoTileset > -1)
+            if (!String.IsNullOrEmpty(AutoTileset))
                 return false;
 
             if (Layers.Count > 0)
@@ -110,11 +119,11 @@ namespace RogueEssence.Dungeon
             if (AutoTileset != other.AutoTileset)
                 return false;
 
-            if (AutoTileset > -1)
+            if (!String.IsNullOrEmpty(AutoTileset))
             {
                 if (Associates.Count != other.Associates.Count)
                     return false;
-                foreach (int tile in Associates)
+                foreach (string tile in Associates)
                 {
                     if (!other.Associates.Contains(tile))
                         return false;
@@ -148,8 +157,8 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            if (AutoTileset > -1 && AutoTileset < DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Count)
-                return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Entries[AutoTileset].Name.ToLocal());
+            if (!String.IsNullOrEmpty(AutoTileset))
+                return String.Format("AutoTile {0}", DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(AutoTileset).Name.ToLocal());
             else
             {
                 if (Layers.Count > 0)

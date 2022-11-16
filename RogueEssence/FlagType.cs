@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace RogueEssence
@@ -34,12 +35,18 @@ namespace RogueEssence
         {
             if (type != null)
             {
-                fullType = Type.GetType(String.Format("{0}, {1}", type, assembly));
+                fullType = Type.GetType(String.Format("{0}, {1}", type, assembly), versionlessResolve, null);
                 if (fullType == null)
                 {
                     throw new TypeInitializationException(type, null);
                 }
             }
+        }
+
+        private static Assembly versionlessResolve(AssemblyName name)
+        {
+            name.Version = null;
+            return Assembly.Load(name);
         }
 
         public override string ToString()

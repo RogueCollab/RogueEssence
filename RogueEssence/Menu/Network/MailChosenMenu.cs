@@ -1,30 +1,41 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
 using System;
+using RogueEssence.Content;
+using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
     public class MailChosenMenu : SingleStripMenu
     {
 
-        private bool canRescue;
         private MailMenu.OnChoosePath action;
         private Action deleteAction;
 
-        public MailChosenMenu(bool canRescue, string fileName, MailMenu.OnChoosePath action, Action deleteAction)
+        public MailChosenMenu(bool canRescue, bool offVersion, string fileName, MailMenu.OnChoosePath action, Action deleteAction)
         {
-            this.canRescue = canRescue;
             this.action = action;
             this.deleteAction = deleteAction;
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
-            if (this.canRescue)
+            if (canRescue)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_RESCUE"), () => { ActivityAction(fileName); }));
+            if (offVersion)
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_VERSION_INFO"), () => { ViewVersionDiff(fileName); }));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_DELETE"), deleteAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(204, 8), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(204, GraphicsManager.ScreenWidth - choice_width), 8), choice_width, choices.ToArray(), 0);
+        }
+
+        private void ViewVersionDiff(string fileName)
+        {
+            SOSMail mail = DataManager.LoadRescueMail(fileName) as SOSMail;
+            List<ModVersion> curVersions = PathMod.GetModVersion();
+            List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
+            MenuManager.Instance.AddMenu(new VersionDiffMenu(versionDiff, 0), false);
         }
 
 

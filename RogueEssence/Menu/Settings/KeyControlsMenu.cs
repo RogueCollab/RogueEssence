@@ -33,14 +33,14 @@ namespace RogueEssence.Menu
                 if (!Settings.UsedByKeyboard((FrameInput.InputType)index))
                     continue;
                 MenuText buttonName = new MenuText(((FrameInput.InputType)index).ToLocal(), new Loc(2, 1), Color.White);
-                MenuText buttonType = new MenuText("[" + actionKeys[index].ToLocal() + "]", new Loc(200, 1), DirH.Right);
+                MenuText buttonType = new MenuText(DiagManager.Instance.GetKeyboardString(actionKeys[index]), new Loc(200, 1), DirH.Right);
                 flatChoices.Add(new MenuElementChoice(() => { chooseAction(index, buttonType); }, true, buttonName, buttonType));
             }
             for (int ii = 0; ii < dirKeys.Length; ii++)
             {
                 int index = remapDirIndex(ii);
                 MenuText buttonName = new MenuText(((Dir4)index).ToLocal(), new Loc(2, 1), Color.White);
-                MenuText buttonType = new MenuText("[" + dirKeys[index].ToLocal() + "]", new Loc(200, 1), DirH.Right);
+                MenuText buttonType = new MenuText(DiagManager.Instance.GetKeyboardString(dirKeys[index]), new Loc(200, 1), DirH.Right);
                 flatChoices.Add(new MenuElementChoice(() => { chooseDir(index, buttonType); }, true, buttonName, buttonType));
             }
             {
@@ -86,7 +86,7 @@ namespace RogueEssence.Menu
                     continue;
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText("[" + actionKeys[index].ToLocal() + "]");
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText(DiagManager.Instance.GetKeyboardString(actionKeys[index]));
                 if (actionConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;
@@ -111,7 +111,7 @@ namespace RogueEssence.Menu
                 int index = remapDirIndex(ii);
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText("[" + dirKeys[index].ToLocal() + "]");
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText(DiagManager.Instance.GetKeyboardString(dirKeys[index]));
                 if (dirConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;

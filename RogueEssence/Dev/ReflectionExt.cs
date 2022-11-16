@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dev
 {
@@ -17,17 +16,12 @@ namespace RogueEssence.Dev
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                IFormatter formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                formatter.Serialize(stream, obj);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                Serializer.Serialize(stream, obj);
 
                 stream.Flush();
                 stream.Position = 0;
 
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                return (T)formatter.Deserialize(stream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                return (T)Serializer.Deserialize(stream, obj.GetType());
             }
         }
 
@@ -35,6 +29,9 @@ namespace RogueEssence.Dev
         {
             if (type.IsValueType)
                 return Activator.CreateInstance(type);
+            if (type.IsArray)
+                return Array.CreateInstance(type.GetElementType(), 0);
+
             ConstructorInfo[] ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
             if (ctors.Length > 0)
             {

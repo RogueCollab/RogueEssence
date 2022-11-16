@@ -3,6 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// An emitter that releases a single animation, or particle emitter, several times.
+    /// </summary>
     [Serializable]
     public class RepeatEmitter : FiniteEmitter
     {
@@ -31,10 +34,29 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new RepeatEmitter(this); }
 
+        /// <summary>
+        /// The animation to play.  Can also be an emitter.
+        /// </summary>
         public IEmittable Anim;
+
+        /// <summary>
+        /// The number of times to release the animation.
+        /// </summary>
         public int Bursts;
+
+        /// <summary>
+        /// The number of frames between emissions.
+        /// </summary>
         public int BurstTime;
+
+        /// <summary>
+        /// The layer to put the animation on.
+        /// </summary>
         public DrawLayer Layer;
+
+        /// <summary>
+        /// Shifts the animation in the given number of pixels, based on the direction of the origin entity.
+        /// </summary>
         public int Offset;
 
         [NonSerialized]

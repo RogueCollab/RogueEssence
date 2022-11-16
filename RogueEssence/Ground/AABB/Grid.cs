@@ -67,32 +67,35 @@
 
 		public Cell[,] Cells { get; private set; }
 
-        public IEnumerable<Cell> QueryCells(int x, int y, int w, int h)
+        public IEnumerable<Cell> QueryCells(int x, int y, int w, int h, bool wrap)
         {
             List<Cell> result = new List<Cell>();
             if (w == 0 && h == 0)
                 return result;
 
-			var minX = (x / this.CellSize);
-			var minY = (y / this.CellSize);
-			var maxX = ((x + w - 1) / this.CellSize);
-			var maxY = ((y + h - 1) / this.CellSize);
+			var minX = MathUtils.DivDown(x, this.CellSize);
+			var minY = MathUtils.DivDown(y, this.CellSize);
+			var maxX = MathUtils.DivUp(x + w, this.CellSize);
+			var maxY = MathUtils.DivUp(y + h, this.CellSize);
 
-			minX = Math.Max(0, minX);
-			minY = Math.Max(0, minY);
-			maxX = Math.Min(this.Columns - 1, maxX);
-			maxY = Math.Min(this.Rows - 1, maxY);
+			Loc size = new Loc(this.Columns, this.Rows);
 
-			for (int ix = minX; ix <= maxX; ix++)
+			for (int ix = minX; ix < maxX; ix++)
 			{
-				for (int iy = minY; iy <= maxY; iy++)
+				for (int iy = minY; iy < maxY; iy++)
 				{
-					var cell = Cells[ix, iy];
+					Loc testLoc = new Loc(ix, iy);
+					if (wrap)
+						testLoc = Loc.Wrap(testLoc, size);
+					else if (!RogueElements.Collision.InBounds(this.Columns, this.Rows, testLoc))
+						continue;
+
+					var cell = Cells[testLoc.X, testLoc.Y];
 
 					if (cell == null)
 					{
-						cell = new Cell(ix,iy,CellSize);
-						Cells[ix, iy] = cell;
+						cell = new Cell(testLoc.X, testLoc.Y, CellSize);
+						Cells[testLoc.X, testLoc.Y] = cell;
 					}
 
 					result.Add(cell);
@@ -103,16 +106,16 @@
 
 		}
 
-        public IEnumerable<IObstacle> QueryBoxes(int x, int y, int w, int h)
+        public IEnumerable<IObstacle> QueryBoxes(int x, int y, int w, int h, bool wrap)
 		{
-			var cells = this.QueryCells(x, y, w, h);
+			var cells = this.QueryCells(x, y, w, h, wrap);
 
 			return cells.SelectMany((cell) => cell.Children).Distinct();
 		}
 
-		public void Add(IObstacle box)
+		public void Add(IObstacle box, bool wrap)
 		{
-			var cells = this.QueryCells(box.X, box.Y, box.Width, box.Height);
+			var cells = this.QueryCells(box.X, box.Y, box.Width, box.Height, wrap);
 
 			foreach (var cell in cells)
 			{
@@ -121,21 +124,21 @@
 			}
 		}
 
-		public void Update(IObstacle box, Rect from)
+		public void Update(IObstacle box, Rect from, bool wrap)
 		{
-			var fromCells = this.QueryCells(from.X, from.Y, from.Width, from.Height);
+			var fromCells = this.QueryCells(from.X, from.Y, from.Width, from.Height, wrap);
 			var removed = false;
 			foreach (var cell in fromCells)
 			{
 				removed |= cell.Remove(box);
 			}
 
-			this.Add(box);
+			this.Add(box, wrap);
 		}
 
-		public bool Remove(IObstacle box)
+		public bool Remove(IObstacle box, bool wrap)
 		{
-			var cells = this.QueryCells(box.X, box.Y, box.Width, box.Height);
+			var cells = this.QueryCells(box.X, box.Y, box.Width, box.Height, wrap);
 
 			var removed = false;
 			foreach (var cell in cells)

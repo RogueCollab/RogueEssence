@@ -48,7 +48,7 @@ namespace RogueEssence.Dev
             RangeBorderAttribute.GetAddVals(index1, inclusive, out addMin, out addMax);
         }
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, IntRange member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, IntRange member, Type[] subGroupStack)
         {
             int addMin, addMax;
             getMinMaxOffsets(attributes, out addMin, out addMax);

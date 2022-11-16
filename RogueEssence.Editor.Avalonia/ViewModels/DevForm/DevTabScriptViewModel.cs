@@ -7,6 +7,7 @@ using RogueEssence.Script;
 using System.Collections.ObjectModel;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -18,6 +19,7 @@ namespace RogueEssence.Dev.ViewModels
         public DevTabScriptViewModel()
         {
             m_lastcommands = new Stack<string>();
+            m_lastcommands.Push("");
             ScriptLog = "";
             ScriptLine = "";
         }
@@ -36,6 +38,13 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref scriptCaret, value); }
         }
 
+        private int cmdCaret;
+        public int CmdCaret
+        {
+            get { return cmdCaret; }
+            set { this.SetIfChanged(ref cmdCaret, value); }
+        }
+
         private string scriptLine;
         public string ScriptLine
         {
@@ -45,6 +54,11 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnReloadScripts_Click()
         {
+            DevForm.ExecuteOrPend(scriptReload);
+        }
+
+        private void scriptReload()
+        {
             lock (GameBase.lockObj)
             {
                 //Reload everything
@@ -53,12 +67,22 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void btnTextTest_Click()
+        {
+            TextTestViewModel mv = new TextTestViewModel();
+            Views.TextTestForm editForm = new Views.TextTestForm();
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
+
         public void SendScript()
         {
             lock (GameBase.lockObj)
             {
                 ScriptLog = ScriptLog + "\n" + ScriptLine;
+                m_lastcommands.Pop();
                 m_lastcommands.Push(ScriptLine);
+                m_lastcommands.Push("");
                 ScriptCaret = ScriptLog.Length;
                 //Send the text to the script engine
                 LuaEngine.Instance.RunString(ScriptLine);
@@ -70,7 +94,7 @@ namespace RogueEssence.Dev.ViewModels
         public void ShiftHistory(int increment)
         {
             string[] strs = m_lastcommands.ToArray();
-            m_cntDownArrow = (m_cntDownArrow + strs.Length + increment) % strs.Length;
+            m_cntDownArrow = Math.Clamp(m_cntDownArrow + increment, 0, strs.Length - 1);
             ScriptLine = strs[m_cntDownArrow];
         }
 

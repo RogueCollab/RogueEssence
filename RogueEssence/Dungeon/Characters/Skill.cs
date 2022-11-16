@@ -1,5 +1,7 @@
 using System;
+using Newtonsoft.Json;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -7,21 +9,21 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class Skill
     {
-
-        public int SkillNum;
+        [JsonConverter(typeof(SkillConverter))]
+        public string SkillNum;
         public int Charges;
         public bool Enabled;
 
         public bool Sealed;
 
         public Skill()
-            : this(-1, 0)
+            : this("", 0)
         { }
 
-        public Skill(int skillNum, int charges)
+        public Skill(string skillNum, int charges)
             : this(skillNum, charges, true)
         { }
-        public Skill(int skillNum, int charges, bool enabled)
+        public Skill(string skillNum, int charges, bool enabled)
         {
             SkillNum = skillNum;
             Charges = charges;

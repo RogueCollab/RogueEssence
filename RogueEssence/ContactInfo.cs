@@ -12,7 +12,7 @@ namespace RogueEssence
     public class ContactData
     {
         public string TeamName;
-        public int Rank;
+        public string Rank;
         public int RankStars;
         public ProfilePic[] TeamProfile;
 
@@ -20,14 +20,14 @@ namespace RogueEssence
         public ContactData()
         {
             TeamName = "";
-            Rank = -1;
+            Rank = "";
             TeamProfile = new ProfilePic[0];
         }
 
         public string GetLocalRankStr()
         {
-            if (Rank == -1)
-                return "---";
+            if (String.IsNullOrEmpty(Rank))
+                return "**Empty**";
             return /*Rank.ToLocal() + */new string('\uE10C', RankStars);
         }
     }
@@ -57,7 +57,7 @@ namespace RogueEssence
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                Serializer.Serialize(stream, Data);
+                Serializer.SerializeData(stream, Data);
                 return stream.ToArray();
             }
         }
@@ -68,8 +68,7 @@ namespace RogueEssence
                 StringBuilder builder = new StringBuilder();
                 stream.Write(bytes, 0, bytes.Length);
                 stream.Position = 0;
-                IFormatter formatter = new BinaryFormatter();
-                Data = (ContactData)Serializer.Deserialize(stream, typeof(ContactData));
+                Data = (ContactData)Serializer.DeserializeData(stream);
             }
         }
     }

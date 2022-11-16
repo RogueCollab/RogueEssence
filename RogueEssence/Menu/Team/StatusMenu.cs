@@ -13,15 +13,15 @@ namespace RogueEssence.Menu
         SummaryMenu summaryMenu;
         DialogueText Description;
 
-        List<int> mapIndices;
-        List<int> indices;
+        List<string> mapIndices;
+        List<string> indices;
 
         public StatusMenu(int teamSlot)
         {
             int menuWidth = 168;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            mapIndices = new List<int>();
-            foreach (int status in ZoneManager.Instance.CurrentMap.Status.Keys)
+            mapIndices = new List<string>();
+            foreach (string status in ZoneManager.Instance.CurrentMap.Status.Keys)
             {
                 MapStatus statusInstance = ZoneManager.Instance.CurrentMap.Status[status];
                 if (!statusInstance.Hidden)
@@ -36,8 +36,8 @@ namespace RogueEssence.Menu
                         flatChoices.Add(new MenuElementChoice(() => { }, true, statusName));
                 }
             }
-            indices = new List<int>();
-            foreach (int status in DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects.Keys)
+            indices = new List<string>();
+            foreach (string status in DungeonScene.Instance.ActiveTeam.Players[teamSlot].StatusEffects.Keys)
             {
                 if (Data.DataManager.Instance.GetStatus(status).MenuName)
                 {
@@ -86,15 +86,15 @@ namespace RogueEssence.Menu
             int index = CurrentChoiceTotal;
             if (index < mapIndices.Count)
             {
-                int entryIndex = mapIndices[index];
+                string entryIndex = mapIndices[index];
                 Data.MapStatusData entry = Data.DataManager.Instance.GetMapStatus(entryIndex);
-                Description.SetFormattedText(entry.Desc.ToLocal());
+                Description.SetAndFormatText(entry.Desc.ToLocal());
             }
             else
             {
-                int entryIndex = indices[index - mapIndices.Count];
+                string entryIndex = indices[index - mapIndices.Count];
                 Data.StatusData entry = Data.DataManager.Instance.GetStatus(entryIndex);
-                Description.SetFormattedText(entry.Desc.ToLocal());
+                Description.SetAndFormatText(entry.Desc.ToLocal());
             }
             base.ChoiceChanged();
         }

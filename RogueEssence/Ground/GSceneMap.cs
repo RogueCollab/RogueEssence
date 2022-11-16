@@ -25,16 +25,17 @@ namespace RogueEssence.Ground
 
 
 
-        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, bool held)
+        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, int teamSlot)
         {
             InvItem invItem = null;
-            if (held)
+            if (invSlot < 0)
             {
-                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[invSlot];
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
                 invItem = activeChar.EquippedItem;
             }
             else
                 invItem = DataManager.Instance.Save.ActiveTeam.GetInv(invSlot);
+            Character target = teamSlot == -1 ? DataManager.Instance.Save.ActiveTeam.Leader : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
 
             ItemData itemEntry = (ItemData)invItem.GetData();
 
@@ -42,24 +43,23 @@ namespace RogueEssence.Ground
             {
                 case ItemData.UseType.Learn:
                     {
-                        ItemIndexState effect = itemEntry.ItemStates.GetWithDefault<ItemIndexState>();
-                        int skill = effect.Index;
+                        ItemIDState effect = itemEntry.ItemStates.GetWithDefault<ItemIDState>();
+                        string skill = effect.ID;
 
-                        Character player = (Character)character.Data;
                         int learn = -1;
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(player, skill, (int slot) => { learn = slot; }, () => { }));
+                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(target, skill, (int slot) => { learn = slot; }, () => { }));
 
                         if (learn > -1)
-                            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(player, skill, learn));
+                            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(target, skill, learn));
                         else
                             yield break;
                     }
                     break;
             }
 
-            if (held)
+            if (invSlot < 0)
             {
-                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[invSlot];
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
                 activeChar.EquippedItem = new InvItem();
             }
             else
@@ -143,7 +143,7 @@ namespace RogueEssence.Ground
 
             GameManager.Instance.SE(GraphicsManager.EquipSE);
 
-            if (itemChar.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(itemChar.EquippedItem.ID))
             {
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_SWAP", itemChar.GetDisplayName(false), item.GetDisplayName(), itemChar.EquippedItem.GetDisplayName())));
                 //put item in inv
@@ -207,15 +207,15 @@ namespace RogueEssence.Ground
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[index];
 
-            if (player.EquippedItem.ID > -1)
+            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
                 player.DequipItem();
                 DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
             }
 
-            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(player);
             RemoveChar(index);
+            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(player);
 
         }
 
@@ -254,7 +254,7 @@ namespace RogueEssence.Ground
             }
         }
 
-        public void RemoveMapStatus(int id)
+        public void RemoveMapStatus(string id)
         {
             MapStatus statusToRemove;
             if (ZoneManager.Instance.CurrentGround.Status.TryGetValue(id, out statusToRemove))

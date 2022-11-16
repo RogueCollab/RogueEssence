@@ -30,12 +30,12 @@ namespace RogueEssence.Menu
             hasSwappable = false;
 
 
-            bool[] itemPresence = new bool[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
-            for (int ii = 0; ii < itemPresence.Length; ii++)
+            HashSet<string> itemPresence = new HashSet<string>();
+            foreach (string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
             {
-                if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
                 {
-                    if (updatePresence(ii, itemPresence))
+                    if (updatePresence(key, itemPresence))
                     {
                         hasSwappable = true;
                         break;
@@ -64,14 +64,17 @@ namespace RogueEssence.Menu
 
             Initialize(new Loc(8, 8), 196, Text.FormatKey("MENU_CONTACTS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
-        private bool updatePresence(int index, bool[] itemPresence)
+        private bool updatePresence(string index, HashSet<string> itemPresence)
         {
-            if (!itemPresence[index])
+            if (!itemPresence.Contains(index))
             {
-                itemPresence[index] = true;
-                ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
-                if (itemEntry.ContainsState<MaterialState>())
-                    return true;
+                itemPresence.Add(index);
+                if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(index))
+                {
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(index) as ItemEntrySummary;
+                    if (itemEntry.ContainsState<MaterialState>())
+                        return true;
+                }
             }
             return false;
         }

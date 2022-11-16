@@ -5,6 +5,11 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Places the mobs without altering their location in any way.
+    /// This is useful for mobs that already have their location set on creation.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class PlaceNoLocMobsStep<T> : PlaceMobsStep<T>
         where T : class, IGroupPlaceableGenContext<TeamSpawn>, IMobSpawnMap

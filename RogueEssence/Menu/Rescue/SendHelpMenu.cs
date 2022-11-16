@@ -6,6 +6,7 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Network;
 using System.IO;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -128,7 +129,7 @@ namespace RogueEssence.Menu
                     if (sendHelp.CurrentState == ExchangeRescueState.AOKReady)
                     {
                         //ready to receive SOS
-                        string baseAskString = (aok.OfferedItem.Value > -1) ? "DLG_RESCUE_SEND_AOK_ASK_REWARD" : "DLG_RESCUE_SEND_AOK_ASK";
+                        string baseAskString = !String.IsNullOrEmpty(aok.OfferedItem.Value) ? "DLG_RESCUE_SEND_AOK_ASK_REWARD" : "DLG_RESCUE_SEND_AOK_ASK";
                         DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, sendHelp.TargetInfo.Data.TeamName), () =>
                         {
                             CurrentState = ExchangeRescueState.AOKTrading;
@@ -153,10 +154,10 @@ namespace RogueEssence.Menu
                         //delete the AOK file
                         File.Delete(aokPath);
 
-                        if (aok.OfferedItem.Value > -1)
+                        if (!String.IsNullOrEmpty(aok.OfferedItem.Value))
                         {
                             if (aok.OfferedItem.IsMoney)
-                                DataManager.Instance.Save.ActiveTeam.Bank += aok.OfferedItem.Value;
+                                DataManager.Instance.Save.ActiveTeam.Bank += aok.OfferedItem.Amount;
                             else
                             {
                                 List<InvItem> itemsToStore = new List<InvItem>();

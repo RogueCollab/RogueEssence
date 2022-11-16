@@ -87,6 +87,7 @@ namespace RogueEssence.Dungeon
         
         HotkeyMenu[] ShownHotkeys;
 
+        public List<Loc> PendingTraps;
         
         public List<PickupItem> PickupItems;
         
@@ -100,7 +101,7 @@ namespace RogueEssence.Dungeon
         public bool ShowActions;
         
         public MinimapState ShowMap;
-
+        public Loc MinimapOffset;
         
         /// <summary>
         /// Rectangle of the tiles that are relevant to sight computation.
@@ -113,6 +114,7 @@ namespace RogueEssence.Dungeon
         {
 
             LevelGains = new List<CharIndex>();
+            PendingTraps = new List<Loc>();
             PickupItems = new List<PickupItem>();
             Hitboxes = new List<Hitbox>();
 
@@ -264,8 +266,7 @@ namespace RogueEssence.Dungeon
                 yield return new WaitUntil(AnimationsOver);
 
                 GameManager.Instance.FrameProcessed = false;
-
-                focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                ReloadFocusedPlayer();
 
                 if (IsPlayerLeaderTurn() && PendingLeaderAction != null)
                 {
@@ -317,13 +318,14 @@ namespace RogueEssence.Dungeon
                 if (DataManager.Instance.CurrentReplay.Paused)
                 {
                     if (input.JustPressed(FrameInput.InputType.Minimap))
+                    {
                         ShowMap = (MinimapState)((int)(ShowMap + 1) % 3);
+                        MinimapOffset = Loc.Zero;
+                    }
 
                     //multi-button presses
                     if (ShowMap == MinimapState.Detail)
-                    {
-
-                    }
+                        ProcessMinimapInput(input);
                     else if (DataManager.Instance.CurrentReplay.OpenMenu)
                     {
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
@@ -344,6 +346,7 @@ namespace RogueEssence.Dungeon
                     {
                         DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                         DataManager.Instance.CurrentReplay = null;
+                        DataManager.Instance.Save.UpdateOptions();
 
                         GameManager.Instance.SetFade(true, false);
 
@@ -382,12 +385,12 @@ namespace RogueEssence.Dungeon
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
                 }
-                else if (input.JustPressed(FrameInput.InputType.MsgLog))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.MsgLog))
                 {
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MsgLogMenu()));
                 }
-                else if (input.JustPressed(FrameInput.InputType.SkillMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.SkillMenu))
                 {
                     ShowActions = false;
                     GameManager.Instance.SE("Menu/Skip");
@@ -396,12 +399,12 @@ namespace RogueEssence.Dungeon
                     if (turnChar.Faction == Faction.Player)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
                 }
-                else if (input.JustPressed(FrameInput.InputType.ItemMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.ItemMenu))
                 {
                     bool heldItems = false;
                     foreach (Character character in ActiveTeam.Players)
                     {
-                        if (!character.Dead && character.EquippedItem.ID > -1)
+                        if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
                         {
                             heldItems = true;
                             break;
@@ -415,7 +418,7 @@ namespace RogueEssence.Dungeon
                     else
                         GameManager.Instance.SE("Menu/Cancel");
                 }
-                else if (input.JustPressed(FrameInput.InputType.TacticMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.TacticMenu))
                 {
                     if (ActiveTeam.Players.Count > 1)
                     {
@@ -425,7 +428,7 @@ namespace RogueEssence.Dungeon
                     else
                         GameManager.Instance.SE("Menu/Cancel");
                 }
-                else if (input.JustPressed(FrameInput.InputType.TeamMenu))
+                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.TeamMenu))
                 {
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(false)));
@@ -433,13 +436,14 @@ namespace RogueEssence.Dungeon
                 else
                 {
                     if (input.JustPressed(FrameInput.InputType.Minimap) && !input[FrameInput.InputType.Skills])
+                    {
                         ShowMap = (MinimapState)((int)(ShowMap + 1) % 3);
+                        MinimapOffset = Loc.Zero;
+                    }
 
                     //multi-button presses
                     if (ShowMap == MinimapState.Detail)
-                    {
-
-                    }
+                        ProcessMinimapInput(input);
                     else if (input[FrameInput.InputType.Skills])
                     {
                         int skillIndex = -1;
@@ -455,7 +459,7 @@ namespace RogueEssence.Dungeon
                         if (skillIndex > -1)
                         {
                             Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
-                            if (skillState.SkillNum > -1 && skillState.Charges > 0 && !skillState.Sealed)
+                            if (!String.IsNullOrEmpty(skillState.SkillNum) && skillState.Charges > 0 && !skillState.Sealed)
                                 action = new GameAction(GameAction.ActionType.UseSkill, Dir8.None, skillIndex);
                             else
                                 GameManager.Instance.SE("Menu/Cancel");
@@ -607,14 +611,14 @@ namespace RogueEssence.Dungeon
                         for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                         {
                             Skill skill = FocusedCharacter.Skills[ii].Element;
-                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive, DiagManager.Instance.InvertABXY);
-                            if (skill.SkillNum > -1)
+                            ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive);
+                            if (!String.IsNullOrEmpty(skill.SkillNum))
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
                                 ShownHotkeys[ii].SetSkill(skillData.GetColoredName(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
                             }
                             else
-                                ShownHotkeys[ii].SetSkill("", 00, 0, 0, false);
+                                ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
                         }
                     }
 
@@ -659,6 +663,28 @@ namespace RogueEssence.Dungeon
 
                 if (action.Type != GameAction.ActionType.None)
                     yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(action));
+            }
+        }
+
+        private void ProcessMinimapInput(InputManager input)
+        {
+            if (input.Direction != Dir8.None)
+            {
+                int input_gap = 2;
+                if ((input.InputTime - input.AddedInputTime) / input_gap < input.InputTime / input_gap)
+                {
+                    MinimapOffset += input.Direction.GetLoc() * 2;
+
+                    Loc centerLoc = new Loc();
+                    if (FocusedCharacter != null)
+                        centerLoc = FocusedCharacter.CharLoc;
+                    Loc startLoc = new Loc(Math.Max(0, Math.Min(centerLoc.X - MAX_MINIMAP_WIDTH / 2, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
+                        Math.Max(0, Math.Min(centerLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                    Loc endLoc = startLoc + MinimapOffset;
+                    endLoc = new Loc(Math.Max(0, Math.Min(endLoc.X, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
+                        Math.Max(0, Math.Min(endLoc.Y, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                    MinimapOffset = endLoc - startLoc;
+                }
             }
         }
 
@@ -735,8 +761,9 @@ namespace RogueEssence.Dungeon
                 //recompute character sight
                 Loc sightStart = new Loc(viewCenter.X - GraphicsManager.ScreenWidth / 2 - GraphicsManager.TileSize / 3, viewCenter.Y - GraphicsManager.ScreenHeight / 2 - GraphicsManager.TileSize / 3);
                 Loc sightEnd = new Loc(viewCenter.X + GraphicsManager.ScreenWidth / 2 + GraphicsManager.TileSize / 3, viewCenter.Y + GraphicsManager.ScreenHeight / 2 + GraphicsManager.TileSize / 3);
-                sightRect = new Rect((int)Math.Floor((float)sightStart.X / GraphicsManager.TileSize), (int)Math.Floor((float)sightStart.Y / GraphicsManager.TileSize),
-                    (sightEnd.X - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)sightStart.X / GraphicsManager.TileSize), (sightEnd.Y - 1) / GraphicsManager.TileSize + 1 - (int)Math.Floor((float)sightStart.Y / GraphicsManager.TileSize));
+                sightRect = new Rect(MathUtils.DivDown(sightStart.X, GraphicsManager.TileSize), MathUtils.DivDown(sightStart.Y, GraphicsManager.TileSize),
+                    MathUtils.DivUp(sightEnd.X, GraphicsManager.TileSize) - MathUtils.DivDown(sightStart.X, GraphicsManager.TileSize),
+                    MathUtils.DivUp(sightEnd.Y, GraphicsManager.TileSize) - MathUtils.DivDown(sightStart.Y, GraphicsManager.TileSize));
 
                 if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.GetTileSight() != Map.SightRange.Clear) && !SeeAll)
                 {
@@ -755,7 +782,7 @@ namespace RogueEssence.Dungeon
                             foreach (VisionLoc visionLoc in member.GetVisionLocs())
                             {
                                 if (visionLoc.Weight > 0)
-                                    AddSeenLocs(visionLoc, member.GetCharSight());
+                                    AddBrightLocs(visionLoc, member.GetCharSight());
                             }
                         }
                     }
@@ -784,17 +811,23 @@ namespace RogueEssence.Dungeon
                 return true;
             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 return true;
-            bool outOfBounds = !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy));
-            return !outOfBounds && (ZoneManager.Instance.CurrentMap.DiscoveryArray[xx][yy] == Map.DiscoveryState.Traversed);
+
+            Loc loc = new Loc(xx, yy);
+            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref loc))
+                return false;
+
+            return ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] == Map.DiscoveryState.Traversed;
         }
 
-        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy)
+        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
         {
-            base.PrepareTileDraw(spriteBatch, xx, yy);
+            base.PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
 
-            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(xx, yy), FocusedCharacter.Mobility))
+            Loc visualLoc = new Loc(xx, yy);
+            Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
+            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
             {
-                if (Collision.InFront(FocusedCharacter.CharLoc, new Loc(xx, yy), FocusedCharacter.CharDir, -1))
+                if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
                     GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
                 else
                     GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
@@ -803,12 +836,12 @@ namespace RogueEssence.Dungeon
 
         protected override void PrepareFrontDraw()
         {
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == BaseMap.ScrollEdge.Wrap;
+            Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
+
             //draw hitboxes on top
             foreach (Hitbox hitbox in Hitboxes)
-            {
-                if (CanSeeSprite(ViewRect, hitbox))
-                    AddToDraw(frontDraw, hitbox);
-            }
+                AddRelevantDraw(frontDraw, wrapped, wrapSize, hitbox);
 
             base.PrepareFrontDraw();
         }
@@ -859,27 +892,42 @@ namespace RogueEssence.Dungeon
             return false;
         }
 
+        protected override bool CanSeeTraps()
+        {
+            if (SeeAll)
+                return true;
+
+            foreach (Character member in ActiveTeam.Players)
+            {
+                if (member.SeeTraps)
+                    return true;
+            }
+            return false;
+        }
+
         protected override void DrawItems(SpriteBatch spriteBatch, bool showHiddenItem)
         {
             base.DrawItems(spriteBatch, showHiddenItem);
 
+            bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == BaseMap.ScrollEdge.Wrap;
+            Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
             //draw pickup items
             foreach (PickupItem item in PickupItems)
             {
-                if (CanSeeSprite(ViewRect, item))
+                foreach (Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
                     TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                     if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
                     {
                         if (showHiddenItem)
-                            item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                            item.Draw(spriteBatch, viewLoc, Color.White * 0.5f);
                     }
                     else if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                     {
                         if (terrain.BlockType == TerrainData.Mobility.Passable)
-                            item.Draw(spriteBatch, ViewRect.Start, Color.White);
+                            item.Draw(spriteBatch, viewLoc, Color.White);
                         else
-                            item.Draw(spriteBatch, ViewRect.Start, Color.White * 0.5f);
+                            item.Draw(spriteBatch, viewLoc, Color.White * 0.5f);
                     }
                 }
             }
@@ -893,28 +941,31 @@ namespace RogueEssence.Dungeon
                 if (ShowMap != MinimapState.Detail)
                     DrawGame(spriteBatch);
 
-
                 if ((ShowMap != MinimapState.None) && !Turn && !ShowActions && !DataManager.Instance.Save.CutsceneMode && MenuManager.Instance.MenuCount == 0)
                 {
                     //draw minimap
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
+                    float mapVis = 1f;
+                    if (ShowMap == MinimapState.Clear)
+                        mapVis = (0.01f * DiagManager.Instance.CurSettings.Minimap);
                     TileSheet mapSheet = GraphicsManager.MapSheet;
 
                     Vector2 mapStart = new Vector2(0, 16);
-                    uint mobility = 0;
+                    TerrainData.Mobility mobility = TerrainData.Mobility.Passable;
                     if (ShowMap == MinimapState.Detail)
                     {
-                        mobility |= (1U << (int)TerrainData.Mobility.Water);
-                        mobility |= (1U << (int)TerrainData.Mobility.Lava);
-                        mobility |= (1U << (int)TerrainData.Mobility.Abyss);
+                        mobility |= TerrainData.Mobility.Water;
+                        mobility |= TerrainData.Mobility.Lava;
+                        mobility |= TerrainData.Mobility.Abyss;
                     }
 
-                    Loc startLoc = new Loc();
+                    Loc centerLoc = new Loc();
                     if (FocusedCharacter != null)
-                        startLoc = FocusedCharacter.CharLoc;
-                    startLoc = new Loc(Math.Max(0, Math.Min(startLoc.X - MAX_MINIMAP_WIDTH / 2, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
-                        Math.Max(0, Math.Min(startLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                        centerLoc = FocusedCharacter.CharLoc;
+                    Loc startLoc = new Loc(Math.Max(0, Math.Min(centerLoc.X - MAX_MINIMAP_WIDTH / 2, ZoneManager.Instance.CurrentMap.Width - MAX_MINIMAP_WIDTH)),
+                        Math.Max(0, Math.Min(centerLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
+                    startLoc += MinimapOffset;
 
                     for (int ii = startLoc.X; ii < ZoneManager.Instance.CurrentMap.Width && ii - startLoc.X < MAX_MINIMAP_WIDTH; ii++)
                     {
@@ -930,35 +981,33 @@ namespace RogueEssence.Dungeon
                                 TerrainData terrain = tile.Data.GetData();
                                 if (ShowMap == MinimapState.Detail)
                                 {
-                                    if (terrain.BlockType == TerrainData.Mobility.Water)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Blue, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
-                                    else if (terrain.BlockType == TerrainData.Mobility.Lava)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.DarkOrange, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
-                                    else if (terrain.BlockType == TerrainData.Mobility.Abyss)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, Color.Gray, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
+                                    if (terrain.MinimapColor != Color.White && terrain.MinimapColor != Color.Transparent)
+                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, terrain.MinimapColor * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
                                 }
 
                                 if (!ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), mobility))
                                 {
                                     //draw halls
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj - 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj + 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii - 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii + 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
                                 }
 
-                                if (discovery == Map.DiscoveryState.Traversed && tile.Effect.ID > -1 && (tile.Effect.Exposed || SeeAll))
+                                if (discovery == Map.DiscoveryState.Traversed && !String.IsNullOrEmpty(tile.Effect.ID) && (tile.Effect.Exposed || SeeAll))
                                 {
-                                    TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
+                                    TileData entry;
 
                                     //draw tiles
-                                    if (!tile.Effect.Revealed)
-                                        entry = DataManager.Instance.GetTile(0);
-                                    mapSheet.DrawTile(spriteBatch, destVector, entry.MinimapIcon.X, entry.MinimapIcon.Y, entry.MinimapColor);
+                                    if (tile.Effect.Revealed)
+                                        entry = DataManager.Instance.GetTile(tile.Effect.ID);
+                                    else
+                                        entry = DataManager.Instance.GetTile(DataManager.Instance.DefaultTile);
+                                    mapSheet.DrawTile(spriteBatch, destVector, entry.MinimapIcon.X, entry.MinimapIcon.Y, entry.MinimapColor * mapVis);
                                 }
                             }
                         }
@@ -1004,7 +1053,7 @@ namespace RogueEssence.Dungeon
                             }
                         }
                         if (seeItem)
-                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(item.TileLoc.X, item.TileLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Cyan);
+                            mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(item.TileLoc.X, item.TileLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, Color.Cyan * mapVis);
                     }
 
                     foreach (Team team in ZoneManager.Instance.CurrentMap.MapTeams)
@@ -1025,7 +1074,7 @@ namespace RogueEssence.Dungeon
                                 if (seen || SeeAll)
                                 {
                                     SkinData skinData = DataManager.Instance.GetSkin(character.Appearance.Skin);
-                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, skinData.MinimapColor);
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, skinData.MinimapColor * mapVis);
                                 }
                             }
                         }
@@ -1047,7 +1096,7 @@ namespace RogueEssence.Dungeon
                                     }
                                 }
                                 if (seen || SeeAll)
-                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, new Color(0, 231, 0));
+                                    mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(character.CharLoc.X, character.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight), 3, 0, new Color(0, 231, 0) * mapVis);
                             }
                         }
                     }
@@ -1058,7 +1107,7 @@ namespace RogueEssence.Dungeon
                         if (!player.Dead)
                         {
                             mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                    3, 0, Color.Orange);
+                                    3, 0, Color.Orange * mapVis);
                         }
                     }
                     foreach (Character player in ActiveTeam.Players)
@@ -1067,10 +1116,10 @@ namespace RogueEssence.Dungeon
                         {
                             if (player == ActiveTeam.Leader)
                                 mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                    3, (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1, Color.White);
+                                    3, (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(10) % 2 == 0) ? 0 : 1, Color.White * mapVis);
                             else
                                 mapSheet.DrawTile(spriteBatch, mapStart + (new Vector2(player.CharLoc.X, player.CharLoc.Y) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight),
-                                    3, 0, Color.Yellow);
+                                    3, 0, Color.Yellow * mapVis);
                         }
                     }
 
@@ -1148,30 +1197,35 @@ namespace RogueEssence.Dungeon
                 Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 //subtractive blending
                 spriteBatch.Begin(SpriteSortMode.Deferred, subtractBlend, SamplerState.PointClamp, null, null, null, matrix);
+                bool wrapped = ZoneManager.Instance.CurrentMap.EdgeView == Map.ScrollEdge.Wrap;
 
                 for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
                 {
                     for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
                     {
+                        Loc mapLoc = new Loc(ii, jj);
                         //set tile sprite position
-                        if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
+                        if (!wrapped && !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapLoc))
                         {
                             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                            continue;
                         }
-                        else if (!Collision.InBounds(sightRect, new Loc(ii, jj)))
+
+                        if (!Collision.InBounds(sightRect, mapLoc))
                             GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
                         else
                         {
-                            if (charSightValues[ii - sightRect.X][jj - sightRect.Y] < 1f)
+                            float charSightValue = charSightValues[mapLoc.X - sightRect.X][mapLoc.Y - sightRect.Y];
+                            if (charSightValue < 1f)
                             {
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null,
-                                    Color.White * DARK_TRANSPARENT * Math.Max(1f - charSightValues[ii - sightRect.X][jj - sightRect.Y], 0), new Vector2(GraphicsManager.TileSize));
+                                    Color.White * DARK_TRANSPARENT * Math.Max(1f - charSightValue, 0), new Vector2(GraphicsManager.TileSize));
                             }
 
                             for (int dir = 0; dir < DirExt.DIR8_COUNT; dir++)
                             {
-                                foreach (VisionLoc tex in getDarknessTextures(new Loc(ii, jj), sightRect.Start, (Dir8)dir))
+                                foreach (VisionLoc tex in getBorderDarkness(mapLoc, sightRect, (Dir8)dir))
                                 {
                                     //draw in correct location
                                     Loc dest = new Loc(ii * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.X, jj * GraphicsManager.TileSize + GraphicsManager.TileSize / 3 - ViewRect.Y)
@@ -1192,17 +1246,17 @@ namespace RogueEssence.Dungeon
         {
             if (Turn)
             {
-                foreach (Character hpChar in shownChars)
+                foreach ((Character sprite, Loc viewOffset) hpChar in shownChars)
                 {
-                    if (CanIdentifyCharOnScreen(hpChar))
+                    if (CanIdentifyCharOnScreen(hpChar.sprite))
                     {
-                        Loc drawLoc = hpChar.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(2, GraphicsManager.TileSize - 6);
+                        Loc drawLoc = hpChar.sprite.CharLoc * GraphicsManager.TileSize - hpChar.viewOffset + new Loc(2, GraphicsManager.TileSize - 6);
                         GraphicsManager.MiniHP.Draw(spriteBatch, drawLoc.ToVector2(), null);
-                        int hpAmount = (hpChar.HP * 18 - 1) / hpChar.MaxHP + 1;
+                        int hpAmount = MathUtils.DivUp(hpChar.sprite.HP * 18, hpChar.sprite.MaxHP);
                         Color hpColor = new Color(88, 248, 88);
-                        if (hpChar.HP * 4 <= hpChar.MaxHP)
+                        if (hpChar.sprite.HP * 4 <= hpChar.sprite.MaxHP)
                             hpColor = new Color(248, 128, 88);
-                        else if (hpChar.HP * 2 <= hpChar.MaxHP)
+                        else if (hpChar.sprite.HP * 2 <= hpChar.sprite.MaxHP)
                             hpColor = new Color(248, 232, 88);
                         GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(drawLoc.X + 1, drawLoc.Y + 1, hpAmount, 2), null, hpColor);
                     }
@@ -1272,7 +1326,7 @@ namespace RogueEssence.Dungeon
 
             if (FocusedCharacter != null)
             {
-                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm);
+                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm.ToCharID());
                 sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
                 Color frameColor = Color.White;
                 string emoteName = GraphicsManager.Emotions[DebugEmote].Name;
@@ -1286,13 +1340,13 @@ namespace RogueEssence.Dungeon
                 }
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
 
-                MonsterID monId;
+                CharID monId;
                 Loc offset;
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
 
-                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance);
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.Appearance.ToCharID());
                 frameColor = Color.White;
                 string animName = GraphicsManager.Actions[anim].Name;
                 int resultAnim = charSheet.GetReferencedAnimIndex(anim);
@@ -1364,12 +1418,20 @@ namespace RogueEssence.Dungeon
                 GraphicsManager.HPMenu.DrawTile(spriteBatch, new Vector2(digitX, 8), 0, 0);
         }
 
-        public void AddSeenLocs(VisionLoc loc, Map.SightRange sight)
+        /// <summary>
+        /// Lights up tiles for graphical reasons.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="sight"></param>
+        public void AddBrightLocs(VisionLoc loc, Map.SightRange sight)
         {
-            //needs to be edited according to FOV
-            Loc seen = Character.GetSightDims() + new Loc(1);
-            Loc minLoc = new Loc(Math.Max(sightRect.X, loc.Loc.X - seen.X), Math.Max(sightRect.Y, loc.Loc.Y - seen.Y));
-            Loc addLoc = new Loc(Math.Min(sightRect.End.X, loc.Loc.X + seen.X + 1), Math.Min(sightRect.End.Y, loc.Loc.Y + seen.Y + 1)) - minLoc;
+            //The sight rect of the character, not the screen.
+            //TODO: we currently add 1 to the range, even though it's beyond the actual sight of the players.
+            //This is to prevent darkness at the edge of vision from constantly showing up when walking.
+            //However, this is not ideal; the tiles being lit up actually aren't in character sight.
+            //So there needs to be a better way eventually...
+            Loc seen = Character.GetSightDims() + Loc.One;
+            Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
             switch (sight)
             {
                 case Map.SightRange.Blind:
@@ -1380,8 +1442,7 @@ namespace RogueEssence.Dungeon
                         {
                             for (int y = -1; y <= 1; y++)
                             {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc.Loc + new Loc(x, y))
-                                    && Collision.InBounds(minLoc, addLoc, new Loc(x, y) + loc.Loc))
+                                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
                                     charSightValues[loc.Loc.X + x - sightRect.X][loc.Loc.Y + y - sightRect.Y] += loc.Weight;
                             }
                         }
@@ -1389,17 +1450,17 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        CalculateSymmetricFOV(minLoc, addLoc, loc);
+                        CalculateSymmetricFOV(localSightRect.Start, localSightRect.Size, loc);
                         break;
                     }
                 default:
                     {
-                        for (int x = 0; x < addLoc.X; x++)
+                        for (int x = 0; x < localSightRect.Size.X; x++)
                         {
-                            for (int y = 0; y < addLoc.Y; y++)
+                            for (int y = 0; y < localSightRect.Size.Y; y++)
                             {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, minLoc + new Loc(x, y)))
-                                    charSightValues[minLoc.X + x - sightRect.X][minLoc.Y + y - sightRect.Y] += loc.Weight;
+                                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + localSightRect.Start))
+                                    charSightValues[localSightRect.Start.X + x - sightRect.X][localSightRect.Start.Y + y - sightRect.Y] += loc.Weight;
                             }
                         }
                         break;
@@ -1412,16 +1473,34 @@ namespace RogueEssence.Dungeon
         {
             Fov.LightOperation lightOp = (int locX, int locY, float light) =>
             {
-                charSightValues[locX - sightRect.X][locY - sightRect.Y] += start.Weight;
+                Loc testLoc = new Loc(locX, locY);
+                if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref testLoc))
+                    return;
+
+                //Can only light up tiles that have been explored
+                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[testLoc.X][testLoc.Y] != Map.DiscoveryState.Traversed)
+                    return;
+
+                //can only light up tiles currently in the viewport
+                //but be sure to light up all of them
+                foreach (Loc loc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
+                    charSightValues[loc.X - sightRect.Start.X][loc.Y - sightRect.Start.Y] += start.Weight;
             };
             Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }
 
-
-        private IEnumerable<VisionLoc> getDarknessTextures(Loc loc, Loc rectStart, Dir8 dir)
+        /// <summary>
+        /// Gets the texture and darkness intensity of a tile's border in a certain direction.
+        /// It is only used for tiles that are already bright.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="sightRect"></param>
+        /// <param name="dir"></param>
+        /// <returns>A visionLoc of the texture to draw, and the intensity to draw it at (the amount of darkness to add).</returns>
+        private IEnumerable<VisionLoc> getBorderDarkness(Loc loc, Rect sightRect, Dir8 dir)
         {
             //y0 = inward, y1 = outward, y2 = wall
-            float curLight = getBrightnessValue(loc, rectStart);
+            float curLight = getBrightnessValue(loc, sightRect.Start);
             if (dir.IsDiagonal())
             {
                 DirH horiz;
@@ -1430,9 +1509,9 @@ namespace RogueEssence.Dungeon
                 Loc horizLoc = loc + horiz.GetLoc();
                 Loc vertLoc = loc + vert.GetLoc();
                 Loc diagLoc = loc + dir.GetLoc();
-                float horizLight = getBrightnessValue(horizLoc, rectStart);
-                float vertLight = getBrightnessValue(vertLoc, rectStart);
-                float diagLight = getBrightnessValue(diagLoc, rectStart);
+                float horizLight = getBrightnessValue(horizLoc, sightRect.Start);
+                float vertLight = getBrightnessValue(vertLoc, sightRect.Start);
+                float diagLight = getBrightnessValue(diagLoc, sightRect.Start);
                 float darkest = curLight;
                 //if any of the 4-dir lights are darker than
                 if (horizLight == vertLight)
@@ -1480,36 +1559,53 @@ namespace RogueEssence.Dungeon
             else
             {
                 Loc diagLoc = loc + dir.GetLoc();
-                float diff = curLight - getBrightnessValue(diagLoc, rectStart);
+                float diff = curLight - getBrightnessValue(diagLoc, sightRect.Start);
                 if (diff > 0)
                     yield return new VisionLoc(new Loc((int)dir.Reverse() / 2, 2), diff);
             }
         }
 
+        /// <summary>
+        /// Gets the brightness of a tile, for border computation.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <param name="rectStart"></param>
+        /// <returns></returns>
         private float getBrightnessValue(Loc loc, Loc rectStart)
         {
             if (SeeAll)
                 return 1f;
 
             //if it's out of bounds, use the decided-on darkness of out-of-bounds
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, loc))
+            Loc wrappedLoc = loc;
+            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref wrappedLoc))
             {
                 if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                 {
-                    if (FocusedCharacter.GetCharSight() != Map.SightRange.Clear)
-                        return 1f - DARK_TRANSPARENT;
-                    else
+                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear)
                         return 1f;
+                    else
+                        return 1f - DARK_TRANSPARENT;
                 }
                 else
                     return 0f;
             }
 
-            //if it's undiscovered, it's black
-            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] != Map.DiscoveryState.Traversed)
-                return 0f;
+            //if it's undiscovered, it's decided-on darkness
+            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[wrappedLoc.X][wrappedLoc.Y] != Map.DiscoveryState.Traversed)
+            {
+                if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                {
+                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear)
+                        return 1f;
+                    else
+                        return 1f - DARK_TRANSPARENT;
+                }
+                else
+                    return 0f;
+            }
 
-            //otherwise, use fade value
+            //if it's outside the camera, treat it as no-border
             Loc dest = loc - rectStart;
             if (!Collision.InBounds(charSightValues.Length, charSightValues[0].Length, dest))
                 return 1f - DARK_TRANSPARENT;

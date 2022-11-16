@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,58 +8,136 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RogueEssence.Dev;
+using RogueEssence.LevelGen;
 
 namespace RogueEssence.Data
 {
     [Serializable]
     public class SerializationContainer
     {
-        public object Object;
         public Version Version;
+        public object Object;
     }
 
     public static class Serializer
     {
-        public static readonly JsonSerializerSettings Settings = new()
+        public static JsonSerializerSettings Settings { get; private set; }
+
+        public static void InitSettings(IContractResolver resolver, ISerializationBinder binder)
         {
-            ContractResolver = new SerializerContractResolver(),
-            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-            TypeNameHandling = TypeNameHandling.Auto,
-        };
-        
+            Settings = new JsonSerializerSettings()
+            {
+                ContractResolver = resolver,
+                SerializationBinder = binder,
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+                TypeNameHandling = TypeNameHandling.Auto,
+                Formatting = Formatting.Indented,
+            };
+
+        }
+
+        /// <summary>
+        /// A value that is temporarily set when deserializing a data object, serving as a global old version for converters in UpgradeConverters.cs to recognize the version.
+        /// A bit hacky, but is currently the only way for converters to recognize version.
+        /// </summary>
+        public static Version OldVersion;
+
         public static object Deserialize(Stream stream, Type type)
         {
+            object obj;
+            Version pastVersion = OldVersion;
+            OldVersion = Versioning.GetVersion();
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
             {
-                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(reader.ReadToEnd(), typeof(SerializationContainer), Settings);
-                return container.Object;
+                obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
             }
+            OldVersion = pastVersion;
+            return obj;
         }
 
         public static void Serialize(Stream stream, object entry)
         {
             using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
             {
-                SerializationContainer container = new SerializationContainer();
-                container.Object = entry;
-                container.Version = Versioning.GetVersion();
-                string val = JsonConvert.SerializeObject(container, Settings);
+                string val = JsonConvert.SerializeObject(entry, Settings);
                 writer.Write(val);
             }
         }
-        
-        private class SerializerContractResolver : DefaultContractResolver
+
+        public static Version GetVersion(string containerStr)
         {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            Version objVersion = new Version(0, 0);
+            try
             {
-                FieldInfo[] fieldsLess = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                List<MemberInfo> fields = type.GetSerializableMembers();
-                List<JsonProperty> props = fields.Select(f => CreateProperty(f, memberSerialization))
-                    .ToList();
-                props.ForEach(p => { p.Writable = true; p.Readable = true; });
-                return props;
-                
+                using (JsonTextReader textReader = new JsonTextReader(new StringReader(containerStr)))
+                {
+                    textReader.Read();
+                    textReader.Read();
+                    while (true)
+                    {
+                        if (textReader.TokenType == JsonToken.PropertyName && (string)textReader.Value == "Version")
+                        {
+                            textReader.Read();
+                            objVersion = new Version((string)textReader.Value);
+                            break;
+                        }
+                        else
+                        {
+                            textReader.Skip();
+                            textReader.Read();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            return objVersion;
+        }
+
+        public static object DeserializeData(Stream stream)
+        {
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+            {
+                string containerStr = reader.ReadToEnd();
+                //Temporarily set global old version for converters in UpgradeConverters.cs to recognize the version.
+                Version pastVersion = OldVersion;
+                OldVersion = GetVersion(containerStr);
+                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
+                OldVersion = pastVersion;
+                return container.Object;
             }
         }
+
+        public static void SerializeData(Stream stream, object entry)
+        {
+            using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
+            {
+                SerializationContainer container = new SerializationContainer();
+                container.Object = entry;
+                container.Version = Versioning.GetVersion();
+                string val = SerializeObjectInternal(container, Settings);
+                writer.Write(val);
+            }
+        }
+
+        private static string SerializeObjectInternal(object value, JsonSerializerSettings settings)
+        {
+            JsonSerializer jsonSerializer = JsonSerializer.CreateDefault(settings);
+            StringBuilder sb = new StringBuilder(256);
+            StringWriter sw = new StringWriter(sb, CultureInfo.InvariantCulture);
+            using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
+            {
+                jsonWriter.Formatting = jsonSerializer.Formatting;
+                jsonWriter.Indentation = 0;
+                jsonWriter.IndentChar = '\t';
+
+                jsonSerializer.Serialize(jsonWriter, value, null);
+            }
+
+            return sw.ToString();
+        }
+
     }
 }

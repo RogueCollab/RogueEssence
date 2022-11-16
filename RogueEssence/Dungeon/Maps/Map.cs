@@ -9,6 +9,9 @@ using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
+using QuadTrees;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -25,21 +28,16 @@ namespace RogueEssence.Dungeon
             Blind = 3
         }
 
-        /// <summary>
-        /// Describes how to handle the map scrolling past the edge of the map
-        /// </summary>
-        public enum ScrollEdge
-        {
-            Blank = 0,//displays a black void, or the BlankBG texture
-            Clamp,//does not scroll past the edge of the map
-        }
-
         public enum DiscoveryState
         {
             None = 0,
             Hinted,//only shows geography, not tiles/items
             Traversed//shows all
         }
+
+        //Fast-lookup from location to character
+        [NonSerialized]
+        private Dictionary<Loc, List<Character>> lookup;
 
         public LocalText Name { get; set; }
 
@@ -67,24 +65,23 @@ namespace RogueEssence.Dungeon
         public SightRange TileSight;
         public SightRange CharSight;
 
-        public ScrollEdge EdgeView;
-
-
-        public Dictionary<int, MapStatus> Status;
+        [JsonConverter(typeof(MapStatusDictConverter))]
+        public Dictionary<string, MapStatus> Status;
 
         public ActiveEffect MapEffect;
 
-        //if maps are to be separated into their own chunks, these members would be specific to each chunk
-        public int MaxFoes;
-        public int RespawnTime;
         public SpawnList<TeamSpawner> TeamSpawns;
 
         public MoneySpawnRange MoneyAmount;
         public CategorySpawnChooser<InvItem> ItemSpawns;
 
         public AutoTile BlankBG;
-        public Dictionary<int, AutoTile> TextureMap;
-        public int Element;
+
+        [JsonConverter(typeof(Dev.TerrainDictAutotileConverter))]
+        public Dictionary<string, AutoTile> TextureMap;
+
+        [JsonConverter(typeof(Dev.ElementConverter))]
+        public string Element;
 
         public IBackgroundSprite Background;
 
@@ -93,7 +90,41 @@ namespace RogueEssence.Dungeon
         public Loc ViewOffset;
 
         [NonSerialized]
-        public ExplorerTeam ActiveTeam;
+        private ExplorerTeam activeTeam;
+        public ExplorerTeam ActiveTeam
+        {
+            get { return activeTeam; }
+            set
+            {
+                if (activeTeam != null)
+                {
+                    activeTeam.ContainingMap = null;
+                    activeTeam.MapFaction = Faction.None;
+                    activeTeam.MapIndex = -1;
+
+                    //remove references from the lookup
+                    removeTeamLookup(activeTeam);
+                }
+                activeTeam = value;
+                if (activeTeam != null)
+                {
+                    activeTeam.ContainingMap = this;
+                    activeTeam.MapFaction = Faction.Player;
+                    activeTeam.MapIndex = 0;
+                    //add references to the lookup
+                    addTeamLookup(activeTeam);
+                }
+            }
+        }
+
+        [NonSerialized]
+        public HashSet<CharIndex> TeamsWithDead;
+
+        [NonSerialized]
+        public HashSet<CharIndex> DeadTeams;
+
+        [NonSerialized]
+        public HashSet<Character> DisplacedChars;
 
         public bool NoRescue;
         public bool NoSwitching;
@@ -113,7 +144,11 @@ namespace RogueEssence.Dungeon
 
         public DiscoveryState[][] DiscoveryArray;
 
-        public Map()
+        public Map() : this(true)
+        { }
+
+        [JsonConstructor]
+        public Map(bool initEvents)
         {
             AssetName = "";
             Name = new LocalText();
@@ -128,16 +163,24 @@ namespace RogueEssence.Dungeon
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
 
+            TeamsWithDead = new HashSet<CharIndex>();
+            DeadTeams = new HashSet<CharIndex>();
+            DisplacedChars = new HashSet<Character>();
+
             Background = new MapBG();
             BlankBG = new AutoTile();
 
             MapEffect = new ActiveEffect();
 
-            Status = new Dictionary<int, MapStatus>();
+            Status = new Dictionary<string, MapStatus>();
 
-            TextureMap = new Dictionary<int, AutoTile>();
+            TextureMap = new Dictionary<string, AutoTile>();
+            Element = "";
 
             CurrentTurnMap = new TurnState();
+
+            if (initEvents)
+                setTeamEvents();
         }
 
 
@@ -147,6 +190,9 @@ namespace RogueEssence.Dungeon
             DiscoveryArray = new DiscoveryState[width][];
             for (int ii = 0; ii < width; ii++)
                 DiscoveryArray[ii] = new DiscoveryState[height];
+            Element = DataManager.Instance.DefaultElement;
+
+            this.lookup = new Dictionary<Loc, List<Character>>();
         }
 
 
@@ -157,7 +203,7 @@ namespace RogueEssence.Dungeon
 
             //tiles
             Grid.LocAction changeOp = (Loc loc) => { Tiles[loc.X][loc.Y].Effect.UpdateTileLoc(loc); };
-            Grid.LocAction newOp = (Loc loc) => { Tiles[loc.X][loc.Y] = new Tile(0, loc); };
+            Grid.LocAction newOp = (Loc loc) => { Tiles[loc.X][loc.Y] = new Tile(DataManager.Instance.GenFloor, loc); };
 
             Loc diff = Grid.ResizeJustified(ref Tiles, width, height, anchorDir.Reverse(), changeOp, newOp);
 
@@ -180,7 +226,10 @@ namespace RogueEssence.Dungeon
 
             //entry points
             for (int ii = 0; ii < EntryPoints.Count; ii++)
-                EntryPoints[ii] = new LocRay8(EntryPoints[ii].Loc + diff, EntryPoints[ii].Dir);
+                EntryPoints[ii] = new LocRay8(Collision.ClampToBounds(width, height, EntryPoints[ii].Loc + diff), EntryPoints[ii].Dir);
+
+            this.lookup = new Dictionary<Loc, List<Character>>();
+            //wait... don't we need to recompute all entities?
         }
 
 
@@ -241,99 +290,20 @@ namespace RogueEssence.Dungeon
 
                     if (Grid.GetForkDirs(testLoc, TileBlocked, TileBlocked).Count >= 2)
                         return;
-                        //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
-                        foreach (Character character in ActiveTeam.Players)
+                    //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
+                    foreach (Character character in ActiveTeam.Players)
                     {
                         if (character.IsInSightBounds(testLoc))
                             return;
                     }
 
-                    foreach (Team team in AllyTeams)
-                    {
-                        foreach (Character character in team.EnumerateChars())
-                        {
-                            if (!character.Dead && character.CharLoc == testLoc)
-                                return;
-                        }
-                    }
+                    if (GetCharAtLoc(testLoc) != null)
+                        return;
 
-                    foreach (Team team in MapTeams)
-                    {
-                        foreach (Character character in team.EnumerateChars())
-                        {
-                            if (!character.Dead && character.CharLoc == testLoc)
-                                return;
-                        }
-                    }
                     freeTiles.Add(testLoc);
                 },
                 EntryPoints[0].Loc);
             return freeTiles;
-        }
-
-        public List<Character> RespawnMob()
-        {
-            List<Character> respawns = new List<Character>();
-            if (TeamSpawns.Count > 0)
-            {
-                List<Loc> freeTiles = GetFreeToSpawnTiles();
-                if (freeTiles.Count > 0)
-                {
-                    for (int ii = 0; ii < 10; ii++)
-                    {
-                        Team newTeam = TeamSpawns.Pick(Rand).Spawn(this);
-                        if (newTeam == null)
-                            continue;
-                        Loc trialLoc = freeTiles[Rand.Next(freeTiles.Count)];
-                        //find a way to place all members- needs to fit all of them in, or else fail the spawn
-
-                        Grid.LocTest checkOpen = (Loc testLoc) =>
-                        {
-                            if (TileBlocked(testLoc))
-                                return false;
-
-                            Character locChar = GetCharAtLoc(testLoc);
-                            if (locChar != null)
-                                return false;
-                            return true;
-                        };
-                        Grid.LocTest checkBlock = (Loc testLoc) =>
-                        {
-                            return TileBlocked(testLoc, true);
-                        };
-                        Grid.LocTest checkDiagBlock = (Loc testLoc) =>
-                        {
-                            return TileBlocked(testLoc, true, true);
-                        };
-
-                        List<Loc> resultLocs = new List<Loc>();
-                        foreach (Loc loc in Grid.FindClosestConnectedTiles(new Loc(), new Loc(Width, Height),
-                            checkOpen, checkBlock, checkDiagBlock, trialLoc, newTeam.Players.Count))
-                        {
-                            resultLocs.Add(loc);
-                        }
-
-
-                        if (resultLocs.Count >= newTeam.Players.Count + newTeam.Guests.Count)
-                        {
-                            for (int jj = 0; jj < newTeam.Players.Count; jj++)
-                                newTeam.Players[jj].CharLoc = resultLocs[jj];
-                            for (int jj = 0; jj < newTeam.Guests.Count; jj++)
-                                newTeam.Guests[jj].CharLoc = resultLocs[newTeam.Players.Count + jj];
-
-                            MapTeams.Add(newTeam);
-
-                            foreach (Character member in newTeam.EnumerateChars())
-                            {
-                                member.RefreshTraits();
-                                respawns.Add(member);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            return respawns;
         }
 
 
@@ -353,6 +323,7 @@ namespace RogueEssence.Dungeon
         public void EnterMap(ExplorerTeam activeTeam, LocRay8 entryPoint)
         {
             ActiveTeam = activeTeam;
+
             //place characters around in order
             ActiveTeam.Leader.CharLoc = entryPoint.Loc;
             if (entryPoint.Dir != Dir8.None)
@@ -379,7 +350,7 @@ namespace RogueEssence.Dungeon
         public Character LookupCharIndex(CharIndex charIndex)
         {
             Team team = GetTeam(charIndex.Faction, charIndex.Team);
-            List<Character> playerList;
+            EventedList<Character> playerList;
             if (charIndex.Guest)
                 playerList = team.Guests;
             else
@@ -390,27 +361,23 @@ namespace RogueEssence.Dungeon
 
         public CharIndex GetCharIndex(Character character)
         {
+            if (character.MemberTeam != null)
             {
-                CharIndex charIndex = ActiveTeam.GetCharIndex(character);
-                if (charIndex != CharIndex.Invalid)
-                    return new CharIndex(Faction.Player, 0, charIndex.Guest, charIndex.Char);
-            }
-
-            for (int ii = 0; ii < AllyTeams.Count; ii++)
-            {
-                CharIndex charIndex = AllyTeams[ii].GetCharIndex(character);
-                if (charIndex != CharIndex.Invalid)
-                    return new CharIndex(Faction.Friend, ii, charIndex.Guest, charIndex.Char);
-            }
-
-            for (int ii = 0; ii < MapTeams.Count; ii++)
-            {
-                CharIndex charIndex = MapTeams[ii].GetCharIndex(character);
-                if (charIndex != CharIndex.Invalid)
-                    return new CharIndex(Faction.Foe, ii, charIndex.Guest, charIndex.Char);
+                CharIndex charIndex = character.MemberTeam.GetCharIndex(character);
+                return new CharIndex(character.MemberTeam.MapFaction, character.MemberTeam.MapIndex, charIndex.Guest, charIndex.Char);
             }
 
             return CharIndex.Invalid;
+        }
+
+        /// <summary>
+        /// Gets just the character faction instead of the whole index.  Saves on performance.
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public Faction GetCharFaction(Character character)
+        {
+            return character.MemberTeam.MapFaction;
         }
 
         public EffectTile.TileOwner GetTileOwner(Character target)
@@ -426,7 +393,7 @@ namespace RogueEssence.Dungeon
         public void CalculateAutotiles(Loc rectStart, Loc rectSize)
         {
             foreach (MapLayer layer in Layers)
-                layer.CalculateAutotiles(this.rand.FirstSeed, rectStart, rectSize);
+                layer.CalculateAutotiles(this.rand.FirstSeed, rectStart, rectSize, EdgeView == ScrollEdge.Wrap);
         }
 
         public void CalculateTerrainAutotiles(Loc rectStart, Loc rectSize)
@@ -435,45 +402,60 @@ namespace RogueEssence.Dungeon
             //does not calculate floor tiles.
             //in all known use cases, there is no need to autotile floor tiles.
             //if a use case is brought up that does, this can be changed.
-            HashSet<int> blocktilesets = new HashSet<int>();
+            HashSet<string> blocktilesets = new HashSet<string>();
             for (int ii = rectStart.X; ii < rectStart.X + rectSize.X; ii++)
             {
                 for (int jj = rectStart.Y; jj < rectStart.Y + rectSize.Y; jj++)
                 {
-                    if (Collision.InBounds(Width, Height, new Loc(ii, jj)))
-                    {
-                        AutoTile outTile;
-                        if (TextureMap.TryGetValue(Tiles[ii][jj].Data.ID, out outTile))
-                            Tiles[ii][jj].Data.TileTex = outTile.Copy();
+                    Loc destLoc = new Loc(ii, jj);
+                    if (!GetLocInMapBounds(ref destLoc))
+                        continue;
 
-                        if (Tiles[ii][jj].Data.TileTex.AutoTileset > -1)
-                            blocktilesets.Add(Tiles[ii][jj].Data.TileTex.AutoTileset);
-                    }
+                    //Only color empty tiles
+                    AutoTile outTile;
+                    if (!Tiles[destLoc.X][destLoc.Y].Data.StableTex && TextureMap.TryGetValue(Tiles[destLoc.X][destLoc.Y].Data.ID, out outTile))
+                        Tiles[destLoc.X][destLoc.Y].Data.TileTex = outTile.Copy();
+
+                    if (!String.IsNullOrEmpty(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset))
+                        blocktilesets.Add(Tiles[destLoc.X][destLoc.Y].Data.TileTex.AutoTileset);
                 }
             }
-            foreach (int tileset in blocktilesets)
+            foreach (string tileset in blocktilesets)
             {
                 AutoTileData entry = DataManager.Instance.GetAutoTile(tileset);
-                entry.Tiles.AutoTileArea(noise, rectStart, rectSize, new Loc(Width, Height),
+                entry.Tiles.AutoTileArea(noise, rectStart, rectSize,
                     (int x, int y, int neighborCode) =>
                     {
-                        Tiles[x][y].Data.TileTex.NeighborCode = neighborCode;
+                        Loc checkLoc = new Loc(x, y);
+                        if (!GetLocInMapBounds(ref checkLoc))
+                            return;
+
+                        Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.NeighborCode = neighborCode;
                     },
                     (int x, int y) =>
                     {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                        Loc checkLoc = new Loc(x, y);
+                        if (!GetLocInMapBounds(ref checkLoc))
                             return true;
-                        return Tiles[x][y].Data.TileTex.AutoTileset == tileset;
+
+                        return Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.AutoTileset == tileset;
                     },
                     (int x, int y) =>
                     {
-                        if (!Collision.InBounds(Width, Height, new Loc(x, y)))
+                        Loc checkLoc = new Loc(x, y);
+                        if (!GetLocInMapBounds(ref checkLoc))
                             return true;
-                        return Tiles[x][y].Data.TileTex.AutoTileset == tileset || Tiles[x][y].Data.TileTex.Associates.Contains(tileset);
+
+                        return Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.AutoTileset == tileset || Tiles[checkLoc.X][checkLoc.Y].Data.TileTex.Associates.Contains(tileset);
                     });
             }
         }
 
+        /// <summary>
+        /// The region must be the region up for recalculation, NOT the changed tiles.
+        /// </summary>
+        /// <param name="startLoc">Unwrapped start of rectangle</param>
+        /// <param name="sizeLoc"></param>
         public void MapModified(Loc startLoc, Loc sizeLoc)
         {
             CalculateAutotiles(startLoc, sizeLoc);
@@ -482,12 +464,13 @@ namespace RogueEssence.Dungeon
             //update exploration for every character that sees the change
             if (ActiveTeam != null)
             {
+                Rect modifiedRect = new Rect(startLoc, sizeLoc);
                 foreach (Character character in ActiveTeam.Players)
                 {
                     if (!character.Dead)
                     {
                         Loc seenBounds = Character.GetSightDims();
-                        if (Collision.Collides(startLoc, sizeLoc, character.CharLoc - seenBounds, seenBounds * 2 + new Loc(1)))
+                        if (Collides(modifiedRect, new Rect(character.CharLoc - seenBounds, seenBounds * 2 + new Loc(1))))
                             UpdateExploration(character);
                     }
                 }
@@ -496,7 +479,11 @@ namespace RogueEssence.Dungeon
 
         private void discoveryLightOp(int x, int y, float light)
         {
-            DiscoveryArray[x][y] = DiscoveryState.Traversed;
+            Loc checkLoc = new Loc(x, y);
+            if (!GetLocInMapBounds(ref checkLoc))
+                return;
+
+            DiscoveryArray[checkLoc.X][checkLoc.Y] = DiscoveryState.Traversed;
         }
 
         public void UpdateExploration(Character character)
@@ -510,6 +497,7 @@ namespace RogueEssence.Dungeon
                     character.UpdateTileSight(discoveryLightOp);
             }
         }
+
 
         public IEnumerable<Character> IterateCharacters(bool ally = true, bool foe = true)
         {
@@ -538,12 +526,85 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Iterate through all characters with proximity passives that touch the specified location.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public IEnumerable<Character> IterateProximityCharacters(Loc loc)
+        {
+            //TODO: create a proximity lookup structure so we don't have to iterate all characters
+            //For now, the hack is to assume the proximity is never over 5.
+            foreach(Character character in GetCharsInRect(Rect.FromPointRadius(loc, 5)))
+            {
+                if (InRange(character.CharLoc, loc, character.Proximity))
+                    yield return character;
+            }
+            yield break;
+        }
+
+        public IEnumerable<Character> GetCharsInRect(Rect rect)
+        {
+            for (int xx = 0; xx < rect.Width; xx++)
+            {
+                for (int yy = 0; yy < rect.Height; yy++)
+                {
+                    Character charAtLoc = GetCharAtLoc(rect.Start + new Loc(xx, yy));
+                    if (charAtLoc != null)
+                        yield return charAtLoc;
+                }
+            }
+        }
+
+        public IEnumerable<Character> GetCharsInFillRect(Loc origin, Rect rect)
+        {
+            List<Character> foundChars = new List<Character>();
+
+            bool[][] traversedGrid = new bool[rect.Width][];
+            for (int xx = 0; xx < rect.Width; xx++)
+                traversedGrid[xx] = new bool[rect.Height];
+
+            Grid.FloodFill(rect,
+            (Loc testLoc) =>
+            {
+                if (traversedGrid[testLoc.X - rect.X][testLoc.Y - rect.Y])
+                    return true;
+                if (ZoneManager.Instance.CurrentMap.TileBlocked(testLoc, true))
+                    return true;
+
+                return false;
+            },
+            (Loc testLoc) =>
+            {
+                return false;
+            },
+            (Loc fillLoc) =>
+            {
+                traversedGrid[fillLoc.X - rect.X][fillLoc.Y - rect.Y] = true;
+
+                Character chara = GetCharAtLoc(fillLoc);
+                if (chara != null)
+                    foundChars.Add(chara);
+            },
+            origin);
+
+            foreach (Character chara in foundChars)
+                yield return chara;
+        }
+
         public Character GetCharAtLoc(Loc loc, Character exclude = null)
         {
-            foreach (Character character in IterateCharacters())
+            if (!GetLocInMapBounds(ref loc))
+                return null;
+
+            List<Character> list;
+            if (lookup.TryGetValue(loc, out list))
             {
-                if (!character.Dead && character.CharLoc == loc && exclude != character)
-                    return character;
+                foreach (Character character in list)
+                {
+                    if (!character.Dead && character.CharLoc == loc && exclude != character)
+                        return character;
+                }
             }
             return null;
         }
@@ -580,10 +641,13 @@ namespace RogueEssence.Dungeon
         /// </summary>
         /// <param name="character">The character being moved. Null if not a character currently on the map.</param>
         /// <param name="loc">The ideal warp destination.</param>
-        /// <returns></returns>
+        /// <returns>The best fit warp destination.  This value is wrapped.</returns>
         public Loc? GetClosestTileForChar(Character character, Loc loc)
         {
-            return Grid.FindClosestConnectedTile(new Loc(), new Loc(Width, Height),
+            Loc boundsStartLoc = Loc.Zero;
+            if (EdgeView == ScrollEdge.Wrap)
+                boundsStartLoc = loc - Size / 2;
+            Loc? result = Grid.FindClosestConnectedTile(boundsStartLoc, Size,
                 (Loc testLoc) =>
                 {
                     if (character == null)
@@ -611,14 +675,20 @@ namespace RogueEssence.Dungeon
                     return TileBlocked(testLoc, true, true);
                 },
                 loc);
+
+            // wrap the value
+            if (result.HasValue)
+                result = WrapLoc(result.Value);
+
+            return result;
         }
 
-        public bool IsBlocked(Loc loc, uint mobility)
+        public bool IsBlocked(Loc loc, TerrainData.Mobility mobility)
         {
             return IsBlocked(loc, mobility, true, false);
         }
 
-        public bool IsBlocked(Loc loc, uint mobility, bool checkPlayer, bool checkDiagonal)
+        public bool IsBlocked(Loc loc, TerrainData.Mobility mobility, bool checkPlayer, bool checkDiagonal)
         {
             if (TileBlocked(loc, mobility, checkDiagonal))
                 return true;
@@ -635,12 +705,12 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public bool DirBlocked(Dir8 dir, Loc loc, uint mobility)
+        public bool DirBlocked(Dir8 dir, Loc loc, TerrainData.Mobility mobility)
         {
             return DirBlocked(dir, loc, mobility, 1, true, true);
         }
 
-        public bool DirBlocked(Dir8 dir, Loc loc, uint mobility, int distance, bool blockedByPlayer, bool blockedByDiagonal)
+        public bool DirBlocked(Dir8 dir, Loc loc, TerrainData.Mobility mobility, int distance, bool blockedByPlayer, bool blockedByDiagonal)
         {
             return Grid.IsDirBlocked(loc, dir,
                 (Loc testLoc) =>
@@ -658,6 +728,184 @@ namespace RogueEssence.Dungeon
         {
             INoise noise = new ReNoise(rand.FirstSeed);
             BlankBG.DrawBlank(spriteBatch, drawPos, noise.Get2DUInt64((ulong)mapPos.X, (ulong)mapPos.Y));
+        }
+
+        private void setTeamEvents()
+        {
+            AllyTeams.ItemAdding += addingAllyTeam;
+            MapTeams.ItemAdding += addingMapTeam;
+            AllyTeams.ItemChanging += settingAllies;
+            MapTeams.ItemChanging += settingFoes;
+            AllyTeams.ItemRemoving += removingAllyTeam;
+            MapTeams.ItemRemoving += removingMapTeam;
+            AllyTeams.ItemsClearing += clearingAllies;
+            MapTeams.ItemsClearing += clearingFoes;
+        }
+
+        private void removeTeamLookup(Team team)
+        {
+            foreach (Character chara in team.Players)
+                RemoveCharLookup(chara);
+            foreach (Character chara in team.Guests)
+                RemoveCharLookup(chara);
+        }
+
+        private void addTeamLookup(Team team)
+        {
+            foreach (Character chara in team.Players)
+                AddCharLookup(chara);
+            foreach (Character chara in team.Guests)
+                AddCharLookup(chara);
+        }
+
+        public void RemoveCharLookup(Character chara)
+        {
+            try
+            {
+                List<Character> list = lookup[chara.CharLoc];
+                int idx = list.IndexOf(chara);
+                list.RemoveAt(idx);
+                if (list.Count == 0)
+                    lookup.Remove(chara.CharLoc);
+
+                //TODO: update proximity
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+        public void AddCharLookup(Character chara)
+        {
+            try
+            {
+                List<Character> newList;
+                if (lookup.TryGetValue(chara.CharLoc, out newList))
+                    newList.Add(chara);
+                else
+                {
+                    lookup[chara.CharLoc] = new List<Character>();
+                    lookup[chara.CharLoc].Add(chara);
+                }
+
+                //TODO: update proximity
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+        public void ModifyCharLookup(Character chara, Loc prevLoc)
+        {
+            try
+            {
+                //remove from old location
+                List<Character> list = lookup[prevLoc];
+                int idx = list.IndexOf(chara);
+                list.RemoveAt(idx);
+                if (list.Count == 0)
+                    lookup.Remove(prevLoc);
+
+                //TODO: update proximity
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+
+            AddCharLookup(chara);
+        }
+
+        public void ModifyCharProximity(Character chara, int oldRadius)
+        {
+            //TODO: update proximity
+        }
+
+        private void settingAllies(int index, Team team)
+        {
+            AllyTeams[index].ContainingMap = null;
+            AllyTeams[index].MapFaction = Faction.None;
+            AllyTeams[index].MapIndex = -1;
+            team.ContainingMap = this;
+            team.MapFaction = Faction.Friend;
+            team.MapIndex = index;
+            //update location caches
+            removeTeamLookup(AllyTeams[index]);
+            addTeamLookup(team);
+        }
+        private void settingFoes(int index, Team team)
+        {
+            MapTeams[index].ContainingMap = null;
+            MapTeams[index].MapFaction = Faction.None;
+            MapTeams[index].MapIndex = -1;
+            team.ContainingMap = this;
+            team.MapFaction = Faction.Foe;
+            team.MapIndex = index;
+            //update location caches
+            removeTeamLookup(MapTeams[index]);
+            addTeamLookup(team);
+        }
+        private void addingAllyTeam(int index, Team team)
+        {
+            team.ContainingMap = this;
+            team.MapFaction = Faction.Friend;
+            team.MapIndex = index;
+            for (int ii = index; ii < AllyTeams.Count; ii++)
+                AllyTeams[ii].MapIndex++;
+            //update location caches
+            addTeamLookup(team);
+        }
+        private void addingMapTeam(int index, Team team)
+        {
+            team.ContainingMap = this;
+            team.MapFaction = Faction.Foe;
+            team.MapIndex = index;
+            for (int ii = index; ii < MapTeams.Count; ii++)
+                MapTeams[ii].MapIndex++;
+            //update location caches
+            addTeamLookup(team);
+        }
+        private void removingAllyTeam(int index, Team team)
+        {
+            team.ContainingMap = null;
+            team.MapFaction = Faction.None;
+            team.MapIndex = -1;
+            for (int ii = index + 1; ii < AllyTeams.Count; ii++)
+                AllyTeams[ii].MapIndex--;
+            //update location caches
+            removeTeamLookup(team);
+        }
+        private void removingMapTeam(int index, Team team)
+        {
+            team.ContainingMap = null;
+            team.MapFaction = Faction.None;
+            team.MapIndex = -1;
+            for (int ii = index + 1; ii < MapTeams.Count; ii++)
+                MapTeams[ii].MapIndex--;
+            //update location caches
+            removeTeamLookup(team);
+        }
+        private void clearingAllies()
+        {
+            foreach (Team team in AllyTeams)
+            {
+                team.ContainingMap = null;
+                team.MapFaction = Faction.None;
+                team.MapIndex = -1;
+                //update location caches
+                removeTeamLookup(team);
+            }
+        }
+        private void clearingFoes()
+        {
+            foreach (Team team in MapTeams)
+            {
+                team.ContainingMap = null;
+                team.MapFaction = Faction.None;
+                team.MapIndex = -1;
+                //update location caches
+                removeTeamLookup(team);
+            }
         }
 
         //========================
@@ -762,6 +1010,39 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Character c in IterateCharacters())
                     c.DoCleanup();
+            }
+        }
+
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //recompute the lookup
+            lookup = new Dictionary<Loc, List<Character>>();
+
+            //No need to set team events since they'd already be set during the class construction phase of deserialization
+            ReconnectMapReference();
+
+            setTeamEvents();
+        }
+
+        protected virtual void ReconnectMapReference()
+        {
+            //reconnect Teams' references
+            for(int ii = 0; ii < AllyTeams.Count; ii++)
+            {
+                AllyTeams[ii].ContainingMap = this;
+                AllyTeams[ii].MapFaction = Faction.Friend;
+                AllyTeams[ii].MapIndex = ii;
+                addTeamLookup(AllyTeams[ii]);
+            }
+            for (int ii = 0; ii < MapTeams.Count; ii++)
+            {
+                MapTeams[ii].ContainingMap = this;
+                MapTeams[ii].MapFaction = Faction.Foe;
+                MapTeams[ii].MapIndex = ii;
+                addTeamLookup(MapTeams[ii]);
             }
         }
     }

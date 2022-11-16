@@ -21,16 +21,35 @@ namespace RogueEssence.Data
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
+        public int IndexNum;
 
+        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment, IndexNum); }
 
+        /// <summary>
+        /// The number of times the skill can be used.
+        /// </summary>
         public int BaseCharges;
 
+        /// <summary>
+        /// How many times the skill attacks.
+        /// </summary>
         [Dev.NumberRange(0, 1, Int32.MaxValue)]
         public int Strikes;
+
+        /// <summary>
+        /// Data on the hitbox of the attack.  Controls range and targeting.
+        /// </summary>
         public CombatAction HitboxAction;
+
+        /// <summary>
+        /// Optional data to specify a splash effect on the tiles hit.
+        /// </summary>
         public ExplosionData Explosion;
 
+        /// <summary>
+        /// Events that occur with this skill.
+        /// Before it's used, when it hits, after it's used, etc.
+        /// </summary>
         public BattleData Data;
 
 

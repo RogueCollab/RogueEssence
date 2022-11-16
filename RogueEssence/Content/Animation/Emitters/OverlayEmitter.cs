@@ -1,9 +1,14 @@
 ﻿using System;
 using RogueElements;
 using Microsoft.Xna.Framework;
+using System.Runtime.Serialization;
+using RogueEssence.Data;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Creates an overlay effect using a background texture.
+    /// </summary>
     [Serializable]
     public class FiniteOverlayEmitter : FiniteEmitter
     {
@@ -21,7 +26,11 @@ namespace RogueEssence.Content
             Anim = new BGAnimData(other.Anim);
             Movement = other.Movement;
             TotalTime = other.TotalTime;
+            FadeIn = other.FadeIn;
+            FadeOut = other.FadeOut;
             Offset = other.Offset;
+            RepeatX = other.RepeatX;
+            RepeatY = other.RepeatY;
             Layer = other.Layer;
             Color = other.Color;
         }
@@ -29,24 +38,64 @@ namespace RogueEssence.Content
         public override BaseEmitter Clone() { return new FiniteOverlayEmitter(this); }
 
         public int Offset;
+
+        /// <summary>
+        /// The background texture to show.
+        /// </summary>
         public BGAnimData Anim;
+
         /// <summary>
         /// Pixels per second
         /// </summary>
         public Loc Movement;
+
+
+        public bool RepeatX;
+
+        [Dev.SharedRow]
+        public bool RepeatY;
+
+        /// <summary>
+        /// Time to fade in, in render frames.  Cuts into total time.
+        /// </summary>
+        public int FadeIn;
+
+        /// <summary>
+        /// Time to fade out, in render frames.  Cuts into total time.
+        /// </summary>
+        [Dev.SharedRow]
+        public int FadeOut;
+
+        /// <summary>
+        /// The total time the animation appears, in frames.
+        /// </summary>
         public int TotalTime;
         public DrawLayer Layer;
+
+        /// <summary>
+        /// The color to shift the background texture.
+        /// </summary>
         public Color Color;
 
 
         public override void Update(BaseScene scene, FrameTick elapsedTime)
         {
             if (Anim.AnimIndex != "")
-                scene.Anims[(int)Layer].Add(new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, false, Movement, TotalTime));
+                scene.Anims[(int)Layer].Add(new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, false, Movement, TotalTime, FadeIn, FadeOut, RepeatX, RepeatY));
             finished = true;
         }
 
 
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (Serializer.OldVersion < new Version(0, 6, 1))
+            {
+                RepeatX = true;
+                RepeatY = true;
+            }
+        }
     }
     [Serializable]
     public class OverlayEmitter : SwitchOffEmitter
@@ -87,7 +136,7 @@ namespace RogueEssence.Content
         {
             if (runningAnim == null && Anim.AnimIndex != "")
             {
-                runningAnim = new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, true, Movement, -1);
+                runningAnim = new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, true, Movement, -1, 0, 0, true, true);
                 scene.Anims[(int)Layer].Add(runningAnim);
             }
         }

@@ -25,21 +25,18 @@ namespace RogueEssence.Menu
             skillCharges = new MenuText("", Bounds.Center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Right);
         }
 
-        public void SetArrangement(bool diamond, bool reverse)
+        public void SetArrangement(bool diamond)
         {
             Loc center = Loc.Zero;
             if (diamond)
             {
-                int resultSlot = skillSlot;
-                if (reverse)
-                    resultSlot = (resultSlot + 1) % 2 + resultSlot / 2 * 2;
-                if (resultSlot == 0)
+                if (skillSlot == 0)
                     center = new Loc(GraphicsManager.ScreenWidth / 4 - 8, GraphicsManager.ScreenHeight / 2 - 16);
-                else if (resultSlot == 1)
+                else if (skillSlot == 1)
                     center = new Loc(GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 4 - 16);
-                else if (resultSlot == 2)
+                else if (skillSlot == 2)
                     center = new Loc(GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight * 3 / 4 - 16);
-                else if (resultSlot == 3)
+                else if (skillSlot == 3)
                     center = new Loc(GraphicsManager.ScreenWidth * 3 / 4 + 8, GraphicsManager.ScreenHeight / 2 - 16);
             }
             else
@@ -60,7 +57,7 @@ namespace RogueEssence.Menu
             skillCharges.Loc = new Loc(Bounds.Size.X / 2 + 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
         }
 
-        public void SetSkill(string skillName, int element, int charges, int max, bool skillSealed)
+        public void SetSkill(string skillName, string element, int charges, int max, bool skillSealed)
         {
             if (!String.IsNullOrWhiteSpace(skillName))
             {

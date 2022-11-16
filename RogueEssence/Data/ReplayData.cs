@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueEssence.Dungeon;
+using System.Text;
 
 namespace RogueEssence.Data
 {
@@ -13,9 +14,11 @@ namespace RogueEssence.Data
             GameLog,
             UILog,
             QuicksaveLog,
-            GroundsaveLog
+            GroundsaveLog,
+            OptionLog,
         }
         
+        [NonSerialized]
         public string RecordDir;
         public Version RecordVersion;
         public string RecordLang;
@@ -24,6 +27,7 @@ namespace RogueEssence.Data
         public int CurrentState;
         public int CurrentAction;
         public int CurrentUI;
+        public int Desyncs;
 
         public bool Paused;
         public bool OpenMenu;
@@ -62,6 +66,15 @@ namespace RogueEssence.Data
             int cmd = UICodes[CurrentUI];
             CurrentUI++;
             return cmd;
+        }
+
+        public string ReadUIString()
+        {
+            int count = ReadUI();
+            StringBuilder str = new StringBuilder();
+            for (int ii = 0; ii < count; ii++)
+                str.Append((char)ReadUI());
+            return str.ToString();
         }
     }
 

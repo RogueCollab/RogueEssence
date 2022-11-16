@@ -4,13 +4,30 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates specific rooms randomly across the whole dungeon segment.  This is done by replacing an existing room on the floor.
+    /// </summary>
     [Serializable]
     public class SpreadRoomZoneStep : ZoneStep
     {
+        /// <summary>
+        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// </summary>
         public SpreadPlanBase SpreadPlan;
-        //this is heavily hardcoded
+
+        /// <summary>
+        /// The rooms to distribute.
+        /// </summary>
         public SpawnList<RoomGenOption> Spawns;
+
+        /// <summary>
+        /// At what point in the map gen process to add the room in, if the floor gen uses a grid plan.
+        /// </summary>
         public Priority PriorityGrid;
+
+        /// <summary>
+        /// At what point in the map gen process to add the room in, if the floor gen uses a floor plan.
+        /// </summary>
         public Priority PriorityList;
 
         public SpreadRoomZoneStep()
@@ -73,9 +90,19 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class RoomGenOption
     {
+        /// <summary>
+        /// The room generator used if the floor gen uses a grid plan.
+        /// </summary>
         public RoomGen<MapGenContext> GridOption;
+
+        /// <summary>
+        /// The room generator used if the floor gen uses a floor plan.
+        /// </summary>
         public RoomGen<ListMapGenContext> ListOption;
 
+        /// <summary>
+        /// Determines which rooms are eligible to be replaced.
+        /// </summary>
         public List<BaseRoomFilter> Filters;
 
         public RoomGenOption(RoomGen<MapGenContext> gridOption, RoomGen<ListMapGenContext> listOption, List<BaseRoomFilter> filters)

@@ -31,6 +31,47 @@ namespace RogueEssence.Script
 
         public LuaFunction WaitSE;
 
+
+        public void FadeInSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.LoopSE(name, fadeTime);
+        }
+
+        public void FadeInBattleSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.LoopBattleSE(name, fadeTime);
+        }
+
+        public void LoopSE(string name)
+        {
+            GameManager.Instance.LoopSE(name);
+        }
+
+        public void LoopBattleSE(string name)
+        {
+            GameManager.Instance.LoopBattleSE(name);
+        }
+
+        public void FadeOutSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.StopLoopSE(name, fadeTime);
+        }
+
+        public void FadeOutBattleSE(string name, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            GameManager.Instance.StopLoopBattleSE(name, fadeTime);
+        }
+
+        public void StopSE(string name)
+        {
+            GameManager.Instance.StopLoopSE(name);
+        }
+
+        public void StopBattleSE(string name)
+        {
+            GameManager.Instance.StopLoopBattleSE(name);
+        }
+
         //===========================
         //  Fanfare
         //===========================
@@ -49,14 +90,14 @@ namespace RogueEssence.Script
         //===========================
         //  Music
         //===========================
-        public void PlayBGM(string name, bool fade)
+        public void PlayBGM(string name, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
         {
-            GameManager.Instance.BGM(name, fade);
+            GameManager.Instance.BGM(name, fade, fadeTime);
         }
 
-        public void FadeOutBGM()
+        public void FadeOutBGM(int fadeTime = GameManager.MUSIC_FADE_TOTAL)
         {
-            GameManager.Instance.BGM("", true);
+            GameManager.Instance.BGM("", true, fadeTime);
         }
 
         public void StopBGM()

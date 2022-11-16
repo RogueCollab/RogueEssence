@@ -6,6 +6,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using System;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
@@ -31,7 +32,7 @@ namespace RogueEssence.Menu
                 for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.Players[ii].Skills.Count; jj++)
                 {
                     Skill skill = DataManager.Instance.Save.ActiveTeam.Players[ii].Skills[jj].Element;
-                    if (skill.SkillNum > -1)
+                    if (!String.IsNullOrEmpty(skill.SkillNum))
                     {
                         SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                         string skillString = (skill.Enabled ? "\uE10A " : "") + data.GetColoredName();
@@ -68,13 +69,38 @@ namespace RogueEssence.Menu
         {
             if (input.JustPressed(FrameInput.InputType.SkillMenu))
                 MenuManager.Instance.ClearMenus();
+            else if (input.JustPressed(FrameInput.InputType.SortItems))
+            {
+                GameManager.Instance.SE("Menu/Toggle");
+                MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, CurrentPage, CurrentChoice), CurrentPage, CurrentChoice);
+            }
+            else if (input[FrameInput.InputType.SelectItems] && input.Direction == Dir8.Up && input.PrevDirection != Dir8.Up)
+            {
+                if (CurrentChoice > 0)
+                {
+                    GameManager.Instance.SE("Menu/Toggle");
+                    MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, CurrentPage, CurrentChoice - 1), CurrentPage, CurrentChoice - 1);
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
+            }
+            else if (input[FrameInput.InputType.SelectItems] && input.Direction == Dir8.Down && input.PrevDirection != Dir8.Down)
+            {
+                if (CurrentChoice < Choices.Count - 1)
+                {
+                    GameManager.Instance.SE("Menu/Toggle");
+                    MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, CurrentPage, CurrentChoice), CurrentPage, CurrentChoice + 1);
+                }
+                else
+                    GameManager.Instance.SE("Menu/Cancel");
+            }
             else
                 base.UpdateKeys(input);
         }
 
         private void choose(int choice)
         {
-            if (Data.DataManager.Instance.CurrentReplay == null)
+            if (DataManager.Instance.CurrentReplay == null)
                 MenuManager.Instance.AddMenu(new SkillChosenMenu(CurrentPage, choice), true);
         }
 
@@ -96,5 +122,13 @@ namespace RogueEssence.Menu
             //draw other windows
             summaryMenu.Draw(spriteBatch);
         }
+
+
+        public static IEnumerator<YieldInstruction> MoveCommand(GameAction action, int teamSlot, int switchSlot)
+        {
+            yield return CoroutineManager.Instance.StartCoroutine((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(action) : GroundScene.Instance.ProcessInput(action));
+            MenuManager.Instance.ReplaceMenu(new SkillMenu(teamSlot, switchSlot));
+        }
+
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dungeon
 {
@@ -24,13 +25,13 @@ namespace RogueEssence.Dungeon
             Enemy
         }
 
-        public override int GetID() { return ID; }
+        public override string GetID() { return ID; }
         public TileData GetData() { return DataManager.Instance.GetTile(ID); }
         public override string GetDisplayName() { return GetData().GetColoredName(); }
 
-
+        [JsonConverter(typeof(Dev.TileConverter))]
         [DataType(0, DataManager.DataType.Tile, true)]
-        public int ID;
+        public string ID;
 
         public bool Exposed { get { return true; } }
         public bool Revealed;
@@ -50,21 +51,21 @@ namespace RogueEssence.Dungeon
 
         public EffectTile()
         {
-            ID = -1;
+            ID = "";
             TileStates = new StateCollection<TileState>();
         }
-        public EffectTile(int index, bool revealed) : this()
+        public EffectTile(string index, bool revealed) : this()
         {
             ID = index;
             Revealed = revealed;
         }
-        public EffectTile(int index, bool revealed, Loc loc) : this(index, revealed)
+        public EffectTile(string index, bool revealed, Loc loc) : this(index, revealed)
         {
             TileLoc = loc;
         }
         public EffectTile(Loc loc)
         {
-            ID = -1;
+            ID = "";
             TileStates = new StateCollection<TileState>();
             TileLoc = loc;
         }
@@ -119,8 +120,6 @@ namespace RogueEssence.Dungeon
         {
             Loc drawLoc = GetDrawLoc(offset);
             TileData entry = DataManager.Instance.GetTile(ID);
-            if (!Revealed) //draw texture
-                entry = DataManager.Instance.GetTile(0);
 
             if (entry.Anim.AnimIndex != "")
             {
@@ -133,8 +132,6 @@ namespace RogueEssence.Dungeon
         public Loc GetDrawLoc(Loc offset)
         {
             TileData entry = DataManager.Instance.GetTile(ID);
-            if (!Revealed)
-                entry = DataManager.Instance.GetTile(0);
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
@@ -144,8 +141,6 @@ namespace RogueEssence.Dungeon
         public Loc GetDrawSize()
         {
             TileData entry = DataManager.Instance.GetTile(ID);
-            if (!Revealed)
-                entry = DataManager.Instance.GetTile(0);
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
             return new Loc(sheet.TileWidth, sheet.TileHeight);
@@ -153,8 +148,55 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            string local = (ID > -1) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[ID].Name.ToLocal() : "NULL";
+            string local = (!String.IsNullOrEmpty(ID)) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Get(ID).Name.ToLocal() : "NULL";
             return string.Format("{0}: {1}", this.GetType().Name, local);
+        }
+    }
+
+
+    public class DrawTile : IDrawableSprite
+    {
+        public Loc TileLoc { get; private set; }
+        public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
+        public int LocHeight { get { return 0; } }
+
+        public string TileID;
+
+        public DrawTile(Loc loc, string tileID)
+        {
+            TileLoc = loc;
+            TileID = tileID;
+        }
+
+        public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        {
+            Loc drawLoc = GetDrawLoc(offset);
+            TileData entry = DataManager.Instance.GetTile(TileID);
+
+            if (entry.Anim.AnimIndex != "")
+            {
+                DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), entry.Anim.GetDrawDir(Dir8.None), Color.White);
+            }
+        }
+
+
+        public Loc GetDrawLoc(Loc offset)
+        {
+            TileData entry = DataManager.Instance.GetTile(TileID);
+            DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
+
+            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
+            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) - offset;
+        }
+
+        public Loc GetDrawSize()
+        {
+            TileData entry = DataManager.Instance.GetTile(TileID);
+            DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
+
+            return new Loc(sheet.TileWidth, sheet.TileHeight);
         }
     }
 }

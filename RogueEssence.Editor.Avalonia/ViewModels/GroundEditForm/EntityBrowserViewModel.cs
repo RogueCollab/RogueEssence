@@ -337,6 +337,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
 
+        private List<string> monsterKeys;
         public ObservableCollection<string> Monsters { get; }
 
         public int ChosenMonster
@@ -347,7 +348,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
                 {
                     GroundChar charEnt = SelectedEntity as GroundChar;
-                    feature = charEnt.Data.BaseForm.Species;
+                    feature = monsterKeys.IndexOf(charEnt.Data.BaseForm.Species);
                 }
                 return feature;
             }
@@ -356,7 +357,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
                 {
                     GroundChar charEnt = SelectedEntity as GroundChar;
-                    charEnt.Data.BaseForm.Species = value;
+                    charEnt.Data.BaseForm.Species = monsterKeys[value];
                 }
                 this.RaisePropertyChanged();
                 speciesChanged();
@@ -389,6 +390,8 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> skinKeys;
+
         public ObservableCollection<string> Skins { get; }
 
         public int ChosenSkin
@@ -399,7 +402,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
                 {
                     GroundChar charEnt = SelectedEntity as GroundChar;
-                    feature = charEnt.Data.BaseForm.Skin;
+                    feature = skinKeys.IndexOf(charEnt.Data.BaseForm.Skin);
                 }
                 return feature;
             }
@@ -408,7 +411,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
                 {
                     GroundChar charEnt = SelectedEntity as GroundChar;
-                    charEnt.Data.BaseForm.Skin = value;
+                    charEnt.Data.BaseForm.Skin = skinKeys[value];
                 }
                 this.RaisePropertyChanged();
             }
@@ -457,6 +460,28 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     GroundChar charEnt = SelectedEntity as GroundChar;
                     charEnt.Data.Nickname = value;
+                }
+                this.RaisePropertyChanged();
+            }
+        }
+        public bool AIEnabled
+        {
+            get
+            {
+                bool feature = false;
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
+                {
+                    GroundChar charEnt = SelectedEntity as GroundChar;
+                    feature = charEnt.AIEnabled;
+                }
+                return feature;
+            }
+            set
+            {
+                if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Character)
+                {
+                    GroundChar charEnt = SelectedEntity as GroundChar;
+                    charEnt.AIEnabled = value;
                 }
                 this.RaisePropertyChanged();
             }
@@ -518,16 +543,24 @@ namespace RogueEssence.Dev.ViewModels
             ObjectAnims = new ObservableCollection<string>();
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
-            for (int ii = 0; ii < monster_names.Length; ii++)
-                Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+            monsterKeys = new List<string>();
+            Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
+            foreach (string key in monster_names.Keys)
+            {
+                Monsters.Add(key + ": " + monster_names[key]);
+                monsterKeys.Add(key);
+            }
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                Skins.Add(skin_names[ii]);
+            skinKeys = new List<string>();
+            Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+            foreach (string key in skin_names.Keys)
+            {
+                Skins.Add(key + ": " + skin_names[key]);
+                skinKeys.Add(key);
+            }
 
             Genders = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Gender.Female; ii++)
@@ -620,6 +653,7 @@ namespace RogueEssence.Dev.ViewModels
             ChosenGender = ChosenGender;
 
             Nickname = Nickname;
+            AIEnabled = AIEnabled;
 
             SpawnName = SpawnName;
 
@@ -675,10 +709,10 @@ namespace RogueEssence.Dev.ViewModels
 
                             CharData chdata = new CharData();
                             chdata.Nickname = "";
-                            chdata.BaseForm = new MonsterID();
+                            chdata.BaseForm = new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless);
                             chdata.Level = 1;
-                            Character ch = new Character(chdata, null);
-                            AITactic tactic = DataManager.Instance.GetAITactic(0);
+                            Character ch = new Character(chdata);
+                            AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
                             ch.Tactic = new AITactic(tactic);
 
                             GroundChar gch = new GroundChar(ch, Loc.Zero, Dir8.Down, entName);
@@ -770,7 +804,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 int tempForm = ChosenForm;
                 Forms.Clear();
-                MonsterData monster = DataManager.Instance.GetMonster(ChosenMonster);
+                MonsterData monster = DataManager.Instance.GetMonster(monsterKeys[ChosenMonster]);
                 for (int ii = 0; ii < monster.Forms.Count; ii++)
                     Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
 
@@ -786,7 +820,7 @@ namespace RogueEssence.Dev.ViewModels
             GroundObject groundEnt = SelectedEntity as GroundObject;
             string oldIndex = groundEnt.ObjectAnim.AnimIndex;
             ObjectAnims.Clear();
-            ObjectAnims.Add("---");
+            ObjectAnims.Add("**EMPTY**");
             string[] dirs = PathMod.GetModFiles(GraphicsManager.CONTENT_PATH + groundEnt.ObjectAnim.AssetType.ToString() + "/");
             int newAnim = 0;
             for (int ii = 0; ii < dirs.Length; ii++)

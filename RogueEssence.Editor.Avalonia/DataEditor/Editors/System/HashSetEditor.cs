@@ -21,7 +21,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, HashSet<T> member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, HashSet<T> member, Type[] subGroupStack)
         {
             Type elementType = typeof(T);
 
@@ -44,7 +44,8 @@ namespace RogueEssence.Dev
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
@@ -67,16 +68,13 @@ namespace RogueEssence.Dev
                     if (itemExists)
                     {
                         await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate items.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                        return false;
                     }
                     else
                     {
                         op(index, newElement);
-                        frmData.Close();
+                        return true;
                     }
-                };
-                frmData.SelectedCancelEvent += () =>
-                {
-                    frmData.Close();
                 };
 
                 control.GetOwningForm().RegisterChild(frmData);

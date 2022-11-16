@@ -97,24 +97,66 @@ namespace RogueEssence
             Loc drawSize = sprite.GetDrawSize();
             if (drawSize == new Loc(-1))
                 return true;
+            if (drawSize == Loc.Zero)
+                return false;
+
             Rect spriteRect = new Rect(sprite.GetDrawLoc(Loc.Zero), drawSize);
 
-            if (spriteRect.Size == Loc.Zero)
-                return false;
 
             return Collision.Collides(spriteRect, viewBounds);
         }
 
-        public void AddToDraw(List<IDrawableSprite> sprites, IDrawableSprite sprite)
+        public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite)
         {
-            MathUtils.AddToSortedList(sprites, sprite, CompareSpriteCoords);
+            AddToDraw(sprites, sprite, ViewRect.Start);
         }
 
-
-
-        public int CompareSpriteCoords(IDrawableSprite sprite1, IDrawableSprite sprite2)
+        public void AddToDraw(List<(IDrawableSprite, Loc)> sprites, IDrawableSprite sprite, Loc viewOffset)
         {
-            return Math.Sign(sprite1.MapLoc.Y - sprite2.MapLoc.Y);
+            CollectionExt.AddToSortedList(sprites, (sprite, viewOffset), CompareSpriteCoords);
+        }
+
+        public void AddRelevantDraw(List<(IDrawableSprite, Loc)> sprites, bool wrapped, Loc wrapSize, IDrawableSprite sprite)
+        {
+            foreach (Loc viewOffset in IterateRelevantDraw(wrapped, wrapSize, sprite))
+                AddToDraw(sprites, sprite, viewOffset);
+        }
+
+        public IEnumerable<Loc> IterateRelevantDraw(bool wrapped, Loc wrapSize, IDrawableSprite sprite)
+        {
+            if (sprite == null)
+                yield break;
+
+            Loc drawSize = sprite.GetDrawSize();
+            if (drawSize == new Loc(-1))
+            {
+                yield return ViewRect.Start;
+                yield break;
+            }
+            if (drawSize == Loc.Zero)
+                yield break;
+
+            Loc baseDrawLoc = sprite.GetDrawLoc(Loc.Zero);
+            if (!wrapped)
+            {
+                Rect spriteRect = new Rect(baseDrawLoc, drawSize);
+                if (Collision.Collides(spriteRect, ViewRect))
+                    yield return ViewRect.Start;
+                yield break;
+            }
+
+            foreach (Rect spriteRect in WrappedCollision.IterateRegionsColliding(wrapSize, ViewRect, new Rect(baseDrawLoc, drawSize)))
+            {
+                //first compute a loc for which the addition to the original loc would result in this checked loc
+                Loc diffLoc = spriteRect.Start - baseDrawLoc;
+                //that difference is how much the viewRect needs to be shifted by
+                yield return ViewRect.Start - diffLoc;
+            }
+        }
+
+        public int CompareSpriteCoords((IDrawableSprite sprite, Loc viewOffset) sprite1, (IDrawableSprite sprite, Loc viewOffset) sprite2)
+        {
+            return Math.Sign((sprite1.sprite.MapLoc.Y - sprite1.viewOffset.Y) - (sprite2.sprite.MapLoc.Y - sprite2.viewOffset.Y));
         }
     }
 }

@@ -5,14 +5,16 @@ using RogueEssence.Data;
 using System.Runtime.Serialization;
 using RogueElements;
 using RogueEssence.LevelGen;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
     [Serializable]
     public abstract class Team
     {
-        public List<Character> Players;
-        public List<Character> Guests;
+        public EventedList<Character> Players { get; set; }
+        public EventedList<Character> Guests { get; set; }
 
         public int LeaderIndex;
 
@@ -23,13 +25,35 @@ namespace RogueEssence.Dungeon
 
         private List<InvItem> inventory;
 
+        [NonSerialized]
+        public Map ContainingMap;
+
+        [NonSerialized]
+        public Faction MapFaction;
+
+        [NonSerialized]
+        public int MapIndex;
+
         public Team()
         {
-            Players = new List<Character>();
-            Guests = new List<Character>();
+            Players = new EventedList<Character>();
+            Guests = new EventedList<Character>();
             inventory = new List<InvItem>();
         }
-        
+
+        protected Team(Team other) : this()
+        {
+            foreach (Character chara in other.Players)
+                Players.Add(chara.Clone(this));
+            foreach (Character chara in other.Guests)
+                Guests.Add(chara.Clone(this));
+            LeaderIndex = other.LeaderIndex;
+            FoeConflict = other.FoeConflict;
+            foreach (InvItem item in other.inventory)
+                inventory.Add(new InvItem(item));
+        }
+        public abstract Team Clone();
+
         public Character Leader { get { return Players[LeaderIndex]; } }
 
         public int MemberGuestCount { get { return Players.Count + Guests.Count; } }
@@ -60,6 +84,99 @@ namespace RogueEssence.Dungeon
                 yield return chara;
         }
 
+        protected virtual void setMemberEvents()
+        {
+            Players.ItemAdding += addingMember;
+            Guests.ItemAdding += addingMember;
+            Players.ItemChanging += settingPlayer;
+            Guests.ItemChanging += settingGuest;
+            Players.ItemRemoving += removingMember;
+            Guests.ItemRemoving += removingMember;
+            Players.ItemsClearing += clearingPlayers;
+            Guests.ItemsClearing += clearingGuests;
+        }
+
+        private void settingPlayer(int index, Character chara)
+        {
+            Players[index].MemberTeam = null;
+            chara.MemberTeam = this;
+            //update location caches
+            ContainingMap?.RemoveCharLookup(Players[index]);
+            ContainingMap?.AddCharLookup(chara);
+        }
+        private void settingGuest(int index, Character chara)
+        {
+            Guests[index].MemberTeam = null;
+            chara.MemberTeam = this;
+            //update location caches
+            ContainingMap?.RemoveCharLookup(Guests[index]);
+            ContainingMap?.AddCharLookup(chara);
+        }
+        private void addingMember(int index, Character chara)
+        {
+            chara.MemberTeam = this;
+            //update location caches
+            ContainingMap?.AddCharLookup(chara);
+        }
+        private void removingMember(int index, Character chara)
+        {
+            chara.MemberTeam = null;
+            //update location caches
+            ContainingMap?.RemoveCharLookup(chara);
+        }
+        private void clearingPlayers()
+        {
+            foreach (Character chara in Players)
+            {
+                chara.MemberTeam = null;
+                //update location caches
+                ContainingMap?.RemoveCharLookup(chara);
+            }
+        }
+        private void clearingGuests()
+        {
+            foreach (Character chara in Guests)
+            {
+                chara.MemberTeam = null;
+                //update location caches
+                ContainingMap?.RemoveCharLookup(chara);
+            }
+        }
+
+        public void CharacterDeathChanged()
+        {
+            CharIndex teamIndex = new CharIndex(MapFaction, MapIndex, false, -1);
+            bool allDead = true;
+            foreach (Character character in this.EnumerateChars())
+            {
+                if (!character.Dead)
+                    allDead = false;
+            }
+            if (allDead)
+            {
+                //add to DeadTeams
+                ContainingMap.DeadTeams.Add(teamIndex);
+            }
+            else
+            {
+                //remove from DeadTeams
+                ContainingMap.DeadTeams.Remove(teamIndex);
+            }
+
+            if (this.MapFaction != Faction.Player)
+            {
+                if (!allDead && this.Leader.Dead)
+                {
+                    //add to TeamsWithDead
+                    ContainingMap.TeamsWithDead.Add(teamIndex);
+                }
+                else
+                {
+                    //remove from TeamsWithDead
+                    ContainingMap.TeamsWithDead.Remove(teamIndex);
+                }
+            }
+        }
 
         public int GetInvCount()
         {
@@ -118,6 +235,9 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Sorts items in the inventory STABLELY
+        /// </summary>
         public void SortItems()
         {
             List<InvItem> newInv = new List<InvItem>();
@@ -127,7 +247,7 @@ namespace RogueEssence.Dungeon
                 //find its new place
                 for (int ii = newInv.Count; ii >= 0; ii--)
                 {
-                    if (ii == 0 || SucceedsInvItem(inventory[kk], newInv[ii - 1]))
+                    if (ii == 0 || succeedsInvItem(inventory[kk], newInv[ii - 1]))
                     {
                         newInv.Insert(ii, inventory[kk]);
                         break;
@@ -137,15 +257,9 @@ namespace RogueEssence.Dungeon
             inventory = newInv;
         }
 
-        private bool SucceedsInvItem(InvItem inv1, InvItem inv2)
+        private bool succeedsInvItem(InvItem inv1, InvItem inv2)
         {
-            ItemData entry1 = DataManager.Instance.GetItem(inv1.ID);
-            ItemData entry2 = DataManager.Instance.GetItem(inv2.ID);
-            if (entry1.UsageType > entry2.UsageType)
-                return true;
-            else if (entry1.UsageType < entry2.UsageType)
-                return false;
-            return (inv1.ID >= inv2.ID);
+            return DataManager.Instance.DataIndices[DataManager.DataType.Item].CompareWithSort(inv1.ID, inv2.ID) > 0;
         }
 
         public int GetInvValue()
@@ -175,10 +289,13 @@ namespace RogueEssence.Dungeon
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            ReconnectTeamReference();
+            //No need to set member events since they'd already be set during the class construction phase of deserialization
+            reconnectTeamReference();
+
+            setMemberEvents();
         }
 
-        protected virtual void ReconnectTeamReference()
+        protected virtual void reconnectTeamReference()
         {
             //reconnect Players' references
             foreach (Character player in Players)
@@ -207,7 +324,23 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class MonsterTeam : Team
     {
-        public bool Unrecruitable;
+
+        public MonsterTeam() : this(true)
+        { }
+
+        [JsonConstructor]
+        public MonsterTeam(bool initEvents) : base()
+        {
+            if (initEvents)
+                setMemberEvents();
+        }
+
+        protected MonsterTeam(MonsterTeam other) : base(other)
+        {
+            
+        }
+
+        public override Team Clone() { return new MonsterTeam(this); }
     }
 
     [Serializable]
@@ -218,24 +351,62 @@ namespace RogueEssence.Dungeon
         public int MaxInv;
 
         public string Name;
-        public List<Character> Assembly;
-        public int[] Storage;
+        public EventedList<Character> Assembly;
+
+        [JsonConverter(typeof(ItemStorageConverter))]
+        public Dictionary<string, int> Storage;
         public List<InvItem> BoxStorage;
         public int Bank;
         public int Money;
-        public int Rank { get; private set; }
+
+        [JsonConverter(typeof(Dev.RankConverter))]
+        public string Rank { get; private set; }
         public int Fame;
         public int RankExtra;
 
-        public ExplorerTeam()
+        public ExplorerTeam() : this(true)
+        { }
+        [JsonConstructor]
+        public ExplorerTeam(bool initEvents) : base()
         {
             Name = "";
-            Assembly = new List<Character>();
+            Assembly = new EventedList<Character>();
             BoxStorage = new List<InvItem>();
-            Storage = new int[10000];//TODO: remove this magic number and make it an adjustable value
+            Storage = new Dictionary<string, int>();
+
+            if (initEvents)
+                setMemberEvents();
         }
 
-        public void SetRank(int rank)
+        protected ExplorerTeam(ExplorerTeam other) : base(other)
+        {
+            MaxInv = other.MaxInv;
+            Name = other.Name;
+
+            Assembly = new EventedList<Character>();
+            foreach (Character chara in other.Assembly)
+                Assembly.Add(chara.Clone(this));
+
+            BoxStorage = new List<InvItem>();
+            foreach (InvItem item in other.BoxStorage)
+                BoxStorage.Add(new InvItem(item));
+
+            Storage = new Dictionary<string, int>();
+            foreach (string key in other.Storage.Keys)
+                Storage[key] = other.Storage[key];
+
+            Bank = other.Bank;
+            Money = other.Money;
+            Rank = other.Rank;
+            Fame = other.Fame;
+            RankExtra = other.RankExtra;
+
+            setMemberEvents();
+        }
+
+        public override Team Clone() { return new ExplorerTeam(this); }
+
+        public void SetRank(string rank)
         {
             Rank = rank;
             MaxInv = DataManager.Instance.GetRank(rank).BagSize;
@@ -248,7 +419,7 @@ namespace RogueEssence.Dungeon
                 slots = zone.BagSize;
             foreach (Character player in Players)
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                     slots--;
             }
             return slots;
@@ -279,41 +450,50 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public List<InvItem> TakeItems(List<int> indices, bool remove = true)
+        public List<InvItem> TakeItems(List<WithdrawSlot> indices, bool remove = true)
         {
             List<int> removedBoxSlots = new List<int>();
             List<InvItem> invToTake = new List<InvItem>();
             for (int ii = 0; ii < indices.Count; ii++)
             {
-                int index = indices[ii];
-                if (index < DataManager.Instance.DataIndices[DataManager.DataType.Item].Count)
+                if (!indices[ii].IsBox)
                 {
+                    string index = indices[ii].ItemID;
                     ItemData entry = DataManager.Instance.GetItem(index);
                     if (entry.MaxStack > 1)
                     {
                         int existingStack = -1;
                         for (int jj = 0; jj < invToTake.Count; jj++)
                         {
-                            if (invToTake[jj].ID == index && invToTake[jj].HiddenValue < entry.MaxStack)
+                            if (invToTake[jj].ID == index && invToTake[jj].Amount < entry.MaxStack)
                             {
                                 existingStack = jj;
                                 break;
                             }
                         }
                         if (existingStack > -1)
-                            invToTake[existingStack].HiddenValue++;
+                            invToTake[existingStack].Amount++;
                         else
                             invToTake.Add(new InvItem(index, false, 1));
                     }
                     else
                         invToTake.Add(new InvItem(index));
                     if (remove)
-                        Storage[index]--;
+                    {
+                        int val;
+                        if (Storage.TryGetValue(index, out val))
+                        {
+                            if (val - 1 > 0)
+                                Storage[index] = val - 1;
+                            else
+                                Storage.Remove(index);
+                        }
+                    }
                 }
                 else
                 {
-                    invToTake.Add(BoxStorage[index - DataManager.Instance.DataIndices[DataManager.DataType.Item].Count]);
-                    removedBoxSlots.Add(index - DataManager.Instance.DataIndices[DataManager.DataType.Item].Count);
+                    invToTake.Add(BoxStorage[indices[ii].BoxSlot]);
+                    removedBoxSlots.Add(indices[ii].BoxSlot);
                 }
             }
             removedBoxSlots.Sort();
@@ -331,18 +511,49 @@ namespace RogueEssence.Dungeon
             foreach(InvItem item in invToStore)
             {
                 ItemData entry = DataManager.Instance.GetItem(item.ID);
-                if (entry.MaxStack > 1)
-                    Storage[item.ID] += item.HiddenValue;
-                else if (entry.UsageType == ItemData.UseType.Box)
+                if (entry.UsageType == ItemData.UseType.Box)
                     BoxStorage.Add(item);
                 else
-                    Storage[item.ID]++;
+                {
+                    if (!Storage.ContainsKey(item.ID))
+                        Storage[item.ID] = 0;
+
+                    if (entry.MaxStack > 1)
+                        Storage[item.ID] += item.Amount;
+                    else
+                        Storage[item.ID]++;
+                }
             }
         }
 
-        public int GetTotalScore()
+        public void AddMoney(Character character, int amount)
         {
-            return GetInvValue() + Money + Bank;
+            Money += amount;
+
+            //TODO: gained money events
+        }
+
+        public void LoseMoney(Character character, int amount)
+        {
+            Money -= amount;
+
+            //TODO: lost money events
+        }
+
+        public int GetStorageValue()
+        {
+            int invValue = 0;
+            foreach (InvItem item in BoxStorage)
+                invValue += item.GetSellValue();
+            foreach(string key in Storage.Keys)
+            {
+                if (Storage.GetValueOrDefault(key, 0) > 0)
+                {
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(key))
+                        invValue += DataManager.Instance.GetItem(key).Price;
+                }
+            }
+            return invValue;
         }
 
         public void AddToSortedAssembly(Character chara)
@@ -357,7 +568,7 @@ namespace RogueEssence.Dungeon
             Assembly.Insert(idx, chara);
         }
 
-        public Character CreatePlayer(IRandom rand, MonsterID form, int level, int intrinsic, int personality)
+        public Character CreatePlayer(IRandom rand, MonsterID form, int level, string intrinsic, int personality)
         {
             MonsterID formData = form;
             MonsterData dex = DataManager.Instance.GetMonster(formData.Species);
@@ -368,14 +579,14 @@ namespace RogueEssence.Dungeon
 
             BaseMonsterForm formEntry = dex.Forms[formData.Form];
 
-            List<int> final_skills = formEntry.RollLatestSkills(character.Level, new List<int>());
+            List<string> final_skills = formEntry.RollLatestSkills(character.Level, new List<string>());
             for(int ii = 0; ii < final_skills.Count; ii++)
                 character.BaseSkills[ii] = new SlotSkill(final_skills[ii]);
 
             if (form.Gender == Gender.Unknown)
                 character.BaseForm.Gender = dex.Forms[formData.Form].RollGender(rand);
             
-            if (intrinsic == -1)
+            if (String.IsNullOrEmpty(intrinsic))
                 character.BaseIntrinsics[0] = formEntry.RollIntrinsic(rand, 2);
             else
                 character.BaseIntrinsics[0] = intrinsic;
@@ -389,6 +600,7 @@ namespace RogueEssence.Dungeon
             character.OriginalUUID = DataManager.Instance.Save.UUID;
             character.OriginalTeam = DataManager.Instance.Save.ActiveTeam.Name;
             character.MetAt = Text.FormatKey("MET_AT_START");
+            character.MetLoc = ZoneLoc.Invalid;
 
             return CreatePlayer(character);
         }
@@ -397,25 +609,53 @@ namespace RogueEssence.Dungeon
 
         public Character CreatePlayer(CharData character)
         {
-            Character player = new Character(character, this);
+            Character player = new Character(character);
             foreach (BackReference<Skill> skill in player.Skills)
             {
-                if (skill.Element.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.Element.SkillNum))
                 {
                     SkillData entry = DataManager.Instance.GetSkill(skill.Element.SkillNum);
                     skill.Element.Enabled = (entry.Data.Category == BattleData.SkillCategory.Physical || entry.Data.Category == BattleData.SkillCategory.Magical);
                 }
             }
-            AITactic tactic = DataManager.Instance.GetAITactic(0);
+            AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
             player.Tactic = new AITactic(tactic);
 
             return player;
         }
 
-
-        protected override void ReconnectTeamReference()
+        private void settingAssembly(int index, Character chara)
         {
-            base.ReconnectTeamReference();
+            Assembly[index].MemberTeam = null;
+            chara.MemberTeam = this;
+        }
+        private void addingAssembly(int index, Character chara)
+        {
+            chara.MemberTeam = this;
+        }
+        private void removingAssembly(int index, Character chara)
+        {
+            chara.MemberTeam = null;
+        }
+        private void clearingAssembly()
+        {
+            foreach (Character chara in Assembly)
+                chara.MemberTeam = null;
+        }
+
+        protected override void setMemberEvents()
+        {
+            base.setMemberEvents();
+
+            Assembly.ItemAdding += addingAssembly;
+            Assembly.ItemChanging += settingAssembly;
+            Assembly.ItemRemoving += removingAssembly;
+            Assembly.ItemsClearing += clearingAssembly;
+        }
+
+        protected override void reconnectTeamReference()
+        {
+            base.reconnectTeamReference();
             foreach (Character player in Assembly)
                 player.MemberTeam = this;
         }
@@ -432,6 +672,21 @@ namespace RogueEssence.Dungeon
             base.LoadLua();
             foreach (Character player in Assembly)
                 player.LoadLua();
+        }
+    }
+
+    [Serializable]
+    public struct WithdrawSlot
+    {
+        public bool IsBox;
+        public string ItemID;
+        public int BoxSlot;
+
+        public WithdrawSlot(bool isBox, string itemID, int boxSlot)
+        {
+            IsBox = isBox;
+            ItemID = itemID;
+            BoxSlot = boxSlot;
         }
     }
 

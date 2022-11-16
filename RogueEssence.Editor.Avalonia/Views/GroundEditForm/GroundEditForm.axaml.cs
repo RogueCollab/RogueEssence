@@ -42,8 +42,7 @@ namespace RogueEssence.Dev.Views
 
         public void ProcessInput(InputManager input)
         {
-            GroundEditViewModel vm = (GroundEditViewModel)DataContext;
-            DevForm.ExecuteOrInvoke(() => vm.ProcessInput(input));
+            DevForm.ExecuteOrInvoke(() => ((GroundEditViewModel)DataContext).ProcessInput(input));
         }
 
 

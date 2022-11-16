@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace RogueEssence
 {
+    /// <summary>
+    /// Draws a specified number of angular tunnels starting from the edge of any room or hall.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class AddTunnelStep<T> : GenStep<T>
         where T : class, ITiledGenContext
@@ -13,29 +17,41 @@ namespace RogueEssence
             this.Brush = new DefaultHallBrush();
         }
 
+        /// <summary>
+        /// The number of tiles to dig the tunnel forward before changing direction.
+        /// </summary>
         public RandRange TurnLength { get; set; }
 
+        /// <summary>
+        /// The expected length of the whole tunnel.
+        /// Actual tunnels can be shorter if they dig into a room or hall, but cannot exceed the chosen max.
+        /// </summary>
         public RandRange MaxLength { get; set; }
 
+        /// <summary>
+        /// Allows tunnels to be dead ends.  Forces tunnels to touch another room or hall if turned off.
+        /// </summary>
         public bool AllowDeadEnd { get; set; }
 
+        /// <summary>
+        /// The number of tunnels to draw.
+        /// </summary>
         public RandRange Halls { get; set; }
 
+        /// <summary>
+        /// The brush to draw the halls with.
+        /// </summary>
         public BaseHallBrush Brush { get; set; }
 
         public override void Apply(T map)
         {
             Grid.LocTest checkGround = (Loc testLoc) =>
             {
-                if (!Collision.InBounds(map.Width, map.Height, testLoc))
-                    return false;
-                return (map.GetTile(testLoc).TileEquivalent(map.RoomTerrain));
+                return map.RoomTerrain.TileEquivalent(map.GetTile(testLoc));
             };
             Grid.LocTest checkBlock = (Loc testLoc) =>
             {
-                if (!Collision.InBounds(map.Width, map.Height, testLoc))
-                    return false;
-                return map.GetTile(testLoc).TileEquivalent(map.WallTerrain);
+                return map.WallTerrain.TileEquivalent(map.GetTile(testLoc));
             };
 
             Rect fullRect = new Rect(0, 0, map.Width, map.Height);

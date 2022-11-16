@@ -35,7 +35,7 @@ namespace RogueEssence.Menu
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 int index = ii;
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
                     MenuText itemText = new MenuText((index + 1).ToString() + ": " + activeChar.EquippedItem.GetDisplayName(), new Loc(2, 1), !enableHeld ? Color.Red : Color.White);
                     MenuText itemPrice = new MenuText(activeChar.EquippedItem.GetPriceString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, !enableHeld ? Color.Red : Color.White);
@@ -96,14 +96,13 @@ namespace RogueEssence.Menu
         {
             if (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0)
                 return 0;
-            return (DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1) / SLOTS_PER_PAGE + 1;
+            return MathUtils.DivUp(DataManager.Instance.Save.ActiveTeam.GetInvCount(), SLOTS_PER_PAGE);
         }
 
         protected override void ChoiceChanged()
         {
-            int chosenSlot = CurrentChoiceTotal;
-            defaultChoice = chosenSlot;
-            InvItem item = getChosenItemID(chosenSlot);
+            defaultChoice = CurrentChoiceTotal;
+            InvItem item = getChosenItemID(CurrentChoiceTotal);
 
             summaryMenu.SetItem(item);
             base.ChoiceChanged();
@@ -115,7 +114,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
-                if (activeChar.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
                     if (countedHeld == menuIndex)
                         return activeChar.EquippedItem;
@@ -130,7 +129,7 @@ namespace RogueEssence.Menu
         {
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
-                if (replaceSlot == -2 && Data.DataManager.Instance.CurrentReplay == null)
+                if (replaceSlot < 0 && DataManager.Instance.CurrentReplay == null)
                 {
                     GameManager.Instance.SE("Menu/Sort");
                     MenuManager.Instance.NextAction = SortCommand();

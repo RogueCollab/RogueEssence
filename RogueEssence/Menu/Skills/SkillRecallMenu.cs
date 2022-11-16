@@ -11,14 +11,14 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 5;
 
-        int[] forgottenSkills;
+        string[] forgottenSkills;
         OnChooseSlot chooseSlotAction;
         Action refuseAction;
         Character player;
 
         SkillSummary summaryMenu;
 
-        public SkillRecallMenu(Character player, int[] forgottenSkills, OnChooseSlot action, Action refuseAction)
+        public SkillRecallMenu(Character player, string[] forgottenSkills, OnChooseSlot action, Action refuseAction)
         {
             int menuWidth = 152;
             this.player = player;
@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.RemoveMenu();
 
-            chooseSlotAction(forgottenSkills[choice]);
+            chooseSlotAction(choice);
         }
 
         protected override void ChoiceChanged()

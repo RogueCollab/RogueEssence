@@ -24,8 +24,17 @@ namespace RogueEssence.Dungeon
     {
         public enum AreaLimit
         {
+            /// <summary>
+            /// Hits in all directions.
+            /// </summary>
             Full,
+            /// <summary>
+            /// Hits the front and sides in a cone shape.
+            /// </summary>
             Cone,
+            /// <summary>
+            /// Hits the tiles left and right of the center.
+            /// </summary>
             Sides
         }
         public enum TargetHitType
@@ -345,13 +354,11 @@ namespace RogueEssence.Dungeon
         {
             if (DungeonScene.Instance.IsTargeted(loc, BurstTiles))
                 return TargetHitType.Burst;
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            Character target = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            if (target != null)
             {
-                if (DungeonScene.Instance.IsTargeted(User, character, TargetAlignments))
-                {
-                    if (loc == character.CharLoc)
-                        return TargetHitType.Burst;
-                }
+                if (DungeonScene.Instance.IsTargeted(User, target, TargetAlignments))
+                    return TargetHitType.Burst;
             }
             if (HitTiles)
                 return TargetHitType.Tile;
@@ -458,8 +465,6 @@ namespace RogueEssence.Dungeon
             {
                 if (connectionGrid[testLoc.X - topLeft.X][testLoc.Y - topLeft.Y])
                     return true;
-                if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, testLoc))
-                    return true;
                 if (!IsInSquareHitbox(testLoc, Origin, MaxRadius, HitArea, Dir))
                     return true;
                 if (ZoneManager.Instance.CurrentMap.TileBlocked(testLoc, true))
@@ -486,13 +491,11 @@ namespace RogueEssence.Dungeon
         {
             if (DungeonScene.Instance.IsTargeted(loc, BurstTiles))
                 return TargetHitType.Burst;
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            if (character != null)
             {
                 if (DungeonScene.Instance.IsTargeted(User, character, TargetAlignments))
-                {
-                    if (loc == character.CharLoc)
-                        return TargetHitType.Burst;
-                }
+                    return TargetHitType.Burst;
             }
             if (HitTiles)
                 return TargetHitType.Tile;
@@ -599,9 +602,6 @@ namespace RogueEssence.Dungeon
         }
         private void preCalculateCoverage(StablePriorityQueue<int, Loc> tilesToHit, int delay)
         {
-            HashSet<Loc> hitTiles = new HashSet<Loc>();
-            HashSet<Loc> returnTiles = new HashSet<Loc>();
-
             Loc candTile = StartPoint;
             for (int ii = 0; ii < MaxDistance; ii++)
             {
@@ -620,13 +620,11 @@ namespace RogueEssence.Dungeon
         public override TargetHitType IsValidTileTarget(Loc loc)
         {
             //check to see who and what is hit by the current drag of old and new origin
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            if (character != null)
             {
                 if (DungeonScene.Instance.IsTargeted(User, character, TargetAlignments))
-                {
-                    if (loc == character.CharLoc)
-                        return TargetHitType.Burst;
-                }
+                    return TargetHitType.Burst;
             }
             if (BurstOnWall && DungeonScene.Instance.IsTargeted(loc, TileAlignment.Wall))
                 return TargetHitType.Burst;
@@ -801,13 +799,11 @@ namespace RogueEssence.Dungeon
         public override TargetHitType IsValidTileTarget(Loc loc)
         {
             //check to see who and what is hit by the current drag of old and new origin
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            if (character != null)
             {
                 if (DungeonScene.Instance.IsTargeted(User, character, TargetAlignments))
-                {
-                    if (loc == character.CharLoc)
-                        return TargetHitType.Burst;
-                }
+                    return TargetHitType.Burst;
             }
             if (BurstOnWall && DungeonScene.Instance.IsTargeted(loc, TileAlignment.Wall))
                 return TargetHitType.Burst;
@@ -1059,13 +1055,11 @@ namespace RogueEssence.Dungeon
         public override TargetHitType IsValidTileTarget(Loc loc)
         {
             //check to see who and what is hit by the current drag of old and new origin
-            foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            Character character = ZoneManager.Instance.CurrentMap.GetCharAtLoc(loc);
+            if (character != null)
             {
                 if (DungeonScene.Instance.IsTargeted(User, character, TargetAlignments))
-                {
-                    if (loc == character.CharLoc)
-                        return TargetHitType.Burst;
-                }
+                    return TargetHitType.Burst;
             }
             if (BurstOnWall && DungeonScene.Instance.IsTargeted(loc, TileAlignment.Wall))
                 return TargetHitType.Burst;

@@ -3,7 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Creates an animation (Or particle emitter) behind and in front of the target sprite.
+    /// </summary>
     [Serializable]
     public class BetweenEmitter : FiniteEmitter
     {
@@ -34,11 +36,30 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new BetweenEmitter(this); }
 
+        /// <summary>
+        /// The animation or particle emitter behind the target sprite.
+        /// </summary>
         public IEmittable AnimBack;
+
+        /// <summary>
+        /// The animation or particle emitter in front of the target sprite.
+        /// </summary>
         public IEmittable AnimFront;
-        public int Offset;
+
+        /// <summary>
+        /// The height of the animation or particle emitter behind the target sprite.
+        /// </summary>
         public int HeightBack;
+
+        /// <summary>
+        /// The height of the animation or particle emitter in front of the target sprite.
+        /// </summary>
         public int HeightFront;
+
+        /// <summary>
+        /// The number of pixels to offset both animations forward, in the direction of the animation.
+        /// </summary>
+        public int Offset;
 
 
         public override void Update(BaseScene scene, FrameTick elapsedTime)

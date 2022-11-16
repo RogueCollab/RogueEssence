@@ -69,10 +69,9 @@ namespace RogueEssence.Menu
             spriteBatch.End();
             float scale = GraphicsManager.WindowZoom;
             Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
-            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(0,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferHeight,
-                0, 0, 1);
+            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(
+                0, GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, 0,
+                0, 1);
 
             alphaTest.Projection = orthMatrix;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s1, null, alphaTest);

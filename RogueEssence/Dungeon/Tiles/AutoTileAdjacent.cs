@@ -107,7 +107,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, Loc totalSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
+        public override void AutoTileArea(INoise noise, Loc rectStart, Loc rectSize, PlacementMethod placementMethod, QueryMethod presenceMethod, QueryMethod queryMethod)
         {
             int[][] mainArray = new int[rectSize.X][];
             for (int ii = 0; ii < rectSize.X; ii++)
@@ -121,7 +121,7 @@ namespace RogueEssence.Dungeon
             {
                 for (int yy = 0; yy < rectSize.Y; yy++)
                 {
-                    if (Collision.InBounds(totalSize.X, totalSize.Y, new Loc(rectStart.X + xx, rectStart.Y + yy)) && presenceMethod(rectStart.X + xx, rectStart.Y + yy))
+                    if (presenceMethod(rectStart.X + xx, rectStart.Y + yy))
                         textureMainBlock(mainArray, rectStart, rectStart.X + xx, rectStart.Y + yy, queryMethod);
                 }
             }
@@ -308,5 +308,55 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public override IEnumerable<List<TileLayer>> IterateElements()
+        {
+            foreach(List<TileLayer> layers in Tilex00) yield return layers;
+            foreach(List<TileLayer> layers in Tilex01) yield return layers;
+            foreach(List<TileLayer> layers in Tilex02) yield return layers;
+            foreach(List<TileLayer> layers in Tilex03) yield return layers;
+            foreach(List<TileLayer> layers in Tilex13) yield return layers;
+            foreach(List<TileLayer> layers in Tilex04) yield return layers;
+            foreach(List<TileLayer> layers in Tilex05) yield return layers;
+            foreach(List<TileLayer> layers in Tilex06) yield return layers;
+            foreach(List<TileLayer> layers in Tilex26) yield return layers;
+            foreach(List<TileLayer> layers in Tilex07) yield return layers;
+            foreach(List<TileLayer> layers in Tilex17) yield return layers;
+            foreach(List<TileLayer> layers in Tilex27) yield return layers;
+            foreach(List<TileLayer> layers in Tilex37) yield return layers;
+            foreach(List<TileLayer> layers in Tilex08) yield return layers;
+            foreach(List<TileLayer> layers in Tilex09) yield return layers;
+            foreach(List<TileLayer> layers in Tilex89) yield return layers;
+            foreach(List<TileLayer> layers in Tilex0A) yield return layers;
+            foreach(List<TileLayer> layers in Tilex0B) yield return layers;
+            foreach(List<TileLayer> layers in Tilex1B) yield return layers;
+            foreach(List<TileLayer> layers in Tilex8B) yield return layers;
+            foreach(List<TileLayer> layers in Tilex9B) yield return layers;
+            foreach(List<TileLayer> layers in Tilex0C) yield return layers;
+            foreach(List<TileLayer> layers in Tilex4C) yield return layers;
+            foreach(List<TileLayer> layers in Tilex0D) yield return layers;
+            foreach(List<TileLayer> layers in Tilex4D) yield return layers;
+            foreach(List<TileLayer> layers in Tilex8D) yield return layers;
+            foreach(List<TileLayer> layers in TilexCD) yield return layers;
+            foreach(List<TileLayer> layers in Tilex0E) yield return layers;
+            foreach(List<TileLayer> layers in Tilex2E) yield return layers;
+            foreach(List<TileLayer> layers in Tilex4E) yield return layers;
+            foreach(List<TileLayer> layers in Tilex6E) yield return layers;
+            foreach(List<TileLayer> layers in Tilex0F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex1F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex2F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex3F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex4F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex5F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex6F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex7F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex8F) yield return layers;
+            foreach(List<TileLayer> layers in Tilex9F) yield return layers;
+            foreach(List<TileLayer> layers in TilexAF) yield return layers;
+            foreach(List<TileLayer> layers in TilexBF) yield return layers;
+            foreach(List<TileLayer> layers in TilexCF) yield return layers;
+            foreach(List<TileLayer> layers in TilexDF) yield return layers;
+            foreach(List<TileLayer> layers in TilexEF) yield return layers;
+            foreach(List<TileLayer> layers in TilexFF) yield return layers;
+        }
     }
 }

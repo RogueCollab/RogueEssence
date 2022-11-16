@@ -17,9 +17,13 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabTilesViewModel()
         {
             TileTypes = new ObservableCollection<string>();
-            string[] tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray(true);
-            for (int ii = 0; ii < tile_names.Length; ii++)
-                TileTypes.Add(ii.ToString("D3") + ": " + tile_names[ii]);
+            Dictionary<string, string> tile_names = DataManager.Instance.DataIndices[DataManager.DataType.Tile].GetLocalStringArray(true);
+            keys = new List<string>();
+            foreach (string key in tile_names.Keys)
+            {
+                keys.Add(key);
+                TileTypes.Add(key + ": " + tile_names[key]);
+            }
 
             Owners = new ObservableCollection<string>();
             for (int ii = 0; ii < 3; ii++)
@@ -40,6 +44,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> keys;
 
         public ObservableCollection<string> TileTypes { get; }
 
@@ -90,11 +95,12 @@ namespace RogueEssence.Dev.ViewModels
         public void TileStates_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "TileStates[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle("Tile", elementName, element, typeof(TileState), new object[0]);
 
             //TODO: make this a member and reference it that way
-            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", elementName, typeof(TileState), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", null, elementName, typeof(TileState), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(TileState));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
@@ -115,17 +121,14 @@ namespace RogueEssence.Dev.ViewModels
 
                 if (itemExists)
                 {
-                    await MessageBox.Show(form.MapEditForm, "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBox.Show(frmData, "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
                 }
                 else
                 {
                     op(index, element);
-                    frmData.Close();
+                    return true;
                 }
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
             };
 
             form.MapEditForm.RegisterChild(frmData);
@@ -178,7 +181,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private EffectTile getBrush()
         {
-            EffectTile brush = new EffectTile(ChosenTile, IsRevealed);
+            EffectTile brush = new EffectTile(keys[ChosenTile], IsRevealed);
             brush.Danger = IsDanger;
             brush.Owner = (EffectTile.TileOwner)ChosenOwner;
 
@@ -190,7 +193,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void setBrush(EffectTile brush)
         {
-            ChosenTile = brush.ID;
+            ChosenTile = keys.IndexOf(brush.ID);
             ChosenOwner = (int)brush.Owner;
             IsDanger = brush.Danger;
             IsRevealed = brush.Revealed;
@@ -222,7 +225,7 @@ namespace RogueEssence.Dev.ViewModels
                 return;
 
             EffectTile effectTile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y].Effect;
-            if (effectTile.ID > -1)
+            if (!String.IsNullOrEmpty(effectTile.ID))
                 setBrush(effectTile);
         }
 

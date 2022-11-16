@@ -20,14 +20,39 @@ namespace RogueEssence.Dungeon
         public const int FAKE_ATTACK_SLOT = -2;
         public const int EQUIP_ITEM_SLOT = -1;
         public const int FLOOR_ITEM_SLOT = -2;
+        public const int NO_ITEM_SLOT = -3;
         public const int FORCED_SLOT = -3;
 
-        public Loc StrikeStartTile { get; set; }//the tile of the user before it started a strike (used for tipper effects)
-        public Loc StrikeEndTile { get; set; }//the tile of the user JUST AFTER it started a strike (used for updating position)
-        public Dir8 StartDir { get; set; }//the direcion of the user before it started a strike (used for multistrike confusion)
+        /// <summary>
+        /// the tile of the user before it started a strike (used for tipper effects)
+        /// wrapped; it can't go out of bounds anyway
+        /// </summary>
+        public Loc StrikeStartTile { get; set; }
+        /// <summary>
+        /// the tile of the user JUST AFTER it started a strike (used for updating position)
+        /// wrapped; it can't go out of bounds anyway
+        /// </summary>
+        public Loc StrikeEndTile { get; set; }
+        /// <summary>
+        /// the direcion of the user before it started a strike (used for multistrike confusion)
+        /// unwrapped
+        /// </summary>
+        public Dir8 StartDir { get; set; }
+        /// <summary>
+        /// the origin tile for the explosion
+        /// unwrapped
+        /// </summary>
         public Loc ExplosionTile { get; set; }
+        /// <summary>
+        ///  the location of the tile being targeted
+        /// unwrapped
+        /// </summary>
         public Loc TargetTile { get; set; }
-        public List<Loc> StrikeLandTiles { get; set; }//all tiles in which a strike's hitbox ended (used for item landing)
+        /// <summary>
+        /// all tiles in which a strike's hitbox ended (used for item landing)
+        /// unwrapped
+        /// </summary>
+        public List<Loc> StrikeLandTiles { get; set; }
 
 
         public BattleActionType ActionType { get; set; }
@@ -38,7 +63,7 @@ namespace RogueEssence.Dungeon
         public ExplosionData Explosion { get; set; }
         public BattleData Data { get; set; }
         public InvItem Item;//the item that is used, and most likely dropped
-        public int SkillUsedUp;//the skill whose last charge was used up
+        public string SkillUsedUp;//the skill whose last charge was used up
         public AbortStatus TurnCancel;
 
         private bool actionSilent;
@@ -55,7 +80,7 @@ namespace RogueEssence.Dungeon
             TurnCancel = new AbortStatus();
             this.ActionType = actionType;
             UsageSlot = BattleContext.DEFAULT_ATTACK_SLOT;
-            SkillUsedUp = -1;
+            SkillUsedUp = "";
             StrikeLandTiles = new List<Loc>();
             actionMsg = "";
             GlobalContextStates = new StateCollection<ContextState>();
@@ -109,7 +134,11 @@ namespace RogueEssence.Dungeon
 
         public int GetContextStateInt<T>(bool global, int defaultVal) where T : ContextIntState
         {
-            ContextIntState countState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            return GetContextStateInt(typeof(T), global, defaultVal);
+        }
+        public int GetContextStateInt(Type type, bool global, int defaultVal)
+        {
+            ContextIntState countState = global ? (ContextIntState)GlobalContextStates.GetWithDefault(type) : (ContextIntState)ContextStates.GetWithDefault(type);
             if (countState == null)
                 return defaultVal;
             else
@@ -119,10 +148,15 @@ namespace RogueEssence.Dungeon
 
         public void AddContextStateInt<T>(bool global, int addedVal) where T : ContextIntState
         {
-            ContextIntState countState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            AddContextStateInt(typeof(T), global, addedVal);
+        }
+
+        public void AddContextStateInt(Type type, bool global, int addedVal)
+        {
+            ContextIntState countState = global ? (ContextIntState)GlobalContextStates.GetWithDefault(type) : (ContextIntState)ContextStates.GetWithDefault(type);
             if (countState == null)
             {
-                T newCount = (T)Activator.CreateInstance(typeof(T));
+                ContextIntState newCount = (ContextIntState)Activator.CreateInstance(type);
                 newCount.Count = addedVal;
                 if (global)
                     GlobalContextStates.Set(newCount);
@@ -139,7 +173,12 @@ namespace RogueEssence.Dungeon
         }
         public Multiplier GetContextStateMult<T>(bool global, Multiplier defaultVal) where T : ContextMultState
         {
-            ContextMultState countState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            return GetContextStateMult(typeof(T), global, defaultVal);
+        }
+
+        public Multiplier GetContextStateMult(Type type, bool global, Multiplier defaultVal)
+        {
+            ContextMultState countState = global ? (ContextMultState)GlobalContextStates.GetWithDefault(type) : (ContextMultState)ContextStates.GetWithDefault(type);
             if (countState == null)
                 return defaultVal;
             else
@@ -148,10 +187,15 @@ namespace RogueEssence.Dungeon
 
         public void AddContextStateMult<T>(bool global, int numerator, int denominator) where T : ContextMultState
         {
-            ContextMultState multState = global ? GlobalContextStates.GetWithDefault<T>() : ContextStates.GetWithDefault<T>();
+            AddContextStateMult(typeof(T), global, numerator, denominator);
+        }
+
+        public void AddContextStateMult(Type type, bool global, int numerator, int denominator)
+        {
+            ContextMultState multState = global ? (ContextMultState)GlobalContextStates.GetWithDefault(type) : (ContextMultState)ContextStates.GetWithDefault(type);
             if (multState == null)
             {
-                T newMult = (T)Activator.CreateInstance(typeof(T));
+                ContextMultState newMult = (ContextMultState)Activator.CreateInstance(type);
                 newMult.Mult = new Multiplier(numerator, denominator);
                 if (global)
                     GlobalContextStates.Set(newMult);
@@ -174,7 +218,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeforeExplosion(context));
 
             //release explosion
-            yield return CoroutineManager.Instance.StartCoroutine(context.Explosion.ReleaseExplosion(context.ExplosionTile, context.User, ProcessHitLoc, ProcessHitTile));
+            yield return CoroutineManager.Instance.StartCoroutine(context.Explosion.ReleaseExplosion(context.ExplosionTile, context.User, context.ProcessHitLoc, context.ProcessHitTile));
         }
 
         public IEnumerator<YieldInstruction> ProcessHitLoc(Loc loc)

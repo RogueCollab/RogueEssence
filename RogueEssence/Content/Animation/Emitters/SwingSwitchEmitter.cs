@@ -3,6 +3,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Emits a particle that moves from the source to the target, with a parabolic circular motion.
+    /// </summary>
     [Serializable]
     public class SwingSwitchEmitter : FiniteEmitter
     {

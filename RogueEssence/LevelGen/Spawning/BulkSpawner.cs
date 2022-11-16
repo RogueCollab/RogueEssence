@@ -4,16 +4,32 @@ using System.Collections.Generic;
 
 namespace RogueEssence.LevelGen
 {
-
+    /// <summary>
+    /// Generates spawnable objects using a spawnlist and a regular list.
+    /// The normal list is for choosing specific objects that are ALWAYS spawned.
+    /// The spawnlist is for choosing several items randomly.
+    /// </summary>
+    /// <typeparam name="TGenContext"></typeparam>
+    /// <typeparam name="TSpawnable"></typeparam>
     [Serializable]
     public class BulkSpawner<TGenContext, TSpawnable> : IStepSpawner<TGenContext, TSpawnable>
         where TGenContext : IGenContext
         where TSpawnable : ISpawnable
     {
+        /// <summary>
+        /// Objects that are always spawned.
+        /// </summary>
         public List<TSpawnable> SpecificSpawns;
 
-        public int SpawnAmount;
+        /// <summary>
+        /// An encounter/loot table of random spawnable objects.
+        /// </summary>
         public SpawnList<TSpawnable> RandomSpawns;
+
+        /// <summary>
+        /// The number of objects to roll from Random Spawns.
+        /// </summary>
+        public int SpawnAmount;
 
         public BulkSpawner()
         {

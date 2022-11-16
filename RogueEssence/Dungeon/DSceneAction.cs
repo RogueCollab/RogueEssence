@@ -29,7 +29,7 @@ namespace RogueEssence.Dungeon
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteSkill));
 
-            if (context.SkillUsedUp > -1 && !context.User.Dead)
+            if (!String.IsNullOrEmpty(context.SkillUsedUp) && !context.User.Dead)
             {
                 SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
                 LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
@@ -48,15 +48,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessUseItem(Character character, int invSlot, int teamSlot, ActionResult result)
         {
-            if (character.AttackOnly)
-            {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
-                yield break;
-            }
             Character target = teamSlot == -1 ? character : character.MemberTeam.Players[teamSlot];
-            if (target.AttackOnly)
+            if (target != character && character.CantInteract)
             {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", target.GetDisplayName(false)), false, true);
+                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM_OTHER", character.GetDisplayName(false)), false, true);
                 yield break;
             }
 
@@ -82,12 +77,6 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessThrowItem(Character character, int invSlot, ActionResult result)
         {
-            if (character.AttackOnly)
-            {
-                LogMsg(Text.FormatKey("MSG_CANT_USE_ITEM", character.GetDisplayName(false)), false, true);
-                yield break;
-            }
-
             BattleContext context = new BattleContext(BattleActionType.Throw);
             context.User = character;
             context.UsageSlot = invSlot;
@@ -127,7 +116,7 @@ namespace RogueEssence.Dungeon
         {
             if (context.UsageSlot > BattleContext.DEFAULT_ATTACK_SLOT && context.UsageSlot < CharData.MAX_SKILL_SLOTS)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(context.User.DeductCharges(context.UsageSlot, 1, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(context.User.DeductCharges(context.UsageSlot, 1, false, false, false));
                 if (context.User.Skills[context.UsageSlot].Element.Charges == 0)
                     context.SkillUsedUp = context.User.Skills[context.UsageSlot].Element.SkillNum;
             }
@@ -145,8 +134,8 @@ namespace RogueEssence.Dungeon
             {
                 InvItem item = ((ExplorerTeam)context.User.MemberTeam).GetInv(context.UsageSlot);
                 ItemData entry = (ItemData)item.GetData();
-                if (entry.MaxStack > 1 && item.HiddenValue > 1)
-                    item.HiddenValue--;
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                    item.Amount--;
                 else if (entry.MaxStack < 0)
                 {
                     //reusable, do nothing.
@@ -158,8 +147,8 @@ namespace RogueEssence.Dungeon
             {
                 InvItem item = context.User.EquippedItem;
                 ItemData entry = (ItemData)item.GetData();
-                if (entry.MaxStack > 1 && item.HiddenValue > 1)
-                    item.HiddenValue--;
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                    item.Amount--;
                 else if (entry.MaxStack < 0)
                 {
                     //reusable, do nothing.
@@ -172,8 +161,8 @@ namespace RogueEssence.Dungeon
                 int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(context.User.CharLoc);
                 MapItem item = ZoneManager.Instance.CurrentMap.Items[mapSlot];
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
-                if (entry.MaxStack > 1 && item.HiddenValue > 1)
-                    item.HiddenValue--;
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                    item.Amount--;
                 else if (entry.MaxStack < 0)
                 {
                     //reusable, do nothing.
@@ -195,9 +184,9 @@ namespace RogueEssence.Dungeon
         {
             //this is where the delays between target hits are managed
             context.HitboxAction.Distance += Math.Min(Math.Max(-3, context.RangeMod), 3);
-            yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformCharAction(context.HitboxAction.Clone(), context));
+            yield return CoroutineManager.Instance.StartCoroutine(context.User.PerformBattleAction(context.HitboxAction.Clone(), context));
             //if (context.User.CharLoc == context.StrikeEndTile && context.StrikeEndTile != context.StrikeStartTile)
-            //    yield return CoroutinesManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
+            //    yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(context.User, false, false, false));
 
             //TODO: test to make sure everything is consistent with the erasure of handling movement in here
             //first, hopping needs to work properly, because the it will call its own tile landing
@@ -260,6 +249,8 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(PerformAction(context));
             if (context.CancelState.Cancel) yield break;
             yield return CoroutineManager.Instance.StartCoroutine(context.User.AfterActionTaken(context));
+            //activate any traps that may have been queued from the action
+            yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(context.User));
         }
 
         public IEnumerator<YieldInstruction> RepeatActions(BattleContext context)
@@ -362,7 +353,7 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public static int GetEffectiveness(Character attacker, Character target, BattleData action, int element)
+        public static int GetEffectiveness(Character attacker, Character target, BattleData action, string element)
         {
             int effectiveness = 0;
 
@@ -392,7 +383,7 @@ namespace RogueEssence.Dungeon
             return effectiveness;
         }
 
-        public static int GetEffectiveness(Character attacker, Character target, int attacking, int defending)
+        public static int GetEffectiveness(Character attacker, Character target, string attacking, string defending)
         {
             int effectiveness = 0;
 
@@ -623,6 +614,13 @@ namespace RogueEssence.Dungeon
             return GetMatchup(attacker, target, true);
         }
 
+        /// <summary>
+        /// Determines how the first character should treat the second character.
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="target"></param>
+        /// <param name="action">Whether the alignment is for thinking (off) or for attacking (on)</param>
+        /// <returns></returns>
         public Alignment GetMatchup(Character attacker, Character target, bool action)
         {
             if (attacker == null) return Alignment.Foe;
@@ -632,20 +630,22 @@ namespace RogueEssence.Dungeon
 
             if (target.EnemyOfFriend && action)
                 return Alignment.Foe;
+            if (attacker.AttackFriend && action)
+                return Alignment.Foe;
 
             if (attacker.MemberTeam == target.MemberTeam)
                 return Alignment.Friend;
 
-            CharIndex attackerIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(attacker);
-            CharIndex targetIndex = ZoneManager.Instance.CurrentMap.GetCharIndex(target);
+            Faction attackerFaction = ZoneManager.Instance.CurrentMap.GetCharFaction(attacker);
+            Faction targetFaction = ZoneManager.Instance.CurrentMap.GetCharFaction(target);
             //members of the same faction are friends
-            if (attackerIndex.Faction == targetIndex.Faction)
+            if (attackerFaction == targetFaction)
                 return Alignment.Friend;
             //if any faction is friend, then the matchup might be friend.
-            if (attackerIndex.Faction == Faction.Friend || targetIndex.Faction == Faction.Friend)
+            if (attackerFaction == Faction.Friend || targetFaction == Faction.Friend)
             {
                 bool foeTruce = true; // allies and foes won't attack each other, unless this is set to false
-                if (attackerIndex.Faction == Faction.Foe || targetIndex.Faction == Faction.Foe)
+                if (attackerFaction == Faction.Foe || targetFaction == Faction.Foe)
                 {
                     foeTruce &= !attacker.MemberTeam.FoeConflict;
                     foeTruce &= !target.MemberTeam.FoeConflict;
@@ -675,7 +675,7 @@ namespace RogueEssence.Dungeon
 
         public bool IsTargeted(Loc tile, TileAlignment tileAlignment)
         {
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, tile))
+            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref tile))
                 return false;
 
             if (tileAlignment == TileAlignment.None)
@@ -683,10 +683,7 @@ namespace RogueEssence.Dungeon
             if (tileAlignment == TileAlignment.Any)
                 return true;
 
-            uint mobility = 0;
-            mobility |= (1U << (int)TerrainData.Mobility.Lava);
-            mobility |= (1U << (int)TerrainData.Mobility.Water);
-            mobility |= (1U << (int)TerrainData.Mobility.Abyss);
+            TerrainData.Mobility mobility = TerrainData.Mobility.Lava | TerrainData.Mobility.Water | TerrainData.Mobility.Abyss;
             if (ZoneManager.Instance.CurrentMap.TileBlocked(tile, mobility))
                 return true;
             else

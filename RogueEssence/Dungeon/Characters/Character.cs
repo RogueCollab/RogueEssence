@@ -9,13 +9,13 @@ using System.Runtime.Serialization;
 using RogueEssence.Script;
 using NLua;
 using Newtonsoft.Json;
+using QuadTrees.QTreePoint;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
-    
-
     [Serializable]
-    public class Character : CharData, ICharSprite, IEntityWithLuaData
+    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable
     {
 
         public const int MAX_FULLNESS = 100;
@@ -31,10 +31,20 @@ namespace RogueEssence.Dungeon
             {
                 if (ProxyName != "")
                     return ProxyName;
-                if (MemberTeam is MonsterTeam)
-                    return GetFullFormName(CurrentForm);
+                if (MemberTeam is ExplorerTeam)
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        return Nickname;
+                    else
+                        return DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                }
                 else
-                    return BaseName;
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        return Nickname;
+                    else
+                        return GetFullFormName(BaseForm);
+                }
             }
         }
 
@@ -45,7 +55,24 @@ namespace RogueEssence.Dungeon
         /// <returns></returns>
         public string GetDisplayName(bool trueName)
         {
-            string name = trueName ? BaseName : Name;
+            string name = Name;
+            if (trueName)
+            {
+                if (MemberTeam is ExplorerTeam)
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        name = Nickname;
+                    else
+                        name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                }
+                else
+                {
+                    if (!String.IsNullOrEmpty(Nickname))
+                        name = Nickname;
+                    else
+                        name = GetFullFormName(BaseForm);
+                }
+            }
 
             Team team = MemberTeam;
             if (Unidentifiable && team != DataManager.Instance.Save.ActiveTeam)
@@ -138,8 +165,11 @@ namespace RogueEssence.Dungeon
 
         public List<BackReference<Skill>> Skills;
 
-        public int Element1 { get; private set; }
-        public int Element2 { get; private set; }
+        [JsonConverter(typeof(ElementConverter))]
+        public string Element1 { get; private set; }
+
+        [JsonConverter(typeof(ElementConverter))]
+        public string Element2 { get; private set; }
 
         public List<BackReference<Intrinsic>> Intrinsics;
 
@@ -166,8 +196,15 @@ namespace RogueEssence.Dungeon
         public Loc CharLoc
         {
             get { return currentCharAction.CharLoc; }
-            set { currentCharAction.CharLoc = value; }
+            set
+            {
+                Loc oldLoc = currentCharAction.CharLoc;
+                currentCharAction.CharLoc = value;
+                updateLoc(oldLoc);
+            }
         }
+
+        System.Drawing.Point IPointQuadStorable.Point { get { return new System.Drawing.Point(CharLoc.X, CharLoc.Y); } }
 
         /// <summary>
         /// Character's direction.
@@ -185,9 +222,19 @@ namespace RogueEssence.Dungeon
         public int FullnessRemainder;
         public int MaxFullness;
 
-        public bool Dead;
+        private bool dead;
+        public bool Dead
+        {
+            get { return dead; }
+            set
+            {
+                dead = value;
+                MemberTeam?.CharacterDeathChanged();
+            }
+        }
 
-        public Dictionary<int, StatusEffect> StatusEffects;
+        [JsonConverter(typeof(StatusDictConverter))]
+        public Dictionary<string, StatusEffect> StatusEffects;
 
         public bool MustHitNext;
 
@@ -212,7 +259,7 @@ namespace RogueEssence.Dungeon
         public AITactic Tactic;
 
         //calculable via save-loading
-        public uint Mobility;
+        public TerrainData.Mobility Mobility;
         public bool CantWalk;
         //will prevent the passive item effects, as well as the "stick" effect
         //does not affect active use
@@ -222,12 +269,24 @@ namespace RogueEssence.Dungeon
         public bool StopItemAtHit;
         public bool MovesScrambled;
         public bool ChargeSaver;
-        
+
         /// <summary>
-        /// Can only use basic attack as an action.
+        /// The Wait command translates to attack.
         /// </summary>
-        public bool AttackOnly;
+        public bool WaitToAttack;
+
+        /// <summary>
+        /// Can't pick up/place/equip/take items, cant interact with ground/people.
+        /// </summary>
+        public bool CantInteract;
+        /// <summary>
+        /// Treated as a foe by friends in combat
+        /// </summary>
         public bool EnemyOfFriend;
+        /// <summary>
+        /// Treats friends as foes in and out of combat
+        /// </summary>
+        public bool AttackFriend;
         //visibility and sight
         public Map.SightRange TileSight;
         public Map.SightRange CharSight;
@@ -238,15 +297,21 @@ namespace RogueEssence.Dungeon
         public bool SeeAllChars;
         public bool SeeItems;
         public bool SeeWallItems;
+        public bool SeeTraps;
+        public bool Unrecruitable;
 
         //miscellaneous traits
         public StateCollection<CharState> CharStates;
 
         //temporarily stores forced warp to prevent warp chains
+        [NonSerialized]
         public List<Loc> WarpHistory;
-        
+
         [NonSerialized]
         public Team MemberTeam;
+
+        [NonSerialized]
+        public int Proximity;
 
         public TempCharBackRef BackRef;
 
@@ -263,8 +328,8 @@ namespace RogueEssence.Dungeon
                     Skills.Add(new BackReference<Skill>(new Skill()));
             }
 
-            Element1 = 00;
-            Element2 = 00;
+            Element1 = "";
+            Element2 = "";
 
             Intrinsics = new List<BackReference<Intrinsic>>();
             if (populateSlots)
@@ -274,6 +339,9 @@ namespace RogueEssence.Dungeon
             }
 
             EquippedItem = new InvItem();
+
+            Proximity = -1;
+
             ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
@@ -283,7 +351,8 @@ namespace RogueEssence.Dungeon
             ProxySpeed = -1;
             CharStates = new StateCollection<CharState>();
             WarpHistory = new List<Loc>();
-            StatusEffects = new Dictionary<int, StatusEffect>();
+            StatusEffects = new Dictionary<string, StatusEffect>();
+            IdleOverride = -1;
             currentCharAction = new EmptyCharAction(new CharAnimIdle(new Loc(), Dir8.Down));
             StatusesTargetingThis = new List<StatusRef>();
             TileSight = Map.SightRange.Any;
@@ -292,10 +361,10 @@ namespace RogueEssence.Dungeon
             BackRef = new TempCharBackRef(false, -1);
         }
 
-        public Character(CharData baseChar, Team team)
-            : this(baseChar, team, new Loc(), Dir8.Down) { }
+        public Character(CharData baseChar)
+            : this(baseChar, new Loc(), Dir8.Down) { }
 
-        public Character(CharData baseChar, Team team, Loc newLoc, Dir8 charDir)
+        public Character(CharData baseChar, Loc newLoc, Dir8 charDir)
             : base(baseChar)
         {            
             CurrentForm = BaseForm;
@@ -309,7 +378,7 @@ namespace RogueEssence.Dungeon
             for(int ii = 0; ii < BaseSkills.Count; ii++)
             {
                 Skill newState = null;
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                     newState = new Skill(BaseSkills[ii].SkillNum, DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges);
                 else
                     newState = new Skill();
@@ -325,6 +394,9 @@ namespace RogueEssence.Dungeon
                 Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
 
             EquippedItem = new InvItem();
+
+            Proximity = -1;
+
             ProxyName = "";
             ProxySprite = MonsterID.Invalid;
             ProxyAtk = -1;
@@ -334,10 +406,10 @@ namespace RogueEssence.Dungeon
             ProxySpeed = -1;
             CharStates = new StateCollection<CharState>();
             WarpHistory = new List<Loc>();
-            StatusEffects = new Dictionary<int, StatusEffect>();
+            StatusEffects = new Dictionary<string, StatusEffect>();
+            IdleOverride = -1;
             currentCharAction = new EmptyCharAction(new CharAnimIdle(newLoc, charDir));
             StatusesTargetingThis = new List<StatusRef>();
-            MemberTeam = team;
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
@@ -365,10 +437,14 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
                 character.BaseIntrinsics[ii] = this.BaseIntrinsics[ii];
 
-            Character new_mob = new Character(character, team);
+            Character new_mob = new Character(character);
             team.Players.Add(new_mob);
-            new_mob.CharLoc = this.CharLoc;
-            new_mob.CharDir = this.CharDir;
+
+            new_mob.IdleOverride = IdleOverride;
+            CharAnimIdle idleAction = new CharAnimIdle(this.CharLoc, this.CharDir);
+            if (IdleOverride > -1)
+                idleAction.Override = IdleOverride;
+            new_mob.currentCharAction = new EmptyCharAction(idleAction);
             new_mob.Tactic = new AITactic(this.Tactic);
             new_mob.EquippedItem = new InvItem(this.EquippedItem);
 
@@ -381,7 +457,7 @@ namespace RogueEssence.Dungeon
         public void OnRemove()
         {
             //remove all status from this character without saying anything
-            List<int> keys = new List<int>();
+            List<string> keys = new List<string>();
             keys.AddRange(StatusEffects.Keys);
             for (int ii = 0; ii < keys.Count; ii++)
             {
@@ -431,7 +507,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < BaseSkills.Count; ii++)
             {
                 Skill newState = null;
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
                     int baseCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
                     BaseSkills[ii].Charges = baseCharges;
@@ -455,13 +531,19 @@ namespace RogueEssence.Dungeon
             ProxyMDef = -1;
             ProxySpeed = -1;
 
-            StatusEffects = new Dictionary<int, StatusEffect>();
+            StatusEffects = new Dictionary<string, StatusEffect>();
 
             return skillIndices;
         }
 
         public void FullRestore()
         {
+            if (Dead)
+            {
+                Dead = false;
+                DefeatAt = "";
+            }
+
             List<int> skillIndices = baseRestore();
 
             OnSkillsChanged(skillIndices.ToArray());
@@ -469,12 +551,12 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public bool HasElement(int element)
+        public bool HasElement(string element)
         {
             return (element == Element1 || element == Element2);
         }
 
-        public bool HasIntrinsic(int intrinsic)
+        public bool HasIntrinsic(string intrinsic)
         {
             foreach (BackReference<Intrinsic> checkIntrinsic in Intrinsics)
             {
@@ -514,9 +596,8 @@ namespace RogueEssence.Dungeon
             MonsterData newDex = DataManager.Instance.GetMonster(CurrentForm.Species);
             BaseMonsterForm newForm = newDex.Forms[CurrentForm.Form];
 
-            if (prevIndex == 2 && newForm.Intrinsic3 == 0)
-                prevIndex = 0;
-            if (prevIndex == 1 && newForm.Intrinsic2 == 0)
+            List<int> possibles = newForm.GetPossibleIntrinsicSlots();
+            if (!possibles.Contains(prevIndex))
                 prevIndex = 0;
 
             Intrinsics.Clear();
@@ -553,7 +634,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < BaseSkills.Count; ii++)
             {
                 Skill newState = null;
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                     newState = new Skill(BaseSkills[ii].SkillNum, BaseSkills[ii].Charges, turnOn[ii]);
                 else
                     newState = new Skill();
@@ -618,13 +699,9 @@ namespace RogueEssence.Dungeon
                 Fullness = 0;
                 FullnessRemainder = 0;
 
-                if (MemberTeam == DungeonScene.Instance.ActiveTeam && MemberTeam.Leader == this)
-                {
+                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
                     GameManager.Instance.SE(GraphicsManager.HungerSE);
-                    recovery = -60;
-                }
-                else
-                    recovery = 0;
+                recovery = -60;
             }
 
             yield return CoroutineManager.Instance.StartCoroutine(ModifyHP(MaxHP * recovery));
@@ -719,7 +796,12 @@ namespace RogueEssence.Dungeon
             }
         }
 
-
+        /// <summary>
+        /// Makes the character disappear but also causes it to let go of its item.
+        /// Technically should be handled by the scripts calling it.
+        /// TODO: remove this method, after removing calls from rescue to script
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<YieldInstruction> DieSilent()
         {
             HP = 0;
@@ -738,7 +820,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 InvItem heldItem = EquippedItem;
-                if (heldItem.ID > -1)
+                if (!String.IsNullOrEmpty(heldItem.ID))
                 {
                     DequipItem();
                     MapItem mapItem = new MapItem(heldItem);
@@ -754,45 +836,6 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> Die()
         {
-            int animTime = 10 + GameManager.Instance.ModifyBattleSpeed(50, CharLoc);
-
-            if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-            {
-                CharAnimDefeated defeatAnim = new CharAnimDefeated();
-                defeatAnim.CharLoc = CharLoc;
-                defeatAnim.CharDir = CharDir;
-                defeatAnim.MajorAnim = true;
-                defeatAnim.AnimTime = animTime;
-                yield return CoroutineManager.Instance.StartCoroutine(this.StartAnim(defeatAnim));
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT", GetDisplayName(true)));
-            }
-            else
-            {
-                CharAnimDefeated defeatAnim = new CharAnimDefeated();
-                defeatAnim.CharLoc = CharLoc;
-                defeatAnim.CharDir = CharDir;
-                defeatAnim.MajorAnim = true;
-                defeatAnim.AnimTime = animTime;
-                yield return CoroutineManager.Instance.StartCoroutine(this.StartAnim(defeatAnim));
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_DEFEAT_FOE", GetDisplayName(true)));
-
-            }
-
-            yield return new WaitForFrames(animTime - 1);
-
-            HP = 0;
-            Dead = true;
-
-            
-            //pre death:
-            //defeat message
-            //mark as dead
-            //drop item
-
-            //post death:
-            //revert to normal
-            //EXP handout
-
             yield return CoroutineManager.Instance.StartCoroutine(OnDeath());
             
             if (Dead)
@@ -804,7 +847,7 @@ namespace RogueEssence.Dungeon
                 else
                 {
                     InvItem heldItem = EquippedItem;
-                    if (heldItem.ID > -1)
+                    if (!String.IsNullOrEmpty(heldItem.ID))
                     {
                         DequipItem();
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
@@ -829,7 +872,7 @@ namespace RogueEssence.Dungeon
         {
             for (int ii = 0; ii < Skills.Count; ii++)
             {
-                if (Skills[ii].Element.SkillNum > -1)
+                if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                 {
                     if (skillSlot == ii || skillSlot == -1)
                     {
@@ -849,12 +892,12 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(DeductCharges(skillSlot, charges, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(DeductCharges(skillSlot, charges, true, true, true));
         }
 
-        public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges, bool effect, bool declare)
+        public IEnumerator<YieldInstruction> DeductCharges(int skillSlot, int charges, bool effect, bool declare, bool force)
         {
-            if (ChargeSaver)
+            if (ChargeSaver && force)
             {
                 if (declare)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_CHARGES_LOST_ZERO", GetDisplayName(false)));
@@ -877,7 +920,7 @@ namespace RogueEssence.Dungeon
             {
                 for (int ii = 0; ii < Skills.Count; ii++)
                 {
-                    if (Skills[ii].Element.SkillNum > -1)
+                    if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                     {
                         if (Skills[ii].Element.Charges > 0)
                         {
@@ -953,7 +996,7 @@ namespace RogueEssence.Dungeon
                 BaseSkills[Skills[slot].BackRef].Charges = Skills[slot].Element.Charges;
         }
 
-        public StatusEffect GetStatusEffect(int id)
+        public StatusEffect GetStatusEffect(string id)
         {
             StatusEffect value;
             if (StatusEffects.TryGetValue(id, out value))
@@ -1012,7 +1055,7 @@ namespace RogueEssence.Dungeon
 
         }
 
-        public void SilentRemoveStatus(int id)
+        public void SilentRemoveStatus(string id)
         {
             StatusEffect statusToRemove;
             if (StatusEffects.TryGetValue(id, out statusToRemove))
@@ -1024,7 +1067,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public IEnumerator<YieldInstruction> RemoveStatusEffect(int id, bool msg = true)
+        public IEnumerator<YieldInstruction> RemoveStatusEffect(string id, bool msg = true)
         {
             StatusEffect statusToRemove;
             if (StatusEffects.TryGetValue(id, out statusToRemove))
@@ -1060,7 +1103,7 @@ namespace RogueEssence.Dungeon
         public void DeleteIntrinsic(int slot)
         {
             BaseIntrinsics.RemoveAt(slot);
-            BaseIntrinsics.Add(-1);
+            BaseIntrinsics.Add("");
             for (int ii = Intrinsics.Count; ii >= 0; ii--)
             {
                 if (Intrinsics[ii].BackRef == slot)
@@ -1073,13 +1116,13 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public void LearnIntrinsic(int intrinsicNum, int slot = -1)
+        public void LearnIntrinsic(string intrinsicNum, int slot = -1)
         {
             if (slot == -1)
             {
                 for (int ii = 0; ii < MAX_INTRINSIC_SLOTS; ii++)
                 {
-                    if (BaseIntrinsics[ii] == -1)
+                    if (String.IsNullOrEmpty(BaseIntrinsics[ii]))
                     {
                         slot = ii;
                         break;
@@ -1101,9 +1144,9 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void ChangeSkill(int slot, int skillNum)
+        public void ChangeSkill(int slot, string skillNum)
         {
-            if (skillNum > -1)
+            if (!String.IsNullOrEmpty(skillNum))
                 Skills[slot] = new BackReference<Skill>(new Skill(skillNum, DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost), -1);
             else
                 Skills[slot] = new BackReference<Skill>(new Skill(), -1);
@@ -1144,17 +1187,17 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public void LearnSkill(int skillNum, bool enabled)
+        public void LearnSkill(string skillNum, bool enabled)
         {
             int newSlot = 0;
             foreach (SlotSkill skill in BaseSkills)
             {
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                     newSlot++;
             }
             ReplaceSkill(skillNum, newSlot, enabled);
         }
-        public void ReplaceSkill(int skillNum, int newSlot, bool enabled)
+        public void ReplaceSkill(string skillNum, int newSlot, bool enabled)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
 
@@ -1163,7 +1206,7 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        private List<int> baseReplaceSkill(int skillNum, int newSlot, bool enabled)
+        private List<int> baseReplaceSkill(string skillNum, int newSlot, bool enabled)
         {
             List<int> skillIndices = new List<int>();
             for (int ii = 0; ii < MAX_SKILL_SLOTS; ii++)
@@ -1174,8 +1217,6 @@ namespace RogueEssence.Dungeon
 
             BaseSkills[newSlot] = new SlotSkill(skillNum);
             BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
-            while (Relearnables.Count <= skillNum)
-                Relearnables.Add(false);
             Relearnables[skillNum] = true;
 
             int owningSlot = -1;
@@ -1203,13 +1244,13 @@ namespace RogueEssence.Dungeon
         /// <param name="skillNum"></param>
         /// <param name="newSlot"></param>
         /// <param name="enabled"></param>
-        public void EditSkill(int skillNum, int newSlot, bool enabled)
+        public void EditSkill(string skillNum, int newSlot, bool enabled)
         {
             if (newSlot >= MAX_SKILL_SLOTS)
                 return;
 
             BaseSkills[newSlot] = new SlotSkill(skillNum);
-            if (skillNum > -1)
+            if (!String.IsNullOrEmpty(skillNum))
                 BaseSkills[newSlot].Charges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
 
             int owningSlot = -1;
@@ -1226,7 +1267,7 @@ namespace RogueEssence.Dungeon
                 Skills[owningSlot] = new BackReference<Skill>(new Skill(skillNum, BaseSkills[newSlot].Charges, enabled), newSlot);
         }
 
-        public void SwitchSkills(int slot)
+        public void SilentSwitchSkills(int slot)
         {
             BackReference<Skill> upState = Skills[slot];
             BackReference<Skill> downState = Skills[slot + 1];
@@ -1244,6 +1285,11 @@ namespace RogueEssence.Dungeon
                 upState.BackRef = downRef;
                 downState.BackRef = upRef;
             }
+        }
+
+        public void SwitchSkills(int slot)
+        {
+            SilentSwitchSkills(slot);
 
             //need to switch relevant statuses around
             List<int> skillIndices = new List<int>();
@@ -1257,11 +1303,59 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public List<int> GetRelearnableSkills()
+        public List<string> GetRelearnableSkills(bool includePreEvo)
         {
-            BaseMonsterForm entry = DataManager.Instance.GetMonster(BaseForm.Species).Forms[BaseForm.Form];
-            List<int> forgottenSkills = new List<int>();
-            foreach (int skill in entry.GetSkillsAtLevel(Level, true))
+            List<BaseMonsterForm> entries = new List<BaseMonsterForm>();
+            string evolutionStage = BaseForm.Species;
+            MonsterData entryData;
+            BaseMonsterForm entryForm;
+
+            while (!string.IsNullOrEmpty(evolutionStage))
+            {
+                entryData = DataManager.Instance.GetMonster(evolutionStage);
+                entryForm = entryData.Forms[BaseForm.Form];
+                entries.Add(entryForm);
+                evolutionStage = includePreEvo ? entryData.PromoteFrom : string.Empty;
+            }
+
+            List<string> forgottenSkills = new List<string>();
+            foreach(BaseMonsterForm entry in entries)
+            {
+                foreach (string skill in entry.GetSkillsAtLevel(Level, true))
+                {
+                    bool hasSkill = false;
+                    foreach (SlotSkill learnedSkill in BaseSkills)
+                    {
+                        if (learnedSkill.SkillNum == skill)
+                        {
+                            hasSkill = true;
+                            break;
+                        }
+                    }
+                    if (!hasSkill && !forgottenSkills.Contains(skill))
+                        forgottenSkills.Add(skill);
+                }
+            }
+
+            foreach (string key in Relearnables.Keys)
+            {
+                bool hasSkill = false;
+                foreach (SlotSkill learnedSkill in BaseSkills)
+                {
+                    if (learnedSkill.SkillNum == key)
+                    {
+                        hasSkill = true;
+                        break;
+                    }
+                }
+                if (!hasSkill && !forgottenSkills.Contains(key))
+                    forgottenSkills.Add(key);
+            }
+            return forgottenSkills;
+
+            /*BaseMonsterForm entry = DataManager.Instance.GetMonster(BaseForm.Species).Forms[BaseForm.Form];
+            List<string> forgottenSkills = new List<string>();
+            foreach (string skill in entry.GetSkillsAtLevel(Level, true))
             {
                 bool hasSkill = false;
                 foreach (SlotSkill learnedSkill in BaseSkills)
@@ -1275,32 +1369,30 @@ namespace RogueEssence.Dungeon
                 if (!hasSkill && !forgottenSkills.Contains(skill))
                     forgottenSkills.Add(skill);
             }
-            for (int ii = 0; ii < Relearnables.Count; ii++)
+
+            foreach(string key in Relearnables.Keys)
             {
-                if (Relearnables[ii])
+                bool hasSkill = false;
+                foreach (SlotSkill learnedSkill in BaseSkills)
                 {
-                    bool hasSkill = false;
-                    foreach (SlotSkill learnedSkill in BaseSkills)
+                    if (learnedSkill.SkillNum == key)
                     {
-                        if (learnedSkill.SkillNum == ii)
-                        {
-                            hasSkill = true;
-                            break;
-                        }
+                        hasSkill = true;
+                        break;
                     }
-                    if (!hasSkill && !forgottenSkills.Contains(ii))
-                        forgottenSkills.Add(ii);
                 }
+                if (!hasSkill && !forgottenSkills.Contains(key))
+                    forgottenSkills.Add(key);
             }
-            return forgottenSkills;
+            return forgottenSkills;*/
         }
 
-        public IEnumerator<YieldInstruction> ChangeElement(int element1, int element2, bool msg = true, bool vfx = true)
+        public IEnumerator<YieldInstruction> ChangeElement(string element1, string element2, bool msg = true, bool vfx = true)
         {
-            if (element1 == 00 && element2 != 00)
+            if (element1 == DataManager.Instance.DefaultElement && element2 != DataManager.Instance.DefaultElement)
             {
                 element1 = element2;
-                element2 = 00;
+                element2 = DataManager.Instance.DefaultElement;
             }
 
             bool equal1 = (Element1 == element1);
@@ -1312,9 +1404,9 @@ namespace RogueEssence.Dungeon
             {
                 ElementData type1Data = DataManager.Instance.GetElement(element1);
                 ElementData type2Data = DataManager.Instance.GetElement(element2);
-                if (element1 != 00 && element2 != 00)
+                if (element1 != DataManager.Instance.DefaultElement && element2 != DataManager.Instance.DefaultElement)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE_DUAL", GetDisplayName(false), type1Data.GetIconName(), type2Data.GetIconName()));
-                else if (element1 != 00)
+                else if (element1 != DataManager.Instance.DefaultElement)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_ELEMENT_CHANGE", GetDisplayName(false), type1Data.GetIconName()));
             }
             if (vfx)
@@ -1323,7 +1415,7 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public IEnumerator<YieldInstruction> ReplaceIntrinsic(int slot, int intrinsic, bool msg = true, bool vfx = true)
+        public IEnumerator<YieldInstruction> ReplaceIntrinsic(int slot, string intrinsic, bool msg = true, bool vfx = true)
         {
             if (intrinsic == Intrinsics[slot].Element.ID)
             {
@@ -1334,7 +1426,7 @@ namespace RogueEssence.Dungeon
 
             if (msg)
             {
-                if (intrinsic > 0)
+                if (intrinsic != DataManager.Instance.DefaultIntrinsic)
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_GAIN", GetDisplayName(false), DataManager.Instance.GetIntrinsic(intrinsic).GetColoredName()));
                 else
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_INTRINSIC_CHANGE_LOST", GetDisplayName(false), DataManager.Instance.GetIntrinsic(Intrinsics[slot].Element.ID).GetColoredName()));
@@ -1349,24 +1441,12 @@ namespace RogueEssence.Dungeon
         
         public void EquipItem(InvItem item)
         {
+            ItemCheckContext context = new ItemCheckContext(this, new MapItem(item), new MapItem(EquippedItem));
+
             EquippedItem = item;
-            ItemData entry = DataManager.Instance.GetItem(EquippedItem.ID);
-            
-            if (item.Cursed && !CanRemoveStuck)
-            {
-                GameManager.Instance.SE(GraphicsManager.CursedSE);
-                DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_CURSED", item.GetDisplayName(), GetDisplayName(false)));
-            }
-            else if (entry.Cursed)
-            {
-                GameManager.Instance.SE(GraphicsManager.CursedSE);
-                if (!CanRemoveStuck)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE", item.GetDisplayName(), GetDisplayName(false)));
-                else
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_EQUIP_AUTOCURSE_AVOID", item.GetDisplayName(), GetDisplayName(false)));
-                item.Cursed = true;
-            }
             RefreshTraits();
+
+            OnEquip(context);
         }
 
         /// <summary>
@@ -1374,8 +1454,12 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public void DequipItem()
         {
+            ItemCheckContext context = new ItemCheckContext(this, new MapItem(), new MapItem(EquippedItem));
+
             EquippedItem = new InvItem();
             RefreshTraits();
+
+            OnEquip(context);
         }
 
         //find a way to prevent repeated calls to this method in various other methods
@@ -1394,7 +1478,8 @@ namespace RogueEssence.Dungeon
             MovesScrambled = false;
 
             ChargeSaver = false;
-            AttackOnly = false;
+            WaitToAttack = false;
+            CantInteract = false;
             EnemyOfFriend = false;
 
             Unidentifiable = false;
@@ -1402,12 +1487,13 @@ namespace RogueEssence.Dungeon
             SeeAllChars = false;
             SeeItems = false;
             SeeWallItems = false;
+            SeeTraps = false;
 
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
             //Mobility
-            Mobility = 0;
+            Mobility = TerrainData.Mobility.Passable;
 
             CharStates.Clear();
 
@@ -1419,21 +1505,44 @@ namespace RogueEssence.Dungeon
                 skillState.Element.Sealed = false;
             }
         }
+
+        private void refreshProximity()
+        {
+            int oldProximity = Proximity;
+            Proximity = -1;
+
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives())
+                    Proximity = Math.Max(Proximity, proximityTuple.passive.ProximityEvent.Radius);
+            }
+
+            if (Proximity != oldProximity)
+                MemberTeam?.ContainingMap?.ModifyCharProximity(this, oldProximity);
+        }
+
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
         public void RefreshTraits()
         {
+            TerrainData.Mobility oldMobility = Mobility;
+
             baseRefresh();
+
+            refreshProximity();
 
             OnRefresh();
 
             maintainMaximums();
+
+            if (Mobility != oldMobility)
+                MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
         }
 
         private void maintainMaximums()
         {
             for (int ii = 0; ii < Skills.Count; ii++)
             {
-                if (Skills[ii].Element.SkillNum > -1)
+                if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                 {
                     int maxCharges = DataManager.Instance.GetSkill(Skills[ii].Element.SkillNum).BaseCharges + ChargeBoost;
                     //bring charges up to maximum if maximum is enforced
@@ -1447,7 +1556,7 @@ namespace RogueEssence.Dungeon
             }
             for (int ii = 0; ii < BaseSkills.Count; ii++)
             {
-                if (BaseSkills[ii].SkillNum > -1)
+                if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
                     int maxCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
 
@@ -1475,14 +1584,14 @@ namespace RogueEssence.Dungeon
                 yield return new PassiveContext(statusRef.TargetChar.GetStatusEffect(statusRef.ID), statusRef.GetStatusEntry().TargetPassive, defaultPortPriority, statusRef.TargetChar);
 
             //check equipped item
-            Dictionary<int, int> activeItems = new Dictionary<int, int>();
-            if (EquippedItem.ID > -1 && !ItemDisabled)
+            Dictionary<string, int> activeItems = new Dictionary<string, int>();
+            if (!String.IsNullOrEmpty(EquippedItem.ID) && !ItemDisabled)
             {
                 yield return new PassiveContext(EquippedItem, EquippedItem.GetData(), defaultPortPriority, this);
                 activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
             }
             //check bag items
-            if (!ItemDisabled)
+            if (!ItemDisabled && MemberTeam != null)
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
@@ -1494,7 +1603,7 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                foreach (int key in activeItems.Keys)
+                foreach (string key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
                         yield return new PassiveContext(MemberTeam.GetInv(activeItems[key]), MemberTeam.GetInv(activeItems[key]).GetData(), defaultPortPriority, this);
@@ -1505,7 +1614,7 @@ namespace RogueEssence.Dungeon
             {
                 foreach (BackReference<Intrinsic> intrinsic in Intrinsics)
 				{
-                    if (intrinsic.Element.ID > -1)
+                    if (!String.IsNullOrEmpty(intrinsic.Element.ID))
                         yield return new PassiveContext(intrinsic.Element, intrinsic.Element.GetData(), defaultPortPriority, this);
 				}
             }
@@ -1513,10 +1622,8 @@ namespace RogueEssence.Dungeon
             if (dungeonMode)
             {
                 //iterate through all other characters' proximity effects which touch this character
-                //for now, just iterate everyone and their proximity passives
-                //TODO: we need location caching.  profiling shows that every turn drops FPS thanks to this block of code!!
                 StablePriorityQueue<int, Character> charQueue = new StablePriorityQueue<int, Character>();
-                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                foreach (Character character in ZoneManager.Instance.CurrentMap.IterateProximityCharacters(CharLoc))
                 {
                     if (!character.Dead)
                         charQueue.Enqueue(-character.Speed, character);
@@ -1535,6 +1642,15 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<PassiveContext> IterateProximityPassives(Character character, Loc targetLoc, Priority portPriority)
         {
+            foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives())
+            {
+                if (ZoneManager.Instance.CurrentMap.InRange(this.CharLoc, targetLoc, proximityTuple.passive.ProximityEvent.Radius) &&
+                    (DungeonScene.Instance.GetMatchup(character, this) & proximityTuple.passive.ProximityEvent.TargetAlignments) != Alignment.None)
+                    yield return new PassiveContext(proximityTuple.owner, proximityTuple.passive.ProximityEvent, portPriority, this);
+            }
+        }
+        private IEnumerable<(PassiveActive, ProximityPassive)> findProximityPassives()
+        {
             //check all of their entries for proximity ranges; return them only if their ranges are above 0
             //whatever proximity passive class is used, it needs to somehow refer back to the character owning it
             //can the passive active be made up on the spot?
@@ -1543,50 +1659,50 @@ namespace RogueEssence.Dungeon
             foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
             {
                 ProximityPassive proximity = (ProximityPassive)status.GetData();
-                if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-                    yield return new PassiveContext(status, proximity.ProximityEvent, portPriority, this);
+                if (proximity.ProximityEvent.Radius > -1)
+                    yield return (status, proximity);
             }
 
             //check statuses
             foreach (StatusEffect status in StatusEffects.Values)
             {
                 ProximityPassive proximity = (ProximityPassive)status.GetData();
-                if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-                    yield return new PassiveContext(status, proximity.ProximityEvent, portPriority, this);
+                if (proximity.ProximityEvent.Radius > -1)
+                    yield return (status, proximity);
             }
 
             //check eqipped item
-            Dictionary<int, int> activeItems = new Dictionary<int, int>();
-            if (EquippedItem.ID > -1 && !ItemDisabled)
+            Dictionary<string, int> activeItems = new Dictionary<string, int>();
+            if (!String.IsNullOrEmpty(EquippedItem.ID) && !ItemDisabled)
             {
                 ProximityPassive proximity = (ProximityPassive)EquippedItem.GetData();
-                if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
+                if (proximity.ProximityEvent.Radius > -1)
                 {
-                    yield return new PassiveContext(EquippedItem, proximity.ProximityEvent, portPriority, this);
+                    yield return (EquippedItem, proximity);
                     activeItems.Add(EquippedItem.ID, BattleContext.EQUIP_ITEM_SLOT);
                 }
             }
 
             // check bag items
-            if (!ItemDisabled)
+            if (!ItemDisabled && MemberTeam != null)
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
                     ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
-                    if (itemData.BagEffect && itemData.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist4() && (DungeonScene.Instance.GetMatchup(character, this) & itemData.ProximityEvent.TargetAlignments) != Alignment.None)
+                    if (itemData.BagEffect && itemData.ProximityEvent.Radius > -1)
                     {
                         if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
                             activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
 
-                foreach (int key in activeItems.Keys)
+                foreach (string key in activeItems.Keys)
                 {
                     if (activeItems[key] > BattleContext.EQUIP_ITEM_SLOT)
                     {
                         InvItem invItem = MemberTeam.GetInv(activeItems[key]);
                         ItemData itemData = DataManager.Instance.GetItem(invItem.ID);
-                        yield return new PassiveContext(invItem, itemData.ProximityEvent, portPriority, this);
+                        yield return (invItem, itemData);
                     }
                 }
             }
@@ -1597,16 +1713,15 @@ namespace RogueEssence.Dungeon
             {
                 foreach (BackReference<Intrinsic> intrinsic in Intrinsics)
                 {
-                    if (intrinsic.Element.ID > -1)
+                    if (!String.IsNullOrEmpty(intrinsic.Element.ID))
                     {
 						ProximityPassive proximity = (ProximityPassive)intrinsic.Element.GetData();
-						if (proximity.ProximityEvent.Radius >= (this.CharLoc - targetLoc).Dist8() && (DungeonScene.Instance.GetMatchup(character, this) & proximity.ProximityEvent.TargetAlignments) != Alignment.None)
-							yield return new PassiveContext(intrinsic.Element, proximity.ProximityEvent, portPriority, this);
-					}
+						if (proximity.ProximityEvent.Radius > -1)
+                            yield return (intrinsic.Element, proximity);
+                    }
                 }
             }
 
-            yield break;
         }
 
         public IEnumerator<YieldInstruction> BeforeTryAction(BattleContext context)
@@ -1699,59 +1814,117 @@ namespace RogueEssence.Dungeon
 
         public void OnModifyHP(ref int hpChange)
         {
-            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs, this);
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ModifyHPs, this);
+                DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs, this);
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ModifyHPs, this);
 
-                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs, this);
-            };
-            foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+                    foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.ModifyHPs, this);
+                };
+                foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
+                    effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         public void OnRestoreHP(ref int hpChange)
         {
-            DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs, this);
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.RestoreHPs, this);
+                DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs, this);
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.RestoreHPs, this);
 
-                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs, this);
-            };
-            foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+                    foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<HPChangeEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.RestoreHPs, this);
+                };
+                foreach (EventQueueElement<HPChangeEvent> effect in DungeonScene.IterateEvents<HPChangeEvent>(function))
+                    effect.Event.Apply(effect.Owner, effect.OwnerChar, ref hpChange);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         private void OnSkillsChanged(int[] skillIndices)
         {
-            DungeonScene.EventEnqueueFunction<SkillChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SkillChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                //check statuses
-                foreach (StatusEffect status in StatusEffects.Values)
-                    status.AddEventsToQueue<SkillChangeEvent>(queue, maxPriority, ref nextPriority, ((StatusData)status.GetData()).OnSkillChanges, this);
-            };
-            foreach (EventQueueElement<SkillChangeEvent> effect in DungeonScene.IterateEvents<SkillChangeEvent>(function))
-                effect.Event.Apply(effect.Owner, this, skillIndices);
+                DungeonScene.EventEnqueueFunction<SkillChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SkillChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    //check statuses
+                    foreach (StatusEffect status in StatusEffects.Values)
+                        status.AddEventsToQueue<SkillChangeEvent>(queue, maxPriority, ref nextPriority, ((StatusData)status.GetData()).OnSkillChanges, this);
+                };
+                foreach (EventQueueElement<SkillChangeEvent> effect in DungeonScene.IterateEvents<SkillChangeEvent>(function))
+                    effect.Event.Apply(effect.Owner, this, skillIndices);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         private void OnRefresh()
         {
-            DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            try
             {
-                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh, this);
+                DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+                {
+                    DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh, this);
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnRefresh, this);
+
+                    foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnRefresh, this);
+                };
+                foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
+                    effect.Event.Apply(effect.Owner, effect.OwnerChar, this);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+        public void OnEquip(ItemCheckContext context)
+        {
+            DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            {
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnEquips, this);
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnRefresh, this);
+                    ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnEquips, this);
+                
+                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnEquips, this);
+            };
+            foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+        }
+
+        public void OnPickup(ItemCheckContext context)
+        {
+            DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
+            {
+                DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnPickups, this);
+                ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnPickups, this);
 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
-                    effectContext.AddEventsToQueue<RefreshEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnRefresh, this);
+                    effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnPickups, this);
             };
-            foreach (EventQueueElement<RefreshEvent> effect in DungeonScene.IterateEvents<RefreshEvent>(function))
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, this);
+            foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
+                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
         }
 
 
@@ -1927,8 +2100,8 @@ namespace RogueEssence.Dungeon
         //either border of sight range, or border of the screen
         public static Loc GetSightDims()
         {
-            int width = (GraphicsManager.ScreenWidth - GraphicsManager.TileSize - 1) / 2 / GraphicsManager.TileSize + 1;
-            int height = (GraphicsManager.ScreenHeight - GraphicsManager.TileSize - 1) / 2 / GraphicsManager.TileSize + 1;
+            int width = MathUtils.DivUp(GraphicsManager.ScreenWidth - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
+            int height = MathUtils.DivUp(GraphicsManager.ScreenHeight - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
             return new Loc(width, height);
         }
 
@@ -1955,8 +2128,7 @@ namespace RogueEssence.Dungeon
             {
                 case Map.SightRange.Blind:
                     {
-                        if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc))
-                            lightOp(CharLoc.X, CharLoc.Y, 1f);
+                        lightOp(CharLoc.X, CharLoc.Y, 1f);
                         break;
                     }
                 case Map.SightRange.Murky:
@@ -1965,18 +2137,15 @@ namespace RogueEssence.Dungeon
                         for (int x = -1; x <= 1; x++)
                         {
                             for (int y = -1; y <= 1; y++)
-                            {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc + new Loc(x, y)))
-                                    lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
-                            }
+                                lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
                         }
                         break;
                     }
                 case Map.SightRange.Dark:
                     {
                         Loc seen = GetSightDims();
-                        Loc minLoc = new Loc(Math.Max(0, CharLoc.X - seen.X), Math.Max(0, CharLoc.Y - seen.Y));
-                        Loc addLoc = new Loc(Math.Min(ZoneManager.Instance.CurrentMap.Width, CharLoc.X + seen.X + 1), Math.Min(ZoneManager.Instance.CurrentMap.Height, CharLoc.Y + seen.Y + 1)) - minLoc;
+                        Loc minLoc = new Loc(CharLoc.X - seen.X, CharLoc.Y - seen.Y);
+                        Loc addLoc = new Loc(CharLoc.X + seen.X + 1, CharLoc.Y + seen.Y + 1) - minLoc;
 
                         Fov.CalculateAnalogFOV(minLoc, addLoc, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
                         break;
@@ -1988,10 +2157,7 @@ namespace RogueEssence.Dungeon
                         for (int x = -seen.X; x <= seen.X; x++)
                         {
                             for (int y = -seen.Y; y <= seen.Y; y++)
-                            {
-                                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, CharLoc + new Loc(x, y)))
-                                    lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
-                            }
+                                lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
                         }
                         break;
                     }
@@ -1999,13 +2165,40 @@ namespace RogueEssence.Dungeon
         }
 
 
+        /// <summary>
+        /// Does not guarantee any order
+        /// </summary>
+        /// <param name="targetAlignment"></param>
+        /// <returns></returns>
         public List<Character> GetSeenCharacters(Alignment targetAlignment)
         {
             List<Character> seenChars = new List<Character>();
-            foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
+            if (SeeAllChars)
             {
-                if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
-                    seenChars.Add(target);
+                foreach (Character target in ZoneManager.Instance.CurrentMap.IterateCharacters())
+                {
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
+                        seenChars.Add(target);
+                }
+            }
+            else
+            {
+                //add members of the same team - can be seen no matter what
+                foreach (Character target in MemberTeam.EnumerateChars())
+                {
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false))
+                        seenChars.Add(target);
+                }
+
+                Loc radius = GetSightDims();
+                //iterate through everyone in max sight range EXCEPT members of the same team
+                foreach (Character target in ZoneManager.Instance.CurrentMap.GetCharsInRect(Rect.FromPoints(CharLoc - radius, CharLoc + radius)))
+                {
+                    if (target.MemberTeam == MemberTeam)
+                        continue;
+                    if (DungeonScene.Instance.IsTargeted(this, target, targetAlignment, false) && CanSeeCharacter(target))
+                        seenChars.Add(target);
+                }
             }
             return seenChars;
         }
@@ -2019,10 +2212,10 @@ namespace RogueEssence.Dungeon
             if (character == null)
                 return false;
 
-            if (character.MemberTeam == this.MemberTeam)
+            if (SeeAllChars)
                 return true;
 
-            if (SeeAllChars)
+            if (character.MemberTeam == this.MemberTeam)
                 return true;
 
             if (character.Unlocatable)
@@ -2043,49 +2236,43 @@ namespace RogueEssence.Dungeon
         public bool CanSeeLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
         {
             //needs to be edited according to FOV
-            Loc diffLoc = (fromLoc - toLoc);
             switch (sight)
             {
                 case Map.SightRange.Blind:
                     return false;
                 case Map.SightRange.Murky:
-                    return diffLoc.Dist8() <= 1;
+                    {
+                        Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
+                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
+                    }
                 case Map.SightRange.Dark:
                     {
                         Loc seen = GetSightDims();
+                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
-                        if (Math.Abs(diffLoc.X) > seen.X)
-                            return false;
-                        if (Math.Abs(diffLoc.Y) > seen.Y)
-                            return false;
-
-                        return Fov.IsInFOV(fromLoc, toLoc, DungeonScene.Instance.VisionBlocked);
+                        foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
+                        {
+                            if (Fov.IsInFOV(fromLoc, testLoc, DungeonScene.Instance.VisionBlocked))
+                                return true;
+                        }
+                        return false;
                     }
                 default:
-                    {
-                        Loc seen = GetSightDims();
-
-                        if (Math.Abs(diffLoc.X) > seen.X)
-                            return false;
-                        if (Math.Abs(diffLoc.Y) > seen.Y)
-                            return false;
-
-                        return true;
-                    }
+                        return IsInSightBoundsFrom(fromLoc, toLoc);
             }
         }
 
         public bool IsInSightBounds(Loc loc)
         {
-            Loc diffLoc = (CharLoc - loc);
+            return IsInSightBoundsFrom(CharLoc, loc);
+        }
+
+        public bool IsInSightBoundsFrom(Loc fromLoc, Loc loc)
+        {
             Loc seen = GetSightDims();
+            Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
-            if (Math.Abs(diffLoc.X) > seen.X)
-                return false;
-            if (Math.Abs(diffLoc.Y) > seen.Y)
-                return false;
-
-            return true;
+            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
         }
 
 
@@ -2101,6 +2288,9 @@ namespace RogueEssence.Dungeon
         [NonSerialized]
         private Emote currentEmote;
 
+        [NonSerialized]
+        public int IdleOverride;
+
         public Loc CharLocFrom { get { return currentCharAction.CharLocFrom; } }
         public bool ActionDone { get { return currentCharAction.ActionDone; } }
         private Loc drawOffset { get { return currentCharAction.DrawOffset; } }
@@ -2109,6 +2299,15 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public Loc MapLoc { get { return currentCharAction.MapLoc; } }
         public int LocHeight { get { return currentCharAction.LocHeight; } }
+
+        private void updateLoc(Loc oldLoc)
+        {
+            if (oldLoc == CharLoc)
+                return;
+            //update location caches
+            MemberTeam?.ContainingMap?.ModifyCharLookup(this, oldLoc);
+            MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
+        }
 
         public void StartEmote(Emote emote)
         {
@@ -2122,33 +2321,51 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> StartAnim(CharAnimation charAnim)
         {
+            if (IdleOverride > -1)
+            {
+                CharAnimIdle idleAction = charAnim as CharAnimIdle;
+                if (idleAction != null)
+                    idleAction.Override = IdleOverride;
+            }
+
+            charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
             if (OccupiedwithAction())
             {
+                Loc preInterruptLoc = CharLoc;
                 //if it's a major anim, it must wait.  put this on the top of the stack to be executed the moment it is available
+                //ProcessInterruptingAnim can have 3 outcomes:
+                //-It tells the new animation to wait until it is currently done
+                //-It prevents the new animation from being executed but changes the current animation in some way (likely CharLoc)
                 bool wait = currentCharAction.ProcessInterruptingAnim(charAnim);
                 if (wait)
                     yield return new WaitWhile(OccupiedwithAction);
                 else
+                {
+                    updateLoc(preInterruptLoc);
                     yield break;
-                
+                }
             }
 
             CharAction prevAction = currentCharAction;
             CharAction newCharAction = new EmptyCharAction(charAnim);
-            newCharAction.PickUpFrom(Appearance, currentCharAction);
+            newCharAction.PickUpFrom(Appearance.ToCharID(), currentCharAction);
+            Loc oldLoc = CharLoc;
             currentCharAction = newCharAction;
+            updateLoc(oldLoc);
 
             UpdateFrame();
         }
 
-        public IEnumerator<YieldInstruction> PerformCharAction(CombatAction action, BattleContext context)
+        public IEnumerator<YieldInstruction> PerformBattleAction(CombatAction action, BattleContext context)
         {
             yield return new WaitUntil(DungeonScene.Instance.AnimationsOver);
             yield return new WaitWhile(OccupiedwithAction);
 
             yield return CoroutineManager.Instance.StartCoroutine(action.OnIntro(this));
             action.BeginAction(this, currentCharAction);
+            Loc oldLoc = CharLoc;
             currentCharAction = action;
+            updateLoc(oldLoc);
             UpdateFrame();
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(this);
@@ -2180,7 +2397,9 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(action.OnIntro(this));
             action.BeginAction(this, currentCharAction);
+            Loc oldLoc = CharLoc;
             currentCharAction = action;
+            updateLoc(oldLoc);
             UpdateFrame();
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(this);
@@ -2205,7 +2424,14 @@ namespace RogueEssence.Dungeon
             currentCharAction.OnUpdate(elapsedTime, Appearance, MovementSpeed);
 
             if (currentCharAction.WantsToEnd())
-                currentCharAction = new EmptyCharAction(new CharAnimIdle(CharLoc, CharDir));
+            {
+                CharAnimIdle idleAction = new CharAnimIdle(CharLoc, CharDir);
+                if (IdleOverride > -1)
+                    idleAction.Override = IdleOverride;
+                EmptyCharAction action = new EmptyCharAction(idleAction);
+                action.PickUpFrom(Appearance.ToCharID(), currentCharAction);
+                currentCharAction = action;
+            }
 
             UpdateFrame();
 
@@ -2232,12 +2458,11 @@ namespace RogueEssence.Dungeon
                 drawEffects.Add(DrawEffect.Transparent);
 
             currentCharAction.UpdateDrawEffects(drawEffects);
-
         }
 
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset, int terrainShadow)
         {
-            CharSheet sheet = GraphicsManager.GetChara(Appearance);
+            CharSheet sheet = GraphicsManager.GetChara(Appearance.ToCharID());
             int teamStatus = 2;
             //if (DataManager.Instance.Save != null || !DataManager.Instance.Save.CutsceneMode)
             //{
@@ -2273,7 +2498,7 @@ namespace RogueEssence.Dungeon
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset)
         {
-            CharSheet sheet = GraphicsManager.GetChara(Appearance);
+            CharSheet sheet = GraphicsManager.GetChara(Appearance.ToCharID());
             Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);
             Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
             Loc leftHand = currentCharAction.GetActionPoint(sheet, ActionPointType.LeftHand);
@@ -2295,7 +2520,7 @@ namespace RogueEssence.Dungeon
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            CharSheet sheet = GraphicsManager.GetChara(Appearance);
+            CharSheet sheet = GraphicsManager.GetChara(Appearance.ToCharID());
             currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
@@ -2349,23 +2574,23 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void GetCurrentSprite(out MonsterID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
+        public void GetCurrentSprite(out CharID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
         {
-            currentForm = Appearance;
+            currentForm = Appearance.ToCharID();
             currentOffset = drawOffset;
             currentHeight = LocHeight;
-            CharSheet sheet = GraphicsManager.GetChara(Appearance);
+            CharSheet sheet = GraphicsManager.GetChara(Appearance.ToCharID());
             currentCharAction.GetCurrentSprite(sheet, out currentAnim, out currentTime, out currentFrame);
         }
 
         public Loc GetDrawLoc(Loc offset)
         {
-            return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(Appearance));
+            return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(Appearance.ToCharID()));
         }
 
         public Loc GetDrawSize()
         {
-            return new Loc(GraphicsManager.GetChara(Appearance).TileWidth, GraphicsManager.GetChara(Appearance).TileHeight);
+            return new Loc(GraphicsManager.GetChara(Appearance.ToCharID()).TileWidth, GraphicsManager.GetChara(Appearance.ToCharID()).TileHeight);
         }
 
         //

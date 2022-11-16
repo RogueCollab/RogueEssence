@@ -28,12 +28,25 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class CombineGridRoomStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
     {
-        //just combine simple squares for now
-        public SpawnList<GridCombo<T>> Combos;
-        public ComponentCollection RoomComponents { get; set; }
+        /// <summary>
+        /// The number of merges to add to the grid plan.
+        /// </summary>
         public RandRange MergeRate;
 
+        /// <summary>
+        /// List of possible merges that can be done.
+        /// </summary>
+        public SpawnList<GridCombo<T>> Combos;
+
+        /// <summary>
+        /// Determines which rooms are eligible to be merged into a new room.
+        /// </summary>
         public List<BaseRoomFilter> Filters { get; set; }
+
+        /// <summary>
+        /// Components that the newly added room will be labeled with.
+        /// </summary>
+        public ComponentCollection RoomComponents { get; set; }
 
         public CombineGridRoomStep()
         {
@@ -59,10 +72,15 @@ namespace RogueEssence.LevelGen
                 //roll a merge
                 GridCombo<T> combo = Combos.Pick(rand);
                 List<Loc> viableLocs = new List<Loc>();
+
+                Rect allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight) - combo.Size + new Loc(1));
+                if (floorPlan.Wrap)
+                    allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight));
+
                 //attempt to place it
-                for (int xx = 0; xx < floorPlan.GridWidth - (combo.Size.X - 1); xx++)
+                for (int xx = allowedRange.X; xx < allowedRange.End.X; xx++)
                 {
-                    for (int yy = 0; yy < floorPlan.GridHeight - (combo.Size.Y - 1); yy++)
+                    for (int yy = allowedRange.Y; yy < allowedRange.End.Y; yy++)
                     {
                         bool viable = true;
                         //check for room presence in all rooms (must be SINGLE and immutable)

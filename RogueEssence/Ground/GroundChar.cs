@@ -30,6 +30,12 @@ namespace RogueEssence.Ground
         public GameAction CurrentCommand;
 
         [NonSerialized]
+        public int IdleOverride;
+
+        [NonSerialized]
+        private HashSet<DrawEffect> drawEffects;
+
+        [NonSerialized]
         private GroundAction currentCharAction;
 
         [NonSerialized]
@@ -104,13 +110,13 @@ namespace RogueEssence.Ground
         }
 
 
-        public GroundChar() : this(new MonsterID(), new Loc(), Dir8.Down, "GroundChar")
+        public GroundChar() : this(new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), new Loc(), Dir8.Down, "GroundChar")
         {
             //!#FIXME : Give a default unique name please fix this when we have editor/template names!
         }
 
         [JsonConstructor]
-        public GroundChar(bool populateSlots) : this(new MonsterID(), new Loc(), Dir8.Down, "", "GroundChar", populateSlots)
+        public GroundChar(bool populateSlots) : this(new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), new Loc(), Dir8.Down, "", "GroundChar", populateSlots)
         {
         }
 
@@ -120,7 +126,9 @@ namespace RogueEssence.Ground
             //Events = new List<GroundEvent>();
             //ThinkEvents = new List<GroundEvent>();
 
+            IdleOverride = -1;
             currentCharAction = new IdleGroundAction(newLoc, charDir);
+            drawEffects = new HashSet<DrawEffect>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
             TriggerType = EEntityTriggerTypes.Action;
@@ -149,11 +157,14 @@ namespace RogueEssence.Ground
         {
             Data = new CharData(other.Data);
 
+            IdleOverride = -1;
             currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
+            drawEffects = new HashSet<DrawEffect>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
 
             //from base
             EntEnabled = other.EntEnabled;
+            AIEnabled = other.AIEnabled;
             Collider = other.Collider;
             EntName = other.EntName;
             Direction = other.Direction;
@@ -169,7 +180,13 @@ namespace RogueEssence.Ground
 
         public void StartAction(GroundAction action)
         {
-            action.Begin(CurrentForm);
+            if (IdleOverride > -1)
+            {
+                IdleGroundAction idleAction = action as IdleGroundAction;
+                if (idleAction != null)
+                    idleAction.Override = IdleOverride;
+            }
+            action.Begin(CurrentForm.ToCharID());
             currentCharAction = action;
 
             UpdateFrame();
@@ -215,6 +232,14 @@ namespace RogueEssence.Ground
             return movement;
         }
 
+        public void SetDrawEffect(DrawEffect effect)
+        {
+            drawEffects.Add(effect);
+        }
+        public void RemoveDrawEffect(DrawEffect effect)
+        {
+            drawEffects.Remove(effect);
+        }
 
         /// <summary>
         /// Update for editor view
@@ -241,7 +266,11 @@ namespace RogueEssence.Ground
             //transition to the new action
             if (currentCharAction.NextAction != null)
             {
-                currentCharAction.NextAction.Begin(CurrentForm);
+                IdleGroundAction idleAction = currentCharAction.NextAction as IdleGroundAction;
+                if (idleAction != null)
+                    idleAction.Override = IdleOverride;
+
+                currentCharAction.NextAction.Begin(CurrentForm.ToCharID());
                 currentCharAction = currentCharAction.NextAction;
             }
 
@@ -305,11 +334,13 @@ namespace RogueEssence.Ground
         public void UpdateFrame()
         {
             currentCharAction.UpdateFrame();
+
+            currentCharAction.UpdateDrawEffects(drawEffects);
         }
 
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset)
         {
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
 
             Loc shadowType = new Loc(0, 2 + sheet.ShadowSize * 3);
             Loc shadowPoint = currentCharAction.GetActionPoint(sheet, ActionPointType.Shadow);
@@ -333,7 +364,7 @@ namespace RogueEssence.Ground
                 blank.Draw(spriteBatch, new Rectangle(Bounds.X - offset.X, Bounds.Y - offset.Y,
                     Bounds.Width, Bounds.Height), null, Color.Yellow * 0.7f);
             }
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
             Loc center = currentCharAction.GetActionPoint(sheet, ActionPointType.Center);
             Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
             Loc leftHand = currentCharAction.GetActionPoint(sheet, ActionPointType.LeftHand);
@@ -354,7 +385,7 @@ namespace RogueEssence.Ground
         }
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
             currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
@@ -365,23 +396,23 @@ namespace RogueEssence.Ground
         }
 
 
-        public void GetCurrentSprite(out MonsterID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
+        public void GetCurrentSprite(out CharID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
         {
-            currentForm = CurrentForm;
+            currentForm = CurrentForm.ToCharID();
             currentOffset = drawOffset;
             currentHeight = LocHeight;
-            CharSheet sheet = GraphicsManager.GetChara(CurrentForm);
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
             currentCharAction.GetCurrentSprite(sheet, out currentAnim, out currentTime, out currentFrame);
         }
 
         public override Loc GetDrawLoc(Loc offset)
         {
-            return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm));
+            return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm.ToCharID()));
         }
 
         public override Loc GetDrawSize()
         {
-            return new Loc(GraphicsManager.GetChara(CurrentForm).TileWidth, GraphicsManager.GetChara(CurrentForm).TileHeight);
+            return new Loc(GraphicsManager.GetChara(CurrentForm.ToCharID()).TileWidth, GraphicsManager.GetChara(CurrentForm.ToCharID()).TileHeight);
         }
 
         /// <summary>

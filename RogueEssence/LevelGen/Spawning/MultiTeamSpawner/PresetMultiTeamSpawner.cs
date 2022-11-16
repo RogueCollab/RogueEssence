@@ -5,11 +5,17 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
-
+    /// <summary>
+    /// Spawns specific mob teams defined in a list.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class PresetMultiTeamSpawner<T> : IMultiTeamSpawner<T>
         where T : IGenContext, IMobSpawnMap
     {
+        /// <summary>
+        /// The list of teams to spawn.
+        /// </summary>
         public List<SpecificTeamSpawner> Spawns;
 
         public PresetMultiTeamSpawner()

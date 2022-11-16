@@ -37,9 +37,15 @@ namespace RogueEssence
         private static GameManager instance;
         public static void InitInstance()
         {
+            if (instance != null)
+                GraphicsManager.ZoomChanged -= instance.ZoomChanged;
             instance = new GameManager();
+            GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
         public static GameManager Instance { get { return instance; } }
+        
+        public RenderTarget2D GameScreen { get; private set; }
+
 
         public InputManager MetaInputManager;
         public InputManager InputManager;
@@ -69,10 +75,13 @@ namespace RogueEssence
         private float bgFadeAmount;
         private BGAnimData fadedBG;
 
+        public Dictionary<string, (float volume, float diff)> LoopingSE;
+
         public string Song;
         public string NextSong;
         public FrameTick MusicFadeTime;
-        public const int MUSIC_FADE_TOTAL = 120;
+        public int MusicFadeTotal;
+        public const int MUSIC_FADE_TOTAL = 40;
         public string QueuedFanfare;
         public FanfarePhase CurrentFanfarePhase;
         public FrameTick FanfareTime;
@@ -89,7 +98,18 @@ namespace RogueEssence
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
 
+            LoopingSE = new Dictionary<string, (float volume, float diff)>();
+
             DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
+
+            ZoomChanged();
+        }
+
+        public void ZoomChanged()
+        {
+            GameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                GraphicsManager.WindowWidth, GraphicsManager.WindowHeight,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24Stencil8);
         }
 
         public void BattleSE(string newSE)
@@ -113,6 +133,59 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
         }
+
+        public void LoopBattleSE(string newSE, int fadeTime = 0)
+        {
+            if (newSE != "")
+                LoopSE("Battle/" + newSE, fadeTime);
+        }
+
+        public void LoopSE(string newSE, int fadeTime = 0)
+        {
+            try
+            {
+                if (DataManager.Instance.Loading != DataManager.LoadMode.None)
+                    return;
+
+                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                {
+                    if (fadeTime > 0)
+                        LoopingSE[newSE] = (0f, 1f / fadeTime);
+                    else
+                        LoopingSE[newSE] = (1f, 0f);
+                    SoundManager.PlayLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), LoopingSE[newSE].volume);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+        public void StopLoopBattleSE(string newSE, int fadeTime = 0)
+        {
+            if (newSE != "")
+                StopLoopSE("Battle/" + newSE, fadeTime);
+        }
+
+        public void StopLoopSE(string newSE, int fadeTime = 0)
+        {
+            if (fadeTime > 0)
+            {
+                if (LoopingSE.ContainsKey(newSE))
+                {
+                    (float volume, float diff) cur = LoopingSE[newSE];
+                    float newDiff = -cur.volume / fadeTime;
+                    LoopingSE[newSE] = (cur.volume, newDiff);
+                }
+            }
+            else
+            {
+                LoopingSE.Remove(newSE);
+                SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
+            }
+        }
+
 
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
         {
@@ -167,6 +240,32 @@ namespace RogueEssence
                     FanfareTime = FrameTick.FromFrames((FANFARE_FADE_END - FanfareTime.DivOf(FANFARE_FADE_END)) * FANFARE_FADE_START / FANFARE_FADE_END);
                     QueuedFanfare = newSE;
                 }
+            }
+        }
+
+        public void BGM(string newBGM, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
+        {
+            if (DataManager.Instance.Loading != DataManager.LoadMode.None)
+                return;
+
+            if (Song != newBGM || (Song == newBGM && NextSong != null && NextSong != newBGM))
+            {
+                if (String.IsNullOrEmpty(Song) || !fade)//if the current song is empty, or the game doesn't want to fade it
+                {
+                    //immediately start
+                    MusicFadeTime = FrameTick.Zero;
+                }
+                else if (NextSong != null)
+                {
+                    //do nothing, and watch it tick down
+                }
+                else
+                {
+                    //otherwise, set up the tick-down
+                    MusicFadeTotal = fadeTime;
+                    MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
+                }
+                NextSong = newBGM;
             }
         }
 
@@ -316,31 +415,6 @@ namespace RogueEssence
                 return waitTime;
         }
 
-        public void BGM(string newBGM, bool fade)
-        {
-            if (DataManager.Instance.Loading != DataManager.LoadMode.None)
-                return;
-
-            if (Song != newBGM || (Song == newBGM && NextSong != null && NextSong != newBGM))
-            {
-                if (String.IsNullOrEmpty(Song) || !fade)//if the current song is empty, or the game doesn't want to fade it
-                {
-                    //immediately start
-                    MusicFadeTime = FrameTick.Zero;
-                }
-                else if (NextSong != null)
-                {
-                    //do nothing, and watch it tick down
-                }
-                else
-                {
-                    //otherwise, set up the tick-down
-                    MusicFadeTime = FrameTick.FromFrames(MUSIC_FADE_TOTAL);
-                }
-                NextSong = newBGM;
-            }
-        }
-
         public bool IsInGame()
         {
             return (GameManager.Instance.CurrentScene == DungeonScene.Instance &&
@@ -349,9 +423,10 @@ namespace RogueEssence
 
         public void Begin()
         {
-
             SoundManager.BGMBalance = DiagManager.Instance.CurSettings.BGMBalance * 0.1f;
             SoundManager.SEBalance = DiagManager.Instance.CurSettings.SEBalance * 0.1f;
+            if (DiagManager.Instance.DevMode)
+                DiagManager.Instance.ListenToMapGen();
 
             //coroutines.Clear();
             MoveToScene(new SplashScene());
@@ -381,13 +456,20 @@ namespace RogueEssence
         }
 
 
-        public IEnumerator<YieldInstruction> SetMod(string modPath, bool fade)
+        public IEnumerator<YieldInstruction> MoveToQuest(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
         {
-            if (fade)
-                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+            yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
 
+            SetQuest(quest, mods, loadOrder);
+
+            DiagManager.Instance.SaveModSettings();
+
+            yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
+        }
+        public void SetQuest(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
+        {
             cleanup();
-            PathMod.Mod = modPath;
+            PathMod.SetMods(quest, mods, loadOrder);
             Text.Init();
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";
@@ -403,8 +485,6 @@ namespace RogueEssence
             DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.All);
             MoveToScene(new TitleScene(false));
 
-            if (fade)
-                yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
         private void cleanup()
@@ -442,7 +522,7 @@ namespace RogueEssence
             BaseScene destScene = newGround ? (BaseScene)GroundEditScene.Instance : (BaseScene)DungeonEditScene.Instance;
 
             ZoneLoc destLoc = ZoneLoc.Invalid;
-            if (ZoneManager.Instance.CurrentZoneID > -1)
+            if (!String.IsNullOrEmpty(ZoneManager.Instance.CurrentZoneID))
                 destLoc = new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID);
 
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
@@ -503,7 +583,7 @@ namespace RogueEssence
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
             else
             {
-                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)destId.ID));//NOTE: there are better ways to seed a multi-dungeon adventure
+                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 
@@ -580,7 +660,7 @@ namespace RogueEssence
         /// </summary>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
-        public IEnumerator<YieldInstruction> MoveToGround(int zone, string mapname, string entrypoint, bool preserveMusic)
+        public IEnumerator<YieldInstruction> MoveToGround(string zone, string mapname, string entrypoint, bool preserveMusic)
         {
             //if we're in a test map, return to editor
             if (ZoneManager.Instance.InDevZone)
@@ -597,7 +677,7 @@ namespace RogueEssence
                 ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
             else
             {
-                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone));//NOTE: there are better ways to seed a multi-dungeon adventure
+                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 
@@ -644,7 +724,7 @@ namespace RogueEssence
             //actually, just save the entire SOS mail somewhere as the current SOS
             DataManager.Instance.Save.Rescue = new RescueState(sos, true);
             //this is after saving the fail file, but before saving the first state of the replay
-            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(new ZoneLoc(sos.Goal.ID, new SegLoc(0, 0))));
+            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(new ZoneLoc(sos.Goal.ID, new SegLoc(0, 0)), true));
 
 
             //must also set script variables for dungeon if they matter
@@ -655,21 +735,21 @@ namespace RogueEssence
         public IEnumerator<YieldInstruction> BeginGameInSegment(ZoneLoc nextZone, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             yield return CoroutineManager.Instance.StartCoroutine(BeginGame(nextZone.ID, MathUtils.Rand.NextUInt64(), stakes, recorded, silentRestrict));
-            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(nextZone));
+            yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(nextZone, true));
         }
-        public IEnumerator<YieldInstruction> BeginGame(int zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             //initiate the adventure
             DataManager.Instance.CurrentReplay = null;
             yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.BeginGame(zoneID, seed, stakes, recorded, silentRestrict));
         }
-        public IEnumerator<YieldInstruction> BeginSegment(ZoneLoc nextZone)
+        public IEnumerator<YieldInstruction> BeginSegment(ZoneLoc nextZone, bool newGame)
         {
             DataManager.Instance.Save.NextDest = nextZone;
             if (DataManager.Instance.RecordingReplay)
                 DataManager.Instance.LogState();
 
-            SceneOutcome = MoveToZone(nextZone);
+            SceneOutcome = MoveToZone(nextZone, newGame, false);
             yield break;
         }
 
@@ -717,7 +797,12 @@ namespace RogueEssence
                         if (nextAction.Type == GameAction.ActionType.Rescue)
                             rescued = nextAction;
                         else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                        {
+                            // Change dialogue message depending on the LoadMode.
+                            DataManager.Instance.CurrentReplay.Desyncs++;
+                            if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                        }
                     }
 
                     if (rescued != null) //run the action
@@ -733,14 +818,20 @@ namespace RogueEssence
 
                         rescued = new GameAction(GameAction.ActionType.Rescue, Dir8.None);
                         rescued.AddArg(mail.OfferedItem.IsMoney ? 1 : 0);
-                        rescued.AddArg(mail.OfferedItem.Value);
-                        rescued.AddArg(mail.OfferedItem.HiddenValue);
+                        rescued.AddArg(mail.OfferedItem.Value.Length);
+                        for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
+                            rescued.AddArg(mail.OfferedItem.Value[ii]);
+                        rescued.AddArg(mail.OfferedItem.HiddenValue.Length);
+                        for (int ii = 0; ii < mail.OfferedItem.HiddenValue.Length; ii++)
+                            rescued.AddArg(mail.OfferedItem.HiddenValue[ii]);
+                        rescued.AddArg(mail.OfferedItem.Amount);
 
                         rescued.AddArg(mail.RescuedBy.Length);
                         for (int ii = 0; ii < mail.RescuedBy.Length; ii++)
                             rescued.AddArg(mail.RescuedBy[ii]);
 
                         DataManager.Instance.LogPlay(rescued);
+                        DataManager.Instance.Save.UpdateOptions();
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, mail));
                     }
                     else
@@ -761,6 +852,7 @@ namespace RogueEssence
                             //the game accepts loading into a file that has been downed, or passed its section with nothing else
                             DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
                             DataManager.Instance.CurrentReplay = null;
+                            //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
 
                             SetFade(true, false);
 
@@ -771,6 +863,14 @@ namespace RogueEssence
                             //if failed, just show the death plaque
                             //if succeeded, run the script that follows.
                             SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
+                        }
+                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) 
+                        {
+                            if (DataManager.Instance.CurrentReplay.Desyncs > 0)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                            else
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
                         }
                         else //we've reached the end of the replay
                             yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
@@ -791,8 +891,8 @@ namespace RogueEssence
                 if (rescue)
                 {
                     DataManager.Instance.SuspendPlay();
-                    GameState state = DataManager.Instance.LoadMainGameState();
-                    SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, Versioning.GetVersion());
+                    GameState state = DataManager.Instance.LoadMainGameState(false);
+                    SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, DataManager.Instance.Save.GetModVersion());
                     state.Save.Rescue = new RescueState(awaiting, false);
                     DataManager.Instance.SaveGameState(state);
 
@@ -892,6 +992,8 @@ namespace RogueEssence
             try
             {
                 DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+                DataManager.Instance.Save.UpdateVersion();
+                DataManager.Instance.Save.UpdateOptions();
                 DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
                 DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
                 LuaEngine.Instance.OnNewGame();
@@ -904,11 +1006,13 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             DataManager.Instance.SetProgress(new MainProgress(seed, Guid.NewGuid().ToString().ToUpper()));
+            DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-            DataManager.Instance.Save.ActiveTeam.SetRank(0);
+            DataManager.Instance.Save.ActiveTeam.SetRank(DataManager.Instance.DefaultRank);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(), DataManager.Instance.StartLevel, -1, 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), DataManager.Instance.StartLevel, "", 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 
@@ -957,9 +1061,9 @@ namespace RogueEssence
                     if (MetaInputManager[FrameInput.InputType.Ctrl])
                         SceneOutcome = RestartToTitle();
                     else if (MetaInputManager[FrameInput.InputType.ShowDebug])
-                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc()), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc()), 0);
                     else
-                        SceneOutcome = DebugWarp(new ZoneLoc(0, new SegLoc(-1, 0), 0), 0);
+                        SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc(-1, 0), 0), 0);
                 }
             }
 
@@ -1010,16 +1114,38 @@ namespace RogueEssence
             }
             else
             {
-                if (!Paused || AdvanceFrame)
+                if (AdvanceFrame)
                 {
-                    //if actions are ready for queue, get a new result
                     CoroutineManager.Instance.Update();
 
-                    int speedFactor = 8;
-                    speedFactor = (int)Math.Round(speedFactor * Math.Pow(2, (int)DebugSpeed));
-
-                    FrameTick newElapsed = FrameTick.FromFrames(1) * speedFactor / 8;
+                    FrameTick newElapsed = FrameTick.FromFrames(1);
                     Update(newElapsed);
+                }
+                else if (!Paused)
+                {
+                    double speedMult = Math.Pow(2, (int)DebugSpeed);
+                    if (DebugSpeed <= GameSpeed.Normal)
+                    {
+                        //if actions are ready for queue, get a new result
+                        CoroutineManager.Instance.Update();
+
+                        FrameTick newElapsed = FrameTick.FromFrames(1) * (int)Math.Round(8 * speedMult) / 8;
+                        Update(newElapsed);
+                    }
+                    else
+                    {
+                        int intMult = (int)Math.Round(speedMult);
+                        for (int ii = 0; ii < intMult; ii++)
+                        {
+                            if (ii > 0)
+                                InputManager.RepeatFrameInput();
+
+                            CoroutineManager.Instance.Update();
+
+                            FrameTick newElapsed = FrameTick.FromFrames(1);
+                            Update(newElapsed);
+                        }
+                    }
                 }
             }
         }
@@ -1053,7 +1179,7 @@ namespace RogueEssence
                     }
                 }
                 else
-                    musicFadeFraction *= MusicFadeTime.FractionOf(MUSIC_FADE_TOTAL);
+                    musicFadeFraction *= MusicFadeTime.FractionOf(MusicFadeTotal);
             }
             if (CurrentFanfarePhase != FanfarePhase.None)
             {
@@ -1089,6 +1215,29 @@ namespace RogueEssence
                 }
             }
             SoundManager.SetBGMVolume(musicFadeFraction);
+
+            //update sounds
+            List<string> seKeys = new List<string>();
+            foreach (string seKey in LoopingSE.Keys)
+                seKeys.Add(seKey);
+            
+            foreach (string key in seKeys)
+            {
+                (float volume, float diff) cur = LoopingSE[key];
+                if (cur.volume + cur.diff <= 0)
+                {
+                    LoopingSE.Remove(key);
+                    SoundManager.StopLoopedSE(PathMod.ModPath(GraphicsManager.SOUND_PATH + key + ".ogg"));
+                }
+                else if (cur.volume + cur.diff > 1)
+                    LoopingSE[key] = (1f, 0f);
+                else
+                {
+                    LoopingSE[key] = (cur.volume + cur.diff, cur.diff);
+                    SoundManager.SetLoopedSEVolume(PathMod.ModPath(GraphicsManager.SOUND_PATH + key + ".ogg"), LoopingSE[key].volume);
+                }
+            }
+
             if (!thisFrameErrored)
                 framesErrored = 0;
             thisFrameErrored = false;
@@ -1103,6 +1252,9 @@ namespace RogueEssence
 
         public void Draw(SpriteBatch spriteBatch, double updateTime)
         {
+            GraphicsManager.GraphicsDevice.SetRenderTarget(GameScreen);
+            GraphicsManager.GraphicsDevice.Clear(Color.Black);
+            
             if (DataManager.Instance.Loading == DataManager.LoadMode.None || DiagManager.Instance.DevMode)
                 CurrentScene.Draw(spriteBatch);
 
@@ -1154,6 +1306,18 @@ namespace RogueEssence
                 DrawDebug(spriteBatch, updateTime);
             }
             spriteBatch.End();
+
+            GraphicsManager.GraphicsDevice.SetRenderTarget(null);
+
+            GraphicsManager.GraphicsDevice.Clear(Color.Black);
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(1, 1, 1)));
+
+            Loc screenPos = GraphicsManager.GetGameScreenOffset();
+            spriteBatch.Draw(GameScreen, screenPos.ToVector2(), Color.White);
+
+            spriteBatch.End();
+
         }
 
         private void DrawDebug(SpriteBatch spriteBatch, double updateTime)
@@ -1188,10 +1352,13 @@ namespace RogueEssence
             if (!thisFrameErrored)
                 framesErrored++;
             thisFrameErrored = true;
-            if (framesErrored > 300)
+            if (framesErrored > 180)
                 GameBase.CurrentPhase = GameBase.LoadPhase.Error;
             if (ping)
                 SE("Menu/Error");
+
+            if (DataManager.Instance.CurrentReplay != null)
+                DataManager.Instance.CurrentReplay.Desyncs++;
         }
 
         private string ErrorTrace()

@@ -108,13 +108,29 @@ namespace RogueEssence.Content
         public const string OBJECT_PATTERN = CONTENT_PATH + "Object/{0}.dir";
         public const string BG_PATTERN = CONTENT_PATH + "BG/{0}.dir";
 
-
+        /// <summary>
+        /// All textures are multiples of 8, right?
+        /// This also controls the minimum units for a ground map.
+        /// </summary>
         public const int TEX_SIZE = 8;
 
+        /// <summary>
+        /// The size of a dungeon tile, in Tex
+        /// </summary>
         public static int DungeonTexSize;
+
+        /// <summary>
+        /// The size of a dungeon tile, in pixels
+        /// </summary>
         public static int TileSize { get { return DungeonTexSize * TEX_SIZE; } }
+
+        /// <summary>
+        /// The size of the game screen, which will then be stretched by the resolution settings.
+        /// </summary>
         public static int ScreenWidth;
         public static int ScreenHeight;
+
+
         public static string MoneySprite;
         public static int PortraitSize;
         public static List<EmotionType> Emotions;
@@ -143,6 +159,10 @@ namespace RogueEssence.Content
         public static event Action ZoomChanged;
 
         private static GameZoom zoom;
+
+        /// <summary>
+        /// The zoom of the game map.  Only applies to ground and dungeon scenes.  Used only for debug.
+        /// </summary>
         public static GameZoom Zoom
         {
             get { return zoom; }
@@ -155,29 +175,54 @@ namespace RogueEssence.Content
         }
 
         private static int windowZoom;
-        public static int WindowZoom
+
+        /// <summary>
+        /// Game zoom based on window settings, affecting all graphics.  Independent of Zoom, which is used to zoom the map.
+        /// </summary>
+        public static int WindowZoom { get { return windowZoom; } }
+        public static bool FullScreen { get { return graphics.IsFullScreen; } }
+
+        public static void SetWindowMode(int mode)
         {
-            get { return windowZoom; }
-            set
+            if (mode == 0)
             {
-                windowZoom = value;
+                graphics.IsFullScreen = true;
+                DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+                int resize = Math.Min(displayMode.Width / ScreenWidth, displayMode.Height / ScreenHeight);
+                windowZoom = resize;
+
+                float ratio = Math.Max((float)WindowWidth / displayMode.Width, (float)WindowHeight / displayMode.Height);
+                graphics.PreferredBackBufferWidth = (int)(displayMode.Width * ratio);
+                graphics.PreferredBackBufferHeight = (int)(displayMode.Height * ratio);
+
+                //graphics.PreferredBackBufferWidth = displayMode.Width;
+                //graphics.PreferredBackBufferHeight = displayMode.Height;
+            }
+            else
+            {
+                graphics.IsFullScreen = false;
+                windowZoom = mode;
                 graphics.PreferredBackBufferWidth = WindowWidth;
                 graphics.PreferredBackBufferHeight = WindowHeight;
-                graphics.ApplyChanges();
-
-                ZoomChanged?.Invoke();
             }
+            graphics.ApplyChanges();
+
+            ZoomChanged?.Invoke();
         }
-        public static bool FullScreen
+
+        /// <summary>
+        /// For letterboxing
+        /// </summary>
+        /// <returns></returns>
+        public static Loc GetGameScreenOffset()
         {
-            get { return graphics.IsFullScreen; }
-            set
-            {
-                graphics.IsFullScreen = value;
-                graphics.ApplyChanges();
-            }
+            return new Loc((GraphicsDevice.PresentationParameters.BackBufferWidth - WindowWidth) / 2,
+                (GraphicsDevice.PresentationParameters.BackBufferHeight - WindowHeight) / 2);
         }
 
+        /// <summary>
+        /// The actual size of the game window in pixels.  Used for debug drawing that doesn't try to maintain pixel-perfection.
+        /// </summary>
         public static int WindowWidth { get { return windowZoom * ScreenWidth; } }
         public static int WindowHeight { get { return windowZoom * ScreenHeight; } }
 
@@ -191,8 +236,8 @@ namespace RogueEssence.Content
         private static Texture2D defaultTex;
         public static BaseSheet Pixel { get; private set; }
 
-        private static LRUCache<MonsterID, CharSheet> spriteCache;
-        private static LRUCache<MonsterID, PortraitSheet> portraitCache;
+        private static LRUCache<CharID, CharSheet> spriteCache;
+        private static LRUCache<CharID, PortraitSheet> portraitCache;
         private static LRUCache<string, IEffectAnim> vfxCache;
         private static LRUCache<string, DirSheet> iconCache;
         private static LRUCache<string, DirSheet> itemCache;
@@ -284,7 +329,8 @@ namespace RogueEssence.Content
                     foreach (XmlNode emotion in emotions.SelectNodes("Emotion"))
                     {
                         XmlNode emotionName = emotion.SelectSingleNode("Name");
-                        Emotions.Add(new EmotionType(emotionName.InnerText));
+                        XmlNode emotionRandom = emotion.SelectSingleNode("Random");
+                        Emotions.Add(new EmotionType(emotionName.InnerText, Boolean.Parse(emotionRandom.InnerText)));
                         List<string> emotionFallbacks = new List<string>();
                         foreach (XmlNode fallback in emotion.SelectNodes("Fallback"))
                             emotionFallbacks.Add(fallback.InnerText);
@@ -324,7 +370,7 @@ namespace RogueEssence.Content
                     {
                         foreach (string fallback in fallbacks[ii])
                         {
-                            int fallbackIndex = Actions.FindIndex((a) => { return a.Name.Equals(fallback, StringComparison.OrdinalIgnoreCase); });
+                            int fallbackIndex = GraphicsManager.GetAnimIndex(fallback);
                             Actions[ii].Fallbacks.Add(fallbackIndex);
                         }
                     }
@@ -355,12 +401,11 @@ namespace RogueEssence.Content
         }
 
 
-        public static void InitBase(GraphicsDeviceManager newGraphics, int zoom, bool fullScreen)
+        public static void InitBase(GraphicsDeviceManager newGraphics, int mode)
         {
             graphics = newGraphics;
-            WindowZoom = zoom;
             Zoom = GameZoom.x1;
-            FullScreen = fullScreen;
+            SetWindowMode(mode);
         }
 
         public static void InitSystem(GraphicsDevice graphics)
@@ -435,9 +480,9 @@ namespace RogueEssence.Content
             DiagManager.Instance.LoadMsg = "Loading Headers";
 
             //initialize caches
-            spriteCache = new LRUCache<MonsterID, CharSheet>(CHARA_CACHE_SIZE);
+            spriteCache = new LRUCache<CharID, CharSheet>(CHARA_CACHE_SIZE);
             spriteCache.OnItemRemoved = DisposeCachedObject;
-            portraitCache = new LRUCache<MonsterID, PortraitSheet>(PORTRAIT_CACHE_SIZE);
+            portraitCache = new LRUCache<CharID, PortraitSheet>(PORTRAIT_CACHE_SIZE);
             portraitCache.OnItemRemoved = DisposeCachedObject;
             vfxCache = new LRUCache<string, IEffectAnim>(VFX_CACHE_SIZE);
             vfxCache.OnItemRemoved = DisposeCachedObject;
@@ -563,8 +608,6 @@ namespace RogueEssence.Content
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {
-                // Old format (auto tiles):
-                Dev.ImportHelper.ImportAllAutoTiles(PathMod.DEV_PATH + "Tile/", DataManager.DATA_PATH + "AutoTile/");
                 // New format (image data & auto tiles):
                 Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TileDtef/", PathMod.HardMod(TILE_PATTERN));
                 
@@ -717,11 +760,21 @@ namespace RogueEssence.Content
             CharaIndexNode fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(PathMod.ModPath(charaDir + "index.idx")))
+                Dictionary<int, CharaIndexNode> nodes = new Dictionary<int, CharaIndexNode>();
+                foreach (string modPath in PathMod.FallforthPaths(charaDir + "index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                        fullGuide = CharaIndexNode.Load(reader);
+                    using (FileStream stream = File.OpenRead(modPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            CharaIndexNode guide = CharaIndexNode.Load(reader);
+                            foreach (int key in guide.Nodes.Keys)
+                                nodes[key] = guide.Nodes[key];
+                        }
+                    }
                 }
+                fullGuide = new CharaIndexNode();
+                fullGuide.Nodes = nodes;
             }
             catch (Exception ex)
             {
@@ -730,10 +783,10 @@ namespace RogueEssence.Content
             return fullGuide;
         }
 
-        public static MonsterID GetFallbackForm(CharaIndexNode guide, MonsterID data)
+        public static CharID GetFallbackForm(CharaIndexNode guide, CharID data)
         {
-            MonsterID fallback = MonsterID.Invalid;
-            MonsterID buffer = MonsterID.Invalid;
+            CharID fallback = CharID.Invalid;
+            CharID buffer = CharID.Invalid;
             if (guide.Nodes.ContainsKey(data.Species))
             {
                 buffer.Species = data.Species;
@@ -752,10 +805,10 @@ namespace RogueEssence.Content
                             buffer.Skin = trialSkin;
                             if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Position > 0)
                                 fallback = buffer;
-                            if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes.ContainsKey((int)data.Gender))
+                            if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes.ContainsKey(data.Gender))
                             {
                                 buffer.Gender = data.Gender;
-                                if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes[(int)data.Gender].Position > 0)
+                                if (guide.Nodes[data.Species].Nodes[data.Form].Nodes[trialSkin].Nodes[data.Gender].Position > 0)
                                     fallback = buffer;
                             }
                             break;
@@ -764,10 +817,12 @@ namespace RogueEssence.Content
                     }
                 }
             }
+            if (!fallback.IsValid())
+                fallback = new CharID(0, -1, -1, -1);
             return fallback;
         }
 
-        public static CharSheet GetChara(MonsterID data)
+        public static CharSheet GetChara(CharID data)
         {
             data = GetFallbackForm(CharaIndex, data);
 
@@ -783,7 +838,7 @@ namespace RogueEssence.Content
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
-                            long position = CharaIndex.GetPosition(data.Species, data.Form, (int)data.Skin, (int)data.Gender);
+                            long position = CharaIndex.GetPosition(data.Species, data.Form, data.Skin, data.Gender);
                             // Jump to the correct position
                             stream.Seek(position, SeekOrigin.Begin);
                             sheet = CharSheet.Load(reader);
@@ -806,7 +861,7 @@ namespace RogueEssence.Content
 
 
 
-        public static PortraitSheet GetPortrait(MonsterID data)
+        public static PortraitSheet GetPortrait(CharID data)
         {
             data = GetFallbackForm(PortraitIndex, data);
 
@@ -822,7 +877,7 @@ namespace RogueEssence.Content
                     {
                         using (BinaryReader reader = new BinaryReader(stream))
                         {
-                            long position = PortraitIndex.GetPosition(data.Species, data.Form, (int)data.Skin, (int)data.Gender);
+                            long position = PortraitIndex.GetPosition(data.Species, data.Form, data.Skin, data.Gender);
                             // Jump to the correct position
                             stream.Seek(position, SeekOrigin.Begin);
                             sheet = PortraitSheet.Load(reader);
@@ -1005,17 +1060,26 @@ namespace RogueEssence.Content
         }
 
 
-        private static TileGuide LoadTileIndices(string tileDir)
+        public static TileGuide LoadTileIndices(string tileDir)
         {
             TileGuide fullGuide = null;
             try
             {
-                using (FileStream stream = File.OpenRead(PathMod.ModPath(tileDir + "index.idx")))
+                Dictionary<string, TileIndexNode> nodes = new Dictionary<string, TileIndexNode>();
+                foreach (string modPath in PathMod.FallforthPaths(tileDir + "index.idx"))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                        fullGuide = TileGuide.Load(reader);
+                    using (FileStream stream = File.OpenRead(modPath))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            TileGuide guide = TileGuide.Load(reader);
+                            foreach (string key in guide.Nodes.Keys)
+                                nodes[key] = guide.Nodes[key];
+                        }
+                    }
                 }
-
+                fullGuide = new TileGuide();
+                fullGuide.Nodes = nodes;
             }
             catch (Exception ex)
             {
@@ -1059,6 +1123,11 @@ namespace RogueEssence.Content
             BaseSheet newSheet = BaseSheet.LoadError();
             tileCache.Add(addr, newSheet);
             return newSheet;
+        }
+
+        public static int GetAnimIndex(string anim)
+        {
+            return Actions.FindIndex((e) => { return (String.Compare(e.Name, anim, true) == 0); });
         }
 
         public static int CountPixels(BaseSheet obj)

@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text;
 using RogueEssence.Data;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -13,8 +16,13 @@ namespace RogueEssence.Dungeon
     {
         public bool IsMoney;
         public bool Cursed;
-        public int Value;
-        public int HiddenValue;
+
+
+        [JsonConverter(typeof(ItemConverter))]
+        public string Value;
+
+        public string HiddenValue;
+        public int Amount;
         public int Price;
 
         public string SpriteIndex
@@ -24,7 +32,7 @@ namespace RogueEssence.Dungeon
                 if (IsMoney)
                     return GraphicsManager.MoneySprite;
                 else
-                    return Data.DataManager.Instance.GetItem(Value).Sprite;
+                    return DataManager.Instance.GetItem(Value).Sprite;
             }
         }
 
@@ -34,29 +42,25 @@ namespace RogueEssence.Dungeon
 
         public MapItem()
         {
-            Value = -1;
+            Value = "";
+            HiddenValue = "";
             TileLoc = new Loc();
         }
 
-        public MapItem(int value)
+        public MapItem(string value)
         {
             Value = value;
+            HiddenValue = "";
         }
 
-        public MapItem(bool isMoney, int value)
+        public MapItem(string value, int amount)
             : this(value)
         {
-            IsMoney = isMoney;
+            Amount = amount;
         }
 
-        public MapItem(int value, int hiddenValue)
-            : this(value)
-        {
-            HiddenValue = hiddenValue;
-        }
-
-        public MapItem(int value, int hiddenValue, int price)
-            : this(value, hiddenValue)
+        public MapItem(string value, int amount, int price)
+            : this(value, amount)
         {
             Price = price;
         }
@@ -67,6 +71,7 @@ namespace RogueEssence.Dungeon
             Cursed = other.Cursed;
             Value = other.Value;
             HiddenValue = other.HiddenValue;
+            Amount = other.Amount;
             Price = other.Price;
         }
         public ISpawnable Copy() { return new MapItem(this); }
@@ -77,6 +82,7 @@ namespace RogueEssence.Dungeon
         {
             Value = item.ID;
             Cursed = item.Cursed;
+            Amount = item.Amount;
             HiddenValue = item.HiddenValue;
             Price = item.Price;
             TileLoc = loc;
@@ -84,7 +90,29 @@ namespace RogueEssence.Dungeon
 
         public InvItem MakeInvItem()
         {
-            return new InvItem(Value, Cursed, HiddenValue, Price);
+            InvItem item = new InvItem(Value, Cursed);
+            item.Amount = Amount;
+            item.HiddenValue = HiddenValue;
+            item.Price = Price;
+            return item;
+        }
+
+        public static MapItem CreateMoney(int amt)
+        {
+            MapItem item = new MapItem();
+            item.IsMoney = true;
+            item.Amount = amt;
+            return item;
+        }
+
+        public static MapItem CreateBox(string value, string hiddenValue, int price = 0, bool cursed = false)
+        {
+            MapItem item = new MapItem();
+            item.Value = value;
+            item.HiddenValue = hiddenValue;
+            item.Cursed = cursed;
+            item.Price = price;
+            return item;
         }
 
         public int GetSellValue()
@@ -94,7 +122,7 @@ namespace RogueEssence.Dungeon
 
             ItemData entry = DataManager.Instance.GetItem(Value);
             if (entry.MaxStack > 1)
-                return entry.Price * HiddenValue;
+                return entry.Price * Amount;
             else
                 return entry.Price;
         }
@@ -135,10 +163,10 @@ namespace RogueEssence.Dungeon
         public string GetDungeonName()
         {
             if (IsMoney)
-                return Text.FormatKey("MONEY_AMOUNT", Value);
+                return Text.FormatKey("MONEY_AMOUNT", Amount);
             else
             {
-                Data.ItemData entry = Data.DataManager.Instance.GetItem(Value);
+                ItemData entry = DataManager.Instance.GetItem(Value);
 
                 string prefix = "";
                 if (entry.Icon > -1)
@@ -148,7 +176,7 @@ namespace RogueEssence.Dungeon
 
                 string nameStr = entry.Name.ToLocal();
                 if (entry.MaxStack > 1)
-                    nameStr += " (" + HiddenValue + ")";
+                    nameStr += " (" + Amount + ")";
 
                 return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
             }
@@ -180,5 +208,52 @@ namespace RogueEssence.Dungeon
                 GraphicsManager.GetItem(SpriteIndex).TileHeight);
         }
 
+        //TODO: Created v0.5.20, delete on v1.1
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (IsMoney)
+            {
+                int amt;
+                if (int.TryParse(HiddenValue, out amt))
+                {
+                    Amount = amt;
+                    HiddenValue = "";
+                }
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(Value))
+                {
+                    ItemData item = DataManager.Instance.GetItem(Value);
+
+                    if (item != null)
+                    {
+                        int amt;
+                        if (int.TryParse(HiddenValue, out amt))
+                        {
+                            if (item.MaxStack > 0)
+                            {
+                                Amount = amt;
+                                HiddenValue = "";
+                            }
+                            else if (amt > 0)
+                            {
+                                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
+                                HiddenValue = asset_name;
+                            }
+                            else
+                            {
+                                HiddenValue = "";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Value = "empty";
+                    }
+                }
+            }
+        }
     }
 }

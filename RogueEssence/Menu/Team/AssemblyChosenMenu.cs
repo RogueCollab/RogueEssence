@@ -5,6 +5,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using RogueEssence.Ground;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -47,16 +48,16 @@ namespace RogueEssence.Menu
             if (assembly)
             {
                 if (DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot].IsFavorite)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_UNFAVORITE"), baseMenu.ToggleFave));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_FAVORITE_OFF"), baseMenu.ToggleFave));
                 else
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_FAVORITE"), baseMenu.ToggleFave));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_FAVORITE"), baseMenu.ToggleFave));
             }
             else
             {
                 if (DataManager.Instance.Save.ActiveTeam.Players[teamSlot].IsFavorite)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_UNFAVORITE"), baseMenu.ToggleFave));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_FAVORITE_OFF"), baseMenu.ToggleFave));
                 else
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_FAVORITE"), baseMenu.ToggleFave));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_FAVORITE"), baseMenu.ToggleFave));
             }
 
             if (assembly)
@@ -67,7 +68,8 @@ namespace RogueEssence.Menu
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
-            Initialize(new Loc(168, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(168, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
 
         private void SummaryAction()

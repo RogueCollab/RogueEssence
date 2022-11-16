@@ -24,10 +24,10 @@ namespace RogueEssence.Dungeon
         public Priority Priority;//dev specified; lowest first
         public Priority PortPriority;//user (-2), target (-1), everyone else (0+)
         public EventCause TypeID;//tiebreaker order of enum
-        public int ID;//tiebreaker: the ID of the owning passive/battle effect
+        public string ID;//tiebreaker: the ID of the owning passive/battle effect
         public int ListIndex;//last tiebreaker: location in the list
 
-        public GameEventPriority(Priority priority, Priority portPriority, EventCause typeId, int id, int listIndex)
+        public GameEventPriority(Priority priority, Priority portPriority, EventCause typeId, string id, int listIndex)
         {
             Priority = priority;
             PortPriority = portPriority;

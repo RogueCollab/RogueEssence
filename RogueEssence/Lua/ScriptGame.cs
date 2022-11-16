@@ -21,6 +21,17 @@ namespace RogueEssence.Script
             return new Coroutine(GroundScene.Instance.SaveGame());
         }
 
+        public ModDiff GetModDiff(string uuidStr)
+        {
+            Guid uuid = new Guid(uuidStr);
+            List<ModDiff> diffs = DataManager.Instance.Save.GetModDiffs();
+            foreach (ModDiff diff in diffs)
+            {
+                if (diff.UUID == uuid)
+                    return diff;
+            }
+            return new ModDiff("", uuid, null, null);
+        }
 
         //===================================
         // Current Map
@@ -61,14 +72,14 @@ namespace RogueEssence.Script
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(ZoneManager.Instance.CurrentZoneID, name, entrypoint, preserveMusic);
         }
 
-        public void EnterGroundMap(int zone, string name, string entrypoint, bool preserveMusic = false)
+        public void EnterGroundMap(string zone, string name, string entrypoint, bool preserveMusic = false)
         {
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToGround(zone, name, entrypoint, preserveMusic);
         }
 
 
         public LuaFunction EnterDungeon;
-        public Coroutine _EnterDungeon(int dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public Coroutine _EnterDungeon(string dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), stakes, recorded, silentRestrict));
         }
@@ -91,14 +102,14 @@ namespace RogueEssence.Script
         }
 
         public LuaFunction ContinueDungeon;
-        public Coroutine _ContinueDungeon(int dungeonid, int structureid, int mapid, int entry)
+        public Coroutine _ContinueDungeon(string dungeonid, int structureid, int mapid, int entry)
         {
-            return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry)));
+            return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), false));
         }
 
 
         public LuaFunction EndDungeonRun;
-        public Coroutine _EndDungeonRun(GameProgress.ResultType result, int destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
+        public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
         {
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
         }
@@ -118,7 +129,7 @@ namespace RogueEssence.Script
         /// <param name="zone"></param>
         /// <param name="structure"></param>
         /// <param name="id"></param>
-        public void EnterZone(int zone, int structure, int id, int entry)
+        public void EnterZone(string zone, int structure, int id, int entry)
         {
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(zone, new SegLoc(structure, id), entry));
         }
@@ -154,6 +165,15 @@ namespace RogueEssence.Script
             return new Coroutine(GroundScene.Instance.MoveCamera(new Loc(x, y), duration, toPlayer));
         }
 
+        public Loc GetCameraCenter()
+        {
+            return GroundScene.Instance.GetFocusedLoc();
+        }
+
+        public bool IsCameraOnChar()
+        {
+            return !ZoneManager.Instance.CurrentGround.ViewCenter.HasValue;
+        }
 
         //===================================
         // Mail
@@ -187,12 +207,21 @@ namespace RogueEssence.Script
         public void SetTeamLeaderIndex(int idx)
         {
             //make leader
+            int oldIdx = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
             DataManager.Instance.Save.ActiveTeam.LeaderIndex = idx;
 
             //update team
-            ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader,
-                ZoneManager.Instance.CurrentGround.ActiveChar.MapLoc,
-                ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader,
+                    ZoneManager.Instance.CurrentGround.ActiveChar.MapLoc,
+                    ZoneManager.Instance.CurrentGround.ActiveChar.CharDir, "PLAYER"));
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldIdx, idx);
+                DungeonScene.Instance.ReloadFocusedPlayer();
+            }
         }
 
         public void SetCanSwitch(bool canSwitch)
@@ -272,7 +301,16 @@ namespace RogueEssence.Script
 
         public void AddPlayerTeam(Character character)
         {
-            DataManager.Instance.Save.ActiveTeam.Players.Add(character);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, false, character);
+                character.RefreshTraits();
+                character.Tactic.Initialize(character);
+            }
+            else
+            {
+                DataManager.Instance.Save.ActiveTeam.Players.Add(character);
+            }
         }
 
         /// <summary>
@@ -283,19 +321,60 @@ namespace RogueEssence.Script
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Players[slot];
 
-            if (player.EquippedItem.ID > -1)
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
-                InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
-                DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
-            }
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                {
+                    InvItem heldItem = player.EquippedItem;
+                    player.DequipItem();
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                }
 
-            DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(slot);
+                GroundScene.Instance.RemoveChar(slot);
+            }
+            else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                {
+                    InvItem heldItem = player.EquippedItem;
+                    player.DequipItem();
+                    if (DataManager.Instance.Save.ActiveTeam.GetInvCount() + 1 < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+                        DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                }
+
+                DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, false, slot));
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                {
+                    InvItem heldItem = player.EquippedItem;
+                    player.DequipItem();
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
+                }
+
+                ExplorerTeam team = DataManager.Instance.Save.ActiveTeam;
+
+                team.Players.RemoveAt(slot);
+
+                //update leader
+                if (slot < team.LeaderIndex)
+                    team.LeaderIndex--;
+            }
         }
 
         public void AddPlayerGuest(Character character)
         {
-            DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, true, character);
+                character.RefreshTraits();
+                character.Tactic.Initialize(character);
+            }
+            else
+            {
+                DataManager.Instance.Save.ActiveTeam.Guests.Add(character);
+            }
         }
 
         /// <summary>
@@ -306,13 +385,17 @@ namespace RogueEssence.Script
         {
             Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
 
-            if (player.EquippedItem.ID > -1)
-            {
-                InvItem heldItem = player.EquippedItem;
+            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 player.DequipItem();
-            }
 
-            DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, true, slot));
+            }
+            else
+            {
+                DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
+            }
         }
 
 
@@ -357,14 +440,14 @@ namespace RogueEssence.Script
         /// <param name="character"></param>
         public bool CanRelearn(Character character)
         {
-            return character.GetRelearnableSkills().Count > 0;
+            return character.GetRelearnableSkills(true).Count > 0;
         }
 
         public bool CanForget(Character character)
         {
             foreach (SlotSkill skill in character.BaseSkills)
             {
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                     return true;
             }
             return false;
@@ -374,7 +457,7 @@ namespace RogueEssence.Script
         {
             foreach (SlotSkill skill in character.BaseSkills)
             {
-                if (skill.SkillNum == -1)
+                if (String.IsNullOrEmpty(skill.SkillNum))
                     return true;
             }
             return false;
@@ -391,7 +474,7 @@ namespace RogueEssence.Script
         {
             DungeonScene.GetLevelSkills(chara, oldLevel);
 
-            foreach (int skill in DungeonScene.GetLevelSkills(chara, oldLevel))
+            foreach (string skill in DungeonScene.GetLevelSkills(chara, oldLevel))
             {
                 int learn = -1;
                 if (DataManager.Instance.CurrentReplay != null)
@@ -408,12 +491,12 @@ namespace RogueEssence.Script
 
 
         public LuaFunction TryLearnSkill;
-        public Coroutine _TryLearnSkill(Character chara, int skill)
+        public Coroutine _TryLearnSkill(Character chara, string skill)
         {
             return new Coroutine(__TryLearnSkill(chara, skill));
         }
 
-        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, int skill)
+        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, string skill)
         {
             int learn = -1;
             if (DataManager.Instance.CurrentReplay != null)
@@ -427,7 +510,7 @@ namespace RogueEssence.Script
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(chara, skill, learn));
         }
 
-        public void LearnSkill(Character chara, int skillNum)
+        public void LearnSkill(Character chara, string skillNum)
         {
             chara.LearnSkill(skillNum, true);
         }
@@ -437,13 +520,13 @@ namespace RogueEssence.Script
             chara.DeleteSkill(slot);
         }
 
-        public void SetCharacterSkill(Character character, int skillId, int slot)
+        public void SetCharacterSkill(Character character, string skillId, int slot)
         {
             character.ReplaceSkill(skillId, slot, true);
         }
 
 
-        public int GetCharacterSkill(Character chara, int slot)
+        public string GetCharacterSkill(Character chara, int slot)
         {
             return chara.BaseSkills[slot].SkillNum;
         }
@@ -455,7 +538,7 @@ namespace RogueEssence.Script
             MonsterData entry = DataManager.Instance.GetMonster(character.BaseForm.Species);
             for (int ii = 0; ii < entry.Promotions.Count; ii++)
             {
-                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[entry.Promotions[ii].Result].Released)
+                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(entry.Promotions[ii].Result.ToString()).Released)
                     continue;
 
                 bool hardReq = false;
@@ -473,7 +556,7 @@ namespace RogueEssence.Script
             return false;
         }
 
-        public LuaTable GetAvailablePromotions(Character character, int bypassItem)
+        public LuaTable GetAvailablePromotions(Character character, string bypassItem)
         {
             MonsterData entry = DataManager.Instance.GetMonster(character.BaseForm.Species);
             bool bypass = character.EquippedItem.ID == bypassItem;
@@ -483,7 +566,7 @@ namespace RogueEssence.Script
 
             for (int ii = 0; ii < entry.Promotions.Count; ii++)
             {
-                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Entries[entry.Promotions[ii].Result].Released)
+                if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(entry.Promotions[ii].Result.ToString()).Released)
                     continue;
                 if (entry.Promotions[ii].IsQualified(character, false))
                     addfn.Call(tbl, entry.Promotions[ii]);
@@ -506,7 +589,7 @@ namespace RogueEssence.Script
             return tbl;
         }
 
-        public void PromoteCharacter(Character character, PromoteBranch branch, int bypassItem)
+        public void PromoteCharacter(Character character, PromoteBranch branch, string bypassItem)
         {
             MonsterData entry = DataManager.Instance.GetMonster(branch.Result);
             //exception item bypass
@@ -528,7 +611,7 @@ namespace RogueEssence.Script
         //===================================
         // Inventory
         //===================================
-        public object FindPlayerItem(int id, bool held, bool inv)
+        public object FindPlayerItem(string id, bool held, bool inv)
         {
             if (held)
             {
@@ -557,7 +640,7 @@ namespace RogueEssence.Script
             int nbitems = 0;
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
             {
-                if (player.EquippedItem.ID > -1)
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                     nbitems++;
             }
 
@@ -586,16 +669,40 @@ namespace RogueEssence.Script
 
         public void GivePlayerItem(InvItem item)
         {
-            DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+            ItemData entry = DataManager.Instance.GetItem(item.ID);
+            if (entry.MaxStack > 1)
+            {
+                int amount = item.Amount;
+                foreach (InvItem inv in DataManager.Instance.Save.ActiveTeam.EnumerateInv())
+                {
+                    if (inv.ID == item.ID && inv.Cursed == item.Cursed && inv.Amount < entry.MaxStack)
+                    {
+                        int addValue = Math.Min(entry.MaxStack - inv.Amount, item.Amount);
+                        inv.Amount += addValue;
+                        amount -= addValue;
+                        if (amount <= 0)
+                            break;
+                    }
+                }
+                if (amount > 0 && DataManager.Instance.Save.ActiveTeam.GetInvCount() < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
+                {
+                    InvItem newInv = new InvItem(item);
+                    newInv.Amount = amount;
+                    DataManager.Instance.Save.ActiveTeam.AddToInv(newInv);
+                }
+            }
+            else
+                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
         }
 
-        public void GivePlayerItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
+        public void GivePlayerItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
-            for (int i = 0; i < count; ++i)
+            count = Math.Max(1, count);
+            for (int ii = 0; ii < count; ii++)
             {
-                InvItem item = new InvItem(id, cursed);
+                InvItem item = new InvItem(id, cursed, 1);
                 item.HiddenValue = hiddenval;
-                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+                GivePlayerItem(item);
             }
         }
 
@@ -624,14 +731,17 @@ namespace RogueEssence.Script
         public int GetPlayerStorageCount()
         {
             int count = DataManager.Instance.Save.ActiveTeam.BoxStorage.Count;
-            foreach (int nb in DataManager.Instance.Save.ActiveTeam.Storage )
-                count += nb;
+            foreach (string nb in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
+                count += DataManager.Instance.Save.ActiveTeam.Storage[nb];
             return count;
         }
 
-        public int GetPlayerStorageItemCount(int id)
+        public int GetPlayerStorageItemCount(string id)
         {
-            return DataManager.Instance.Save.ActiveTeam.Storage[id];
+            int val;
+            if (DataManager.Instance.Save.ActiveTeam.Storage.TryGetValue(id, out val))
+                return val;
+            return 0;
         }
 
         public void GivePlayerStorageItem(InvItem item)
@@ -639,7 +749,7 @@ namespace RogueEssence.Script
             DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
         }
 
-        public void GivePlayerStorageItem(int id, int count = 1, bool cursed = false, int hiddenval = 0)
+        public void GivePlayerStorageItem(string id, int count = 1, bool cursed = false, string hiddenval = "")
         {
             for (int ii = 0; ii < count; ii++)
             {
@@ -648,9 +758,9 @@ namespace RogueEssence.Script
                 DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
             }
         }
-        public void TakePlayerStorageItem(int id)
+        public void TakePlayerStorageItem(string id)
         {
-            DataManager.Instance.Save.ActiveTeam.TakeItems(new List<int> { id });
+            DataManager.Instance.Save.ActiveTeam.TakeItems(new List<WithdrawSlot> { new WithdrawSlot(false, id, 0) });
         }
 
         //===================================
@@ -661,14 +771,14 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Bank;
         }
 
-        public int AddToPlayerMoneyBank(int toadd)
+        public void AddToPlayerMoneyBank(int toadd)
         {
-            return DataManager.Instance.Save.ActiveTeam.Bank + toadd;
+            DataManager.Instance.Save.ActiveTeam.Bank += toadd;
         }
 
-        public int RemoveFromPlayerMoneyBank(int toremove)
+        public void RemoveFromPlayerMoneyBank(int toremove)
         {
-            return DataManager.Instance.Save.ActiveTeam.Bank - toremove;
+            DataManager.Instance.Save.ActiveTeam.Bank -= toremove;
         }
 
         public int GetPlayerMoney()
@@ -678,12 +788,12 @@ namespace RogueEssence.Script
 
         public void AddToPlayerMoney(int toadd)
         {
-            DataManager.Instance.Save.ActiveTeam.Money += toadd;
+            DataManager.Instance.Save.ActiveTeam.AddMoney(null, toadd);
         }
 
         public void RemoveFromPlayerMoney(int toremove)
         {
-            DataManager.Instance.Save.ActiveTeam.Money -= toremove;
+            DataManager.Instance.Save.ActiveTeam.LoseMoney(null, toremove);
         }
 
         //===================================
@@ -712,14 +822,14 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.Rand.FirstSeed;
         }
 
-        public void UnlockDungeon(int dungeonid)
+        public void UnlockDungeon(string dungeonid)
         {
-            DataManager.Instance.UnlockDungeon(dungeonid);
+            DataManager.Instance.Save.UnlockDungeon(dungeonid);
         }
 
-        public bool DungeonUnlocked(int dungeonid)
+        public bool DungeonUnlocked(string dungeonid)
         {
-            return DataManager.Instance.GetDungeonUnlockStatus(dungeonid) != GameProgress.UnlockState.None;
+            return DataManager.Instance.Save.GetDungeonUnlock(dungeonid) != GameProgress.UnlockState.None;
         }
 
         public bool InRogueMode()
@@ -740,6 +850,30 @@ namespace RogueEssence.Script
         public void SetRescueAllowed(bool allowed)
         {
             DataManager.Instance.Save.AllowRescue = allowed;
+        }
+
+        public void QueueLeaderEvent(object obj)
+        {
+            IEnumerator<YieldInstruction> yields = null;
+            if (obj is Coroutine)
+            {
+                Coroutine coro = obj as Coroutine;
+                yields = CoroutineManager.Instance.YieldCoroutine(coro);
+            }
+            else if (obj is LuaFunction)
+            {
+                LuaFunction luaFun = obj as LuaFunction;
+                yields = LuaEngine.Instance.CallScriptFunction(luaFun);
+            }
+
+            if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+            {
+                GroundScene.Instance.PendingLeaderAction = yields;
+            }
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                DungeonScene.Instance.PendingLeaderAction = yields;
+            }
         }
 
         //===================================

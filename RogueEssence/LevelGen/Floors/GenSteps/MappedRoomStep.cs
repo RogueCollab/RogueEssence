@@ -4,9 +4,16 @@ using RogueEssence.Data;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Loads a file from the Map directory to be used as the dungeon floor.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MappedRoomStep<T> : GenStep<T> where T : MapLoadContext
     {
+        /// <summary>
+        /// Map file to load
+        /// </summary>
         [Dev.DataFolder(0, "Map/")]
         public string MapID;
 

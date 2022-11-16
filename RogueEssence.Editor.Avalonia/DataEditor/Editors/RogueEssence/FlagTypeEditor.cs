@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
         public override bool DefaultDecoration => false;
         public override bool DefaultLabel => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, FlagType member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, FlagType member, Type[] subGroupStack)
         {
             StringTypeConstraintAttribute dataAtt = ReflectionExt.FindAttribute<StringTypeConstraintAttribute>(attributes);
 
@@ -29,6 +29,7 @@ namespace RogueEssence.Dev
                 Type baseType = dataAtt.BaseClass;
 
                 Type[] children = baseType.GetAssignableTypes();
+                control.DataContext = children;
 
                 Avalonia.Controls.Grid sharedRowPanel = getSharedRowPanel(2);
 
@@ -39,7 +40,7 @@ namespace RogueEssence.Dev
                 sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
                 lblType.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-                ComboBox cbValue = new ComboBox();
+                ComboBox cbValue = new SearchComboBox();
                 cbValue.Margin = new Thickness(4, 0, 0, 0);
                 sharedRowPanel.Children.Add(cbValue);
                 cbValue.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
@@ -75,7 +76,7 @@ namespace RogueEssence.Dev
             {
                 Type baseType = dataAtt.BaseClass;
 
-                Type[] children = baseType.GetAssignableTypes();
+                Type[] children = (Type[])control.DataContext;
 
                 Avalonia.Controls.Grid subGrid = (Avalonia.Controls.Grid)control.Children[controlIndex];
                 ComboBox cbValue = (ComboBox)subGrid.Children[1];

@@ -33,23 +33,51 @@ namespace RogueEssence.Dev.ViewModels
 
         public ObservableCollection<ScriptItem> ScriptItems { get; }
 
-        public void btnOpenScriptDir_Click()
+        public async void btnOpenScriptDir_Click()
         {
-            lock (GameBase.lockObj)
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
+            string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
+
+            if (!Directory.Exists(mapscriptdir))
             {
-                DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                string mapscriptdir = LuaEngine.MakeMapScriptPath(Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile));
-                mapscriptdir = Path.GetFullPath(mapscriptdir);
-                Process.Start("explorer.exe", mapscriptdir);
+                await MessageBox.Show(form.GroundEditForm, String.Format("This map has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            }
+            else
+            {
+                try
+                {
+
+                    if (OperatingSystem.IsWindows())
+                        Process.Start("explorer.exe", mapscriptdir);
+                    else if (OperatingSystem.IsLinux())
+                        Process.Start("mimeopen", mapscriptdir);
+                    else if (OperatingSystem.IsMacOS())
+                        Process.Start("open", mapscriptdir);
+                    else
+                        throw new NotSupportedException("File open not supported on current system.");
+                }
+                catch (Exception e)
+                {
+                    DiagManager.Instance.LogError(e);
+                }
             }
         }
+        
         public void btnReloadScripts_Click()
+        {
+            DevForm.ExecuteOrPend(scriptReload);
+            LoadScripts();
+        }
+
+        private void scriptReload()
         {
             lock (GameBase.lockObj)
             {
+                //Reload everything
                 LuaEngine.Instance.Reset();
                 LuaEngine.Instance.ReInit();
-                LoadScripts();
             }
         }
 

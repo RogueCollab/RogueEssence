@@ -14,7 +14,7 @@ namespace RogueEssence.Dungeon
         //traps, wonder tiles, stairs, etc. that can be removed
         public EffectTile Effect;
 
-        public int ID { get { return Data.ID; } set { Data.ID = value; } }
+        public string ID { get { return Data.ID; } set { Data.ID = value; } }
 
         public Tile()
         {
@@ -22,13 +22,19 @@ namespace RogueEssence.Dungeon
             Effect = new EffectTile();
         }
 
-        public Tile(int type)
+        public Tile(string type)
         {
             Data = new TerrainTile(type);
             Effect = new EffectTile();
         }
 
-        public Tile(int type, Loc loc)
+        public Tile(string type, bool stableTex)
+        {
+            Data = new TerrainTile(type, stableTex);
+            Effect = new EffectTile();
+        }
+
+        public Tile(string type, Loc loc)
         {
             Data = new TerrainTile(type);
             Effect = new EffectTile(loc);
@@ -52,10 +58,11 @@ namespace RogueEssence.Dungeon
         public override string ToString()
         {
             List<string> values = new List<string>();
-            if (Data.ID > -1)
-                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Entries[Data.ID].Name.ToLocal());
-            if (Effect.ID > -1)
-                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Entries[Effect.ID].Name.ToLocal());
+
+            if (!String.IsNullOrEmpty(Data.ID))
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Terrain].Get(Data.ID).Name.ToLocal());
+            if (!String.IsNullOrEmpty(Effect.ID))
+                values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Get(Effect.ID).Name.ToLocal());
             string features = string.Join("/", values);
             return string.Format("{0}: {1}", this.GetType().Name, features);
         }

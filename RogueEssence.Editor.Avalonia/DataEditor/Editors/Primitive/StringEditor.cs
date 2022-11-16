@@ -21,7 +21,7 @@ namespace RogueEssence.Dev
 
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
             //for strings, use an edit textbox
             TextBox txtValue = new TextBox();
@@ -45,6 +45,11 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
 
             TextBox txtValue = (TextBox)control.Children[controlIndex];
+
+            SanitizeAttribute attribute = ReflectionExt.FindAttribute<SanitizeAttribute>(attributes);
+            if (attribute != null)
+                return Text.Sanitize(txtValue.Text);
+
             return txtValue.Text;
         }
     }

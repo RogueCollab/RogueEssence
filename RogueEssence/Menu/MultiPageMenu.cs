@@ -26,13 +26,11 @@ namespace RogueEssence.Menu
 
         protected override void MenuPressed()
         {
-            MenuManager.Instance.ClearToCheckpoint();
             onMenu();
         }
 
         protected override void Canceled()
         {
-            MenuManager.Instance.RemoveMenu();
             onCancel();
         }
 
@@ -77,7 +75,7 @@ namespace RogueEssence.Menu
 
         protected static IChoosable[][] SortIntoPages(IChoosable[] choices, int maxSlots)
         {
-            int pages = (choices.Length - 1) / maxSlots + 1;
+            int pages = MathUtils.DivUp(choices.Length, maxSlots);
             int count = 0;
             List<IChoosable[]> box = new List<IChoosable[]>();
             for (int ii = 0; ii < pages; ii++)
@@ -126,7 +124,7 @@ namespace RogueEssence.Menu
             if (moved)
             {
                 GameManager.Instance.SE("Menu/Skip");
-                PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
+                cursor.ResetTimeOffset();
             }
             else if (input.JustPressed(FrameInput.InputType.Confirm))
             {

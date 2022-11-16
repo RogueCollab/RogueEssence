@@ -13,21 +13,28 @@ namespace RogueEssence.Menu
 
         public delegate void MusicChoice(string song);
         private MusicChoice choice;
-        string[] files;
+        private List<string> unlocks;
+        private List<string> files;
         SongSummary summaryMenu;
 
-        public MusicMenu(MusicChoice choice)
+        public MusicMenu(List<string> unlockedTags, MusicChoice choice)
         {
+            this.unlocks = unlockedTags;
             this.choice = choice;
-            files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
+            string[] pre_files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
 
+            files = new List<string>();
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             flatChoices.Add(new MenuTextChoice("---", () => { choose(""); }));
-            foreach (string song in files)
+            foreach (string song in pre_files)
             {
                 if (!DataManager.IsNonTrivialFile(song))
                     continue;
 
+                if (!canSeeSong(song))
+                    continue;
+
+                files.Add(song);
                 flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(song), () => { choose(Path.GetFileName(song)); }));
             }
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
@@ -60,6 +67,17 @@ namespace RogueEssence.Menu
 
             //draw other windows
             summaryMenu.Draw(spriteBatch);
+        }
+
+        private bool canSeeSong(string fileName)
+        {
+            LoopedSong song = new LoopedSong(fileName);
+            if (song.Tags.ContainsKey("SPOILER"))
+            {
+                string spoiler = song.Tags["SPOILER"];
+                return unlocks.Contains(spoiler);
+            }
+            return true;
         }
     }
 }

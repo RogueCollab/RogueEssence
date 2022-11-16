@@ -14,15 +14,29 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class MoneySpawnZoneStep : ZoneStep
     {
+        /// <summary>
+        /// At what point in the map gen process to run the money spawning in.
+        /// </summary>
         public Priority Priority;
 
+        /// <summary>
+        /// The amount of money spawned on the first floor.
+        /// </summary>
         [Dev.RangeBorder(0, false, true)]
         public RandRange StartAmount;
 
+        /// <summary>
+        /// The amount of money that is added on each increasing floor.
+        /// </summary>
         [Dev.RangeBorder(0, false, true)]
         public RandRange AddAmount;
 
-        [StringTypeConstraint(0, typeof(ModGenState))]
+        /// <summary>
+        /// Flags from the player's passives that will affect the money spawned.
+        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
+        /// The amount of money spawned will be increased by the ModGenState's value.
+        /// </summary>
+        [StringTypeConstraint(1, typeof(ModGenState))]
         public List<FlagType> ModStates;
 
         [NonSerialized]
@@ -79,14 +93,6 @@ namespace RogueEssence.LevelGen
             }
 
             queue.Enqueue(Priority, new MoneySpawnStep<BaseMapGenContext>(amount));
-        }
-
-        //TODO: Created v0.5.2, delete on v0.6.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (ModStates == null)
-                ModStates = new List<FlagType>();
         }
     }
 }

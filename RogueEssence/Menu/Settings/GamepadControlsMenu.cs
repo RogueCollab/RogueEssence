@@ -2,6 +2,7 @@
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -14,8 +15,8 @@ namespace RogueEssence.Menu
 
         public GamepadControlsMenu()
         {
-            actionButtons = new Buttons[DiagManager.Instance.CurSettings.ActionButtons.Length];
-            DiagManager.Instance.CurSettings.ActionButtons.CopyTo(actionButtons, 0);
+            actionButtons = new Buttons[DiagManager.Instance.CurActionButtons.Length];
+            DiagManager.Instance.CurActionButtons.CopyTo(actionButtons, 0);
             inactiveInput = DiagManager.Instance.CurSettings.InactiveInput;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
@@ -26,7 +27,7 @@ namespace RogueEssence.Menu
                 if (!Settings.UsedByGamepad((FrameInput.InputType)index))
                     continue;
                 MenuText buttonName = new MenuText(((FrameInput.InputType)index).ToLocal(), new Loc(2, 1), Color.White);
-                MenuText buttonType = new MenuText("(" + actionButtons[index].ToLocal() + ")", new Loc(200, 1), DirH.Right);
+                MenuText buttonType = new MenuText(DiagManager.Instance.GetButtonString(actionButtons[index]), new Loc(200, 1), DirH.Right);
                 flatChoices.Add(new MenuElementChoice(() => { chooseAction(index, buttonType); }, true, buttonName, buttonType));
             }
 
@@ -39,7 +40,7 @@ namespace RogueEssence.Menu
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_CONTROLS_CONFIRM"), confirm));
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(16, 16), 232, Text.FormatKey("MENU_GAMEPAD_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), 232, String.Format("{0}: {1}", Text.FormatKey("MENU_GAMEPAD_TITLE"), DiagManager.Instance.CurGamePadName), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
 
@@ -68,14 +69,14 @@ namespace RogueEssence.Menu
                     continue;
 
                 IChoosable choice = TotalChoices[totalIndex / SLOTS_PER_PAGE][totalIndex % SLOTS_PER_PAGE];
-                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText("(" + actionButtons[index].ToLocal() + ")");
+                ((MenuText)((MenuElementChoice)choice).Elements[1]).SetText(DiagManager.Instance.GetButtonString(actionButtons[index]));
                 if (actionConflicts(index))
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Red;
                     ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Red;
                     conflicted = true;
                 }
-                else if (actionButtons[index] != DiagManager.Instance.CurSettings.ActionButtons[index])
+                else if (actionButtons[index] != DiagManager.Instance.CurActionButtons[index])
                 {
                     ((MenuText)((MenuElementChoice)choice).Elements[0]).Color = Color.Yellow;
                     ((MenuText)((MenuElementChoice)choice).Elements[1]).Color = Color.Yellow;
@@ -165,7 +166,7 @@ namespace RogueEssence.Menu
 
         private void confirm()
         {
-            actionButtons.CopyTo(DiagManager.Instance.CurSettings.ActionButtons, 0);
+            actionButtons.CopyTo(DiagManager.Instance.CurActionButtons, 0);
             DiagManager.Instance.CurSettings.InactiveInput = inactiveInput;
 
             DiagManager.Instance.SaveSettings(DiagManager.Instance.CurSettings);

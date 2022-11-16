@@ -15,13 +15,13 @@ namespace RogueEssence.Dev.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int idx)
+            if (value is string idx)
             {
                 DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[dataType];
-                if (idx >= 0 && idx < nameIndex.Count)
-                    return nameIndex.Entries[idx].Name.ToLocal();
-                return "---";
+                if (nameIndex.ContainsKey(idx))
+                    return nameIndex.Get(idx).Name.ToLocal();
+                return "**EMPTY**";
             }
             return value;
         }

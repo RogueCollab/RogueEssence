@@ -11,13 +11,15 @@ using Avalonia.Threading;
 using System.Threading;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.Views
 {
     public class DataEditForm : ParentForm
     {
-        public event Action SelectedOKEvent;
-        public event Action SelectedCancelEvent;
+        public delegate Task<bool> OKEvent();
+        public OKEvent SelectedOKEvent;
+        //public event Action SelectedCancelEvent;
 
         public StackPanel ControlPanel { get; }
 
@@ -26,16 +28,28 @@ namespace RogueEssence.Dev.Views
             InitializeComponent();
 
             ControlPanel = this.FindControl<StackPanel>("stkContent");
+            
 #if DEBUG
             this.AttachDevTools();
 #endif
         }
 
-        private void InitializeComponent()
+        protected virtual void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
 
+        public async Task SaveChildren()
+        {
+            for (int ii = children.Count - 1; ii >= 0; ii--)
+            {
+                DataEditForm dataEditor = children[ii] as DataEditForm;
+                if (dataEditor != null)
+                    await dataEditor.SaveChildren();
+            }
+            if (SelectedOKEvent != null)
+                await SelectedOKEvent.Invoke();
+        }
 
         //TODO: this is a workaround to a bug in text wrapping
         //the window size must be modified in order to invalidate a cached value for width
@@ -47,22 +61,33 @@ namespace RogueEssence.Dev.Views
             this.Width = this.Width + 10;
         }
 
-        public void Window_Closing(object sender, CancelEventArgs e)
+        public virtual void Window_Closing(object sender, CancelEventArgs e)
         {
             if (Design.IsDesignMode)
                 return;
-
+            
             CloseChildren();
         }
 
-        public void btnOK_Click(object sender, RoutedEventArgs e)
+        public async void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            SelectedOKEvent?.Invoke();
+            bool close = false;
+            if (SelectedOKEvent != null)
+                close = await SelectedOKEvent.Invoke();
+            if (close)
+                Close();
         }
 
         public void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            SelectedCancelEvent?.Invoke();
+            //SelectedCancelEvent?.Invoke();
+            Close();
+        }
+
+        public void SetViewOnly()
+        {
+            Button button = this.FindControl<Button>("btnOK");
+            button.IsEnabled = false;
         }
 
     }

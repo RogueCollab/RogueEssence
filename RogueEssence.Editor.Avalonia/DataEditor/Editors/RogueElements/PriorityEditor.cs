@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Priority member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Priority member, Type[] subGroupStack)
         {
             //for strings, use an edit textbox
             TextBox txtValue = new TextBox();

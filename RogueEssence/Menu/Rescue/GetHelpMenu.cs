@@ -1,4 +1,5 @@
 ﻿using RogueElements;
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Data;
@@ -93,7 +94,7 @@ namespace RogueEssence.Menu
                         CurrentState = ExchangeRescueState.AOKReady;
                         getHelp.SetReady(CurrentState);
 
-                        string baseAskString = (getHelp.OfferedMail.OfferedItem.Value > -1) ? "DLG_RESCUE_GET_AOK_ASK_REWARD" : "DLG_RESCUE_GET_AOK_ASK";
+                        string baseAskString = !String.IsNullOrEmpty(getHelp.OfferedMail.OfferedItem.Value) ? "DLG_RESCUE_GET_AOK_ASK_REWARD" : "DLG_RESCUE_GET_AOK_ASK";
 
                         DialogueBox dialog = MenuManager.Instance.CreateQuestion(Text.FormatKey(baseAskString, getHelp.TargetInfo.Data.TeamName), () =>
                         {
@@ -137,10 +138,10 @@ namespace RogueEssence.Menu
                     {
                         //save the AOK file
                         DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.AOK_FOLDER), getHelp.OfferedMail, false);
-                        if (getHelp.OfferedMail.OfferedItem.Value > -1)
+                        if (!String.IsNullOrEmpty(getHelp.OfferedMail.OfferedItem.Value))
                         {
                             //deduct your reward and save it to the base file
-                            GameState state = DataManager.Instance.LoadMainGameState();
+                            GameState state = DataManager.Instance.LoadMainGameState(false);
                             state.Save.Rescue.SOS.OfferedItem = getHelp.OfferedMail.OfferedItem;
                             DataManager.Instance.SaveGameState(state);
 

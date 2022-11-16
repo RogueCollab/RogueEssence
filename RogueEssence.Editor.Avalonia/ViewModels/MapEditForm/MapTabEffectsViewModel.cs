@@ -40,20 +40,17 @@ namespace RogueEssence.Dev.ViewModels
         public void MapEffect_Edit(object element, ClassBoxViewModel.EditElementOp op)
         {
             string elementName = "MapEffect";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(ActiveEffect), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(ActiveEffect));
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true, new Type[0]);
                 op(element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -63,7 +60,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Statuses_Changed()
         {
-            Dictionary<int, MapStatus> statuses = new Dictionary<int, MapStatus>();
+            Dictionary<string, MapStatus> statuses = new Dictionary<string, MapStatus>();
             List<MapStatus> states = Statuses.GetList<List<MapStatus>>();
             for (int ii = 0; ii < states.Count; ii++)
                 statuses[states[ii].ID] = states[ii];
@@ -74,10 +71,11 @@ namespace RogueEssence.Dev.ViewModels
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapStatus), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(MapStatus), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(MapStatus), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(MapStatus));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
@@ -97,16 +95,15 @@ namespace RogueEssence.Dev.ViewModels
                 }
 
                 if (itemExists)
-                    await MessageBox.Show(form.MapEditForm, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                {
+                    await MessageBox.Show(frmData, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
+                }
                 else
                 {
                     op(index, element);
-                    frmData.Close();
+                    return true;
                 }
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
             };
 
             form.MapEditForm.RegisterChild(frmData);
@@ -116,20 +113,17 @@ namespace RogueEssence.Dev.ViewModels
         public void Events_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Events[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(SingleCharEvent), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(SingleCharEvent));
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true, new Type[0]);
                 op(index, element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;

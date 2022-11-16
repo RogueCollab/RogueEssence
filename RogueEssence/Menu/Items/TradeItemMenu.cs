@@ -26,33 +26,32 @@ namespace RogueEssence.Menu
 
         public ExchangeState CurrentState;
 
-        public List<int> AllowedGoods;
+        public List<string> AllowedGoods;
 
         public TradeItemMenu(int defaultChoice)
         {
             int menuWidth = 152;
-            AllowedGoods = new List<int>();
+            AllowedGoods = new List<string>();
 
-            int[] itemPresence = new int[DataManager.Instance.DataIndices[DataManager.DataType.Item].Count];
-            for (int ii = 0; ii < itemPresence.Length; ii++)
-            {
-                itemPresence[ii] += DataManager.Instance.Save.ActiveTeam.Storage[ii];
-            }
+            Dictionary<string, int> itemPresence = new Dictionary<string, int>();
+            foreach(string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
+                itemPresence[key] = DataManager.Instance.Save.ActiveTeam.Storage[key];
+
+            //check for inventory too?
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            for (int ii = 0; ii < itemPresence.Length; ii++)
+            foreach (string key in itemPresence.Keys)
             {
-                int index = ii;
-                if (itemPresence[index] > 0)
+                if (itemPresence[key] > 0)
                 {
-                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Entries[index] as ItemEntrySummary;
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(key) as ItemEntrySummary;
                     if (itemEntry.ContainsState<MaterialState>())
                     {
-                        AllowedGoods.Add(index);
+                        AllowedGoods.Add(key);
                         int slot = flatChoices.Count;
 
-                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(ii).GetIconName(), new Loc(2, 1));
-                        MenuText menuCount = new MenuText("(" + itemPresence[index] + ")", new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
+                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                        MenuText menuCount = new MenuText("(" + itemPresence[key] + ")", new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                     }
                 }

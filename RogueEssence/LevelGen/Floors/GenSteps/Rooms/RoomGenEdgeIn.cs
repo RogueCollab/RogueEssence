@@ -3,11 +3,21 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates a rectangular room with the specified width and height, and blocks off the tiles at the edges.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class RoomGenEdgeIn<T> : PermissiveRoomGen<T> where T : ITiledGenContext
     {
-
+        /// <summary>
+        /// Width of the room.
+        /// </summary>
         public RandRange Width;
+
+        /// <summary>
+        /// Height of the room.
+        /// </summary>
         public RandRange Height;
 
         public RoomGenEdgeIn() { }

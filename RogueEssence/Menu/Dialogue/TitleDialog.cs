@@ -173,7 +173,7 @@ namespace RogueEssence.Menu
 
                 DialogueText text = new DialogueText("", new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
 
-                text.SetFormattedText(scrolls[nn]);
+                text.SetAndFormatText(scrolls[nn]);
                 Texts.Add(text);
 
                 Loc size = text.GetTextSize();
@@ -319,14 +319,12 @@ namespace RogueEssence.Menu
             if (!Visible)
                 return;
 
-
             spriteBatch.End();
             float scale = GraphicsManager.WindowZoom;
             Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
-            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(0,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferHeight,
-                0, 0, 1);
+            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(
+                0, GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, 0,
+                0, 1);
 
             alphaTest.Projection = orthMatrix;
             BlendState blend = new BlendState();

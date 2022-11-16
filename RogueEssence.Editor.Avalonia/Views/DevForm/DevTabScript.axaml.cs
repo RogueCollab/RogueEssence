@@ -30,17 +30,18 @@ namespace RogueEssence.Dev.Views
                     case Key.Enter:
                         {
                             viewModel.ScriptLine = viewModel.ScriptLine + "\n";
+                            viewModel.CmdCaret = viewModel.CmdCaret + 1;
                             break;
                         }
                     case Key.Up:
                         {
-                            viewModel.ShiftHistory(-1);
+                            viewModel.ShiftHistory(1);
                             args.Handled = true;
                             break;
                         }
                     case Key.Down:
                         {
-                            viewModel.ShiftHistory(1);
+                            viewModel.ShiftHistory(-1);
                             args.Handled = true;
                             break;
                         }

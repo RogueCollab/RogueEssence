@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
+using RogueElements;
 
 namespace RogueEssence.Content
 {
@@ -10,10 +11,12 @@ namespace RogueEssence.Content
     {
         public string Name;
         public List<int> Fallbacks;
+        public bool AllowRandom;
 
-        public EmotionType(string name)
+        public EmotionType(string name, bool allowRandom)
         {
             Name = name;
+            AllowRandom = allowRandom;
             Fallbacks = new List<int>();
         }
     }
@@ -196,7 +199,7 @@ namespace RogueEssence.Content
             if (singleFrames)
             {
                 int fullWidth = (int)Math.Ceiling(Math.Sqrt(GraphicsManager.Emotions.Count));
-                int fullHeight = (GraphicsManager.Emotions.Count - 1) / fullWidth + 1;
+                int fullHeight = MathUtils.DivUp(GraphicsManager.Emotions.Count, fullWidth);
 
                 bool includeReverse = false;
                 foreach (PortraitData data in sheet.emoteMap.Values)

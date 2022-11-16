@@ -55,7 +55,7 @@ namespace RogueEssence.Menu
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 5),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            portrait = new SpeakerPortrait(new MonsterID(), new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
+            portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, startChoice, startPage, SLOTS_PER_PAGE);
 
@@ -134,7 +134,7 @@ namespace RogueEssence.Menu
                 Character chara = DataManager.Instance.Save.ActiveTeam.Assembly[currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count];
                 chara.IsFavorite = !chara.IsFavorite;
                 DataManager.Instance.Save.ActiveTeam.Assembly.RemoveAt(currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count);
-                DataManager.Instance.Save.ActiveTeam.Assembly.Insert(0, chara);
+                DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(chara);
             }
             MenuManager.Instance.ReplaceMenu(new AssemblyMenu(DataManager.Instance.Save.ActiveTeam.Players.Count, teamChanged));
         }

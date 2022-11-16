@@ -72,7 +72,7 @@ namespace RogueEssence.Menu
             ElementData element2 = DataManager.Instance.GetElement(player.Element2);
 
             string typeString = element1.GetIconName();
-            if (player.Element2 != 00)
+            if (player.Element2 != DataManager.Instance.DefaultElement)
                 typeString += "/" + element2.GetIconName();
             BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
             bool origElements = (player.Element1 == monsterForm.Element1);
@@ -84,7 +84,7 @@ namespace RogueEssence.Menu
             int expToNext = 0;
             if (player.Level < DataManager.Instance.MaxLevel)
             {
-                int growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
+                string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);
                 expToNext = growthData.GetExpToNext(player.Level);
             }
@@ -124,7 +124,7 @@ namespace RogueEssence.Menu
 
             ItemDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 12), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            Item = new MenuText(player.EquippedItem.ID > -1 ? Text.FormatKey("MENU_HELD_ITEM", player.EquippedItem.GetDisplayName()) : Text.FormatKey("MENU_HELD_NO_ITEM"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET));
+            Item = new MenuText(!String.IsNullOrEmpty(player.EquippedItem.ID) ? Text.FormatKey("MENU_HELD_ITEM", player.EquippedItem.GetDisplayName()) : Text.FormatKey("MENU_HELD_NO_ITEM"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET));
 
         }
 

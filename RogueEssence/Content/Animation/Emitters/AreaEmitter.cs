@@ -5,7 +5,9 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
-
+    /// <summary>
+    /// Emits particles within a specified circular area.
+    /// </summary>
     [Serializable]
     public class StaticAreaEmitter : FiniteEmitter
     {
@@ -37,11 +39,26 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new StaticAreaEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IEmittable> Anims;
+        
+
         public int Bursts;
+
         public int ParticlesPerBurst;
+
+        /// <summary>
+        /// Number of frames between bursts.
+        /// </summary>
         public int BurstTime;
+
+        /// <summary>
+        /// Radius of the emitting area in pixels.
+        /// </summary>
         public int Range;
+
         public DrawLayer Layer;
 
         [NonSerialized]
@@ -78,6 +95,10 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// Emits particles within a specified circular area.
+    /// The area of emission starts at a radius of 0 and grows to a maximum range.
+    /// </summary>
     [Serializable]
     public class FiniteAreaEmitter : FiniteEmitter
     {
@@ -109,19 +130,31 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new FiniteAreaEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IEmittable> Anims;
 
         /// <summary>
+        /// The maximum radius of the emitting area.
         /// In Pixels
         /// </summary>
         public int Range;
 
         /// <summary>
+        /// Speed of the radius's increase.
         /// In Pixels Per Second
         /// </summary>
         public int Speed;
-        //public int LagRange;
+
+        /// <summary>
+        /// Total particles to emit by the time the emitter finishes.
+        /// </summary>
         public int TotalParticles;
+
+        /// <summary>
+        /// The draw layer to put the particles on.
+        /// </summary>
         public DrawLayer Layer;
 
         [NonSerialized]
@@ -167,6 +200,9 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// Emits particles within a specified circular area, attached to a moving user or object.
+    /// </summary>
     [Serializable]
     public class AttachAreaEmitter : AttachPointEmitter
     {
@@ -195,11 +231,31 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new AttachAreaEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IEmittable> Anims;
-        public int Range;//pixels!
+
+        /// <summary>
+        /// Radius of the emitting area in pixels.
+        /// </summary>
+        public int Range;
+
         public int ParticlesPerBurst;
+
+        /// <summary>
+        /// The amount of height to add to the particles.
+        /// </summary>
         public int AddHeight;
+
+        /// <summary>
+        /// Number of frames between bursts.
+        /// </summary>
         public int BurstTime;
+
+        /// <summary>
+        /// The draw layer to put the particles on.
+        /// </summary>
         public DrawLayer Layer;
 
         [NonSerialized]
@@ -236,6 +292,10 @@ namespace RogueEssence.Content
         }
     }
 
+    /// <summary>
+    /// Emits particles within the range of the hitbox that owns it.
+    /// The area of emission is a circle that starts at a radius of 0 and grows to the range of the square-shaped hitbox.
+    /// </summary>
     [Serializable]
     public class CircleSquareAreaEmitter : CircleSquareEmitter
     {
@@ -267,9 +327,26 @@ namespace RogueEssence.Content
 
         public override BaseEmitter Clone() { return new CircleSquareAreaEmitter(this); }
 
+        /// <summary>
+        /// The particles to emit.
+        /// </summary>
         public List<IEmittable> Anims;
+
+        /// <summary>
+        /// The amount of particles to emit per tile covered by the hitbox.
+        /// </summary>
         public double ParticlesPerTile;
-        public int RangeDiff;//pixels!
+
+        /// <summary>
+        /// A modification to the emission radius initially supplied by the hitbox, in pixels.
+        /// Negative numbers take the hitbox's radius and decrease it.
+        /// Positive numbers take the hitbox's radius and increase it.
+        /// </summary>
+        public int RangeDiff;
+
+        /// <summary>
+        /// The draw layer to put the particles on.
+        /// </summary>
         public DrawLayer Layer; 
 
         [NonSerialized]

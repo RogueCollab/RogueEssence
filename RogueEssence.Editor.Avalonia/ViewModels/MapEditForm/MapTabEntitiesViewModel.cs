@@ -18,9 +18,9 @@ namespace RogueEssence.Dev.ViewModels
         public MapTabEntitiesViewModel()
         {
             MonsterTeam team = new MonsterTeam();
-            SelectedEntity = new Character(new CharData(), team);
+            SelectedEntity = new Character(new CharData());
             SelectedEntity.Level = 1;
-            SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
+            SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI));
             team.Players.Add(SelectedEntity);
 
             Directions = new ObservableCollection<string>();
@@ -28,43 +28,72 @@ namespace RogueEssence.Dev.ViewModels
                 Directions.Add(dir.ToLocal());
 
             Tactics = new ObservableCollection<string>();
-            string[] tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
-            for (int ii = 0; ii < tactic_names.Length; ii++)
-                Tactics.Add(ii.ToString("D2") + ": " + tactic_names[ii]);
+            Dictionary<string, string> tactic_names = DataManager.Instance.DataIndices[DataManager.DataType.AI].GetLocalStringArray(true);
+
+            tacticKeys = new List<string>();
+
+            foreach (string key in tactic_names.Keys)
+            {
+                tacticKeys.Add(key);
+                Tactics.Add(key + ": " + tactic_names[key]);
+            }
 
             Monsters = new ObservableCollection<string>();
-            string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
-            for (int ii = 0; ii < monster_names.Length; ii++)
-                Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+            monsterKeys = new List<string>();
+            Dictionary<string, string> monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
+            foreach (string key in monster_names.Keys)
+            {
+                Monsters.Add(key + ": " + monster_names[key]);
+                monsterKeys.Add(key);
+            }
 
             Forms = new ObservableCollection<string>();
 
             Skins = new ObservableCollection<string>();
-            string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                Skins.Add(skin_names[ii]);
+            skinKeys = new List<string>();
+            Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+            foreach (string key in skin_names.Keys)
+            {
+                Skins.Add(key + ": " + skin_names[key]);
+                skinKeys.Add(key);
+            }
 
             Genders = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Gender.Female; ii++)
                 Genders.Add(((Gender)ii).ToLocal());
 
             Intrinsics = new ObservableCollection<string>();
-            string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+            intrinsicKeys = new List<string>();
             Intrinsics.Add("---: None");
-            for (int ii = 0; ii < intrinsic_names.Length; ii++)
-                Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
+            intrinsicKeys.Add("");
+            Dictionary<string, string> intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+            foreach (string key in intrinsic_names.Keys)
+            {
+                Intrinsics.Add(key + ": " + intrinsic_names[key]);
+                intrinsicKeys.Add(key);
+            }
 
             Equips = new ObservableCollection<string>();
+            itemKeys = new List<string>();
             Equips.Add("---: None");
-            string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
-            for (int ii = 0; ii < item_names.Length; ii++)
-                Equips.Add(ii.ToString("D3") + ": " + item_names[ii]);
+            itemKeys.Add("");
+            Dictionary<string, string> item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+            foreach (string key in item_names.Keys)
+            {
+                Equips.Add(key + ": " + item_names[key]);
+                itemKeys.Add(key);
+            }
 
             Skills = new ObservableCollection<string>();
-            Skills.Add("---: None");
-            string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
-            for (int ii = 0; ii < skill_names.Length; ii++)
-                Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
+            skillKeys = new List<string>();
+            Skills.Add("**Empty**");
+            skillKeys.Add("");
+            Dictionary<string, string> skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
+            foreach (string key in skill_names.Keys)
+            {
+                Skills.Add(key + ": " + skill_names[key]);
+                skillKeys.Add(key);
+            }
 
             speciesChanged();
 
@@ -97,14 +126,16 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private List<string> tacticKeys;
+
         public ObservableCollection<string> Tactics { get; }
 
         public int ChosenTactic
         {
-            get { return SelectedEntity.Tactic.ID; }
+            get { return tacticKeys.IndexOf(SelectedEntity.Tactic.ID); }
             set
             {
-                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(value));
+                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(tacticKeys[value]));
                 this.RaisePropertyChanged();
             }
         }
@@ -116,20 +147,23 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        private List<string> monsterKeys;
+
         public ObservableCollection<string> Monsters { get; }
 
         public int ChosenMonster
         {
             get
             {
-                return SelectedEntity.BaseForm.Species;
+                return monsterKeys.IndexOf(SelectedEntity.BaseForm.Species);
             }
             set
             {
-                SelectedEntity.BaseForm.Species = value;
+                SelectedEntity.BaseForm.Species = monsterKeys[value];
                 SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
                 speciesChanged();
+                updateStats();
             }
         }
 
@@ -149,10 +183,13 @@ namespace RogueEssence.Dev.ViewModels
                     SelectedEntity.BaseForm.Form = value;
                     SelectedEntity.RestoreForm();
                     SelectedEntity.HP = SelectedEntity.MaxHP;
+                    updateStats();
                 }
                 this.RaisePropertyChanged();
             }
         }
+
+        private List<string> skinKeys;
 
         public ObservableCollection<string> Skins { get; }
 
@@ -160,11 +197,11 @@ namespace RogueEssence.Dev.ViewModels
         {
             get
             {
-                return SelectedEntity.BaseForm.Skin;
+                return skinKeys.IndexOf(SelectedEntity.BaseForm.Skin);
             }
             set
             {
-                SelectedEntity.BaseForm.Skin = value;
+                SelectedEntity.BaseForm.Skin = skinKeys[value];
                 SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
             }
@@ -193,84 +230,90 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.RaiseAndSet(ref SelectedEntity.Level, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
+                updateStats();
             }
         }
 
         public ObservableCollection<string> Intrinsics { get; }
 
+        List<string> intrinsicKeys;
+
         public int ChosenIntrinsic
         {
-            get { return SelectedEntity.Intrinsics[0].Element.ID + 1; }
+            get { return intrinsicKeys.IndexOf(SelectedEntity.Intrinsics[0].Element.ID); }
             set
             {
-                SelectedEntity.LearnIntrinsic(value - 1, 0);
+                SelectedEntity.LearnIntrinsic(intrinsicKeys[value], 0);
                 this.RaisePropertyChanged();
             }
         }
 
         public ObservableCollection<string> Equips { get; }
 
+        List<string> itemKeys;
+
         public int ChosenEquip
         {
-            get { return SelectedEntity.EquippedItem.ID + 1; }
+            get { return itemKeys.IndexOf(SelectedEntity.EquippedItem.ID); }
             set
             {
                 lock (GameBase.lockObj)
                 {
                     if (value > 0)
                     {
-                        InvItem item = new InvItem(value - 1);
+                        InvItem item = new InvItem(itemKeys[value]);
                         ItemData entry = (ItemData)item.GetData();
                         if (entry.MaxStack > 1)
-                            item.HiddenValue = entry.MaxStack;
-                        SelectedEntity.EquipItem(item);
+                            item.Amount = entry.MaxStack;
+                        SelectedEntity.EquippedItem = item;
                     }
                     else
-                        SelectedEntity.DequipItem();
+                        SelectedEntity.EquippedItem = new InvItem();
                 }
                 this.RaisePropertyChanged();
             }
         }
 
+        private List<string> skillKeys;
         public ObservableCollection<string> Skills { get; }
 
         //TODO: replace with observable collection- it MUST sync with the original model
         public int ChosenSkill0
         {
-            get { return SelectedEntity.BaseSkills[0].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[0].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 0, SelectedEntity.Skills[0].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 0, SelectedEntity.Skills[0].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
 
         public int ChosenSkill1
         {
-            get { return SelectedEntity.BaseSkills[1].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[1].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 1, SelectedEntity.Skills[1].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 1, SelectedEntity.Skills[1].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
 
         public int ChosenSkill2
         {
-            get { return SelectedEntity.BaseSkills[2].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[2].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 2, SelectedEntity.Skills[2].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 2, SelectedEntity.Skills[2].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
 
         public int ChosenSkill3
         {
-            get { return SelectedEntity.BaseSkills[3].SkillNum + 1; }
+            get { return skillKeys.IndexOf(SelectedEntity.BaseSkills[3].SkillNum); }
             set
             {
-                SelectedEntity.EditSkill(value - 1, 3, SelectedEntity.Skills[3].Element.Enabled);
+                SelectedEntity.EditSkill(skillKeys[value], 3, SelectedEntity.Skills[3].Element.Enabled);
                 this.RaisePropertyChanged();
             }
         }
@@ -322,37 +365,75 @@ namespace RogueEssence.Dev.ViewModels
             {
                 this.RaiseAndSet(ref SelectedEntity.MaxHPBonus, value);
                 SelectedEntity.HP = SelectedEntity.MaxHP;
+                HPTotal = HPTotal;
             }
         }
 
         public int AtkBonus
         {
             get { return SelectedEntity.AtkBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.AtkBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.AtkBonus, value); AtkTotal = AtkTotal; }
         }
 
         public int DefBonus
         {
             get { return SelectedEntity.DefBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.DefBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.DefBonus, value); DefTotal = DefTotal; }
         }
 
         public int MAtkBonus
         {
             get { return SelectedEntity.MAtkBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.MAtkBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.MAtkBonus, value); MAtkTotal = MAtkTotal; }
         }
 
         public int MDefBonus
         {
             get { return SelectedEntity.MDefBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.MDefBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.MDefBonus, value); MDefTotal = MDefTotal; }
         }
 
         public int SpeedBonus
         {
             get { return SelectedEntity.SpeedBonus; }
-            set { this.RaiseAndSet(ref SelectedEntity.SpeedBonus, value); }
+            set { this.RaiseAndSet(ref SelectedEntity.SpeedBonus, value); SpeedTotal = SpeedTotal; }
+        }
+
+
+        public string HPTotal
+        {
+            get { return "= " + SelectedEntity.MaxHP; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string AtkTotal
+        {
+            get { return "= " + SelectedEntity.Atk; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string DefTotal
+        {
+            get { return "= " + SelectedEntity.Def; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string MAtkTotal
+        {
+            get { return "= " + SelectedEntity.MAtk; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string MDefTotal
+        {
+            get { return "= " + SelectedEntity.MDef; }
+            set { this.RaisePropertyChanged(); }
+        }
+
+        public string SpeedTotal
+        {
+            get { return "= " + SelectedEntity.Speed; }
+            set { this.RaisePropertyChanged(); }
         }
 
         public CollectionBoxViewModel Statuses { get; set; }
@@ -420,7 +501,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 int tempForm = ChosenForm;
                 Forms.Clear();
-                MonsterData monster = DataManager.Instance.GetMonster(ChosenMonster);
+                MonsterData monster = DataManager.Instance.GetMonster(monsterKeys[ChosenMonster]);
                 for (int ii = 0; ii < monster.Forms.Count; ii++)
                     Forms.Add(ii.ToString("D2") + ": " + monster.Forms[ii].FormName.ToLocal());
 
@@ -431,7 +512,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void Statuses_Changed()
         {
-            Dictionary<int, StatusEffect> statuses = new Dictionary<int, StatusEffect>();
+            Dictionary<string, StatusEffect> statuses = new Dictionary<string, StatusEffect>();
             List<StatusEffect> states = Statuses.GetList<List<StatusEffect>>();
             for (int ii = 0; ii < states.Count; ii++)
                 statuses[states[ii].ID] = states[ii];
@@ -441,10 +522,11 @@ namespace RogueEssence.Dev.ViewModels
         public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(StatusEffect));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
@@ -464,16 +546,15 @@ namespace RogueEssence.Dev.ViewModels
                 }
 
                 if (itemExists)
-                    await MessageBox.Show(form.MapEditForm, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                {
+                    await MessageBox.Show(frmData, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    return false;
+                }
                 else
                 {
                     op(index, element);
-                    frmData.Close();
+                    return true;
                 }
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
             };
 
             form.MapEditForm.RegisterChild(frmData);
@@ -548,9 +629,9 @@ namespace RogueEssence.Dev.ViewModels
             else
             {
                 MonsterTeam team = new MonsterTeam();
-                SelectedEntity = new Character(new CharData(), team);
+                SelectedEntity = new Character(new CharData());
                 SelectedEntity.Level = 1;
-                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(0));
+                SelectedEntity.Tactic = new AITactic(DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI));
                 team.Players.Add(SelectedEntity);
                 setEntity(SelectedEntity);
             }
@@ -594,6 +675,16 @@ namespace RogueEssence.Dev.ViewModels
             Statuses.LoadFromList(states);
         }
 
+        private void updateStats()
+        {
+            HPTotal = HPTotal;
+            AtkTotal = AtkTotal;
+            DefTotal = DefTotal;
+            MAtkTotal = MAtkTotal;
+            MDefTotal = MDefTotal;
+            SpeedTotal = SpeedTotal;
+        }
+
         /// <summary>
         /// Select the entity at that position and displays its data for editing
         /// </summary>
@@ -619,20 +710,22 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MapEntityStateUndo : StateUndo<List<Team>>
+    public class MapEntityStateUndo : StateUndo<EventedList<Team>>
     {
         public MapEntityStateUndo()
         {
         }
 
-        public override List<Team> GetState()
+        public override EventedList<Team> GetState()
         {
             return ZoneManager.Instance.CurrentMap.MapTeams;
         }
 
-        public override void SetState(List<Team> state)
+        public override void SetState(EventedList<Team> state)
         {
-            ZoneManager.Instance.CurrentMap.MapTeams = state;
+            ZoneManager.Instance.CurrentMap.MapTeams.Clear();
+            foreach(Team item in state)
+                ZoneManager.Instance.CurrentMap.MapTeams.Add(item);
         }
     }
 }

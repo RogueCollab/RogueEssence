@@ -6,20 +6,20 @@ namespace RogueEssence.Menu
 {
     public class CharaDetailMenu : BaseSettingsMenu
     {
-        private int species;
+        private string species;
         private int origFormSetting;
-        private int origSkinSetting;
+        private string origSkinSetting;
         private Gender origGenderSetting;
         private int origIntrinsicSetting;
 
         private CharaChoiceMenu baseMenu;
 
         private List<int> legalForms;
-        private List<int> legalSkins;
+        private List<string> legalSkins;
         private List<Gender> legalGenders;
         private List<int> legalIntrinsics;
         
-        public CharaDetailMenu(int species, CharaChoiceMenu baseMenu)
+        public CharaDetailMenu(string species, CharaChoiceMenu baseMenu)
         {
             this.species = species;
             this.baseMenu = baseMenu;
@@ -125,11 +125,11 @@ namespace RogueEssence.Menu
                 legalSkins = dex.Forms[formSettingIndex].GetPossibleSkins();
             else
             {
-                legalSkins = new List<int>() { 0 };
-                for (int ii = 1; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
+                legalSkins = new List<string>() { DataManager.Instance.DefaultSkin };
+                foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetOrderedKeys(true))
                 {
-                    if (DataManager.Instance.GetSkin(ii).Challenge)
-                        legalSkins.Add(ii);
+                    if (DataManager.Instance.GetSkin(key).Challenge)
+                        legalSkins.Add(key);
                 }
             }
             List<string> choices = new List<string>();
@@ -201,7 +201,7 @@ namespace RogueEssence.Menu
                 if (legalIntrinsics[jj] == origIntrinsicSetting)
                     origChosenIndex = jj;
             }
-            if (-1 == origIntrinsicSetting)
+            if (origIntrinsicSetting == -1)
                 origChosenIndex = -1;
 
             return new MenuSetting(Text.FormatKey("MENU_CHARA_DETAIL_INTRINSIC"), 48, 72, choices, chosenIndex + 1, origChosenIndex + 1, confirmAction);

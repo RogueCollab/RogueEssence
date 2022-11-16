@@ -10,10 +10,10 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Places items on the map near the room as an existing spawnable.
+    /// Places objects on the floor in the room of an existing spawnable, or as close to it as possible.
     /// </summary>
     /// <typeparam name="TGenContext">Type of the MapGenContext.</typeparam>
-    /// <typeparam name="TSpawnable">Type of the item to spawn.</typeparam>
+    /// <typeparam name="TSpawnable">Type of the object to spawn.</typeparam>
     /// <typeparam name="TPriorSpawn">Type of the spawnable to refer to.</typeparam>
     [Serializable]
     public class NearSpawnableSpawnStep<TGenContext, TSpawnable, TPriorSpawn> : RoomSpawnStep<TGenContext, TSpawnable>
@@ -33,7 +33,7 @@ namespace RogueEssence.LevelGen
         }
 
         /// <summary>
-        /// The percentage chance to multiply a room's spawning chance when it successfully spawns an item.
+        /// The percentage chance to multiply a room's spawning chance when it successfully spawns an object.
         /// </summary>
         public int SuccessPercent { get; set; }
 
@@ -46,7 +46,7 @@ namespace RogueEssence.LevelGen
                 FloorRoomPlan room = map.RoomPlan.GetRoomPlan(ii);
                 for (int jj = 0; jj < map.Count; jj++)
                 {
-                    if (Collision.InBounds(room.RoomGen.Draw, map.GetLoc(jj)))
+                    if (map.RoomPlan.InBounds(room.RoomGen.Draw, map.GetLoc(jj)))
                         spawningRooms.Add(new RoomHallIndex(ii, false), 100);
                 }
             }

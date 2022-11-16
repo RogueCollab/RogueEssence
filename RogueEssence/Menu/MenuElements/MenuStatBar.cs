@@ -20,7 +20,7 @@ namespace RogueEssence.Menu
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(offset.X + Loc.X+1, offset.Y + Loc.Y+1, Length, 8), null, Color.Black);
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(offset.X + Loc.X + 1, offset.Y + Loc.Y + 1, Length, 8), null, Color.Black);
             GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(offset.X + Loc.X, offset.Y + Loc.Y, Length, 8), null, Color);
         }
     }

@@ -37,8 +37,11 @@ namespace RogueEssence.Dev.ViewModels
     {
         public event Action SelectedOKEvent;
         public event Action SelectedAddEvent;
+        public event Action SelectedDeleteEvent;
 
         public ObservableCollection<DataOpContainer> OpList { get; }
+
+        private List<string> keys;
 
         public DataListFormViewModel()
         {
@@ -47,9 +50,13 @@ namespace RogueEssence.Dev.ViewModels
 
             SearchList.SetName("Select Item");
             SearchList.ListBoxMouseDoubleClick += slbEntries_MouseDoubleClick;
+
+            keys = new List<string>();
         }
 
         public SearchListBoxViewModel SearchList { get; set; }
+
+        public string ChosenAsset { get { return SearchList.InternalIndex > -1 ? keys[SearchList.InternalIndex] : null; } }
 
         private string name;
         public string Name
@@ -58,12 +65,14 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref name, value); }
         }
 
-
-        public void SetEntries(string[] entries)
+        public void SetEntries(Dictionary<string, string> entries)
         {
             SearchList.Clear();
-            for (int ii = 0; ii < entries.Length; ii++)
-                SearchList.AddItem(ii.ToString("D3") + ": " + entries[ii]);
+            foreach (string key in entries.Keys)
+            {
+                keys.Add(key);
+                SearchList.AddItem(key + ": " + entries[key]);
+            }
         }
 
         public void SetOps(params DataOpContainer[] ops)
@@ -72,14 +81,23 @@ namespace RogueEssence.Dev.ViewModels
             OpList.Add(edit);
         }
 
-        public void ModifyEntry(int index, string entry)
+        public void ModifyEntry(string index, string entry)
         {
-            SearchList.SetInternalEntry(index, index.ToString("D3") + ": " + entry);
+            int intIndex = keys.IndexOf(index);
+            SearchList.SetInternalEntry(intIndex, index + ": " + entry);
         }
 
-        public void AddEntry(string entry)
+        public void AddEntry(string key, string entry)
         {
-            SearchList.AddItem(SearchList.Count.ToString("D3") + ": " + entry);
+            keys.Add(key);
+            SearchList.AddItem(key + ": " + entry);
+        }
+
+        public void DeleteEntry(string key)
+        {
+            int idx = keys.IndexOf(key);
+            keys.RemoveAt(idx);
+            SearchList.RemoveInternalAt(idx);
         }
 
         public void btnAdd_Click()
@@ -87,10 +105,10 @@ namespace RogueEssence.Dev.ViewModels
             SelectedAddEvent?.Invoke();
         }
 
-        //public void btnDelete_Click()
-        //{
-
-        //}
+        public void btnDelete_Click()
+        {
+            SelectedDeleteEvent?.Invoke();
+        }
 
         public void slbEntries_MouseDoubleClick(object sender, RoutedEventArgs e)
         {

@@ -3,6 +3,11 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Generates a room, and then coats it with additional tiles.
+    /// INCOMPLETE
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class RoomGenCoated<T> : RoomGen<T> where T : ITiledGenContext
     {
@@ -33,15 +38,12 @@ namespace RogueEssence.LevelGen
 
 
 
-        public override void ReceiveOpenedBorder(IRoomGen sourceRoom, Dir4 dir)
+        public override void AskBorderFromRoom(Rect sourceRect, Func<Dir4, int, bool> borderQuery, Dir4 dir)
         {
             //TODO: transfer to internal roomgen 
         }
-        public override void ReceiveFulfillableBorder(IRoomGen sourceRoom, Dir4 dir)
-        {
-            //TODO: transfer to internal roomgen 
-        }
-        public override void ReceiveBorderRange(IntRange range, Dir4 dir)
+
+        public override void AskBorderRange(IntRange range, Dir4 dir)
         {
             //TODO: transfer to internal roomgen 
         }

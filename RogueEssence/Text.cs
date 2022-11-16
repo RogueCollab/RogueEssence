@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Xml;
 using System.IO;
+using System.Resources.NetStandard;
 
 
 namespace RogueEssence
@@ -39,39 +40,44 @@ namespace RogueEssence
 
         public static void Init()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             Strings = new List<Dictionary<string, string>>();
             StringsEx = new List<Dictionary<string, string>>();
 
-            string path = PathMod.ModPath("Strings/Languages.xml");
             List<string> codes = new List<string>();
             Dictionary<string, LanguageSetting> translations = new Dictionary<string, LanguageSetting>();
             try
             {
-                if (File.Exists(path))
+                foreach (string path in PathMod.FallforthPaths("Strings/Languages.xml"))
                 {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    if (File.Exists(path))
                     {
-                        if (xnode.Name == "data")
+                        XmlDocument xmldoc = new XmlDocument();
+                        xmldoc.Load(path);
+                        foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
                         {
-                            string value = null;
-                            string name = null;
-                            var atname = xnode.Attributes["name"];
-                            if (atname != null)
-                                name = atname.Value;
+                            if (xnode.Name == "data")
+                            {
+                                string value = null;
+                                string name = null;
+                                var atname = xnode.Attributes["name"];
+                                if (atname != null)
+                                    name = atname.Value;
 
-                            //Get value
-                            XmlNode valnode = xnode.SelectSingleNode("value");
-                            if (valnode != null)
-                                value = valnode.InnerText;
+                                //Get value
+                                XmlNode valnode = xnode.SelectSingleNode("value");
+                                if (valnode != null)
+                                    value = valnode.InnerText;
 
-                            List<string> fallbacks = new List<string>();
-                            foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
-                                fallbacks.Add(fallbacknode.InnerText);
+                                List<string> fallbacks = new List<string>();
+                                foreach (XmlNode fallbacknode in xnode.SelectNodes("fallback"))
+                                    fallbacks.Add(fallbacknode.InnerText);
 
-                            codes.Add(name);
-                            translations[name] = new LanguageSetting(value, fallbacks);
+                                if (!codes.Contains(name))
+                                    codes.Add(name);
+                                translations[name] = new LanguageSetting(value, fallbacks);
+                            }
                         }
                     }
                 }
@@ -91,7 +97,7 @@ namespace RogueEssence
             return LangNames[lang].Name;
         }
 
-        public static Dictionary<string, string> LoadXmlDoc(string path)
+        public static Dictionary<string, string> LoadStringResx(string path)
         {
             try
             {
@@ -126,6 +132,62 @@ namespace RogueEssence
             {
                 DiagManager.Instance.LogError(ex);
                 return new Dictionary<string, string>();
+            }
+        }
+
+        public static Dictionary<string, (string val, string comment)> LoadDevStringResx(string path)
+        {
+            try
+            {
+                Dictionary<string, (string val, string comment)> translations = new Dictionary<string, (string val, string comment)>();
+                if (File.Exists(path))
+                {
+                    XmlDocument xmldoc = new XmlDocument();
+                    xmldoc.Load(path);
+                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
+                    {
+                        if (xnode.Name == "data")
+                        {
+                            string value = null;
+                            string name = null;
+                            string comment = "";
+                            var atname = xnode.Attributes["name"];
+                            if (atname != null)
+                                name = atname.Value;
+
+                            //Get value
+                            XmlNode valnode = xnode.SelectSingleNode("value");
+                            if (valnode != null)
+                                value = valnode.InnerText;
+
+                            //Get comment
+                            XmlNode comnode = xnode.SelectSingleNode("comment");
+                            if (comnode != null)
+                                comment = comnode.InnerText;
+
+                            if (value != null && name != null)
+                                translations[name] = (value, comment);
+                        }
+                    }
+                }
+                return translations;
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+                return new Dictionary<string, (string, string)>();
+            }
+        }
+
+        public static void SaveStringResx(string path, Dictionary<string, (string val, string comment)> stringDict)
+        {
+            using (ResXResourceWriter resx = new ResXResourceWriter(path))
+            {
+                foreach (string key in stringDict.Keys)
+                    resx.AddResource(new ResXDataNode(key, stringDict[key].val) { Comment = stringDict[key].comment });
+
+                resx.Generate();
+                resx.Close();
             }
         }
 
@@ -205,24 +267,112 @@ namespace RogueEssence
         {
             Culture = new CultureInfo(code);
 
-            Strings.Clear();
-            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + code + ".resx")));
+            loadCulture(Strings, code, "strings");
+
+            loadCulture(StringsEx, code, "stringsEx");
+        }
+
+        private static void loadCulture(List<Dictionary<string, string>> strings, string code, string fileName)
+        {
+            strings.Clear();
+            //order of string fallbacks:
+            //first go through all mods of the original language
+            foreach(string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
+                strings.Add(LoadStringResx(path));
+
+            //then go through all mods of the official fallbacks
             if (LangNames.ContainsKey(code))
             {
                 foreach (string fallback in LangNames[code].Fallbacks)
-                    Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings." + fallback + ".resx")));
+                {
+                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
+                        strings.Add(LoadStringResx(path));
+                }
             }
-            Strings.Add(LoadXmlDoc(PathMod.ModPath("Strings/strings.resx")));
+            //then go through all mods of the default language
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
+                strings.Add(LoadStringResx(path));
+        }
 
-            StringsEx.Clear();
-
-            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + code + ".resx")));
-            if (LangNames.ContainsKey(code))
+        public static string Sanitize(string input)
+        {
+            StringBuilder sbReturn = new StringBuilder();
+            var arrayText = input.Normalize(NormalizationForm.FormD).ToCharArray();
+            foreach (char letter in arrayText)
             {
-                foreach (string fallback in LangNames[code].Fallbacks)
-                    StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx." + fallback + ".resx")));
+                if (CharUnicodeInfo.GetUnicodeCategory(letter) != UnicodeCategory.NonSpacingMark)
+                    sbReturn.Append(letter);
             }
-            StringsEx.Add(LoadXmlDoc(PathMod.ModPath("Strings/stringsEx.resx")));
+            string result = Regex.Replace(sbReturn.ToString(), "[':.]", "");
+            result = Regex.Replace(result, "\\W", "_");
+            return result;
+        }
+
+        public static string GetNonConflictingName(string inputStr, Func<string, bool> getConflict)
+        {
+            string prefix = inputStr;
+            int origIndex;
+            int lastUnderscore = inputStr.LastIndexOf('_');
+            if (lastUnderscore > -1)
+            {
+                string substr = inputStr.Substring(lastUnderscore + 1);
+                if (int.TryParse(substr, out origIndex))
+                    prefix = inputStr.Substring(0, lastUnderscore);
+            }
+
+            if (!getConflict(inputStr))
+                return inputStr;
+
+            int copy_index = 1;
+            while (copy_index < Int32.MaxValue)
+            {
+                if (!getConflict(prefix + "_" + copy_index.ToString()))
+                    return prefix + "_" + copy_index.ToString();
+
+                copy_index++;
+            }
+
+            return null;
+        }
+
+        public static string GetMemberTitle(string name)
+        {
+            StringBuilder separatedName = new StringBuilder();
+            for (int ii = 0; ii < name.Length; ii++)
+            {
+                if (ii > 0)
+                {
+                    bool space = false;
+                    if (char.IsDigit(name[ii]) && char.IsLetter(name[ii - 1]))
+                        space = true;
+                    if (char.IsUpper(name[ii]) && char.IsLower(name[ii - 1]) || char.IsUpper(name[ii]) && char.IsDigit(name[ii - 1]))
+                        space = true;
+                    if (space)
+                        separatedName.Append(' ');
+                }
+                separatedName.Append(name[ii]);
+            }
+            return separatedName.ToString();
+        }
+
+        public static int DeterministicHash(string str)
+        {
+            //TODO: we don't know if this is consistent between 32bit and 64bit machines...
+            unchecked
+            {
+                int hash1 = (5381 << 16) + 5381;
+                int hash2 = hash1;
+
+                for (int i = 0; i < str.Length; i += 2)
+                {
+                    hash1 = ((hash1 << 5) + hash1) ^ str[i];
+                    if (i == str.Length - 1)
+                        break;
+                    hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
+                }
+
+                return hash1 + (hash2 * 1566083941);
+            }
         }
     }
 
@@ -262,6 +412,11 @@ namespace RogueEssence
             if (Key != null)
                 return Key;
             return "";
+        }
+
+        public bool IsValid()
+        {
+            return !String.IsNullOrWhiteSpace(Key);
         }
     }
 

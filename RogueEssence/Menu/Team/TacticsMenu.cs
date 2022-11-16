@@ -22,14 +22,14 @@ namespace RogueEssence.Menu
                 Character character = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 List<string> choices = new List<string>();
                 int tacticIndex = -1;
-                for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
+                foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].GetOrderedKeys(true))
                 {
-                    AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                    AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Get(ai_asset) as AIEntrySummary;
                     if (summary.Assignable)
                     {
-                        if (jj == character.Tactic.ID)
-                            tacticIndex = jj;
-                        choices.Add(DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj].GetColoredName());
+                        if (ai_asset == character.Tactic.ID)
+                            tacticIndex = choices.Count;
+                        choices.Add(summary.GetColoredName());
                     }
                 }
                 releasedTactics = choices.Count;
@@ -44,9 +44,9 @@ namespace RogueEssence.Menu
 
             //tactics meeting
             List<string> allChoices = new List<string>();
-            for (int jj = 0; jj < DataManager.Instance.DataIndices[DataManager.DataType.AI].Count; jj++)
+            foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].GetOrderedKeys(true))
             {
-                AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Entries[jj] as AIEntrySummary;
+                AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Get(ai_asset) as AIEntrySummary;
                 if (summary.Assignable)
                     allChoices.Add(summary.GetColoredName());
             }

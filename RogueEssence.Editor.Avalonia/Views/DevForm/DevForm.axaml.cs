@@ -24,6 +24,9 @@ namespace RogueEssence.Dev.Views
         public MapEditForm MapEditForm;
         public GroundEditForm GroundEditForm;
 
+        private Action pendingEditorAction;
+        private Exception pendingException;
+
         public IMapEditor MapEditor { get { return MapEditForm; } }
         public IGroundEditor GroundEditor { get { return GroundEditForm; } }
         public bool AteMouse { get { return false; } }
@@ -56,7 +59,7 @@ namespace RogueEssence.Dev.Views
         {
             lock (GameBase.lockObj)
             {
-                DevGraphicsManager.Init();
+                DevDataManager.Init();
 
                 loadDevConfig();
 
@@ -77,7 +80,7 @@ namespace RogueEssence.Dev.Views
             lock (GameBase.lockObj)
             {
                 if (dataType == DataManager.DataType.All)
-                    DevGraphicsManager.ClearCaches();
+                    DevDataManager.ClearCaches();
 
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
@@ -85,44 +88,61 @@ namespace RogueEssence.Dev.Views
                 {
                     devViewModel.Game.HideSprites = DataManager.Instance.HideChars;
                     devViewModel.Game.HideObjects = DataManager.Instance.HideObjects;
+                    devViewModel.Travel.DebugGen = DiagManager.Instance.ListenGen;
                 }
 
                 if ((dataType & DataManager.DataType.Skill) != DataManager.DataType.None)
                 {
-                    string[] skill_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
                     devViewModel.Game.Skills.Clear();
-                    for (int ii = 0; ii < skill_names.Length; ii++)
-                        devViewModel.Game.Skills.Add(ii.ToString("D3") + ": " + skill_names[ii]);
+                    devViewModel.Game.SkillKeys.Clear();
+                    foreach (string key in entry_names.Keys)
+                    {
+                        devViewModel.Game.Skills.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.SkillKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenSkill = -1;
                     devViewModel.Game.ChosenSkill = Math.Min(Math.Max(GetConfig("SkillChoice", 0), 0), devViewModel.Game.Skills.Count - 1);
                 }
 
                 if ((dataType & DataManager.DataType.Intrinsic) != DataManager.DataType.None)
                 {
-                    string[] intrinsic_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
                     devViewModel.Game.Intrinsics.Clear();
-                    for (int ii = 0; ii < intrinsic_names.Length; ii++)
-                        devViewModel.Game.Intrinsics.Add(ii.ToString("D3") + ": " + intrinsic_names[ii]);
+                    devViewModel.Game.IntrinsicKeys.Clear();
+                    foreach (string key in entry_names.Keys)
+                    {
+                        devViewModel.Game.Intrinsics.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.IntrinsicKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenIntrinsic = -1;
                     devViewModel.Game.ChosenIntrinsic = Math.Min(Math.Max(GetConfig("IntrinsicChoice", 0), 0), devViewModel.Game.Intrinsics.Count - 1);
                 }
 
                 if ((dataType & DataManager.DataType.Status) != DataManager.DataType.None)
                 {
-                    string[] status_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
                     devViewModel.Game.Statuses.Clear();
-                    for (int ii = 0; ii < status_names.Length; ii++)
-                        devViewModel.Game.Statuses.Add(ii.ToString("D3") + ": " + status_names[ii]);
+                    devViewModel.Game.StatusKeys.Clear();
+                    foreach (string key in entry_names.Keys)
+                    {
+                        devViewModel.Game.Statuses.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.StatusKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenStatus = -1;
                     devViewModel.Game.ChosenStatus = Math.Min(Math.Max(GetConfig("StatusChoice", 0), 0), devViewModel.Game.Statuses.Count - 1);
                 }
 
                 if ((dataType & DataManager.DataType.Item) != DataManager.DataType.None)
                 {
-                    string[] item_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
                     devViewModel.Game.Items.Clear();
-                    for (int ii = 0; ii < item_names.Length; ii++)
-                        devViewModel.Game.Items.Add(ii.ToString("D4") + ": " + item_names[ii]);
+                    devViewModel.Game.ItemKeys.Clear();
+                    foreach (string key in entry_names.Keys)
+                    {
+                        devViewModel.Game.Items.Add(key + ": " + entry_names[key]);
+                        devViewModel.Game.ItemKeys.Add(key);
+                    }
                     devViewModel.Game.ChosenItem = -1;
                     devViewModel.Game.ChosenItem = Math.Min(Math.Max(GetConfig("ItemChoice", 0), 0), devViewModel.Game.Items.Count - 1);
                 }
@@ -130,20 +150,28 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Monster) != DataManager.DataType.None)
                 {
-                    string[] monster_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetLocalStringArray(true);
                     devViewModel.Player.Monsters.Clear();
-                    for (int ii = 0; ii < monster_names.Length; ii++)
-                        devViewModel.Player.Monsters.Add(ii.ToString("D3") + ": " + monster_names[ii]);
+                    devViewModel.Player.MonsterKeys.Clear();
+                    foreach (string key in entry_names.Keys)
+                    {
+                        devViewModel.Player.Monsters.Add(key + ": " + entry_names[key]);
+                        devViewModel.Player.MonsterKeys.Add(key);
+                    }
                     devViewModel.Player.ChosenMonster = -1;
                     devViewModel.Player.ChosenMonster = 0;
 
                     devViewModel.Player.ChosenForm = -1;
                     devViewModel.Player.ChosenForm = 0;
 
-                    string[] skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+                    Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
                     devViewModel.Player.Skins.Clear();
-                    for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Skin].Count; ii++)
-                        devViewModel.Player.Skins.Add(skin_names[ii]);
+                    devViewModel.Player.SkinKeys.Clear();
+                    foreach (string key in skin_names.Keys)
+                    {
+                        devViewModel.Player.Skins.Add(key + ": " + skin_names[key]);
+                        devViewModel.Player.SkinKeys.Add(key);
+                    }
                     devViewModel.Player.ChosenSkin = -1;
                     devViewModel.Player.ChosenSkin = 0;
 
@@ -166,10 +194,10 @@ namespace RogueEssence.Dev.Views
 
                 if ((dataType & DataManager.DataType.Zone) != DataManager.DataType.None)
                 {
-                    string[] dungeon_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
+                    Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
                     devViewModel.Travel.Zones.Clear();
-                    for (int ii = 0; ii < dungeon_names.Length; ii++)
-                        devViewModel.Travel.Zones.Add(ii.ToString("D2") + ": " + dungeon_names[ii]);
+                    foreach (string key in entry_names.Keys)
+                        devViewModel.Travel.Zones.Add(key + ": " + entry_names[key]);
                     devViewModel.Travel.ChosenZone = -1;
                     devViewModel.Travel.ChosenZone = Math.Min(Math.Max(GetConfig("ZoneChoice", 0), 0), devViewModel.Travel.Zones.Count - 1);
 
@@ -193,6 +221,19 @@ namespace RogueEssence.Dev.Views
 
         public void Update(GameTime gameTime)
         {
+            if (pendingEditorAction != null)
+            {
+                try
+                {
+                    pendingEditorAction();
+                }
+                catch (Exception ex)
+                {
+                    pendingException = ex;
+                }
+                pendingEditorAction = null;
+            }
+
             ExecuteOrInvoke(update);
         }
 
@@ -201,10 +242,24 @@ namespace RogueEssence.Dev.Views
             lock (GameBase.lockObj)
             {
                 ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
-                devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+
                 devViewModel.Player.UpdateLevel();
                 if (GameManager.Instance.IsInGame())
+                {
+                    if (!devViewModel.Player.JustOnce)
+                    {
+                        if (devViewModel.Player.JustMe)
+                        {
+                            int currentIdle = Dungeon.DungeonScene.Instance.FocusedCharacter.IdleOverride;
+                            if (currentIdle < 0)
+                                currentIdle = GraphicsManager.GlobalIdle;
+                            devViewModel.Player.ChosenAnim = currentIdle;
+                        }
+                        else
+                            devViewModel.Player.ChosenAnim = GraphicsManager.GlobalIdle;
+                    }
                     devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm);
+                }
                 if (GroundEditForm != null)
                 {
                     ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
@@ -303,6 +358,31 @@ namespace RogueEssence.Dev.Views
             }
         }
 
+        /// <summary>
+        /// A method intended to be called from the editor thread, that sends a function pointer to the Game thread,
+        /// waits for it to complete (blocking the thread), and then continues execution.
+        /// This call cannot be performed within a lock!!
+        /// </summary>
+        /// <param name="action"></param>
+        public static void ExecuteOrPend(Action action)
+        {
+            if (!OperatingSystem.IsLinux())
+                action();
+            else
+            {
+                DevForm editor = (DevForm)DiagManager.Instance.DevEditor;
+                editor.pendingEditorAction = action;
+
+                SpinWait.SpinUntil(() => editor.pendingEditorAction == null);
+
+                if (editor.pendingException != null)
+                {
+                    Exception ex = editor.pendingException;
+                    throw ex;
+                }
+            }
+        }
+
         public static void ExecuteOrInvoke(Action action)
         {
             if (!OperatingSystem.IsLinux())
@@ -313,10 +393,16 @@ namespace RogueEssence.Dev.Views
 
         void LoadGameDelegate()
         {
-            DiagManager.Instance.DevEditor = this;
-            using (GameBase game = new GameBase())
-                game.Run();
-
+            try
+            {
+                DiagManager.Instance.DevEditor = this;
+                using (GameBase game = new GameBase())
+                    game.Run();
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
             ExecuteOrInvoke(Close);
         }
 
@@ -439,9 +525,9 @@ namespace RogueEssence.Dev.Views
             //MacOS actually uses a different folder for config data, traditionally
             //I guess it's the odd one out...
             if (OperatingSystem.IsMacOS())
-                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
+                return PathMod.FromExe("./devConfig");//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "/Library/Application Support/RogueEssence/config");
             else
-                return "./devConfig";//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
+                return PathMod.FromExe("./devConfig");//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
         }
     }
 }

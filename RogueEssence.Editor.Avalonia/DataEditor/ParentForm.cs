@@ -16,7 +16,7 @@ namespace RogueEssence.Dev.Views
 {
     public class ParentForm : Window
     {
-        private List<Window> children;
+        protected List<Window> children;
 
         public ParentForm()
         {

@@ -11,6 +11,7 @@ using System.Linq;
 using RogueEssence.Script;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Ground
 {
@@ -25,7 +26,8 @@ namespace RogueEssence.Ground
         protected IRandom rand;
         public IRandom Rand { get { return rand; } }
 
-        public Dictionary<int, MapStatus> Status;
+        [JsonConverter(typeof(MapStatusDictConverter))]
+        public Dictionary<string, MapStatus> Status;
 
         [NonSerialized]
         private Dictionary<LuaEngine.EMapCallbacks, ScriptEvent> scriptEvents; //psy's notes: In order to get rid of duplicates and help make things more straightforward I moved script events to a dictionary
@@ -42,12 +44,14 @@ namespace RogueEssence.Ground
         public int TileSize { get { return TexSize * GraphicsManager.TEX_SIZE; } }
         public int Width { get { return Layers[0].Tiles.Length; } }
         public int Height { get { return Layers[0].Tiles[0].Length; } }
+        public Loc Size { get { return new Loc(Width, Height); } }
 
         public int TexWidth { get { return Width * TexSize; } }
         public int TexHeight { get { return Height * TexSize; } }
 
         public int GroundWidth { get { return Width * TileSize; } }
         public int GroundHeight { get { return Height * TileSize; } }
+        public Loc GroundSize { get { return new Loc(GroundWidth, GroundHeight); } }
 
         /// <summary>
         /// the internal name of the map, no spaces or special characters, never localized.
@@ -88,7 +92,7 @@ namespace RogueEssence.Ground
 
             Entities = new List<EntityLayer>();
 
-            Status = new Dictionary<int, MapStatus>();
+            Status = new Dictionary<string, MapStatus>();
 
             Background = new MapBG();
             BlankBG = new AutoTile();
@@ -101,6 +105,13 @@ namespace RogueEssence.Ground
 
             Decorations = new List<AnimLayer>();
 
+        }
+
+        [JsonConstructor]
+        public GroundMap(bool init)
+        {
+            scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
+            //dummy constructor for json serialization
         }
 
         public void LoadRand(IRandom rand)
@@ -144,7 +155,7 @@ namespace RogueEssence.Ground
         public void OnEditorInit()
         {
             if (AssetName != "")
-                LuaEngine.Instance.RunMapScript(AssetName);
+                LuaEngine.Instance.RunGroundMapScript(AssetName);
 
             //Reload the map events
             LoadScriptEvents();
@@ -161,7 +172,7 @@ namespace RogueEssence.Ground
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
             if (AssetName != "")
-                LuaEngine.Instance.RunMapScript(AssetName);
+                LuaEngine.Instance.RunGroundMapScript(AssetName);
 
             //Reload the map events
             LoadScriptEvents();
@@ -199,9 +210,6 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerator<YieldInstruction> OnEnter()
         {
-            //Ensure the AI is enabled
-            GroundAI.GlobalAIEnabled = true;
-
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EMapCallbacks.Enter));
 
@@ -262,7 +270,7 @@ namespace RogueEssence.Ground
         {
             //GroundChar groundChar = new GroundChar(ActiveTeam.Leader, entry.Loc, (entry.Dir != Dir8.None) ? entry.Dir : ActiveTeam.Leader.CharDir, "PLAYER");
             if (ActiveChar != null)
-                grid.Remove(ActiveChar);
+                grid.Remove(ActiveChar, EdgeView == BaseMap.ScrollEdge.Wrap);
             ActiveChar = mapChar;
 
             if (ActiveChar != null)
@@ -332,17 +340,23 @@ namespace RogueEssence.Ground
         public void RemoveMapChar(GroundChar mapChar)
         {
             Entities[0].MapChars.Remove(mapChar);
-            grid.Remove(mapChar);
+            grid.Remove(mapChar, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
         private void signCharToMap(GroundChar groundChar)
         {
             groundChar.Map = this;
-            grid.Add(groundChar);
+            grid.Add(groundChar, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
         public void AddObject(GroundObject groundObj)
         {
             Entities[0].GroundObjects.Add(groundObj);
-            grid.Add(groundObj);
+            grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
+        }
+
+        public void RemoveObject(GroundObject groundObj)
+        {
+            Entities[0].GroundObjects.Remove(groundObj);
+            grid.Remove(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         /// <summary>
@@ -353,7 +367,7 @@ namespace RogueEssence.Ground
         {
             ch.Map = this;
             Entities[0].TemporaryChars.Add(ch);
-            grid.Add(ch);
+            grid.Add(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         /// <summary>
@@ -363,13 +377,19 @@ namespace RogueEssence.Ground
         public void RemoveTempChar(GroundChar ch)
         {
             Entities[0].TemporaryChars.Remove(ch);
-            grid.Remove(ch);
+            grid.Remove(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
-        public void RemoveObject(GroundObject groundObj)
+        public void AddTempObject(GroundObject groundObj)
         {
-            Entities[0].GroundObjects.Remove(groundObj);
-            grid.Remove(groundObj);
+            Entities[0].TemporaryObjects.Add(groundObj);
+            grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
+        }
+
+        public void RemoveTempObject(GroundObject groundObj)
+        {
+            Entities[0].TemporaryObjects.Remove(groundObj);
+            grid.Remove(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         /// <summary>
@@ -381,6 +401,21 @@ namespace RogueEssence.Ground
         public GroundObject GetObj(string instancename)
         {
             GroundObject found = Entities[0].GroundObjects.Find((GroundObject ch) => { return ch.EntName == instancename; });
+            if (found != null)
+                return found;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Lookup a temporary object instance by name on the map.
+        /// Returns the object if found, or null.
+        /// </summary>
+        /// <param name="instancename">Name of the object instance</param>
+        /// <returns>Forund object, or null</returns>
+        public GroundObject GetTempObj(string instancename)
+        {
+            GroundObject found = Entities[0].TemporaryObjects.Find((GroundObject ch) => { return ch.EntName == instancename; });
             if (found != null)
                 return found;
 
@@ -445,6 +480,42 @@ namespace RogueEssence.Ground
         }
 
 
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on tiles.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapLoc(Loc loc)
+        {
+            return Loc.Wrap(loc, Size);
+        }
+
+        /// <summary>
+        /// Converts out of bounds coords to wrapped-around coords.
+        /// Based on pixels.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
+        public Loc WrapGroundLoc(Loc loc)
+        {
+            return Loc.Wrap(loc, GroundSize);
+        }
+        public bool InMapBounds(Loc loc)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return true;
+            return RogueElements.Collision.InBounds(Width, Height, loc);
+        }
+
+        public bool InBounds(Rect rect, Loc loc)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+                return WrappedCollision.InBounds(Size, rect, loc);
+            else
+                return RogueElements.Collision.InBounds(rect, loc);
+        }
+
         public IEnumerable<GroundChar> IterateCharacters()
         {
             if (ActiveChar != null)
@@ -460,6 +531,17 @@ namespace RogueEssence.Ground
             }
         }
 
+        public void WrapEntities()
+        {
+            if (EdgeView == BaseMap.ScrollEdge.Wrap)
+            {
+                if (ActiveChar != null)
+                    ActiveChar.SetMapLoc(WrapGroundLoc(ActiveChar.MapLoc));
+
+                foreach (GroundEntity ent in IterateEntities())
+                    ent.SetMapLoc(WrapGroundLoc(ent.MapLoc));
+            }
+        }
 
         public uint GetObstacle(int x, int y)
         {
@@ -489,12 +571,13 @@ namespace RogueEssence.Ground
             }
 
             this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
+            //wait... don't we need to recompute all entities?
         }
 
         public void Retile(int texSize)
         {
-            int newWidth = (Width * TexSize - 1) / texSize + 1;
-            int newHeight = (Height * TexSize - 1) / texSize + 1;
+            int newWidth = MathUtils.DivUp(Width * TexSize, texSize);
+            int newHeight = MathUtils.DivUp(Height * TexSize, texSize);
 
             TexSize = texSize;
 
@@ -538,38 +621,33 @@ namespace RogueEssence.Ground
         /// <returns></returns>
         public IEnumerable<IObstacle> FindPossible(int x, int y, int w, int h)
         {
-            x = Math.Max(0, Math.Min(x, this.GroundWidth - w));
-            y = Math.Max(0, Math.Min(y, this.GroundHeight - h));
-            w = Math.Max(0, Math.Min(w, this.GroundWidth - x));
-            h = Math.Max(0, Math.Min(h, this.GroundHeight - y));
-
-
-            foreach (IObstacle obstacle in this.grid.QueryBoxes(x, y, w, h))
+            foreach (IObstacle obstacle in this.grid.QueryBoxes(x, y, w, h, EdgeView == BaseMap.ScrollEdge.Wrap))
                 yield return obstacle;
             foreach (IObstacle obstacle in findWalls(x, y, w, h))
                 yield return obstacle;
-
         }
 
         private IEnumerable<IObstacle> findWalls(int x, int y, int w, int h)
         {
-            x = Math.Max(0, Math.Min(x, this.GroundWidth - w));
-            y = Math.Max(0, Math.Min(y, this.GroundHeight - h));
-            w = Math.Max(0, Math.Min(w, this.GroundWidth - x));
-            h = Math.Max(0, Math.Min(h, this.GroundHeight - y));
-
             int divSize = GraphicsManager.TEX_SIZE;
-            var minX = (x / divSize);
-            var minY = (y / divSize);
-            var maxX = ((x + w - 1) / divSize);
-            var maxY = ((y + h - 1) / divSize);
+            var minX = MathUtils.DivDown(x, divSize);
+            var minY = MathUtils.DivDown(y, divSize);
+            var maxX = MathUtils.DivUp(x + w, divSize);
+            var maxY = MathUtils.DivUp(y + h, divSize);
+            Loc texSize = new Loc(TexWidth, TexHeight);
 
-            for (int ii = minX; ii <= maxX; ii++)
+            for (int ii = minX; ii < maxX; ii++)
             {
-                for (int jj = minY; jj <= maxY; jj++)
+                for (int jj = minY; jj < maxY; jj++)
                 {
-                    if (obstacles[ii][jj].Tags > 0)
-                        yield return obstacles[ii][jj];
+                    Loc testLoc = new Loc(ii, jj);
+                    if (EdgeView == BaseMap.ScrollEdge.Wrap)
+                        testLoc = Loc.Wrap(testLoc, texSize);
+                    else if (!RogueElements.Collision.InBounds(TexWidth, TexHeight, testLoc))
+                        continue;
+
+                    if (obstacles[testLoc.X][testLoc.Y].Tags > 0)
+                        yield return obstacles[testLoc.X][testLoc.Y];
                 }
             }
         }
@@ -596,7 +674,7 @@ namespace RogueEssence.Ground
 
         public void Update(IBox box, Rect from)
         {
-            this.grid.Update(box, from);
+            this.grid.Update(box, from, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
 
         public IHit Hit(Loc point, IEnumerable<IObstacle> ignoring = null)
@@ -610,6 +688,7 @@ namespace RogueEssence.Ground
 
             foreach (var other in boxes)
             {
+                //TODO: detect collision in wrap-arounds
                 var hit = AABB.Hit.Resolve(point, other);
 
                 if (hit != null)
@@ -638,6 +717,7 @@ namespace RogueEssence.Ground
 
             foreach (IObstacle other in boxes)
             {
+                //TODO: detect collision in wrap-arounds
                 var hit = AABB.Hit.Resolve(origin, destination, other);
 
                 if (hit != null && (nearest == null || hit.IsNearest(nearest, origin)))
@@ -659,6 +739,7 @@ namespace RogueEssence.Ground
 
             foreach (IObstacle other in boxes)
             {
+                //TODO: detect collision in wrap-arounds
                 IHit hit = AABB.Hit.Resolve(origin, destination, other);
 
                 if (hit != null && (nearest == null || hit.IsNearest(nearest, origin.Start)))
@@ -718,6 +799,7 @@ namespace RogueEssence.Ground
 
         public void DrawLoc(SpriteBatch spriteBatch, Loc drawPos, Loc loc, bool front)
         {
+            loc = WrapLoc(loc);
             foreach (MapLayer layer in Layers)
             {
                 if ((layer.Layer == DrawLayer.Top) == front && layer.Visible)
@@ -731,7 +813,7 @@ namespace RogueEssence.Ground
                             Action<string, int, int, float> drawString)
         {
             // Drawing boxes
-            IEnumerable<IObstacle> boxes = this.grid.QueryBoxes(x, y, w, h);
+            IEnumerable<IObstacle> boxes = this.grid.QueryBoxes(x, y, w, h, EdgeView == BaseMap.ScrollEdge.Wrap);
             foreach (IObstacle box in boxes)
                 drawBox(box);
 
@@ -740,7 +822,7 @@ namespace RogueEssence.Ground
                 drawBox(box);
 
             // Drawing cells
-            IEnumerable<AABB.Grid.Cell> cells = this.grid.QueryCells(x, y, w, h);
+            IEnumerable<AABB.Grid.Cell> cells = this.grid.QueryCells(x, y, w, h, EdgeView == BaseMap.ScrollEdge.Wrap);
             foreach (AABB.Grid.Cell cell in cells)
             {
                 int count = cell.Count();
@@ -811,47 +893,20 @@ namespace RogueEssence.Ground
         }
 
 
+        public bool EntityNameExists(string name)
+        {
+            //TODO: account for equivalent values such as with leading zeroes
+            foreach (GroundEntity c in IterateEntities())
+            {
+                if (String.Compare(c.EntName, name, true) == 0)
+                    return true;
+            }
+            return false;
+        }
 
         public string FindNonConflictingName(string inputStr)
         {
-            //TODO: account for equivalent values such as with leading zeroes
-
-            string prefix = inputStr;
-            int origIndex = -1;
-            int lastUnderscore = inputStr.LastIndexOf('_');
-            if (lastUnderscore > -1)
-            {
-                string substr = inputStr.Substring(lastUnderscore + 1);
-                if (int.TryParse(substr, out origIndex))
-                    prefix = inputStr.Substring(0, lastUnderscore);
-            }
-
-            Dictionary<int, GroundEntity> found = new Dictionary<int, GroundEntity>();
-            foreach (GroundEntity c in IterateEntities())
-            {
-                if (c.EntName == prefix)
-                    found[-1] = c;
-                else if (c.EntName.StartsWith(prefix + "_"))
-                {
-                    int val;
-                    if (Int32.TryParse(c.EntName.Substring(prefix.Length+1), out val))
-                        found[val] = c;
-                }
-            }
-
-            if (!found.ContainsKey(origIndex))
-                return inputStr;
-
-            int copy_index = 1;
-            while (copy_index < Int32.MaxValue)
-            {
-                if (!found.ContainsKey(copy_index))
-                    break;
-
-                copy_index++;
-            }
-
-            return prefix + "_" + copy_index.ToString();
+            return Text.GetNonConflictingName(inputStr, EntityNameExists);
         }
 
         public GroundEntity FindEntity(string name)
@@ -975,7 +1030,7 @@ namespace RogueEssence.Ground
             foreach (GroundObject groundObj in Entities[layer].GroundObjects)
             {
                 groundObj.OnDeserializeMap(this);
-                grid.Add(groundObj);
+                grid.Add(groundObj, EdgeView == BaseMap.ScrollEdge.Wrap);
             }
         }
 

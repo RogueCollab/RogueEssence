@@ -22,7 +22,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in PathMod.GetModFiles(search, pattern))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(search), pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     int num = Convert.ToInt32(file);
@@ -37,11 +37,16 @@ namespace RogueEssence.Dev
 
                 }
 
-                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                if (fullGuide.Nodes.Count > 0)
                 {
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                        fullGuide.Save(writer);
+                    using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            fullGuide.Save(writer);
+                    }
                 }
+                else
+                    File.Delete(PathMod.HardMod(search + "/index.idx"));
             }
             catch (Exception ex)
             {
@@ -56,7 +61,7 @@ namespace RogueEssence.Dev
             string pattern = Path.GetFileName(String.Format(cachePattern, '*'));
             try
             {
-                foreach (string dir in PathMod.GetModFiles(search, pattern))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(search), pattern))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
                     using (FileStream stream = File.OpenRead(dir))
@@ -69,11 +74,16 @@ namespace RogueEssence.Dev
                     }
                 }
 
-                using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                if (fullGuide.Nodes.Count > 0)
                 {
-                    using (BinaryWriter writer = new BinaryWriter(stream))
-                        fullGuide.Save(writer);
+                    using (FileStream stream = new FileStream(PathMod.HardMod(search + "/index.idx"), FileMode.Create, FileAccess.Write))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(stream))
+                            fullGuide.Save(writer);
+                    }
                 }
+                else
+                    File.Delete(PathMod.HardMod(search + "/index.idx"));
             }
             catch (Exception ex)
             {
@@ -84,7 +94,7 @@ namespace RogueEssence.Dev
 
 
 
-        public delegate void BakeSpecies(string spriteDir, Dictionary<MonsterID, byte[]> spriteData, MonsterID formData);
+        public delegate void BakeSpecies(string spriteDir, Dictionary<CharID, byte[]> spriteData, CharID formData);
 
         public static void ImportAllChars(string spriteRootDirectory, string cachePattern)
         {
@@ -97,7 +107,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void BakeCharSheet(string spriteDir, Dictionary<MonsterID, byte[]> spriteData, MonsterID formData)
+        public static void BakeCharSheet(string spriteDir, Dictionary<CharID, byte[]> spriteData, CharID formData)
         {
             //check to see if files exist
             string[] pngs = Directory.GetFiles(spriteDir, "*.png", SearchOption.TopDirectoryOnly);
@@ -131,7 +141,7 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void BakePortrait(string spriteDir, Dictionary<MonsterID, byte[]> spriteData, MonsterID formData)
+        public static void BakePortrait(string spriteDir, Dictionary<CharID, byte[]> spriteData, CharID formData)
         {
             //check to see if files exist
             string[] pngs = Directory.GetFiles(spriteDir, "*.png", SearchOption.TopDirectoryOnly);
@@ -161,27 +171,27 @@ namespace RogueEssence.Dev
                 if (Directory.Exists(spriteDir))
                 {
                     //check main folder
-                    Dictionary<MonsterID, byte[]> spriteData = new Dictionary<MonsterID, byte[]>();
+                    Dictionary<CharID, byte[]> spriteData = new Dictionary<CharID, byte[]>();
 
-                    bakeMethod(spriteDir, spriteData, new MonsterID(index, -1, -1, (Gender)(-1)));
+                    bakeMethod(spriteDir, spriteData, new CharID(index, -1, -1, -1));
 
                     //check all subfolders
                     foreach (int formDirs in GetAllNumberedDirs(spriteDir, ""))
                     {
                         //get subframes (discount if negative)
-                        bakeMethod(spriteDir + formDirs.ToString("D4") + "/", spriteData, new MonsterID(index, formDirs, -1, (Gender)(-1)));
+                        bakeMethod(spriteDir + formDirs.ToString("D4") + "/", spriteData, new CharID(index, formDirs, -1, -1));
 
                         foreach (int skinDirs in GetAllNumberedDirs(spriteDir + formDirs.ToString("D4") + "/", ""))
                         {
                             //get subframes
                             bakeMethod(spriteDir + formDirs.ToString("D4") + "/" + skinDirs.ToString("D4") + "/",
-                                spriteData, new MonsterID(index, formDirs, skinDirs, (Gender)(-1)));
+                                spriteData, new CharID(index, formDirs, skinDirs, -1));
 
                             foreach (int genderDirs in GetAllNumberedDirs(spriteDir + formDirs.ToString("D4") + "/" + skinDirs.ToString("D4") + "/", ""))
                             {
                                 //get subframes
                                 bakeMethod(spriteDir + formDirs.ToString("D4") + "/" + skinDirs.ToString("D4") + "/" + genderDirs.ToString("D4") + "/",
-                                    spriteData, new MonsterID(index, formDirs, skinDirs, (Gender)genderDirs));
+                                    spriteData, new CharID(index, formDirs, skinDirs, genderDirs));
                             }
                         }
                     }
@@ -198,7 +208,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void SaveSpecies(string destinationPath, Dictionary<MonsterID, byte[]> spriteData)
+        public static void SaveSpecies(string destinationPath, Dictionary<CharID, byte[]> spriteData)
         {
             if (spriteData.Count == 0)
             {
@@ -208,14 +218,14 @@ namespace RogueEssence.Dev
 
             //generate formtree
             CharaIndexNode guide = new CharaIndexNode();
-            Dictionary<MonsterID, long> spritePositions = new Dictionary<MonsterID, long>();
+            Dictionary<CharID, long> spritePositions = new Dictionary<CharID, long>();
             long currentPosition = 0;
-            foreach (MonsterID key in spriteData.Keys)
+            foreach (CharID key in spriteData.Keys)
             {
                 spritePositions[key] = currentPosition;
                 currentPosition += spriteData[key].LongLength;
             }
-            foreach (MonsterID key in spritePositions.Keys)
+            foreach (CharID key in spritePositions.Keys)
                 guide.AddSubValue(0, key.Form, key.Skin, (int)key.Gender);
 
             using (FileStream stream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
@@ -226,7 +236,7 @@ namespace RogueEssence.Dev
                     guide.Save(writer);
 
                     //update how much space it takes
-                    foreach (MonsterID key in spritePositions.Keys)
+                    foreach (CharID key in spritePositions.Keys)
                         guide.AddSubValue(spritePositions[key] + writer.BaseStream.Position, key.Form, key.Skin, (int)key.Gender);
 
                     //save it again
@@ -295,8 +305,8 @@ namespace RogueEssence.Dev
                         DiagManager.Instance.LoadMsg = "Importing Tile " + fileName;
                         using (BaseSheet tileset = BaseSheet.Import(dirs[ii]))
                         {
-                            List<BaseSheet> tileList = new List<BaseSheet>();
-                            tileList.Add(tileset);
+                            List<BaseSheet[]> tileList = new List<BaseSheet[]>();
+                            tileList.Add(new BaseSheet[] { tileset });
                             SaveTileSheet(tileList, outputFile, tileSize);
                         }
                     }
@@ -320,7 +330,7 @@ namespace RogueEssence.Dev
 
                     try
                     {
-                        List<BaseSheet> tileList = new List<BaseSheet>();
+                        List<BaseSheet[]> tileList = new List<BaseSheet[]>();
                         foreach (string tileTitle in TILE_TITLES)
                         {
                             int layerIndex = 0;
@@ -330,7 +340,7 @@ namespace RogueEssence.Dev
                                 if (layers.Length == 1)
                                 {
                                     BaseSheet tileset = BaseSheet.Import(layers[0]);
-                                    tileList.Add(tileset);
+                                    tileList.Add(new BaseSheet[]{ tileset });
                                 }
                                 else if (layers.Length > 1)
                                 {
@@ -344,8 +354,9 @@ namespace RogueEssence.Dev
                             }
                         }
                         SaveTileSheet(tileList, outputFile, tileSize);
-                        foreach (BaseSheet tex in tileList)
-                            tex.Dispose();
+                        foreach (BaseSheet[] arr in tileList)
+                            foreach(BaseSheet tex in arr)
+                                tex.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -355,71 +366,79 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void SaveTileSheet(List<BaseSheet> tileList, string destFile, int tileSize)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tileList">A list of arrays of Basesheets.  Array members will be arranged vertically.  List members horizontally.</param>
+        /// <param name="destFile"></param>
+        /// <param name="tileSize"></param>
+        public static void SaveTileSheet(List<BaseSheet[]> tileList, string destFile, int tileSize)
         {
-            int imgWidth = 0;
-            int imgHeight = 0;
-
-            foreach (BaseSheet sheet in tileList)
-                imgWidth = Math.Max(sheet.Width, imgWidth);
-
             Dictionary<Loc, int> tileData = new Dictionary<Loc, int>();
             List<byte[]> tileBytes = new List<byte[]>();
             List<long> positions = new List<long>();
             long currentPosition = 0;
 
-            foreach (BaseSheet sheet in tileList)
+            int curTileWidth = 0;
+            foreach (BaseSheet[] arr in tileList)
             {
-                int count = (imgWidth / tileSize) * (sheet.Height / tileSize);
-
-                // Write header information about each tile, skip blanks
-                for (int ii = 0; ii < count; ii++)
+                int maxTileWidth = 0;
+                int totalTileHeight = 0;
+                foreach (BaseSheet sheet in arr)
                 {
-                    int x = ii % (imgWidth / tileSize);
-                    int y = ii / (imgWidth / tileSize);
-                    //check if blank
-                    if (x >= sheet.Width / tileSize || sheet.IsBlank(x * tileSize, y * tileSize, tileSize, tileSize))
+                    int count = (sheet.Width / tileSize) * (sheet.Height / tileSize);
+
+                    // Write header information about each tile, skip blanks
+                    for (int ii = 0; ii < count; ii++)
                     {
-                        //don't add
-                    }
-                    else
-                    {
-                        //cut off the corresponding piece
-                        using (BaseSheet tileTex = new BaseSheet(tileSize, tileSize))
+                        int x = ii % (sheet.Width / tileSize);
+                        int y = ii / (sheet.Width / tileSize);
+                        //check if blank
+                        if (sheet.IsBlank(x * tileSize, y * tileSize, tileSize, tileSize))
                         {
-                            tileTex.Blit(sheet, x * tileSize, y * tileSize, tileSize, tileSize, 0, 0);
-
-                            //save as a PNG to a stream
-                            using (MemoryStream ms = new MemoryStream())
+                            //don't add
+                        }
+                        else
+                        {
+                            //cut off the corresponding piece
+                            using (BaseSheet tileTex = new BaseSheet(tileSize, tileSize))
                             {
-                                using (BinaryWriter mw = new BinaryWriter(ms))
-                                    tileTex.Save(mw);
-                                byte[] bytes = ms.ToArray();
+                                tileTex.Blit(sheet, x * tileSize, y * tileSize, tileSize, tileSize, 0, 0);
 
-                                int existingData = -1;
-                                for (int nn = 0; nn < tileBytes.Count; nn++)
+                                //save as a PNG to a stream
+                                using (MemoryStream ms = new MemoryStream())
                                 {
-                                    if (bytes.Length == tileBytes[nn].Length && bytes.SequenceEqual(tileBytes[nn]))
+                                    using (BinaryWriter mw = new BinaryWriter(ms))
+                                        tileTex.Save(mw);
+                                    byte[] bytes = ms.ToArray();
+
+                                    int existingData = -1;
+                                    for (int nn = 0; nn < tileBytes.Count; nn++)
                                     {
-                                        existingData = nn;
-                                        break;
+                                        if (bytes.Length == tileBytes[nn].Length && bytes.SequenceEqual(tileBytes[nn]))
+                                        {
+                                            existingData = nn;
+                                            break;
+                                        }
                                     }
-                                }
 
-                                if (existingData == -1)
-                                {
-                                    tileData.Add(new Loc(x, y + imgHeight / tileSize), tileBytes.Count);
-                                    positions.Add(currentPosition);
-                                    tileBytes.Add(bytes);
-                                    currentPosition += bytes.LongLength;
+                                    if (existingData == -1)
+                                    {
+                                        tileData.Add(new Loc(x + curTileWidth, y + totalTileHeight), tileBytes.Count);
+                                        positions.Add(currentPosition);
+                                        tileBytes.Add(bytes);
+                                        currentPosition += bytes.LongLength;
+                                    }
+                                    else
+                                        tileData.Add(new Loc(x + curTileWidth, y + totalTileHeight), existingData);
                                 }
-                                else
-                                    tileData.Add(new Loc(x, y + imgHeight / tileSize), existingData);
                             }
                         }
                     }
+                    maxTileWidth = Math.Max(maxTileWidth, (sheet.Width / tileSize));
+                    totalTileHeight += (sheet.Height / tileSize);
                 }
-                imgHeight += sheet.Height;
+                curTileWidth += maxTileWidth;
             }
 
             //generate tileguide
@@ -483,6 +502,41 @@ namespace RogueEssence.Dev
                             new Point(loc.X * guide.TileSize, loc.Y * guide.TileSize), SpriteEffects.None);
                         }
                         BaseSheet.ExportColors(outputPath, tilesetColors, imgSize);
+                    }
+                }
+            }
+        }
+
+
+        public static void WriteFullTilesetTexture(string inputPath, MemoryStream outStream)
+        {
+            if (File.Exists(inputPath))
+            {
+                using (FileStream stream = File.OpenRead(inputPath))
+                {
+                    using (BinaryReader reader = new BinaryReader(stream))
+                    {
+                        TileIndexNode guide = TileIndexNode.Load(reader);
+                        Loc maxPositions = Loc.Zero;
+                        Dictionary<Loc, Color[]> tiles = new Dictionary<Loc, Color[]>();
+                        foreach (Loc loc in guide.Positions.Keys)
+                        {
+                            maxPositions = new Loc(Math.Max(loc.X, maxPositions.X), Math.Max(loc.Y, maxPositions.Y));
+                            long tilePos = guide.Positions[loc];
+                            reader.BaseStream.Seek(tilePos, SeekOrigin.Begin);
+                            using (BaseSheet sheet = BaseSheet.Load(reader))
+                                tiles.Add(loc, BaseSheet.GetData(sheet));
+                        }
+                        maxPositions = maxPositions + Loc.One;
+                        Point imgSize = new Point(maxPositions.X * guide.TileSize, maxPositions.Y * guide.TileSize);
+                        Color[] tilesetColors = new Color[imgSize.X * imgSize.Y];
+                        foreach (Loc loc in tiles.Keys)
+                        {
+                            BaseSheet.Blit(tiles[loc], tilesetColors, new Point(guide.TileSize, guide.TileSize), imgSize,
+                            new Point(loc.X * guide.TileSize, loc.Y * guide.TileSize), SpriteEffects.None);
+                        }
+
+                        BaseSheet.ExportColors(outStream, tilesetColors, imgSize);
                     }
                 }
             }
@@ -575,196 +629,6 @@ namespace RogueEssence.Dev
                 int value;
                 if (Int32.TryParse(num, out value))
                     yield return value;
-            }
-        }
-
-        /// <summary>
-        /// Reads all tileset folders from the input directory, and creates autotiles from them.
-        /// </summary>
-        /// <param name="sourceDir"></param>
-        /// <param name="cacheDir"></param>
-        public static void ImportAllAutoTiles(string sourceDir, string cacheDir)
-        {
-            string[] sizeDirs = Directory.GetDirectories(sourceDir);
-            foreach (string sizeDir in sizeDirs)
-            {
-                int tileSize = GetDirSize(sizeDir);
-                if (tileSize == 0)
-                    continue;
-
-
-                string[] dirs = Directory.GetDirectories(sizeDir);
-                for (int ii = 0; ii < dirs.Length; ii++)
-                {
-                    string fileName = Path.GetFileName(dirs[ii]);
-                    //string[] info = fileName.Split('.');
-                    string outputName = fileName;
-
-
-                    DiagManager.Instance.LoadMsg = "Importing " + outputName;
-
-                    // Read XML for layer mapping
-                    XmlDocument document = new XmlDocument();
-                    document.Load(Path.Join(sizeDir, fileName, "tileset.xml"));
-
-                    int TOTAL_TILES = 47;
-
-                    try
-                    {
-                        int currentTier = 0;
-                        for (int nn = 0; nn < TILE_TITLES.Length; nn++)
-                        {
-                            string tileTitle = TILE_TITLES[nn];
-                            string tileNodeTitle = TILE_NODE_TITLES[nn];
-                            XmlNode node = document.SelectSingleNode("//LegacyDungeonTileset/RogueEssence/" + tileNodeTitle);
-                            int index = -1;
-                            if (node != null)
-                                index = Int32.Parse(node.InnerText);
-
-                            AutoTileData autoTile = new AutoTileData();
-                            AutoTileAdjacent entry = new AutoTileAdjacent();
-
-                            List<TileLayer>[][] totalArray = new List<TileLayer>[48][];
-
-                            for (int jj = 0; jj < TOTAL_TILES; jj++)
-                            {
-                                totalArray[jj] = new List<TileLayer>[3];
-                                for (int kk = 0; kk < 3; kk++)
-                                    totalArray[jj][kk] = new List<TileLayer>();
-                            }
-
-                            int layerIndex = 0;
-                            while (true)
-                            {
-                                string[] layers = Directory.GetFiles(dirs[ii] + "/", tileTitle + "." + String.Format("{0:D2}", layerIndex) + ".*");
-                                if (layers.Length == 1)
-                                {
-                                    string layerName = Path.GetFileNameWithoutExtension(layers[0]);
-                                    string[] layerInfo = layerName.Split('.');
-
-                                    using (BaseSheet tileset = BaseSheet.Import(layers[0]))
-                                    {
-                                        int frameLength = Convert.ToInt32(layerInfo[2]);
-                                        if (frameLength == 0)
-                                            frameLength = 60;
-                                        int maxVariants = Convert.ToInt32(layerInfo[3]);
-
-
-                                        int maxFrames = tileset.Width / tileSize / maxVariants;
-
-                                        for (int jj = 0; jj < TOTAL_TILES; jj++)
-                                        {
-                                            for (int kk = 0; kk < maxVariants; kk++)
-                                            {
-                                                //go through each layer
-                                                TileLayer anim = new TileLayer();
-                                                anim.FrameLength = frameLength;
-
-                                                for (int mm = 0; mm < maxFrames; mm++)
-                                                {
-                                                    //keep adding more tiles to the anim until end of blank spot is found
-                                                    if (!tileset.IsBlank((kk * maxFrames + mm) * tileSize, jj * tileSize, tileSize, tileSize))
-                                                        anim.Frames.Add(new TileFrame(new Loc(kk * maxFrames + mm, jj + currentTier * 47), outputName));
-                                                }
-
-                                                if (anim.Frames.Count > 0)
-                                                    totalArray[jj][kk].Add(anim);
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (layers.Length > 1)
-                                {
-                                    throw new Exception("More files than expected");
-                                }
-                                else
-                                {
-                                    break;
-                                }
-                                layerIndex++;
-                                currentTier++;
-                            }
-
-                            if (layerIndex > 0)
-                            {
-                                if (index == -1)
-                                {
-                                    throw new KeyNotFoundException(String.Format(
-                                        "Layer index mapping for layer {0} for {1} missing.", tileTitle, fileName));
-                                }
-
-                                ImportTileVariant(entry.Tilex00, totalArray[0]);
-                                ImportTileVariant(entry.Tilex01, totalArray[1]);
-                                ImportTileVariant(entry.Tilex02, totalArray[2]);
-                                ImportTileVariant(entry.Tilex03, totalArray[3]);
-                                ImportTileVariant(entry.Tilex13, totalArray[4]);
-                                ImportTileVariant(entry.Tilex04, totalArray[5]);
-                                ImportTileVariant(entry.Tilex05, totalArray[6]);
-                                ImportTileVariant(entry.Tilex06, totalArray[7]);
-                                ImportTileVariant(entry.Tilex26, totalArray[8]);
-                                ImportTileVariant(entry.Tilex07, totalArray[9]);
-                                ImportTileVariant(entry.Tilex17, totalArray[10]);
-                                ImportTileVariant(entry.Tilex27, totalArray[11]);
-                                ImportTileVariant(entry.Tilex37, totalArray[12]);
-                                ImportTileVariant(entry.Tilex08, totalArray[13]);
-                                ImportTileVariant(entry.Tilex09, totalArray[14]);
-                                ImportTileVariant(entry.Tilex89, totalArray[15]);
-                                ImportTileVariant(entry.Tilex0A, totalArray[16]);
-                                ImportTileVariant(entry.Tilex0B, totalArray[17]);
-                                ImportTileVariant(entry.Tilex1B, totalArray[18]);
-                                ImportTileVariant(entry.Tilex8B, totalArray[19]);
-                                ImportTileVariant(entry.Tilex9B, totalArray[20]);
-                                ImportTileVariant(entry.Tilex0C, totalArray[21]);
-                                ImportTileVariant(entry.Tilex4C, totalArray[22]);
-                                ImportTileVariant(entry.Tilex0D, totalArray[23]);
-                                ImportTileVariant(entry.Tilex4D, totalArray[24]);
-                                ImportTileVariant(entry.Tilex8D, totalArray[25]);
-                                ImportTileVariant(entry.TilexCD, totalArray[26]);
-                                ImportTileVariant(entry.Tilex0E, totalArray[27]);
-                                ImportTileVariant(entry.Tilex2E, totalArray[28]);
-                                ImportTileVariant(entry.Tilex4E, totalArray[29]);
-                                ImportTileVariant(entry.Tilex6E, totalArray[30]);
-                                ImportTileVariant(entry.Tilex0F, totalArray[31]);
-                                ImportTileVariant(entry.Tilex1F, totalArray[32]);
-                                ImportTileVariant(entry.Tilex2F, totalArray[33]);
-                                ImportTileVariant(entry.Tilex3F, totalArray[34]);
-                                ImportTileVariant(entry.Tilex4F, totalArray[35]);
-                                ImportTileVariant(entry.Tilex5F, totalArray[36]);
-                                ImportTileVariant(entry.Tilex6F, totalArray[37]);
-                                ImportTileVariant(entry.Tilex7F, totalArray[38]);
-                                ImportTileVariant(entry.Tilex8F, totalArray[39]);
-                                ImportTileVariant(entry.Tilex9F, totalArray[40]);
-                                ImportTileVariant(entry.TilexAF, totalArray[41]);
-                                ImportTileVariant(entry.TilexBF, totalArray[42]);
-                                ImportTileVariant(entry.TilexCF, totalArray[43]);
-                                ImportTileVariant(entry.TilexDF, totalArray[44]);
-                                ImportTileVariant(entry.TilexEF, totalArray[45]);
-                                ImportTileVariant(entry.TilexFF, totalArray[46]);
-
-                                autoTile.Tiles = entry;
-
-                                autoTile.Name = new LocalText(outputName + tileTitle);
-
-                                DataManager.SaveData(index, DataManager.DataType.AutoTile.ToString(), autoTile);
-                                Debug.WriteLine(String.Format("{0:D3}: {1}", index, autoTile.Name));
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        DiagManager.Instance.LogError(new Exception("Error importing " + outputName + "\n", ex));
-                    }
-                }
-            }
-        }
-
-        private static void ImportTileVariant(List<List<TileLayer>> list, List<TileLayer>[] data)
-        {
-            //add the variant to the appropriate entry list
-            for (int kk = 0; kk < 3; kk++)
-            {
-                if (data[kk].Count > 0)
-                    list.Add(data[kk]);
             }
         }
     }

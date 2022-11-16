@@ -180,7 +180,7 @@ namespace RogueEssence.Ground
                 bool heldItems = false;
                 foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
                 {
-                    if (!character.Dead && character.EquippedItem.ID > -1)
+                    if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
                     {
                         heldItems = true;
                         break;
@@ -278,6 +278,9 @@ namespace RogueEssence.Ground
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
+                //Wrap all coordinates
+                ZoneManager.Instance.CurrentGround.WrapEntities();
+
                 //Make entities think!
                 foreach (GroundEntity ent in ZoneManager.Instance.CurrentGround.IterateEntities())
                 {
@@ -307,15 +310,7 @@ namespace RogueEssence.Ground
                         character.Collide();
                 }
 
-
-                Loc focusedLoc = new Loc();
-                if (FreeCamCenter.HasValue)
-                    focusedLoc = FreeCamCenter.Value;
-                else if (ZoneManager.Instance.CurrentGround.ViewCenter.HasValue)
-                    focusedLoc = ZoneManager.Instance.CurrentGround.ViewCenter.Value;
-                else if (FocusedCharacter != null)
-                    focusedLoc = FocusedCharacter.Bounds.Center + ZoneManager.Instance.CurrentGround.ViewOffset;
-
+                Loc focusedLoc = GetFocusedLoc();
                 base.UpdateCamMod(elapsedTime, ref focusedLoc);
 
                 UpdateCam(ref focusedLoc);
@@ -329,6 +324,19 @@ namespace RogueEssence.Ground
 
         }
 
+        public Loc GetFocusedLoc()
+        {
+            Loc focusedLoc = new Loc();
+            if (FreeCamCenter.HasValue)
+                focusedLoc = FreeCamCenter.Value;
+            else if (ZoneManager.Instance.CurrentGround.ViewCenter.HasValue)
+                focusedLoc = ZoneManager.Instance.CurrentGround.ViewCenter.Value;
+            else if (FocusedCharacter != null)
+                focusedLoc = FocusedCharacter.Bounds.Center + ZoneManager.Instance.CurrentGround.ViewOffset;
+
+            return focusedLoc;
+        }
+
         public override void DrawGame(SpriteBatch spriteBatch)
         {
             //
@@ -340,14 +348,14 @@ namespace RogueEssence.Ground
             if (ZoneManager.Instance.CurrentGround != null)
             {
 
-                if (GameManager.Instance.ShowDebug)
+                if (GameManager.Instance.ShowDebug && DiagManager.Instance.DevMode)
                 {
-                    foreach (IDrawableSprite sprite in groundDraw)
-                        sprite.DrawDebug(spriteBatch, ViewRect.Start);
-                    foreach (IDrawableSprite sprite in objectDraw)
-                        sprite.DrawDebug(spriteBatch, ViewRect.Start);
-                    foreach (IDrawableSprite sprite in foregroundDraw)
-                        sprite.DrawDebug(spriteBatch, ViewRect.Start);
+                    foreach ((IDrawableSprite sprite, Loc viewOffset) group in groundDraw)
+                        group.sprite.DrawDebug(spriteBatch, group.viewOffset);
+                    foreach ((IDrawableSprite sprite, Loc viewOffset) group in objectDraw)
+                        group.sprite.DrawDebug(spriteBatch, group.viewOffset);
+                    foreach ((IDrawableSprite sprite, Loc viewOffset) group in foregroundDraw)
+                        group.sprite.DrawDebug(spriteBatch, group.viewOffset);
                 }
             }
 
@@ -378,11 +386,11 @@ namespace RogueEssence.Ground
             GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
 
             if (FreeCamCenter.HasValue)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "Free Cam", null, DirV.Up, DirH.Right, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "Free Cam", null, DirV.Up, DirH.Left, Color.LightYellow);
 
             if (FocusedCharacter != null)
             {
-                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm);
+                PortraitSheet sheet = GraphicsManager.GetPortrait(FocusedCharacter.CurrentForm.ToCharID());
                 sheet.DrawPortrait(spriteBatch, new Vector2(0, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize), new EmoteStyle(DebugEmote));
                 Color frameColor = Color.White;
                 string emoteName = GraphicsManager.Emotions[DebugEmote].Name;
@@ -396,21 +404,18 @@ namespace RogueEssence.Ground
                 }
                 GraphicsManager.SysFont.DrawText(spriteBatch, 2, GraphicsManager.WindowHeight - GraphicsManager.PortraitSize - 2, emoteName, null, DirV.Down, DirH.Left, frameColor);
 
-                if (FreeCamCenter.HasValue)
-                {
-                    Loc viewCenter = FreeCamCenter.Value;
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("Cam X:{0:D3} Y:{1:D3}", viewCenter.X, viewCenter.Y), null, DirV.Up, DirH.Right, Color.White);
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Rel X:{0:D3} Y:{1:D3}", viewCenter.X - FocusedCharacter.Bounds.Center.X, viewCenter.Y - FocusedCharacter.Bounds.Center.Y), null, DirV.Up, DirH.Right, Color.White);
-                }
-                else
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.MapLoc.X, FocusedCharacter.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                Loc focusedLoc = GroundScene.Instance.GetFocusedLoc();
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Cam X:{0:D3} Y:{1:D3}", focusedLoc.X, focusedLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 72, String.Format("Rel X:{0:D3} Y:{1:D3}", focusedLoc.X - FocusedCharacter.Bounds.Center.X, focusedLoc.Y - FocusedCharacter.Bounds.Center.Y), null, DirV.Up, DirH.Right, Color.White);
 
-                MonsterID monId;
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("X:{0:D3} Y:{1:D3}", FocusedCharacter.MapLoc.X, FocusedCharacter.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+
+                CharID monId;
                 Loc offset;
                 int anim;
                 int currentHeight, currentTime, currentFrame;
                 FocusedCharacter.GetCurrentSprite(out monId, out offset, out currentHeight, out anim, out currentTime, out currentFrame);
-                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.CurrentForm);
+                CharSheet charSheet = GraphicsManager.GetChara(FocusedCharacter.CurrentForm.ToCharID());
                 frameColor = Color.White;
                 string animName = GraphicsManager.Actions[anim].Name;
                 int resultAnim = charSheet.GetReferencedAnimIndex(anim);

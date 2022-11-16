@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -9,7 +10,7 @@ namespace RogueEssence.Menu
         {
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { MenuManager.Instance.AddMenu(new RogueDestMenu(), false); }));
-            if (Data.DataManager.Instance.FoundRecords(PathMod.ModSavePath(Data.DataManager.ROGUE_PATH)))
+            if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.ROGUE_PATH), DataManager.QUICKSAVE_EXTENSION))
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_LOAD"), () => { MenuManager.Instance.AddMenu(new QuicksaveMenu(), false); }));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), () => { MenuManager.Instance.AddMenu(new RogueInfoMenu(), false); }));
 

@@ -3,6 +3,10 @@ using RogueElements;
 
 namespace RogueEssence.Content
 {
+    /// <summary>
+    /// Emits multiple animations or particles.
+    /// Not very used.
+    /// </summary>
     [Serializable]
     public class ExpandableEmitter : CircleSquareEmitter
     {

@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
-        public override void LoadWindowControls(StackPanel control, string parent, string name, Type type, object[] attributes, Color member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Color member, Type[] subGroupStack)
         {
             Avalonia.Controls.Grid innerPanel = getSharedRowPanel(8);
 

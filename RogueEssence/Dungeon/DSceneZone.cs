@@ -65,8 +65,8 @@ namespace RogueEssence.Dungeon
         {
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
-
-            focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+            
+            ReloadFocusedPlayer();
 
             //refresh everyone's traits
             ZoneManager.Instance.CurrentMap.RefreshTraits();
@@ -227,51 +227,71 @@ namespace RogueEssence.Dungeon
             //fade white back with music
 
             //remove reward item
-            MapItem offeredItem = new MapItem((action[0] == 1), action[1]);
-            offeredItem.HiddenValue = action[2];
+            MapItem offeredItem = new MapItem();
+            int nn = 0;
+            offeredItem.IsMoney = (action[nn] == 1);
+            nn++;
+            int itemLength = action[nn];
+            nn++;
+            string itemName = "";
+            for (int ii = 0; ii < itemLength; ii++)
+                itemName += (char)action[nn + ii];
+            nn += itemLength;
+            offeredItem.Value = itemName;
 
-            if (offeredItem.Value > -1)
+            itemLength = action[nn];
+            nn++;
+            itemName = "";
+            for (int ii = 0; ii < itemLength; ii++)
+                itemName += (char)action[nn + ii];
+            nn += itemLength;
+            offeredItem.HiddenValue = itemName;
+
+            offeredItem.Amount = action[nn];
+            nn++;
+
+
+            if (offeredItem.IsMoney)
+                ActiveTeam.Bank -= offeredItem.Amount;
+            else if (!String.IsNullOrEmpty(offeredItem.Value))
             {
-                if (offeredItem.IsMoney)
-                    ActiveTeam.Bank -= offeredItem.Value;
+                ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
+                if (entry.MaxStack > 1)
+                {
+                    List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                    for (int ii = 0; ii < offeredItem.Amount; ii++)
+                        itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
+                    ActiveTeam.TakeItems(itemsToTake);
+                }
+                else if (entry.UsageType == ItemData.UseType.Box)
+                {
+                    int chosenIndex = 0;
+                    for (int ii = 0; ii < ActiveTeam.BoxStorage.Count; ii++)
+                    {
+                        if (ActiveTeam.BoxStorage[ii].ID == offeredItem.Value
+                            && ActiveTeam.BoxStorage[ii].HiddenValue == offeredItem.HiddenValue)
+                        {
+                            chosenIndex = ii;
+                            break;
+                        }
+                    }
+                    List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                    itemsToTake.Add(new WithdrawSlot(true, "", chosenIndex));
+                    ActiveTeam.TakeItems(itemsToTake);
+                }
                 else
                 {
-                    ItemData entry = DataManager.Instance.GetItem(offeredItem.Value);
-                    if (entry.MaxStack > 1)
-                    {
-                        List<int> itemsToTake = new List<int>();
-                        for (int ii = 0; ii < offeredItem.HiddenValue; ii++)
-                            itemsToTake.Add(offeredItem.Value);
-                        ActiveTeam.TakeItems(itemsToTake);
-                    }
-                    else if (entry.UsageType == ItemData.UseType.Box)
-                    {
-                        int chosenIndex = 0;
-                        for (int ii = 0; ii < ActiveTeam.BoxStorage.Count; ii++)
-                        {
-                            if (ActiveTeam.BoxStorage[ii].ID == offeredItem.Value
-                                && ActiveTeam.BoxStorage[ii].HiddenValue == offeredItem.HiddenValue)
-                            {
-                                chosenIndex = ii;
-                                break;
-                            }
-                        }
-                        List<int> itemsToTake = new List<int>();
-                        itemsToTake.Add(DataManager.Instance.DataIndices[DataManager.DataType.Item].Count + chosenIndex);
-                    }
-                    else
-                    {
-                        List<int> itemsToTake = new List<int>();
-                        itemsToTake.Add(offeredItem.Value);
-                        ActiveTeam.TakeItems(itemsToTake);
-                    }
+                    List<WithdrawSlot> itemsToTake = new List<WithdrawSlot>();
+                    itemsToTake.Add(new WithdrawSlot(false, offeredItem.Value, 0));
+                    ActiveTeam.TakeItems(itemsToTake);
                 }
             }
 
-            int nameLength = action[3];
+            int nameLength = action[nn];
+            nn++;
             string name = "";
             for (int ii = 0; ii < nameLength; ii++)
-                name += (char)action[4 + ii];
+                name += (char)action[nn + ii];
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(name, mail));
 
@@ -286,6 +306,7 @@ namespace RogueEssence.Dungeon
 
             //extraneous directions are removed
 
+            DataManager.Instance.QueueLogUI();
             ActionResult result = new ActionResult();//denotes if a turn was taken
             yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(action, CurrentCharacter, result));
 
@@ -293,6 +314,11 @@ namespace RogueEssence.Dungeon
             {
                 //log the turn and reset inputs
                 DataManager.Instance.LogPlay(action);
+                DataManager.Instance.DequeueLogUI();
+            }
+            else if (DataManager.Instance.CurrentReplay != null)
+            {
+                DiagManager.Instance.LogError(new InvalidOperationException(String.Format("Recorded action failed: {0}", action.ToString())));
             }
         }
 
@@ -301,7 +327,7 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> ProcessInput(GameAction action, Character character, ActionResult result)
         {
             //translates commands into actions
-            if (character.AttackOnly && character.CantWalk && action.Type == GameAction.ActionType.Wait)
+            if (character.WaitToAttack && character.CantWalk && action.Type == GameAction.ActionType.Wait)
                 action = new GameAction(GameAction.ActionType.Attack, action.Dir);
 
             ProcessDir(action.Dir, character);
@@ -424,12 +450,20 @@ namespace RogueEssence.Dungeon
                     {
                         result.Success = ActionResult.ResultType.Success;
 
+                        List<string> eligibleAI = new List<string>();
+                        foreach (string ai_asset in DataManager.Instance.DataIndices[DataManager.DataType.AI].GetOrderedKeys(true))
+                        {
+                            AIEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.AI].Get(ai_asset) as AIEntrySummary;
+                            if (summary.Assignable)
+                                eligibleAI.Add(ai_asset);
+                        }
+
                         //saves all the settings to the characters
                         for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                         {
                             int choice = action[ii];
                             Character target = ActiveTeam.Players[ii];
-                            AITactic tactic = DataManager.Instance.GetAITactic(choice);
+                            AITactic tactic = DataManager.Instance.GetAITactic(eligibleAI[choice]);
                             if (tactic.ID != target.Tactic.ID)
                                 target.Tactic = new AITactic(tactic);
                             target.Tactic.Initialize(target);
@@ -447,8 +481,9 @@ namespace RogueEssence.Dungeon
                 case GameAction.ActionType.ShiftSkill:
                     {
                         result.Success = ActionResult.ResultType.Success;
-
-                        ActiveTeam.Players[action[0]].SwitchSkills(action[1]);
+                        Character targetChar = ActiveTeam.Players[action[0]];
+                        int slot = action[1];
+                        targetChar.SwitchSkills(slot);
                         break;
                     }
                 case GameAction.ActionType.SortItems:
@@ -456,6 +491,13 @@ namespace RogueEssence.Dungeon
                         result.Success = ActionResult.ResultType.Success;
 
                         ActiveTeam.SortItems();
+                        break;
+                    }
+                case GameAction.ActionType.Option:
+                    {
+                        result.Success = ActionResult.ResultType.Success;
+
+                        DataManager.Instance.Save.DefaultSkill = (Settings.SkillDefault)action[0];
                         break;
                     }
                 default:
@@ -538,7 +580,7 @@ namespace RogueEssence.Dungeon
 
             Team team = ZoneManager.Instance.CurrentMap.GetTeam(charIndex.Faction, charIndex.Team);
 
-            List<Character> playerList = (charIndex.Guest) ? team.Guests : team.Players;
+            EventedList<Character> playerList = (charIndex.Guest) ? team.Guests : team.Players;
             Character character = playerList[charIndex.Char];
 
             character.OnRemove();
@@ -646,8 +688,7 @@ namespace RogueEssence.Dungeon
 
                     //re-order map order as well
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, oldLeader, charIndex);
-
-                    focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                    ReloadFocusedPlayer();
 
                     DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_LEADER_SWAP", ActiveTeam.Leader.GetDisplayName(true)));
 
@@ -695,12 +736,11 @@ namespace RogueEssence.Dungeon
                     ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex + 1, ActiveTeam.LeaderIndex);
                 }
 
-
-                focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
+                ReloadFocusedPlayer();
             }
         }
 
-        private int getLiveIndex(List<Character> playerList)
+        private int getLiveIndex(EventedList<Character> playerList)
         {
             for (int ii = 0; ii < playerList.Count; ii++)
             {
@@ -746,50 +786,35 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.AllyTeams.Count; jj++)
-                genericReorderDeadPlayerList(Faction.Friend, jj);
+            foreach(CharIndex deadTeamIdx in ZoneManager.Instance.CurrentMap.TeamsWithDead)
+                genericReorderDeadPlayerList(deadTeamIdx.Faction, deadTeamIdx.Team);
+            ZoneManager.Instance.CurrentMap.TeamsWithDead.Clear();
+        }
 
-            for (int jj = 0; jj < ZoneManager.Instance.CurrentMap.MapTeams.Count; jj++)
-                genericReorderDeadPlayerList(Faction.Foe, jj);
+
+        private int deadTeamIndexCompare(CharIndex key1, CharIndex key2)
+        {
+            int cmp = Math.Sign((int)key2.Faction - (int)key1.Faction);
+            if (cmp != 0)
+                return cmp;
+            return Math.Sign(key2.Team - key1.Team);
         }
 
         public void RemoveDeadTeams()
         {
-            for (int ii = ZoneManager.Instance.CurrentMap.AllyTeams.Count - 1; ii >= 0; ii--)
+            List<CharIndex> sortedTeams = new List<CharIndex>();
+            foreach (CharIndex deadTeamIdx in ZoneManager.Instance.CurrentMap.DeadTeams)
+                sortedTeams.Add(deadTeamIdx);
+            sortedTeams.Sort(deadTeamIndexCompare);
+            foreach (CharIndex deadTeamIdx in sortedTeams)
             {
-                bool allDead = true;
-                Team team = ZoneManager.Instance.CurrentMap.AllyTeams[ii];
-                foreach (Character character in team.EnumerateChars())
-                {
-                    if (!character.Dead)
-                        allDead = false;
-                }
-                if (allDead)
-                {
-                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Friend, ii, true, jj));
-                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Friend, ii, false, jj));
-                }
+                Team deadTeam = ZoneManager.Instance.CurrentMap.GetTeam(deadTeamIdx.Faction, deadTeamIdx.Team);
+                for (int jj = deadTeam.Guests.Count - 1; jj >= 0; jj--)
+                    RemoveChar(new CharIndex(deadTeamIdx.Faction, deadTeamIdx.Team, true, jj));
+                for (int jj = deadTeam.Players.Count - 1; jj >= 0; jj--)
+                    RemoveChar(new CharIndex(deadTeamIdx.Faction, deadTeamIdx.Team, false, jj));
             }
-
-            for (int ii = ZoneManager.Instance.CurrentMap.MapTeams.Count - 1; ii >= 0; ii--)
-            {
-                bool allDead = true;
-                Team team = ZoneManager.Instance.CurrentMap.MapTeams[ii];
-                foreach (Character character in team.EnumerateChars())
-                {
-                    if (!character.Dead)
-                        allDead = false;
-                }
-                if (allDead)
-                {
-                    for (int jj = team.Guests.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Foe, ii, true, jj));
-                    for (int jj = team.Players.Count - 1; jj >= 0; jj--)
-                        RemoveChar(new CharIndex(Faction.Foe, ii, false, jj));
-                }
-            }
+            ZoneManager.Instance.CurrentMap.DeadTeams.Clear();
         }
 
         public int GetSpeedMult(Character movingChar, Loc destTile)
@@ -798,9 +823,8 @@ namespace RogueEssence.Dungeon
                 return 12;
 
             Loc seen = Character.GetSightDims();
-            Loc startDiff = movingChar.CharLoc - FocusedCharacter.CharLoc;
-            Loc endDiff = destTile - FocusedCharacter.CharLoc;
-            if ((Math.Abs(startDiff.X) > seen.X || Math.Abs(startDiff.Y) > seen.Y) && (Math.Abs(endDiff.X) > seen.X || Math.Abs(endDiff.Y) > seen.Y))
+            Rect sightBounds = new Rect(FocusedCharacter.CharLoc - seen, seen * 2 + new Loc(1));
+            if (!ZoneManager.Instance.CurrentMap.InBounds(sightBounds, movingChar.CharLoc) && !ZoneManager.Instance.CurrentMap.InBounds(sightBounds, destTile))
                 return 0;
 
             //character walks into vision
@@ -869,10 +893,13 @@ namespace RogueEssence.Dungeon
                 }
                 while (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(CurrentCharacter));
 
-                if (!IsPlayerTurn())
-                    OrganizeAIMovement(0);
+                //reorder again in case something happened to deaths.
+                ReorderDeadLeaders();
 
                 RemoveDeadTeams();
+
+                if (!IsPlayerTurn())
+                    OrganizeAIMovement(0);
 
                 yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
             }
@@ -885,6 +912,11 @@ namespace RogueEssence.Dungeon
             //silently reset turn map
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
+            ReloadFocusedPlayer();
+        }
+
+        public void ReloadFocusedPlayer()
+        {
             focusedPlayerIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar().Char;
         }
 
@@ -982,34 +1014,6 @@ namespace RogueEssence.Dungeon
 
             ZoneManager.Instance.CurrentMap.MapTurns++;
             DataManager.Instance.Save.TotalTurns++;
-
-
-            //Map Respawns
-            if (ZoneManager.Instance.CurrentMap.RespawnTime > 0 && ZoneManager.Instance.CurrentMap.MapTurns % ZoneManager.Instance.CurrentMap.RespawnTime == 0)
-            {
-                int totalFoes = 0;
-                foreach (Team team in ZoneManager.Instance.CurrentMap.MapTeams)
-                {
-                    foreach (Character character in team.Players)
-                    {
-                        if (!character.Dead)
-                            totalFoes++;
-                    }
-                }
-                if (totalFoes < ZoneManager.Instance.CurrentMap.MaxFoes)
-                {
-                    List<Character> respawns = ZoneManager.Instance.CurrentMap.RespawnMob();
-                    foreach (Character respawn in respawns)
-                    {
-                        respawn.Tactic.Initialize(respawn);
-                        if (!respawn.Dead)
-                        {
-                            yield return CoroutineManager.Instance.StartCoroutine(respawn.OnMapStart());
-                            ZoneManager.Instance.CurrentMap.UpdateExploration(respawn);
-                        }
-                    }
-                }
-            }
 
             //check EXP because someone could've died
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());

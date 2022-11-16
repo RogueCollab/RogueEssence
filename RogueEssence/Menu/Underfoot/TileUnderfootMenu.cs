@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
         TileSummary summaryMenu;
         bool danger;
 
-        public TileUnderfootMenu(int tileIndex, bool danger)
+        public TileUnderfootMenu(string tileIndex, bool danger)
         {
             this.danger = danger;
             Data.TileData entry = Data.DataManager.Instance.GetTile(tileIndex);

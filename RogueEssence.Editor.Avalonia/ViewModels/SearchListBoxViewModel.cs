@@ -19,7 +19,9 @@ namespace RogueEssence.Dev.ViewModels
             SearchText = "";
         }
 
+        //total items in the box
         private List<string> entries;
+        //maps index from the search list to index in the entries list
         private List<int> entryMap;
 
         private string dataName;
@@ -84,10 +86,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void RemoveAt(int index)
         {
-            entries.RemoveAt(entryMap[index]);
-
-            SearchItems.RemoveAt(index);
-            entryMap.RemoveAt(index);
+            RemoveInternalAt(entryMap[index]);
         }
 
         public string GetItem(int index)
@@ -156,16 +155,20 @@ namespace RogueEssence.Dev.ViewModels
 
         public void RemoveInternalAt(int internalIndex)
         {
-            bool oldAppears = (SearchText == "" || entries[internalIndex].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1);
             entries.RemoveAt(internalIndex);
 
             int shownIndex = entryMap.IndexOf(internalIndex);
-
-            if (oldAppears)
+            if (shownIndex > -1)
             {
                 //remove
                 SearchItems.RemoveAt(shownIndex);
                 entryMap.RemoveAt(shownIndex);
+            }
+
+            for (int ii = 0; ii < entryMap.Count; ii++)
+            {
+                if (entryMap[ii] > internalIndex)
+                    entryMap[ii] = entryMap[ii] - 1;
             }
         }
 

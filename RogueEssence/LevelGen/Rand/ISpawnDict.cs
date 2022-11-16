@@ -19,6 +19,8 @@ namespace RogueElements
 
         void Clear();
 
+        IEnumerable<TK> GetKeys();
+
         TV GetSpawn(TK key);
 
         int GetSpawnRate(TK key);
@@ -29,7 +31,7 @@ namespace RogueElements
 
         void Remove(TK key);
 
-        public bool ContainsKey(TK key);
+        bool ContainsKey(TK key);
     }
 
     public interface ISpawnDict
@@ -42,6 +44,8 @@ namespace RogueElements
 
         void Clear();
 
+        IEnumerable GetKeys();
+
         object GetSpawn(object key);
 
         int GetSpawnRate(object key);
@@ -52,6 +56,6 @@ namespace RogueElements
 
         void Remove(object key);
 
-        public bool Contains(object key);
+        bool Contains(object key);
     }
 }

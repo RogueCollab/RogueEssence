@@ -13,11 +13,11 @@ namespace RogueEssence.Menu
         OnChooseSlot learnAction;
         Action refuseAction;
         Character player;
-        int skillNum;
+        string skillNum;
 
         SkillSummary summaryMenu;
 
-        public SkillReplaceMenu(Character player, int skillNum, OnChooseSlot learnAction, Action refuseAction)
+        public SkillReplaceMenu(Character player, string skillNum, OnChooseSlot learnAction, Action refuseAction)
         {
             int menuWidth = 152;
             this.player = player;
@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < player.BaseSkills.Count; ii++)
             {
                 SlotSkill skill = player.BaseSkills[ii];
-                if (skill.SkillNum > -1)
+                if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
                     string skillString = data.GetColoredName();

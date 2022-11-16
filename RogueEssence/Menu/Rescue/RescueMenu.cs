@@ -5,6 +5,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Network;
 using System.IO;
 using RogueEssence.Script;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -100,16 +101,16 @@ namespace RogueEssence.Menu
             bool canOfferItem = DataManager.Instance.Save.ActiveTeam.BoxStorage.Count > 0;
             if (!canOfferItem)
             {
-                for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Storage.Length; ii++)
+                foreach(string key in DataManager.Instance.Save.ActiveTeam.Storage.Keys)
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Storage[ii] > 0)
+                    if (DataManager.Instance.Save.ActiveTeam.Storage.GetValueOrDefault(key, 0) > 0)
                     {
                         canOfferItem = true;
                         break;
                     }
                 }
             }
-            bool canRemoveItem = DataManager.Instance.Save.Rescue.SOS.OfferedItem.Value > -1;
+            bool canRemoveItem = !String.IsNullOrEmpty(DataManager.Instance.Save.Rescue.SOS.OfferedItem.Value);
 
             List <DialogueChoice> choices = new List<DialogueChoice>();
             choices.Add(new DialogueChoice(Text.FormatKey("MENU_REWARD_MONEY"), () => { MenuManager.Instance.AddMenu(new BankMenu(0, setRewardMoney), false); }, canOfferMoney));
@@ -125,15 +126,15 @@ namespace RogueEssence.Menu
             if (amount == 0)
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem();
             else
-                DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(true, amount);
+                DataManager.Instance.Save.Rescue.SOS.OfferedItem = MapItem.CreateMoney(amount);
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
         }
 
-        private void setRewardItem(List<int> slots)
+        private void setRewardItem(List<WithdrawSlot> slots)
         {
             List<InvItem> items = DataManager.Instance.Save.ActiveTeam.TakeItems(slots, false);
             if (items.Count > 1)
@@ -141,7 +142,7 @@ namespace RogueEssence.Menu
             else
                 DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem(items[0]);
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -151,7 +152,7 @@ namespace RogueEssence.Menu
         {
             DataManager.Instance.Save.Rescue.SOS.OfferedItem = new MapItem();
 
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue = DataManager.Instance.Save.Rescue;
             DataManager.Instance.SaveGameState(state);
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
@@ -186,6 +187,9 @@ namespace RogueEssence.Menu
 
                 TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
                 MenuManager.Instance.ClearMenus();
+                List<ModDiff> replayDiffs = aok.RescueReplay.States[0].Save.GetModDiffs();
+                if (replayDiffs.Count > 0)
+                    MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_FILE_VERSION_DIFF")), false);
                 GameManager.Instance.SceneOutcome = validateReplay(aok.RescueReplay);
             }
             else
@@ -227,7 +231,7 @@ namespace RogueEssence.Menu
             //notify if it is found and working
             //notify if it failed to work
             //delete the mail either way
-            GameState state = DataManager.Instance.LoadMainGameState();
+            GameState state = DataManager.Instance.LoadMainGameState(false);
             state.Save.Rescue.SOS.RescuedBy = testingMail.RescuingTeam;
             state.Save.Rescue.SOS.RescuingNames = testingMail.RescuingNames;
             state.Save.Rescue.SOS.RescuingTeam = testingMail.RescuingProfile;

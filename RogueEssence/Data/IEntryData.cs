@@ -2,6 +2,9 @@
 {
     public interface IDescribedData : IEntryData
     {
+        /// <summary>
+        /// The description of the asset as the player sees it, including translations.
+        /// </summary>
         LocalText Desc { get; set; }
     }
 
@@ -12,9 +15,21 @@
     /// </summary>
     public interface IEntryData
     {
+        /// <summary>
+        /// The name of the asset as the player sees it, including translations.
+        /// </summary>
         LocalText Name { get; set; }
+
+        /// <summary>
+        /// If released, this asset can be found/accessed in the game.
+        /// </summary>
         bool Released { get; }
+
+        /// <summary>
+        /// Developer-only comments for this asset.
+        /// </summary>
         string Comment { get; set; }
+
         string GetColoredName();
 
         EntrySummary GenerateEntrySummary();

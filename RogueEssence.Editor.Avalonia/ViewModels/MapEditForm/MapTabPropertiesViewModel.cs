@@ -22,12 +22,17 @@ namespace RogueEssence.Dev.ViewModels
                 Sights.Add(((Map.SightRange)ii).ToLocal());
 
             Elements = new ObservableCollection<string>();
-            string[] element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray(true);
-            for (int ii = 0; ii < element_names.Length; ii++)
-                Elements.Add(ii.ToString("D2") + ": " + element_names[ii]);
+            Dictionary<string, string> element_names = DataManager.Instance.DataIndices[DataManager.DataType.Element].GetLocalStringArray(true);
+            keys = new List<string>();
+
+            foreach (string key in element_names.Keys)
+            {
+                keys.Add(key);
+                Elements.Add(key + ": " + element_names[key]);
+            }
 
             ScrollEdges = new ObservableCollection<string>();
-            for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
+            for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
             BG = new ClassBoxViewModel(new StringConv(typeof(IBackgroundSprite), new object[0]));
@@ -81,14 +86,16 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
+        private List<string> keys;
+
         public ObservableCollection<string> Elements { get; }
 
         public int ChosenElement
         {
-            get { return ZoneManager.Instance.CurrentMap.Element; }
+            get { return keys.IndexOf(ZoneManager.Instance.CurrentMap.Element); }
             set
             {
-                ZoneManager.Instance.CurrentMap.Element = value;
+                ZoneManager.Instance.CurrentMap.Element = keys[value];
                 this.RaisePropertyChanged();
             }
         }
@@ -136,20 +143,17 @@ namespace RogueEssence.Dev.ViewModels
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, type);
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0]);
                 op(element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -174,7 +178,7 @@ namespace RogueEssence.Dev.ViewModels
             tmv.AutotileBrowser.TileSize = GraphicsManager.TileSize;
             tmv.LoadTile(element);
 
-            tmv.SelectedOKEvent += () =>
+            tmv.SelectedOKEvent += async () =>
             {
                 element = tmv.GetTile();
                 op(element);
@@ -193,27 +197,25 @@ namespace RogueEssence.Dev.ViewModels
 
         public void TextureMap_Changed()
         {
-            ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<int, AutoTile>>();
+            ZoneManager.Instance.CurrentMap.TextureMap = TextureMap.GetDict<Dictionary<string, AutoTile>>();
             ZoneManager.Instance.CurrentMap.CalculateTerrainAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
         }
 
         public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap<Key>";
-            DataEditForm frmKey = new DataEditForm();
+            DataEditForm frmKey = new DataEditRootForm();
             frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(int), new object[0]);
 
-            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(int), new object[0], key, true, new Type[0]);
+            DataTypeAttribute attr = new DataTypeAttribute(1, DataManager.DataType.Terrain, false);
+            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(int), new object[1] { attr }, key, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmKey, typeof(int));
 
-            frmKey.SelectedOKEvent += () =>
+            frmKey.SelectedOKEvent += async () =>
             {
-                key = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[0], true, new Type[0]);
-                op(key, element);
-                frmKey.Close();
-            };
-            frmKey.SelectedCancelEvent += () =>
-            {
-                frmKey.Close();
+                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[1] { attr }, true, new Type[0]);
+                op(key, newKey, element);
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -224,20 +226,17 @@ namespace RogueEssence.Dev.ViewModels
         public void TextureMap_EditItem(object key, object element, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap[" + key.ToString() + "]";
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, elementName, typeof(AutoTile), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(AutoTile), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(AutoTile));
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true, new Type[0]);
-                op(key, element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                op(key, key, element);
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;

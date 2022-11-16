@@ -11,7 +11,7 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 5;
 
-        int[] intrinsicChoices;
+        string[] intrinsicChoices;
         OnChooseSlot chooseSlotAction;
         Action refuseAction;
         Character player;
@@ -20,7 +20,7 @@ namespace RogueEssence.Menu
         DialogueText Description;
 
 
-        public IntrinsicRecallMenu(Character player, int[] intrinsicChoices, OnChooseSlot action, Action refuseAction)
+        public IntrinsicRecallMenu(Character player, string[] intrinsicChoices, OnChooseSlot action, Action refuseAction)
         {
             this.player = player;
             this.intrinsicChoices = intrinsicChoices;
@@ -62,13 +62,13 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.RemoveMenu();
 
-            chooseSlotAction(intrinsicChoices[choice]);
+            chooseSlotAction(choice);
         }
 
         protected override void ChoiceChanged()
         {
             Data.IntrinsicData entry = Data.DataManager.Instance.GetIntrinsic(intrinsicChoices[CurrentChoiceTotal]);
-            Description.SetFormattedText(entry.Desc.ToLocal());
+            Description.SetAndFormatText(entry.Desc.ToLocal());
 
             base.ChoiceChanged();
         }

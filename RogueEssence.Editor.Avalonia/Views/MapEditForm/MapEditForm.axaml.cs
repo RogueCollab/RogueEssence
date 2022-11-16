@@ -40,8 +40,7 @@ namespace RogueEssence.Dev.Views
 
         public void ProcessInput(InputManager input)
         {
-            MapEditViewModel vm = (MapEditViewModel)DataContext;
-            DevForm.ExecuteOrInvoke(() => vm.ProcessInput(input));
+            DevForm.ExecuteOrInvoke(() => ((MapEditViewModel)DataContext).ProcessInput(input));
         }
 
 

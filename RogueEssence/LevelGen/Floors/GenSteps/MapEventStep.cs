@@ -6,9 +6,17 @@ using RogueEssence.Data;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Sets the map's own events.  These events work similarly to the Universal Event, which works game-wide.
+    /// These events work map-wide.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MapEffectStep<T> : GenStep<T> where T : BaseMapGenContext
     {
+        /// <summary>
+        /// The object containing the events.
+        /// </summary>
         [Dev.SubGroup]
         public ActiveEffect Effect;
 

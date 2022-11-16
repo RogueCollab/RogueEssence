@@ -3,7 +3,8 @@ using Microsoft.Xna.Framework;
 using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
-using RogueEssence.Ground;
+using System;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -20,7 +21,7 @@ namespace RogueEssence.Menu
             this.skillSlot = skillSlot;
 
             bool shiftUp = (skillSlot > 0);
-            bool shiftDown = (skillSlot < DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills.Count - 1) && (DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills[skillSlot + 1].Element.SkillNum > -1);
+            bool shiftDown = (skillSlot < DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills.Count - 1) && !String.IsNullOrEmpty(DataManager.Instance.Save.ActiveTeam.Players[teamIndex].Skills[skillSlot + 1].Element.SkillNum);
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -34,7 +35,8 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), () => { shiftPosition(true); }, shiftDown, shiftDown ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), MenuManager.Instance.RemoveMenu));
 
-            Initialize(new Loc(168, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
+            int choice_width = CalculateChoiceLength(choices, 72);
+            Initialize(new Loc(Math.Min(168, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
         
         private void useAction()
@@ -47,7 +49,7 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.RemoveMenu();
 
-            MenuManager.Instance.NextAction = MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, teamIndex, skillSlot), skillSlot);
+            MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, teamIndex, skillSlot), teamIndex, skillSlot);
         }
 
         private void shiftPosition(bool switchDown)
@@ -61,14 +63,7 @@ namespace RogueEssence.Menu
                 swapSlot++;
                 newSlot += 2;
             }
-            MenuManager.Instance.NextAction = MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, teamIndex, swapSlot), newSlot);
+            MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, teamIndex, swapSlot), teamIndex, newSlot);
         }
-
-        public IEnumerator<YieldInstruction> MoveCommand(GameAction action, int switchSlot)
-        {
-            yield return CoroutineManager.Instance.StartCoroutine((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(action) : GroundScene.Instance.ProcessInput(action));
-            MenuManager.Instance.ReplaceMenu(new SkillMenu(teamIndex, switchSlot));
-        }
-
     }
 }

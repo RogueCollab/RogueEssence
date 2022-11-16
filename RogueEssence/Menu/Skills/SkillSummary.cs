@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
             Elements.Add(MenuDiv);
         }
 
-        public void SetSkill(int index)
+        public void SetSkill(string index)
         {
             SkillData skillEntry = DataManager.Instance.GetSkill(index);
             ElementData elementEntry = DataManager.Instance.GetElement(skillEntry.Data.Element);
@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
             SkillPower.SetText(Text.FormatKey("MENU_SKILLS_POWER", (powerState != null ? powerState.Power.ToString() : "---")));
             SkillHitRate.SetText(Text.FormatKey("MENU_SKILLS_HIT_RATE", (skillEntry.Data.HitRate > -1 ? skillEntry.Data.HitRate + "%" : "---")));
             Targets.SetText(Text.FormatKey("MENU_SKILLS_RANGE", skillEntry.HitboxAction.GetDescription()));
-            Description.SetFormattedText(skillEntry.Desc.ToLocal());
+            Description.SetAndFormatText(skillEntry.Desc.ToLocal());
         }
 
     }

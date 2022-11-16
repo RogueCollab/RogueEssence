@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
             Elements.Add(MenuDiv);
         }
 
-        public void SetDetails(string formString, int skinSetting, Gender genderSetting, string intrinsicString)
+        public void SetDetails(string formString, string skinSetting, Gender genderSetting, string intrinsicString)
         {
             while(Elements.Count > 2)
                 Elements.RemoveAt(2);
@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
 
             if (formString != "")
                 rules.Add(new MenuText(formString, Loc.Zero));
-            if (skinSetting > 0)
+            if (skinSetting != DataManager.Instance.DefaultSkin)
                 rules.Add(new MenuText(Text.FormatKey("MENU_CHARA_DETAIL_SKIN", DataManager.Instance.GetSkin(skinSetting).GetColoredName()), Loc.Zero));
             if (genderSetting != Gender.Unknown)
                 rules.Add(new MenuText(genderSetting.ToLocal(), Loc.Zero));

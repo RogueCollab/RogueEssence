@@ -32,30 +32,11 @@ namespace RogueEssence.Script
                 //Build a lua table as we go and return it
                 LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
                 LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, str) tbl[key] = str end").First() as LuaFunction;
-                if (File.Exists(path))
-                {
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.Load(path);
-                    foreach (XmlNode xnode in xmldoc.DocumentElement.ChildNodes)
-                    {
-                        if (xnode.Name == "data")
-                        {
-                            string value = null;
-                            string name = null;
-                            var atname = xnode.Attributes["name"];
-                            if (atname != null)
-                                name = atname.Value;
 
-                            //Get value
-                            XmlNode valnode = xnode.SelectSingleNode("value");
-                            if (valnode != null)
-                                value = valnode.InnerText;
+                Dictionary<string, string> xmlDict = Text.LoadStringResx(path);
+                foreach (string name in xmlDict.Keys)
+                    addfn.Call(tbl, name, xmlDict[name]);
 
-                            if (value != null && name != null)
-                                addfn.Call(tbl, name, value);
-                        }
-                    }
-                }
                 return tbl;
             }
             catch (Exception ex)

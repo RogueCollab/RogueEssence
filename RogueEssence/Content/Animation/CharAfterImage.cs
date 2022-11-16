@@ -6,7 +6,7 @@ namespace RogueEssence.Content
 {
     public class CharAfterImage : BaseAnim
     {
-        public CharAfterImage(Loc mapLoc, Dungeon.MonsterID appearance, int currentAnim, int frame, Dir8 dir, int locHeight, int animTime, byte alpha, byte alphaSpeed)
+        public CharAfterImage(Loc mapLoc, CharID appearance, int currentAnim, int frame, Dir8 dir, int locHeight, int animTime, byte alpha, byte alphaSpeed)
         {
             this.mapLoc = mapLoc;
             Appearance = appearance;
@@ -19,7 +19,7 @@ namespace RogueEssence.Content
             AlphaSpeed = alphaSpeed;
         }
 
-        private Dungeon.MonsterID Appearance;
+        private CharID Appearance;
         
         private int CurrentAnim;
         

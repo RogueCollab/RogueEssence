@@ -88,7 +88,7 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.MapEditForm);
 
-            if (results.Length > 0)
+            if (results != null && results.Length > 0)
             {
                 bool legalPath = false;
                 foreach (string proposedPath in PathMod.FallbackPaths(DataManager.MAP_PATH))
@@ -112,8 +112,13 @@ namespace RogueEssence.Dev.ViewModels
                 return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
             {
+                string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
+                string result = Path.Join(reqDir, Path.GetFileName(CurrentFile));
                 lock (GameBase.lockObj)
-                    DoSave(ZoneManager.Instance.CurrentMap, CurrentFile, CurrentFile);
+                {
+                    string oldFilename = CurrentFile;
+                    DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
+                }
                 return true;
             }
         }
@@ -132,9 +137,9 @@ namespace RogueEssence.Dev.ViewModels
 
             string result = await saveFileDialog.ShowAsync(form.MapEditForm);
 
-            if (result != null)
+            if (!String.IsNullOrEmpty(result))
             {
-                string reqDir = PathMod.ModPath(DataManager.MAP_PATH);
+                string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
@@ -157,16 +162,15 @@ namespace RogueEssence.Dev.ViewModels
         {
             bool saved = await mnuSave_Click();
             if (saved)
-                GameManager.Instance.SceneOutcome = exitAndTest();
-        }
-
-        private IEnumerator<YieldInstruction> exitAndTest()
-        {
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.SilentClose();
-            form.MapEditForm = null;
-
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64()));
+            {
+                lock (GameBase.lockObj)
+                {
+                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+                    form.MapEditForm.SilentClose();
+                    form.MapEditForm = null;
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64());
+                }
+            }
         }
 
         public async void mnuImportFromPng_Click()
@@ -184,11 +188,8 @@ namespace RogueEssence.Dev.ViewModels
 
             string[] results = await openFileDialog.ShowAsync(form.MapEditForm);
 
-            lock (GameBase.lockObj)
-            {
-                if (results.Length > 0)
-                    DoImportPng(results[0]);
-            }
+            if (results != null && results.Length > 0)
+                DoImportPng(results[0]);
         }
 
         public void mnuClearLayer_Click()
@@ -312,26 +313,37 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoImportPng(string filePath)
         {
+            DevForm.ExecuteOrPend(() => { tryImportPng(filePath); });
+
             string sheetName = Path.GetFileNameWithoutExtension(filePath);
-            string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
-
-
-            //load into tilesets
-            using (BaseSheet tileset = BaseSheet.Import(filePath))
+            lock (GameBase.lockObj)
             {
-                List<BaseSheet> tileList = new List<BaseSheet>();
-                tileList.Add(tileset);
-                ImportHelper.SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
+                Textures.TileBrowser.UpdateTilesList();
+                Terrain.TileBrowser.UpdateTilesList();
             }
-
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevGraphicsManager.ClearCaches();
-
-            Textures.TileBrowser.UpdateTilesList();
             Textures.TileBrowser.SelectTileset(sheetName);
-            Terrain.TileBrowser.UpdateTilesList();
             Terrain.TileBrowser.SelectTileset(sheetName);
+        }
+
+        private void tryImportPng(string filePath)
+        {
+            lock (GameBase.lockObj)
+            {
+                string sheetName = Path.GetFileNameWithoutExtension(filePath);
+                string outputFile = PathMod.HardMod(String.Format(GraphicsManager.TILE_PATTERN, sheetName));
+
+                //load into tilesets
+                using (BaseSheet tileset = BaseSheet.Import(filePath))
+                {
+                    List<BaseSheet[]> tileList = new List<BaseSheet[]>();
+                    tileList.Add(new BaseSheet[] { tileset });
+                    ImportHelper.SaveTileSheet(tileList, outputFile, GraphicsManager.TileSize);
+                }
+
+                GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+                GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+                DevDataManager.ClearCaches();
+            }
         }
 
         private void DoClearLayer()
@@ -384,8 +396,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private static bool comparePaths(string path1, string path2)
         {
-            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\'),
-                Path.GetFullPath(path2).TrimEnd('\\'),
+            return String.Compare(Path.GetFullPath(path1).TrimEnd('\\').TrimEnd('/'),
+                Path.GetFullPath(path2).TrimEnd('\\').TrimEnd('/'),
                 StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 

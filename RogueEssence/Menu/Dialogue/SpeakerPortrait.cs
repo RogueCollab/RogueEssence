@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            PortraitSheet portrait = GraphicsManager.GetPortrait(Speaker);
+            PortraitSheet portrait = GraphicsManager.GetPortrait(Speaker.ToCharID());
 
             Loc drawLoc = Loc + offset;
 

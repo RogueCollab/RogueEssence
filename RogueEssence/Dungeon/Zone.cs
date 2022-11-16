@@ -22,6 +22,7 @@ namespace RogueEssence.Dungeon
         public bool MoneyRestrict;
         public int BagRestrict;
         public int BagSize;
+        public bool Persistent;
 
         //we want to be able to load and save maps in both ground and dungeon mode
         //we want to be able to create new maps and save them to a file
@@ -38,7 +39,7 @@ namespace RogueEssence.Dungeon
 
         public int MapCount { get { return maps.Count; } }
 
-        public int ID { get; private set; }
+        public string ID { get; private set; }
         public SegLoc CurrentMapID { get; private set; }
         public Map CurrentMap { get; private set; }
 
@@ -47,12 +48,14 @@ namespace RogueEssence.Dungeon
 
         public List<MapStatus> CarryOver;
 
+        public int MapsLoaded;
+
         /// <summary>
         /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
         /// </summary>
         private Dictionary<LuaEngine.EZoneCallbacks, ScriptEvent> scriptEvents;
 
-        public Zone(ulong seed, int zoneIndex)
+        public Zone(ulong seed, string zoneIndex)
         {
             DiagManager.Instance.LogInfo("Zone Seed: " + seed);
             rand = new ReRandom(seed);
@@ -87,7 +90,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < (int)LuaEngine.EZoneCallbacks.Invalid; ii++)
             {
                 LuaEngine.EZoneCallbacks ev = (LuaEngine.EZoneCallbacks)ii;
-                string assetName = "zone_" + this.ID;
+                string assetName = this.ID;
                 string callback = LuaEngine.MakeZoneScriptCallbackName(assetName, ev);
                 if (!LuaEngine.Instance.DoesFunctionExists(callback))
                     continue;
@@ -222,7 +225,7 @@ namespace RogueEssence.Dungeon
                 ulong[] doubleSeed = totalNoise.GetTwoUInt64((ulong)id.Segment);
                 ulong structSeed = doubleSeed[0];
                 DiagManager.Instance.LogInfo("Struct Seed: " + structSeed);
-                INoise structNoise = new ReNoise(doubleSeed[1]);
+                INoise structNoise = new ReNoise(structSeed);
                 INoise idNoise = new ReNoise(doubleSeed[1]);
 
                 //load the struct context if it isn't present yet
@@ -244,7 +247,10 @@ namespace RogueEssence.Dungeon
                 }
                 ZoneGenContext zoneContext = structureContexts[id.Segment];
                 zoneContext.CurrentID = id.ID;
-                zoneContext.Seed = idNoise.GetUInt64((ulong)id.ID);
+                ulong finalSeed = (ulong)id.ID;
+                finalSeed <<= 32;
+                finalSeed |= (ulong)MapsLoaded;
+                zoneContext.Seed = idNoise.GetUInt64(finalSeed);
 
                 //TODO: remove the need for this explicit cast
                 //make a parameterized version of zonestructure and then make zonestructure itself put in basemapgencontext as the parameter
@@ -255,20 +261,31 @@ namespace RogueEssence.Dungeon
                         IGenContext context = Segments[id.Segment].GetMap(zoneContext);
                         Map map = ((BaseMapGenContext)context).Map;
 
-                        //uncomment this to cache the state of every map after its generation.  it's not nice on memory though...
-                        //maps.Add(id, map);
+                        if (Persistent)
+                            maps.Add(id, map);
+                        else
+                            MapsLoaded++;
                         return map;
                     }
                     catch (Exception ex)
                     {
                         DiagManager.Instance.LogError(ex);
                         DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii+1));
-                        zoneContext.Seed = structNoise.GetUInt64((ulong)(id.ID + ii));
+                        ulong subSeed = (ulong)id.ID;
+                        subSeed <<= 32;
+                        subSeed |= (ulong)(MapsLoaded + ii);
+                        zoneContext.Seed = structNoise.GetUInt64(subSeed);
                     }
                 }
+
+                DiagManager.Instance.LogInfo(String.Format("Falling back to an empty map!"));
+                Map bak = new Map();
+                bak.CreateNew(10, 10);
+                return bak;
             }
             return maps[id];
         }
+
         public GroundMap GetGround(SegLoc id)
         {
             return DataManager.Instance.GetGround(GroundMaps[id.ID]);
@@ -282,10 +299,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnInit()
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             DiagManager.Instance.LogInfo("Zone.OnInit(): Initializing the zone..");
-            if (ZoneManager.Instance.CurrentZoneID >= 0)
+            if (!String.IsNullOrEmpty(ZoneManager.Instance.CurrentZoneID))
                 LuaEngine.Instance.RunZoneScript(assetName);
 
             LoadScriptEvents();
@@ -303,7 +320,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnEnterSegment(bool rescuing)
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.EnterSegment, this, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
@@ -314,7 +331,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnExitSegment(GameProgress.ResultType result, bool rescuing)
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.ExitSegment, this, result, rescuing, CurrentMapID.Segment, CurrentMapID.ID));
@@ -325,7 +342,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> OnRescued(string name, SOSMail mail)
         {
-            string assetName = "zone_" + ZoneManager.Instance.CurrentZoneID;
+            string assetName = ZoneManager.Instance.CurrentZoneID;
 
             //Do script event
             yield return CoroutineManager.Instance.StartCoroutine(RunScriptEvent(LuaEngine.EZoneCallbacks.Rescued, this, name, mail));
@@ -344,10 +361,10 @@ namespace RogueEssence.Dungeon
         {
             exitMap();
 
-            string assetName = "zone_" + ID;
+            string assetName = ID;
             DiagManager.Instance.LogInfo(String.Format("Zone.~Zone(): Finalizing {0}..", assetName));
 
-            if (ID > -1)
+            if (!String.IsNullOrEmpty(ID))
                 LuaEngine.Instance.CleanZoneScript(assetName);
         }
     }

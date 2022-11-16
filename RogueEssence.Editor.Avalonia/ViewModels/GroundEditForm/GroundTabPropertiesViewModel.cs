@@ -17,7 +17,7 @@ namespace RogueEssence.Dev.ViewModels
         public GroundTabPropertiesViewModel()
         {
             ScrollEdges = new ObservableCollection<string>();
-            for (int ii = 0; ii <= (int)Map.ScrollEdge.Clamp; ii++)
+            for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
 
             BG = new ClassBoxViewModel(new StringConv(typeof(IBackgroundSprite), new object[0]));
@@ -103,20 +103,17 @@ namespace RogueEssence.Dev.ViewModels
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
-            DataEditForm frmData = new DataEditForm();
+            DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, null, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, type);
 
-            frmData.SelectedOKEvent += () =>
+            frmData.SelectedOKEvent += async () =>
             {
                 element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0]);
                 op(element);
-                frmData.Close();
-            };
-            frmData.SelectedCancelEvent += () =>
-            {
-                frmData.Close();
+                return true;
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -142,7 +139,7 @@ namespace RogueEssence.Dev.ViewModels
             tmv.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
             tmv.LoadTile(element);
 
-            tmv.SelectedOKEvent += () =>
+            tmv.SelectedOKEvent += async () =>
             {
                 element = tmv.GetTile();
                 op(element);

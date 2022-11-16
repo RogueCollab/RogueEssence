@@ -1,17 +1,21 @@
 ﻿using System;
+using Newtonsoft.Json;
 using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
     [Serializable]
     public struct MonsterID
     {
-        public int Species;
+        [JsonConverter(typeof(MonsterConverter))]
+        public string Species;
         public int Form;
-        public int Skin;
+        [JsonConverter(typeof(SkinConverter))]
+        public string Skin;
         public Gender Gender;
 
-        public MonsterID(int species, int form, int skin, Gender gender)
+        public MonsterID(string species, int form, string skin, Gender gender)
         {
             Species = species;
             Form = form;
@@ -19,11 +23,11 @@ namespace RogueEssence.Dungeon
             Gender = gender;
         }
 
-        public static readonly MonsterID Invalid = new MonsterID(-1, -1, -1, Gender.Unknown);
+        public static readonly MonsterID Invalid = new MonsterID("", -1, "", Gender.Unknown);
 
         public bool IsValid()
         {
-            return (Species > -1);
+            return !String.IsNullOrEmpty(Species);
         }
 
         public override bool Equals(object obj)
@@ -58,6 +62,13 @@ namespace RogueEssence.Dungeon
         public static bool operator !=(MonsterID value1, MonsterID value2)
         {
             return !(value1 == value2);
+        }
+
+        public Content.CharID ToCharID()
+        {
+            int mon = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(Species).SortOrder;
+            int skin = DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(Skin).SortOrder;
+            return new Content.CharID(mon, Form, skin, (int)Gender);
         }
     }
 }

@@ -4,6 +4,10 @@ using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Determines the total amount of money that will be spawned on the whole floor.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MoneySpawnStep<T> : GenStep<T> where T : BaseMapGenContext
     {

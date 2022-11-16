@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -41,8 +42,8 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            int itemIndex = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.ID;
-            if (itemIndex > -1)
+            string itemIndex = DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.ID;
+            if (!String.IsNullOrEmpty(itemIndex))
                 Text.SetText(RogueEssence.Text.FormatKey("MENU_HELD_ITEM", DataManager.Instance.Save.ActiveTeam.Players[CurrentChoice].EquippedItem.GetDisplayName()));
             else
                 Text.SetText(RogueEssence.Text.FormatKey("MENU_HELD_NO_ITEM"));

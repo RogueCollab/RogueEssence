@@ -197,7 +197,7 @@ namespace RogueEssence.Dev.ViewModels
         public void SelectEntity(GroundEntity ent)
         {
             if (ent != null)
-                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundSelectUndo());
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundEntityStateUndo(0));
 
             GroundEditScene.Instance.SelectedEntity = ent;
             EntBrowser.SelectEntity(ent);
@@ -247,6 +247,7 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
+    //TODO: retain selection consistency when undoing/redoing?
     public class GroundSelectUndo : Undoable
     {
         private Loc oldEntIdx;

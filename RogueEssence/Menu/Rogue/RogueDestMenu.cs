@@ -10,40 +10,44 @@ namespace RogueEssence.Menu
 {
     public class RogueDestMenu : MultiPageMenu
     {
+        private static int defaultChoice;
+
         private const int SLOTS_PER_PAGE = 12;
 
         DungeonSummary summaryMenu;
-        private List<int> dungeonIndices;
+        private List<string> dungeonIndices;
         private SeedSummary infoMenu;
         private ulong? seed;
 
         public RogueDestMenu()
         {
-            dungeonIndices = new List<int>();
+            dungeonIndices = new List<string>();
 
-            for (int ii = 0; ii < DataManager.Instance.DataIndices[DataManager.DataType.Zone].Count; ii++)
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetOrderedKeys(true))
             {
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[ii] as ZoneEntrySummary;
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(key) as ZoneEntrySummary;
                 if (!DiagManager.Instance.DevMode)
                 {
-                    if (DataManager.Instance.Save.DungeonUnlocks[ii] == GameProgress.UnlockState.None)
+                    if (DataManager.Instance.Save.GetDungeonUnlock(key) == GameProgress.UnlockState.None)
                         continue;
                     if (summary == null)
                         continue;
                     if (summary.Rogue != RogueStatus.AllTransfer)
                         continue;
                 }
-                dungeonIndices.Add(ii);
+                dungeonIndices.Add(key);
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(dungeonIndices[MathUtils.Rand.Next(dungeonIndices.Count)]); }));
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
-                int zone = dungeonIndices[ii];
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Entries[zone] as ZoneEntrySummary;
+                string zone = dungeonIndices[ii];
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zone) as ZoneEntrySummary;
                 flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
             }
+
+            int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
             int totalSlots = SLOTS_PER_PAGE;
@@ -55,19 +59,23 @@ namespace RogueEssence.Menu
             infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             UpdateExtraInfo("");
 
-            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, 0, 0, totalSlots, false, -1);
+            int startPage = actualChoice / SLOTS_PER_PAGE;
+            int startIndex = actualChoice % SLOTS_PER_PAGE;
+
+            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, startIndex, startPage, totalSlots, false, -1);
         }
 
         protected override void ChoiceChanged()
         {
+            defaultChoice = CurrentChoiceTotal;
             int choice = CurrentChoiceTotal - 1;
             if (choice > -1)
             {
                 summaryMenu.Visible = true;
                 bool isComplete = false;
                 if (DataManager.Instance.Save != null)
-                    isComplete = DataManager.Instance.Save.DungeonUnlocks[dungeonIndices[choice]] == GameProgress.UnlockState.Completed;
-                summaryMenu.SetDungeon(dungeonIndices[choice], isComplete);
+                    isComplete = DataManager.Instance.Save.GetDungeonUnlock(dungeonIndices[choice]) == GameProgress.UnlockState.Completed;
+                summaryMenu.SetDungeon(dungeonIndices[choice], isComplete, false);
             }
             else
                 summaryMenu.Visible = false;
@@ -86,7 +94,7 @@ namespace RogueEssence.Menu
             infoMenu.Draw(spriteBatch);
         }
 
-        private void choose(int choice)
+        private void choose(string choice)
         {
             MenuManager.Instance.AddMenu(new RogueTeamInputMenu(choice, seed), false);
         }

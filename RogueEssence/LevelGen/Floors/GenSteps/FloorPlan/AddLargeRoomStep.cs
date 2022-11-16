@@ -4,16 +4,34 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Adds large rooms to the grid plan.
+    /// This is done by choosing an area that contains at least one eligible room, and no ineligible rooms.
+    /// The step then bulldozes the area and places the new room in it.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class AddLargeRoomStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
     {
-        //just combine simple squares for now
-        public SpawnList<LargeRoom<T>> GiantRooms;
+        /// <summary>
+        /// The amount of rooms to place.
+        /// </summary>
         public RandRange RoomAmount;
 
-        public ComponentCollection RoomComponents { get; set; }
+        /// <summary>
+        /// The types of rooms to place.
+        /// </summary>
+        public SpawnList<LargeRoom<T>> GiantRooms;
 
+        /// <summary>
+        /// Determines which rooms are eligible to be replaced with the new room.
+        /// </summary>
         public List<BaseRoomFilter> Filters { get; set; }
+
+        /// <summary>
+        /// Components that the newly added room will be labeled with.
+        /// </summary>
+        public ComponentCollection RoomComponents { get; set; }
 
         public AddLargeRoomStep()
             : base()
@@ -144,7 +162,7 @@ namespace RogueEssence.LevelGen
             return true;
         }
 
-        private List<List<LocRay4>> findHallSets(GridPlan floorPlan, Rect rect, List<LocRay4> raysOut)
+        private List<List<LocRay4>> findHallSets(GridPlan gridPlan, Rect rect, List<LocRay4> raysOut)
         {
             bool[] raysCovered = new bool[raysOut.Count];
 
@@ -154,26 +172,23 @@ namespace RogueEssence.LevelGen
             {
                 List<int> returnList = new List<int>();
 
-                Loc loc = new Loc(nodeIndex % floorPlan.GridWidth, nodeIndex / floorPlan.GridWidth);
-                int roomIndex = floorPlan.GetRoomIndex(loc);
+                Loc loc = new Loc(nodeIndex % gridPlan.GridWidth, nodeIndex / gridPlan.GridWidth);
+                int roomIndex = gridPlan.GetRoomIndex(loc);
                 for (int dd = 0; dd < DirExt.DIR4_COUNT; dd++)
                 {
                     Dir4 dir = (Dir4)dd;
                     Loc destLoc = loc + dir.GetLoc();
-                    //check against outside floor bound
-                    if (!Collision.InBounds(floorPlan.GridWidth, floorPlan.GridHeight, destLoc))
-                        continue;
                     //check against inside rect bound
-                    if (Collision.InBounds(rect, destLoc))
+                    if (gridPlan.InBounds(rect, destLoc))
                         continue;
                     //check against a valid room
-                    int destRoom = floorPlan.GetRoomIndex(destLoc);
+                    int destRoom = gridPlan.GetRoomIndex(destLoc);
                     if (destRoom == roomIndex)
-                        returnList.Add(destLoc.Y * floorPlan.GridWidth + destLoc.X);
+                        returnList.Add(destLoc.Y * gridPlan.GridWidth + destLoc.X);
                     else if (destRoom > -1)
                     {
-                        if (floorPlan.GetHall(new LocRay4(loc, dir)) != null)
-                            returnList.Add(destLoc.Y * floorPlan.GridWidth + destLoc.X);
+                        if (gridPlan.GetHall(new LocRay4(loc, dir)) != null)
+                            returnList.Add(destLoc.Y * gridPlan.GridWidth + destLoc.X);
                     }
                 }
 
@@ -189,10 +204,10 @@ namespace RogueEssence.LevelGen
                 Loc startLoc = raysOut[ii].Traverse(1);
                 List<LocRay4> set = new List<LocRay4>();
 
-                Graph.TraverseBreadthFirst(startLoc.Y * floorPlan.GridWidth + startLoc.X,
+                Graph.TraverseBreadthFirst(startLoc.Y * gridPlan.GridWidth + startLoc.X,
                     (int nodeIndex, int distance) =>
                     {
-                        Loc fillLoc = new Loc(nodeIndex % floorPlan.GridWidth, nodeIndex / floorPlan.GridWidth);
+                        Loc fillLoc = new Loc(nodeIndex % gridPlan.GridWidth, nodeIndex / gridPlan.GridWidth);
                         for (int nn = 0; nn < raysOut.Count; nn++)
                         {
                             if (raysOut[nn].Traverse(1) == fillLoc)

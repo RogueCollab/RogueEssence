@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
@@ -7,6 +8,8 @@ namespace RogueEssence.LevelGen
     public class GenPriority<T> : IGenPriority where T : IGenStep
     {
         public Priority Priority { get; set; }
+
+        [SubGroup]
         public T Item;
 
         public GenPriority() { }

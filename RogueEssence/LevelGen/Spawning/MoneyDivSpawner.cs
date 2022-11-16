@@ -4,6 +4,10 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Divides a given amount of money into a specified number of pickups.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MoneyDivSpawner<T> : IStepSpawner<T, MoneySpawn> 
         where T : ISpawningGenContext<MoneySpawn>
@@ -11,6 +15,9 @@ namespace RogueEssence.LevelGen
         //amounts cannot be over this % greater or less than the base value
         const int DIV_DIFF = 50;
 
+        /// <summary>
+        /// The number of pickups to split the total sum of money into.
+        /// </summary>
         public RandRange DivAmount;
 
         public MoneyDivSpawner() { }

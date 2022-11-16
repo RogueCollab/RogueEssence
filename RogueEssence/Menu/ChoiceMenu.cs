@@ -8,22 +8,22 @@ namespace RogueEssence.Menu
 {
     public abstract class ChoiceMenu : InteractableMenu
     {
-        protected const int CURSOR_FLASH_TIME = 24;
-
         public List<IMenuElement> NonChoices;
         public List<IChoosable> Choices;
 
-        public ulong PrevTick;
-        public abstract Loc PickerPos { get; }
+        //TODO: add this into the non-choices list?
+        protected MenuCursor cursor;
 
         public ChoiceMenu()
         {
+            cursor = new MenuCursor(this);
             NonChoices = new List<IMenuElement>();
             Choices = new List<IChoosable>();
         }
 
         public override IEnumerable<IMenuElement> GetElements()
         {
+            yield return cursor;
             foreach (IChoosable choice in Choices)
                 yield return choice;
             foreach (IMenuElement nonChoice in NonChoices)
@@ -36,11 +36,6 @@ namespace RogueEssence.Menu
             if (!Visible)
                 return;
             base.Draw(spriteBatch);
-
-            //draw cursor
-            if (((GraphicsManager.TotalFrameTick - PrevTick) / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0 || Inactive)
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(PickerPos.X, PickerPos.Y), 0, 0);
-
         }
     }
 }
