@@ -13,6 +13,7 @@ namespace RogueEssence.Menu
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+        
         public MenuText Title;
         public MenuDivider Div;
 
@@ -57,9 +58,16 @@ namespace RogueEssence.Menu
             this.allowAssembly = allowAssembly;
 
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
-
+            
+            MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
+            BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
+            
+            int totalLearnsetPages = (int) Math.Ceiling((double) formEntry.LevelSkills.Count / MemberLearnsetMenu.SLOTS_PER_PAGE);
+            int totalOtherMemberPages = 3;
+            int totalPages = totalLearnsetPages + totalOtherMemberPages;
+            
             //TODO: align the page text properly
-            Title = new MenuText(Text.FormatKey("MENU_STATS_TITLE") +" (2/3)", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Title = new MenuText(Text.FormatKey("MENU_STATS_TITLE") + $" (2/{totalPages})", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using RogueEssence.Content;
@@ -12,6 +13,7 @@ namespace RogueEssence.Menu
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+        
         public MenuText Title;
         public MenuDivider Div;
 
@@ -34,14 +36,18 @@ namespace RogueEssence.Menu
             this.allowAssembly = allowAssembly;
 
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
-
-            //TODO: align the page text properly
-            Title = new MenuText(Text.FormatKey("MENU_TEAM_INFO") +" (3/3)", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
-
-
+            
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
+            
+            int totalLearnsetPages = (int) Math.Ceiling((double) formEntry.LevelSkills.Count / MemberLearnsetMenu.SLOTS_PER_PAGE);
+            int totalOtherMemberPages = 3;
+            int totalPages = totalLearnsetPages + totalOtherMemberPages;
+
+            //TODO: align the page text properly
+            Title = new MenuText(Text.FormatKey("MENU_TEAM_INFO") + $" (3/{totalPages})", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
+
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
                 new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
 
@@ -138,7 +144,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot, assembly, allowAssembly));
             }
             else if (IsInputting(input, Dir8.Up))
             {
