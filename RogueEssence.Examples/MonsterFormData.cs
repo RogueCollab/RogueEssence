@@ -22,9 +22,9 @@ namespace RogueEssence.Examples
             return 1;
         }
 
-        public override int RollSkin(IRandom rand)
+        public override string RollSkin(IRandom rand)
         {
-            return 0;
+            return DataManager.DataType.Skin.ToString() + "_" + 0.ToString();
         }
 
         public override int GetPersonalityType(int discriminator)
@@ -37,9 +37,9 @@ namespace RogueEssence.Examples
             return Gender.Genderless;
         }
 
-        public override int RollIntrinsic(IRandom rand, int bounds)
+        public override string RollIntrinsic(IRandom rand, int bounds)
         {
-            return 0;
+            return DataManager.DataType.Intrinsic.ToString() + "_" + 0.ToString();
         }
 
 
@@ -52,10 +52,10 @@ namespace RogueEssence.Examples
         }
 
 
-        public override List<int> GetPossibleSkins()
+        public override List<string> GetPossibleSkins()
         {
-            List<int> colors = new List<int>();
-            colors.Add(0);
+            List<string> colors = new List<string>();
+            colors.Add(DataManager.DataType.Skin.ToString() + "_" + 0.ToString());
             return colors;
         }
 
@@ -82,7 +82,7 @@ namespace RogueEssence.Examples
             return 1;
         }
 
-        public override bool CanLearnSkill(int skill)
+        public override bool CanLearnSkill(string skill)
         {
             return false;
         }

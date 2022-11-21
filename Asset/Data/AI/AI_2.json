@@ -1,0 +1,15 @@
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "RogueEssence.Data.AITactic, RogueEssence",
+"Name": {
+"DefaultText": "AI 2",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"ID": "AI_2",
+"Assignable": false,
+"Plans": []
+}
+}

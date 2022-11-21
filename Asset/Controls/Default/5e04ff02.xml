@@ -1,0 +1,23 @@
+<Config>
+  <Name>Xbox</Name>
+  <ActionButtons>
+    <ActionButton>A</ActionButton>
+    <ActionButton>B</ActionButton>
+    <ActionButton>A</ActionButton>
+    <ActionButton>B</ActionButton>
+    <ActionButton>LeftTrigger</ActionButton>
+    <ActionButton>X</ActionButton>
+    <ActionButton>RightTrigger</ActionButton>
+    <ActionButton>Start</ActionButton>
+    <ActionButton>Back</ActionButton>
+    <ActionButton>Y</ActionButton>
+    <ActionButton>LeftShoulder</ActionButton>
+    <ActionButton>RightShoulder</ActionButton>
+    <ActionButton>X</ActionButton>
+    <ActionButton>Y</ActionButton>
+    <ActionButton>A</ActionButton>
+    <ActionButton>B</ActionButton>
+    <ActionButton>X</ActionButton>
+    <ActionButton>LeftTrigger</ActionButton>
+  </ActionButtons>
+</Config>

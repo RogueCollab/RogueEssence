@@ -17,6 +17,8 @@ using SDL2;
 using RogueEssence.Ground;
 using RogueElements;
 using System.IO;
+using System.Collections.Generic;
+using Newtonsoft.Json.Serialization;
 #endregion
 
 namespace RogueEssence.Examples
@@ -33,14 +35,16 @@ namespace RogueEssence.Examples
         static void Main()
         {
             InitDllMap();
+            //SetProcessDPIAware();
             //TODO: figure out how to set this switch in appconfig
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.SerializationGuard.AllowFileWrites", true);
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-            
+
             string[] args = Environment.GetCommandLineArgs();
-            PathMod.InitExePath(args[0]);
+            PathMod.InitPathMod(args[0], "origin");
             DiagManager.InitInstance();
+            Serializer.InitSettings(new SerializerContractResolver(), new DefaultSerializationBinder());
             DiagManager.Instance.CurSettings = DiagManager.Instance.LoadSettings();
 
             try
@@ -51,15 +55,20 @@ namespace RogueEssence.Examples
                 DiagManager.Instance.LogInfo(Versioning.GetDotNetInfo());
                 DiagManager.Instance.LogInfo("=========================================");
 
+
                 bool logInput = true;
                 GraphicsManager.AssetType convertAssets = GraphicsManager.AssetType.None;
                 DataManager.DataType convertIndices = DataManager.DataType.None;
                 DataManager.DataType reserializeIndices = DataManager.DataType.None;
                 string langArgs = "";
                 bool dev = false;
-                string mod = "";
-                bool buildMod = false;
+                string quest = "";
+                List<string> mod = new List<string>();
+                bool buildQuest = false;
+                bool loadModXml = true;
                 string playInputs = null;
+                bool dump = false;
+                bool preConvert = false;
                 for (int ii = 1; ii < args.Length; ii++)
                 {
                     if (args[ii] == "-dev")
@@ -86,14 +95,30 @@ namespace RogueEssence.Examples
                         PathMod.DEV_PATH = Path.GetFullPath(args[ii + 1]);
                         ii++;
                     }
+                    else if (args[ii] == "-quest")
+                    {
+                        quest = args[ii + 1];
+                        loadModXml = false;
+                        ii++;
+                    }
                     else if (args[ii] == "-mod")
                     {
-                        mod = args[ii + 1];
-                        ii++;
+                        int jj = 1;
+                        while (args.Length > ii + jj)
+                        {
+                            if (args[ii + jj].StartsWith("-"))
+                                break;
+                            else
+                                mod.Add(args[ii + jj]);
+                            jj++;
+                        }
+                        loadModXml = false;
+                        ii += jj - 1;
                     }
                     else if (args[ii] == "-build")
                     {
-                        buildMod = true;
+                        buildQuest = true;
+                        loadModXml = false;
                         ii++;
                     }
                     else if (args[ii] == "-convert")
@@ -116,6 +141,7 @@ namespace RogueEssence.Examples
                                 break;
                             jj++;
                         }
+                        loadModXml = false;
                         ii += jj - 1;
                     }
                     else if (args[ii] == "-index")
@@ -138,6 +164,7 @@ namespace RogueEssence.Examples
                                 break;
                             jj++;
                         }
+                        loadModXml = false;
                         ii += jj - 1;
                     }
                     else if (args[ii] == "-reserialize")
@@ -160,24 +187,102 @@ namespace RogueEssence.Examples
                                 break;
                             jj++;
                         }
+                        loadModXml = false;
                         ii += jj - 1;
+                    }
+                    else if (args[ii] == "-dump")
+                    {
+                        dump = true;
+                        ii++;
+                    }
+                    else if (args[ii] == "-preconvert")
+                    {
+                        preConvert = true;
+                        ii++;
                     }
                 }
 
+                DiagManager.Instance.SetupGamepad();
                 GraphicsManager.InitParams();
 
                 DiagManager.Instance.DevMode = dev;
 
-                if (mod != "")
+                ModHeader newQuest = ModHeader.Invalid;
+                ModHeader[] newMods = new ModHeader[0] { };
+                if (quest != "")
                 {
-                    if (Directory.Exists(Path.Combine(PathMod.MODS_PATH, mod)))
+                    ModHeader header = PathMod.GetModDetails(Path.Combine(PathMod.MODS_PATH, quest));
+                    if (header.IsValid())
                     {
-                        PathMod.Mod = PathMod.MODS_FOLDER + mod;
-
-                        DiagManager.Instance.LogInfo(String.Format("Loaded mod \"{0}\".", mod));
+                        newQuest = header;
+                        DiagManager.Instance.LogInfo(String.Format("Queued quest for loading: \"{0}\".", quest));
                     }
                     else
-                        DiagManager.Instance.LogInfo(String.Format("Cannot find mod \"{0}\" in {1}. Falling back to base game.", mod, PathMod.MODS_PATH));
+                        DiagManager.Instance.LogInfo(String.Format("Cannot find quest \"{0}\" in {1}. Falling back to base game.", quest, PathMod.MODS_PATH));
+                }
+
+                if (mod.Count > 0)
+                {
+                    List<ModHeader> workingMods = new List<ModHeader>();
+                    for (int ii = 0; ii < mod.Count; ii++)
+                    {
+                        ModHeader header = PathMod.GetModDetails(Path.Combine(PathMod.MODS_PATH, mod[ii]));
+                        if (header.IsValid())
+                        {
+                            workingMods.Add(header);
+                            DiagManager.Instance.LogInfo(String.Format("Queued mod for loading: \"{0}\".", String.Join(", ", mod[ii])));
+                        }
+                        else
+                        {
+                            DiagManager.Instance.LogInfo(String.Format("Cannot find mod \"{0}\" in {1}. It will be ignored.", mod, PathMod.MODS_PATH));
+                            mod.RemoveAt(ii);
+                            ii--;
+                        }
+                    }
+                    newMods = workingMods.ToArray();
+                }
+
+                if (loadModXml)
+                    (newQuest, newMods) = DiagManager.Instance.LoadModSettings();
+
+                List<int> loadOrder = new List<int>();
+                List<(ModRelationship, List<ModHeader>)> loadErrors = new List<(ModRelationship, List<ModHeader>)>();
+                PathMod.ValidateModLoad(newQuest, newMods, loadOrder, loadErrors);
+                PathMod.SetMods(newQuest, newMods, loadOrder);
+                if (loadErrors.Count > 0)
+                {
+                    List<string> errorMsgs = new List<string>();
+                    foreach ((ModRelationship, List<ModHeader>) loadError in loadErrors)
+                    {
+                        List<ModHeader> involved = loadError.Item2;
+                        switch (loadError.Item1)
+                        {
+                            case ModRelationship.Incompatible:
+                                {
+                                    errorMsgs.Add(String.Format("{0} is incompatible with {1}.", involved[0].Namespace, involved[1].Namespace));
+                                    errorMsgs.Add("\n");
+                                }
+                                break;
+                            case ModRelationship.DependsOn:
+                                {
+                                    errorMsgs.Add(String.Format("{0} depends on missing mod {1}.", involved[0].Namespace, involved[1].Namespace));
+                                    errorMsgs.Add("\n");
+                                }
+                                break;
+                            case ModRelationship.LoadBefore:
+                            case ModRelationship.LoadAfter:
+                                {
+                                    List<string> cycle = new List<string>();
+                                    foreach (ModHeader header in involved)
+                                        cycle.Add(header.Namespace);
+                                    errorMsgs.Add(String.Format("Load-order loop: {0}.", String.Join(", ", cycle.ToArray())));
+                                    errorMsgs.Add("\n");
+                                }
+                                break;
+                        }
+                    }
+                    DiagManager.Instance.LogError(new Exception("Errors detected in mod load:\n" + String.Join("", errorMsgs.ToArray())));
+                    DiagManager.Instance.LogInfo(String.Format("The game will continue execution with mods loaded, but order will be broken!"));
                 }
 
 
@@ -197,18 +302,17 @@ namespace RogueEssence.Examples
                 }
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language == "" ? "" : DiagManager.Instance.CurSettings.Language.ToString());
 
-                if (buildMod)
+                if (buildQuest)
                 {
-                    if (PathMod.Mod == "")
+                    if (!PathMod.Quest.IsValid())
                     {
-                        DiagManager.Instance.LogInfo("No mod specified to build.");
+                        DiagManager.Instance.LogInfo("No quest specified to build.");
                         return;
                     }
-                    RogueEssence.Dev.DevHelper.MergeMod(mod);
+                    RogueEssence.Dev.DevHelper.MergeQuest(quest);
 
                     return;
                 }
-
 
                 if (convertAssets != GraphicsManager.AssetType.None)
                 {
@@ -218,16 +322,45 @@ namespace RogueEssence.Examples
                         GraphicsManager.InitSystem(game.GraphicsDevice);
                         GraphicsManager.RunConversions(convertAssets);
                     }
+                    return;
+                }
 
+                if (preConvert)
+                {
+                    using (GameBase game = new GameBase())
+                    {
+                        GraphicsManager.InitSystem(game.GraphicsDevice);
+                        GraphicsManager.RebuildIndices(GraphicsManager.AssetType.All);
+                    }
+
+                    LuaEngine.InitInstance();
+                    DataManager.InitInstance();
+                    DataManager.Instance.LoadConversions();
+                    RogueEssence.Dev.DevHelper.PrepareAssetConversion();
                     return;
                 }
 
                 if (reserializeIndices != DataManager.DataType.None)
                 {
+                    DiagManager.Instance.LogInfo("Beginning Reserialization");
+
+                    using (GameBase game = new GameBase())
+                    {
+                        GraphicsManager.InitSystem(game.GraphicsDevice);
+                        GraphicsManager.RebuildIndices(GraphicsManager.AssetType.All);
+                    }
+
+                    //we need the datamanager for this, but only while data is hardcoded
+                    //TODO: remove when data is no longer hardcoded
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
+                    DataManager.Instance.LoadConversions();
 
                     DataManager.InitDataDirs(PathMod.ModPath(""));
+                    RogueEssence.Dev.DevHelper.ConvertAssetNames();
+
+                    //load conversions a second time because it mightve changed
+                    DataManager.Instance.LoadConversions();
                     RogueEssence.Dev.DevHelper.ReserializeBase();
                     DiagManager.Instance.LogInfo("Reserializing main data");
                     RogueEssence.Dev.DevHelper.Reserialize(reserializeIndices);
@@ -240,35 +373,73 @@ namespace RogueEssence.Examples
                     DiagManager.Instance.LogInfo("Reserializing indices");
                     RogueEssence.Dev.DevHelper.RunIndexing(reserializeIndices);
 
-                    DataManager.Instance.UniversalData = (TypeDict<BaseData>)RogueEssence.Dev.DevHelper.LoadWithLegacySupport(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), typeof(TypeDict<BaseData>));
+                    DataManager.InitInstance();
+                    DataManager.Instance.LoadConversions();
+
+                    //TODO: Created v0.5.20, delete on v1.1
+                    if (File.Exists(PathMod.HardMod(DataManager.MISC_PATH + "Index.bin")))
+                        DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"));
+                    else
+                        DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT));
                     RogueEssence.Dev.DevHelper.RunExtraIndexing(reserializeIndices);
+                    return;
+                }
+
+                //For exporting to data
+                if (dump)
+                {
+                    LuaEngine.InitInstance();
+
+                    DataManager.InitInstance();
+                    DataManager.Instance.LoadConversions();
+                    DataInfo.AddEditorOps();
+                    DataInfo.AddSystemFX();
+                    DataInfo.AddUniversalEvent();
+                    DataInfo.AddUniversalData();
+
+                    DataInfo.AddElementData();
+                    DataInfo.AddGrowthGroupData();
+                    DataInfo.AddSkillGroupData();
+                    DataInfo.AddEmoteData();
+                    DataInfo.AddAIData();
+                    DataInfo.AddTileData();
+                    DataInfo.AddTerrainData();
+                    DataInfo.AddRankData();
+                    DataInfo.AddSkinData();
+                    DataInfo.AddMonsterData();
+                    DataInfo.AddSkillData();
+                    DataInfo.AddIntrinsicData();
+                    DataInfo.AddStatusData();
+                    DataInfo.AddMapStatusData();
+
+                    DataInfo.AddItemData();
+                    DataInfo.AddMapData();
+                    DataInfo.AddGroundData();
+                    DataInfo.AddZoneData();
+
+                    DataManager.DataType reserializeType = DataManager.DataType.None;
+                    reserializeType |= DataManager.DataType.Zone;
+                    reserializeType |= DataManager.DataType.Item;
+                    RogueEssence.Dev.DevHelper.RunIndexing(DataManager.DataType.All);
+
+                    RogueEssence.Dev.DevHelper.RunExtraIndexing(DataManager.DataType.All);
                     return;
                 }
 
                 if (convertIndices != DataManager.DataType.None)
                 {
+                    //we need the datamanager for this, but only while data is hardcoded
+                    //TODO: remove when data is no longer hardcoded
                     LuaEngine.InitInstance();
                     DataManager.InitInstance();
+                    DiagManager.Instance.LogInfo("Reserializing indices");
                     DataManager.InitDataDirs(PathMod.ModPath(""));
                     RogueEssence.Dev.DevHelper.RunIndexing(convertIndices);
 
-                    DataManager.Instance.UniversalData = (TypeDict<BaseData>)RogueEssence.Dev.DevHelper.LoadWithLegacySupport(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), typeof(TypeDict<BaseData>));
+                    DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT));
                     RogueEssence.Dev.DevHelper.RunExtraIndexing(convertIndices);
                     return;
                 }
-
-
-                if (langArgs != "" && DiagManager.Instance.CurSettings.Language == "")
-                {
-                    if (langArgs.Length > 0)
-                    {
-                        DiagManager.Instance.CurSettings.Language = langArgs.ToLower();
-                        Text.SetCultureCode(langArgs.ToLower());
-                    }
-                    else
-                        DiagManager.Instance.CurSettings.Language = "en";
-                }
-                Text.SetCultureCode(DiagManager.Instance.CurSettings.Language == "" ? "" : DiagManager.Instance.CurSettings.Language.ToString());
 
 
                 logInput = false; //this feature is disabled for now...
@@ -278,7 +449,7 @@ namespace RogueEssence.Examples
                 if (DiagManager.Instance.DevMode)
                 {
                     InitDataEditor();
-                    AppBuilder builder = Dev.Program.BuildAvaloniaApp();
+                    AppBuilder builder = RogueEssence.Dev.Program.BuildAvaloniaApp();
                     builder.StartWithClassicDesktopLifetime(args);
                 }
                 else
@@ -288,15 +459,16 @@ namespace RogueEssence.Examples
                         game.Run();
                 }
 
-
             }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex);
-                throw ex;
+                throw;
             }
         }
 
+        // We used to have to map dlls manually, but FNA has a provisional solution now.
+        // Keep these comments for clarity
         public static void InitDllMap()
         {
             //CoreDllMap.Init();
@@ -315,7 +487,7 @@ namespace RogueEssence.Examples
 
             DataEditor.AddEditor(new MoneySpawnZoneStepEditor());
 
-            //DataEditor.AddConverter(new AutoTileBaseConverter());
+            DataEditor.AddEditor(new AutoTileBaseEditor());
             DataEditor.AddEditor(new DataFolderEditor());
             DataEditor.AddEditor(new AnimDataEditor());
             DataEditor.AddEditor(new SoundEditor());
@@ -362,6 +534,8 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new ColumnAnimEditor());
             DataEditor.AddEditor(new StaticAnimEditor());
             DataEditor.AddEditor(new TypeDictEditor());
+            DataEditor.AddEditor(new CategorySpawnEditor());
+            DataEditor.AddEditor(new DictSpawnEditor());
             DataEditor.AddEditor(new RangeDictEditor(false, true));
             DataEditor.AddEditor(new SpawnListEditor());
             DataEditor.AddEditor(new SpawnRangeListEditor(false, true));
@@ -376,13 +550,16 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new FlagTypeEditor());
             DataEditor.AddEditor(new ColorEditor());
             DataEditor.AddEditor(new TypeEditor());
+            DataEditor.AddEditor(new AliasDataEditor());
 
             DataEditor.AddEditor(new HashSetEditor<int>());
+
             DataEditor.AddEditor(new ArrayEditor());
             DataEditor.AddEditor(new DictionaryEditor());
             DataEditor.AddEditor(new NoDupeListEditor());
             DataEditor.AddEditor(new ListEditor());
             DataEditor.AddEditor(new EnumEditor());
+            DataEditor.AddEditor(new GuidEditor());
             DataEditor.AddEditor(new StringEditor());
             DataEditor.AddEditor(new DoubleEditor());
             DataEditor.AddEditor(new SingleEditor());

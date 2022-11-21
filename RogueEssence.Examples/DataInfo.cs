@@ -16,16 +16,16 @@ namespace RogueEssence.Examples
     {
         public static void AddUniversalEvent()
         {
-            File.Delete(PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin"));
+            File.Delete(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
             ActiveEffect universalEvent = new ActiveEffect();
-            DataManager.SaveData(PathMod.ModPath(DataManager.DATA_PATH + "Universal.bin"), universalEvent);
+            DataManager.SaveData(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), universalEvent);
         }
 
         public static void AddUniversalData()
         {
-            File.Delete(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"));
+            File.Delete(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT));
             TypeDict<BaseData> baseData = new TypeDict<BaseData>();
-            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"), baseData);
+            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), baseData);
         }
 
         public static void AddEditorOps()
@@ -38,51 +38,51 @@ namespace RogueEssence.Examples
             DeleteData(PathMod.ModPath(DataManager.FX_PATH));
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Heal.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Heal" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "RestoreCharge.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "RestoreCharge" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "LoseCharge.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "LoseCharge" + DataManager.DATA_EXT), fx);
             }
             {
                 EmoteFX fx = new EmoteFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "NoCharge.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "NoCharge" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Element.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Element" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Intrinsic.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Intrinsic" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "SendHome.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "SendHome" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "ItemLost.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "ItemLost" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Warp.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Warp" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Knockback.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Knockback" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Jump.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Jump" + DataManager.DATA_EXT), fx);
             }
             {
                 BattleFX fx = new BattleFX();
-                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Throw.fx"), fx);
+                DataManager.SaveData(PathMod.ModPath(DataManager.FX_PATH + "Throw" + DataManager.DATA_EXT), fx);
             }
         }
 
@@ -104,7 +104,7 @@ namespace RogueEssence.Examples
             for (int ii = 0; ii < 3; ii++)
             {
                 ElementData element = new ElementData(new LocalText(String.Format("{0} {1}", DataManager.DataType.Element.ToString(), ii)), (char)(ii + 0xE080));
-                DataManager.SaveData(ii, DataManager.DataType.Element.ToString(), element);
+                DataManager.SaveData(DataManager.DataType.Element.ToString() + "_" + ii.ToString(), DataManager.DataType.Element.ToString(), element);
             }
         }
 
@@ -117,7 +117,7 @@ namespace RogueEssence.Examples
                 for (int jj = 0; jj < 100; jj++)
                     exp.Add(jj * 10);
                 GrowthData skillGroup = new GrowthData(new LocalText(String.Format("{0} {1}", DataManager.DataType.GrowthGroup.ToString(), ii)), exp.ToArray());
-                DataManager.SaveData(ii, DataManager.DataType.GrowthGroup.ToString(), skillGroup);
+                DataManager.SaveData(DataManager.DataType.GrowthGroup.ToString() + "_" + ii.ToString(), DataManager.DataType.GrowthGroup.ToString(), skillGroup);
             }
         }
 
@@ -127,7 +127,7 @@ namespace RogueEssence.Examples
             for (int ii = 0; ii < 3; ii++)
             {
                 SkillGroupData skillGroup = new SkillGroupData(new LocalText(String.Format("{0} {1}", DataManager.DataType.SkillGroup.ToString(), ii)));
-                DataManager.SaveData(ii, DataManager.DataType.SkillGroup.ToString(), skillGroup);
+                DataManager.SaveData(DataManager.DataType.SkillGroup.ToString() + "_" + ii.ToString(), DataManager.DataType.SkillGroup.ToString(), skillGroup);
             }
         }
 
@@ -137,7 +137,7 @@ namespace RogueEssence.Examples
             for (int ii = 0; ii < 3; ii++)
             {
                 EmoteData emote = new EmoteData(new LocalText(String.Format("{0} {1}", DataManager.DataType.Emote.ToString(), ii)), new AnimData(), 0);
-                DataManager.SaveData(ii, DataManager.DataType.Emote.ToString(), emote);
+                DataManager.SaveData(DataManager.DataType.Emote.ToString() + "_" + ii.ToString(), DataManager.DataType.Emote.ToString(), emote);
             }
         }
 
@@ -149,8 +149,8 @@ namespace RogueEssence.Examples
             {
                 AITactic tactic = new AITactic();
                 tactic.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.AI.ToString(), ii));
-                tactic.ID = 0;
-                DataManager.SaveData(ii, DataManager.DataType.AI.ToString(), tactic);
+                tactic.ID = DataManager.DataType.AI.ToString() + "_" + ii.ToString();
+                DataManager.SaveData(DataManager.DataType.AI.ToString() + "_" + ii.ToString(), DataManager.DataType.AI.ToString(), tactic);
             }
         }
 
@@ -162,7 +162,7 @@ namespace RogueEssence.Examples
             {
                 TileData tile = new TileData();
                 tile.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.Tile.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.Tile.ToString(), tile);
+                DataManager.SaveData(DataManager.DataType.Tile.ToString() + "_" + ii.ToString(), DataManager.DataType.Tile.ToString(), tile);
             }
         }
 
@@ -174,7 +174,7 @@ namespace RogueEssence.Examples
             {
                 TerrainData tile = new TerrainData();
                 tile.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.Terrain.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.Terrain.ToString(), tile);
+                DataManager.SaveData(DataManager.DataType.Rank.ToString() + "_" + ii.ToString(), DataManager.DataType.Terrain.ToString(), tile);
             }
         }
 
@@ -183,8 +183,8 @@ namespace RogueEssence.Examples
             DataInfo.DeleteIndexedData(DataManager.DataType.Rank.ToString());
             for (int ii = 0; ii < 3; ii++)
             {
-                RankData data = new RankData(new LocalText(String.Format("{0} {1}", DataManager.DataType.Terrain.ToString(), ii)), 16, 10 * ii);
-                DataManager.SaveData(ii, DataManager.DataType.Rank.ToString(), data);
+                RankData data = new RankData(new LocalText(String.Format("{0} {1}", DataManager.DataType.Terrain.ToString(), ii)), 16, 10 * ii, DataManager.DataType.Rank.ToString() + "_" + (ii+1).ToString());
+                DataManager.SaveData(DataManager.DataType.Rank.ToString() + "_" + ii.ToString(), DataManager.DataType.Rank.ToString(), data);
             }
         }
 
@@ -195,7 +195,7 @@ namespace RogueEssence.Examples
             for (int ii = 0; ii < 3; ii++)
             {
                 SkinData data = new SkinData(new LocalText(String.Format("{0} {1}", DataManager.DataType.Skin.ToString(), ii)), '\0');
-                DataManager.SaveData(ii, DataManager.DataType.Skin.ToString(), data);
+                DataManager.SaveData(DataManager.DataType.Skin.ToString() + "_" + ii.ToString(), DataManager.DataType.Skin.ToString(), data);
             }
         }
 
@@ -208,7 +208,7 @@ namespace RogueEssence.Examples
             {
                 SkillData skill = new SkillData();
                 skill.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.Skill.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.Skill.ToString(), skill);
+                DataManager.SaveData(DataManager.DataType.Skill.ToString() + "_" + ii.ToString(), DataManager.DataType.Skill.ToString(), skill);
             }
         }
 
@@ -220,7 +220,7 @@ namespace RogueEssence.Examples
             {
                 IntrinsicData intrinsic = new IntrinsicData();
                 intrinsic.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.Intrinsic.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.Intrinsic.ToString(), intrinsic);
+                DataManager.SaveData(DataManager.DataType.Intrinsic.ToString() + "_" + ii.ToString(), DataManager.DataType.Intrinsic.ToString(), intrinsic);
             }
         }
 
@@ -236,7 +236,7 @@ namespace RogueEssence.Examples
                 formEntry.FormName = new LocalText("Test Form");
                 formEntry.LevelSkills.Add(new LevelUpSkill());
                 entry.Forms.Add(formEntry);
-                DataManager.SaveData(ii, DataManager.DataType.Monster.ToString(), entry);
+                DataManager.SaveData(DataManager.DataType.Monster.ToString() + "_" + ii.ToString(), DataManager.DataType.Monster.ToString(), entry);
             }
         }
 
@@ -248,7 +248,7 @@ namespace RogueEssence.Examples
             {
                 StatusData status = new StatusData();
                 status.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.Status.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.Status.ToString(), status);
+                DataManager.SaveData(DataManager.DataType.Status.ToString() + "_" + ii.ToString(), DataManager.DataType.Status.ToString(), status);
             }
         }
 
@@ -260,7 +260,7 @@ namespace RogueEssence.Examples
             {
                 MapStatusData status = new MapStatusData();
                 status.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.MapStatus.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.MapStatus.ToString(), status);
+                DataManager.SaveData(DataManager.DataType.MapStatus.ToString() + "_" + ii.ToString(), DataManager.DataType.MapStatus.ToString(), status);
             }
         }
 
@@ -271,7 +271,7 @@ namespace RogueEssence.Examples
             {
                 ItemData item = new ItemData();
                 item.Name = new LocalText(String.Format("{0} {1}", DataManager.DataType.Item.ToString(), ii));
-                DataManager.SaveData(ii, DataManager.DataType.Item.ToString(), item);
+                DataManager.SaveData(DataManager.DataType.Item.ToString() + "_" + ii.ToString(), DataManager.DataType.Item.ToString(), item);
             }
         }
 
@@ -315,7 +315,7 @@ namespace RogueEssence.Examples
             for (int ii = 0; ii < 2; ii++)
             {
                 ZoneData zone = GetZoneData(ii);
-                DataManager.SaveData(ii, DataManager.DataType.Zone.ToString(), zone);
+                DataManager.SaveData(DataManager.DataType.Zone.ToString() + "_" + ii.ToString(), DataManager.DataType.Zone.ToString(), zone);
             }
         }
 
@@ -376,11 +376,11 @@ namespace RogueEssence.Examples
                             for (int jj = 0; jj < height; jj++)
                             {
                                 if (level[jj][ii] == '#')
-                                    drawStep.Tiles[ii][jj] = new Tile(2);
+                                    drawStep.Tiles[ii][jj] = new Tile(DataManager.DataType.Terrain.ToString() + "_" + 2.ToString());
                                 else if (level[jj][ii] == '~')
-                                    drawStep.Tiles[ii][jj] = new Tile(3);
+                                    drawStep.Tiles[ii][jj] = new Tile(DataManager.DataType.Terrain.ToString() + "_" + 3.ToString());
                                 else
-                                    drawStep.Tiles[ii][jj] = new Tile(0);
+                                    drawStep.Tiles[ii][jj] = new Tile(DataManager.DataType.Terrain.ToString() + "_" + 0.ToString());
                             }
                         }
 
@@ -396,16 +396,16 @@ namespace RogueEssence.Examples
                         }
                         {
                             List<(MapGenExit, Loc)> items = new List<(MapGenExit, Loc)>();
-                            items.Add((new MapGenExit(new EffectTile(1, true)), new Loc(22, 12)));
+                            items.Add((new MapGenExit(new EffectTile(DataManager.DataType.Tile.ToString() + "_" + 1.ToString(), true)), new Loc(22, 12)));
                             AddSpecificSpawn(layout, items, new Priority(2));
                         }
 
                         MapTextureStep<StairsMapGenContext> texturePostProc = new MapTextureStep<StairsMapGenContext>();
-                        texturePostProc.BlockTileset = curTileIndex;
+                        texturePostProc.BlockTileset = DataManager.DataType.AutoTile.ToString() + "_" + curTileIndex.ToString();
                         curTileIndex++;
-                        texturePostProc.GroundTileset = curTileIndex;
+                        texturePostProc.GroundTileset = DataManager.DataType.AutoTile.ToString() + "_" + curTileIndex.ToString();
                         curTileIndex++;
-                        texturePostProc.WaterTileset = curTileIndex;
+                        texturePostProc.WaterTileset = DataManager.DataType.AutoTile.ToString() + "_" + curTileIndex.ToString();
                         curTileIndex++;
                         layout.GenSteps.Add(5, texturePostProc);
 

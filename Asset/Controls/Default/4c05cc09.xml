@@ -1,0 +1,23 @@
+<Config>
+  <Name>PlayStation 4</Name>
+  <ActionButtons>
+    <ActionButton>A</ActionButton>
+    <ActionButton>B</ActionButton>
+    <ActionButton>A</ActionButton>
+    <ActionButton>B</ActionButton>
+    <ActionButton>LeftShoulder</ActionButton>
+    <ActionButton>X</ActionButton>
+    <ActionButton>RightTrigger</ActionButton>
+    <ActionButton>Start</ActionButton>
+    <ActionButton>Back</ActionButton>
+    <ActionButton>Y</ActionButton>
+    <ActionButton>LeftStick</ActionButton>
+    <ActionButton>RightStick</ActionButton>
+    <ActionButton>X</ActionButton>
+    <ActionButton>Y</ActionButton>
+    <ActionButton>A</ActionButton>
+    <ActionButton>B</ActionButton>
+    <ActionButton>X</ActionButton>
+    <ActionButton>LeftTrigger</ActionButton>
+  </ActionButtons>
+</Config>

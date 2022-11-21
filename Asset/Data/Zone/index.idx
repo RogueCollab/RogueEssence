@@ -1,1 +1,48 @@
-﻿{"Object":{"$type":"RogueEssence.Data.EntryDataIndex, RogueEssence","Entries":[{"$type":"RogueEssence.Data.ZoneEntrySummary, RogueEssence","NoEXP":false,"Level":-1,"LevelCap":false,"TeamRestrict":false,"TeamSize":-1,"MoneyRestrict":false,"BagRestrict":-1,"BagSize":-1,"Rescues":0,"CountedFloors":0,"Rogue":0,"Name":{"DefaultText":"Debug Zone","LocalTexts":{}},"Released":false,"Comment":""},{"$type":"RogueEssence.Data.ZoneEntrySummary, RogueEssence","NoEXP":false,"Level":-1,"LevelCap":false,"TeamRestrict":false,"TeamSize":-1,"MoneyRestrict":false,"BagRestrict":-1,"BagSize":-1,"Rescues":0,"CountedFloors":0,"Rogue":0,"Name":{"DefaultText":"Main Zone","LocalTexts":{}},"Released":false,"Comment":""}]},"Version":"1.0.0.0"}
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib],[RogueEssence.Data.EntrySummary, RogueEssence]], System.Private.CoreLib",
+"Zone_0": {
+"$type": "RogueEssence.Data.ZoneEntrySummary, RogueEssence",
+"NoEXP": false,
+"Level": -1,
+"LevelCap": false,
+"TeamRestrict": false,
+"TeamSize": -1,
+"MoneyRestrict": false,
+"BagRestrict": -1,
+"BagSize": -1,
+"Rescues": 0,
+"CountedFloors": 0,
+"Rogue": 0,
+"Name": {
+"DefaultText": "Debug Zone",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+},
+"Zone_1": {
+"$type": "RogueEssence.Data.ZoneEntrySummary, RogueEssence",
+"NoEXP": false,
+"Level": -1,
+"LevelCap": false,
+"TeamRestrict": false,
+"TeamSize": -1,
+"MoneyRestrict": false,
+"BagRestrict": -1,
+"BagSize": -1,
+"Rescues": 0,
+"CountedFloors": 0,
+"Rogue": 0,
+"Name": {
+"DefaultText": "Main Zone",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+}
+}
+}

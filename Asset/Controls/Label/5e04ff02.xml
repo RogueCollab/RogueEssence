@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <Button name="DPadUp">\uF00B</Button>
+  <Button name="DPadDown">\uF00C</Button>
+  <Button name="DPadLeft">\uF00D</Button>
+  <Button name="DPadRight">\uF00E</Button>
+  <Button name="Start">\uF004</Button>
+  <Button name="Back">\uF005</Button>
+  <Button name="LeftStick">\uF015</Button>
+  <Button name="RightStick">\uF016</Button>
+  <Button name="LeftShoulder">\uF01A</Button>
+  <Button name="RightShoulder">\uF01B</Button>
+  <Button name="A">\uF000</Button>
+  <Button name="B">\uF001</Button>
+  <Button name="X">\uF002</Button>
+  <Button name="Y">\uF003</Button>
+  <Button name="LeftTrigger">\uF018</Button>
+  <Button name="RightTrigger">\uF019</Button>
+  <Button name="BigButton">\uF02E</Button>
+</root>

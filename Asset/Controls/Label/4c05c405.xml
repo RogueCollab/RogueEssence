@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <Button name="A">\uF01F</Button>
+  <Button name="B">\uF020</Button>
+  <Button name="X">\uF021</Button>
+  <Button name="Y">\uF022</Button>
+  <Button name="BigButton">\uF02F</Button>
+  <Button name="TouchPadEXT">\uF028</Button>
+  <Button name="Start">\uF01C</Button>
+  <Button name="Back">\uF014</Button>
+  <Button name="LeftStick">\uF015</Button>
+  <Button name="RightStick">\uF016</Button>
+  <Button name="LeftShoulder">\uF023</Button>
+  <Button name="RightShoulder">\uF024</Button>
+  <Button name="LeftTrigger">\uF025</Button>
+  <Button name="RightTrigger">\uF026</Button>
+</root>

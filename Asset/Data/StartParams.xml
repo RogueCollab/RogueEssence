@@ -2,9 +2,9 @@
 <root>
 <StartChars>
   <StartChar>
-    <Species>1</Species>
+    <Species>Monster_1</Species>
     <Form>0</Form>
-    <Skin>0</Skin>
+    <Skin>Skin_0</Skin>
     <Gender>Unknown</Gender>
 	<Name/>
   </StartChar>
@@ -15,10 +15,23 @@
 <StartLevel>1</StartLevel>
 <MaxLevel>100</MaxLevel>
 <StartPersonality>0</StartPersonality>
+<DefaultZone>Zone_0</DefaultZone>
+<DefaultRank>Rank_0</DefaultRank>
+<DefaultSkin>Skin_0</DefaultSkin>
+<DefaultAI>AI_0</DefaultAI>
+<DefaultTile>Tile_0</DefaultTile>
+<DefaultElement>Element_0</DefaultElement>
+<DefaultMapStatus>MapStatus_0</DefaultMapStatus>
+<DefaultIntrinsic>Intrinsic_0</DefaultIntrinsic>
+<DefaultSkill>Skill_0</DefaultSkill>
+<DefaultMonster>Monster_0</DefaultMonster>
 <StartMap>
-  <Zone>1</Zone>
+  <Zone>Zone_0</Zone>
   <Segment>-1</Segment>
   <ID>1</ID>
   <Entry>0</Entry>
 </StartMap>
+<GenFloor>Terrain_0</GenFloor>
+<GenWall>Terrain_1</GenWall>
+<GenUnbreakable>Terrain_2</GenUnbreakable>
 </root>

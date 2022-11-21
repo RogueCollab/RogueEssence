@@ -1,0 +1,45 @@
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "RogueEssence.Data.MonsterData, RogueEssence",
+"Name": {
+"DefaultText": "Monster 0",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"Title": {
+"DefaultText": "",
+"LocalTexts": {}
+},
+"IndexNum": 0,
+"EXPTable": "",
+"SkillGroup1": "",
+"SkillGroup2": "",
+"JoinRate": 0,
+"PromoteFrom": "",
+"Promotions": [],
+"Forms": [
+{
+"$type": "RogueEssence.Examples.MonsterFormData, RogueEssence.Examples",
+"Released": false,
+"FormName": {
+"DefaultText": "Test Form",
+"LocalTexts": {}
+},
+"Temporary": false,
+"Element1": "",
+"Element2": "",
+"Intrinsic1": "",
+"Intrinsic2": "",
+"Intrinsic3": "",
+"LevelSkills": [
+{
+"Level": 0,
+"Skill": ""
+}
+]
+}
+]
+}
+}

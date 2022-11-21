@@ -1,0 +1,14 @@
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "RogueEssence.Data.RankData, RogueEssence",
+"Name": {
+"DefaultText": "Terrain 2",
+"LocalTexts": {}
+},
+"Comment": "",
+"BagSize": 16,
+"FameToNext": 20,
+"Next": "Rank_3"
+}
+}

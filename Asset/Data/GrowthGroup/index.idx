@@ -1,1 +1,33 @@
-﻿{"Object":{"$type":"RogueEssence.Data.EntryDataIndex, RogueEssence","Entries":[{"Name":{"DefaultText":"GrowthGroup 0","LocalTexts":{}},"Released":true,"Comment":""},{"Name":{"DefaultText":"GrowthGroup 1","LocalTexts":{}},"Released":true,"Comment":""},{"Name":{"DefaultText":"GrowthGroup 2","LocalTexts":{}},"Released":true,"Comment":""}]},"Version":"1.0.0.0"}
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib],[RogueEssence.Data.EntrySummary, RogueEssence]], System.Private.CoreLib",
+"GrowthGroup_0": {
+"Name": {
+"DefaultText": "GrowthGroup 0",
+"LocalTexts": {}
+},
+"Released": true,
+"Comment": "",
+"SortOrder": 0
+},
+"GrowthGroup_1": {
+"Name": {
+"DefaultText": "GrowthGroup 1",
+"LocalTexts": {}
+},
+"Released": true,
+"Comment": "",
+"SortOrder": 0
+},
+"GrowthGroup_2": {
+"Name": {
+"DefaultText": "GrowthGroup 2",
+"LocalTexts": {}
+},
+"Released": true,
+"Comment": "",
+"SortOrder": 0
+}
+}
+}

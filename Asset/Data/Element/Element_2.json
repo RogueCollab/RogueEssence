@@ -1,0 +1,12 @@
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "RogueEssence.Data.ElementData, RogueEssence",
+"Name": {
+"DefaultText": "Element 2",
+"LocalTexts": {}
+},
+"Comment": "",
+"Symbol": ""
+}
+}

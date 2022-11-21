@@ -8,6 +8,7 @@
 <Emotions>
   <Emotion>
     <Name>Normal</Name>
+    <Random>true</Random>
   </Emotion>
 </Emotions>
 <SOSEmotion>0</SOSEmotion>

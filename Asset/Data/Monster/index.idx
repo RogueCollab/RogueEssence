@@ -1,1 +1,66 @@
-﻿{"Object":{"$type":"RogueEssence.Data.EntryDataIndex, RogueEssence","Entries":[{"$type":"RogueEssence.Data.MonsterEntrySummary, RogueEssence","Forms":[{"Name":{"DefaultText":"Test Form","LocalTexts":{}},"Released":false,"Temporary":false}],"Name":{"DefaultText":"Monster 0","LocalTexts":{}},"Released":false,"Comment":""},{"$type":"RogueEssence.Data.MonsterEntrySummary, RogueEssence","Forms":[{"Name":{"DefaultText":"Test Form","LocalTexts":{}},"Released":false,"Temporary":false}],"Name":{"DefaultText":"Monster 1","LocalTexts":{}},"Released":false,"Comment":""},{"$type":"RogueEssence.Data.MonsterEntrySummary, RogueEssence","Forms":[{"Name":{"DefaultText":"Test Form","LocalTexts":{}},"Released":false,"Temporary":false}],"Name":{"DefaultText":"Monster 2","LocalTexts":{}},"Released":false,"Comment":""}]},"Version":"1.0.0.0"}
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib],[RogueEssence.Data.EntrySummary, RogueEssence]], System.Private.CoreLib",
+"Monster_0": {
+"$type": "RogueEssence.Data.MonsterEntrySummary, RogueEssence",
+"Forms": [
+{
+"Name": {
+"DefaultText": "Test Form",
+"LocalTexts": {}
+},
+"Released": false,
+"Temporary": false
+}
+],
+"Name": {
+"DefaultText": "Monster 0",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+},
+"Monster_1": {
+"$type": "RogueEssence.Data.MonsterEntrySummary, RogueEssence",
+"Forms": [
+{
+"Name": {
+"DefaultText": "Test Form",
+"LocalTexts": {}
+},
+"Released": false,
+"Temporary": false
+}
+],
+"Name": {
+"DefaultText": "Monster 1",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+},
+"Monster_2": {
+"$type": "RogueEssence.Data.MonsterEntrySummary, RogueEssence",
+"Forms": [
+{
+"Name": {
+"DefaultText": "Test Form",
+"LocalTexts": {}
+},
+"Released": false,
+"Temporary": false
+}
+],
+"Name": {
+"DefaultText": "Monster 2",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+}
+}
+}

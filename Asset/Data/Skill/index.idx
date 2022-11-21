@@ -1,1 +1,33 @@
-﻿{"Object":{"$type":"RogueEssence.Data.EntryDataIndex, RogueEssence","Entries":[{"Name":{"DefaultText":"Skill 0","LocalTexts":{}},"Released":false,"Comment":""},{"Name":{"DefaultText":"Skill 1","LocalTexts":{}},"Released":false,"Comment":""},{"Name":{"DefaultText":"Skill 2","LocalTexts":{}},"Released":false,"Comment":""}]},"Version":"1.0.0.0"}
+﻿{
+"Version": "1.0.0.0",
+"Object": {
+"$type": "System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib],[RogueEssence.Data.EntrySummary, RogueEssence]], System.Private.CoreLib",
+"Skill_0": {
+"Name": {
+"DefaultText": "Skill 0",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+},
+"Skill_1": {
+"Name": {
+"DefaultText": "Skill 1",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+},
+"Skill_2": {
+"Name": {
+"DefaultText": "Skill 2",
+"LocalTexts": {}
+},
+"Released": false,
+"Comment": "",
+"SortOrder": 0
+}
+}
+}
