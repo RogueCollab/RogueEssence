@@ -343,7 +343,7 @@ namespace RogueEssence.Script
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), message,
-                        m_curspeakerSnd, false, m_curcenter_h, m_curcenter_v,
+                        m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                         () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
@@ -1119,10 +1119,10 @@ namespace RogueEssence.Script
 
                 Action cancelAction = null;
                 if (mappedCancel != null)
-                    cancelAction = () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = (long)cancelChoice; DataManager.Instance.LogUIPlay((int)(long)cancelChoice); };
+                    cancelAction = () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = (int)(long)cancelChoice; DataManager.Instance.LogUIPlay((int)(long)cancelChoice); };
 
                 //Make a choice menu, and check if we display a speaker or not
-                m_curchoice = new CustomMultiPageMenu(new RogueElements.Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, null);
+                m_curchoice = new CustomMultiPageMenu(new RogueElements.Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, cancelAction);
             }
             catch (Exception e)
             {

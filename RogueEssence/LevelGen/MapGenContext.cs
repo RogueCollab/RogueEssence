@@ -228,7 +228,6 @@ namespace RogueEssence.LevelGen
             if (!Map.GetLocInMapBounds(ref loc))
                 throw new ArgumentException("Loc out of bounds.");
             Tile tile = Map.GetTile(loc);
-            tile.Data = ((Tile)RoomTerrain).Data.Copy();
             tile.Effect = new EffectTile(item);
         }
 
@@ -411,6 +410,8 @@ namespace RogueEssence.LevelGen
         {
             if (!Map.GetLocInMapBounds(ref loc))
                 throw new ArgumentException("Loc out of bounds.");
+            Tile tile = Map.GetTile(loc);
+            tile.Data = ((Tile)RoomTerrain).Data.Copy();
             MapGenEntrance newItem = new MapGenEntrance(loc, item.Dir);
             GenEntrances.Add(newItem);
         }
@@ -418,6 +419,8 @@ namespace RogueEssence.LevelGen
         {
             if (!Map.GetLocInMapBounds(ref loc))
                 throw new ArgumentException("Loc out of bounds.");
+            Tile tile = Map.GetTile(loc);
+            tile.Data = ((Tile)RoomTerrain).Data.Copy();
             MapGenExit newItem = new MapGenExit(loc, new EffectTile(item.Tile));
             GenExits.Add(newItem);
         }
