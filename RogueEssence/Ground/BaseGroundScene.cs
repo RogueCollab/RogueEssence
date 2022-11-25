@@ -78,10 +78,23 @@ namespace RogueEssence.Ground
             }
 
             if (ZoneManager.Instance.CurrentGround.EdgeView == Map.ScrollEdge.Clamp)
-                focusedLoc = new Loc(Math.Max((int)(GraphicsManager.ScreenWidth / scale / 2), Math.Min(focusedLoc.X,
-                    ZoneManager.Instance.CurrentGround.GroundWidth - (int)(GraphicsManager.ScreenWidth / scale / 2))),
-                    Math.Max((int)(GraphicsManager.ScreenHeight / scale / 2), Math.Min(focusedLoc.Y,
-                    ZoneManager.Instance.CurrentGround.GroundHeight - (int)(GraphicsManager.ScreenHeight / scale / 2))));
+            {
+                int clampedX = focusedLoc.X;
+                int clampedY = focusedLoc.Y;
+                int screenPixelWidth = (int)(GraphicsManager.ScreenWidth / scale);
+                int screenPixelHeight = (int)(GraphicsManager.ScreenHeight / scale);
+
+                if (ZoneManager.Instance.CurrentGround.GroundWidth < screenPixelWidth) // center it
+                    clampedX = ZoneManager.Instance.CurrentGround.GroundWidth / 2;
+                else
+                    clampedX = Math.Max(screenPixelWidth / 2, Math.Min(clampedX, ZoneManager.Instance.CurrentGround.GroundWidth - screenPixelWidth / 2));
+
+                if (ZoneManager.Instance.CurrentGround.GroundHeight < screenPixelHeight)
+                    clampedY = ZoneManager.Instance.CurrentGround.GroundHeight / 2;
+                else
+                    clampedY = Math.Max(screenPixelHeight / 2, Math.Min(clampedY, ZoneManager.Instance.CurrentGround.GroundHeight - screenPixelHeight / 2));
+                focusedLoc = new Loc(clampedX, clampedY);
+            }
 
             ViewRect = new Rect((int)(focusedLoc.X - GraphicsManager.ScreenWidth / scale / 2), (int)(focusedLoc.Y - GraphicsManager.ScreenHeight / scale / 2),
                 (int)(GraphicsManager.ScreenWidth / scale), (int)(GraphicsManager.ScreenHeight / scale));

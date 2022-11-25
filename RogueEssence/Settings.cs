@@ -117,6 +117,8 @@ namespace RogueEssence
             ForbiddenKeys = new HashSet<Keys>();
             for (int ii = 0; ii < 24; ii++)
                 ForbiddenKeys.Add(Keys.F1 + ii);
+            for (int ii = 0; ii < 10; ii++)
+                ForbiddenKeys.Add(Keys.NumPad0 + ii);
             ForbiddenKeys.Add(Keys.LeftControl);
             ForbiddenKeys.Add(Keys.RightControl);
             ForbiddenKeys.Add(Keys.LeftAlt);
