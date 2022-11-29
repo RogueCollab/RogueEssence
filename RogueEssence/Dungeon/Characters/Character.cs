@@ -725,6 +725,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> RestoreHP(int hp, bool anim = true)
         {
+            if (Dead)
+                yield break;
+
             OnRestoreHP(ref hp);
 
             if (hp != 0)
