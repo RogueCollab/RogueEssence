@@ -2156,11 +2156,12 @@ namespace RogueEssence.Dungeon
                 default:
                     {
                         Loc seen = GetSightDims();
-                        List<Loc> tiles = new List<Loc>();
-                        for (int x = -seen.X; x <= seen.X; x++)
+                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen);
+                        sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
+                        for (int x = sightBounds.X; x < sightBounds.End.X; x++)
                         {
-                            for (int y = -seen.Y; y <= seen.Y; y++)
-                                lightOp(CharLoc.X + x, CharLoc.Y + y, 1f);
+                            for (int y = sightBounds.Y; y <= sightBounds.End.Y; y++)
+                                lightOp(x, y, 1f);
                         }
                         break;
                     }
@@ -2194,8 +2195,11 @@ namespace RogueEssence.Dungeon
                 }
 
                 Loc radius = GetSightDims();
+                Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius);
+                sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
+
                 //iterate through everyone in max sight range EXCEPT members of the same team
-                foreach (Character target in ZoneManager.Instance.CurrentMap.GetCharsInRect(Rect.FromPoints(CharLoc - radius, CharLoc + radius)))
+                foreach (Character target in ZoneManager.Instance.CurrentMap.GetCharsInRect(sightBounds))
                 {
                     if (target.MemberTeam == MemberTeam)
                         continue;
@@ -2274,6 +2278,7 @@ namespace RogueEssence.Dungeon
         {
             Loc seen = GetSightDims();
             Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
+            sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
             return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
         }

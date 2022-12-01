@@ -260,6 +260,21 @@ namespace RogueEssence.Dungeon
                 origin);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public Rect GetClampedSight(Rect rect)
+        {
+            if (EdgeView == ScrollEdge.Clamp)
+            {
+                Loc start = rect.Start;
+                rect.Start = new Loc(Math.Max(0, Math.Min(start.X, Width - rect.Width)), Math.Max(0, Math.Min(start.Y, Height - rect.Height)));
+                return rect;
+            }
+            return rect;
+        }
 
         /// <summary>
         /// Converts out of bounds coords to wrapped-around coords.
