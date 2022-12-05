@@ -144,7 +144,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot, assembly, allowAssembly, false));
             }
             else if (IsInputting(input, Dir8.Up))
             {

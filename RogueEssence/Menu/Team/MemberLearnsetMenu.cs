@@ -20,7 +20,7 @@ namespace RogueEssence.Menu
 
         SkillSummary summaryMenu;
 
-        public MemberLearnsetMenu(int teamSlot, bool assembly, bool allowAssembly)
+        public MemberLearnsetMenu(int teamSlot, bool assembly, bool allowAssembly, bool maxPage)
         {
             this.teamSlot = teamSlot;
             this.assembly = assembly;
@@ -40,7 +40,7 @@ namespace RogueEssence.Menu
                 SkillData skillEntry = DataManager.Instance.GetSkill(levelUpSkill.Skill);
 
                 MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
-                MenuText levelUpText = new MenuText(levelUpSkill.Level.ToString(),
+                MenuText levelUpText = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", levelUpSkill.Level),
                     new Loc(GraphicsManager.ScreenWidth - 72, 1), DirV.Up, DirH.Right, Color.White);
 
                 Skills.Add(skill);
@@ -54,59 +54,55 @@ namespace RogueEssence.Menu
                     VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Initialize(new Loc(16, 16), GraphicsManager.ScreenWidth - 32, "", choices, 0, 0, SLOTS_PER_PAGE);
+            Initialize(new Loc(16, 16), GraphicsManager.ScreenWidth - 32, "", choices, 0, maxPage ? (choices.Length - 1) : 0, SLOTS_PER_PAGE);
         }
 
         protected override void ChoiceChanged()
         {
-            Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET",
-                DataManager.Instance.Save.ActiveTeam.Players[teamSlot].GetDisplayName(true)));
+            Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET"));
             summaryMenu.SetSkill(Skills[CurrentChoiceTotal]);
             base.ChoiceChanged();
         }
         
         protected override void UpdateKeys(InputManager input)
         {
-            if (CurrentPage - 1 == -1 && IsInputting(input, Dir8.Left))
+            if (CurrentPage - 1 < 0 && IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(teamSlot, assembly, allowAssembly));
             }
-
-            else if (CurrentPage + 1 == TotalChoices.Length && IsInputting(input, Dir8.Right))
+            else if (CurrentPage + 1 >= TotalChoices.Length && IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(teamSlot, assembly, allowAssembly));
             }
-            
-            else if (CurrentChoice - 1 == -1 && IsInputting(input, Dir8.Up))
+            else if (CurrentChoice - 1 < 0 && IsInputting(input, Dir8.Up))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
                     int amtLimit = (!assembly) ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
                     if (teamSlot - 1 < 0)
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(amtLimit - 1, !assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(amtLimit - 1, !assembly, allowAssembly, false));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot - 1, assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot - 1, assembly, allowAssembly, false));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly));
+                    MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, false));
             }
-        
-            else if (CurrentChoice + 1 == SLOTS_PER_PAGE && IsInputting(input, Dir8.Down))
+            else if (CurrentChoice + 1 >= SLOTS_PER_PAGE && IsInputting(input, Dir8.Down))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
                     int amtLimit = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
                     if (teamSlot + 1 >= amtLimit)
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(0, !assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(0, !assembly, allowAssembly, false));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot + 1, assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot + 1, assembly, allowAssembly, false));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly));
+                    MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, false));
             }
 
             else
