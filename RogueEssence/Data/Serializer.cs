@@ -31,7 +31,6 @@ namespace RogueEssence.Data
                 SerializationBinder = binder,
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 TypeNameHandling = TypeNameHandling.Auto,
-                Formatting = Formatting.Indented,
             };
 
         }
@@ -129,7 +128,7 @@ namespace RogueEssence.Data
             StringWriter sw = new StringWriter(sb, CultureInfo.InvariantCulture);
             using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
             {
-                jsonWriter.Formatting = jsonSerializer.Formatting;
+                jsonWriter.Formatting = Formatting.Indented;
                 jsonWriter.Indentation = 0;
                 jsonWriter.IndentChar = '\t';
 
