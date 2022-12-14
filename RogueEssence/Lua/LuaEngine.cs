@@ -121,12 +121,13 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="callbackformat"></param>
         /// <param name="mapname"></param>
+        /// <param name="callback"></param>
         /// <returns></returns>
         public static string MakeMapScriptCallbackName(string mapname, EMapCallbacks callback)
         {
             if (callback < 0 && callback >= EMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeMapScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", MapCurrentScriptSym, callback.ToString());
+            return String.Format("{0}.{1}", mapname, callback.ToString());
         }
         #endregion
 
