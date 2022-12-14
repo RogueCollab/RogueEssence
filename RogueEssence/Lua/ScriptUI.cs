@@ -1066,7 +1066,8 @@ namespace RogueEssence.Script
                 }
                 else
                 {
-                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(message, m_curspeakerSnd, choices, mappedDefault.Value, mappedCancel.Value);
+                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(MonsterID.Invalid, null, new EmoteStyle(0),
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
