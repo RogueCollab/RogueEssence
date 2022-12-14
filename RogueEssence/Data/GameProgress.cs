@@ -909,9 +909,7 @@ namespace RogueEssence.Data
             ClearDefeatDest();
 
             //create a copy (from save and load) of the current state to ensure that no nonserialized variables linger
-            DataManager.Instance.SaveMainGameState();
-
-            GameState state = DataManager.Instance.LoadMainGameState(false);
+            GameState state = DataManager.Instance.CopyMainGameState();
 
             DataManager.Instance.SetProgress(state.Save);
             LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save);
@@ -919,7 +917,7 @@ namespace RogueEssence.Data
             LuaEngine.Instance.UpdateZoneInstance();
 
             //and load another copy to mark it with loss
-            state = DataManager.Instance.LoadMainGameState(false);
+            state = DataManager.Instance.CopyMainGameState();
             if (Stakes == DungeonStakes.Risk)
                 LossPenalty(state.Save);
             DataManager.Instance.SaveGameState(state);

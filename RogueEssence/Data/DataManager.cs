@@ -1863,7 +1863,7 @@ namespace RogueEssence.Data
             return null;
         }
 
-        public void SaveMainGameState()
+        public GameState CopyMainGameState()
         {
             GameState state = new GameState();
             state.Save = Save;
@@ -1872,7 +1872,29 @@ namespace RogueEssence.Data
             //notify script engine
             LuaEngine.Instance.SaveData(state.Save);
 
-            SaveGameState(state);
+            using (MemoryStream tempStream = new MemoryStream())
+            {
+                //saves scene, zone, and ground, if there will be one...
+                using (BinaryWriter writer = new BinaryWriter(tempStream))
+                {
+                    SaveGameState(writer, state);
+
+                    tempStream.Seek(0, SeekOrigin.Begin);
+                    //loads dungeon, zone, and ground, if there will be one...
+                    using (BinaryReader reader = new BinaryReader(tempStream))
+                        return ReadGameState(reader, false);
+                }
+            }
+        }
+
+        public void SaveMainGameState()
+        {
+            GameState state = new GameState();
+            state.Save = Save;
+            state.Zone = ZoneManager.Instance;
+
+            //notify script engine
+            LuaEngine.Instance.SaveData(state.Save);
         }
 
         public void SaveMainGameState(BinaryWriter writer)

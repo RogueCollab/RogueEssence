@@ -469,8 +469,14 @@ namespace RogueEssence.Dungeon
                 {
                     if (!character.Dead)
                     {
-                        Loc seenBounds = Character.GetSightDims();
-                        if (Collides(modifiedRect, new Rect(character.CharLoc - seenBounds, seenBounds * 2 + new Loc(1))))
+                        Loc seen = Character.GetSightDims();
+                        Rect sightBounds = new Rect(character.CharLoc - seen, seen * 2 + Loc.One);
+                        sightBounds = ZoneManager.Instance.CurrentMap.GetClampedSight(sightBounds);
+
+                        if (EdgeView == BaseMap.ScrollEdge.Clamp)
+                            return;
+
+                        if (Collides(modifiedRect, sightBounds))
                             UpdateExploration(character);
                     }
                 }
