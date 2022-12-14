@@ -753,7 +753,7 @@ namespace RogueEssence.Script
         {
             for (int ii = 0; ii < count; ii++)
             {
-                InvItem item = new InvItem(id, cursed);
+                InvItem item = new InvItem(id, cursed, 1);
                 item.HiddenValue = hiddenval;
                 DataManager.Instance.Save.ActiveTeam.StoreItems(new List<InvItem> { item });
             }
