@@ -964,7 +964,7 @@ namespace RogueEssence.Dungeon
         {
             foreach (var ev in LuaEngine.EnumerateDungeonFloorCallbackTypes())
             {
-                string cbackn = LuaEngine.MakeDungeonMapScriptCallbackName(AssetName, ev);
+                string cbackn = LuaEngine.MakeDungeonMapScriptCallbackName(LuaEngine.DungeonMapCurrentScriptSym, ev);
                 if (LuaEngine.Instance.DoesFunctionExists(cbackn))
                     ScriptEvents[ev] = new ScriptEvent(cbackn);
             }
