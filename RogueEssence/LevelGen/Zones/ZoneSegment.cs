@@ -213,8 +213,14 @@ namespace RogueEssence.LevelGen
         public abstract int FloorCount { get; }
         public abstract IEnumerable<int> GetFloorIDs();
 
-        //for now, post-processing must be handled here
+        /// <summary>
+        /// Map Generation steps that apply to multiple floors at a time.
+        /// </summary>
         public List<ZoneStep> ZoneSteps;
+
+        /// <summary>
+        /// Determines if the segment counts to the dungeon's total floor count.
+        /// </summary>
         public bool IsRelevant;
 
         public ZoneSegmentBase()
