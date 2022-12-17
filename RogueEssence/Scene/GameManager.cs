@@ -703,6 +703,7 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
             //no fade; the script handles that itself
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
+            DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
         }
 
 
