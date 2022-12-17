@@ -287,6 +287,9 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> PromptFloorItem()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                yield break;
+
             int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(ActiveTeam.Leader.CharLoc);
             if (itemSlot > -1)
             {

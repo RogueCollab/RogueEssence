@@ -270,8 +270,7 @@ namespace RogueEssence.Dungeon
 
                 if (IsPlayerLeaderTurn() && PendingLeaderAction != null)
                 {
-                    if (DataManager.Instance.CurrentReplay == null)
-                        yield return CoroutineManager.Instance.StartCoroutine(PendingLeaderAction);
+                    yield return CoroutineManager.Instance.StartCoroutine(PendingLeaderAction);
                     PendingLeaderAction = null;
                 }
                 else if (PendingDevEvent != null)
