@@ -1895,6 +1895,8 @@ namespace RogueEssence.Data
 
             //notify script engine
             LuaEngine.Instance.SaveData(state.Save);
+
+            SaveGameState(state);
         }
 
         public void SaveMainGameState(BinaryWriter writer)

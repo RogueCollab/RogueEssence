@@ -27,7 +27,11 @@ namespace RogueEssence.Menu
         {
             Data.ItemData entry = Data.DataManager.Instance.GetItem(item.ID);
             Description.SetAndFormatText(entry.Desc.ToLocal());
-            SalePrice.SetText(Text.FormatKey("MENU_ITEM_VALUE", Text.FormatKey("MONEY_AMOUNT", item.GetSellValue())));
+            if (entry.Price > 0)
+                SalePrice.SetText(Text.FormatKey("MENU_ITEM_VALUE", Text.FormatKey("MONEY_AMOUNT", item.GetSellValue())));
+            else
+                SalePrice.SetText("");
+
             if (entry.Rarity > 0)
             {
                 string rarityStr = "";

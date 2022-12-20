@@ -15,6 +15,7 @@ namespace RogueEssence.Menu
         bool allowAssembly;
 
         public MenuText Title;
+        public MenuText PageText;
         public MenuDivider Div;
 
         public SpeakerPortrait Portrait;
@@ -47,10 +48,10 @@ namespace RogueEssence.Menu
             
             int totalLearnsetPages = (int) Math.Ceiling((double) formEntry.LevelSkills.Count / MemberLearnsetMenu.SLOTS_PER_PAGE);
             int totalOtherMemberPages = 3;
-            int totalPages = totalLearnsetPages + totalOtherMemberPages; 
+            int totalPages = totalLearnsetPages + totalOtherMemberPages;
 
-            //TODO: align this text properly
-            Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES") + $" (1/{totalPages})", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES"), new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            PageText = new MenuText($"(1/{totalPages})", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
@@ -108,6 +109,7 @@ namespace RogueEssence.Menu
         public override IEnumerable<IMenuElement> GetElements()
         {
             yield return Title;
+            yield return PageText;
             yield return Div;
 
             yield return Portrait;

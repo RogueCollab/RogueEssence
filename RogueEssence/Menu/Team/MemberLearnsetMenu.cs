@@ -59,7 +59,8 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET"));
+            Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
+            Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET", player.GetDisplayName(true)));
             summaryMenu.SetSkill(Skills[CurrentChoiceTotal]);
             base.ChoiceChanged();
         }

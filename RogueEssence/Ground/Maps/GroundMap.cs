@@ -961,7 +961,7 @@ namespace RogueEssence.Ground
                 for (int ii = 0; ii < (int)LuaEngine.EMapCallbacks.Invalid; ii++)
                 {
                     LuaEngine.EMapCallbacks ev = (LuaEngine.EMapCallbacks)ii;
-                    string callback = LuaEngine.MakeMapScriptCallbackName(AssetName, ev);
+                    string callback = LuaEngine.MakeMapScriptCallbackName(LuaEngine.MapCurrentScriptSym, ev);
                     if (!LuaEngine.Instance.DoesFunctionExists(callback))
                         continue;
                     DiagManager.Instance.LogInfo(String.Format("GroundMap.LoadScriptEvents(): Added event {0} to map {1}!", ev.ToString(), AssetName));

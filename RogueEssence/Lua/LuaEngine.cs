@@ -178,7 +178,7 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EDungeonMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeDungeonMapScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", DungeonMapCurrentScriptSym, callback.ToString());
+            return String.Format("{0}.{1}", floorname, callback.ToString());
         }
 
         /// <summary>
