@@ -1475,7 +1475,7 @@ namespace RogueEssence.Dungeon
             }
             return false;
         }
-
+        
         public bool CanTeamSeeLoc(Team team, Loc loc)
         {
             foreach (Character player in team.Players)
@@ -1488,6 +1488,19 @@ namespace RogueEssence.Dungeon
             }
             return false;
         }
+        public bool CanTeamSeeCharLoc(Team team, Loc loc)
+        {
+            foreach (Character player in team.Players)
+            {
+                if (!player.Dead)
+                {
+                    if (player.CanSeeLoc(loc, player.GetCharSight()))
+                        return true;
+                }
+            }
+            return false;
+        }
+
 
         public bool ShotBlocked(Character character, Loc loc, Dir8 dir, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
         {

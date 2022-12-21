@@ -33,6 +33,12 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_SWITCH"), switchAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_UP"), () => { shiftPosition(false); }, shiftUp, shiftUp ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SHIFT_DOWN"), () => { shiftPosition(true); }, shiftDown, shiftDown ? Color.White : Color.Red));
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                if (turnChar.Faction == Faction.Player && turnChar.Char == teamIndex)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SKILL_PREVIEW"), previewMove));
+            }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), MenuManager.Instance.RemoveMenu));
 
             int choice_width = CalculateChoiceLength(choices, 72);
@@ -64,6 +70,17 @@ namespace RogueEssence.Menu
                 newSlot += 2;
             }
             MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, teamIndex, swapSlot), teamIndex, newSlot);
+        }
+
+        private void previewMove()
+        {
+            MenuManager.Instance.ClearMenus();
+            if (skillSlot != DungeonScene.Instance.CurrentPreviewMove )
+            {
+                DungeonScene.Instance.CurrentPreviewMove = skillSlot;
+                DungeonScene.Instance.CalculateMovePreviews();
+            }
+
         }
     }
 }
