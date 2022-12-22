@@ -797,7 +797,7 @@ namespace RogueEssence.Dungeon
                 //update the team/enemies
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 {
-                    if (DiagManager.Instance.CurSettings.BattleFlow < Settings.BattleSpeed.VeryFast && !character.Dead && !character.ActionDone || character.OccupiedwithAction())
+                    if (/*DiagManager.Instance.CurSettings.BattleFlow < Settings.BattleSpeed.VeryFast && !character.Dead && !character.ActionDone || */character.OccupiedwithAction())
                         return false;
                 }
             }

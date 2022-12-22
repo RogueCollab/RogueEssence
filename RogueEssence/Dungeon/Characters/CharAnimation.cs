@@ -443,7 +443,17 @@ namespace RogueEssence.Dungeon
         public override bool ActionPassed { get { return ActionDone; } }
         public override bool ActionDone { get { return ActionTime >= ANIM_TIME; } }
 
-        protected override int AnimFrameType { get { return 0; } }
+        protected override int AnimFrameType { get { return animOverride > -1 ? animOverride : 0; } }
+
+        public int animOverride;
+
+        public CharAnimDrop() { }
+
+        public CharAnimDrop(int anim)
+        {
+            this.animOverride = anim;
+        }
+
         protected override void UpdateFrameInternal()
         {
             MapLoc = VisualLoc * GraphicsManager.TileSize;
@@ -461,12 +471,71 @@ namespace RogueEssence.Dungeon
         }
         public override bool ActionPassed { get { return ActionTime >= ANIM_TIME - 1; } }
         public override bool ActionDone { get { return ActionTime >= ANIM_TIME; } }
-        protected override int AnimFrameType { get { return GraphicsManager.ChargeAction; } }
+        protected override int AnimFrameType { get { return animOverride > -1 ? animOverride : GraphicsManager.ChargeAction; } }
+
+        public int animOverride;
+
+        public CharAnimFly() { }
+
+        public CharAnimFly(int anim)
+        {
+            this.animOverride = anim;
+        }
 
         protected override void UpdateFrameInternal()
         {
             MapLoc = VisualLoc * GraphicsManager.TileSize;
             LocHeight = (int)ActionTime.FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
+        }
+    }
+
+
+
+    public class CharAnimKidnap : StaticCharAnimation
+    {
+        const int MAX_TILE_HEIGHT = 8;
+        public const int ANIM_TIME = 24;
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return CharSheet.TrueFrame(frames, Math.Min(ActionTime.Ticks, FrameTick.FrameToTick(AnimReturnTime)), true);
+        }
+        public override bool ActionPassed { get { return ActionTime >= AnimHitTime; } }
+
+        public override bool ActionDone { get { return ActionTime >= (AnimHitTime + ANIM_TIME); } }
+        protected override int AnimFrameType { get { return animOverride > 0 ? animOverride : 0; } }
+
+        public int animOverride;
+
+        public CharAnimKidnap() { }
+
+        public CharAnimKidnap(int anim)
+        {
+            this.animOverride = anim;
+        }
+
+        protected override void UpdateFrameInternal()
+        {
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
+
+            int farthest_distance = GraphicsManager.TileSize * (FallShort ? 1 : 2) / 3;
+            Loc toOffset = CharDir.GetLoc() * farthest_distance;
+
+            if (ActionTime < AnimRushTime)
+            {
+                //dont do anything; the animation itself will take care of pull-back
+            }
+            else if (ActionTime < AnimHitTime)
+            {
+                double intb = (double)(ActionTime - AnimRushTime).FractionOf(AnimHitTime - AnimRushTime);
+                Loc newLoc = new Loc(AnimMath.Lerp(0, toOffset.X, intb), AnimMath.Lerp(0, toOffset.Y, intb));
+                drawOffset = newLoc;
+            }
+            else
+            {
+                drawOffset = toOffset;
+
+                LocHeight = (int)(ActionTime - AnimHitTime).FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
+            }
         }
     }
 
@@ -480,7 +549,16 @@ namespace RogueEssence.Dungeon
         }
         public override bool ActionPassed { get { return ActionDone; } }
         public override bool ActionDone { get { return ActionTime >= ANIM_TIME; } }
-        protected override int AnimFrameType { get { return GraphicsManager.ChargeAction; } }
+        protected override int AnimFrameType { get { return animOverride > -1 ? animOverride : GraphicsManager.ChargeAction; } }
+
+        public int animOverride;
+
+        public CharAnimSpin() { }
+
+        public CharAnimSpin(int anim)
+        {
+            this.animOverride = anim;
+        }
 
         protected override void UpdateFrameInternal()
         {

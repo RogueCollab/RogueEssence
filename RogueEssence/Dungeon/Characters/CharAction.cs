@@ -279,16 +279,21 @@ namespace RogueEssence.Dungeon
             None,
             Spin,
             Drop,
-            Fly
+            Fly,
+            Kidnap
         }
 
         public ProcessType Process;
 
+        public int AnimOverride;
+
         public CharAnimProcess() { }
         public CharAnimProcess(ProcessType process) { Process = process; }
+        public CharAnimProcess(ProcessType process, int animFrameOverride) { Process = process; AnimOverride = animFrameOverride; }
         protected CharAnimProcess(CharAnimProcess other)
         {
             Process = other.Process;
+            AnimOverride = other.AnimOverride;
         }
         public override CharAnimData Clone() { return new CharAnimProcess(this); }
 
@@ -297,11 +302,13 @@ namespace RogueEssence.Dungeon
             switch (Process)
             {
                 case ProcessType.Spin:
-                    return new CharAnimSpin();
+                    return new CharAnimSpin(AnimOverride);
                 case ProcessType.Drop:
-                    return new CharAnimDrop();
+                    return new CharAnimDrop(AnimOverride);
                 case ProcessType.Fly:
-                    return new CharAnimFly();
+                    return new CharAnimFly(AnimOverride);
+                case ProcessType.Kidnap:
+                    return new CharAnimKidnap(AnimOverride);
                 default:
                     return null;
             }
