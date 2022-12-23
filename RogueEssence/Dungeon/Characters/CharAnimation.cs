@@ -849,6 +849,32 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    public class CharAnimKidnapDash : DashAnimation
+    {
+        const int MAX_TILE_HEIGHT = 8;
+        public const int ANIM_TIME = 24;
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return CharSheet.TrueFrame(frames, Math.Min(ActionTime.Ticks, FrameTick.FrameToTick(AnimReturnTime)), true);
+        }
+
+        public override bool ActionDone { get { return ActionTime >= (AnimHitTime + ANIM_TIME); } }
+
+        protected override void UpdateFrameInternal()
+        {
+            base.UpdateFrameInternal();
+
+            if (ActionTime < AnimHitTime)
+            {
+
+            }
+            else
+            {
+                LocHeight = (int)(ActionTime - AnimHitTime).FractionOf(MAX_TILE_HEIGHT * GraphicsManager.TileSize, ANIM_TIME);
+            }
+        }
+    }
+
     public class CharAnimGhostDash : DashAnimation
     {
         protected override void UpdateFrameInternal()
