@@ -1098,6 +1098,54 @@ namespace RogueEssence.Data
             destProgress.ActiveTeam.Bank += MoneyToStore;
             MoneyToStore = 0;
         }
+
+        public void DeleteOutdatedAssets(DataManager.DataType assetType)
+        {
+            //illegal items:
+            if ((assetType & DataManager.DataType.Item) != DataManager.DataType.None)
+            {
+                //delete from inv
+                for (int ii = ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
+                {
+                    ItemData entry = DataManager.Instance.GetItem(ActiveTeam.GetInv(ii).ID);
+                    if (entry == null)
+                        ActiveTeam.RemoveFromInv(ii, true);
+                }
+
+                //remove equips
+                foreach (Character player in ActiveTeam.EnumerateChars())
+                {
+                    if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                    {
+                        ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
+                        if (entry == null)
+                            player.EquippedItem = new InvItem();
+                    }
+                }
+
+                //delete from storage
+                List<string> removeKeys = new List<string>();
+                foreach (string key in ActiveTeam.Storage.Keys)
+                {
+                    ItemData entry = DataManager.Instance.GetItem(key);
+                    if (entry == null)
+                        removeKeys.Add(key);
+
+                }
+                foreach (string key in removeKeys)
+                    ActiveTeam.Storage.Remove(key);
+
+                //delete from boxstorage
+                for (int ii = ActiveTeam.BoxStorage.Count - 1; ii >= 0; ii--)
+                {
+                    ItemData entry = DataManager.Instance.GetItem(ActiveTeam.BoxStorage[ii].ID);
+                    if (entry == null)
+                        ActiveTeam.BoxStorage.RemoveAt(ii);
+                }
+            }
+
+            //TODO: delete skills, intrinsics, and monsters
+        }
     }
 
 
