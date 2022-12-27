@@ -84,8 +84,9 @@ namespace RogueEssence.Dungeon
         LiveMsgLog LiveBattleLog;
         
         TeamModeNotice TeamModeNote;
-        
+
         HotkeyMenu[] ShownHotkeys;
+        PreviewSkillMenu Preview;
 
         public List<Loc> PendingTraps;
         
@@ -127,6 +128,7 @@ namespace RogueEssence.Dungeon
             ShownHotkeys = new HotkeyMenu[CharData.MAX_SKILL_SLOTS];
             for (int ii = 0; ii < ShownHotkeys.Length; ii++)
                 ShownHotkeys[ii] = new HotkeyMenu(ii);
+            Preview = new PreviewSkillMenu();
 
             ShowMap = MinimapState.Clear;
             Loc drawSight = getDrawSight();
@@ -257,16 +259,16 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.SE("Menu/Cancel");
         }
 
-        private int ProcessSkillInput(InputManager input)
+        private int ProcessSkillInput(InputManager input, bool hold)
         {
             int skillIndex = -1;
-            if (input.JustPressed(FrameInput.InputType.Skill1))
+            if (input.JustPressed(FrameInput.InputType.Skill1) || hold && input[FrameInput.InputType.Skill1])
                 skillIndex = 0;
-            else if (input.JustPressed(FrameInput.InputType.Skill2))
+            else if (input.JustPressed(FrameInput.InputType.Skill2) || hold && input[FrameInput.InputType.Skill2])
                 skillIndex = 1;
-            else if (input.JustPressed(FrameInput.InputType.Skill3))
+            else if (input.JustPressed(FrameInput.InputType.Skill3) || hold && input[FrameInput.InputType.Skill3])
                 skillIndex = 2;
-            else if (input.JustPressed(FrameInput.InputType.Skill4))
+            else if (input.JustPressed(FrameInput.InputType.Skill4) || hold && input[FrameInput.InputType.Skill4])
                 skillIndex = 3;
             return skillIndex;
         }
@@ -395,9 +397,10 @@ namespace RogueEssence.Dungeon
                 bool diagonal = false;
                 bool runCommand = false;
                 bool runCancelling = false;
-                bool showTurn = false;
-
+                int previewMove = -1;
+                bool previewing = false;
                 HashSet<Character> newRevealed = null;
+
                 if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
                 {
                     GameManager.Instance.SE("Menu/Skip");
@@ -452,10 +455,6 @@ namespace RogueEssence.Dungeon
                 {
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(false)));
-                } 
-                else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Cancel))
-                {
-                    CurrentPreviewMove = -1;
                 }
                 else
                 {
@@ -472,49 +471,32 @@ namespace RogueEssence.Dungeon
                     {
                         if (input[FrameInput.InputType.Minimap])
                         {
-                            showTurn = true;
-                            int skillIndex = ProcessSkillInput(input);
+                            previewing = true;
+                            int skillIndex = ProcessSkillInput(input, true);
                             if (skillIndex > -1)
                             {
                                 Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
                                 if (!String.IsNullOrEmpty(skillState.SkillNum))
-                                {
-                                    if (skillIndex != CurrentPreviewMove)
-                                    {
-                                        CurrentPreviewMove = skillIndex;
-                                        CalculateMovePreviews();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                turn = true;
+                                    previewMove = skillIndex;
                             }
                         }
                         else
                         {
-                            int skillIndex = ProcessSkillInput(input);
+                            int skillIndex = ProcessSkillInput(input, false);
                             if (skillIndex > -1)
                             {
                                 Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
-                                if (!String.IsNullOrEmpty(skillState.SkillNum) && skillState.Charges > 0 &&
-                                    !skillState.Sealed)
+                                if (!String.IsNullOrEmpty(skillState.SkillNum) && skillState.Charges > 0 && !skillState.Sealed)
                                     action = new GameAction(GameAction.ActionType.UseSkill, Dir8.None, skillIndex);
                                 else
                                     GameManager.Instance.SE("Menu/Cancel");
                             }
-
                         }
+
                         if (action.Type == GameAction.ActionType.None)
                         {
-                            
-                            if (showTurn)
+                            if (previewMove == -1)
                             {
-                                turn = true;
-                            }
-                            else
-                            {
-                                CurrentPreviewMove = -1;
                                 //keep action display
                                 showSkills = true;
                             }
@@ -526,7 +508,7 @@ namespace RogueEssence.Dungeon
                     else
                     {
                         bool run = input[FrameInput.InputType.Run];
-                        if (input[FrameInput.InputType.Turn] || CurrentPreviewMove != -1)
+                        if (input[FrameInput.InputType.Turn])
                             turn = true;
 
                         if (input[FrameInput.InputType.Diagonal])
@@ -540,18 +522,8 @@ namespace RogueEssence.Dungeon
                         }
                         else if (input.JustPressed(FrameInput.InputType.Attack))
                         {
-                            //if there is a move being previewed, then use the move instead of a regular attack
-                            if (CurrentPreviewMove != -1)
-                            {
-                                action = new GameAction(GameAction.ActionType.UseSkill, FocusedCharacter.CharDir,
-                                    CurrentPreviewMove);
-                                CurrentPreviewMove = -1;
-                                turn = false;
-
-                            }
-                            else 
-                                //if confirm was the only move, then the command is an attack
-                                action = new GameAction(GameAction.ActionType.Attack, Dir8.None);
+                            //if confirm was the only move, then the command is an attack
+                            action = new GameAction(GameAction.ActionType.Attack, Dir8.None);
                         }//directions
                         else if (input.JustPressed(FrameInput.InputType.Turn))
                         {
@@ -682,6 +654,12 @@ namespace RogueEssence.Dungeon
                                 ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
                         }
                     }
+                    for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
+                        ShownHotkeys[ii].SetPreview(previewing);
+
+
+                    if (previewMove != CurrentPreviewMove && previewMove > -1)
+                        CalculateMovePreviews(previewMove);
 
                     if (action.Type == GameAction.ActionType.None && !showSkills)
                     {
@@ -719,18 +697,12 @@ namespace RogueEssence.Dungeon
                 }
 
                 ShowActions = showSkills;
+                CurrentPreviewMove = previewMove;
                 Turn = turn;
                 Diagonal = diagonal;
 
                 if (action.Type != GameAction.ActionType.None)
-                {
-                    // Ensures that out of bounds error doesn't occur previewing a move and swapping leaders
-                    if (action.Type == GameAction.ActionType.SetLeader)
-                    {
-                        CurrentPreviewMove = -1;
-                    }
                     yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(action));
-                }
             }
         }
 
@@ -873,10 +845,10 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
-        public void CalculateMovePreviews()
+        public void CalculateMovePreviews(int previewMove)
         {
             List<HashSet<Loc>> previews = new List<HashSet<Loc>>();
-            SlotSkill move = FocusedCharacter.BaseSkills[CurrentPreviewMove];
+            SlotSkill move = FocusedCharacter.BaseSkills[previewMove];
             SkillData data = DataManager.Instance.GetSkill(move.SkillNum);
             ExplosionData explosion = data.Explosion;
             CombatAction hitbox = data.HitboxAction;
@@ -968,26 +940,18 @@ namespace RogueEssence.Dungeon
             Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
             if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
             {
-                if (CurrentPreviewMove != -1 && movePreviews != null)
-                {
-                    HashSet<Loc> movePreview = movePreviews[(int) FocusedCharacter.CharDir];
-                    if (movePreview.Contains(visualLoc))
-                        GraphicsManager.Tiling.DrawTile(spriteBatch,
-                            new Vector2(xx * GraphicsManager.TileSize - ViewRect.X,
-                                yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
-                    else
-                        GraphicsManager.Tiling.DrawTile(spriteBatch,
-                            new Vector2(xx * GraphicsManager.TileSize - ViewRect.X,
-                                yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
-                }
+                if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
+                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
                 else
-                {
-                    if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
-                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
-                    else
-                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
-                }
-
+                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+            }
+            else if (CurrentPreviewMove > -1 && movePreviews != null)
+            {
+                HashSet<Loc> movePreview = movePreviews[(int)FocusedCharacter.CharDir];
+                if (movePreview.Contains(visualLoc))
+                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                else if (!ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
             }
         }
 
@@ -1333,6 +1297,7 @@ namespace RogueEssence.Dungeon
                 {
                     for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                         ShownHotkeys[ii].Draw(spriteBatch);
+                    Preview.Draw(spriteBatch);
                 }
                 else
                 {

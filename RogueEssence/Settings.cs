@@ -113,6 +113,7 @@ namespace RogueEssence
             ActionConflicts.Add(FrameInput.InputType.Skill2);
             ActionConflicts.Add(FrameInput.InputType.Skill3);
             ActionConflicts.Add(FrameInput.InputType.Skill4);
+            ActionConflicts.Add(FrameInput.InputType.SkillPreview);
 
             ForbiddenKeys = new HashSet<Keys>();
             for (int ii = 0; ii < 24; ii++)
@@ -208,6 +209,7 @@ namespace RogueEssence
                 actionKeys[(int)FrameInput.InputType.Skill4] = Keys.X;
                 actionKeys[(int)FrameInput.InputType.SortItems] = Keys.S;
                 actionKeys[(int)FrameInput.InputType.SelectItems] = Keys.A;
+                actionKeys[(int)FrameInput.InputType.SkillPreview] = Keys.Back;
             }
 
             if (actionButtons != null)
@@ -230,6 +232,7 @@ namespace RogueEssence
                 actionButtons[(int)FrameInput.InputType.Skill4] = Buttons.B;
                 actionButtons[(int)FrameInput.InputType.SortItems] = Buttons.X;
                 actionButtons[(int)FrameInput.InputType.SelectItems] = Buttons.LeftTrigger;
+                actionButtons[(int)FrameInput.InputType.SkillPreview] = Buttons.RightTrigger;
             }
         }
 
@@ -262,6 +265,7 @@ namespace RogueEssence
                 case FrameInput.InputType.Skill4: return true;
                 case FrameInput.InputType.SortItems: return true;
                 case FrameInput.InputType.SelectItems: return true;
+                case FrameInput.InputType.SkillPreview: return true;
                 default: return false;
             }
         }
@@ -288,6 +292,7 @@ namespace RogueEssence
                 case FrameInput.InputType.Skill4: return true;
                 case FrameInput.InputType.SortItems: return true;
                 case FrameInput.InputType.SelectItems: return true;
+                case FrameInput.InputType.SkillPreview: return true;
                 default: return false;
             }
         }
