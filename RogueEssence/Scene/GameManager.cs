@@ -1299,7 +1299,6 @@ namespace RogueEssence
 
             if (totalErrorCount > 0)
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth - 2, GraphicsManager.ScreenHeight - 2, String.Format("{0} ERRORS", totalErrorCount), null, DirV.Down, DirH.Right, Color.Red);
-
             if (ShowDebug)
             {
                 spriteBatch.End();
