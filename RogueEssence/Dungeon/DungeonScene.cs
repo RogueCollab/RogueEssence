@@ -934,11 +934,7 @@ namespace RogueEssence.Dungeon
                             if (!CanTeamSeeCharLoc(ActiveTeam, currLoc))
                             {
                                 //use the farthest distance of throw action if the team cannot see the enemy
-                                Loc furthestLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
-                                if (furthestLoc != loc)
-                                {
-                                    currLoc = furthestLoc;   
-                                }
+                                currLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
                             }
                         }
                         foreach (Loc expLoc in explosion.IterateTargetedTiles(currLoc))
