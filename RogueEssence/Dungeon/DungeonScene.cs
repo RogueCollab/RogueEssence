@@ -917,10 +917,13 @@ namespace RogueEssence.Dungeon
                 HashSet<Loc> hitTiles = new HashSet<Loc>();
                 foreach (Loc loc in data.HitboxAction.GetPreTargets(FocusedCharacter, dir, rangeMod))
                 {
-                    if (!canViewPastWalls && CanTeamSeeCharLoc(ActiveTeam, loc))
+                    if (!canViewPastWalls)
                     {
-                        foreach (Loc expLoc in explosion.IterateTargetedTiles(loc))
+                        if (CanTeamSeeCharLoc(ActiveTeam, loc))
+                        {
+                            foreach (Loc expLoc in explosion.IterateTargetedTiles(loc))
                                 hitTiles.Add(ZoneManager.Instance.CurrentMap.WrapLoc(expLoc));
+                        }
                     }
                     else
                     {
@@ -928,12 +931,14 @@ namespace RogueEssence.Dungeon
                         if (hitbox is ThrowAction)
                         {
                             ThrowAction throwAction = hitbox as ThrowAction;
-                            //use the farthest distance of throw action if the team cannot see the enemy
-                            Loc furthestLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
-                            if (furthestLoc != loc)
+                            if (!CanTeamSeeCharLoc(ActiveTeam, currLoc))
                             {
-                                if (!CanTeamSeeCharLoc(ActiveTeam, currLoc))
-                                    currLoc = furthestLoc;
+                                //use the farthest distance of throw action if the team cannot see the enemy
+                                Loc furthestLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
+                                if (furthestLoc != loc)
+                                {
+                                    currLoc = furthestLoc;   
+                                }
                             }
                         }
                         foreach (Loc expLoc in explosion.IterateTargetedTiles(currLoc))
