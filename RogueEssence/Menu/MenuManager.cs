@@ -231,6 +231,11 @@ namespace RogueEssence.Menu
             return null;
         }
 
+        public MainMenu CreateMainMenu()
+        {
+            return new MainMenu();
+        }
+        
         public InfoMenu CreateNotice(string title, string msg)
         {
             return CreateNotice(title, () => { }, msg);

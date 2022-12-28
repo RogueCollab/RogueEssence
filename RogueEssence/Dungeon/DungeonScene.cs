@@ -9,6 +9,7 @@ using RogueEssence.Dev;
 using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dungeon
 {
@@ -406,7 +407,7 @@ namespace RogueEssence.Dungeon
                     GameManager.Instance.SE("Menu/Skip");
                     CurrentPreviewMove = -1;
                     Turn = false;
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                    LuaEngine.Instance.OnMenuButtonPressed();
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.MsgLog))
                 {

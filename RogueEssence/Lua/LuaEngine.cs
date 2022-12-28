@@ -254,6 +254,7 @@ namespace RogueEssence.Script
             Restart,
             Update,
 
+            MenuButtonPressed,
             GroundEntityInteract,
 
             DungeonModeBegin,
@@ -1749,6 +1750,15 @@ namespace RogueEssence.Script
         public void OnUpgrade()
         {
             m_scrsvc.Publish(EServiceEvents.UpgradeSave.ToString());
+        }
+        
+        /// <summary>
+        /// Called when the menu button is pressed!
+        /// </summary>
+        public void OnMenuButtonPressed()
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnMenuButtonPressed()...");
+            m_scrsvc.Publish(EServiceEvents.MenuButtonPressed.ToString());
         }
 
         /// <summary>

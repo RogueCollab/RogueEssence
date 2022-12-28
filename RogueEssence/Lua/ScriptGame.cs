@@ -865,7 +865,11 @@ namespace RogueEssence.Script
                 LuaFunction luaFun = obj as LuaFunction;
                 yields = LuaEngine.Instance.CallScriptFunction(luaFun);
             }
-
+            else
+            {
+                yields = (IEnumerator<YieldInstruction>)obj;
+            }
+            
             if (GameManager.Instance.CurrentScene == GroundScene.Instance)
             {
                 GroundScene.Instance.PendingLeaderAction = yields;
