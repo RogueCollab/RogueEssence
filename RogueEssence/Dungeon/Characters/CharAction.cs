@@ -1307,6 +1307,13 @@ namespace RogueEssence.Dungeon
             }
 
             //if impossible to find, use the default farthest landing spot
+            Loc targetLoc = GetFarthestLanding(owner, ownerLoc, dir, mod);
+            return targetLoc;
+        }
+        
+        public Loc GetFarthestLanding(Character owner, Loc ownerLoc, Dir8 dir, int mod)
+        {
+            int modRange = GetModRange(mod);
             Loc targetLoc = ownerLoc;
             Loc addLoc = dir.GetLoc();
             for (int ii = 0; ii < modRange; ii++)

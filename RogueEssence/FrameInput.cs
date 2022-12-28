@@ -37,6 +37,7 @@ namespace RogueEssence
             Skill4,
             SortItems,
             SelectItems,
+            SkillPreview,
             Wait,
             LeftMouse,
             //meta input here

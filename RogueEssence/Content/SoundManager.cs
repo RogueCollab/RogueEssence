@@ -28,6 +28,7 @@ namespace RogueEssence.Content
         }
 
         private static Dictionary<string, LoopedSong> loopedSE;
+        private static List<DynamicSoundEffectInstance> sounds;
 
         private static string[] playedSounds = new string[8];
         private static int soundIndex = 0;
@@ -37,6 +38,7 @@ namespace RogueEssence.Content
             bgmBalance = 1f;
             seBalance = 1f;
             loopedSE = new Dictionary<string, LoopedSong>();
+            sounds = new List<DynamicSoundEffectInstance>();
         }
 
         public static void PlayBGM(string fileName, float volume = 1.0f)
@@ -84,6 +86,7 @@ namespace RogueEssence.Content
             if (loopedSE.TryGetValue(fileName, out se))
             {
                 se.Stop();
+                //se.Dispose();
                 loopedSE.Remove(fileName);
             }
         }
@@ -98,8 +101,17 @@ namespace RogueEssence.Content
         public static void NewFrame()
         {
             soundIndex = 0;
+            for (int ii = sounds.Count - 1; ii >= 0; ii--)
+            {
+                if (sounds[ii].PendingBufferCount == 0)
+                {
+                    sounds[ii].Stop();
+                    sounds.RemoveAt(ii);
+                }
+            }
         }
 
+        
 
         public static int PlaySound(string fileName, float volume = 1.0f)
         {
@@ -137,9 +149,10 @@ namespace RogueEssence.Content
             soundStream.Volume = volume * seBalance;
             soundStream.SubmitFloatBufferEXT(chunk, 0, framesRead * fileInfo.channels);
             soundStream.Play();
-
+            sounds.Add(soundStream);
 
             return (int)total_frames;
         }
+
     }
 }

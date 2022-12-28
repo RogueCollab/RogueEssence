@@ -150,7 +150,7 @@ namespace RogueEssence.Content
         private const int VFX_CACHE_SIZE = 100;
         private const int ICON_CACHE_SIZE = 100;
         private const int ITEM_CACHE_SIZE = 100;
-        private const int TILE_CACHE_SIZE_PIXELS = 5000000;
+        private const int TILE_CACHE_SIZE_PIXELS = 2000000;
         private const int OBJECT_CACHE_SIZE = 500;
         private const int BG_CACHE_SIZE = 10;
 

@@ -34,7 +34,7 @@ namespace RogueEssence.Data
                     if (pair.Item1 == mod.UUID)
                         return pair.Item2;
                 }
-                throw new KeyNotFoundException("Invalid asset ID");
+                throw new KeyNotFoundException(String.Format("Invalid asset ID: {0}", index));
             }
             else
             {

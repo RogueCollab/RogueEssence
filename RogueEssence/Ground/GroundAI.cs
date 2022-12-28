@@ -35,5 +35,7 @@ namespace RogueEssence.Ground
         /// </summary>
         /// <param name="statename"></param>
         public abstract void ForceState(string statename);
+
+        public abstract void DoCleanup();
     }
 }
