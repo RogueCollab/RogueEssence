@@ -587,13 +587,18 @@ namespace RogueEssence.Data
         public static T LoadNamespacedData<T>(string namespacedNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
             string[] components = namespacedNum.Split(':');
+            T result;
             if (components.Length > 1)
             {
                 ModHeader mod = PathMod.GetModFromNamespace(components[0]);
-                return LoadModData<T>(mod, components[1], subPath, ext);
+                result = LoadModData<T>(mod, components[1], subPath, ext);
             }
             else
-                return LoadData<T>(components[0], subPath, ext);
+                result = LoadData<T>(components[0], subPath, ext);
+            
+            if (result == null)
+                throw new FileNotFoundException(String.Format("Could not find {0} ID: '{1}'", subPath, namespacedNum));
+            return result;
         }
 
         public static T LoadModData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData

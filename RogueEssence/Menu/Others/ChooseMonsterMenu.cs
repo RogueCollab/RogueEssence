@@ -33,7 +33,10 @@ namespace RogueEssence.Menu
                 MonsterID monster = choice.mon;
                 string name = choice.name;
                 if (string.IsNullOrEmpty(name))
-                    name = DataManager.Instance.GetMonster(monster.Species).GetColoredName();
+                {
+                    EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monster.Species);
+                    name = summary.GetColoredName();
+                }
                 int index = i;
                 return (MenuChoice)new MenuTextChoice(name, () => { this.chooseAction(index); });
             }).ToList();
