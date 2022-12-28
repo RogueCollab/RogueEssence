@@ -394,6 +394,8 @@ namespace RogueEssence.Script
         /// </summary>
         public void Reset()
         {
+            if (LuaState != null)
+                LuaState.Close();
             //init lua
             LuaState = new Lua();
             //LuaState.UseTraceback = true;
@@ -688,7 +690,6 @@ namespace RogueEssence.Script
             LuaState["TASK"] = m_scripttask;
             LuaState["AI"] = m_scriptai;
             LuaState["XML"] = m_scriptxml;
-
         }
 
         public void UpdateZoneInstance()
