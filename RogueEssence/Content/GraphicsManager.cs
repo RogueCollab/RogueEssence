@@ -585,8 +585,9 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllPortraits(PathMod.DEV_PATH + "Portrait/", PathMod.HardMod(PORTRAIT_PATTERN));
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
             }
+
             if ((conversionFlags & AssetType.Tile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tile/", PathMod.HardMod(TILE_PATTERN), true, false);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tile/", PathMod.HardMod(TILE_PATTERN));
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
@@ -602,9 +603,7 @@ namespace RogueEssence.Content
             if ((conversionFlags & AssetType.BG) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", PathMod.HardMod(BG_PATTERN));
 
-            if ((conversionFlags & AssetType.Autotile) != AssetType.None)
-                // Old format (image data):
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tile/", PathMod.HardMod(TILE_PATTERN), false, true);
+
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {

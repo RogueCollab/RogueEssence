@@ -222,8 +222,6 @@ namespace RogueEssence.Dev
             foreach (string dir in dirs)
             {
                 string fileName = Path.GetFileName(dir);
-                if (fileName != "ChasmCave1")
-                    continue;
                 string outputFnTiles = string.Format(cachePattern, fileName);
                 DiagManager.Instance.LoadMsg = "Importing " + fileName;
                 ImportDtef(dir, outputFnTiles);
