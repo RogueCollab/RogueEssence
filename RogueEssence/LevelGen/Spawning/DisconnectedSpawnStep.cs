@@ -33,7 +33,10 @@ namespace RogueEssence.LevelGen
             Grid.FloodFill(new Rect(0, 0, map.Width, map.Height),
             (Loc testLoc) =>
             {
-                return (connectionGrid[testLoc.X][testLoc.Y] || !map.RoomTerrain.TileEquivalent(map.GetTile(testLoc)));
+                if (connectionGrid[testLoc.X][testLoc.Y])
+                    return true;
+
+                return map.TileBlocked(testLoc);
             },
             (Loc testLoc) =>
             {
