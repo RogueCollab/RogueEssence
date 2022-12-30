@@ -229,6 +229,16 @@ namespace RogueEssence.LevelGen
                 throw new ArgumentException("Loc out of bounds.");
             Tile tile = Map.GetTile(loc);
             tile.Effect = new EffectTile(item);
+            //remove foliage, only foliage.
+            //TODO: refactor to tell apart trap placement (remove terrain) and other effect tile placement (keep terrain)
+            //This is a general problem, in which placeables of the same data type want to be placed, but placed differently
+            //other example: money placement  instead of item placement, mob placement being multiple entities
+            TerrainData data = tile.Data.GetData();
+            if (data.BlockType == TerrainData.Mobility.Passable)
+            {
+                Tile tmpTile = (Tile)RoomTerrain.Copy();
+                tile.Data = tmpTile.Data;
+            }
         }
 
 
