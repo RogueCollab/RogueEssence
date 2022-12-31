@@ -51,7 +51,7 @@ namespace RogueEssence
         /// </summary>
         public bool FullSide;
 
-        public bool Test(T map, Rect rect)
+        public bool Test(T map, Rect rect, Grid.LocTest blobTest)
         {
             Rect borderRect = rect;
             borderRect.Inflate(1, 1);
