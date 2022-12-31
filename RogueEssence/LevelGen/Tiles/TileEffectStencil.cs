@@ -24,15 +24,15 @@ namespace RogueEssence.LevelGen
             this.Not = not;
         }
 
+        /// <summary>
+        /// If turned on, test will pass for empty tiles.
+        /// </summary>
         public bool Not { get; private set; }
 
         public bool Test(TGenContext map, Loc loc)
         {
             Tile checkTile = (Tile)map.GetTile(loc);
-            if (String.IsNullOrEmpty(checkTile.Effect.ID) == this.Not)
-                return true;
-
-            return false;
+            return (String.IsNullOrEmpty(checkTile.Effect.ID) == this.Not);
         }
     }
 }

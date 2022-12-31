@@ -205,15 +205,15 @@ namespace RogueEssence.Dev.ViewModels
         {
             string elementName = "TextureMap<Key>";
             DataEditForm frmKey = new DataEditRootForm();
-            frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(int), new object[0]);
+            frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(string), new object[0]);
 
             DataTypeAttribute attr = new DataTypeAttribute(1, DataManager.DataType.Terrain, false);
-            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(int), new object[1] { attr }, key, true, new Type[0]);
+            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(string), new object[1] { attr }, key, true, new Type[0]);
             DataEditor.TrackTypeSize(frmKey, typeof(int));
 
             frmKey.SelectedOKEvent += async () =>
             {
-                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(int), new object[1] { attr }, true, new Type[0]);
+                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(string), new object[1] { attr }, true, new Type[0]);
                 op(key, newKey, element);
                 return true;
             };
