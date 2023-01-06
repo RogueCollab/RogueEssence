@@ -96,18 +96,17 @@ namespace RogueEssence.LevelGen
 
             if (x < diameter)
             {
+                int xdiff = diameter - x;
                 if (y < diameter)
                 {
-                    int xdiff = diameter - x;
                     int ydiff = diameter - y;
-                    if (xdiff + ydiff < diameter)
+                    if (xdiff + ydiff <= diameter)
                         return true;
                 }
                 else if (y > sizeX2.Y - diameter)
                 {
-                    int xdiff = diameter - x;
                     int ydiff = y - (sizeX2.Y - diameter);
-                    if (xdiff + ydiff < diameter)
+                    if (xdiff + ydiff <= diameter)
                         return true;
                 }
                 else
@@ -117,18 +116,17 @@ namespace RogueEssence.LevelGen
             }
             else if (x > sizeX2.X - diameter)
             {
+                int xdiff = x - (sizeX2.X - diameter);
                 if (y < diameter)
                 {
-                    int xdiff = x - (sizeX2.X - diameter);
                     int ydiff = diameter - y;
-                    if (xdiff + ydiff < diameter)
+                    if (xdiff + ydiff <= diameter)
                         return true;
                 }
                 else if (y > sizeX2.Y - diameter)
                 {
-                    int xdiff = x - (sizeX2.X - diameter);
                     int ydiff = y - (sizeX2.Y - diameter);
-                    if (xdiff + ydiff < diameter)
+                    if (xdiff + ydiff <= diameter)
                         return true;
                 }
                 else
