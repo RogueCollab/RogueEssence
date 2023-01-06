@@ -221,10 +221,10 @@ namespace RogueEssence.Dungeon
         {
             if (!maps.ContainsKey(id))
             {
+                DiagManager.Instance.LogInfo("Zone Seed: " + rand.FirstSeed);
                 ReNoise totalNoise = new ReNoise(rand.FirstSeed);
                 ulong[] doubleSeed = totalNoise.GetTwoUInt64((ulong)id.Segment);
                 ulong structSeed = doubleSeed[0];
-                DiagManager.Instance.LogInfo("Struct Seed: " + structSeed);
                 INoise structNoise = new ReNoise(structSeed);
                 INoise idNoise = new ReNoise(doubleSeed[1]);
 
@@ -250,6 +250,9 @@ namespace RogueEssence.Dungeon
                 ulong finalSeed = (ulong)id.ID;
                 finalSeed <<= 32;
                 finalSeed |= (ulong)MapsLoaded;
+
+                DiagManager.Instance.LogInfo("Map Count: " + MapsLoaded);
+                DiagManager.Instance.LogInfo("Map Seed: " + finalSeed);
                 zoneContext.Seed = idNoise.GetUInt64(finalSeed);
 
                 //TODO: remove the need for this explicit cast
