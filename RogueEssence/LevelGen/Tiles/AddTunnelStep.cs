@@ -72,7 +72,8 @@ namespace RogueEssence
                     int curLength = 0;
                     int finalLength = MaxLength.Pick(map.Rand);
 
-                    List<LocRay4> drawnLocs = new List<LocRay4>();
+                    HashSet<Loc> drawnLocs = new HashSet<Loc>();
+                    List<(LocRay4, int)> drawnRays = new List<(LocRay4, int)>();
                     bool crossedSelf = false;
                     bool bonk = false;
                     bool bonkFloor = false;
@@ -82,22 +83,23 @@ namespace RogueEssence
                         //length bust always be at least 2
                         addLength = Math.Max(2, addLength);
 
+                        LocRay4 legRay = tunnelDir;
+                        int legLength = 0;
+
                         //traverse the length in the specified tunnelDir until we hit a border or a new walkable
                         for (int jj = 0; jj < addLength; jj++)
                         {
                             //draw brush
-                            drawnLocs.Add(new LocRay4(tunnelDir.Loc, tunnelDir.Dir));
+                            drawnLocs.Add(tunnelDir.Loc);
 
                             //move forward
                             tunnelDir.Loc = tunnelDir.Traverse(1);
+                            legLength++;
 
-                            foreach (LocRay4 ray in drawnLocs)
+                            if (drawnLocs.Contains(tunnelDir.Loc))
                             {
-                                if (ray.Loc == tunnelDir.Loc)
-                                {
-                                    crossedSelf = true;
-                                    break;
-                                }
+                                crossedSelf = true;
+                                break;
                             }
 
                             if (!checkBlock(tunnelDir.Loc) || crossedSelf)
@@ -108,6 +110,8 @@ namespace RogueEssence
                                 break;
                             }
                         }
+
+                        drawnRays.Add((legRay, legLength));
 
                         if (bonk)
                             break;
@@ -127,8 +131,8 @@ namespace RogueEssence
                             continue;
                     }
 
-                    foreach(LocRay4 ray in drawnLocs)
-                        Brush.DrawHallBrush(map, fullRect, ray.Loc, ray.Dir.ToAxis() == Axis4.Vert);
+                    foreach((LocRay4 ray, int length) ray in drawnRays)
+                        Brush.DrawHallBrush(map, fullRect, ray.ray, ray.length);
                     break;
                 }
                 GenContextDebug.DebugProgress("Added Tunnel");
