@@ -273,11 +273,15 @@ namespace RogueEssence.Dungeon
                     catch (Exception ex)
                     {
                         DiagManager.Instance.LogError(ex);
-                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii+1));
+                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii + 1));
                         ulong subSeed = (ulong)id.ID;
                         subSeed <<= 32;
                         subSeed |= (ulong)(MapsLoaded + ii);
                         zoneContext.Seed = structNoise.GetUInt64(subSeed);
+                    }
+                    finally
+                    {
+                        DiagManager.Instance.FlushRogueElements();
                     }
                 }
 
