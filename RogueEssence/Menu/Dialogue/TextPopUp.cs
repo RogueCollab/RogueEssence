@@ -104,7 +104,8 @@ namespace RogueEssence.Menu
                 }
             }
 
-            Text.TextOpacity = CurrentFadeTime.FractionOf(FADE_TIME);
+            if (Visible)
+                Text.TextOpacity = CurrentFadeTime.FractionOf(FADE_TIME);
         }
 
 
