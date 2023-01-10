@@ -72,7 +72,6 @@ namespace RogueEssence
                     int curLength = 0;
                     int finalLength = MaxLength.Pick(map.Rand);
 
-                    HashSet<Loc> drawnLocs = new HashSet<Loc>();
                     List<(LocRay4, int)> drawnRays = new List<(LocRay4, int)>();
                     bool crossedSelf = false;
                     bool bonk = false;
@@ -89,17 +88,17 @@ namespace RogueEssence
                         //traverse the length in the specified tunnelDir until we hit a border or a new walkable
                         for (int jj = 0; jj < addLength; jj++)
                         {
-                            //draw brush
-                            drawnLocs.Add(tunnelDir.Loc);
-
                             //move forward
                             tunnelDir.Loc = tunnelDir.Traverse(1);
                             legLength++;
 
-                            if (drawnLocs.Contains(tunnelDir.Loc))
+                            foreach ((LocRay4 ray, int range) drawn in drawnRays)
                             {
-                                crossedSelf = true;
-                                break;
+                                if (Collision.InFront(drawn.ray.Loc, tunnelDir.Loc, drawn.ray.Dir.ToDir8(), drawn.range))
+                                {
+                                    crossedSelf = true;
+                                    break;
+                                }
                             }
 
                             if (!checkBlock(tunnelDir.Loc) || crossedSelf)
@@ -111,6 +110,7 @@ namespace RogueEssence
                             }
                         }
 
+                        //actually draw the rays
                         drawnRays.Add((legRay, legLength));
 
                         if (bonk)
