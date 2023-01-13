@@ -989,6 +989,7 @@ namespace RogueEssence.Data
                 replayWriter.Write(version.Build);
                 replayWriter.Write(version.Revision);
                 replayWriter.Write(0L);//pointer to epitaph location, 0 for now
+                replayWriter.Write(0L);//final time, 0 for now
                 replayWriter.Write(0);//final score, 0 for now
                 replayWriter.Write(0);//final result, 0 for now
                 replayWriter.Write(zoneId);
@@ -1294,7 +1295,6 @@ namespace RogueEssence.Data
                     replayWriter.Close();
                     replayWriter = null;
                 }
-
             }
             catch (Exception ex)
             {
@@ -1363,6 +1363,8 @@ namespace RogueEssence.Data
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                         //epitaph location
                         long endPos = reader.ReadInt64();
+                        //read time
+                        record.Time = reader.ReadInt64();
                         //read score
                         record.Score = reader.ReadInt32();
                         //read result
@@ -1425,7 +1427,21 @@ namespace RogueEssence.Data
             }
             return null;
         }
-
+        public void SaveDungeonTime(TimeSpan dungeonTime)
+        {
+            try
+            {
+                if (replayWriter != null)
+                {
+                    replayWriter.BaseStream.Seek(sizeof(Int32) * 4 + sizeof(Int64), SeekOrigin.Begin);
+                    replayWriter.Write(dungeonTime.Ticks);
+                }
+            } 
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
         public byte[] ReadReplayFile(string recordDir)
         {
             byte[] replay = null;
@@ -1456,6 +1472,8 @@ namespace RogueEssence.Data
                         writer.Write(reader.ReadInt32());
                         writer.Write(reader.ReadInt32());
                         //read the pointer for location of epitaph
+                        writer.Write(reader.ReadInt64());
+                        //read time
                         writer.Write(reader.ReadInt64());
                         //read score
                         writer.Write(reader.ReadInt32());
@@ -1504,6 +1522,8 @@ namespace RogueEssence.Data
                         long endPos = reader.ReadInt64();
                         if (endPos > 0 && quickload)
                             throw new Exception("Cannot quickload a completed file!");
+                        //read time
+                        reader.ReadInt64();
                         //read score
                         reader.ReadInt32();
                         //read result
@@ -1615,6 +1635,8 @@ namespace RogueEssence.Data
                         //read the pointer for location of epitaph
                         reader.ReadInt64();
                         writer.Write(0L);
+                        //read time
+                        writer.Write(reader.ReadInt64());
                         //read score
                         writer.Write(reader.ReadInt32());
                         //read result

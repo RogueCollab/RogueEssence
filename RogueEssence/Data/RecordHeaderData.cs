@@ -10,6 +10,7 @@ namespace RogueEssence.Data
         public string DateTimeString;
         public string LocationString;
         public string Zone;
+        public long Time;
         public int Score;
         public string Path;
         public bool IsRogue;

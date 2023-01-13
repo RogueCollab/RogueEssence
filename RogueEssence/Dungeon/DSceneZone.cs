@@ -179,6 +179,7 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            DataManager.Instance.SaveDungeonTime(DataManager.Instance.Save.DungeonTime);
             //TODO: resolve all Nonserialized variables (such as in mapgen, AI) being inconsistent before enabling this.
             //DataManager.Instance.LogQuicksave();
             DataManager.Instance.SuspendPlay();
@@ -1016,7 +1017,7 @@ namespace RogueEssence.Dungeon
 
             ZoneManager.Instance.CurrentMap.MapTurns++;
             DataManager.Instance.Save.TotalTurns++;
-
+            
             //check EXP because someone could've died
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
 

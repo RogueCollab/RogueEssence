@@ -127,6 +127,7 @@ namespace RogueEssence.Data
         public int TotalEXP;
         public int StartLevel;
         public int RescuesLeft;
+        public TimeSpan DungeonTime;
 
         //these values update and never clear
         public string EndDate;
@@ -201,6 +202,15 @@ namespace RogueEssence.Data
             }
         }
 
+        public string GetDungeonTimeDisplay()
+        {
+            string display = "99:59:59";
+            int totalHours = DungeonTime.Hours;
+            if (totalHours < 100)
+                display = String.Format("{0:D2}", totalHours) + DungeonTime.ToString(@"\:mm\:ss");
+
+            return display;
+        }
         public bool GetDefaultEnable(string moveIndex)
         {
             if (String.IsNullOrEmpty(moveIndex))
@@ -901,9 +911,10 @@ namespace RogueEssence.Data
             //restrict team size/bag size/etc
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
-
+            
             MidAdventure = true;
             Stakes = stakes;
+            DungeonTime = TimeSpan.Zero;
 
             //reset location defeated
             ClearDefeatDest();
@@ -932,10 +943,15 @@ namespace RogueEssence.Data
 
             if (recorded)
                 DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false);
+            
+            DungeonScene.Instance.SavedDungeonTime = TimeSpan.Zero;
+            DungeonScene.Instance.LastEnterTime = DateTime.Now;
+            DungeonScene.Instance.ContinueTimer = true;
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
         {
+            DungeonScene.Instance.ContinueTimer = false;
             Outcome = result;
             bool recorded = DataManager.Instance.RecordingReplay;
             string recordFile = null;
@@ -1113,9 +1129,10 @@ namespace RogueEssence.Data
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             ZoneData zone = DataManager.Instance.GetZone(zoneID);
-
+            
             MidAdventure = true;
             Stakes = stakes;
+            DungeonTime = TimeSpan.Zero;
 
             yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false, true, true));
 
@@ -1126,11 +1143,15 @@ namespace RogueEssence.Data
                 DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
             }
 
+            DungeonScene.Instance.SavedDungeonTime = TimeSpan.Zero;
+            DungeonScene.Instance.LastEnterTime = DateTime.Now;
+            DungeonScene.Instance.ContinueTimer = true;
             yield break;
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
         {
+            DungeonScene.Instance.ContinueTimer = false;
             bool recorded = DataManager.Instance.RecordingReplay;
             //if lose, end the play, display plaque, and go to title
             if (result != ResultType.Cleared)

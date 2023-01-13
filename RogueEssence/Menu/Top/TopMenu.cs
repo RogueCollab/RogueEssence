@@ -203,7 +203,7 @@ namespace RogueEssence.Menu
 
             DataManager.Instance.Loading = DataManager.LoadMode.Loading;
             DataManager.Instance.CurrentReplay = replay;
-
+            
             if (rescueMail != null)
                 DataManager.Instance.Save.Rescue = new RescueState(rescueMail, false);
 
@@ -212,6 +212,10 @@ namespace RogueEssence.Menu
             if (DataManager.Instance.Save.NextDest.IsValid())
             {
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+                RecordHeaderData header = DataManager.Instance.GetRecordHeader(DataManager.Instance.CurrentReplay.RecordDir);
+                DungeonScene.Instance.SavedDungeonTime = TimeSpan.FromTicks(header.Time);
+                DungeonScene.Instance.LastEnterTime = DateTime.Now;
+                DungeonScene.Instance.ContinueTimer = true;
             }
             else
             {
