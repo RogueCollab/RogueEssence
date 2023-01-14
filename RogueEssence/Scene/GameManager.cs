@@ -88,7 +88,7 @@ namespace RogueEssence
         public const int FANFARE_FADE_START = 3;
         public const int FANFARE_FADE_END = 40;
         public const int FANFARE_WAIT_EXTRA = 20;
-        public RogueStartConfig rogueConfig;
+        public RogueStartConfig RogueConfig;
 
         public GameManager()
         {
@@ -99,6 +99,7 @@ namespace RogueEssence
             InputManager = new InputManager();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
+            RogueConfig = new RogueStartConfig();
 
             DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
 
@@ -1410,9 +1411,11 @@ namespace RogueEssence
             public bool Seeded;
             public string SkinSetting;
             public string Nickname;
-            public string Species;
+            public string Starter;
+            public bool StarterRandomized;
+            
             public string Destination;
-            public RogueStartConfig() {}
+            public bool DestinationRandomized;
         }
     }
 }

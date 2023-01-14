@@ -1194,7 +1194,6 @@ namespace RogueEssence.Data
 
                 if (restart)
                 {
-                    yield return new WaitForFrames(20);
                     restartRun();
                 }
                 else
@@ -1306,17 +1305,32 @@ namespace RogueEssence.Data
 
         private void restartRun()
         {
-            if (GameManager.Instance.rogueConfig.TeamRandomized)
-                GameManager.Instance.rogueConfig.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
-            GameManager.RogueStartConfig config = GameManager.Instance.rogueConfig;
-            CoroutineManager.Instance.StartCoroutine(StartRogue(GameManager.Instance.rogueConfig));
+            if (GameManager.Instance.RogueConfig.TeamRandomized)
+                GameManager.Instance.RogueConfig.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+            if (!GameManager.Instance.RogueConfig.Seeded)
+                GameManager.Instance.RogueConfig.Seed = MathUtils.Rand.NextUInt64();
+            if (GameManager.Instance.RogueConfig.StarterRandomized)
+            {
+                List<string> starters = CharaChoiceMenu.GetStartersList();
+                string starter = starters[MathUtils.Rand.Next(starters.Count)];
+                GameManager.Instance.RogueConfig.Starter = starter;
+                GameManager.Instance.RogueConfig.IntrinsicSetting = -1;
+                GameManager.Instance.RogueConfig.FormSetting = -1;
+                GameManager.Instance.RogueConfig.GenderSetting = Gender.Unknown;
+            }
+            if (GameManager.Instance.RogueConfig.DestinationRandomized)
+            {
+                List<string> destinations = RogueDestMenu.GetDestinationsList();
+                GameManager.Instance.RogueConfig.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
+            }
+            GameManager.Instance.SceneOutcome = StartRogue(GameManager.Instance.RogueConfig);
+
         }
         public IEnumerator<YieldInstruction> StartRogue(GameManager.RogueStartConfig config)
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
-
-            GameProgress save = new RogueProgress(Seeded ? config.Seed : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), Seeded);
+            GameProgress save = new RogueProgress(config.Seed, Guid.NewGuid().ToString().ToUpper(), config.Seeded);
             save.UnlockDungeon(config.Destination);
             DataManager.Instance.SetProgress(save);
             DataManager.Instance.Save.UpdateVersion();
@@ -1325,7 +1339,7 @@ namespace RogueEssence.Data
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.Name = config.TeamName;
 
-            MonsterData monsterData = DataManager.Instance.GetMonster(config.Species);
+            MonsterData monsterData = DataManager.Instance.GetMonster(config.Starter);
 
             int formSlot = config.FormSetting;
             List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
@@ -1351,7 +1365,7 @@ namespace RogueEssence.Data
             else
                 intrinsic = monsterData.Forms[formIndex].Intrinsic3;
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Species, formIndex, config.SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Starter, formIndex, config.SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
             newChar.Nickname = config.Nickname;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
 

@@ -16,7 +16,6 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         private string team;
-        private bool teamRandomized;
         private string chosenDest;
         public int FormSetting;
         public string SkinSetting;
@@ -28,33 +27,22 @@ namespace RogueEssence.Menu
         private List<string> startChars;
         private ulong? seed;
 
-        public CharaChoiceMenu(string teamName, bool teamRandomized, string chosenDungeon, ulong? seed)
+        public CharaChoiceMenu(string teamName, string chosenDungeon, ulong? seed)
         {
             GenderSetting = Gender.Unknown;
             SkinSetting = DataManager.Instance.DefaultSkin;
             IntrinsicSetting = -1;
             FormSetting = -1;
-            this.teamRandomized = teamRandomized;
-            
-            startChars = new List<string>();
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
-            {
-                if (DiagManager.Instance.DevMode)
-                    startChars.Add(key);
 
-                else if (DataManager.Instance.Save.GetRogueUnlock(key) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).Released)
-                    startChars.Add(key);
-                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == key) > -1)
-                    startChars.Add(key);
-            }
+            startChars = GetStartersList();
 
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(MathUtils.Rand.Next(startChars.Count)); }));
+            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(MathUtils.Rand.Next(startChars.Count), true); }));
             for (int ii = 0; ii < startChars.Count; ii++)
             {
                 int startSlot = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(startChars[ii]).GetColoredName(), () => { choose(startSlot); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(startChars[ii]).GetColoredName(), () => { choose(startSlot, false); }));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
@@ -106,8 +94,9 @@ namespace RogueEssence.Menu
             base.ChoiceChanged();
         }
 
-        private void choose(int choice)
+        private void choose(int choice, bool randomized)
         {
+            GameManager.Instance.RogueConfig.StarterRandomized = randomized;
             MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
             {
                 MenuManager.Instance.ClearMenus();
@@ -201,19 +190,34 @@ namespace RogueEssence.Menu
             ulong seedVal = seeded ? seed.Value : MathUtils.Rand.NextUInt64();
             RogueProgress save = new RogueProgress(seedVal, Guid.NewGuid().ToString().ToUpper(), seeded);
             string species = startChars[choice];
-            GameManager.Instance.rogueConfig = new GameManager.RogueStartConfig();
-            GameManager.Instance.rogueConfig.Species = species;
-            GameManager.Instance.rogueConfig.IntrinsicSetting = IntrinsicSetting;
-            GameManager.Instance.rogueConfig.FormSetting = FormSetting;
-            GameManager.Instance.rogueConfig.GenderSetting= GenderSetting;
-            GameManager.Instance.rogueConfig.SkinSetting = SkinSetting;
-            GameManager.Instance.rogueConfig.TeamName = team;
-            GameManager.Instance.rogueConfig.TeamRandomized = teamRandomized;
-            GameManager.Instance.rogueConfig.Nickname = name;
-            GameManager.Instance.rogueConfig.Destination = chosenDest;
-            GameManager.Instance.rogueConfig.Seeded = seeded;
-            GameManager.Instance.rogueConfig.Seed = seedVal;
-            return save.StartRogue(GameManager.Instance.rogueConfig);
+            GameManager.Instance.RogueConfig.Starter = species;
+            GameManager.Instance.RogueConfig.IntrinsicSetting = IntrinsicSetting;
+            GameManager.Instance.RogueConfig.FormSetting = FormSetting;
+            GameManager.Instance.RogueConfig.GenderSetting= GenderSetting;
+            GameManager.Instance.RogueConfig.SkinSetting = SkinSetting;
+            GameManager.Instance.RogueConfig.TeamName = team;
+            GameManager.Instance.RogueConfig.Nickname = name;
+            GameManager.Instance.RogueConfig.Destination = chosenDest;
+            GameManager.Instance.RogueConfig.Seeded = seeded;
+            GameManager.Instance.RogueConfig.Seed = seedVal;
+            return save.StartRogue(GameManager.Instance.RogueConfig);
+        }
+
+        public static List<string> GetStartersList()
+        {
+            List<string> starters = new List<string>();
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
+            {
+                if (DiagManager.Instance.DevMode)
+                    starters.Add(key);
+
+                else if (DataManager.Instance.Save.GetRogueUnlock(key) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).Released)
+                    starters.Add(key);
+                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == key) > -1)
+                    starters.Add(key);
+            }
+
+            return starters;
         }
     }
 }

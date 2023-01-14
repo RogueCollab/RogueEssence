@@ -51,7 +51,8 @@ namespace RogueEssence.Menu
                 Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
                 UpdatePickerPos();
             }
-            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, randomized, chosenDest, seed), false);
+            GameManager.Instance.RogueConfig.TeamRandomized = randomized;
+            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, chosenDest, seed), false);
         }
     }
 }
