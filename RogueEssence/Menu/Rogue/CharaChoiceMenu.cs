@@ -16,6 +16,7 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         private string team;
+        private bool teamRandomized;
         private string chosenDest;
         public int FormSetting;
         public string SkinSetting;
@@ -27,12 +28,13 @@ namespace RogueEssence.Menu
         private List<string> startChars;
         private ulong? seed;
 
-        public CharaChoiceMenu(string teamName, string chosenDungeon, ulong? seed)
+        public CharaChoiceMenu(string teamName, bool teamRandomized, string chosenDungeon, ulong? seed)
         {
             GenderSetting = Gender.Unknown;
             SkinSetting = DataManager.Instance.DefaultSkin;
             IntrinsicSetting = -1;
             FormSetting = -1;
+            this.teamRandomized = teamRandomized;
             
             startChars = new List<string>();
             foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
@@ -195,60 +197,23 @@ namespace RogueEssence.Menu
         
         public IEnumerator<YieldInstruction> Begin(int choice, string name)
         {
-            GameManager.Instance.BGM("", true);
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
-
-            GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
-            save.UnlockDungeon(chosenDest);
-            DataManager.Instance.SetProgress(save);
-            DataManager.Instance.Save.UpdateVersion();
-            DataManager.Instance.Save.UpdateOptions();
-            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
-            DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-            DataManager.Instance.Save.ActiveTeam.Name = team;
-
-            MonsterData monsterData = DataManager.Instance.GetMonster(startChars[choice]);
-
-            int formSlot = FormSetting;
-            List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
-            if (formSlot >= forms.Count)
-                formSlot = forms.Count - 1;
-            if (formSlot == -1)
-                formSlot = MathUtils.Rand.Next(forms.Count);
-
-            int formIndex = forms[formSlot];
-
-            Gender gender = CharaDetailMenu.LimitGender(monsterData, formIndex, GenderSetting);
-            if (gender == Gender.Unknown)
-                gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
-            
-            int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, IntrinsicSetting);
-            string intrinsic;
-            if (intrinsicSlot == -1)
-                intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
-            else if (intrinsicSlot == 0)
-                intrinsic = monsterData.Forms[formIndex].Intrinsic1;
-            else if (intrinsicSlot == 1)
-                intrinsic = monsterData.Forms[formIndex].Intrinsic2;
-            else
-                intrinsic = monsterData.Forms[formIndex].Intrinsic3;
-
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(startChars[choice], formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
-            newChar.Nickname = name;
-            DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
-
-            try
-            {
-                LuaEngine.Instance.OnNewGame();
-                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
-                    throw new Exception("Script generated an invalid team!");
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(chosenDest, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
+            bool seeded = seed.HasValue;
+            ulong seedVal = seeded ? seed.Value : MathUtils.Rand.NextUInt64();
+            RogueProgress save = new RogueProgress(seedVal, Guid.NewGuid().ToString().ToUpper(), seeded);
+            string species = startChars[choice];
+            GameManager.Instance.rogueConfig = new GameManager.RogueStartConfig();
+            GameManager.Instance.rogueConfig.Species = species;
+            GameManager.Instance.rogueConfig.IntrinsicSetting = IntrinsicSetting;
+            GameManager.Instance.rogueConfig.FormSetting = FormSetting;
+            GameManager.Instance.rogueConfig.GenderSetting= GenderSetting;
+            GameManager.Instance.rogueConfig.SkinSetting = SkinSetting;
+            GameManager.Instance.rogueConfig.TeamName = team;
+            GameManager.Instance.rogueConfig.TeamRandomized = teamRandomized;
+            GameManager.Instance.rogueConfig.Nickname = name;
+            GameManager.Instance.rogueConfig.Destination = chosenDest;
+            GameManager.Instance.rogueConfig.Seeded = seeded;
+            GameManager.Instance.rogueConfig.Seed = seedVal;
+            return save.StartRogue(GameManager.Instance.rogueConfig);
         }
     }
 }

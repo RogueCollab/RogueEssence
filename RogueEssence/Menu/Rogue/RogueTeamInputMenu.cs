@@ -8,6 +8,7 @@ namespace RogueEssence.Menu
     {
         public override int MaxLength { get { return 96; } }
 
+        private bool randomized;
         private string chosenDest;
         private ulong? seed;
 
@@ -22,6 +23,7 @@ namespace RogueEssence.Menu
         {
             if (input.BaseKeyPressed(Keys.Tab))
             {
+                randomized = true;
                 //tab will replace the current line with a suggestion
                 GameManager.Instance.SE("Menu/Skip");
                 Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
@@ -29,7 +31,15 @@ namespace RogueEssence.Menu
                 UpdatePickerPos();
             }
             else
-                base.Update(input);
+            {
+                string prevText = Text.Text;
+                base.Update(input); 
+                if (prevText != Text.Text)
+                {
+                    randomized = false;
+                }
+            }
+
         }
 
         protected override void Confirmed()
@@ -37,10 +47,11 @@ namespace RogueEssence.Menu
             GameManager.Instance.SE("Menu/Confirm");
             if (Text.Text == "")
             {
+                randomized = true;
                 Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
                 UpdatePickerPos();
             }
-            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, chosenDest, seed), false);
+            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, randomized, chosenDest, seed), false);
         }
     }
 }

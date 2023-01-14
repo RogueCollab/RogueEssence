@@ -1097,7 +1097,7 @@ namespace RogueEssence.Data
     public class RogueProgress : GameProgress
     {
         public bool Seeded { get; set; }
-
+        
         [JsonConstructor]
         public RogueProgress()
         { }
@@ -1176,6 +1176,7 @@ namespace RogueEssence.Data
                     Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
 
+                    
                 }
 
                 if (newRecruits.Count > 0)
@@ -1185,9 +1186,22 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_NEW_CHARS")));
                 }
 
-                yield return new WaitForFrames(20);
+                
+                bool restart = false;
+                DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRY_AGAIN_ASK"),
+                    () => { restart = true; }, () => { });
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
 
-                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+                if (restart)
+                {
+                    yield return new WaitForFrames(20);
+                    restartRun();
+                }
+                else
+                {
+                    yield return new WaitForFrames(20);
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+                }
             }
             else
             {
@@ -1290,7 +1304,69 @@ namespace RogueEssence.Data
             }
         }
 
+        private void restartRun()
+        {
+            if (GameManager.Instance.rogueConfig.TeamRandomized)
+                GameManager.Instance.rogueConfig.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+            GameManager.RogueStartConfig config = GameManager.Instance.rogueConfig;
+            CoroutineManager.Instance.StartCoroutine(StartRogue(GameManager.Instance.rogueConfig));
+        }
+        public IEnumerator<YieldInstruction> StartRogue(GameManager.RogueStartConfig config)
+        {
+            GameManager.Instance.BGM("", true);
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            GameProgress save = new RogueProgress(Seeded ? config.Seed : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), Seeded);
+            save.UnlockDungeon(config.Destination);
+            DataManager.Instance.SetProgress(save);
+            DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
+            DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+            DataManager.Instance.Save.ActiveTeam.Name = config.TeamName;
+
+            MonsterData monsterData = DataManager.Instance.GetMonster(config.Species);
+
+            int formSlot = config.FormSetting;
+            List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
+            if (formSlot >= forms.Count)
+                formSlot = forms.Count - 1;
+            if (formSlot == -1)
+                formSlot = MathUtils.Rand.Next(forms.Count);
+
+            int formIndex = forms[formSlot];
+
+            Gender gender = CharaDetailMenu.LimitGender(monsterData, formIndex, config.GenderSetting);
+            if (gender == Gender.Unknown)
+                gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
+            
+            int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, config.IntrinsicSetting);
+            string intrinsic;
+            if (intrinsicSlot == -1)
+                intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
+            else if (intrinsicSlot == 0)
+                intrinsic = monsterData.Forms[formIndex].Intrinsic1;
+            else if (intrinsicSlot == 1)
+                intrinsic = monsterData.Forms[formIndex].Intrinsic2;
+            else
+                intrinsic = monsterData.Forms[formIndex].Intrinsic3;
+
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Species, formIndex, config.SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
+            newChar.Nickname = config.Nickname;
+            DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
+
+            try
+            {
+                LuaEngine.Instance.OnNewGame();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid team!");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(config.Destination, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
+        }
     }
-
 }
