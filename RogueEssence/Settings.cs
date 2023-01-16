@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using RogueEssence.Menu;
 
 namespace RogueEssence
 {
@@ -45,6 +46,28 @@ namespace RogueEssence
         public int BGMBalance;
         public int SEBalance;
         public BattleSpeed BattleFlow;
+
+        private double textSpeed;
+        public double TextSpeed
+        {
+            get { return textSpeed; }
+            set
+            {
+                textSpeed = value;
+                if (textSpeed == Math.Floor(textSpeed))
+                {
+                    DialogueBox.CHAR_PER_TEXT_TIME = (int)textSpeed;
+                    DialogueBox.TEXT_TIME = 1;
+                }
+                //handle numbers ending with .5
+                else
+                {
+                    DialogueBox.CHAR_PER_TEXT_TIME = (int)(textSpeed * 2);
+                    DialogueBox.TEXT_TIME = 2;
+                }
+            }
+        }
+
         public SkillDefault DefaultSkills;
         public int Minimap;
         public int Border;
@@ -150,6 +173,7 @@ namespace RogueEssence
             BGMBalance = 5;
             SEBalance = 5;
             BattleFlow = BattleSpeed.Normal;
+            TextSpeed = 1.0;
             DefaultSkills = SkillDefault.Attacks;
             Language = "";
 

@@ -15,9 +15,10 @@ namespace RogueEssence.Menu
 
         protected const int HOLD_CANCEL_TIME = 30;
         private const int SCROLL_SPEED = 2;
-
         protected const int CURSOR_FLASH_TIME = 24;
-        public const int TEXT_TIME = 1;
+        public static int TEXT_TIME = 1;
+        public static int CHAR_PER_TEXT_TIME = 1;
+        
         public const int SIDE_BUFFER = 8;
         public const int TEXT_HEIGHT = 16;//14
         public const int VERT_PAD = 2;//1
@@ -98,6 +99,7 @@ namespace RogueEssence.Menu
             }
 
             TextPause textPause = getCurrentTextPause();
+            bool finishText = false;
             if (textPause != null)
             {
                 bool continueText;
@@ -116,16 +118,22 @@ namespace RogueEssence.Menu
                 }
             }
             else
-            {
-                bool continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
-                continueText |= CurrentText.Finished;
-            }
-
-
+                finishText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
+            
             if (!CurrentText.Finished)
             {
-                CurrentTextTime = new FrameTick();
-                CurrentText.CurrentCharIndex++;
+                if (finishText)
+                {
+                    CurrentTextTime = new FrameTick();
+                    for (int ii = 0; ii < CHAR_PER_TEXT_TIME; ii++)
+                    {
+                        if (!CurrentText.Finished)
+                            CurrentText.CurrentCharIndex++;
+                        else
+                            break;
+                    } 
+
+                }
                 if (Sound && LastSpeakTime > 2)
                 {
                     LastSpeakTime = new FrameTick();

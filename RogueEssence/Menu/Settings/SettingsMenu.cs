@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
@@ -38,7 +39,12 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii <= (int)Settings.BattleSpeed.VeryFast; ii++)
                 speedChoices.Add(((Settings.BattleSpeed)ii).ToLocal());
             totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BATTLE_SPEED"), 88, 72, speedChoices, (int)DiagManager.Instance.CurSettings.BattleFlow, confirmAction));
-
+            
+            List<string> textSpeedChoices = new List<string>();
+            for (int ii = 1; ii <= 6; ii++)
+                textSpeedChoices.Add((ii * 0.5).ToString(CultureInfo.InvariantCulture));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_TEXT_SPEED"), 88, 72, textSpeedChoices, (int)(DiagManager.Instance.CurSettings.TextSpeed * 2) - 1, confirmAction));
+            
             List<string> skillChoices = new List<string>();
             for (int ii = 0; ii <= (int)Settings.SkillDefault.All; ii++)
                 skillChoices.Add(((Settings.SkillDefault)ii).ToLocal());
@@ -86,20 +92,21 @@ namespace RogueEssence.Menu
             DiagManager.Instance.CurSettings.BGMBalance = TotalChoices[0].CurrentChoice;
             DiagManager.Instance.CurSettings.SEBalance = TotalChoices[1].CurrentChoice;
             DiagManager.Instance.CurSettings.BattleFlow = (Settings.BattleSpeed)TotalChoices[2].CurrentChoice;
-            DiagManager.Instance.CurSettings.DefaultSkills = (Settings.SkillDefault)TotalChoices[3].CurrentChoice;
+            DiagManager.Instance.CurSettings.TextSpeed = (TotalChoices[3].CurrentChoice + 1) * 0.5;
+            DiagManager.Instance.CurSettings.DefaultSkills = (Settings.SkillDefault)TotalChoices[4].CurrentChoice;
             if (this.inGame)
                 DataManager.Instance.Save.UpdateOptions();
-            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[4].CurrentChoice + 1) * 10;
-            DiagManager.Instance.CurSettings.Border = TotalChoices[5].CurrentChoice;
-            DiagManager.Instance.CurSettings.Window = TotalChoices[6].CurrentChoice;
+            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[5].CurrentChoice + 1) * 10;
+            DiagManager.Instance.CurSettings.Border = TotalChoices[6].CurrentChoice;
+            DiagManager.Instance.CurSettings.Window = TotalChoices[7].CurrentChoice;
             GraphicsManager.SetWindowMode(DiagManager.Instance.CurSettings.Window);
 
 
             bool changeLanguage = false;
             if (!inGame)
             {
-                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[7].CurrentChoice];
-                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[7].CurrentChoice];
+                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[8].CurrentChoice];
+                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[8].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
             }
