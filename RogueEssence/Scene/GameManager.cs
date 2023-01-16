@@ -88,8 +88,6 @@ namespace RogueEssence
         public const int FANFARE_FADE_START = 3;
         public const int FANFARE_FADE_END = 40;
         public const int FANFARE_WAIT_EXTRA = 20;
-        public RogueStartConfig RogueConfig;
-
         public GameManager()
         {
             fadedTitle = "";
@@ -99,7 +97,6 @@ namespace RogueEssence
             InputManager = new InputManager();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
-            RogueConfig = new RogueStartConfig();
 
             DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
 
@@ -1398,24 +1395,6 @@ namespace RogueEssence
                 DungeonScene.Instance.LogMsg(msg);
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(30));
             }
-        }
-
-        public class RogueStartConfig
-        {
-            public int IntrinsicSetting;
-            public int FormSetting;
-            public Gender GenderSetting;
-            public string TeamName;
-            public bool TeamRandomized;
-            public ulong Seed;
-            public bool Seeded;
-            public string SkinSetting;
-            public string Nickname;
-            public string Starter;
-            public bool StarterRandomized;
-            
-            public string Destination;
-            public bool DestinationRandomized;
         }
     }
 }

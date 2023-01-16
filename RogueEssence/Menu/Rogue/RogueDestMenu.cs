@@ -81,8 +81,14 @@ namespace RogueEssence.Menu
 
         private void choose(string choice, bool randomized)
         {
-            GameManager.Instance.RogueConfig.DestinationRandomized = randomized;
-            MenuManager.Instance.AddMenu(new RogueTeamInputMenu(choice, seed), false);
+            RogueConfig config = new RogueConfig();
+            config.Destination = choice;
+            config.DestinationRandomized = randomized;
+            bool seedRandomized = !seed.HasValue;
+            ulong seedVal = seedRandomized ?  MathUtils.Rand.NextUInt64() : seed.Value;
+            config.Seed = seedVal;
+            config.SeedRandomized = seedRandomized;
+            MenuManager.Instance.AddMenu(new RogueTeamInputMenu(config), false);
         }
 
 

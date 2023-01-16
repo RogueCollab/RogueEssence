@@ -1097,13 +1097,16 @@ namespace RogueEssence.Data
     public class RogueProgress : GameProgress
     {
         public bool Seeded { get; set; }
+
+        private RogueConfig config;
         
         [JsonConstructor]
         public RogueProgress()
         { }
-        public RogueProgress(ulong seed, string uuid, bool seeded) : base(seed, uuid)
+        public RogueProgress(string uuid,  RogueConfig config) : base(config.Seed, uuid)
         {
-            Seeded = seeded;
+            Seeded = !config.SeedRandomized;
+            this.config = config;
         }
         public override int GetTotalScore()
         {
@@ -1172,11 +1175,14 @@ namespace RogueEssence.Data
 
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
-
-                    Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
-
                     
+                    Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
+
+                    // handle the case for seeded runs and there's currently no scores for the current zone
+                    if (scores.ContainsKey(ZoneManager.Instance.CurrentZoneID))
+                    {
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));   
+                    }
                 }
 
                 if (newRecruits.Count > 0)
@@ -1191,16 +1197,11 @@ namespace RogueEssence.Data
                 DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRY_AGAIN_ASK"),
                     () => { restart = true; }, () => { });
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
-
+                yield return new WaitForFrames(20);
                 if (restart)
-                {
                     restartRun();
-                }
                 else
-                {
-                    yield return new WaitForFrames(20);
                     GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
-                }
             }
             else
             {
@@ -1296,41 +1297,44 @@ namespace RogueEssence.Data
                     if (allowTransfer)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));
                 }
-
-
-
+                
                 yield return new WaitForFrames(20);
+                
+                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
         }
 
         private void restartRun()
         {
-            if (GameManager.Instance.RogueConfig.TeamRandomized)
-                GameManager.Instance.RogueConfig.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
-            if (!GameManager.Instance.RogueConfig.Seeded)
-                GameManager.Instance.RogueConfig.Seed = MathUtils.Rand.NextUInt64();
-            if (GameManager.Instance.RogueConfig.StarterRandomized)
+            if (config.TeamRandomized)
+                config.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+            if (config.SeedRandomized)
+            {
+                config.Seed = MathUtils.Rand.NextUInt64();
+            }
+
+            if (config.StarterRandomized)
             {
                 List<string> starters = CharaChoiceMenu.GetStartersList();
                 string starter = starters[MathUtils.Rand.Next(starters.Count)];
-                GameManager.Instance.RogueConfig.Starter = starter;
-                GameManager.Instance.RogueConfig.IntrinsicSetting = -1;
-                GameManager.Instance.RogueConfig.FormSetting = -1;
-                GameManager.Instance.RogueConfig.GenderSetting = Gender.Unknown;
+                config.Starter = starter;
+                config.IntrinsicSetting = -1;
+                config.FormSetting = -1;
+                config.GenderSetting = Gender.Unknown;
             }
-            if (GameManager.Instance.RogueConfig.DestinationRandomized)
+            if (config.DestinationRandomized)
             {
                 List<string> destinations = RogueDestMenu.GetDestinationsList();
-                GameManager.Instance.RogueConfig.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
+                config.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
             }
-            GameManager.Instance.SceneOutcome = StartRogue(GameManager.Instance.RogueConfig);
+            GameManager.Instance.SceneOutcome = StartRogue();
 
         }
-        public IEnumerator<YieldInstruction> StartRogue(GameManager.RogueStartConfig config)
+        public IEnumerator<YieldInstruction> StartRogue()
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
-            GameProgress save = new RogueProgress(config.Seed, Guid.NewGuid().ToString().ToUpper(), config.Seeded);
+            GameProgress save = new RogueProgress(Guid.NewGuid().ToString().ToUpper(), config);
             save.UnlockDungeon(config.Destination);
             DataManager.Instance.SetProgress(save);
             DataManager.Instance.Save.UpdateVersion();
@@ -1379,8 +1383,27 @@ namespace RogueEssence.Data
             {
                 DiagManager.Instance.LogError(ex);
             }
-
+            
+            // TODO - calling this resolves the replay error, but causes one other error
+            ZoneManager.InitInstance();
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(config.Destination, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
         }
+    }
+    
+    public class RogueConfig
+    {
+        public string Destination;
+        public bool DestinationRandomized;
+        public string TeamName;
+        public bool TeamRandomized;
+        public string Starter;
+        public bool StarterRandomized;
+        public int IntrinsicSetting;
+        public int FormSetting;
+        public Gender GenderSetting;
+        public ulong Seed;
+        public bool SeedRandomized;
+        public string SkinSetting;
+        public string Nickname;
     }
 }

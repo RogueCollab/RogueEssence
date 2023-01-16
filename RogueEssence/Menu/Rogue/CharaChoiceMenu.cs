@@ -14,9 +14,7 @@ namespace RogueEssence.Menu
         private static int defaultChoice;
 
         private const int SLOTS_PER_PAGE = 12;
-
-        private string team;
-        private string chosenDest;
+        
         public int FormSetting;
         public string SkinSetting;
         public Gender GenderSetting;
@@ -25,10 +23,11 @@ namespace RogueEssence.Menu
         private CharaSummary infoMenu;
         public SpeakerPortrait Portrait;
         private List<string> startChars;
-        private ulong? seed;
+        private RogueConfig config;
 
-        public CharaChoiceMenu(string teamName, string chosenDungeon, ulong? seed)
+        public CharaChoiceMenu(RogueConfig config)
         {
+            this.config = config;
             GenderSetting = Gender.Unknown;
             SkinSetting = DataManager.Instance.DefaultSkin;
             IntrinsicSetting = -1;
@@ -52,10 +51,6 @@ namespace RogueEssence.Menu
             if (box.Length == 1)
                 totalSlots = box[0].Length;
 
-            team = teamName;
-            chosenDest = chosenDungeon;
-            this.seed = seed;
-
             Portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(200, 64), true);
 
             infoMenu = new CharaSummary(new Rect(new Loc(152, 128), new Loc(136, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
@@ -66,7 +61,7 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box, startIndex, startPage, totalSlots, false, -1);
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", config.TeamName), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             title.Color = TextTan;
             titleMenu.Elements.Add(title);
 
@@ -96,7 +91,7 @@ namespace RogueEssence.Menu
 
         private void choose(int choice, bool randomized)
         {
-            GameManager.Instance.RogueConfig.StarterRandomized = randomized;
+            config.StarterRandomized = randomized;
             MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
             {
                 MenuManager.Instance.ClearMenus();
@@ -186,21 +181,16 @@ namespace RogueEssence.Menu
         
         public IEnumerator<YieldInstruction> Begin(int choice, string name)
         {
-            bool seeded = seed.HasValue;
-            ulong seedVal = seeded ? seed.Value : MathUtils.Rand.NextUInt64();
-            RogueProgress save = new RogueProgress(seedVal, Guid.NewGuid().ToString().ToUpper(), seeded);
-            string species = startChars[choice];
-            GameManager.Instance.RogueConfig.Starter = species;
-            GameManager.Instance.RogueConfig.IntrinsicSetting = IntrinsicSetting;
-            GameManager.Instance.RogueConfig.FormSetting = FormSetting;
-            GameManager.Instance.RogueConfig.GenderSetting= GenderSetting;
-            GameManager.Instance.RogueConfig.SkinSetting = SkinSetting;
-            GameManager.Instance.RogueConfig.TeamName = team;
-            GameManager.Instance.RogueConfig.Nickname = name;
-            GameManager.Instance.RogueConfig.Destination = chosenDest;
-            GameManager.Instance.RogueConfig.Seeded = seeded;
-            GameManager.Instance.RogueConfig.Seed = seedVal;
-            return save.StartRogue(GameManager.Instance.RogueConfig);
+            RogueProgress save = new RogueProgress(Guid.NewGuid().ToString().ToUpper(), config);
+            string starter = startChars[choice];
+            config.IntrinsicSetting = IntrinsicSetting;
+            config.FormSetting = FormSetting;
+            config.GenderSetting= GenderSetting;
+            config.SkinSetting = SkinSetting;
+            config.Nickname = name;
+            config.Starter = starter;
+            
+            return save.StartRogue();
         }
 
         public static List<string> GetStartersList()
