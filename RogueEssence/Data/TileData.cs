@@ -36,8 +36,16 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
         public ObjAnimData Anim;
-        public bool ObjectLayer;
+
+        /// <summary>
+        /// The layer to draw the tile on.  Only supports Bottom, Back and Front for now.
+        /// </summary>
+        public DrawLayer Layer;
         //public bool BlockLight;
+
+        /// <summary>
+        /// Prevents items from landing on it.
+        /// </summary>
         public bool BlockItem;
         public TriggerType StepType;
         public Loc MinimapIcon;

@@ -139,10 +139,18 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(effect.ID) && effect.Exposed && !DataManager.Instance.HideObjects)
             {
                 List<(IDrawableSprite, Loc)> targetDraw;
-                if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
-                    targetDraw = backDraw;
-                else
-                    targetDraw = groundDraw;
+                switch (DataManager.Instance.GetTile(effect.ID).Layer)
+                {
+                    case DrawLayer.Back:
+                        targetDraw = backDraw;
+                        break;
+                    case DrawLayer.Front:
+                        targetDraw = frontDraw;
+                        break;
+                    default:
+                        targetDraw = groundDraw;
+                        break;
+                }
 
                 if (seeTrap || effect.Revealed)
                     AddToDraw(targetDraw, new DrawTile(visualLoc, effect.ID));
