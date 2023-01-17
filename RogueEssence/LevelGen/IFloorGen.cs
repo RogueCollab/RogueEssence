@@ -223,6 +223,33 @@ namespace RogueEssence.LevelGen
         }
     }
 
+
+    /// <summary>
+    /// Chooses one floorgen out of several possibilities.
+    /// </summary>
+    [Serializable]
+    public class ChanceFloorGen : IFloorGen
+    {
+        public SpawnList<IFloorGen> Spawns;
+
+        public ChanceFloorGen()
+        {
+            Spawns = new SpawnList<IFloorGen>();
+        }
+
+        public IGenContext GenMap(ZoneGenContext zoneContext)
+        {
+            //NOTE: initializing the seed like this means the genned map technically reuses the first roll used to pick its algorithm in the first place
+            //problem?
+            IRandom spawnRand = new ReRandom(zoneContext.Seed);
+            IFloorGen gen = Spawns.Pick(spawnRand);
+
+            IGenContext map = gen.GenMap(zoneContext);
+
+            return map;
+        }
+    }
+
     public interface IFloorGen
     {
         //Map ExtractMap(ulong seed);
