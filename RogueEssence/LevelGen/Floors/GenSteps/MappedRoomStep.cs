@@ -29,10 +29,12 @@ namespace RogueEssence.LevelGen
             ulong seed = map.Rand.FirstSeed;
             int id = map.ID;
             LocalText name = map.Map.Name;
+            bool dropTitle = map.Map.DropTitle;
             map.Map = DataManager.Instance.GetMap(MapID);
             map.InitSeed(seed);
             map.Map.ID = id;
             map.Map.Name = name;
+            map.Map.DropTitle = dropTitle;
         }
 
         public override string ToString()
