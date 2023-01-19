@@ -206,8 +206,7 @@ namespace RogueEssence.Menu
             else
             {
                 TotalTextTime += elapsedTime;
-                if (!CurrentText.Finished)
-                    CurrentTextTime += elapsedTime;
+                CurrentTextTime += elapsedTime;
                 if (scrolling)
                     CurrentScrollTime += elapsedTime;
             }
