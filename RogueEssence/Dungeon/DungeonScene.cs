@@ -848,7 +848,7 @@ namespace RogueEssence.Dungeon
         public void CalculateMovePreviews(int previewMove)
         {
             List<HashSet<Loc>> previews = new List<HashSet<Loc>>();
-            SlotSkill move = FocusedCharacter.BaseSkills[previewMove];
+            Skill move = FocusedCharacter.Skills[previewMove].Element;
             SkillData data = DataManager.Instance.GetSkill(move.SkillNum);
             ExplosionData explosion = data.Explosion;
             CombatAction hitbox = data.HitboxAction;
