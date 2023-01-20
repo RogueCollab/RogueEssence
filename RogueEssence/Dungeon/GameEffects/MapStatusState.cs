@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using NLua;
+using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dev;
 using System;
@@ -21,6 +22,16 @@ namespace RogueEssence.Dungeon
         public MapCountDownState(int counter) { Counter = counter; }
         protected MapCountDownState(MapCountDownState other) { Counter = other.Counter; }
         public override GameplayState Clone() { return new MapCountDownState(this); }
+    }
+
+    [Serializable]
+    public class MapLocState : MapStatusState
+    {
+        public Loc Target;
+        public MapLocState() { }
+        public MapLocState(Loc target) { Target = target; }
+        protected MapLocState(MapLocState other) { Target = other.Target; }
+        public override GameplayState Clone() { return new MapLocState(this); }
     }
     [Serializable]
     public class MapWeatherState : MapStatusState
