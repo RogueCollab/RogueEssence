@@ -99,6 +99,8 @@ namespace RogueEssence.Dungeon
         
         public bool Turn;
         
+        private bool canPreTurn;
+        
         public int CurrentPreviewMove = -1;
 
         private List<HashSet<Loc>> movePreviews;
@@ -399,6 +401,7 @@ namespace RogueEssence.Dungeon
                 bool runCancelling = false;
                 int previewMove = -1;
                 bool previewing = false;
+
                 HashSet<Character> newRevealed = null;
 
                 if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
@@ -510,7 +513,7 @@ namespace RogueEssence.Dungeon
                         bool run = input[FrameInput.InputType.Run];
                         if (input[FrameInput.InputType.Turn])
                             turn = true;
-
+                        
                         if (input[FrameInput.InputType.Diagonal])
                             diagonal = true;
 
@@ -525,7 +528,7 @@ namespace RogueEssence.Dungeon
                             //if confirm was the only move, then the command is an attack
                             action = new GameAction(GameAction.ActionType.Attack, Dir8.None);
                         }//directions
-                        else if (input.JustPressed(FrameInput.InputType.Turn))
+                        else if (input.JustPressed(FrameInput.InputType.Turn) || (canPreTurn && turn))
                         {
                             //first attempt to turn to a foe
                             Dir8 losTarget = getTurnDir(false, true);
@@ -696,6 +699,7 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
+                canPreTurn = !turn;
                 ShowActions = showSkills;
                 CurrentPreviewMove = previewMove;
                 Turn = turn;
