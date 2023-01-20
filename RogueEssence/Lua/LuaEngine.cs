@@ -254,6 +254,7 @@ namespace RogueEssence.Script
             Restart,
             Update,
 
+            MusicChange,
             GroundEntityInteract,
 
             DungeonModeBegin,
@@ -1751,6 +1752,15 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.UpgradeSave.ToString());
         }
 
+        /// <summary>
+        /// Called when the music changes!
+        /// </summary>
+        public void OnMusicChange(string name, string originName, string album, string artist, string spoiler)
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnMusicChange()..");
+            m_scrsvc.Publish(EServiceEvents.MusicChange.ToString(), name, originName, album, artist, spoiler);
+        }
+        
         /// <summary>
         /// Called when the game mode switches to GroundMode!
         /// </summary>
