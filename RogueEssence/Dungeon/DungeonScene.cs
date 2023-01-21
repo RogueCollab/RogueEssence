@@ -88,10 +88,6 @@ namespace RogueEssence.Dungeon
         HotkeyMenu[] ShownHotkeys;
         PreviewSkillMenu Preview;
 
-        public TimeSpan SavedDungeonTime;
-        public DateTime LastEnterTime;
-        public bool ContinueTimer;
-
         public List<Loc> PendingTraps;
         
         public List<PickupItem> PickupItems;
@@ -318,8 +314,6 @@ namespace RogueEssence.Dungeon
 
             if (IsGameOver())
             {
-                // stop incrementing the time
-                ContinueTimer = false;
                 bool allowRescue = true;
                 if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
                     allowRescue = false;
@@ -369,7 +363,8 @@ namespace RogueEssence.Dungeon
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(DataManager.Instance.CurrentReplay.ReadCommand()));
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                     {
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Save.UpdateOptions();
 
@@ -736,9 +731,6 @@ namespace RogueEssence.Dungeon
 
         public override void Update(FrameTick elapsedTime)
         {
-            if (ContinueTimer && DataManager.Instance.CurrentReplay == null)
-                DataManager.Instance.Save.DungeonTime = SavedDungeonTime + (DateTime.Now - LastEnterTime);
-
             //update UI notes
             LiveBattleLog.Update(elapsedTime);
             TeamModeNote.Update(elapsedTime);

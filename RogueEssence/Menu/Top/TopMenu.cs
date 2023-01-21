@@ -212,15 +212,12 @@ namespace RogueEssence.Menu
             if (DataManager.Instance.Save.NextDest.IsValid())
             {
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
-                RecordHeaderData header = DataManager.Instance.GetRecordHeader(DataManager.Instance.CurrentReplay.RecordDir);
-                DungeonScene.Instance.SavedDungeonTime = TimeSpan.FromTicks(header.Time);
-                DungeonScene.Instance.LastEnterTime = DateTime.Now;
-                DungeonScene.Instance.ContinueTimer = true;
             }
             else
             {
                 //no valid next dest happens when the player has saved in a ground map in the middle of an adventure
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                 DataManager.Instance.CurrentReplay = null;
                 DataManager.Instance.Save.UpdateOptions();
 
