@@ -99,10 +99,9 @@ namespace RogueEssence.Menu
             }
 
             TextPause textPause = getCurrentTextPause();
-            bool finishText = false;
+            bool continueText;
             if (textPause != null)
             {
-                bool continueText;
                 if (textPause.Time > 0)
                     continueText = CurrentTextTime >= textPause.Time;
                 else
@@ -118,21 +117,14 @@ namespace RogueEssence.Menu
                 }
             }
             else
-                finishText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
+                continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
             
             if (!CurrentText.Finished)
             {
-                if (finishText)
+                if (continueText)
                 {
                     CurrentTextTime = new FrameTick();
-                    for (int ii = 0; ii < CHAR_PER_TEXT_TIME; ii++)
-                    {
-                        if (!CurrentText.Finished)
-                            CurrentText.CurrentCharIndex++;
-                        else
-                            break;
-                    } 
-
+                    CurrentText.CurrentCharIndex += CHAR_PER_TEXT_TIME;
                 }
                 if (Sound && LastSpeakTime > 2)
                 {

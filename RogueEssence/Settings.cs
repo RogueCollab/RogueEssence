@@ -58,12 +58,16 @@ namespace RogueEssence
                 {
                     DialogueBox.CHAR_PER_TEXT_TIME = (int)textSpeed;
                     DialogueBox.TEXT_TIME = 1;
+                    TitleDialog.CHAR_PER_TEXT_TIME = (int)textSpeed;
+                    TitleDialog.TEXT_TIME = 1;
                 }
                 //handle numbers ending with .5
                 else
                 {
                     DialogueBox.CHAR_PER_TEXT_TIME = (int)(textSpeed * 2);
                     DialogueBox.TEXT_TIME = 2;
+                    TitleDialog.CHAR_PER_TEXT_TIME = (int)(textSpeed * 2);
+                    TitleDialog.TEXT_TIME = 2;
                 }
             }
         }

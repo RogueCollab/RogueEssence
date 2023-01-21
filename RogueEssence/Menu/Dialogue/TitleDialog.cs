@@ -16,7 +16,9 @@ namespace RogueEssence.Menu
         private const int SCROLL_SPEED = 2;
 
         protected const int CURSOR_FLASH_TIME = 24;
-        public const int TEXT_TIME = 1;
+        public static int TEXT_TIME = 1;
+        public static int CHAR_PER_TEXT_TIME = 1;
+        
         public const int SIDE_BUFFER = 8;
         public const int TEXT_HEIGHT = 16;
         public const int FADE_TIME = 60;
@@ -255,8 +257,7 @@ namespace RogueEssence.Menu
                 if (continueText)
                 {
                     CurrentTextTime = new FrameTick();
-                    CurrentText.CurrentCharIndex++;
-
+                    CurrentText.CurrentCharIndex += CHAR_PER_TEXT_TIME;
                     if (textPause != null)//remove last text pause
                         CurrentPause.RemoveAt(0);
                 }
