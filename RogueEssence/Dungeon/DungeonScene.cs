@@ -365,7 +365,8 @@ namespace RogueEssence.Dungeon
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(DataManager.Instance.CurrentReplay.ReadCommand()));
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                     {
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Save.UpdateOptions();
 

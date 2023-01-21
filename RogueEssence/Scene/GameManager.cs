@@ -842,7 +842,8 @@ namespace RogueEssence
                     else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
                     {
                         //resuming a game that was just rescued
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Loading = DataManager.LoadMode.None;
                         SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
@@ -882,7 +883,8 @@ namespace RogueEssence
                         else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                         {
                             //the game accepts loading into a file that has been downed, or passed its section with nothing else
-                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                            DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                             DataManager.Instance.CurrentReplay = null;
                             //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
 
@@ -922,6 +924,9 @@ namespace RogueEssence
                 //trigger the end-segment script
                 if (rescue)
                 {
+                    //compute and update the current session time.  the value in the gameprogress wont matter, but we are just using this function to get the result value.
+                    DataManager.Instance.Save.EndSession();
+                    DataManager.Instance.SaveSessionTime(DataManager.Instance.Save.SessionTime);
                     DataManager.Instance.SuspendPlay();
                     GameState state = DataManager.Instance.LoadMainGameState(false);
                     SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, DataManager.Instance.Save.GetModVersion());

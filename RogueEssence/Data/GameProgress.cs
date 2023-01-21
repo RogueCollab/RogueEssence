@@ -128,6 +128,17 @@ namespace RogueEssence.Data
         public int StartLevel;
         public int RescuesLeft;
 
+        /// <summary>
+        /// The total play time from past sessions.
+        /// </summary>
+        public TimeSpan SessionTime;
+
+        /// <summary>
+        /// The time when the current session was started.
+        /// </summary>
+        public DateTime SessionStartTime;
+
+
         //these values update and never clear
         public string EndDate;
         public string Location;
@@ -201,6 +212,20 @@ namespace RogueEssence.Data
             }
         }
 
+        public string GetDungeonTimeDisplay()
+        {
+            TimeSpan totalSessionTime = SessionTime;
+            //add the time elapsed since current session start, if we have a session start
+            if (SessionStartTime.Ticks > 0)
+                totalSessionTime += (DateTime.Now - SessionStartTime);
+
+            string display = "99:59:59";
+            int totalHours = totalSessionTime.Hours;
+            if (totalHours < 100)
+                display = String.Format("{0:D2}", totalHours) + totalSessionTime.ToString(@"\:mm\:ss");
+
+            return display;
+        }
         public bool GetDefaultEnable(string moveIndex)
         {
             if (String.IsNullOrEmpty(moveIndex))
@@ -305,6 +330,40 @@ namespace RogueEssence.Data
 
         public abstract IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
+
+        /// <summary>
+        /// Begin counting play time for session
+        /// </summary>
+        public void BeginSession()
+        {
+            SessionTime = TimeSpan.Zero;
+            SessionStartTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Stops counting play time for the end of an adventure or suspending via quicksave
+        /// </summary>
+        public void EndSession()
+        {
+            SessionTime = SessionTime + (DateTime.Now - SessionStartTime);
+            SessionStartTime = new DateTime(0);
+        }
+
+        /// <summary>
+        /// Loads play time from replay data
+        /// resume counting play time by setting the sesion start
+        /// </summary>
+        public void ResumeSession(ReplayData replay)
+        {
+            SessionTime = new TimeSpan(replay.SessionTime);
+            if (replay.SessionStartTime > 0L)
+            {
+                //special case: use dirty value from forcequitted session
+                SessionStartTime = new DateTime(replay.SessionStartTime);
+            }
+            else
+                SessionStartTime = DateTime.Now;
+        }
 
         public abstract int GetTotalScore();
 
@@ -901,7 +960,7 @@ namespace RogueEssence.Data
             //restrict team size/bag size/etc
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
-
+            
             MidAdventure = true;
             Stakes = stakes;
 
@@ -929,13 +988,16 @@ namespace RogueEssence.Data
 
             DataManager.Instance.Save.RestartLogs(seed);
             DataManager.Instance.Save.RescuesLeft = zone.Rescues;
+            DataManager.Instance.Save.BeginSession();
 
             if (recorded)
-                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false);
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false, SessionStartTime);
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
         {
+            EndSession();
+
             Outcome = result;
             bool recorded = DataManager.Instance.RecordingReplay;
             string recordFile = null;
@@ -1113,17 +1175,19 @@ namespace RogueEssence.Data
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             ZoneData zone = DataManager.Instance.GetZone(zoneID);
-
+            
             MidAdventure = true;
             Stakes = stakes;
 
             yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false, true, true));
 
+            BeginSession();
+
             if (recorded)
             {
                 if (!Directory.Exists(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
                     Directory.CreateDirectory(PathMod.ModSavePath(DataManager.ROGUE_PATH));
-                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded, SessionStartTime);
             }
 
             yield break;
@@ -1131,6 +1195,8 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
         {
+            EndSession();
+
             bool recorded = DataManager.Instance.RecordingReplay;
             //if lose, end the play, display plaque, and go to title
             if (result != ResultType.Cleared)

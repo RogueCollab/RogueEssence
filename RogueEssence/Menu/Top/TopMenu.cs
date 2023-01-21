@@ -203,7 +203,7 @@ namespace RogueEssence.Menu
 
             DataManager.Instance.Loading = DataManager.LoadMode.Loading;
             DataManager.Instance.CurrentReplay = replay;
-
+            
             if (rescueMail != null)
                 DataManager.Instance.Save.Rescue = new RescueState(rescueMail, false);
 
@@ -216,7 +216,8 @@ namespace RogueEssence.Menu
             else
             {
                 //no valid next dest happens when the player has saved in a ground map in the middle of an adventure
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                 DataManager.Instance.CurrentReplay = null;
                 DataManager.Instance.Save.UpdateOptions();
 
