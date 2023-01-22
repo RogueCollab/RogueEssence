@@ -14,9 +14,7 @@ namespace RogueEssence.Menu
         private static int defaultChoice;
 
         private const int SLOTS_PER_PAGE = 12;
-
-        private string team;
-        private string chosenDest;
+        
         public int FormSetting;
         public string SkinSetting;
         public Gender GenderSetting;
@@ -25,34 +23,25 @@ namespace RogueEssence.Menu
         private CharaSummary infoMenu;
         public SpeakerPortrait Portrait;
         private List<string> startChars;
-        private ulong? seed;
+        private RogueConfig config;
 
-        public CharaChoiceMenu(string teamName, string chosenDungeon, ulong? seed)
+        public CharaChoiceMenu(RogueConfig config)
         {
+            this.config = config;
             GenderSetting = Gender.Unknown;
             SkinSetting = DataManager.Instance.DefaultSkin;
             IntrinsicSetting = -1;
             FormSetting = -1;
-            
-            startChars = new List<string>();
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
-            {
-                if (DiagManager.Instance.DevMode)
-                    startChars.Add(key);
 
-                else if (DataManager.Instance.Save.GetRogueUnlock(key) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).Released)
-                    startChars.Add(key);
-                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == key) > -1)
-                    startChars.Add(key);
-            }
+            startChars = GetStartersList();
 
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(MathUtils.Rand.Next(startChars.Count)); }));
+            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(MathUtils.Rand.Next(startChars.Count), true); }));
             for (int ii = 0; ii < startChars.Count; ii++)
             {
                 int startSlot = ii;
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(startChars[ii]).GetColoredName(), () => { choose(startSlot); }));
+                flatChoices.Add(new MenuTextChoice(DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(startChars[ii]).GetColoredName(), () => { choose(startSlot, false); }));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
@@ -61,10 +50,6 @@ namespace RogueEssence.Menu
             int totalSlots = SLOTS_PER_PAGE;
             if (box.Length == 1)
                 totalSlots = box[0].Length;
-
-            team = teamName;
-            chosenDest = chosenDungeon;
-            this.seed = seed;
 
             Portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(200, 64), true);
 
@@ -76,7 +61,7 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), 112, Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), box, startIndex, startPage, totalSlots, false, -1);
 
             titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 8, 16), new Loc(GraphicsManager.ScreenWidth - 8, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", team), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            MenuText title = new MenuText(Text.FormatKey("MENU_START_TEAM", config.TeamName), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             title.Color = TextTan;
             titleMenu.Elements.Add(title);
 
@@ -104,8 +89,9 @@ namespace RogueEssence.Menu
             base.ChoiceChanged();
         }
 
-        private void choose(int choice)
+        private void choose(int choice, bool randomized)
         {
+            config.StarterRandomized = randomized;
             MenuManager.Instance.AddMenu(new NicknameMenu((string name) =>
             {
                 MenuManager.Instance.ClearMenus();
@@ -195,60 +181,32 @@ namespace RogueEssence.Menu
         
         public IEnumerator<YieldInstruction> Begin(int choice, string name)
         {
-            GameManager.Instance.BGM("", true);
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
-
-            GameProgress save = new RogueProgress(seed.HasValue ? seed.Value : MathUtils.Rand.NextUInt64(), Guid.NewGuid().ToString().ToUpper(), seed.HasValue);
-            save.UnlockDungeon(chosenDest);
-            DataManager.Instance.SetProgress(save);
-            DataManager.Instance.Save.UpdateVersion();
-            DataManager.Instance.Save.UpdateOptions();
-            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
-            DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
-            DataManager.Instance.Save.ActiveTeam.Name = team;
-
-            MonsterData monsterData = DataManager.Instance.GetMonster(startChars[choice]);
-
-            int formSlot = FormSetting;
-            List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
-            if (formSlot >= forms.Count)
-                formSlot = forms.Count - 1;
-            if (formSlot == -1)
-                formSlot = MathUtils.Rand.Next(forms.Count);
-
-            int formIndex = forms[formSlot];
-
-            Gender gender = CharaDetailMenu.LimitGender(monsterData, formIndex, GenderSetting);
-            if (gender == Gender.Unknown)
-                gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
+            string starter = startChars[choice];
+            config.IntrinsicSetting = IntrinsicSetting;
+            config.FormSetting = FormSetting;
+            config.GenderSetting= GenderSetting;
+            config.SkinSetting = SkinSetting;
+            config.Nickname = name;
+            config.Starter = starter;
             
-            int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, IntrinsicSetting);
-            string intrinsic;
-            if (intrinsicSlot == -1)
-                intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
-            else if (intrinsicSlot == 0)
-                intrinsic = monsterData.Forms[formIndex].Intrinsic1;
-            else if (intrinsicSlot == 1)
-                intrinsic = monsterData.Forms[formIndex].Intrinsic2;
-            else
-                intrinsic = monsterData.Forms[formIndex].Intrinsic3;
+            return RogueProgress.StartRogue(config);
+        }
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(startChars[choice], formIndex, SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
-            newChar.Nickname = name;
-            DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
+        public static List<string> GetStartersList()
+        {
+            List<string> starters = new List<string>();
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
+            {
+                if (DiagManager.Instance.DevMode)
+                    starters.Add(key);
 
-            try
-            {
-                LuaEngine.Instance.OnNewGame();
-                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
-                    throw new Exception("Script generated an invalid team!");
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
+                else if (DataManager.Instance.Save.GetRogueUnlock(key) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).Released)
+                    starters.Add(key);
+                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == key) > -1)
+                    starters.Add(key);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(chosenDest, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
+            return starters;
         }
     }
 }

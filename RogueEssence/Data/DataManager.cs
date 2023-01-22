@@ -972,7 +972,8 @@ namespace RogueEssence.Data
         /// <param name="zoneId"></param>
         /// <param name="rogue"></param>
         /// <param name="seeded"></param>
-        public void BeginPlay(string filePath, string zoneId, bool rogue, bool seeded)
+        /// <param name="sessionStart"></param>
+        public void BeginPlay(string filePath, string zoneId, bool rogue, bool seeded, DateTime sessionStart)
         {
             try
             {
@@ -989,6 +990,8 @@ namespace RogueEssence.Data
                 replayWriter.Write(version.Build);
                 replayWriter.Write(version.Revision);
                 replayWriter.Write(0L);//pointer to epitaph location, 0 for now
+                replayWriter.Write(0L);//final time, 0 for now
+                replayWriter.Write(sessionStart.Ticks);//session start time
                 replayWriter.Write(0);//final score, 0 for now
                 replayWriter.Write(0);//final result, 0 for now
                 replayWriter.Write(zoneId);
@@ -1013,7 +1016,8 @@ namespace RogueEssence.Data
         /// The quicksave file is loaded and the stream position is set to the end, so that it can continue writing the replay.
         /// </summary>
         /// <param name="replay">The quicksave replay to resume from.</param>
-        public void ResumePlay(ReplayData replay)
+        /// <param name="sessionResumeTime"></param>
+        public void ResumePlay(ReplayData replay, DateTime sessionResumeTime)
         {
             try
             {
@@ -1029,7 +1033,13 @@ namespace RogueEssence.Data
                     replayWriter.Flush();
                 }
                 else
+                {
+                    //TODO: remove this logic when save data is used for quicksaves
+                    replayWriter.BaseStream.Seek(sizeof(Int32) * 4 + sizeof(Int64) * 2, SeekOrigin.Begin);
+                    replayWriter.Write(sessionResumeTime.Ticks);
+
                     replayWriter.BaseStream.Seek(0, SeekOrigin.End);
+                }
             }
             catch (Exception ex)
             {
@@ -1233,6 +1243,8 @@ namespace RogueEssence.Data
                         //pointers and score
                         replayWriter.BaseStream.Seek(sizeof(Int32) * 4, SeekOrigin.Begin);
                         replayWriter.Write(epitaphPos);
+                        replayWriter.Write(epitaph.SessionTime.Ticks);
+                        replayWriter.Write(epitaph.SessionStartTime.Ticks);
                         replayWriter.Write(epitaph.GetTotalScore());
                         replayWriter.Write((int)epitaph.Outcome);
                     }
@@ -1277,13 +1289,34 @@ namespace RogueEssence.Data
             return Text.GetNonConflictingName(fileName, savePathExists);
         }
 
+        //TODO: remove this when LogQuicksave is working
+        /// <summary>
+        /// Saves the current session time
+        /// </summary>
+        /// <param name="sessionTime"></param>
+        public void SaveSessionTime(TimeSpan sessionTime)
+        {
+            try
+            {
+                if (replayWriter != null)
+                {
+                    replayWriter.BaseStream.Seek(sizeof(Int32) * 4 + sizeof(Int64), SeekOrigin.Begin);
+                    replayWriter.Write(sessionTime.Ticks);
+                    replayWriter.Write(0L);
+                    replayWriter.BaseStream.Seek(0, SeekOrigin.End);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
         /// <summary>
         /// Called when an adventure is suspended.  Closes the replay writing stream to allow for clean exit.
         /// Note how nothing else is done aside form closing the stream.
         /// Quicksaves already save every action from the player as it happens, so even if they closed the game there is no lost data.
         /// </summary>
-        /// <param name="epitaph"></param>
-        /// <param name="outFile"></param>
         /// <returns></returns>
         public void SuspendPlay()
         {
@@ -1294,7 +1327,6 @@ namespace RogueEssence.Data
                     replayWriter.Close();
                     replayWriter = null;
                 }
-
             }
             catch (Exception ex)
             {
@@ -1363,6 +1395,10 @@ namespace RogueEssence.Data
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                         //epitaph location
                         long endPos = reader.ReadInt64();
+                        //read time
+                        reader.ReadInt64();
+                        //read session start time
+                        reader.ReadInt64();
                         //read score
                         record.Score = reader.ReadInt32();
                         //read result
@@ -1457,6 +1493,10 @@ namespace RogueEssence.Data
                         writer.Write(reader.ReadInt32());
                         //read the pointer for location of epitaph
                         writer.Write(reader.ReadInt64());
+                        //read time
+                        writer.Write(reader.ReadInt64());
+                        //read session time
+                        writer.Write(reader.ReadInt64());
                         //read score
                         writer.Write(reader.ReadInt32());
                         //read result
@@ -1504,6 +1544,10 @@ namespace RogueEssence.Data
                         long endPos = reader.ReadInt64();
                         if (endPos > 0 && quickload)
                             throw new Exception("Cannot quickload a completed file!");
+                        //read time
+                        replay.SessionTime = reader.ReadInt64();
+                        //read session time
+                        replay.SessionStartTime = reader.ReadInt64();
                         //read score
                         reader.ReadInt32();
                         //read result
@@ -1615,6 +1659,10 @@ namespace RogueEssence.Data
                         //read the pointer for location of epitaph
                         reader.ReadInt64();
                         writer.Write(0L);
+                        //read time
+                        writer.Write(reader.ReadInt64());
+                        //read session time
+                        writer.Write(reader.ReadInt64());
                         //read score
                         writer.Write(reader.ReadInt32());
                         //read result

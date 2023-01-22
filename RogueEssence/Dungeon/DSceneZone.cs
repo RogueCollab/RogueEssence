@@ -179,6 +179,9 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            //compute and update the current session time.  the value in the gameprogress wont matter, but we are just using this function to get the result value.
+            DataManager.Instance.Save.EndSession();
+            DataManager.Instance.SaveSessionTime(DataManager.Instance.Save.SessionTime);
             //TODO: resolve all Nonserialized variables (such as in mapgen, AI) being inconsistent before enabling this.
             //DataManager.Instance.LogQuicksave();
             DataManager.Instance.SuspendPlay();

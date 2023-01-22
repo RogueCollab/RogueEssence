@@ -48,8 +48,13 @@ namespace RogueEssence.Menu
 
     public class ScriptableSingleStripMenu : SingleStripMenu
     {
-        public ScriptableSingleStripMenu(int x, int y, int minWidth, LuaTable choicesPairs, object defaultChoice)
+        public List<SummaryMenu> SummaryMenus;
+
+        public LuaFunction CancelFunction;
+
+        public ScriptableSingleStripMenu(int x, int y, int minWidth, LuaTable choicesPairs, object defaultChoice, LuaFunction cancelFun)
         {
+            CancelFunction = cancelFun;
             int? mappedDefault = null;
             //Intepret the choices from lua
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
@@ -86,6 +91,29 @@ namespace RogueEssence.Menu
 
             int choice_width = CalculateChoiceLength(choices, minWidth);
             Initialize(new Loc(x, y), choice_width, choices.ToArray(), mappedDefault.Value);
+
+            SummaryMenus = new List<SummaryMenu>();
+        }
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            foreach (SummaryMenu menu in SummaryMenus)
+                menu.Draw(spriteBatch);
+        }
+
+        protected override void MenuPressed()
+        {
+            if (CancelFunction != null)
+                CancelFunction.Call();
+        }
+
+        protected override void Canceled()
+        {
+            if (CancelFunction != null)
+                CancelFunction.Call();
         }
 
     }

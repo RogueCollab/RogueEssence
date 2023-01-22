@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using RogueEssence.Menu;
 
 namespace RogueEssence
 {
@@ -45,9 +46,33 @@ namespace RogueEssence
         public int BGMBalance;
         public int SEBalance;
         public BattleSpeed BattleFlow;
+
+
         public SkillDefault DefaultSkills;
         public int Minimap;
-        public int Border;
+
+        private double textSpeed;
+        public double TextSpeed
+        {
+            get { return textSpeed; }
+            set
+            {
+                textSpeed = value;
+                DialogueBox.TextSpeed = textSpeed;
+            }
+        }
+
+        private int border;
+        public int Border
+        {
+            get { return border; }
+            set
+            {
+                border = value;
+                MenuBase.BorderStyle = border;
+            }
+        }
+
         public int Window;
         public string Language;
 
@@ -150,6 +175,7 @@ namespace RogueEssence
             BGMBalance = 5;
             SEBalance = 5;
             BattleFlow = BattleSpeed.Normal;
+            TextSpeed = 1.0;
             DefaultSkills = SkillDefault.Attacks;
             Language = "";
 

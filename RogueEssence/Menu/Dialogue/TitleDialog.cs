@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         private const int SCROLL_SPEED = 2;
 
         protected const int CURSOR_FLASH_TIME = 24;
-        public const int TEXT_TIME = 1;
+        
         public const int SIDE_BUFFER = 8;
         public const int TEXT_HEIGHT = 16;
         public const int FADE_TIME = 60;
@@ -31,7 +31,8 @@ namespace RogueEssence.Menu
         private int curTextIndex;
         private bool scrolling;
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
-        public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count - 1; } }
+        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentScript.Count == 0; } }
+        public bool Finished { get { return CurrentBoxFinished && curTextIndex == Texts.Count - 1; } }
 
         public bool UseFade;
         public int HoldTime;
@@ -206,8 +207,7 @@ namespace RogueEssence.Menu
             else
             {
                 TotalTextTime += elapsedTime;
-                if (!CurrentText.Finished)
-                    CurrentTextTime += elapsedTime;
+                CurrentTextTime += elapsedTime;
                 if (scrolling)
                     CurrentScrollTime += elapsedTime;
             }
@@ -230,7 +230,7 @@ namespace RogueEssence.Menu
                 else if (fadingIn && CurrentFadeTime >= FrameTick.FromFrames(FADE_TIME))
                     fading = false;
             }
-            else if (!CurrentText.Finished)
+            else if (!CurrentBoxFinished)
             {
                 TextScript textScript = getCurrentTextScript();
                 if (textScript != null)
@@ -240,26 +240,40 @@ namespace RogueEssence.Menu
                 }
 
                 TextPause textPause = getCurrentTextPause();
-                bool continueText;
                 if (textPause != null)
                 {
+                    bool continueText;
                     if (textPause.Time > 0)
                         continueText = CurrentTextTime >= textPause.Time;
                     else
                         continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
                             || input.JustPressed(FrameInput.InputType.LeftMouse));
-                }
-                else
-                    continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
 
-                if (continueText)
-                {
-                    CurrentTextTime = new FrameTick();
-                    CurrentText.CurrentCharIndex++;
-
-                    if (textPause != null)//remove last text pause
+                    if (!continueText)
+                        return;
+                    else
+                    {
                         CurrentPause.RemoveAt(0);
+                        CurrentTextTime = new FrameTick();
+                    }
                 }
+
+                FrameTick subTick = DialogueBox.TextSpeed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / DialogueBox.TextSpeed)) : FrameTick.FromFrames(1);
+                while (true)
+                {
+                    if (CurrentText.Finished || getCurrentTextScript() != null || getCurrentTextPause() != null)
+                    {
+                        CurrentTextTime = new FrameTick();
+                        break;
+                    }
+
+                    if (CurrentTextTime < subTick)
+                        break;
+                    CurrentTextTime -= subTick;
+                    CurrentText.CurrentCharIndex++;
+                }
+                if (CurrentText.Finished)
+                    CurrentTextTime = new FrameTick();
             }
             else if (curTextIndex < Texts.Count - 1)
             {
@@ -353,9 +367,10 @@ namespace RogueEssence.Menu
                 }
 
                 //draw down-tick
-                if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && CurrentText.Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && CurrentBoxFinished)
                 {
-                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+                    if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
                 }
             }
 

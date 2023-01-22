@@ -99,6 +99,8 @@ namespace RogueEssence.Dungeon
         
         public bool Turn;
         
+        private bool canPreTurn;
+        
         public int CurrentPreviewMove = -1;
 
         private List<HashSet<Loc>> movePreviews;
@@ -363,7 +365,8 @@ namespace RogueEssence.Dungeon
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(DataManager.Instance.CurrentReplay.ReadCommand()));
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                     {
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Save.UpdateOptions();
 
@@ -399,6 +402,7 @@ namespace RogueEssence.Dungeon
                 bool runCancelling = false;
                 int previewMove = -1;
                 bool previewing = false;
+
                 HashSet<Character> newRevealed = null;
 
                 if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
@@ -510,7 +514,7 @@ namespace RogueEssence.Dungeon
                         bool run = input[FrameInput.InputType.Run];
                         if (input[FrameInput.InputType.Turn])
                             turn = true;
-
+                        
                         if (input[FrameInput.InputType.Diagonal])
                             diagonal = true;
 
@@ -525,7 +529,7 @@ namespace RogueEssence.Dungeon
                             //if confirm was the only move, then the command is an attack
                             action = new GameAction(GameAction.ActionType.Attack, Dir8.None);
                         }//directions
-                        else if (input.JustPressed(FrameInput.InputType.Turn))
+                        else if (input.JustPressed(FrameInput.InputType.Turn) || (canPreTurn && turn))
                         {
                             //first attempt to turn to a foe
                             Dir8 losTarget = getTurnDir(false, true);
@@ -696,6 +700,7 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
+                canPreTurn = !turn;
                 ShowActions = showSkills;
                 CurrentPreviewMove = previewMove;
                 Turn = turn;
@@ -848,7 +853,7 @@ namespace RogueEssence.Dungeon
         public void CalculateMovePreviews(int previewMove)
         {
             List<HashSet<Loc>> previews = new List<HashSet<Loc>>();
-            SlotSkill move = FocusedCharacter.BaseSkills[previewMove];
+            Skill move = FocusedCharacter.Skills[previewMove].Element;
             SkillData data = DataManager.Instance.GetSkill(move.SkillNum);
             ExplosionData explosion = data.Explosion;
             CombatAction hitbox = data.HitboxAction;
@@ -889,10 +894,13 @@ namespace RogueEssence.Dungeon
                 HashSet<Loc> hitTiles = new HashSet<Loc>();
                 foreach (Loc loc in data.HitboxAction.GetPreTargets(FocusedCharacter, dir, rangeMod))
                 {
-                    if (!canViewPastWalls && CanTeamSeeCharLoc(ActiveTeam, loc))
+                    if (!canViewPastWalls)
                     {
-                        foreach (Loc expLoc in explosion.IterateTargetedTiles(loc))
+                        if (CanTeamSeeCharLoc(ActiveTeam, loc))
+                        {
+                            foreach (Loc expLoc in explosion.IterateTargetedTiles(loc))
                                 hitTiles.Add(ZoneManager.Instance.CurrentMap.WrapLoc(expLoc));
+                        }
                     }
                     else
                     {
@@ -900,12 +908,10 @@ namespace RogueEssence.Dungeon
                         if (hitbox is ThrowAction)
                         {
                             ThrowAction throwAction = hitbox as ThrowAction;
-                            //use the farthest distance of throw action if the team cannot see the enemy
-                            Loc furthestLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
-                            if (furthestLoc != loc)
+                            if (!CanTeamSeeCharLoc(ActiveTeam, currLoc))
                             {
-                                if (!CanTeamSeeCharLoc(ActiveTeam, currLoc))
-                                    currLoc = furthestLoc;
+                                //use the farthest distance of throw action if the team cannot see the enemy
+                                currLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
                             }
                         }
                         foreach (Loc expLoc in explosion.IterateTargetedTiles(currLoc))

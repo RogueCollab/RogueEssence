@@ -346,7 +346,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class ExplorerTeam : Team
     {
-        public const int MAX_TEAM_SLOTS = 4;
+        public static int MAX_TEAM_SLOTS = 4;
 
         public int MaxInv;
 
