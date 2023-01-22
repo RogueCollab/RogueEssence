@@ -126,21 +126,28 @@ namespace RogueEssence.Menu
                         return;
                     else
                     {
-                        if (textPause != null)//remove last text pause
-                            CurrentPause.RemoveAt(0);
+                        //remove last text pause
+                        CurrentPause.RemoveAt(0);
+                        CurrentTextTime = new FrameTick();
                     }
                 }
 
                 bool addedText = false;
                 FrameTick subTick = DialogueBox.TextSpeed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / DialogueBox.TextSpeed)) : FrameTick.FromFrames(1);
-                while (!CurrentText.Finished && CurrentTextTime >= subTick)
+                while (true)
                 {
+                    if (CurrentText.Finished || getCurrentTextScript() != null || getCurrentTextPause() != null)
+                    {
+                        CurrentTextTime = new FrameTick();
+                        break;
+                    }
+
+                    if (CurrentTextTime < subTick)
+                        break;
                     CurrentTextTime -= subTick;
                     CurrentText.CurrentCharIndex++;
                     addedText = true;
                 }
-                if (CurrentText.Finished)
-                    CurrentTextTime = new FrameTick();
 
 
                 if (addedText && Sound && LastSpeakTime > SPEAK_FRAMES)
