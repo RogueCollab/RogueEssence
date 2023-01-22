@@ -361,6 +361,7 @@ namespace RogueEssence
                     settings.DefaultSkills = Enum.Parse<Settings.SkillDefault>(xmldoc.SelectSingleNode("Config/DefaultSkills").InnerText);
                     settings.Minimap = Int32.Parse(xmldoc.SelectSingleNode("Config/Minimap").InnerText);
 
+                    settings.TextSpeed = Int32.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
@@ -502,6 +503,7 @@ namespace RogueEssence
                 docNode.AppendInnerTextChild(xmldoc, "DefaultSkills", settings.DefaultSkills.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Minimap", settings.Minimap.ToString());
 
+                docNode.AppendInnerTextChild(xmldoc, "TextSpeed", settings.TextSpeed.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Border", settings.Border.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Window", settings.Window.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Language", settings.Language.ToString());

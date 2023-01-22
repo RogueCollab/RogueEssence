@@ -15,9 +15,15 @@ namespace RogueEssence.Menu
 
         protected const int HOLD_CANCEL_TIME = 30;
         private const int SCROLL_SPEED = 2;
-
         protected const int CURSOR_FLASH_TIME = 24;
-        public const int TEXT_TIME = 1;
+
+        public static double TextSpeed;
+
+        /// <summary>
+        /// frames between speech blip
+        /// </summary>
+        const int SPEAK_FRAMES = 2;
+
         public const int SIDE_BUFFER = 8;
         public const int TEXT_HEIGHT = 16;//14
         public const int VERT_PAD = 2;//1
@@ -42,7 +48,10 @@ namespace RogueEssence.Menu
 
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
         protected DialogueText NextText { get { return nextTextIndex > -1 ? Texts[nextTextIndex] : null; } }
+        
+        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentScript.Count == 0; } }
         public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count-1; } }
+        
         public bool Sound;
 
         protected FrameTick TotalTextTime;
@@ -83,7 +92,7 @@ namespace RogueEssence.Menu
         public virtual void ProcessActions(FrameTick elapsedTime)
         {
             TotalTextTime += elapsedTime;
-            if (!CurrentText.Finished || getCurrentTextPause() != null)
+            if (!CurrentBoxFinished)
             {
                 CurrentTextTime += elapsedTime;
                 LastSpeakTime += elapsedTime;
@@ -94,43 +103,47 @@ namespace RogueEssence.Menu
 
         public void Update(InputManager input)
         {
-            TextScript textScript = getCurrentTextScript();
-            if (textScript != null)
+            if (!CurrentBoxFinished)
             {
-                //TODO: execute callback and wait for its completion
-                CurrentScript.RemoveAt(0);
-            }
-
-            TextPause textPause = getCurrentTextPause();
-            if (textPause != null)
-            {
-                bool continueText;
-                if (textPause.Time > 0)
-                    continueText = CurrentTextTime >= textPause.Time;
-                else
-                    continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
-                        || input.JustPressed(FrameInput.InputType.LeftMouse));
-
-                if (!continueText)
-                    return;
-                else
+                TextScript textScript = getCurrentTextScript();
+                if (textScript != null)
                 {
-                    if (textPause != null)//remove last text pause
-                        CurrentPause.RemoveAt(0);
+                    //TODO: execute callback and wait for its completion
+                    CurrentScript.RemoveAt(0);
                 }
-            }
-            else
-            {
-                bool continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
-                continueText |= CurrentText.Finished;
-            }
+
+                TextPause textPause = getCurrentTextPause();
+                if (textPause != null)
+                {
+                    bool continueText;
+                    if (textPause.Time > 0)
+                        continueText = CurrentTextTime >= textPause.Time;
+                    else
+                        continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                            || input.JustPressed(FrameInput.InputType.LeftMouse));
+
+                    if (!continueText)
+                        return;
+                    else
+                    {
+                        if (textPause != null)//remove last text pause
+                            CurrentPause.RemoveAt(0);
+                    }
+                }
+
+                bool addedText = false;
+                FrameTick subTick = DialogueBox.TextSpeed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / DialogueBox.TextSpeed)) : FrameTick.FromFrames(1);
+                while (!CurrentText.Finished && CurrentTextTime >= subTick)
+                {
+                    CurrentTextTime -= subTick;
+                    CurrentText.CurrentCharIndex++;
+                    addedText = true;
+                }
+                if (CurrentText.Finished)
+                    CurrentTextTime = new FrameTick();
 
 
-            if (!CurrentText.Finished)
-            {
-                CurrentTextTime = new FrameTick();
-                CurrentText.CurrentCharIndex++;
-                if (Sound && LastSpeakTime > 2)
+                if (addedText && Sound && LastSpeakTime > SPEAK_FRAMES)
                 {
                     LastSpeakTime = new FrameTick();
                     GameManager.Instance.SE("Menu/Speak");
@@ -188,8 +201,11 @@ namespace RogueEssence.Menu
                 speakerPic.Draw(spriteBatch, new Loc());
 
             //draw down-tick
-            if (CurrentText.Finished && textPause == null && curTextIndex < Texts.Count - 1 && !scrolling && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+            if (CurrentBoxFinished && !Finished && !scrolling)
+            {
+                if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+            }
         }
 
         public override IEnumerable<IMenuElement> GetElements()

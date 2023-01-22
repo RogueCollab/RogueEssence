@@ -475,8 +475,6 @@ namespace RogueEssence.Content
             HealFont = LoadFont("green");
             EXPFont = LoadFont("blue");
 
-            Menu.MenuBase.BorderStyle = DiagManager.Instance.CurSettings.Border;
-
             DiagManager.Instance.LoadMsg = "Loading Headers";
 
             //initialize caches
