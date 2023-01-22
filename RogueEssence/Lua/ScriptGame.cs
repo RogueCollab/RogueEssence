@@ -122,6 +122,14 @@ namespace RogueEssence.Script
             GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
         }
 
+        /// <summary>
+        /// Restarts a Roguelocke run based on the configuration
+        /// </summary>
+        ///  <param name="config"></param>
+        public void RestartRogue(RogueConfig config)
+        { 
+            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToRogue(config);
+        }
 
         /// <summary>
         ///

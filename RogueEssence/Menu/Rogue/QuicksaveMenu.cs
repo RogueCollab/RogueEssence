@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using RogueElements;
 using RogueEssence.Data;
 using System.IO;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -20,20 +21,26 @@ namespace RogueEssence.Menu
                 string fileName = Path.GetFileNameWithoutExtension(record.Path);
                 if (record.Name != "")
                 {
-                    LocalText zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(record.Zone).Name;
-                    string rogueSign = "";
-                    if (record.IsRogue)
+                    try
                     {
-                        if (record.IsSeeded)
-                            rogueSign = "\uE10D";
-                        else
-                            rogueSign = "\uE10C";
+                        LocalText zoneName = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(record.Zone).Name;
+                        string rogueSign = "";
+                        if (record.IsRogue)
+                        {
+                            if (record.IsSeeded)
+                                rogueSign = "\uE10D";
+                            else
+                                rogueSign = "\uE10C";
+                        }
+                        //also include an indicator of the floors traversed, if possible
+                        fileName = rogueSign + record.Name + ": " + zoneName.ToLocal();
                     }
-                    //also include an indicator of the floors traversed, if possible
-                    flatChoices.Add(new MenuTextChoice(rogueSign + record.Name + ": " + zoneName.ToLocal(), () => { choose(record.Path); }));
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex, false);
+                    }
                 }
-                else
-                    flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
+                flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
             }
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
