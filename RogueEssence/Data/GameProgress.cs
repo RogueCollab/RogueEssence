@@ -1160,7 +1160,7 @@ namespace RogueEssence.Data
     {
         public bool Seeded { get; set; }
 
-        private RogueConfig config;
+        public RogueConfig Config;
         
         [JsonConstructor]
         public RogueProgress()
@@ -1168,7 +1168,7 @@ namespace RogueEssence.Data
         public RogueProgress(string uuid,  RogueConfig config) : base(config.Seed, uuid)
         {
             Seeded = !config.SeedRandomized;
-            this.config = config;
+            Config = config;
         }
         public override int GetTotalScore()
         {
@@ -1257,17 +1257,6 @@ namespace RogueEssence.Data
                     GameManager.Instance.Fanfare("Fanfare/NewArea");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_NEW_CHARS")));
                 }
-
-                
-                bool restart = false;
-                DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRY_AGAIN_ASK"),
-                    () => { restart = true; }, () => { });
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
-                yield return new WaitForFrames(20);
-                if (restart)
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToRogue(RogueConfig.RerollFromOther(this.config));
-                else
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
             else
             {
@@ -1296,9 +1285,7 @@ namespace RogueEssence.Data
                     state.Save.CompleteDungeon(completedZone);
                     DataManager.Instance.SaveGameState(state);
                 }
-
-
-
+                
                 if (recorded)
                 {
                     GameProgress ending = DataManager.Instance.GetRecord(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile));
@@ -1363,11 +1350,8 @@ namespace RogueEssence.Data
                     if (allowTransfer)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));
                 }
-                
-                yield return new WaitForFrames(20);
-                
-                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
+            yield return new WaitForFrames(20);
         }
 
         public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)
