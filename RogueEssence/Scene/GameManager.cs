@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
@@ -51,6 +52,7 @@ namespace RogueEssence
         public InputManager InputManager;
 
         public BaseScene CurrentScene;
+        public TextPopUp TextPopUp;
 
         public IEnumerator<YieldInstruction> SceneOutcome;
 
@@ -97,6 +99,7 @@ namespace RogueEssence
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
+            TextPopUp = new TextPopUp();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
 
@@ -266,6 +269,34 @@ namespace RogueEssence
                     MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
                 }
                 NextSong = newBGM;
+                onMusicChange(newBGM);
+            }
+        }
+
+        private void onMusicChange(string newBGM)
+        {
+            if (NextSong.Length > 0)
+            {
+                string name = "";
+                string originName = "";
+                string origin = "";
+                string artist = "";
+                string spoiler = "";
+                string fileName = Path.Join(PathMod.ASSET_PATH, GraphicsManager.MUSIC_PATH, newBGM);
+                if (File.Exists(fileName))
+                {
+                    LoopedSong song = new LoopedSong(fileName);
+                    name = song.Name;
+                    if (song.Tags.ContainsKey("TITLE"))
+                        originName = song.Tags["TITLE"];
+                    if (song.Tags.ContainsKey("ALBUM"))
+                        origin = song.Tags["ALBUM"];
+                    if (song.Tags.ContainsKey("ARTIST"))
+                        artist = song.Tags["ARTIST"];
+                    if (song.Tags.ContainsKey("SPOILER"))
+                        spoiler = song.Tags["SPOILER"];
+                    LuaEngine.Instance.OnMusicChange(name, originName, origin, artist, spoiler);
+                }
             }
         }
 
@@ -811,7 +842,8 @@ namespace RogueEssence
                     else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
                     {
                         //resuming a game that was just rescued
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Loading = DataManager.LoadMode.None;
                         SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
@@ -851,7 +883,8 @@ namespace RogueEssence
                         else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                         {
                             //the game accepts loading into a file that has been downed, or passed its section with nothing else
-                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                            DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                             DataManager.Instance.CurrentReplay = null;
                             //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
 
@@ -891,6 +924,9 @@ namespace RogueEssence
                 //trigger the end-segment script
                 if (rescue)
                 {
+                    //compute and update the current session time.  the value in the gameprogress wont matter, but we are just using this function to get the result value.
+                    DataManager.Instance.Save.EndSession();
+                    DataManager.Instance.SaveSessionTime(DataManager.Instance.Save.SessionTime);
                     DataManager.Instance.SuspendPlay();
                     GameState state = DataManager.Instance.LoadMainGameState(false);
                     SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, DataManager.Instance.Save.GetModVersion());
@@ -1244,6 +1280,7 @@ namespace RogueEssence
             thisFrameErrored = false;
 
             MenuManager.Instance.ProcessActions(elapsedTime);
+            TextPopUp.Update(elapsedTime);
 
             //keep border flash off by default
             MenuBase.BorderFlash = 0;
@@ -1296,6 +1333,7 @@ namespace RogueEssence
             }
 
             MenuManager.Instance.DrawMenus(spriteBatch);
+            TextPopUp.Draw(spriteBatch);
 
             if (totalErrorCount > 0)
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth - 2, GraphicsManager.ScreenHeight - 2, String.Format("{0} ERRORS", totalErrorCount), null, DirV.Down, DirH.Right, Color.Red);

@@ -19,6 +19,7 @@ namespace RogueEssence.Menu
         public MenuText BankValueTally;
         public MenuText TotalTally;
         public MenuText TotalTurns;
+        public MenuText TotalDungeonTime;
         public MenuText Seed;
         public GameProgress Ending;
 
@@ -73,7 +74,8 @@ namespace RogueEssence.Menu
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             TotalTurns = new MenuText(Text.FormatKey("MENU_RESULTS_TOTAL_TURNS", Ending.TotalTurns),
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-
+            TotalDungeonTime = new MenuText(Text.FormatKey("MENU_TIMER", Ending.GetDungeonTimeDisplay()),
+                new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
@@ -109,6 +111,7 @@ namespace RogueEssence.Menu
             yield return BankValueTally;
             yield return TotalTally;
             yield return TotalTurns;
+            yield return TotalDungeonTime;
             yield return Seed;
         }
 

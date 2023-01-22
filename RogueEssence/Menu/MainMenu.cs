@@ -14,11 +14,11 @@ namespace RogueEssence.Menu
     {
         private static int defaultChoice;
 
+        private int timerStart;
+        private bool inReplay;
+        
         SummaryMenu titleMenu;
-
         SummaryMenu summaryMenu;
-
-
         public MainMenu()
         {
             bool equippedItems = false;
@@ -47,7 +47,7 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
 
             bool hasTactics = (DataManager.Instance.Save.ActiveTeam.Players.Count > 1);
-            bool inReplay = (DataManager.Instance.CurrentReplay != null);
+            inReplay = (DataManager.Instance.CurrentReplay != null);
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
 
@@ -122,6 +122,7 @@ namespace RogueEssence.Menu
                 summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness),
                 new Loc(text_start + hunger_length / 2, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
             }
+            timerStart = GraphicsManager.MenuBG.TileWidth + 4 + NicknameMenu.MAX_LENGTH + level_length + hp_length + remaining_width + hunger_length / 2;
         }
 
         private void checkGround()
@@ -165,6 +166,16 @@ namespace RogueEssence.Menu
             
         }
 
+        public override void Update(InputManager input)
+        {
+            base.Update(input);
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance && !inReplay)
+            {
+                summaryMenu.Elements.RemoveAt(summaryMenu.Elements.Count - 1);
+                summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TIMER", DataManager.Instance.Save.GetDungeonTimeDisplay()),
+                    new Loc(timerStart, GraphicsManager.MenuBG.TileHeight), DirH.None));
+            }
+        }
 
 
         public IEnumerator<YieldInstruction> processSave(bool returnToTitle)

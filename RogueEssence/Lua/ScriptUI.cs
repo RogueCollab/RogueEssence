@@ -34,7 +34,7 @@ namespace RogueEssence.Script
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
         private IEnumerator<YieldInstruction> m_curdialogue;
-
+        
         private IInteractable m_curchoice;
 
         public ScriptUI()
@@ -54,6 +54,7 @@ namespace RogueEssence.Script
         public LuaFunction WaitShowDialogue;
         public LuaFunction WaitShowTimedDialogue;
         public LuaFunction WaitShowVoiceOver;
+        public LuaFunction TextPopUp;
         public LuaFunction WaitInput;
         public LuaFunction WaitShowTitle;
         public LuaFunction WaitHideTitle;
@@ -119,6 +120,18 @@ namespace RogueEssence.Script
             catch (Exception e)
             {
                 DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
+            }
+        }
+        public void PopUp(string text, int expireTime)
+        {
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    GameManager.Instance.TextPopUp.SetMessage(text, expireTime);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextPopUp({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
             }
         }
 
@@ -1216,6 +1229,11 @@ namespace RogueEssence.Script
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowVoiceOver").First() as LuaFunction;
 
+            TextPopUp = state.RunString(@"
+            return function(_, text, expiretime)
+                UI:PopUp(text, expiretime)
+            end", "TextPopUp").First() as LuaFunction;
+            
             WaitInput = state.RunString(@"
             return function(_, any)
                 UI:TextWaitMenu(any)

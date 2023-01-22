@@ -91,6 +91,9 @@ namespace RogueEssence.Ground
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            //compute and update the current session time.  the value in the gameprogress wont matter, but we are just using this function to get the result value.
+            DataManager.Instance.Save.EndSession();
+            DataManager.Instance.SaveSessionTime(DataManager.Instance.Save.SessionTime);
             //TODO: call OnGameSave?
             //where does it load the game in a suspend scenario?
             DataManager.Instance.LogGroundSave();

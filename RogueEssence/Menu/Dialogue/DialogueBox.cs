@@ -43,9 +43,15 @@ namespace RogueEssence.Menu
         private bool scrolling;
         private bool centerH;
         private bool centerV;
+
+        private int nextTextIndex;
+
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
+        protected DialogueText NextText { get { return nextTextIndex > -1 ? Texts[nextTextIndex] : null; } }
+        
         protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentScript.Count == 0; } }
-        public bool Finished { get { return CurrentBoxFinished && curTextIndex == Texts.Count-1; } }
+        public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count-1; } }
+        
         public bool Sound;
 
         protected FrameTick TotalTextTime;
@@ -149,16 +155,22 @@ namespace RogueEssence.Menu
                     || input.JustPressed(FrameInput.InputType.LeftMouse))
                 {
                     scrolling = true;
+                    nextTextIndex = curTextIndex + 1;
+                    NextText.Rect.Start = CurrentText.Rect.Start + new Loc(0, TEXT_HEIGHT * MAX_LINES);
                 }
 
                 if (scrolling)
+                {
                     CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
+                    NextText.Rect.Start -= new Loc(0, SCROLL_SPEED);
+                }
                 int scrollFrames = TEXT_HEIGHT * MAX_LINES / SCROLL_SPEED;
                 if (CurrentScrollTime >= FrameTick.FromFrames(scrollFrames))
                 {
+                    nextTextIndex = -1;
+                    scrolling = false;
                     curTextIndex++;
                     CurrentScrollTime = new FrameTick();
-                    scrolling = false;
                 }
             }
             else
@@ -199,6 +211,8 @@ namespace RogueEssence.Menu
         public override IEnumerable<IMenuElement> GetElements()
         {
             yield return CurrentText;
+            if (nextTextIndex > -1)
+                yield return NextText;
         }
 
         protected TextPause getCurrentTextPause()
@@ -252,7 +266,8 @@ namespace RogueEssence.Menu
 
         public void FinishText()
         {
-            CurrentText.FinishText();
+            foreach(DialogueText text in Texts)
+                text.FinishText();
         }
 
         private void updateMessage()
@@ -261,6 +276,7 @@ namespace RogueEssence.Menu
             //and colors, which will get parsed by the text renderer
             Texts.Clear();
             curTextIndex = 0;
+            nextTextIndex = -1;
             Pauses.Clear();
             ScriptCalls.Clear();
 

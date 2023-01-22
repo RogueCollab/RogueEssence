@@ -102,14 +102,14 @@ namespace RogueEssence.Menu
 
             DataManager.Instance.CurrentReplay = replay;
 
-
             if (DataManager.Instance.Save.NextDest.IsValid())
             {
                 yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
             }
             else
             {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                 DataManager.Instance.CurrentReplay = null;
                 DataManager.Instance.Save.UpdateOptions();
 
@@ -154,7 +154,8 @@ namespace RogueEssence.Menu
             }
             else
             {
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                 DataManager.Instance.CurrentReplay = null;
                 DataManager.Instance.Save.UpdateOptions();
 
