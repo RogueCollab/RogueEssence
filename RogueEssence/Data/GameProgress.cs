@@ -1199,7 +1199,7 @@ namespace RogueEssence.Data
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
                 yield return new WaitForFrames(20);
                 if (restart)
-                    restartRun();
+                    restartRun(this.config);
                 else
                     GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
@@ -1304,14 +1304,14 @@ namespace RogueEssence.Data
             }
         }
 
-        private void restartRun()
+        private static void restartRun(RogueConfig oldConfig)
         {
+            RogueConfig config = new RogueConfig(oldConfig);
             if (config.TeamRandomized)
                 config.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+
             if (config.SeedRandomized)
-            {
                 config.Seed = MathUtils.Rand.NextUInt64();
-            }
 
             if (config.StarterRandomized)
             {
@@ -1327,10 +1327,10 @@ namespace RogueEssence.Data
                 List<string> destinations = RogueDestMenu.GetDestinationsList();
                 config.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
             }
-            GameManager.Instance.SceneOutcome = StartRogue();
+            GameManager.Instance.SceneOutcome = StartRogue(config);
 
         }
-        public IEnumerator<YieldInstruction> StartRogue()
+        public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
@@ -1384,8 +1384,6 @@ namespace RogueEssence.Data
                 DiagManager.Instance.LogError(ex);
             }
             
-            // TODO - calling this resolves the replay error, but causes one other error
-            ZoneManager.InitInstance();
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(config.Destination, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
         }
     }
@@ -1405,5 +1403,26 @@ namespace RogueEssence.Data
         public bool SeedRandomized;
         public string SkinSetting;
         public string Nickname;
+
+        public RogueConfig()
+        {
+        }
+
+        public RogueConfig(RogueConfig other)
+        {
+            Destination = other.Destination;
+            DestinationRandomized = other.DestinationRandomized;
+            TeamName = other.TeamName;
+            TeamRandomized = other.TeamRandomized;
+            Starter = other.Starter;
+            StarterRandomized = other.StarterRandomized;
+            IntrinsicSetting = other.IntrinsicSetting;
+            FormSetting = other.FormSetting;
+            GenderSetting = other.GenderSetting;
+            Seed = other.Seed;
+            SeedRandomized = other.SeedRandomized;
+            SkinSetting = other.SkinSetting;
+            Nickname = other.Nickname;
+        }
     }
 }

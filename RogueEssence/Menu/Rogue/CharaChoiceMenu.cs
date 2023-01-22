@@ -181,7 +181,6 @@ namespace RogueEssence.Menu
         
         public IEnumerator<YieldInstruction> Begin(int choice, string name)
         {
-            RogueProgress save = new RogueProgress(Guid.NewGuid().ToString().ToUpper(), config);
             string starter = startChars[choice];
             config.IntrinsicSetting = IntrinsicSetting;
             config.FormSetting = FormSetting;
@@ -190,7 +189,7 @@ namespace RogueEssence.Menu
             config.Nickname = name;
             config.Starter = starter;
             
-            return save.StartRogue();
+            return RogueProgress.StartRogue(config);
         }
 
         public static List<string> GetStartersList()

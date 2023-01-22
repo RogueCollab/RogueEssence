@@ -88,6 +88,8 @@ namespace RogueEssence
         public const int FANFARE_FADE_START = 3;
         public const int FANFARE_FADE_END = 40;
         public const int FANFARE_WAIT_EXTRA = 20;
+
+
         public GameManager()
         {
             fadedTitle = "";
