@@ -152,7 +152,7 @@ namespace RogueEssence.Menu
         {
             SoundManager.BGMBalance = DiagManager.Instance.CurSettings.BGMBalance * 0.1f;
             SoundManager.SEBalance = DiagManager.Instance.CurSettings.SEBalance * 0.1f;
-            MenuBase.BorderStyle = DiagManager.Instance.CurSettings.Border;
+            DiagManager.Instance.CurSettings.Border = DiagManager.Instance.CurSettings.Border;
         }
 
 

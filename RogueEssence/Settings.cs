@@ -47,6 +47,10 @@ namespace RogueEssence
         public int SEBalance;
         public BattleSpeed BattleFlow;
 
+
+        public SkillDefault DefaultSkills;
+        public int Minimap;
+
         private double textSpeed;
         public double TextSpeed
         {
@@ -54,27 +58,21 @@ namespace RogueEssence
             set
             {
                 textSpeed = value;
-                if (textSpeed == Math.Floor(textSpeed))
-                {
-                    DialogueBox.CHAR_PER_TEXT_TIME = (int)textSpeed;
-                    DialogueBox.TEXT_TIME = 1;
-                    TitleDialog.CHAR_PER_TEXT_TIME = (int)textSpeed;
-                    TitleDialog.TEXT_TIME = 1;
-                }
-                //handle numbers ending with .5
-                else
-                {
-                    DialogueBox.CHAR_PER_TEXT_TIME = (int)(textSpeed * 2);
-                    DialogueBox.TEXT_TIME = 2;
-                    TitleDialog.CHAR_PER_TEXT_TIME = (int)(textSpeed * 2);
-                    TitleDialog.TEXT_TIME = 2;
-                }
+                DialogueBox.TextSpeed = textSpeed;
             }
         }
 
-        public SkillDefault DefaultSkills;
-        public int Minimap;
-        public int Border;
+        private int border;
+        public int Border
+        {
+            get { return border; }
+            set
+            {
+                border = value;
+                MenuBase.BorderStyle = border;
+            }
+        }
+
         public int Window;
         public string Language;
 
