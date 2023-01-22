@@ -1199,7 +1199,7 @@ namespace RogueEssence.Data
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
                 yield return new WaitForFrames(20);
                 if (restart)
-                    restartRun(this.config);
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToRogue(RogueConfig.RerollFromOther(this.config));
                 else
                     GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
@@ -1304,32 +1304,6 @@ namespace RogueEssence.Data
             }
         }
 
-        private static void restartRun(RogueConfig oldConfig)
-        {
-            RogueConfig config = new RogueConfig(oldConfig);
-            if (config.TeamRandomized)
-                config.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
-
-            if (config.SeedRandomized)
-                config.Seed = MathUtils.Rand.NextUInt64();
-
-            if (config.StarterRandomized)
-            {
-                List<string> starters = CharaChoiceMenu.GetStartersList();
-                string starter = starters[MathUtils.Rand.Next(starters.Count)];
-                config.Starter = starter;
-                config.IntrinsicSetting = -1;
-                config.FormSetting = -1;
-                config.GenderSetting = Gender.Unknown;
-            }
-            if (config.DestinationRandomized)
-            {
-                List<string> destinations = RogueDestMenu.GetDestinationsList();
-                config.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
-            }
-            GameManager.Instance.SceneOutcome = StartRogue(config);
-
-        }
         public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)
         {
             GameManager.Instance.BGM("", true);
@@ -1423,6 +1397,32 @@ namespace RogueEssence.Data
             SeedRandomized = other.SeedRandomized;
             SkinSetting = other.SkinSetting;
             Nickname = other.Nickname;
+        }
+
+        public static RogueConfig RerollFromOther(RogueConfig oldConfig)
+        {
+            RogueConfig config = new RogueConfig(oldConfig);
+            if (config.TeamRandomized)
+                config.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+
+            if (config.SeedRandomized)
+                config.Seed = MathUtils.Rand.NextUInt64();
+
+            if (config.StarterRandomized)
+            {
+                List<string> starters = CharaChoiceMenu.GetStartersList();
+                string starter = starters[MathUtils.Rand.Next(starters.Count)];
+                config.Starter = starter;
+                config.IntrinsicSetting = -1;
+                config.FormSetting = -1;
+                config.GenderSetting = Gender.Unknown;
+            }
+            if (config.DestinationRandomized)
+            {
+                List<string> destinations = RogueDestMenu.GetDestinationsList();
+                config.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
+            }
+            return config;
         }
     }
 }

@@ -942,6 +942,13 @@ namespace RogueEssence
             yield break;
         }
 
+        public IEnumerator<YieldInstruction> RestartToRogue(RogueConfig config)
+        {
+            cleanup();
+            reInit();
+            yield return CoroutineManager.Instance.StartCoroutine(RogueProgress.StartRogue(config));
+        }
+
         public void MoveToScene(BaseScene scene)
         {
             //need to transfer player data
