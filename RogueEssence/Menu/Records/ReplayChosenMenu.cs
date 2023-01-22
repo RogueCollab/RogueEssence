@@ -157,7 +157,7 @@ namespace RogueEssence.Menu
                     if (verifying)
                         DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
                     DataManager.Instance.CurrentReplay = replay;
-                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
                     yield break;
                 }
             }
