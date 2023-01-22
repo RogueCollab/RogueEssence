@@ -1160,12 +1160,15 @@ namespace RogueEssence.Data
     {
         public bool Seeded { get; set; }
 
+        private RogueConfig config;
+        
         [JsonConstructor]
         public RogueProgress()
         { }
-        public RogueProgress(ulong seed, string uuid, bool seeded) : base(seed, uuid)
+        public RogueProgress(string uuid,  RogueConfig config) : base(config.Seed, uuid)
         {
-            Seeded = seeded;
+            Seeded = !config.SeedRandomized;
+            this.config = config;
         }
         public override int GetTotalScore()
         {
@@ -1238,10 +1241,14 @@ namespace RogueEssence.Data
 
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
-
+                    
                     Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
 
+                    // handle the case for seeded runs and there's currently no scores for the current zone
+                    if (scores.ContainsKey(ZoneManager.Instance.CurrentZoneID))
+                    {
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));   
+                    }
                 }
 
                 if (newRecruits.Count > 0)
@@ -1251,9 +1258,16 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_NEW_CHARS")));
                 }
 
+                
+                bool restart = false;
+                DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRY_AGAIN_ASK"),
+                    () => { restart = true; }, () => { });
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
                 yield return new WaitForFrames(20);
-
-                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+                if (restart)
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToRogue(RogueConfig.RerollFromOther(this.config));
+                else
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
             else
             {
@@ -1349,14 +1363,132 @@ namespace RogueEssence.Data
                     if (allowTransfer)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));
                 }
-
-
-
+                
                 yield return new WaitForFrames(20);
+                
+                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
         }
 
+        public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)
+        {
+            GameManager.Instance.BGM("", true);
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
+            GameProgress save = new RogueProgress(Guid.NewGuid().ToString().ToUpper(), config);
+            save.UnlockDungeon(config.Destination);
+            DataManager.Instance.SetProgress(save);
+            DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
+            DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+            DataManager.Instance.Save.ActiveTeam.Name = config.TeamName;
 
+            MonsterData monsterData = DataManager.Instance.GetMonster(config.Starter);
+
+            int formSlot = config.FormSetting;
+            List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
+            if (formSlot >= forms.Count)
+                formSlot = forms.Count - 1;
+            if (formSlot == -1)
+                formSlot = MathUtils.Rand.Next(forms.Count);
+
+            int formIndex = forms[formSlot];
+
+            Gender gender = CharaDetailMenu.LimitGender(monsterData, formIndex, config.GenderSetting);
+            if (gender == Gender.Unknown)
+                gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
+            
+            int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, config.IntrinsicSetting);
+            string intrinsic;
+            if (intrinsicSlot == -1)
+                intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
+            else if (intrinsicSlot == 0)
+                intrinsic = monsterData.Forms[formIndex].Intrinsic1;
+            else if (intrinsicSlot == 1)
+                intrinsic = monsterData.Forms[formIndex].Intrinsic2;
+            else
+                intrinsic = monsterData.Forms[formIndex].Intrinsic3;
+
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Starter, formIndex, config.SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
+            newChar.Nickname = config.Nickname;
+            DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
+
+            try
+            {
+                LuaEngine.Instance.OnNewGame();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid team!");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(config.Destination, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
+        }
     }
+    
+    public class RogueConfig
+    {
+        public string Destination;
+        public bool DestinationRandomized;
+        public string TeamName;
+        public bool TeamRandomized;
+        public string Starter;
+        public bool StarterRandomized;
+        public int IntrinsicSetting;
+        public int FormSetting;
+        public Gender GenderSetting;
+        public ulong Seed;
+        public bool SeedRandomized;
+        public string SkinSetting;
+        public string Nickname;
 
+        public RogueConfig()
+        {
+        }
+
+        public RogueConfig(RogueConfig other)
+        {
+            Destination = other.Destination;
+            DestinationRandomized = other.DestinationRandomized;
+            TeamName = other.TeamName;
+            TeamRandomized = other.TeamRandomized;
+            Starter = other.Starter;
+            StarterRandomized = other.StarterRandomized;
+            IntrinsicSetting = other.IntrinsicSetting;
+            FormSetting = other.FormSetting;
+            GenderSetting = other.GenderSetting;
+            Seed = other.Seed;
+            SeedRandomized = other.SeedRandomized;
+            SkinSetting = other.SkinSetting;
+            Nickname = other.Nickname;
+        }
+
+        public static RogueConfig RerollFromOther(RogueConfig oldConfig)
+        {
+            RogueConfig config = new RogueConfig(oldConfig);
+            if (config.TeamRandomized)
+                config.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+
+            if (config.SeedRandomized)
+                config.Seed = MathUtils.Rand.NextUInt64();
+
+            if (config.StarterRandomized)
+            {
+                List<string> starters = CharaChoiceMenu.GetStartersList();
+                string starter = starters[MathUtils.Rand.Next(starters.Count)];
+                config.Starter = starter;
+                config.IntrinsicSetting = -1;
+                config.FormSetting = -1;
+                config.GenderSetting = Gender.Unknown;
+            }
+            if (config.DestinationRandomized)
+            {
+                List<string> destinations = RogueDestMenu.GetDestinationsList();
+                config.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
+            }
+            return config;
+        }
+    }
 }

@@ -7,14 +7,12 @@ namespace RogueEssence.Menu
     public class RogueTeamInputMenu : TextInputMenu
     {
         public override int MaxLength { get { return 96; } }
+        private RogueConfig config;
+        private bool randomized;
 
-        private string chosenDest;
-        private ulong? seed;
-
-        public RogueTeamInputMenu(string chosenDungeon, ulong? seed)
+        public RogueTeamInputMenu(RogueConfig config)
         {
-            chosenDest = chosenDungeon;
-            this.seed = seed;
+            this.config = config;
             Initialize(RogueEssence.Text.FormatKey("INPUT_TEAM_TITLE"), RogueEssence.Text.FormatKey("INPUT_TEAM_DESC"), 256);
         }
 
@@ -22,6 +20,7 @@ namespace RogueEssence.Menu
         {
             if (input.BaseKeyPressed(Keys.Tab))
             {
+                randomized = true;
                 //tab will replace the current line with a suggestion
                 GameManager.Instance.SE("Menu/Skip");
                 Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
@@ -29,7 +28,15 @@ namespace RogueEssence.Menu
                 UpdatePickerPos();
             }
             else
-                base.Update(input);
+            {
+                string prevText = Text.Text;
+                base.Update(input); 
+                if (prevText != Text.Text)
+                {
+                    randomized = false;
+                }
+            }
+
         }
 
         protected override void Confirmed()
@@ -37,10 +44,14 @@ namespace RogueEssence.Menu
             GameManager.Instance.SE("Menu/Confirm");
             if (Text.Text == "")
             {
+                randomized = true;
                 Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
                 UpdatePickerPos();
             }
-            MenuManager.Instance.AddMenu(new CharaChoiceMenu(Text.Text, chosenDest, seed), false);
+
+            config.TeamName = Text.Text;
+            config.TeamRandomized = randomized;
+            MenuManager.Instance.AddMenu(new CharaChoiceMenu(config), false);
         }
     }
 }

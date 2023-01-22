@@ -220,7 +220,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.CurrentReplay = replay;
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
         }
 
         private void completeAOK()

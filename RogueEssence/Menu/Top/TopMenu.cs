@@ -399,7 +399,7 @@ namespace RogueEssence.Menu
                 DiagManager.Instance.LogError(ex);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap, true, false));
         }
 
         private static IEnumerator<YieldInstruction> DefaultBegin()
@@ -408,7 +408,7 @@ namespace RogueEssence.Menu
 
             GameManager.Instance.NewGamePlus(MathUtils.Rand.NextUInt64());
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap, true, false));
         }
 
     }
