@@ -383,7 +383,7 @@ namespace RogueEssence.Menu
         {
             if (CurrentPause.Count > 0)
             {
-                if (CurrentPause[0].LetterIndex == CurrentText.CurrentCharIndex)
+                if (CurrentText.CurrentCharIndex < 0 || CurrentPause[0].LetterIndex <= CurrentText.CurrentCharIndex)
                     return CurrentPause[0];
             }
             return null;
@@ -393,7 +393,7 @@ namespace RogueEssence.Menu
         {
             if (CurrentScript.Count > 0)
             {
-                if (CurrentScript[0].LetterIndex == CurrentText.CurrentCharIndex)
+                if (CurrentText.CurrentCharIndex < 0 || CurrentScript[0].LetterIndex <= CurrentText.CurrentCharIndex)
                     return CurrentScript[0];
             }
             return null;
