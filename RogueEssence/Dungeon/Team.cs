@@ -270,6 +270,13 @@ namespace RogueEssence.Dungeon
             return invValue;
         }
 
+        public Character CharAtIndex(bool guest, int index)
+        {
+            if (guest)
+                return Guests[index];
+            else
+                return Players[index];
+        }
 
         public CharIndex GetCharIndex(Character character)
         {
