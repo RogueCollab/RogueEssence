@@ -10,7 +10,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class SingleCharEvent : GameEvent
     {
-        public abstract IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, Character contextDotCharacter);
+        public abstract IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, SingleCharContext context);
     }
 
     [Serializable]
@@ -31,10 +31,10 @@ namespace RogueEssence.Dungeon
         }
         public override GameEvent Clone() { return new SingleCharScriptEvent(this); }
 
-        public override IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, Character contextDotCharacter)
+        public override IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, SingleCharContext context)
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
-            object[] parameters = new object[] { owner, ownerChar, contextDotCharacter, args };
+            object[] parameters = new object[] { owner, ownerChar, context.User, args };
             string name = "SINGLE_CHAR_SCRIPT." + Script;
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
