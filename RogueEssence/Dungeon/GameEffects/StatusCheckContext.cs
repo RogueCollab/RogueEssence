@@ -1,6 +1,6 @@
 ﻿namespace RogueEssence.Dungeon
 {
-    public class StatusCheckContext : GameContext
+    public class StatusCheckContext : UserTargetGameContext
     {
         public StatusEffect Status;
         public bool msg;

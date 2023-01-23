@@ -11,11 +11,24 @@ namespace RogueEssence.Dungeon
         public AbortStatus(AbortStatus other) { Cancel = other.Cancel; }
     }
 
+    public abstract class UserTargetGameContext : GameContext
+    {
+        public Character Target { get; set; }
+
+        public UserTargetGameContext() : base()
+        {
+        }
+
+        protected UserTargetGameContext(UserTargetGameContext other) : base(other)
+        {
+            Target = other.Target;
+        }
+    }
+
     public abstract class GameContext
     {
         //passes contextual info
         public StateCollection<ContextState> ContextStates;
-        public Character Target { get; set; }
         public Character User { get; set; }
         
         public AbortStatus CancelState;
@@ -32,7 +45,6 @@ namespace RogueEssence.Dungeon
             ContextStates = other.ContextStates.Clone();
 
             User = other.User;
-            Target = other.Target;
             CancelState = other.CancelState;
         }
 
