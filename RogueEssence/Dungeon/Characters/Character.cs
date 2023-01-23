@@ -2147,20 +2147,18 @@ namespace RogueEssence.Dungeon
                 case Map.SightRange.Dark:
                     {
                         Loc seen = GetSightDims();
-                        Loc minLoc = new Loc(CharLoc.X - seen.X, CharLoc.Y - seen.Y);
-                        Loc addLoc = new Loc(CharLoc.X + seen.X + 1, CharLoc.Y + seen.Y + 1) - minLoc;
-
-                        Fov.CalculateAnalogFOV(minLoc, addLoc, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
+                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
+                        Fov.CalculateAnalogFOV(sightBounds.Start, sightBounds.Size, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
                         break;
                     }
                 default:
                     {
                         Loc seen = GetSightDims();
-                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen);
+                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
                         for (int x = sightBounds.X; x < sightBounds.End.X; x++)
                         {
-                            for (int y = sightBounds.Y; y <= sightBounds.End.Y; y++)
+                            for (int y = sightBounds.Y; y < sightBounds.End.Y; y++)
                                 lightOp(x, y, 1f);
                         }
                         break;
@@ -2195,7 +2193,7 @@ namespace RogueEssence.Dungeon
                 }
 
                 Loc radius = GetSightDims();
-                Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius);
+                Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius + Loc.One);
                 sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
                 //iterate through everyone in max sight range EXCEPT members of the same team
