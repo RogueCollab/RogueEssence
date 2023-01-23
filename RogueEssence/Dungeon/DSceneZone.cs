@@ -98,6 +98,7 @@ namespace RogueEssence.Dungeon
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.Tactic.Initialize(character);
 
+            SingleCharContext context = new SingleCharContext(null);
             //map starts for map statuses
             EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -126,7 +127,11 @@ namespace RogueEssence.Dungeon
                 }
             };
             foreach (EventQueueElement<SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
+            {
+                context.User = effect.TargetChar;
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                //normally, we would check for cancel, but I'm not sure if it's ideal to stop it for everyone here.
+            }
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
 
@@ -988,6 +993,7 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> ProcessMapTurnEnd()
         {
+            SingleCharContext context = new SingleCharContext(null);
             //turn ends for all
             EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1014,7 +1020,11 @@ namespace RogueEssence.Dungeon
                 }
             };
             foreach (EventQueueElement<SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
+            {
+                context.User = effect.TargetChar;
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                //normally, we would check for cancel, but I'm not sure if it's ideal to stop it for everyone here.
+            }
 
 
             ZoneManager.Instance.CurrentMap.MapTurns++;
@@ -1035,8 +1045,9 @@ namespace RogueEssence.Dungeon
         {
             if (!character.Dead)
             {
+                SingleCharContext context = new SingleCharContext(character);
                 //process turn start (assume live characters)
-                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart());
+                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart(context));
             }
 
         }

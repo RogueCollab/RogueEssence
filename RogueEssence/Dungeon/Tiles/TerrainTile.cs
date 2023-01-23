@@ -67,13 +67,18 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
+            SingleCharContext context = new SingleCharContext(character);
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TerrainData entry = DataManager.Instance.GetTerrain(ID);
                 AddEventsToQueue(queue, maxPriority, ref nextPriority, entry.LandedOnTiles, character);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
         public bool Equals(TerrainTile other)

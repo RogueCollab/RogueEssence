@@ -95,24 +95,35 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> InteractWithTile(Character character)
         {
+            SingleCharContext context = new SingleCharContext(character);
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
                 AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.InteractWithTiles, character);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
+            // should the context be extended to the caller?
+            SingleCharContext context = new SingleCharContext(character);
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
                 AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.LandedOnTiles, character);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }

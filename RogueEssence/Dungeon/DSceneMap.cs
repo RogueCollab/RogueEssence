@@ -94,12 +94,13 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(switchedChar.StartAnim(switchedWalkAnim));
             }
 
-
-            yield return CoroutineManager.Instance.StartCoroutine(character.OnWalk());
+            SingleCharContext mainContext = new SingleCharContext(character);
+            yield return CoroutineManager.Instance.StartCoroutine(character.OnWalk(mainContext));
             yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem, false));
             if (switchedChar != null)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(switchedChar.OnWalk());
+                SingleCharContext switchedContext = new SingleCharContext(switchedChar);
+                yield return CoroutineManager.Instance.StartCoroutine(switchedChar.OnWalk(switchedContext));
                 yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(switchedChar));
             }
 
@@ -143,7 +144,10 @@ namespace RogueEssence.Dungeon
 
             //end turn
             if (!character.Dead)
-                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnEnd());
+            {
+                SingleCharContext turnContext = new SingleCharContext(character);
+                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnEnd(turnContext));
+            }
 
 
             if (!character.Dead) //add HP based on natural healing
