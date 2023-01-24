@@ -36,8 +36,6 @@ namespace RogueEssence.Dungeon
         public bool Exposed { get { return true; } }
         public bool Revealed;
 
-        [Dev.Multiline(0)]
-        public bool Danger;
         public TileOwner Owner;
 
         public StateCollection<TileState> TileStates;
@@ -73,7 +71,6 @@ namespace RogueEssence.Dungeon
         {
             ID = other.ID;
             Revealed = other.Revealed;
-            Danger = other.Danger;
             TileStates = other.TileStates.Clone();
             TileLoc = other.TileLoc;
         }
@@ -81,7 +78,6 @@ namespace RogueEssence.Dungeon
         {
             ID = other.ID;
             Revealed = other.Revealed;
-            Danger = other.Danger;
             TileStates = other.TileStates.Clone();
             TileLoc = loc;
         }
@@ -93,26 +89,36 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public IEnumerator<YieldInstruction> InteractWithTile(Character character)
+        public IEnumerator<YieldInstruction> InteractWithTile(SingleCharContext context)
         {
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
-                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.InteractWithTiles, character);
+                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.InteractWithTiles, context.User);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
         public IEnumerator<YieldInstruction> LandedOnTile(Character character)
         {
+            SingleCharContext context = new SingleCharContext(character);
+            // should the context be extended to the caller?
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 TileData entry = DataManager.Instance.GetTile(ID);
-                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.LandedOnTiles, character);
+                AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, entry.LandedOnTiles, context.User);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, character));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }

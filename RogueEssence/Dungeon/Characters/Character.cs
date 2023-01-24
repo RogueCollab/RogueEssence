@@ -839,8 +839,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> Die()
         {
-            yield return CoroutineManager.Instance.StartCoroutine(OnDeath());
-            
+            SingleCharContext context = new SingleCharContext(this);
+            yield return CoroutineManager.Instance.StartCoroutine(OnDeath(context));
+
+            //TODO: refactor this code into OnDeath now that it can cancel properly   
             if (Dead)
             {
                 if (MemberTeam is ExplorerTeam)
@@ -1913,7 +1915,11 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnEquips, this);
             };
             foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
+            {
                 effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+                if (context.CancelState.Cancel)
+                    return;
+            }
         }
 
         public void OnPickup(ItemCheckContext context)
@@ -1927,12 +1933,25 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.OnPickups, this);
             };
             foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
+            {
                 effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+                if (context.CancelState.Cancel)
+                    return;
+            }
         }
 
 
+
+        /// <summary>
+        /// Was once called independently as a part of DungeonScene.BeginFloor.
+        /// Was refactored out to allow modifiable order between the map/game-wide events and character events.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public IEnumerator<YieldInstruction> OnMapStart()
         {
+            // should this be extended to the callers?
+            SingleCharContext context = new SingleCharContext(this);
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnMapStarts, this);
@@ -1942,10 +1961,14 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapStarts, this);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
-        public IEnumerator<YieldInstruction> OnTurnStart()
+        public IEnumerator<YieldInstruction> OnTurnStart(SingleCharContext context)
         {
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1956,10 +1979,14 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnTurnStarts, this);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
-        public IEnumerator<YieldInstruction> OnTurnEnd()
+        public IEnumerator<YieldInstruction> OnTurnEnd(SingleCharContext context)
         {
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1970,10 +1997,20 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnTurnEnds, this);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
-        public IEnumerator<YieldInstruction> OnMapTurnEnd()
+        /// <summary>
+        /// Currently not used.  Was once called independently as a part of DungeonScene.ProcessMapTurnEnd
+        /// Was refactored out to allow modifiable order between the map/game-wide events and character events.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> OnMapTurnEnd(SingleCharContext context)
         {
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1984,10 +2021,14 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnMapTurnEnds, this);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
-        public IEnumerator<YieldInstruction> OnWalk()
+        public IEnumerator<YieldInstruction> OnWalk(SingleCharContext context)
         {
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1998,10 +2039,14 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnWalks, this);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
-        public IEnumerator<YieldInstruction> OnDeath()
+        public IEnumerator<YieldInstruction> OnDeath(SingleCharContext context)
         {
             DungeonScene.EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -2012,7 +2057,11 @@ namespace RogueEssence.Dungeon
                     effectContext.AddEventsToQueue<SingleCharEvent>(queue, maxPriority, ref nextPriority, effectContext.EventData.OnDeaths, this);
             };
             foreach (EventQueueElement<SingleCharEvent> effect in DungeonScene.IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, this));
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                if (context.CancelState.Cancel)
+                    yield break;
+            }
         }
 
         public IEnumerator<YieldInstruction> BeforeStatusCheck(StatusCheckContext context)
@@ -2147,20 +2196,18 @@ namespace RogueEssence.Dungeon
                 case Map.SightRange.Dark:
                     {
                         Loc seen = GetSightDims();
-                        Loc minLoc = new Loc(CharLoc.X - seen.X, CharLoc.Y - seen.Y);
-                        Loc addLoc = new Loc(CharLoc.X + seen.X + 1, CharLoc.Y + seen.Y + 1) - minLoc;
-
-                        Fov.CalculateAnalogFOV(minLoc, addLoc, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
+                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
+                        Fov.CalculateAnalogFOV(sightBounds.Start, sightBounds.Size, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
                         break;
                     }
                 default:
                     {
                         Loc seen = GetSightDims();
-                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen);
+                        Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
                         for (int x = sightBounds.X; x < sightBounds.End.X; x++)
                         {
-                            for (int y = sightBounds.Y; y <= sightBounds.End.Y; y++)
+                            for (int y = sightBounds.Y; y < sightBounds.End.Y; y++)
                                 lightOp(x, y, 1f);
                         }
                         break;
@@ -2195,7 +2242,7 @@ namespace RogueEssence.Dungeon
                 }
 
                 Loc radius = GetSightDims();
-                Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius);
+                Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius + Loc.One);
                 sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
                 //iterate through everyone in max sight range EXCEPT members of the same team
