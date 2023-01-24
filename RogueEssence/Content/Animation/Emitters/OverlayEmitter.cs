@@ -81,7 +81,7 @@ namespace RogueEssence.Content
         public override void Update(BaseScene scene, FrameTick elapsedTime)
         {
             if (Anim.AnimIndex != "")
-                scene.Anims[(int)Layer].Add(new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, false, Movement, TotalTime, FadeIn, FadeOut, RepeatX, RepeatY));
+                scene.Anims[(int)Layer].Add(new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, false, Movement, TotalTime + FadeIn + FadeOut, FadeIn, FadeOut, RepeatX, RepeatY));
             finished = true;
         }
 
