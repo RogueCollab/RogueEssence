@@ -284,7 +284,10 @@ namespace RogueEssence.Dungeon
             {
                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[pendingLoc.X][pendingLoc.Y];
                 if (!String.IsNullOrEmpty(tile.Effect.ID))
-                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(activator));
+                {
+                    SingleCharContext singleContext = new SingleCharContext(activator);
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(singleContext));
+                }
             }
             yield break;
         }
@@ -581,18 +584,17 @@ namespace RogueEssence.Dungeon
                 throw new Exception("Attempted to trigger a nonexistent tile effect.  This should never happen.");
             else
             {
-                TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
-                bool turnTaken = !(entry.StepType == TileData.TriggerType.Passage);
+                SingleCharContext singleContext = new SingleCharContext(character);
+                yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(singleContext));
 
-                result.Success = turnTaken ? ActionResult.ResultType.TurnTaken : ActionResult.ResultType.Success;
+                if (singleContext.CancelState.Cancel && singleContext.TurnCancel.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(singleContext.User.CharLoc)); yield break; }
 
-                yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(character));
-
-                if (turnTaken)
+                if (!singleContext.TurnCancel.Cancel)
                 {
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
                     yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character));
                 }
+                result.Success = singleContext.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
             }
         }
 
@@ -704,7 +706,7 @@ namespace RogueEssence.Dungeon
                 return new ItemUnderfootMenu(itemSlot);
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
             if (!String.IsNullOrEmpty(tile.Effect.ID))
-                return new TileUnderfootMenu(tile.Effect.ID, tile.Effect.Danger);
+                return new TileUnderfootMenu(tile.Effect.ID);
             
             return null;
         }

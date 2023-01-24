@@ -68,16 +68,6 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private bool isDanger;
-        public bool IsDanger
-        {
-            get { return isDanger; }
-            set
-            {
-                this.RaiseAndSet(ref isDanger, value);
-            }
-        }
-
         public ObservableCollection<string> Owners { get; }
 
         private int chosenOwner;
@@ -182,7 +172,6 @@ namespace RogueEssence.Dev.ViewModels
         private EffectTile getBrush()
         {
             EffectTile brush = new EffectTile(keys[ChosenTile], IsRevealed);
-            brush.Danger = IsDanger;
             brush.Owner = (EffectTile.TileOwner)ChosenOwner;
 
             List<TileState> states = TileStates.GetList<List<TileState>>();
@@ -195,7 +184,6 @@ namespace RogueEssence.Dev.ViewModels
         {
             ChosenTile = keys.IndexOf(brush.ID);
             ChosenOwner = (int)brush.Owner;
-            IsDanger = brush.Danger;
             IsRevealed = brush.Revealed;
 
             List<TileState> states = new List<TileState>();
