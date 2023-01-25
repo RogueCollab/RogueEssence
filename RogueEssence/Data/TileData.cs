@@ -36,6 +36,8 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
         public ObjAnimData Anim;
+        public Loc Offset;
+
         public bool ObjectLayer;
         //public bool BlockLight;
         public bool BlockItem;

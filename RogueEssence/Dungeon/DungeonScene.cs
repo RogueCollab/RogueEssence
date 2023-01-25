@@ -938,26 +938,29 @@ namespace RogueEssence.Dungeon
             return ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] == Map.DiscoveryState.Traversed;
         }
         
-        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
+        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool objDrawOnly, bool seeTrap)
         {
-            base.PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
-            
-            Loc visualLoc = new Loc(xx, yy);
-            Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
-            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+            base.PrepareTileDraw(spriteBatch, xx, yy, objDrawOnly, seeTrap);
+
+            if (!objDrawOnly)
             {
-                if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
-                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
-                else
-                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
-            }
-            else if (CurrentPreviewMove > -1 && movePreviews != null)
-            {
-                HashSet<Loc> movePreview = movePreviews[(int)FocusedCharacter.CharDir];
-                if (movePreview.Contains(visualLoc))
-                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
-                else if (!ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
-                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+                Loc visualLoc = new Loc(xx, yy);
+                Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
+                if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+                {
+                    if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                    else
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+                }
+                else if (CurrentPreviewMove > -1 && movePreviews != null)
+                {
+                    HashSet<Loc> movePreview = movePreviews[(int)FocusedCharacter.CharDir];
+                    if (movePreview.Contains(visualLoc))
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                    else if (!ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+                }
             }
         }
 

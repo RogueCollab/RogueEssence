@@ -259,6 +259,7 @@ namespace RogueEssence.Dev
                                 {
                                     DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
                                     Loc drawLoc = new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start + new Loc(GraphicsManager.TileSize / 2) - new Loc(sheet.Width, sheet.Height) / 2;
+                                    drawLoc += entry.Offset;
                                     sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames),
                                         entry.Anim.GetDrawDir(Dir8.None), Color.White);
                                 }
