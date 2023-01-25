@@ -282,7 +282,7 @@ namespace RogueEssence
                 string origin = "";
                 string artist = "";
                 string spoiler = "";
-                string fileName = Path.Join(PathMod.ASSET_PATH, GraphicsManager.MUSIC_PATH, newBGM);
+                string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
                 if (File.Exists(fileName))
                 {
                     LoopedSong song = new LoopedSong(fileName);
