@@ -130,7 +130,7 @@ namespace RogueEssence.Menu
                 SoundManager.BGMBalance = TotalChoices[index].CurrentChoice * 0.1f;
             else if (index == 1)
                 SoundManager.SEBalance = TotalChoices[index].CurrentChoice * 0.1f;
-            else if (index == 5)
+            else if (index == 6)
                 MenuBase.BorderStyle = TotalChoices[index].CurrentChoice;
 
             base.SettingChanged(index);
