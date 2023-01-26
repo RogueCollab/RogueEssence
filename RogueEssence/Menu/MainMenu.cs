@@ -14,9 +14,9 @@ namespace RogueEssence.Menu
     {
         private static int defaultChoice;
 
-        private int timerStart;
         private bool inReplay;
-        
+
+        MenuText menuTimer;
         SummaryMenu titleMenu;
         SummaryMenu summaryMenu;
         public MainMenu()
@@ -122,7 +122,14 @@ namespace RogueEssence.Menu
                 summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness),
                 new Loc(text_start + hunger_length / 2, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
             }
-            timerStart = GraphicsManager.MenuBG.TileWidth + 4 + NicknameMenu.MAX_LENGTH + level_length + hp_length + remaining_width + hunger_length / 2;
+            
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance && !inReplay)
+            {
+                int timerStart = GraphicsManager.MenuBG.TileWidth + 4 + NicknameMenu.MAX_LENGTH + level_length + hp_length + remaining_width + hunger_length / 2;
+                menuTimer = new MenuText(Text.FormatKey("MENU_TIMER", DataManager.Instance.Save.GetDungeonTimeDisplay()),
+                    new Loc(timerStart, GraphicsManager.MenuBG.TileHeight), DirH.None);
+                summaryMenu.Elements.Add(menuTimer);
+            }
         }
 
         private void checkGround()
@@ -169,12 +176,7 @@ namespace RogueEssence.Menu
         public override void Update(InputManager input)
         {
             base.Update(input);
-            if (GameManager.Instance.CurrentScene == DungeonScene.Instance && !inReplay)
-            {
-                summaryMenu.Elements.RemoveAt(summaryMenu.Elements.Count - 1);
-                summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TIMER", DataManager.Instance.Save.GetDungeonTimeDisplay()),
-                    new Loc(timerStart, GraphicsManager.MenuBG.TileHeight), DirH.None));
-            }
+            menuTimer?.SetText(Text.FormatKey("MENU_TIMER", DataManager.Instance.Save.GetDungeonTimeDisplay()));
         }
 
 

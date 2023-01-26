@@ -141,7 +141,7 @@ namespace RogueEssence.Dungeon
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
-            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) - offset;
+            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) + entry.Offset - offset;
         }
 
         public Loc GetDrawSize()
@@ -194,7 +194,7 @@ namespace RogueEssence.Dungeon
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
-            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) - offset;
+            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) + entry.Offset - offset;
         }
 
         public Loc GetDrawSize()

@@ -1044,8 +1044,7 @@ namespace RogueEssence.Data
                 }
                 else
                 {
-                    string completedZone = ZoneManager.Instance.CurrentZoneID;
-                    CompleteDungeon(completedZone);
+                    CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
 
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -1095,6 +1094,7 @@ namespace RogueEssence.Data
             {
                 if (mainSave != null)
                     DataManager.Instance.SetProgress(mainSave);
+                DataManager.Instance.Save.CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 

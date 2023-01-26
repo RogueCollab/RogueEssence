@@ -36,6 +36,8 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
         public ObjAnimData Anim;
+        public Loc Offset;
+
 
         /// <summary>
         /// The layer to draw the tile on.  Only supports Bottom, Back and Front for now.
