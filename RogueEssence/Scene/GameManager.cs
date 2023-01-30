@@ -667,17 +667,6 @@ namespace RogueEssence
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
-                // title drop if faded, but do not fade directly
-                if (IsFaded())
-                {
-                    if (ZoneManager.Instance.CurrentMap.DropTitle)
-                    {
-                        yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(true, ZoneManager.Instance.CurrentMap.Name.ToLocal()));
-                        yield return new WaitForFrames(30);
-                        yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(false, ""));
-                    }
-                }
-
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());
             }
             DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;

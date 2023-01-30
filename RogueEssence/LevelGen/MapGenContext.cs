@@ -48,8 +48,6 @@ namespace RogueEssence.LevelGen
 
         public IRandom Rand { get { return Map.Rand; } }
         public bool Begun { get { return Map.Begun; } }
-        public bool DropTitle { get { return Map.DropTitle; } set { Map.DropTitle = value; } }
-
         public Tile[][] Tiles { get { return Map.Tiles; } }
 
         public ITile GetTile(Loc loc) { return Map.GetTile(loc); }
