@@ -27,10 +27,8 @@ namespace RogueEssence.LevelGen
         {
             //still use the old seed, ID, and Name
             ulong seed = map.Rand.FirstSeed;
-            bool dropTitle = map.Map.DropTitle;
             map.Map = DataManager.Instance.GetMap(MapID);
             map.InitSeed(seed);
-            map.Map.DropTitle = dropTitle;
         }
 
         public override string ToString()

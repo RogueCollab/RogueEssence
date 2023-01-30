@@ -319,7 +319,7 @@ namespace RogueEssence.Script
         public const string ZONE_SCRIPT_ENTRY_POINT = "init"; //filename of the zone's main script file that the engine will run when the zone is loaded (by default lua package entrypoints are init.lua)
 
         //Global lua symbol names
-        private const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
+        public const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
