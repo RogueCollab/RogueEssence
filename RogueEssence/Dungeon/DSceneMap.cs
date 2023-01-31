@@ -218,7 +218,7 @@ namespace RogueEssence.Dungeon
                                     }
                                 }
                                 if (canGet)
-                                    PickupItem(character, itemSlot);
+                                    yield return CoroutineManager.Instance.StartCoroutine(PickupItem(character, itemSlot));
                                 else
                                 {
                                     if (character == ActiveTeam.Leader)
@@ -231,7 +231,7 @@ namespace RogueEssence.Dungeon
                                 if (item.Price > 0 || item.IsMoney || !String.IsNullOrEmpty(character.EquippedItem.ID))
                                     wantItem = false;
                                 else
-                                    PickupHoldItem(character);
+                                    yield return CoroutineManager.Instance.StartCoroutine(PickupHoldItem(character));
                             }
                         }
 
@@ -322,7 +322,7 @@ namespace RogueEssence.Dungeon
             {
                 result.Success = ActionResult.ResultType.TurnTaken;
 
-                PickupItem(character, itemSlot);
+                yield return CoroutineManager.Instance.StartCoroutine(PickupItem(character, itemSlot));
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
 
                 yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character));
@@ -331,7 +331,7 @@ namespace RogueEssence.Dungeon
                 LogMsg(Text.FormatKey("MSG_NOTHING_UNDERFOOT", character), false, true);
         }
 
-        public void PickupItem(Character character, int itemSlot)
+        public IEnumerator<YieldInstruction> PickupItem(Character character, int itemSlot)
         {
             //assumes they have the space
             MapItem item = ZoneManager.Instance.CurrentMap.Items[itemSlot];
@@ -387,11 +387,11 @@ namespace RogueEssence.Dungeon
                 LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE, item.TileLoc, character, false));
             }
 
-            character.OnPickup(context);
+            yield return CoroutineManager.Instance.StartCoroutine(character.OnPickup(context));
         }
 
 
-        public void PickupHoldItem(Character character)
+        public IEnumerator<YieldInstruction> PickupHoldItem(Character character)
         {
             //TODO: Due to logging no pickups, the code in here happens instantaneously when it should not
             int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
@@ -412,7 +412,7 @@ namespace RogueEssence.Dungeon
             else
                 LogMsg(Text.FormatKey("MSG_PICKUP_HOLD_ITEM", character.GetDisplayName(false), item.GetDisplayName()));
 
-            character.EquipItem(item);
+            yield return CoroutineManager.Instance.StartCoroutine(character.EquipItem(item));
         }
 
 
@@ -464,7 +464,7 @@ namespace RogueEssence.Dungeon
 
                     LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.GetDisplayName(false), item.GetDungeonName(), invItem.GetDisplayName()));
 
-                    character.EquipItem(item.MakeInvItem());
+                    yield return CoroutineManager.Instance.StartCoroutine(character.EquipItem(item.MakeInvItem()));
                 }
                 else
                 {
@@ -483,7 +483,7 @@ namespace RogueEssence.Dungeon
 
                     memberTeam.AddToInv(item.MakeInvItem());
 
-                    character.OnPickup(context);
+                    yield return CoroutineManager.Instance.StartCoroutine(character.OnPickup(context));
                 }
             }
             else
@@ -502,7 +502,7 @@ namespace RogueEssence.Dungeon
                 GameManager.Instance.SE(GraphicsManager.PlaceSE);
 
                 if (invSlot == -1)
-                    character.DequipItem();
+                    yield return CoroutineManager.Instance.StartCoroutine(character.DequipItem());
                 else
                     character.MemberTeam.RemoveFromInv(invSlot);
             }
@@ -622,7 +622,7 @@ namespace RogueEssence.Dungeon
             if (invSlot == BattleContext.FLOOR_ITEM_SLOT)
             {
                 //character and itemChar are the same
-                PickupHoldItem(character);
+                yield return CoroutineManager.Instance.StartCoroutine(PickupHoldItem(character));
             }
             else
             {
@@ -640,7 +640,7 @@ namespace RogueEssence.Dungeon
                 else
                     LogMsg(Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName()));
 
-                itemChar.EquipItem(item);
+                yield return CoroutineManager.Instance.StartCoroutine(itemChar.EquipItem(item));
             }
 
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
@@ -669,7 +669,7 @@ namespace RogueEssence.Dungeon
             InvItem item = itemChar.EquippedItem;
             GameManager.Instance.SE(GraphicsManager.EquipSE);
             LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.GetDisplayName(false), item.GetDisplayName()));
-            itemChar.DequipItem();
+            yield return CoroutineManager.Instance.StartCoroutine(itemChar.DequipItem());
 
             memberTeam.AddToInv(item);
 
@@ -975,7 +975,7 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                yield return CoroutineManager.Instance.StartCoroutine(player.DequipItem());
                 if (ActiveTeam.GetInvCount() + 1 < ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                     ActiveTeam.AddToInv(heldItem);
                 else if (player.Dead)
@@ -1000,7 +1000,7 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                player.SilentDequipItem();
                 if (ActiveTeam.GetInvCount() + 1 < ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                     ActiveTeam.AddToInv(heldItem);
             }

@@ -54,7 +54,7 @@ namespace RogueEssence.Menu
                 if (selections[ii].IsEquipped)
                 {
                     items.Add(DataManager.Instance.Save.ActiveTeam.Players[selections[ii].Slot].EquippedItem);
-                    DataManager.Instance.Save.ActiveTeam.Players[selections[ii].Slot].DequipItem();
+                    DataManager.Instance.Save.ActiveTeam.Players[selections[ii].Slot].SilentDequipItem();
                 }
                 else
                 {

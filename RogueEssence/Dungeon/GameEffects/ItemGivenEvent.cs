@@ -1,6 +1,7 @@
 ﻿using NLua;
 using RogueEssence.Script;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RogueEssence.Dungeon
@@ -8,7 +9,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class ItemGivenEvent : GameEvent
     {
-        public abstract void Apply(GameEventOwner owner, Character ownerChar, ItemCheckContext context);
+        public abstract IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, ItemCheckContext context);
     }
 
     [Serializable]
@@ -29,15 +30,14 @@ namespace RogueEssence.Dungeon
         }
         public override GameEvent Clone() { return new ItemScriptEvent(this); }
 
-        public override void Apply(GameEventOwner owner, Character ownerChar, ItemCheckContext context)
+        public override IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, ItemCheckContext context)
         {
-            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction("ITEM_SCRIPT." + Script);
+            LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
+            object[] parameters = new object[] { owner, ownerChar, context, args };
+            string name = "ITEM_SCRIPT." + Script;
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
-            if (luafun != null)
-            {
-                LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
-                luafun.Call(new object[] { owner, ownerChar, context, args });
-            }
+            yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));
         }
     }
 }

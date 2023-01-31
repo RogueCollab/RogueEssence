@@ -153,7 +153,7 @@ namespace RogueEssence.Ground
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
 
-            itemChar.EquipItem(item);
+            itemChar.SilentEquipItem(item);
         }
 
         public IEnumerator<YieldInstruction> ProcessTakeItem(GroundChar character, int teamSlot)
@@ -165,7 +165,7 @@ namespace RogueEssence.Ground
 
             InvItem item = itemChar.EquippedItem;
             memberTeam.AddToInv(item);
-            itemChar.DequipItem();
+            yield return CoroutineManager.Instance.StartCoroutine(itemChar.DequipItem());
             GameManager.Instance.SE(GraphicsManager.EquipSE);
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
@@ -210,7 +210,7 @@ namespace RogueEssence.Ground
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                player.SilentDequipItem();
                 DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
             }
 
