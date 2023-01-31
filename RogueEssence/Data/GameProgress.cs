@@ -424,7 +424,7 @@ namespace RogueEssence.Data
                             {
                                 removedItems = true;
                                 itemsToStore.Add(player.EquippedItem);
-                                player.DequipItem();
+                                player.SilentDequipItem();
                                 heldSlots--;
                                 break;
                             }
@@ -942,7 +942,7 @@ namespace RogueEssence.Data
                     {
                         ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
                         if (!entry.CannotDrop)
-                            player.DequipItem();
+                            player.SilentDequipItem();
                     }
                 }
             }

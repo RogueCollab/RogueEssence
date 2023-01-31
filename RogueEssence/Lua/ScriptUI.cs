@@ -518,7 +518,7 @@ namespace RogueEssence.Script
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                    player.DequipItem();
+                    player.SilentDequipItem();
             }
 
             // Remove the items back to front to prevent removing them in the wrong order.

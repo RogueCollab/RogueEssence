@@ -825,7 +825,7 @@ namespace RogueEssence.Dungeon
                 InvItem heldItem = EquippedItem;
                 if (!String.IsNullOrEmpty(heldItem.ID))
                 {
-                    DequipItem();
+                    SilentDequipItem();
                     MapItem mapItem = new MapItem(heldItem);
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropMapItem(mapItem, CharLoc, CharLoc, true));
                 }
@@ -854,7 +854,7 @@ namespace RogueEssence.Dungeon
                     InvItem heldItem = EquippedItem;
                     if (!String.IsNullOrEmpty(heldItem.ID))
                     {
-                        DequipItem();
+                        yield return CoroutineManager.Instance.StartCoroutine(DequipItem());
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
                     }
                 }
@@ -1444,27 +1444,37 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
         
-        public void EquipItem(InvItem item)
+        public IEnumerator<YieldInstruction> EquipItem(InvItem item)
         {
             ItemCheckContext context = new ItemCheckContext(this, new MapItem(item), new MapItem(EquippedItem));
 
+            SilentEquipItem(item);
+
+            yield return CoroutineManager.Instance.StartCoroutine(OnEquip(context));
+        }
+
+        public void SilentEquipItem(InvItem item)
+        {
             EquippedItem = item;
             RefreshTraits();
-
-            OnEquip(context);
         }
 
         /// <summary>
         /// Removes a character's held item, effectively deleting it.
         /// </summary>
-        public void DequipItem()
+        public IEnumerator<YieldInstruction> DequipItem()
         {
             ItemCheckContext context = new ItemCheckContext(this, new MapItem(), new MapItem(EquippedItem));
 
+            SilentDequipItem();
+
+            yield return CoroutineManager.Instance.StartCoroutine(OnEquip(context));
+        }
+
+        public void SilentDequipItem()
+        {
             EquippedItem = new InvItem();
             RefreshTraits();
-
-            OnEquip(context);
         }
 
         //find a way to prevent repeated calls to this method in various other methods
@@ -1903,7 +1913,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public void OnEquip(ItemCheckContext context)
+        public IEnumerator<YieldInstruction> OnEquip(ItemCheckContext context)
         {
             DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1916,13 +1926,13 @@ namespace RogueEssence.Dungeon
             };
             foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
             {
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel)
-                    return;
+                    yield break;
             }
         }
 
-        public void OnPickup(ItemCheckContext context)
+        public IEnumerator<YieldInstruction> OnPickup(ItemCheckContext context)
         {
             DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1934,9 +1944,9 @@ namespace RogueEssence.Dungeon
             };
             foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
             {
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel)
-                    return;
+                    yield break;
             }
         }
 
