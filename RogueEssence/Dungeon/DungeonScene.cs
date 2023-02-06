@@ -1340,6 +1340,8 @@ namespace RogueEssence.Dungeon
                         {
                             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                            else
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.Black, new Vector2(GraphicsManager.TileSize));
                             continue;
                         }
 
