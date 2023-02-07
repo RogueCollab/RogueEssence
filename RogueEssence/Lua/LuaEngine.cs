@@ -250,6 +250,7 @@ namespace RogueEssence.Script
             GraphicsLoad,
             GraphicsUnload,
             NewGame,
+            LossPenalty,
             UpgradeSave,
             Restart,
             Update,
@@ -1761,6 +1762,14 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.MusicChange.ToString(), name, originName, album, artist, spoiler);
         }
         
+        /// <summary>
+        /// Called after failing a dungeon in main progress!
+        /// </summary>
+        public void OnLossPenalty(GameProgress save)
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnLossPenalty()..");
+            m_scrsvc.Publish(EServiceEvents.LossPenalty.ToString(), save);
+        }
         /// <summary>
         /// Called when the game mode switches to GroundMode!
         /// </summary>
