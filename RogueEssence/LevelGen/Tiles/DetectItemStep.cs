@@ -41,7 +41,7 @@ namespace RogueEssence.LevelGen
                     return;
             }
 
-            throw new Exception("Did not find tile " + FindItem + "!  Seed: " + map.Rand.FirstSeed);
+            throw new Exception("Did not find tile " + FindItem + "!");
         }
     }
 }

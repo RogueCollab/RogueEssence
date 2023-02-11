@@ -65,8 +65,8 @@ namespace RogueEssence.LevelGen
         }
         public bool TrySetTile(Loc loc, ITile tile)
         {
-            if (!CanSetTile(loc, tile)) return false;
             loc = Map.WrapLoc(loc);
+            if (!CanSetTile(loc, tile)) return false;
             Map.Tiles[loc.X][loc.Y] = (Tile)tile;
             return true;
         }
