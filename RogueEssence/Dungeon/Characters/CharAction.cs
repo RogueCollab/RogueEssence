@@ -310,7 +310,7 @@ namespace RogueEssence.Dungeon
                 case ProcessType.Kidnap:
                     return new CharAnimKidnap(AnimOverride);
                 default:
-                    return null;
+                    return new CharAnimNone();
             }
         }
     }
@@ -327,7 +327,7 @@ namespace RogueEssence.Dungeon
         public CharAnimData CharAnimData;
 
         //this action throws out no hitbox
-        public SelfAction() { CharAnimData = new CharAnimFrameType(0); }
+        public SelfAction() { CharAnimData = new CharAnimProcess(); }
         protected SelfAction(SelfAction other)
             : base(other)
         {
@@ -407,7 +407,7 @@ namespace RogueEssence.Dungeon
         public AttackAction()
         {
             Emitter = new EmptyFiniteEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected AttackAction(AttackAction other)
             : base(other)
@@ -589,7 +589,7 @@ namespace RogueEssence.Dungeon
         public AreaAction()
         {
             Emitter = new EmptyCircleSquareEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected AreaAction(AreaAction other)
             : base(other)
@@ -748,7 +748,7 @@ namespace RogueEssence.Dungeon
         public OffsetAction()
         {
             Emitter = new EmptyCircleSquareEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected OffsetAction(OffsetAction other)
             : base(other)
@@ -970,7 +970,7 @@ namespace RogueEssence.Dungeon
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             StreamEmitter = new EmptyShootingEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected ProjectileAction(ProjectileAction other)
             : base(other)
@@ -1158,7 +1158,7 @@ namespace RogueEssence.Dungeon
         public WaveMotionAction()
         {
             Anim = new BeamAnimData();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected WaveMotionAction(WaveMotionAction other)
             : base(other)
@@ -1269,7 +1269,7 @@ namespace RogueEssence.Dungeon
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             ItemSprite = "";
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected ThrowAction(ThrowAction other)
             : base(other)

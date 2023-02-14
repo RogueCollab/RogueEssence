@@ -330,6 +330,26 @@ namespace RogueEssence.Dungeon
         }
     }
 
+    public class CharAnimNone : StaticCharAnimation
+    {
+        protected override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            return CharSheet.TrueFrame(frames, ActionTime.Ticks, true);
+        }
+        public override bool ActionPassed { get { return true; } }
+        public override bool ActionDone { get { return true; } }
+
+        public CharAnimNone() { }
+        public CharAnimNone(Loc loc, Dir8 dir) { AnimLoc = loc; CharDir = dir; }
+
+        public int BaseFrameType { get; set; }
+        protected override int AnimFrameType { get { return BaseFrameType; } }
+        protected override void UpdateFrameInternal()
+        {
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
+        }
+    }
+
     public class CharAnimAction : StaticCharAnimation
     {
         protected override int FrameMethod(List<CharAnimFrame> frames)
