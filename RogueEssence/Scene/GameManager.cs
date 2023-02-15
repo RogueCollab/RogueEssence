@@ -505,6 +505,7 @@ namespace RogueEssence
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";
             Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
+            GraphicsManager.ReloadStatic();
             reInit();
             TitleScene.TitleMenuSaveState = null;
             //clean up and reload all caches

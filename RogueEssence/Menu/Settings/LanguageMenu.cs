@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
@@ -26,6 +27,7 @@ namespace RogueEssence.Menu
             DiagManager.Instance.CurSettings.Language = lang;
             DiagManager.Instance.SaveSettings(DiagManager.Instance.CurSettings);
             Text.SetCultureCode(lang);
+            GraphicsManager.ReloadStatic();
             MenuManager.Instance.RemoveMenu();
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_LANGUAGE_SET", DiagManager.Instance.CurSettings.Language.ToName())), false);
         }

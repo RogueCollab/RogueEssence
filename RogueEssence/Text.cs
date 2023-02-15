@@ -294,6 +294,33 @@ namespace RogueEssence
                 strings.Add(LoadStringResx(path));
         }
 
+        public static string GetLanguagedPath(string basePath, string cultureCode)
+        {
+            if (String.IsNullOrEmpty(cultureCode))
+                return basePath;
+
+            string dir = Path.GetDirectoryName(basePath);
+            string noExt = Path.GetFileNameWithoutExtension(basePath);
+            string ext = Path.GetExtension(basePath);
+            return Path.Join(dir, noExt + "." + cultureCode + ext);
+        }
+
+        public static string ModLangPath(string basePath)
+        {
+            string cultureCode = Culture.Name.ToLower();
+            string langPath = GetLanguagedPath(basePath, cultureCode);
+            if (File.Exists(langPath) || Directory.Exists(langPath))
+                return langPath;
+            foreach (string fallback in LangNames[cultureCode].Fallbacks)
+            {
+                langPath = GetLanguagedPath(basePath, cultureCode);
+                if (File.Exists(langPath) || Directory.Exists(langPath))
+                    return langPath;
+            }
+
+            return basePath;
+        }
+
         public static string Sanitize(string input)
         {
             StringBuilder sbReturn = new StringBuilder();
