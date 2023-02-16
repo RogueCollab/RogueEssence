@@ -37,6 +37,9 @@ namespace RogueEssence.Menu
         public List<List<TextScript>> ScriptCalls;
         protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
 
+        public List<List<TextSpeed>> Speeds;
+        protected List<TextSpeed> CurrentSpeed { get { return Speeds[curTextIndex]; } }
+        
         //Dialogue Text needs to be able to set character index accurately
         protected List<DialogueText> Texts;
         private int curTextIndex;
@@ -68,6 +71,8 @@ namespace RogueEssence.Menu
         //message with pauses, without speaker name
         private string message;
 
+        private double currSpeed;
+
         public bool IsCheckpoint { get { return false; } }
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
@@ -78,6 +83,7 @@ namespace RogueEssence.Menu
 
             Pauses = new List<List<TextPause>>();
             ScriptCalls = new List<List<TextScript>>();
+            Speeds = new List<List<TextSpeed>>();
             speakerName = "";
 
             Sound = sound;
@@ -111,7 +117,12 @@ namespace RogueEssence.Menu
                     //TODO: execute callback and wait for its completion
                     CurrentScript.RemoveAt(0);
                 }
-
+                TextSpeed textSpeed = getCurrentTextSpeed();
+                if (textSpeed != null)
+                {
+                    currSpeed = textSpeed.Speed;
+                    CurrentSpeed.RemoveAt(0);
+                }
                 TextPause textPause = getCurrentTextPause();
                 if (textPause != null)
                 {
@@ -133,7 +144,9 @@ namespace RogueEssence.Menu
                 }
 
                 bool addedText = false;
-                FrameTick subTick = DialogueBox.TextSpeed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / DialogueBox.TextSpeed)) : FrameTick.FromFrames(1);
+                
+                double speed = currSpeed > 0 ? currSpeed : DialogueBox.TextSpeed;
+                FrameTick subTick = speed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / speed)) : FrameTick.FromFrames(1);
                 while (true)
                 {
                     if (CurrentText.Finished || getCurrentTextScript() != null || getCurrentTextPause() != null)
@@ -231,6 +244,16 @@ namespace RogueEssence.Menu
             }
             return null;
         }
+        
+        protected TextSpeed getCurrentTextSpeed()
+        {
+            if (CurrentSpeed.Count > 0)
+            {
+                if (CurrentText.CurrentCharIndex < 0 || CurrentSpeed[0].LetterIndex <= CurrentText.CurrentCharIndex)
+                    return CurrentSpeed[0];
+            }
+            return null;
+        }
 
         protected TextScript getCurrentTextScript()
         {
@@ -285,6 +308,7 @@ namespace RogueEssence.Menu
             curTextIndex = 0;
             nextTextIndex = -1;
             Pauses.Clear();
+            Speeds.Clear();
             ScriptCalls.Clear();
 
             int curCharIndex = 0;
@@ -302,8 +326,11 @@ namespace RogueEssence.Menu
                 List<TextPause> pauses = new List<TextPause>();
                 List<TextScript> scripts = new List<TextScript>();
                 List<IntRange> tagRanges = new List<IntRange>();
+                List<TextSpeed> speeds = new List<TextSpeed>();
+                
                 int lag = 0;
                 MatchCollection matches = Text.MsgTags.Matches(scrolls[nn]);
+                
                 foreach (Match match in matches)
                 {
                     foreach (string key in match.Groups.Keys)
@@ -334,6 +361,17 @@ namespace RogueEssence.Menu
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
+                            case "speed":
+                                {
+                                    TextSpeed speed = new TextSpeed();
+                                    speed.LetterIndex = match.Index - lag;
+                                    double param;
+                                    if (Double.TryParse(match.Groups["speedval"].Value, out param))
+                                        speed.Speed = param;
+                                    speeds.Add(speed);
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                }
+                                break;
                             case "colorstart":
                             case "colorend":
                                 break;
@@ -356,6 +394,7 @@ namespace RogueEssence.Menu
                 int totalLength = 0;
                 int curPause = 0;
                 int curScript = 0;
+                int curSpeed = 0;
                 for (int kk = 0; kk < texts.Count; kk++)
                 {
                     DialogueText text = texts[kk];
@@ -363,6 +402,7 @@ namespace RogueEssence.Menu
                     //pauses and scripts need to be re-aligned to the removals done by breaking the text into lines
                     List<TextPause> subPauses = new List<TextPause>();
                     List<TextScript> subScripts = new List<TextScript>();
+                    List<TextSpeed> subSpeeds = new List<TextSpeed>();
 
                     int lineCount = text.GetLineCount();
                     for (int ii = 0; ii < lineCount; ii++)
@@ -392,11 +432,24 @@ namespace RogueEssence.Menu
                             else
                                 break;
                         }
+                        
+                        for (; curSpeed < speeds.Count; curSpeed++)
+                        {
+                            TextSpeed speed = speeds[curSpeed];
+                            if (speed.LetterIndex <= totalLength)
+                            {
+                                speed.LetterIndex -= totalTrim;
+                                subSpeeds.Add(speed);
+                            }
+                            else
+                                break;
+                        }
                     }
                     totalTrim = totalLength;
 
                     Pauses.Add(subPauses);
                     ScriptCalls.Add(subScripts);
+                    Speeds.Add(subSpeeds);
                     Texts.Add(text);
                 }
 
@@ -409,6 +462,12 @@ namespace RogueEssence.Menu
     {
         public int LetterIndex;
         public int Time;//1 in order to wait on button press
+    }
+    
+    public class TextSpeed
+    {
+        public int LetterIndex;
+        public double Speed;
     }
 
     public class TextScript
