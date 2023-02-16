@@ -35,9 +35,9 @@ namespace RogueEssence
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
+                                                @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])" + 
                                                 @"|(?<script>\[script=(?<scriptval>\d+)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        //
 
         public static void Init()
         {

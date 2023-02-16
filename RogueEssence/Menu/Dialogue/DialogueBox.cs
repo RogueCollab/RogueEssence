@@ -40,6 +40,9 @@ namespace RogueEssence.Menu
         public List<List<TextSpeed>> Speeds;
         protected List<TextSpeed> CurrentSpeed { get { return Speeds[curTextIndex]; } }
         
+        public List<List<TextEmote>> Emotes;
+        protected List<TextEmote> CurrentEmote { get { return Emotes[curTextIndex]; } }
+        
         //Dialogue Text needs to be able to set character index accurately
         protected List<DialogueText> Texts;
         private int curTextIndex;
@@ -84,6 +87,7 @@ namespace RogueEssence.Menu
             Pauses = new List<List<TextPause>>();
             ScriptCalls = new List<List<TextScript>>();
             Speeds = new List<List<TextSpeed>>();
+            Emotes = new List<List<TextEmote>>();
             speakerName = "";
 
             Sound = sound;
@@ -123,6 +127,14 @@ namespace RogueEssence.Menu
                     currSpeed = textSpeed.Speed;
                     CurrentSpeed.RemoveAt(0);
                 }
+                
+                TextEmote textEmote = getCurrentTextEmote();
+                if (textEmote != null)
+                {
+                    SetPortraitEmote(textEmote.Emote);
+                    CurrentEmote.RemoveAt(0);
+                }
+                
                 TextPause textPause = getCurrentTextPause();
                 if (textPause != null)
                 {
@@ -254,6 +266,16 @@ namespace RogueEssence.Menu
             }
             return null;
         }
+        
+        protected TextEmote getCurrentTextEmote()
+        {
+            if (CurrentEmote.Count > 0)
+            {
+                if (CurrentText.CurrentCharIndex < 0 || CurrentEmote[0].LetterIndex <= CurrentText.CurrentCharIndex)
+                    return CurrentEmote[0];
+            }
+            return null;
+        }
 
         protected TextScript getCurrentTextScript()
         {
@@ -274,6 +296,14 @@ namespace RogueEssence.Menu
             }
             else
                 speakerPic = null;
+        }
+        
+        public void SetPortraitEmote(int emote)
+        {
+            if (speakerPic != null)
+            {
+                speakerPic = new SpeakerPortrait(speakerPic, emote);
+            }
         }
 
         public void SetSpeaker(MonsterID speaker, string name, EmoteStyle emotion)
@@ -309,6 +339,7 @@ namespace RogueEssence.Menu
             nextTextIndex = -1;
             Pauses.Clear();
             Speeds.Clear();
+            Emotes.Clear();
             ScriptCalls.Clear();
 
             int curCharIndex = 0;
@@ -327,6 +358,7 @@ namespace RogueEssence.Menu
                 List<TextScript> scripts = new List<TextScript>();
                 List<IntRange> tagRanges = new List<IntRange>();
                 List<TextSpeed> speeds = new List<TextSpeed>();
+                List<TextEmote> emotes = new List<TextEmote>();
                 
                 int lag = 0;
                 MatchCollection matches = Text.MsgTags.Matches(scrolls[nn]);
@@ -372,6 +404,22 @@ namespace RogueEssence.Menu
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
+                            case "emote":
+                                {
+                                    TextEmote emote = new TextEmote();
+                                    emote.LetterIndex = match.Index - lag;
+
+                                    int param;
+                                    if (Int32.TryParse(match.Groups["emoteval"].Value, out param))
+                                        emote.Emote = param;
+                                    else
+                                    {
+                                        emote.Emote = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name == match.Groups["emoteval"].Value);
+                                    }
+                                    emotes.Add(emote);
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                }
+                                break;
                             case "colorstart":
                             case "colorend":
                                 break;
@@ -395,6 +443,7 @@ namespace RogueEssence.Menu
                 int curPause = 0;
                 int curScript = 0;
                 int curSpeed = 0;
+                int curEmote = 0;
                 for (int kk = 0; kk < texts.Count; kk++)
                 {
                     DialogueText text = texts[kk];
@@ -403,7 +452,7 @@ namespace RogueEssence.Menu
                     List<TextPause> subPauses = new List<TextPause>();
                     List<TextScript> subScripts = new List<TextScript>();
                     List<TextSpeed> subSpeeds = new List<TextSpeed>();
-
+                    List<TextEmote> subEmotes = new List<TextEmote>();
                     int lineCount = text.GetLineCount();
                     for (int ii = 0; ii < lineCount; ii++)
                     {
@@ -444,12 +493,25 @@ namespace RogueEssence.Menu
                             else
                                 break;
                         }
+                        
+                        for (; curEmote < emotes.Count; curEmote++)
+                        {
+                            TextEmote emote = emotes[curEmote];
+                            if (emote.LetterIndex <= totalLength)
+                            {
+                                emote.LetterIndex -= totalTrim;
+                                subEmotes.Add(emote);
+                            }
+                            else
+                                break;
+                        }
                     }
                     totalTrim = totalLength;
 
                     Pauses.Add(subPauses);
                     ScriptCalls.Add(subScripts);
                     Speeds.Add(subSpeeds);
+                    Emotes.Add(subEmotes);
                     Texts.Add(text);
                 }
 
@@ -468,6 +530,12 @@ namespace RogueEssence.Menu
     {
         public int LetterIndex;
         public double Speed;
+    }
+
+    public class TextEmote
+    {
+        public int LetterIndex;
+        public int Emote;
     }
 
     public class TextScript
