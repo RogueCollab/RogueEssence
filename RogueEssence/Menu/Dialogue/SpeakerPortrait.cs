@@ -23,6 +23,10 @@ namespace RogueEssence.Menu
             Loc = loc;
         }
 
+        public static Loc DefaultLoc()
+        {
+            return new Loc(DialogueBox.SIDE_BUFFER, 132);
+        }
         //kind of like a menu, but not quite (uses borders)
         //draws the portrait
 

@@ -247,21 +247,19 @@ namespace RogueEssence.Menu
             return null;
         }
 
-        public void SetPortrait(MonsterID speaker, EmoteStyle emotion)
+        public void SetPortrait(MonsterID speaker, EmoteStyle emotion, Loc speakerLoc)
         {
             if (speaker.IsValid())
             {
-                // Bounds.Y = 188
-                Loc loc = new Loc(DialogueBox.SIDE_BUFFER, 188 - 56);
-                speakerPic = new SpeakerPortrait(speaker, emotion, loc, true);
+                speakerPic = new SpeakerPortrait(speaker, emotion, speakerLoc, true);
             }
             else
                 speakerPic = null;
         }
 
-        public void SetSpeaker(MonsterID speaker, string name, EmoteStyle emotion)
+        public void SetSpeaker(MonsterID speaker, string name, EmoteStyle emotion, Loc speakerLoc)
         {
-            SetPortrait(speaker, emotion);
+            SetPortrait(speaker, emotion, speakerLoc);
 
             if (!String.IsNullOrEmpty(name))
                 speakerName = name;
