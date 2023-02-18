@@ -60,7 +60,7 @@ namespace RogueEssence.Ground
             if (invSlot < 0)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
-                activeChar.EquippedItem = new InvItem();
+                activeChar.SilentDequipItem();
             }
             else
                 DataManager.Instance.Save.ActiveTeam.RemoveFromInv(invSlot);
@@ -76,7 +76,7 @@ namespace RogueEssence.Ground
                 //no curse check in ground mode
 
                 invItem = activeChar.EquippedItem;
-                activeChar.EquippedItem = new InvItem();
+                activeChar.SilentDequipItem();
             }
             else
             {
