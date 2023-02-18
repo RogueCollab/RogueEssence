@@ -11,12 +11,14 @@ namespace RogueEssence.Menu
     {
         private DialogueChoiceMenu dialogueChoices;
 
-        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice,
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, DialogueChoice[] choices, int defaultChoice,
             int cancelChoice)
-            : base(message, sound, centerH, centerV)
+            : base(message, sound, centerH, centerV, bounds)
         {
             dialogueChoices = new DialogueChoiceMenu(choices, defaultChoice, cancelChoice, Bounds.Y);
         }
+
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice, int cancelChoice) : this(message, sound, centerH, centerV, DialogueBox.DefaultBounds(), choices, defaultChoice, cancelChoice) {}
 
         public override void ProcessTextDone(InputManager input)
         {
@@ -60,8 +62,11 @@ namespace RogueEssence.Menu
                 menu_choices[ii] = new MenuTextChoice(choices[ii].Choice, () => { choose(index); }, choices[ii].Enabled, choices[ii].Enabled ? Color.White : Color.Red);
                 results[ii] = choices[ii].Result;
             }
+            
+            Console.WriteLine(startY);
+            // startY = 188
             int choice_width = CalculateChoiceLength(menu_choices, 0);
-            Initialize(new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width, startY - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2) - QUESTION_SPACE),
+            Initialize(new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width, 188 - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2) - QUESTION_SPACE),
                 choice_width, menu_choices, defaultChoice);
 
             this.cancelChoice = cancelChoice;

@@ -72,10 +72,15 @@ namespace RogueEssence.Menu
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
 
-        public DialogueBox(string msg, bool sound, bool centerH, bool centerV)
+        public static Rect DefaultBounds()
         {
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
-
+            return Rect.FromPoints(
+                new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)),
+                new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+        }
+        public DialogueBox(string msg, bool sound, bool centerH, bool centerV, Rect bounds)
+        {
+            Bounds = bounds;
             Pauses = new List<List<TextPause>>();
             ScriptCalls = new List<List<TextScript>>();
             speakerName = "";
@@ -199,7 +204,7 @@ namespace RogueEssence.Menu
                 //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
                 //the coordinates are relative to the string's position
                 Loc loc = Bounds.Start + CurrentText.GetTextProgress() + CurrentText.Rect.Start;
-
+                
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                     GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);
             }
@@ -211,7 +216,7 @@ namespace RogueEssence.Menu
             if (CurrentBoxFinished && !Finished && !scrolling)
             {
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.Center.X, Bounds.End.Y - 6), 1, 0);
             }
         }
 
@@ -246,7 +251,8 @@ namespace RogueEssence.Menu
         {
             if (speaker.IsValid())
             {
-                Loc loc = new Loc(DialogueBox.SIDE_BUFFER, Bounds.Y - 56);
+                // Bounds.Y = 188
+                Loc loc = new Loc(DialogueBox.SIDE_BUFFER, 188 - 56);
                 speakerPic = new SpeakerPortrait(speaker, emotion, loc, true);
             }
             else
