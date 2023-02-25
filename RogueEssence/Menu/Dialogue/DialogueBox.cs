@@ -25,17 +25,26 @@ namespace RogueEssence.Menu
         const int SPEAK_FRAMES = 2;
 
         public const int SIDE_BUFFER = 8;
-        public const int TEXT_HEIGHT = 16;//14
-        public const int VERT_PAD = 2;//1
-        public const int VERT_OFFSET = -2;//-3
+        public const int TEXT_HEIGHT = 16; //14
+        public const int VERT_PAD = 2; //1
+        public const int VERT_OFFSET = -2; //-3
         public const int HORIZ_PAD = 4;
-        public const int MAX_LINES = 2;//3
+        public const int MAX_LINES = 2; //3
 
         public bool Skippable;
         public List<List<TextPause>> Pauses;
-        protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
+
+        protected List<TextPause> CurrentPause
+        {
+            get { return Pauses[curTextIndex]; }
+        }
+
         public List<List<TextScript>> ScriptCalls;
-        protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
+
+        protected List<TextScript> CurrentScript
+        {
+            get { return ScriptCalls[curTextIndex]; }
+        }
 
         //Dialogue Text needs to be able to set character index accurately
         protected List<DialogueText> Texts;
@@ -46,12 +55,26 @@ namespace RogueEssence.Menu
 
         private int nextTextIndex;
 
-        protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
-        protected DialogueText NextText { get { return nextTextIndex > -1 ? Texts[nextTextIndex] : null; } }
-        
-        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentScript.Count == 0; } }
-        public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count-1; } }
-        
+        protected DialogueText CurrentText
+        {
+            get { return Texts[curTextIndex]; }
+        }
+
+        protected DialogueText NextText
+        {
+            get { return nextTextIndex > -1 ? Texts[nextTextIndex] : null; }
+        }
+
+        protected bool CurrentBoxFinished
+        {
+            get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentScript.Count == 0; }
+        }
+
+        public bool Finished
+        {
+            get { return CurrentText.Finished && curTextIndex == Texts.Count - 1; }
+        }
+
         public bool Sound;
 
         protected FrameTick TotalTextTime;
@@ -63,21 +86,28 @@ namespace RogueEssence.Menu
 
         //optional speaker box
         private SpeakerPortrait speakerPic;
+
         //the speakername, alone
         private string speakerName;
+
         //message with pauses, without speaker name
         private string message;
 
-        public bool IsCheckpoint { get { return false; } }
+        public bool IsCheckpoint
+        {
+            get { return false; }
+        }
+
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
 
-        public static Rect DefaultBounds()
-        {
-            return Rect.FromPoints(
-                new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)),
-                new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
-        }
+        //new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)),
+        //new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
+        public static Rect DefaultBounds => Rect.FromPoints(
+            new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)),
+            new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8)
+        );
+
         public DialogueBox(string msg, bool sound, bool centerH, bool centerV, Rect bounds)
         {
             Bounds = bounds;

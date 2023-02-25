@@ -35,8 +35,9 @@ namespace RogueEssence.Script
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
         private IEnumerator<YieldInstruction> m_curdialogue;
-        private Rect m_curbounds = DialogueBox.DefaultBounds();
-        private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc();
+        private Rect m_curbounds = DialogueBox.DefaultBounds;
+        private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
+        private Loc m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
         
         private IInteractable m_curchoice;
 
@@ -211,7 +212,7 @@ namespace RogueEssence.Script
         {
             m_curspeakerID = MonsterID.Invalid;
             m_curspeakerName = null;
-            m_curspeakerEmo = new EmoteStyle(0);
+            m_curspeakerEmo.Emote = 0;
             m_curspeakerSnd = keysound;
             m_curautoFinish = false;
             m_curcenter_h = false;
@@ -232,7 +233,7 @@ namespace RogueEssence.Script
         {
             m_curspeakerID = new MonsterID(specie, form, skin, gender);
             m_curspeakerName = name;
-            m_curspeakerEmo.Emote = 0;
+            m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
         }
 
@@ -257,7 +258,16 @@ namespace RogueEssence.Script
             m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
         }
-
+        public void SetChoiceLoc(int x, int y)
+        {
+            m_curchoiceLoc = new Loc(x, y);
+        }
+        
+        public void ResetChoiceLoc()
+        {
+            m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
+        }
+        
         public void SetBounds(int x, int y, int width, int height)
         {
             m_curbounds = new Rect(x, y, width, height);
@@ -265,7 +275,7 @@ namespace RogueEssence.Script
         
         public void ResetBounds()
         {
-            m_curbounds = DialogueBox.DefaultBounds();
+            m_curbounds = DialogueBox.DefaultBounds;
         }
         
         public void SetSpeakerLoc(int x, int y)
@@ -275,7 +285,7 @@ namespace RogueEssence.Script
         
         public void ResetSpeakerLoc()
         {
-            m_curspeakerLoc = SpeakerPortrait.DefaultLoc();
+            m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
         }
 
         public void SetSpeaker(Character chara, bool keysound = true)
@@ -299,10 +309,12 @@ namespace RogueEssence.Script
         ///
         /// </summary>
         /// <param name="emo"></param>
-        public void SetSpeakerEmotion(string emo)
+        /// <param name="reverse"></param>
+        public void SetSpeakerEmotion(string emo, bool reverse = false)
         {
             int emoteIndex = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name == emo);
             m_curspeakerEmo.Emote = emoteIndex;
+            m_curspeakerEmo.Reverse = reverse;
         }
 
         public void SetCenter(bool centerH, bool centerV = false)
@@ -373,7 +385,7 @@ namespace RogueEssence.Script
                                                                       m_curspeakerEmo,
                                                                       m_curspeakerLoc,
                                                                       message,
-                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds,
+                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc,
                                                                       () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                                                                       () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
@@ -381,7 +393,7 @@ namespace RogueEssence.Script
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), m_curspeakerLoc, message,
-                        m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds,
+                        m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                         () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
@@ -1099,13 +1111,13 @@ namespace RogueEssence.Script
                 //Make a choice menu, and check if we display a speaker or not
                 if (m_curspeakerName != null)
                 {
-                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc,
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                    m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, 
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(MonsterID.Invalid, null, new EmoteStyle(0), m_curspeakerLoc,
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
