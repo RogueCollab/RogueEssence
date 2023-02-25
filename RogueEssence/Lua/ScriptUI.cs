@@ -258,6 +258,12 @@ namespace RogueEssence.Script
             m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
         }
+
+        public void SetSpeakerReverse(bool reverse)
+        {
+            m_curspeakerEmo.Reverse = reverse;
+        }
+        
         public void SetChoiceLoc(int x, int y)
         {
             m_curchoiceLoc = new Loc(x, y);
