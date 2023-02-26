@@ -34,8 +34,9 @@ namespace RogueEssence
         public static Regex MsgTags = new Regex(@"(?<pause>\[pause=(?<pauseval>\d+)\])" +
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
-                                                @"|(?<scrollbreak>\[scroll\])" +
-                                                @"(?<script>\[script=(?<scriptval>\d+)\])",
+                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
+                                                @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])" + 
+                                                @"|(?<script>\[script=(?<scriptval>\d+)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
