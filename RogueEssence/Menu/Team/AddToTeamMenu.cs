@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
+using RogueEssence.Data;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Menu
@@ -30,9 +31,11 @@ namespace RogueEssence.Menu
                 int index = ii;
                 Character character = DungeonScene.Instance.ActiveTeam.Assembly[index];
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), character.Dead ? Color.Red : Color.White);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, character.Dead ? Color.Red : Color.White);
-                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, !character.Dead, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1),
+                    DirV.Up, DirH.Right, character.Dead ? Color.Red : Color.White);
+                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, !character.Dead, memberName, memberLvLabel, memberLv));
             }
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 

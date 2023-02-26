@@ -39,12 +39,14 @@ namespace RogueEssence.Menu
                 string skill = levelUpSkill.Skill;
                 SkillData skillEntry = DataManager.Instance.GetSkill(levelUpSkill.Skill);
 
+
                 MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
-                MenuText levelUpText = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", levelUpSkill.Level),
-                    new Loc(GraphicsManager.ScreenWidth - 72, 1), DirV.Up, DirH.Right, Color.White);
+                MenuText levelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
+                    new Loc(GraphicsManager.ScreenWidth - 88, 1), DirH.Right);
+                MenuText level = new MenuText(levelUpSkill.Level.ToString(), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 0), DirH.Right);
 
                 Skills.Add(skill);
-                flatChoices.Add(new MenuElementChoice(() => { }, true, levelUpText, skillText));
+                flatChoices.Add(new MenuElementChoice(() => { }, true, levelLabel, level, skillText));
             }
 
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);

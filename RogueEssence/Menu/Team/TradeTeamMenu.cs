@@ -36,9 +36,11 @@ namespace RogueEssence.Menu
                 Character character = DataManager.Instance.Save.ActiveTeam.Assembly[index];
                 bool tradeable = !character.IsFounder && !character.IsFavorite;
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), tradeable ? Color.White : Color.Red);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, tradeable ? Color.White : Color.Red);
-                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, tradeable, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1),
+                    DirV.Up, DirH.Right, tradeable ? Color.White : Color.Red);
+                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, tradeable, memberName, memberLvLabel, memberLv));
             }
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
