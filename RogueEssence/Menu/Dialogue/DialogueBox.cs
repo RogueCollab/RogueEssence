@@ -32,8 +32,10 @@ namespace RogueEssence.Menu
         public const int MAX_LINES = 2;//3
 
         public bool Skippable;
+
         public List<List<TextPause>> Pauses;
         protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
+
         public List<List<TextScript>> ScriptCalls;
         protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
 
@@ -55,7 +57,7 @@ namespace RogueEssence.Menu
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
         protected DialogueText NextText { get { return nextTextIndex > -1 ? Texts[nextTextIndex] : null; } }
         
-        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentScript.Count == 0; } }
+        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentSpeed.Count == 0 && CurrentEmote.Count == 0 && CurrentScript.Count == 0; } }
         public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count-1; } }
         
         public bool Sound;
@@ -408,14 +410,7 @@ namespace RogueEssence.Menu
                                 {
                                     TextEmote emote = new TextEmote();
                                     emote.LetterIndex = match.Index - lag;
-
-                                    int param;
-                                    if (Int32.TryParse(match.Groups["emoteval"].Value, out param))
-                                        emote.Emote = param;
-                                    else
-                                    {
-                                        emote.Emote = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name == match.Groups["emoteval"].Value);
-                                    }
+                                    emote.Emote = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name.ToLower() == match.Groups["emoteval"].Value.ToLower());
                                     emotes.Add(emote);
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
@@ -432,9 +427,11 @@ namespace RogueEssence.Menu
                         startLag += match.Length;
                 }
 
+                //remove the tags, leaving pure text (except for the color tags)
                 for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
                     scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
 
+                //split the text, being mindful of color tags
                 List<DialogueText> texts = DialogueText.SplitFormattedText(scrolls[nn], new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,
                     Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - HORIZ_PAD * 2, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 2 - VERT_PAD * 2 - VERT_OFFSET * 2), TEXT_HEIGHT, centerH, centerV, 0);
 
