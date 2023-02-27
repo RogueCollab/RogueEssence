@@ -20,6 +20,7 @@ namespace RogueEssence.Menu
 
         public SpeakerPortrait Portrait;
         public MenuText Name;
+        public MenuText LevelLabel;
         public MenuText Level;
         public MenuText EXP;
 
@@ -67,7 +68,7 @@ namespace RogueEssence.Menu
             int totalOtherMemberPages = 3;
             int totalPages = totalLearnsetPages + totalOtherMemberPages;
             
-            Title = new MenuText(Text.FormatKey("MENU_STATS_TITLE") + $" (2/{totalPages})", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Title = new MenuText(Text.FormatKey("MENU_STATS_TITLE"), new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
             PageText = new MenuText($"(2/{totalPages})", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
@@ -88,8 +89,9 @@ namespace RogueEssence.Menu
             origElements &= (player.Element2 == monsterForm.Element2);
             Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
 
-            Level = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", player.Level), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
-
+            LevelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
+            Level = new MenuText(player.Level.ToString(),  new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT")), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.Left);
+            
             int expToNext = 0;
             if (player.Level < DataManager.Instance.MaxLevel)
             {
@@ -169,6 +171,7 @@ namespace RogueEssence.Menu
             yield return Portrait;
             yield return Name;
 
+            yield return LevelLabel;
             yield return Level;
             yield return Elements;
             yield return EXP;

@@ -84,7 +84,7 @@ namespace RogueEssence.Menu
         public void SetPreview(bool preview)
         {
             if (skillCharges.Text != "")
-                skillText.Color = preview ? Color.Yellow : Color.White;
+                skillText.Color = preview ? Color.Yellow : skillCharges.Color;
         }
 
         public override IEnumerable<IMenuElement> GetElements()

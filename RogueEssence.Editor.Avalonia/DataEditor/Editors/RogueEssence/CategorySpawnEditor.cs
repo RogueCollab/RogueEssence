@@ -125,7 +125,7 @@ namespace RogueEssence.Dev
                         spawns.Add(key, slicedList, curSave[key].SpawnRates[floor]);
                 }
 
-                SpawnList<InvItem> flatSpawns = CategorySpawnHelper.CollapseSpawnDict<string, InvItem>(spawns);
+                List<(object, double)> flatSpawns = CategorySpawnHelper.CollapseSpawnDict<string, InvItem>(spawns);
 
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = "Spawn Summary";
@@ -137,12 +137,12 @@ namespace RogueEssence.Dev
                 lbxValue.MaxHeight = 400;
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
-                mv.LoadFromList(flatSpawns);
+                mv.LoadFromTupleList(flatSpawns);
                 viewPanel.Children.Add(lbxValue);
 
                 frmData.SetViewOnly();
 
-                frmData.RegisterChild(frmData);
+                control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
             btnTest.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);

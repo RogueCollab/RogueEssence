@@ -32,9 +32,11 @@ namespace RogueEssence.Menu
                 Character character = DataManager.Instance.Save.ActiveTeam.Players[index];
                 bool enabled = !ChoosingLeader(ii);
                 MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), enabled ? Color.Lime : TextIndigo);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, enabled ? Color.Lime : TextIndigo);
-                flatChoices.Add(new MenuElementChoice(() => { Choose(index, false); }, true, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1), 
+                    DirV.Up, DirH.Right, enabled ? Color.Lime : TextIndigo);
+                flatChoices.Add(new MenuElementChoice(() => { Choose(index, false); }, true, memberName, memberLvLabel, memberLv));
             }
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Assembly.Count; ii++)
             {
@@ -42,9 +44,11 @@ namespace RogueEssence.Menu
                 Character character = DataManager.Instance.Save.ActiveTeam.Assembly[index];
                 Color color = CanChooseAssembly(ii) ? (character.IsFavorite ? Color.Yellow : Color.White) : Color.Red;
                 MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), color);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, color);
-                flatChoices.Add(new MenuElementChoice(() => { Choose(index, true); }, true, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
+                
+                flatChoices.Add(new MenuElementChoice(() => { Choose(index, true); }, true, memberName, memberLvLabel, memberLv));
             }
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);

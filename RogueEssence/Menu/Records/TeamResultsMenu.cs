@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             EventedList<Character> charList = GetChars();
-            Stats = new MenuText[charList.Count * 4];
+            Stats = new MenuText[charList.Count * 5];
             Portraits = new SpeakerPortrait[charList.Count];
             for (int ii = 0; ii < charList.Count; ii++)
             {
@@ -37,21 +37,23 @@ namespace RogueEssence.Menu
                 Portraits[ii] = new SpeakerPortrait(character.BaseForm, new EmoteStyle(0),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), false);
                 string speciesText = character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm);
-                Stats[ii * 4] = new MenuText(speciesText,
+                Stats[ii * 5] = new MenuText(speciesText,
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
-                Stats[ii * 4 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level),
-                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 24, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                Stats[ii * 5 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Stats[ii * 5 + 2] = new MenuText(character.Level.ToString(),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
                 if (Ending.UUID == character.OriginalUUID)
                 {
-                    Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),
+                    Stats[ii * 5 + 3] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 }
                 else
                 {
-                    Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", character.OriginalTeam),
+                    Stats[ii * 5 + 3] = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", character.OriginalTeam),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 }
-                Stats[ii * 4 + 3] = new MenuText((String.IsNullOrEmpty(character.DefeatAt) ? "" : Text.FormatKey("MENU_TEAM_FELL_AT", character.DefeatAt)),
+                Stats[ii * 5 + 4] = new MenuText((String.IsNullOrEmpty(character.DefeatAt) ? "" : Text.FormatKey("MENU_TEAM_FELL_AT", character.DefeatAt)),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 44 * ii + TitledStripMenu.TITLE_OFFSET));
 
                 base.Initialize();

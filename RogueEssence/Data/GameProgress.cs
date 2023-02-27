@@ -913,39 +913,7 @@ namespace RogueEssence.Data
             ItemsToStore = new List<InvItem>();
             StorageToStore = new Dictionary<string, int>();
         }
-
-
-        public static void LossPenalty(GameProgress save)
-        {
-            try
-            {
-                //remove money
-                save.ActiveTeam.Money = 0;
-                //remove bag items
-                for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
-                {
-                    ItemData entry = DataManager.Instance.GetItem(save.ActiveTeam.GetInv(ii).ID);
-                    if (!entry.CannotDrop)
-                        save.ActiveTeam.RemoveFromInv(ii);
-                }
-
-                //remove equips
-                foreach (Character player in save.ActiveTeam.EnumerateChars())
-                {
-                    if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                    {
-                        ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
-                        if (!entry.CannotDrop)
-                            player.SilentDequipItem();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-        }
-
+        
         public override int GetTotalScore() { return 0; }
 
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
@@ -972,7 +940,7 @@ namespace RogueEssence.Data
             //and load another copy to mark it with loss
             state = DataManager.Instance.CopyMainGameState();
             if (Stakes == DungeonStakes.Risk)
-                LossPenalty(state.Save);
+                LuaEngine.Instance.OnLossPenalty(state.Save);
             DataManager.Instance.SaveGameState(state);
 
             //empty the player assembly
@@ -1034,7 +1002,7 @@ namespace RogueEssence.Data
                     recordFile = DataManager.Instance.EndPlay(this, StartDate);
 
                     if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
-                        LossPenalty(this);
+                        LuaEngine.Instance.OnLossPenalty(this);
 
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;

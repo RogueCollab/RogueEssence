@@ -96,12 +96,14 @@ namespace RogueEssence.Dungeon
 
             SingleCharContext mainContext = new SingleCharContext(character);
             yield return CoroutineManager.Instance.StartCoroutine(character.OnWalk(mainContext));
-            yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem, false));
+            if (!character.Dead)
+                yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem, false));
             if (switchedChar != null)
             {
                 SingleCharContext switchedContext = new SingleCharContext(switchedChar);
                 yield return CoroutineManager.Instance.StartCoroutine(switchedChar.OnWalk(switchedContext));
-                yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(switchedChar));
+                if (!switchedChar.Dead)
+                    yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(switchedChar));
             }
 
 
