@@ -283,10 +283,13 @@ namespace RogueEssence.Menu
                     scrolling = true;
                 }
 
-                if (scrolling)
-                    CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
                 int scrollFrames = TEXT_HEIGHT * MaxLines / SCROLL_SPEED;
-                if (CurrentScrollTime >= FrameTick.FromFrames(scrollFrames))
+                if (CurrentScrollTime < FrameTick.FromFrames(scrollFrames))
+                {
+                    if (scrolling)
+                        CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
+                }
+                else
                 {
                     curTextIndex++;
                     CurrentScrollTime = new FrameTick();
