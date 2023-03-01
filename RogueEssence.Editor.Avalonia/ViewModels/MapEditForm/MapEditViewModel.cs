@@ -147,7 +147,6 @@ namespace RogueEssence.Dev.ViewModels
                     lock (GameBase.lockObj)
                     {
                         string oldFilename = CurrentFile;
-                        ZoneManager.Instance.CurrentMap.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
 
                         //Schedule saving the map
                         DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
@@ -388,6 +387,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(Map curmap, string filepath, string oldfname)
         {
+            ZoneManager.Instance.CurrentMap.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curmap);
 
             CurrentFile = filepath;
