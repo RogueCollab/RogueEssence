@@ -126,8 +126,7 @@ namespace RogueEssence.Script
         {
             try
             {
-                if (DataManager.Instance.CurrentReplay == null)
-                    GameManager.Instance.TextPopUp.SetMessage(text, expireTime);
+                GameManager.Instance.TextPopUp.SetMessage(text, expireTime);
             }
             catch (Exception e)
             {
