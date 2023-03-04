@@ -175,6 +175,11 @@ namespace RogueEssence.Dungeon
 
         public InvItem EquippedItem;
 
+        /// <summary>
+        /// If turned on, this entity is considered NOT a part of the adventure for the duration of that adventure.
+        /// </summary>
+        public bool Absentee;
+
         public LuaTable LuaData
         {
             get { return LuaDataTable; }

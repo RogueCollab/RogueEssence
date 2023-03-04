@@ -145,8 +145,21 @@ namespace RogueEssence.Menu
         protected override EventedList<Character> GetChars()
         {
             EventedList<Character> characters = new EventedList<Character>();
-            for (int ii = Page * 4; ii < Ending.ActiveTeam.Assembly.Count && ii < (Page + 1) * 4; ii++)
-                characters.Add(Ending.ActiveTeam.Assembly[ii]);
+            int trueIdx = 0;
+            for (int ii = 0; ii < Ending.ActiveTeam.Assembly.Count; ii++)
+            {
+                if (!Ending.ActiveTeam.Assembly[ii].Absentee)
+                {
+                    if (Page * 4 <= ii && ii < (Page + 1) * 4)
+                    {
+                        characters.Add(Ending.ActiveTeam.Assembly[ii]);
+                        if (characters.Count == 4)
+                            break;
+                    }
+                    trueIdx++;
+                }
+
+            }
             return characters;
         }
 

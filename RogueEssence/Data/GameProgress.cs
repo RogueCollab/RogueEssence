@@ -943,8 +943,13 @@ namespace RogueEssence.Data
                 LuaEngine.Instance.OnLossPenalty(state.Save);
             DataManager.Instance.SaveGameState(state);
 
-            //empty the player assembly
-            DataManager.Instance.Save.ActiveTeam.Assembly.Clear();
+            //mark the players as reachable
+            foreach(Character charData in ActiveTeam.Players)
+                charData.Absentee = false;
+
+            //mark the player assembly as unreachable
+            foreach (Character charData in ActiveTeam.Assembly)
+                charData.Absentee = true;
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
@@ -1092,17 +1097,7 @@ namespace RogueEssence.Data
         public void MergeDataTo(MainProgress destProgress)
         {
             if (this != destProgress)
-            {
                 MergeDexTo(destProgress, true);
-
-                foreach (CharData charData in ActiveTeam.Assembly)
-                {
-                    Character chara = new Character(charData);
-                    AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
-                    chara.Tactic = new AITactic(tactic);
-                    destProgress.ActiveTeam.Assembly.Add(chara);
-                }
-            }
 
             //for merging data imported from roguelocke
             foreach (CharData charData in CharsToStore)
