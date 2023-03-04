@@ -473,7 +473,7 @@ namespace RogueEssence.Dungeon
                         ProcessMinimapInput(input);
                     else if (input[FrameInput.InputType.Skills])
                     {
-                        if (input[FrameInput.InputType.Minimap])
+                        if (input[FrameInput.InputType.SkillPreview])
                         {
                             previewing = true;
                             int skillIndex = ProcessSkillInput(input, true);
@@ -656,6 +656,7 @@ namespace RogueEssence.Dungeon
                             }
                             else
                                 ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
+                            Preview.UpdateControls();
                         }
                     }
                     for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
