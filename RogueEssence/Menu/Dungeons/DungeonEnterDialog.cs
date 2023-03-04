@@ -10,11 +10,11 @@ namespace RogueEssence.Menu
     {
         DungeonSummary summaryMenu;
 
-        public DungeonEnterDialog(string message, ZoneLoc dest, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
+        public DungeonEnterDialog(string message, string zoneName, ZoneLoc dest, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
             : base(message, sound, false, false, choices, defaultChoice, cancelChoice)
         {
             summaryMenu = new DungeonSummary(new Rect(new Loc(8, 8), new Loc(128, GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
-            summaryMenu.SetDungeon(dest.ID, DataManager.Instance.Save.GetDungeonUnlock(dest.ID) == GameProgress.UnlockState.Completed, true);
+            summaryMenu.SetDungeon(zoneName, dest.ID, DataManager.Instance.Save.GetDungeonUnlock(dest.ID) == GameProgress.UnlockState.Completed, true);
         }
         
         public override void Draw(SpriteBatch spriteBatch)

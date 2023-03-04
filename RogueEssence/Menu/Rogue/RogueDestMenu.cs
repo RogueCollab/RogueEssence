@@ -60,7 +60,9 @@ namespace RogueEssence.Menu
                 bool isComplete = false;
                 if (DataManager.Instance.Save != null)
                     isComplete = DataManager.Instance.Save.GetDungeonUnlock(dungeonIndices[choice]) == GameProgress.UnlockState.Completed;
-                summaryMenu.SetDungeon(dungeonIndices[choice], isComplete, false);
+
+                ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(dungeonIndices[choice]) as ZoneEntrySummary;
+                summaryMenu.SetDungeon(zoneEntry.GetColoredName(), dungeonIndices[choice], isComplete, false);
             }
             else
                 summaryMenu.Visible = false;

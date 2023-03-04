@@ -25,15 +25,14 @@ namespace RogueEssence.Menu
 
         }
 
-        public void SetDungeon(string index, bool isComplete, bool showRestrict)
+        public void SetDungeon(string name, string index, bool isComplete, bool showRestrict)
         {
             ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(index) as ZoneEntrySummary;
             if (zoneEntry == null)
                 Visible = false;
             else
             {
-                DungeonName.SetText(zoneEntry.GetColoredName());
-                DungeonName.Color = isComplete ? Color.White : Color.Cyan;
+                DungeonName.SetText(name);
                 Floors.SetText(Text.FormatKey("MENU_DUNGEON_FLOORS", (isComplete && zoneEntry.CountedFloors > 0) ? zoneEntry.CountedFloors.ToString() : "??"));
 
                 while (Elements.Count > 3)
