@@ -109,28 +109,35 @@ namespace RogueEssence.Data
             }
         }
 
-        public static void SerializeData(Stream stream, object entry)
+        public static void SerializeData(Stream stream, object entry, bool min = false)
         {
             using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
             {
                 SerializationContainer container = new SerializationContainer();
                 container.Object = entry;
                 container.Version = Versioning.GetVersion();
-                string val = SerializeObjectInternal(container, Settings);
+                string val = SerializeObjectInternal(container, Settings, min);
                 writer.Write(val);
             }
         }
 
-        private static string SerializeObjectInternal(object value, JsonSerializerSettings settings)
+        private static string SerializeObjectInternal(object value, JsonSerializerSettings settings, bool min)
         {
             JsonSerializer jsonSerializer = JsonSerializer.CreateDefault(settings);
             StringBuilder sb = new StringBuilder(256);
             StringWriter sw = new StringWriter(sb, CultureInfo.InvariantCulture);
             using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
             {
-                jsonWriter.Formatting = Formatting.Indented;
-                jsonWriter.Indentation = 0;
-                jsonWriter.IndentChar = '\t';
+                if (min)
+                {
+                    jsonWriter.Formatting = Formatting.None;
+                }
+                else
+                {
+                    jsonWriter.Formatting = Formatting.Indented;
+                    jsonWriter.Indentation = 0;
+                    jsonWriter.IndentChar = '\t';
+                }
 
                 jsonSerializer.Serialize(jsonWriter, value, null);
             }

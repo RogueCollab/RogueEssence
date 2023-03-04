@@ -722,7 +722,7 @@ namespace RogueEssence.Data
             {
                 using (MemoryStream classStream = new MemoryStream())
                 {
-                    Serializer.SerializeData(classStream, save);
+                    Serializer.SerializeData(classStream, save, true);
                     writer.Write(classStream.Position);
 
                     classStream.WriteTo(writer.BaseStream);
