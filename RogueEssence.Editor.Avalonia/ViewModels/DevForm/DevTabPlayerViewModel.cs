@@ -8,6 +8,7 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueEssence.Ground;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -23,6 +24,65 @@ namespace RogueEssence.Dev.ViewModels
             Genders = new ObservableCollection<string>();
             Anims = new ObservableCollection<string>();
         }
+
+        public void LoadMonstersNumeric()
+        {
+            monstersNumeric = DevForm.GetConfig("MonsterNumeric", 0) != 0;
+        }
+
+        private void loadMonsterKeys()
+        {
+            string oldId = "";
+            if (chosenMonster > -1 && chosenMonster < MonsterKeys.Count)
+                oldId = MonsterKeys[chosenMonster];
+
+            Monsters.Clear();
+            MonsterKeys.Clear();
+            List<string> keys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(monstersNumeric);
+            foreach (string key in keys)
+            {
+                string localString = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).GetLocalString(true);
+                if (monstersNumeric)
+                    Monsters.Add(String.Format("{0}: {1}", DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).SortOrder.ToString("D4"), localString));
+                else
+                    Monsters.Add(String.Format("{0}: {1}", key, localString));
+                MonsterKeys.Add(key);
+            }
+            int idx = MonsterKeys.IndexOf(oldId);
+            if (idx > -1)
+                ChosenMonster = idx;
+            else
+                ChosenMonster = 0;
+        }
+
+        public void ReloadMonsters()
+        {
+            bool prevUpdate = updating;
+            updating = true;
+            loadMonsterKeys();
+
+            ChosenForm = -1;
+            ChosenForm = 0;
+
+            Dictionary<string, string> skin_names = DataManager.Instance.DataIndices[DataManager.DataType.Skin].GetLocalStringArray(true);
+            Skins.Clear();
+            SkinKeys.Clear();
+            foreach (string key in skin_names.Keys)
+            {
+                Skins.Add(key + ": " + skin_names[key]);
+                SkinKeys.Add(key);
+            }
+            ChosenSkin = -1;
+            ChosenSkin = 0;
+
+            Genders.Clear();
+            for (int ii = 0; ii < 3; ii++)
+                Genders.Add(((Gender)ii).ToString());
+            ChosenGender = -1;
+            ChosenGender = 0;
+            updating = prevUpdate;
+        }
+
 
         private int level;
         public int Level
@@ -68,6 +128,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private bool monstersNumeric;
         public List<string> MonsterKeys;
 
         public ObservableCollection<string> Monsters { get; }
@@ -326,6 +387,19 @@ namespace RogueEssence.Dev.ViewModels
                     newAnim = new CharAnimIdle(groundChar.CharLoc, groundChar.CharDir);
                 yield return CoroutineManager.Instance.StartCoroutine(groundChar.StartAnim(newAnim));
             }
+        }
+
+
+        public void btnChangeOrder_Click()
+        {
+            bool prevUpdate = updating;
+            updating = true;
+
+            monstersNumeric = !monstersNumeric;
+            DevForm.SetConfig("MonsterNumeric", monstersNumeric ? 1 : 0);
+            loadMonsterKeys();
+
+            updating = prevUpdate;
         }
 
         /// <summary>
