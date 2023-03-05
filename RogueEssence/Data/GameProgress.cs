@@ -944,11 +944,11 @@ namespace RogueEssence.Data
             DataManager.Instance.SaveGameState(state);
 
             //mark the players as reachable
-            foreach(Character charData in ActiveTeam.Players)
+            foreach(Character charData in DataManager.Instance.Save.ActiveTeam.Players)
                 charData.Absentee = false;
 
             //mark the player assembly as unreachable
-            foreach (Character charData in ActiveTeam.Assembly)
+            foreach (Character charData in DataManager.Instance.Save.ActiveTeam.Assembly)
                 charData.Absentee = true;
 
             //set everyone's levels and mark them for backreferral
