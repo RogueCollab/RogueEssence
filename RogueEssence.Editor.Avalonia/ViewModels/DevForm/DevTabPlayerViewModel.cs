@@ -328,6 +328,9 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        /// <summary>
+        /// Denotes the dev UI is updating from the sprite
+        /// </summary>
         bool updating;
         private void SpeciesChanged()
         {
@@ -354,10 +357,14 @@ namespace RogueEssence.Dev.ViewModels
             bool prevUpdate = updating;
             updating = true;
 
-            ChosenMonster = MonsterKeys.IndexOf(id.Species);
-            ChosenForm = id.Form;
-            ChosenSkin = SkinKeys.IndexOf(id.Skin);
-            ChosenGender = (int)id.Gender;
+            if (chosenMonster != MonsterKeys.IndexOf(id.Species))
+                ChosenMonster = MonsterKeys.IndexOf(id.Species);
+            if (ChosenForm != id.Form)
+                ChosenForm = id.Form;
+            if (ChosenSkin != SkinKeys.IndexOf(id.Skin))
+                ChosenSkin = SkinKeys.IndexOf(id.Skin);
+            if (ChosenGender != (int)id.Gender)
+                ChosenGender = (int)id.Gender;
 
             updating = prevUpdate;
         }
