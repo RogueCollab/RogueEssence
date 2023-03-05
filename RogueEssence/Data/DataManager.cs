@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using RogueEssence.Ground;
+using RogueEssence.Dev;
 using RogueEssence.Script;
 using RogueEssence.Content;
 using System.Xml;
@@ -2090,7 +2091,7 @@ namespace RogueEssence.Data
                         if (player.Tactic != null)
                             ai = GetAITactic(player.Tactic.ID);
                         else
-                        ai = GetAITactic(DataManager.Instance.DefaultAI);
+                            ai = GetAITactic(DataManager.Instance.DefaultAI);
                         player.Tactic = new AITactic(ai);
                     }
                     foreach (Character player in state.Save.ActiveTeam.Assembly)
@@ -2099,7 +2100,7 @@ namespace RogueEssence.Data
                         if (player.Tactic != null)
                             ai = GetAITactic(player.Tactic.ID);
                         else
-                        ai = GetAITactic(DataManager.Instance.DefaultAI);
+                            ai = GetAITactic(DataManager.Instance.DefaultAI);
                         player.Tactic = new AITactic(ai);
                     }
                 }

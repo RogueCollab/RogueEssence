@@ -76,6 +76,50 @@ namespace RogueEssence.Dev
             return null;
         }
 
+
+        public static void WipeNonSerializedFields(this object obj)
+        {
+            wipeNonSerializedFieldsRecursive(obj, new List<object>());
+        }
+
+        private static void wipeNonSerializedFieldsRecursive(object obj, List<object> parentStack)
+        {
+            if (obj == null)
+                return;
+            Type type = obj.GetType();
+            if (type.IsPrimitive)
+                return;
+
+            //check for circular reference
+            foreach (object parent in parentStack)
+            {
+                if (Object.ReferenceEquals(parent, obj))
+                    return;
+            }
+
+            List<MemberInfo> myFields = type.GetSerializableMembers();
+            for (int ii = 0; ii < myFields.Count; ii++)
+            {
+                if (myFields[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
+                {
+                    //Nonserialized fields are wiped
+                    myFields[ii].SetValue(obj, null);
+                    continue;
+                }
+
+                //otherwise, check recursively
+                object member = myFields[ii].GetValue(obj);
+                parentStack.Add(obj);
+                wipeNonSerializedFieldsRecursive(member, parentStack);
+                parentStack.RemoveAt(parentStack.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Gets all public fields, properties that have backing fields (auto-implemented properties), and private fields.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static List<MemberInfo> GetSerializableMembers(this Type type)
         {
             List<MemberInfo> members = new List<MemberInfo>();
@@ -113,15 +157,15 @@ namespace RogueEssence.Dev
             foreach (FieldInfo info in myFields)
                 members.Add(info);
 
-            for (int ii = members.Count-1; ii >= 0; ii--)
-            {
-                if (members[ii].GetCustomAttributes(typeof(NonSerializedAttribute), false).Length > 0)
-                    members.RemoveAt(ii);
-            }
-
             return members;
         }
 
+        /// <summary>
+        /// Gets all public fields, and properties that have backing fields (auto-implemented properties)
+        /// Does not get private fields.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static List<MemberInfo> GetEditableMembers(this Type type)
         {
             List<MemberInfo> members = new List<MemberInfo>();

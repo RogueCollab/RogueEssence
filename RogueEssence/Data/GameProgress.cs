@@ -464,22 +464,31 @@ namespace RogueEssence.Data
             }
         }
 
-        public void ClearDefeatDest()
+        public void PrepAdventureStates()
         {
+            MidAdventure = true;
+
+            //clear defeat destinations, set absentee status, reload tactics
             for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
             {
+                ActiveTeam.Players[ii].Absentee = false;
                 ActiveTeam.Players[ii].DefeatAt = "";
                 ActiveTeam.Players[ii].DefeatLoc = ZoneLoc.Invalid;
+                ActiveTeam.Players[ii].Tactic = new AITactic(ActiveTeam.Players[ii].Tactic);
             }
             for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
             {
+                ActiveTeam.Guests[ii].Absentee = false;
                 ActiveTeam.Guests[ii].DefeatAt = "";
                 ActiveTeam.Guests[ii].DefeatLoc = ZoneLoc.Invalid;
+                ActiveTeam.Guests[ii].Tactic = new AITactic(ActiveTeam.Guests[ii].Tactic);
             }
             for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
             {
+                ActiveTeam.Assembly[ii].Absentee = true;
                 ActiveTeam.Assembly[ii].DefeatAt = "";
                 ActiveTeam.Assembly[ii].DefeatLoc = ZoneLoc.Invalid;
+                ActiveTeam.Assembly[ii].Tactic = new AITactic(ActiveTeam.Assembly[ii].Tactic);
             }
         }
 
@@ -755,7 +764,7 @@ namespace RogueEssence.Data
         }
 
 
-        public void FullRestore()
+        public void FullStateRestore()
         {
             foreach (Character character in ActiveTeam.EnumerateChars())
                 character.FullRestore();
@@ -923,33 +932,15 @@ namespace RogueEssence.Data
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
             
-            MidAdventure = true;
             Stakes = stakes;
 
-            //reset location defeated
-            ClearDefeatDest();
+            PrepAdventureStates();
 
-            //create a copy (from save and load) of the current state to ensure that no nonserialized variables linger
+            //load another copy to mark it with loss
             GameState state = DataManager.Instance.CopyMainGameState();
-
-            DataManager.Instance.SetProgress(state.Save);
-            LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save);
-            ZoneManager.LoadFromState(state.Zone);
-            LuaEngine.Instance.UpdateZoneInstance();
-
-            //and load another copy to mark it with loss
-            state = DataManager.Instance.CopyMainGameState();
             if (Stakes == DungeonStakes.Risk)
                 LuaEngine.Instance.OnLossPenalty(state.Save);
             DataManager.Instance.SaveGameState(state);
-
-            //mark the players as reachable
-            foreach(Character charData in DataManager.Instance.Save.ActiveTeam.Players)
-                charData.Absentee = false;
-
-            //mark the player assembly as unreachable
-            foreach (Character charData in DataManager.Instance.Save.ActiveTeam.Assembly)
-                charData.Absentee = true;
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
@@ -1034,7 +1025,7 @@ namespace RogueEssence.Data
 
                 TotalAdventures++;
 
-                FullRestore();
+                FullStateRestore();
             }
             catch (Exception ex)
             {
