@@ -493,6 +493,28 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
+        /// Executed when the save file is loaded without a quicksave.  Check and clear all quicksave-related variables.
+        /// </summary>
+        public void LoadedWithoutQuicksave()
+        {
+            //Remove any dangling rescues
+            if (Rescue != null)
+                Rescue = null;
+            //should never be mid-adventure; we backed out of a dungeon attempt
+            if (MidAdventure)
+            {
+                //give loss penalty if we entered at Risk
+                if (Outcome != ResultType.Unknown)
+                {
+                    if (Stakes == DungeonStakes.Risk)
+                        LuaEngine.Instance.OnLossPenalty(this);
+                    //retain the outcome as the last adventure's outcome
+                }
+                MidAdventure = false;
+            }
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="zone"></param>
@@ -936,20 +958,19 @@ namespace RogueEssence.Data
 
             PrepAdventureStates();
 
-            //load another copy to mark it with loss
-            GameState state = DataManager.Instance.CopyMainGameState();
-            if (Stakes == DungeonStakes.Risk)
-                LuaEngine.Instance.OnLossPenalty(state.Save);
-            DataManager.Instance.SaveGameState(state);
+            //pre-save with a GiveUp outcome
+            Outcome = ResultType.GaveUp;
+            DataManager.Instance.SaveMainGameState();
+            Outcome = ResultType.Unknown;
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.RestrictLevel(zone, true, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, true, false, false));
 
-            DataManager.Instance.Save.RestartLogs(seed);
-            DataManager.Instance.Save.RescuesLeft = zone.Rescues;
-            DataManager.Instance.Save.BeginSession();
+            RestartLogs(seed);
+            RescuesLeft = zone.Rescues;
+            BeginSession();
 
             if (recorded)
                 DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false, SessionStartTime);
@@ -1191,6 +1212,7 @@ namespace RogueEssence.Data
             
             MidAdventure = true;
             Stakes = stakes;
+            Outcome = ResultType.Unknown;
 
             yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false, true, true));
 
@@ -1272,7 +1294,7 @@ namespace RogueEssence.Data
             {
                 string completedZone = ZoneManager.Instance.CurrentZoneID;
 
-                MidAdventure = true;
+                MidAdventure = false;
                 ClearDungeonItems();
 
                 //  if there isn't a next area, end the play, display the plaque, return to title screen
