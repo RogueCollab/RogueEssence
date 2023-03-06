@@ -1389,6 +1389,7 @@ namespace RogueEssence.Data
 
         public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)
         {
+            DataManager.Instance.PreLoadZone(config.Destination);
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
             GameProgress save = new RogueProgress(Guid.NewGuid().ToString().ToUpper(), config);
