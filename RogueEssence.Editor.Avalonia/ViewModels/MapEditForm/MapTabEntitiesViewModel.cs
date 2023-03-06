@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public MapTabEntitiesViewModel()
         {
+            //Teams = new TeamBoxViewModel(DiagManager.Instance.DevEditor.MapEditor.Edits);
+
             MonsterTeam team = new MonsterTeam();
             SelectedEntity = new Character(new CharData());
             SelectedEntity.Level = 1;
@@ -113,6 +115,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public TeamBoxViewModel Teams { get; set; }
 
         public ObservableCollection<string> Directions { get; }
 
@@ -436,6 +439,12 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaisePropertyChanged(); }
         }
 
+        public bool Unrecruitable
+        {
+            get { return SelectedEntity.Unrecruitable; }
+            set { this.RaiseAndSet(ref SelectedEntity.Unrecruitable, value); }
+        }
+
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
@@ -668,6 +677,8 @@ namespace RogueEssence.Dev.ViewModels
             MAtkBonus = MAtkBonus;
             MDefBonus = MDefBonus;
             SpeedBonus = SpeedBonus;
+
+            Unrecruitable = Unrecruitable;
 
             List<StatusEffect> states = new List<StatusEffect>();
             foreach (StatusEffect state in SelectedEntity.StatusEffects.Values)

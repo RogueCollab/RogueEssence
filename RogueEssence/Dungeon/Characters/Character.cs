@@ -241,6 +241,9 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(StatusDictConverter))]
         public Dictionary<string, StatusEffect> StatusEffects;
 
+        /// <summary>
+        /// Guaranteed to hit next attack
+        /// </summary>
         public bool MustHitNext;
 
         /// <summary>
@@ -263,15 +266,29 @@ namespace RogueEssence.Dungeon
 
         public AITactic Tactic;
 
+        public bool Unrecruitable;
+
         //calculable via save-loading
         public TerrainData.Mobility Mobility;
         public bool CantWalk;
         //will prevent the passive item effects, as well as the "stick" effect
         //does not affect active use
+
+        /// <summary>
+        /// Will prevent the passive item effects.  Does not prevent active use.
+        /// </summary>
         public bool ItemDisabled;
+
+        /// <summary>
+        /// Prevents passive intrinsic effects
+        /// </summary>
         public bool IntrinsicDisabled;
         public bool CanRemoveStuck;
         public bool StopItemAtHit;
+
+        /// <summary>
+        /// Will move erratically
+        /// </summary>
         public bool MovesScrambled;
         public bool ChargeSaver;
 
@@ -303,7 +320,6 @@ namespace RogueEssence.Dungeon
         public bool SeeItems;
         public bool SeeWallItems;
         public bool SeeTraps;
-        public bool Unrecruitable;
 
         //miscellaneous traits
         public StateCollection<CharState> CharStates;
@@ -452,6 +468,7 @@ namespace RogueEssence.Dungeon
             new_mob.currentCharAction = new EmptyCharAction(idleAction);
             new_mob.Tactic = new AITactic(this.Tactic);
             new_mob.EquippedItem = new InvItem(this.EquippedItem);
+            new_mob.Unrecruitable = this.Unrecruitable;
 
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                 new_mob.Skills[ii].Element.Enabled = this.Skills[ii].Element.Enabled;

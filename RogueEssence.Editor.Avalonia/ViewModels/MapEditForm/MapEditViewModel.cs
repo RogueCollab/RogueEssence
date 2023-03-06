@@ -305,6 +305,7 @@ namespace RogueEssence.Dev.ViewModels
 
             Terrain.SetupLayerVisibility();
             Entrances.SetupLayerVisibility();
+            //Entities.Teams.LoadTeams();
             Spawns.LoadMapSpawns();
             Effects.LoadMapEffects();
             Properties.LoadMapProperties();
