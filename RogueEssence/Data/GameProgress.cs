@@ -367,7 +367,7 @@ namespace RogueEssence.Data
 
         public abstract int GetTotalScore();
 
-        public IEnumerator<YieldInstruction> RestrictTeam(ZoneData zone, bool silent)
+        public IEnumerator<YieldInstruction> RestrictTeam(ZoneEntrySummary zone, bool silent)
         {
             List<string> teamRestrictions = new List<string>();
             List<string> bagRestrictions = new List<string>();
@@ -522,20 +522,20 @@ namespace RogueEssence.Data
         /// <param name="permanent"></param>
         /// <param name="silent"></param>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool capOnly, bool permanent, bool silent)
+        public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent)
         {
-            StartLevel = zone.Level;
+            StartLevel = level;
             try
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly);
                     if (!permanent)
                         ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly);
                     //no backref for guests
                 }
             }
@@ -949,7 +949,8 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
-            ZoneData zone = DataManager.Instance.GetZone(zoneID);
+            ZoneEntrySummary zone = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zoneID);
+
             //restrict team size/bag size/etc
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
@@ -966,7 +967,7 @@ namespace RogueEssence.Data
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, true, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false));
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;
@@ -1208,13 +1209,13 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
-            ZoneData zone = DataManager.Instance.GetZone(zoneID);
+            ZoneEntrySummary zone = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zoneID);
             
             MidAdventure = true;
             Stakes = stakes;
             Outcome = ResultType.Unknown;
 
-            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, false, true, true));
 
             BeginSession();
 

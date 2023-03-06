@@ -10,6 +10,7 @@ using RogueEssence.Dev;
 using RogueEssence.Script;
 using RogueEssence.Content;
 using System.Xml;
+using System.Threading;
 
 namespace RogueEssence.Data
 {
@@ -139,6 +140,8 @@ namespace RogueEssence.Data
         private const int MAP_STATUS_CACHE_SIZE = 50;
 
 
+        private Thread preLoadZoneThread;
+        private LRUCache<string, ZoneData> zoneCache;
         private LRUCache<string, ItemData> itemCache;
         private LRUCache<string, StatusData> statusCache;
         private LRUCache<string, IntrinsicData> intrinsicCache;
@@ -235,6 +238,7 @@ namespace RogueEssence.Data
 
             MsgLog = new List<string>();
 
+            zoneCache = new LRUCache<string, ZoneData>(1);
             itemCache = new LRUCache<string, ItemData>(ITEM_CACHE_SIZE);
             statusCache = new LRUCache<string, StatusData>(STATUS_CACHE_SIZE);
             intrinsicCache = new LRUCache<string, IntrinsicData>(INSTRINSIC_CACHE_SIZE);
@@ -669,12 +673,44 @@ namespace RogueEssence.Data
                 File.Delete(path);
         }
 
+        public void PreLoadZone(string index)
+        {
+#if !NO_THREADING
+            preLoadZoneThread = new Thread(() => PreLoadZoneInBackground(index));
+            preLoadZoneThread.IsBackground = true;
+            //thread.CurrentCulture = Thread.CurrentThread.CurrentCulture;
+            //thread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture;
+            preLoadZoneThread.Start();
+#endif
+        }
+
+        void PreLoadZoneInBackground(string index)
+        {
+            ZoneData data = LoadNamespacedData<ZoneData>(index, DataType.Zone.ToString());
+            zoneCache.Add(index, data);
+        }
+
         public ZoneData GetZone(string index)
         {
             ZoneData data = null;
 
+            //wait for any preloading to finish
+            if (preLoadZoneThread != null)
+            {
+                preLoadZoneThread.Join();
+                preLoadZoneThread = null;
+            }
+
+            if (zoneCache.TryGetValue(index, out data))
+            {
+                zoneCache.Clear();
+                return data;
+            }
+            zoneCache.Clear();
+
             try
             {
+
                 data = LoadNamespacedData<ZoneData>(index, DataType.Zone.ToString());
                 return data;
             }
@@ -929,6 +965,8 @@ namespace RogueEssence.Data
 
         public void ClearCache(DataType conversionFlags)
         {
+            if ((conversionFlags & DataType.Zone) != DataType.None)
+                zoneCache.Clear();
             if ((conversionFlags & DataType.Item) != DataType.None)
                 itemCache.Clear();
             if ((conversionFlags & DataType.Status) != DataType.None)
