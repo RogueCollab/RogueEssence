@@ -314,7 +314,7 @@ namespace RogueEssence.Dungeon
                     yield return new WaitForFrames(1);
             }
 
-            if (IsGameOver())
+            if (GameManager.Instance.SceneOutcome == null && IsGameOver())
             {
                 bool allowRescue = true;
                 if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
