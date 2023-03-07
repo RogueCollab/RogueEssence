@@ -87,7 +87,11 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public bool IsPartner;
 
+        public bool NameLocked;
+
         public bool IsFavorite;
+
+        public bool Unrecruitable;
 
         public List<BattleEvent> ActionEvents;
 

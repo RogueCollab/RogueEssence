@@ -266,8 +266,6 @@ namespace RogueEssence.Dungeon
 
         public AITactic Tactic;
 
-        public bool Unrecruitable;
-
         //calculable via save-loading
         public TerrainData.Mobility Mobility;
         public bool CantWalk;
@@ -451,6 +449,7 @@ namespace RogueEssence.Dungeon
             character.MAtkBonus = this.MAtkBonus;
             character.MDefBonus = this.MDefBonus;
             character.SpeedBonus = this.SpeedBonus;
+            character.Unrecruitable = this.Unrecruitable;
 
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                 character.BaseSkills[ii] = new SlotSkill(this.BaseSkills[ii]);
@@ -468,7 +467,6 @@ namespace RogueEssence.Dungeon
             new_mob.currentCharAction = new EmptyCharAction(idleAction);
             new_mob.Tactic = new AITactic(this.Tactic);
             new_mob.EquippedItem = new InvItem(this.EquippedItem);
-            new_mob.Unrecruitable = this.Unrecruitable;
 
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                 new_mob.Skills[ii].Element.Enabled = this.Skills[ii].Element.Enabled;
