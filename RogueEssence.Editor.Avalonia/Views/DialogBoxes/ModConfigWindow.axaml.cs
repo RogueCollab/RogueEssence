@@ -30,8 +30,10 @@ namespace RogueEssence.Dev.Views
             ModConfigViewModel vm = (ModConfigViewModel)DataContext;
             try
             {
-                if (String.IsNullOrWhiteSpace(vm.Name))
+                if (String.IsNullOrWhiteSpace(Text.Sanitize(vm.Name)))
                     throw new InvalidOperationException("Invalid Name");
+                if (String.IsNullOrWhiteSpace(Text.Sanitize(vm.Namespace).ToLower()))
+                    throw new InvalidOperationException("Invalid Namespace");
 
                 Guid uuid = Guid.Parse(vm.UUID);
                 if (uuid == Guid.Empty)
