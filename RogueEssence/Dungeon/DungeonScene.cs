@@ -652,7 +652,7 @@ namespace RogueEssence.Dungeon
                             if (!String.IsNullOrEmpty(skill.SkillNum))
                             {
                                 SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
-                                ShownHotkeys[ii].SetSkill(skillData.Name.ToLocal(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
+                                ShownHotkeys[ii].SetSkill(skillData.GetColoredName(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
                             }
                             else
                                 ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
