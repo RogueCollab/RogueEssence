@@ -218,6 +218,8 @@ namespace RogueEssence.Menu
                 //check to see if the form is allowed, or if it's only mid-dungeon
                 if (!dex.Forms[ii].Temporary && (DiagManager.Instance.DevMode || dex.Forms[ii].Released))
                     forms.Add(ii);
+                else if (ii == 0)//always add default form
+                    forms.Add(ii);
             }
 
             return forms;
