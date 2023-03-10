@@ -211,11 +211,14 @@ namespace RogueEssence.Script
         {
             m_curspeakerID = MonsterID.Invalid;
             m_curspeakerName = null;
-            m_curspeakerEmo.Emote = 0;
+            m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
             m_curautoFinish = false;
             m_curcenter_h = false;
             m_curcenter_v = false;
+            m_curbounds = DialogueBox.DefaultBounds;
+            m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
+            m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
         }
 
 
