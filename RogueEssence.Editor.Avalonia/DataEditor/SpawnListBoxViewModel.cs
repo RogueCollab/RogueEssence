@@ -114,6 +114,18 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void LoadFromTupleList(List<(object, double)> source)
+        {
+            Collection.Clear();
+
+            for (int ii = 0; ii < source.Count; ii++)
+            {
+                object obj = source[ii].Item1;
+                double rate = source[ii].Item2;
+                Collection.Add(new SpawnListElement(StringConv, (int)(rate * 1000000), rate, obj));
+            }
+        }
+
 
         private void editItem(int index, object element)
         {

@@ -204,7 +204,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -242,7 +250,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -298,7 +314,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -360,7 +384,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {

@@ -11,14 +11,15 @@
   </Design.DataContext>
   <Grid Margin="4" >
     <Grid.RowDefinitions>
+      <RowDefinition Height="32"/>
       <RowDefinition/>
+      <RowDefinition Height="32"/>
       <RowDefinition/>
+      <RowDefinition Height="32"/>
       <RowDefinition/>
+      <RowDefinition Height="32"/>
       <RowDefinition/>
-      <RowDefinition/>
-      <RowDefinition/>
-      <RowDefinition/>
-      <RowDefinition/>
+      <RowDefinition Height="32"/>
       <RowDefinition/>
       <RowDefinition/>
     </Grid.RowDefinitions>
@@ -30,17 +31,29 @@
     <NumericUpDown Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Margin="4" Grid.Row="1" Grid.Column="0"/>
     <Button Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1">Form</TextBlock>
-    <views:SearchComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4" Grid.Row="3" Grid.Column="0"/>
-    <views:SearchComboBox Name="cbForm" Items="{Binding Forms}" SelectedIndex="{Binding ChosenForm}" Margin="4" Grid.Row="3" Grid.Column="1"/>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="0">Skin</TextBlock>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="1" >Gender</TextBlock>
-    <views:SearchComboBox Name="cbSkin" Items="{Binding Skins}" SelectedIndex="{Binding ChosenSkin}" Margin="4" Grid.Row="5" Grid.Column="0"/>
-    <views:SearchComboBox Name="cbGender" Items="{Binding Genders}" SelectedIndex="{Binding ChosenGender}" Margin="4" Grid.Row="5" Grid.Column="1"/>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="0">Animation</TextBlock>
-    <views:SearchComboBox Name="cbAnim" Items="{Binding Anims}" SelectedIndex="{Binding ChosenAnim}" Margin="4" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"/>
-    <CheckBox Name="chkJustMe" Margin="4" IsChecked="{Binding JustMe}" VerticalAlignment="Center" Grid.Row="8" Grid.Column="0">Just Me</CheckBox>
-    <CheckBox Name="chkJustOnce" Margin="4" IsChecked="{Binding JustOnce}" VerticalAlignment="Center" Grid.Row="8" Grid.Column="1">Just Once</CheckBox>
-    <Button Name="btnResetAnim" Command="{Binding btnResetAnim_Click}" Margin="4" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">Restart All Anims</Button>
+    <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition Width="40"/>
+      </Grid.ColumnDefinitions>
+	  <views:SearchComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4"/>
+	  <Button Name="btnChangeOrder" Command="{Binding btnChangeOrder_Click}" Margin="4" Grid.Column="1" ToolTip.Tip="Switch Ordering">
+        <Panel>
+          <Image Source="/Assets/AssetOrder.png" Width="26"
+                          Height="26" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </Panel>
+	  </Button>
+    </Grid>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="4">Form</TextBlock>
+	<views:SearchComboBox Name="cbForm" Items="{Binding Forms}" SelectedIndex="{Binding ChosenForm}" Margin="4" Grid.Row="5" Grid.ColumnSpan="2"/>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="0">Skin</TextBlock>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="1" >Gender</TextBlock>
+    <views:SearchComboBox Name="cbSkin" Items="{Binding Skins}" SelectedIndex="{Binding ChosenSkin}" Margin="4" Grid.Row="7" Grid.Column="0"/>
+    <views:SearchComboBox Name="cbGender" Items="{Binding Genders}" SelectedIndex="{Binding ChosenGender}" Margin="4" Grid.Row="7" Grid.Column="1"/>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="8" Grid.Column="0">Animation</TextBlock>
+    <views:SearchComboBox Name="cbAnim" Items="{Binding Anims}" SelectedIndex="{Binding ChosenAnim}" Margin="4" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"/>
+    <CheckBox Name="chkJustMe" Margin="4" IsChecked="{Binding JustMe}" VerticalAlignment="Center" Grid.Row="10" Grid.Column="0">Just Me</CheckBox>
+    <CheckBox Name="chkJustOnce" Margin="4" IsChecked="{Binding JustOnce}" VerticalAlignment="Center" Grid.Row="10" Grid.Column="1">Just Once</CheckBox>
+    <Button Name="btnResetAnim" Command="{Binding btnResetAnim_Click}" Margin="4" Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2">Restart All Anims</Button>
   </Grid>
 </UserControl>

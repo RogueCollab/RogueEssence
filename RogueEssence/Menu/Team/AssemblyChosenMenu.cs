@@ -44,7 +44,18 @@ namespace RogueEssence.Menu
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_STANDBY"), SendHomeAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));
+
+            if (assembly)
+            {
+                if (!DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot].NameLocked)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));
+            }
+            else
+            {
+                if (!DataManager.Instance.Save.ActiveTeam.Players[teamSlot].NameLocked)
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ASSEMBLY_RENAME"), RenameAction));
+            }
+
             if (assembly)
             {
                 if (DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot].IsFavorite)

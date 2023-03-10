@@ -154,7 +154,7 @@ namespace RogueEssence.Dungeon
                     //reusable, do nothing.
                 }
                 else
-                    context.User.DequipItem();
+                    yield return CoroutineManager.Instance.StartCoroutine(context.User.DequipItem());
             }
             else if (context.UsageSlot == BattleContext.FLOOR_ITEM_SLOT)
             {

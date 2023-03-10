@@ -36,7 +36,6 @@ namespace RogueEssence.LevelGen
         {
             map.Map.ID = ID;
             map.Map.Name = new LocalText(Name);
-            map.DropTitle = true;
         }
     }
 

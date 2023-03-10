@@ -334,7 +334,7 @@ namespace RogueEssence.Script
                 if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 {
                     InvItem heldItem = player.EquippedItem;
-                    player.DequipItem();
+                    player.SilentDequipItem();
                     DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
                 }
 
@@ -345,7 +345,7 @@ namespace RogueEssence.Script
                 if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 {
                     InvItem heldItem = player.EquippedItem;
-                    player.DequipItem();
+                    player.SilentDequipItem();
                     if (DataManager.Instance.Save.ActiveTeam.GetInvCount() + 1 < DataManager.Instance.Save.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                         DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
                 }
@@ -357,7 +357,7 @@ namespace RogueEssence.Script
                 if (!String.IsNullOrEmpty(player.EquippedItem.ID))
                 {
                     InvItem heldItem = player.EquippedItem;
-                    player.DequipItem();
+                    player.SilentDequipItem();
                     DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
                 }
 
@@ -394,16 +394,12 @@ namespace RogueEssence.Script
             Character player = DataManager.Instance.Save.ActiveTeam.Guests[slot];
 
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                player.DequipItem();
+                player.SilentDequipItem();
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-            {
                 DungeonScene.Instance.RemoveChar(new CharIndex(Faction.Player, 0, true, slot));
-            }
             else
-            {
                 DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
-            }
         }
 
 
@@ -611,7 +607,7 @@ namespace RogueEssence.Script
             branch.OnPromote(character, false, bypass);
             //remove exception item if there is one...
             if (bypass)
-                character.DequipItem();
+                character.SilentDequipItem();
             DataManager.Instance.Save.RegisterMonster(character.BaseForm.Species);
             DataManager.Instance.Save.RogueUnlockMonster(character.BaseForm.Species);
         }
@@ -729,11 +725,11 @@ namespace RogueEssence.Script
         }
         public void TakePlayerEquippedItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.Players[slot].DequipItem();
+            DataManager.Instance.Save.ActiveTeam.Players[slot].SilentDequipItem();
         }
         public void TakeGuestEquippedItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.Guests[slot].DequipItem();
+            DataManager.Instance.Save.ActiveTeam.Guests[slot].SilentDequipItem();
         }
 
         public int GetPlayerStorageCount()

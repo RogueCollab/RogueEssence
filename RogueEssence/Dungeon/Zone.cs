@@ -221,10 +221,10 @@ namespace RogueEssence.Dungeon
         {
             if (!maps.ContainsKey(id))
             {
+                DiagManager.Instance.LogInfo("Zone Seed: " + rand.FirstSeed);
                 ReNoise totalNoise = new ReNoise(rand.FirstSeed);
                 ulong[] doubleSeed = totalNoise.GetTwoUInt64((ulong)id.Segment);
                 ulong structSeed = doubleSeed[0];
-                DiagManager.Instance.LogInfo("Struct Seed: " + structSeed);
                 INoise structNoise = new ReNoise(structSeed);
                 INoise idNoise = new ReNoise(doubleSeed[1]);
 
@@ -234,13 +234,14 @@ namespace RogueEssence.Dungeon
                     ZoneGenContext newContext = new ZoneGenContext();
                     newContext.CurrentZone = ID;
                     newContext.CurrentSegment = id.Segment;
-                    foreach (ZoneStep zoneStep in Segments[id.Segment].ZoneSteps)
+                    for(int ii = 0; ii < Segments[id.Segment].ZoneSteps.Count; ii++)
                     {
+                        ZoneStep zoneStep = Segments[id.Segment].ZoneSteps[ii];
                         //TODO: find a better way to feed ZoneSteps into full zone segments.
                         //Is there a way for them to be stateless?
                         //Additionally, the ZoneSteps themselves sometimes hold IGenSteps that are copied over to the layouts.
                         //Is that really OK? (I would guess yes because there is no chance by design for them to be mutated when generating...)
-                        ZoneStep newStep = zoneStep.Instantiate(structNoise.GetUInt64((ulong)newContext.ZoneSteps.Count));
+                        ZoneStep newStep = zoneStep.Instantiate(structNoise.GetUInt64((ulong)ii));
                         newContext.ZoneSteps.Add(newStep);
                     }
                     structureContexts[id.Segment] = newContext;
@@ -250,6 +251,9 @@ namespace RogueEssence.Dungeon
                 ulong finalSeed = (ulong)id.ID;
                 finalSeed <<= 32;
                 finalSeed |= (ulong)MapsLoaded;
+
+                DiagManager.Instance.LogInfo("Map Count: " + MapsLoaded);
+                DiagManager.Instance.LogInfo("Map Seed: " + finalSeed);
                 zoneContext.Seed = idNoise.GetUInt64(finalSeed);
 
                 //TODO: remove the need for this explicit cast
@@ -270,11 +274,15 @@ namespace RogueEssence.Dungeon
                     catch (Exception ex)
                     {
                         DiagManager.Instance.LogError(ex);
-                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii+1));
+                        DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii + 1));
                         ulong subSeed = (ulong)id.ID;
                         subSeed <<= 32;
                         subSeed |= (ulong)(MapsLoaded + ii);
                         zoneContext.Seed = structNoise.GetUInt64(subSeed);
+                    }
+                    finally
+                    {
+                        DiagManager.Instance.FlushRogueElements();
                     }
                 }
 

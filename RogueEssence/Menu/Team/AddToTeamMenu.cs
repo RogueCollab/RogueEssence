@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
+using RogueEssence.Data;
 using RogueEssence.Dungeon;
 
 namespace RogueEssence.Menu
@@ -18,21 +19,32 @@ namespace RogueEssence.Menu
         OnChooseTeam teamChoice;
         Action refuseAction;
 
+        private List<int> eligibleAssembly;
+
         public AddToTeamMenu(OnChooseTeam teamChoice, Action refuseAction)
         {
             int menuWidth = 152;
             this.teamChoice = teamChoice;
             this.refuseAction = refuseAction;
 
-            List<MenuChoice> flatChoices = new List<MenuChoice>();
+            this.eligibleAssembly = new List<int>();
             for (int ii = 0; ii < DungeonScene.Instance.ActiveTeam.Assembly.Count; ii++)
             {
-                int index = ii;
+                if (!DungeonScene.Instance.ActiveTeam.Assembly[ii].Absentee)
+                    eligibleAssembly.Add(ii);
+            }
+
+            List<MenuChoice> flatChoices = new List<MenuChoice>();
+            for (int ii = 0; ii < eligibleAssembly.Count; ii++)
+            {
+                int index = eligibleAssembly[ii];
                 Character character = DungeonScene.Instance.ActiveTeam.Assembly[index];
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), character.Dead ? Color.Red : Color.White);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, character.Dead ? Color.Red : Color.White);
-                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, !character.Dead, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1),
+                    DirV.Up, DirH.Right, character.Dead ? Color.Red : Color.White);
+                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, !character.Dead, memberName, memberLvLabel, memberLv));
             }
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
@@ -56,7 +68,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Character subjectChar = DungeonScene.Instance.ActiveTeam.Assembly[CurrentChoiceTotal];
+            Character subjectChar = DungeonScene.Instance.ActiveTeam.Assembly[this.eligibleAssembly[CurrentChoiceTotal]];
             summaryMenu.SetMember(subjectChar);
 
             portrait.Speaker = subjectChar.BaseForm;

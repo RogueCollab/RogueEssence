@@ -11,7 +11,7 @@ namespace RogueEssence.LevelGen
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public class PlaceTerrainMobsStep<T> : PlaceMobsStep<T>
-        where T : StairsMapGenContext, ITiledGenContext
+        where T : BaseMapGenContext, ITiledGenContext
     {
         /// <summary>
         /// The terrain types to spawn the mobs in.

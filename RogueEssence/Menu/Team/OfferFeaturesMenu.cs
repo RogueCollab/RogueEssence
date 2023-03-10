@@ -13,6 +13,7 @@ namespace RogueEssence.Menu
         public SpeakerPortrait Portrait;
         public MenuText Nickname;
         public MenuText Name;
+        public MenuText LevelLabel;
         public MenuText Level;
 
         public MenuText Elements;
@@ -38,8 +39,8 @@ namespace RogueEssence.Menu
             Nickname = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight));
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
 
-            Level = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
-
+            LevelLabel = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
+            Level = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2), DirH.Left);
             Elements = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
 
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 - 2), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
@@ -67,7 +68,9 @@ namespace RogueEssence.Menu
 
             BaseMonsterForm formData = DataManager.Instance.GetMonster(CurrentChar.BaseForm.Species).Forms[CurrentChar.BaseForm.Form];
 
-            Level.SetText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", CurrentChar.Level));
+            LevelLabel.SetText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"));
+            Level.SetText(CurrentChar.Level.ToString());
+            
             ElementData element1 = DataManager.Instance.GetElement(formData.Element1);
             ElementData element2 = DataManager.Instance.GetElement(formData.Element2);
             string typeString = element1.GetIconName();
@@ -99,6 +102,7 @@ namespace RogueEssence.Menu
             yield return Nickname;
             yield return Name;
 
+            yield return LevelLabel;
             yield return Level;
             yield return Elements;
 

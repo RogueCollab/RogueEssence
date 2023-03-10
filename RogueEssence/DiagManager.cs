@@ -107,10 +107,25 @@ namespace RogueEssence
             GenContextDebug.OnStep += logRogueElements;
         }
 
+        private List<string> logMsgs = new List<string>();
         private void logRogueElements(string msg)
         {
             if (ListenGen)
-                LogInfo(String.Format("Mapgen: {0}", msg));
+            {
+                logMsgs.Add(String.Format("[{1}] Mapgen: {0}", msg, String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now)));
+            }
+        }
+
+        public void FlushRogueElements()
+        {
+            StringBuilder builder = new StringBuilder("Steps:\n");
+            foreach (string msg in logMsgs)
+            {
+                builder.Append(msg);
+                builder.Append("\n");
+            }
+            LogInfo(builder.ToString());
+            logMsgs.Clear();
         }
 
         public void Unload()

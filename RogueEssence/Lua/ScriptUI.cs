@@ -130,8 +130,7 @@ namespace RogueEssence.Script
         {
             try
             {
-                if (DataManager.Instance.CurrentReplay == null)
-                    GameManager.Instance.TextPopUp.SetMessage(text, expireTime);
+                GameManager.Instance.TextPopUp.SetMessage(text, expireTime);
             }
             catch (Exception e)
             {
@@ -318,7 +317,7 @@ namespace RogueEssence.Script
         /// <param name="reverse"></param>
         public void SetSpeakerEmotion(string emo, bool reverse = false)
         {
-            int emoteIndex = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name == emo);
+            int emoteIndex = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name.ToLower() == emo.ToLower());
             m_curspeakerEmo.Emote = emoteIndex;
             m_curspeakerEmo.Reverse = reverse;
         }
@@ -561,7 +560,7 @@ namespace RogueEssence.Script
             foreach (Character player in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                    player.DequipItem();
+                    player.SilentDequipItem();
             }
 
             // Remove the items back to front to prevent removing them in the wrong order.
@@ -872,7 +871,7 @@ namespace RogueEssence.Script
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { m_choiceresult = true; });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { m_choiceresult = false; });
-                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", name), dest, false, choices, 0, 1);
+                m_curchoice = new DungeonEnterDialog(Text.FormatKey("DLG_ASK_ENTER_DUNGEON", name), name, dest, false, choices, 0, 1);
             }
             catch (Exception e)
             {

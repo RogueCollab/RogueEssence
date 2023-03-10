@@ -1,0 +1,63 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.TeamBox">
+  <UserControl.Resources>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="16"/>
+      <RowDefinition/>
+      <RowDefinition Height="34"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4">Teams:</TextBlock>
+    <TreeView Margin="2" Items="{Binding Teams}" SelectedItem="{Binding ChosenTeam}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
+      
+      <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="vm:TeamNodeViewModel" ItemsSource="{Binding Players}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="0"/>
+          </Grid>
+        </TreeDataTemplate>
+      </TreeView.DataTemplates>
+	  
+    </TreeView>
+	
+    <Button Command="{Binding AddTeam}" Margin="2" Grid.Row="2" Grid.Column="0" ToolTip.Tip="Add Team">
+      <Panel>
+        <Image Source="/Assets/LayerAdd.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding DeleteTeam}" Margin="2" Grid.Row="2" Grid.Column="1" ToolTip.Tip="Delete Team">
+      <Panel>
+        <Image Source="/Assets/LayerDelete.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding MoveTeamUp}" Margin="2" Grid.Row="2" Grid.Column="2" ToolTip.Tip="Move Team Up">
+      <Panel>
+        <Image Source="/Assets/LayerUp.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+    <Button Command="{Binding MoveTeamDown}" Margin="2" Grid.Row="2" Grid.Column="3" ToolTip.Tip="Move Team Down">
+      <Panel>
+        <Image Source="/Assets/LayerDown.png" Width="24"
+                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+      </Panel>
+    </Button>
+  </Grid>
+</UserControl>

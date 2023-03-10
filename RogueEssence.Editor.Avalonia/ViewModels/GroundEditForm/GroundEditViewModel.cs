@@ -143,7 +143,6 @@ namespace RogueEssence.Dev.ViewModels
                     lock (GameBase.lockObj)
                     {
                         string oldFilename = CurrentFile;
-                        ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
 
                         //Schedule saving the map
                         DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
@@ -473,6 +472,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
+            ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.

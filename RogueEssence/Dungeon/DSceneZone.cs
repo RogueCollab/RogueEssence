@@ -136,6 +136,13 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
 
             LogMsg(Text.DIVIDER_STR);
+
+            foreach (Character standChar in ZoneManager.Instance.CurrentMap.DisplacedChars)
+            {
+                if (!standChar.Dead && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
+                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+            }
+            ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
         }
 
 

@@ -240,7 +240,7 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> skipFloor(Loc change)
         {
-            int newStruct = Math.Max(0, Math.Min(ZoneManager.Instance.CurrentMapID.Segment + change.X, ZoneManager.Instance.CurrentZone.Segments.Count));
+            int newStruct = Math.Max(0, Math.Min(ZoneManager.Instance.CurrentMapID.Segment + change.X, ZoneManager.Instance.CurrentZone.Segments.Count - 1));
             if ((newStruct != ZoneManager.Instance.CurrentMapID.Segment || change.X == 0))
             {
                 ZoneSegmentBase structure = ZoneManager.Instance.CurrentZone.Segments[newStruct] as ZoneSegmentBase;
@@ -314,7 +314,7 @@ namespace RogueEssence.Dungeon
                     yield return new WaitForFrames(1);
             }
 
-            if (IsGameOver())
+            if (GameManager.Instance.SceneOutcome == null && IsGameOver())
             {
                 bool allowRescue = true;
                 if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
@@ -473,7 +473,7 @@ namespace RogueEssence.Dungeon
                         ProcessMinimapInput(input);
                     else if (input[FrameInput.InputType.Skills])
                     {
-                        if (input[FrameInput.InputType.Minimap])
+                        if (input[FrameInput.InputType.SkillPreview])
                         {
                             previewing = true;
                             int skillIndex = ProcessSkillInput(input, true);
@@ -656,6 +656,7 @@ namespace RogueEssence.Dungeon
                             }
                             else
                                 ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
+                            Preview.UpdateControls();
                         }
                     }
                     for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
@@ -843,7 +844,7 @@ namespace RogueEssence.Dungeon
                 //update the team/enemies
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 {
-                    if (DiagManager.Instance.CurSettings.BattleFlow < Settings.BattleSpeed.VeryFast && !character.Dead && !character.ActionDone || character.OccupiedwithAction())
+                    if (/*DiagManager.Instance.CurSettings.BattleFlow < Settings.BattleSpeed.VeryFast && !character.Dead && !character.ActionDone || */character.OccupiedwithAction())
                         return false;
                 }
             }
@@ -1340,6 +1341,8 @@ namespace RogueEssence.Dungeon
                         {
                             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                            else
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.Black, new Vector2(GraphicsManager.TileSize));
                             continue;
                         }
 

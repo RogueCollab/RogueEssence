@@ -2,6 +2,7 @@
 using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Dev;
+using System.Collections.Generic;
 
 namespace RogueEssence.LevelGen
 {
@@ -42,32 +43,23 @@ namespace RogueEssence.LevelGen
     public static class CategorySpawnHelper
     {
 
-        public static SpawnList<V> CollapseSpawnDict<K, V>(SpawnDict<K, SpawnList<V>> spawns)
+        public static List<(object, double)> CollapseSpawnDict<K, V>(SpawnDict<K, SpawnList<V>> spawns)
         {
-            SpawnList<V> result = new SpawnList<V>();
-            //if you want to flatten this list,
-            //the rate of an individual spawn must be multiplied by its category spawn rate
-            //and then multiplied by the internal sums of the other categories
+            List<(object, double)> flatList = new List<(object, double)>();
+
             foreach (K key in spawns.GetKeys())
             {
-                int internalSumFactor = spawns.GetSpawnRate(key);
-                foreach (K key2 in spawns.GetKeys())
-                {
-                    if (key2.Equals(key))
-                        continue;
-                    SpawnList<V> otherList = spawns.GetSpawn(key2);
-                    internalSumFactor *= otherList.SpawnTotal;
-                }
 
                 SpawnList<V> list = spawns.GetSpawn(key);
                 foreach (SpawnList<V>.SpawnRate spawn in list)
                 {
                     V item = spawn.Spawn;
-                    int rate = spawn.Rate;
-                    result.Add(item, rate * internalSumFactor);
+                    double totalRate = (double)spawn.Rate / list.SpawnTotal * spawns.GetSpawnRate(key) / spawns.SpawnTotal;
+                    flatList.Add((item, totalRate));
                 }
             }
-            return result;
+
+            return flatList;
         }
     }
 }

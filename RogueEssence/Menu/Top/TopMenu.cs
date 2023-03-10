@@ -139,6 +139,8 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SceneOutcome = continueReplay(replay, rescueMail);
                 return;
             }
+
+            //otherwise, load just the main save
             continueMain(rescueMail);
         }
 
@@ -176,11 +178,7 @@ namespace RogueEssence.Menu
                 cannotRead(DataManager.SAVE_PATH + DataManager.SAVE_FILE_PATH);
                 return;
             }
-            if (state.Save.Rescue != null)
-            {
-                state.Save.Rescue = null;
-                DataManager.Instance.SaveGameState(state);
-            }
+            state.Save.LoadedWithoutQuicksave();
             MenuManager.Instance.ClearMenus();
             GameManager.Instance.SceneOutcome = continueMain(state);
         }

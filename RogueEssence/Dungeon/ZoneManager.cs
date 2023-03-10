@@ -24,7 +24,7 @@ namespace RogueEssence.Dungeon
             state.Zone.SaveLua();
             using (MemoryStream classStream = new MemoryStream())
             {
-                Serializer.SerializeData(classStream, state.Zone);
+                Serializer.SerializeData(classStream, state.Zone, true);
                 writer.Write(classStream.Position);
                 classStream.WriteTo(writer.BaseStream);
             }

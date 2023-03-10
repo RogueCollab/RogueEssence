@@ -35,7 +35,9 @@ namespace RogueEssence
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<scrollbreak>\[scroll\])" +
-                                                @"(?<script>\[script=(?<scriptval>\d+)\])",
+                                                @"|(?<script>\[script=(?<scriptval>\d+)\])" +
+                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
+                                                @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
@@ -292,6 +294,33 @@ namespace RogueEssence
             //then go through all mods of the default language
             foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
                 strings.Add(LoadStringResx(path));
+        }
+
+        public static string GetLanguagedPath(string basePath, string cultureCode)
+        {
+            if (String.IsNullOrEmpty(cultureCode))
+                return basePath;
+
+            string dir = Path.GetDirectoryName(basePath);
+            string noExt = Path.GetFileNameWithoutExtension(basePath);
+            string ext = Path.GetExtension(basePath);
+            return Path.Join(dir, noExt + "." + cultureCode + ext);
+        }
+
+        public static string ModLangPath(string basePath)
+        {
+            string cultureCode = Culture.Name.ToLower();
+            string langPath = GetLanguagedPath(basePath, cultureCode);
+            if (File.Exists(langPath) || Directory.Exists(langPath))
+                return langPath;
+            foreach (string fallback in LangNames[cultureCode].Fallbacks)
+            {
+                langPath = GetLanguagedPath(basePath, cultureCode);
+                if (File.Exists(langPath) || Directory.Exists(langPath))
+                    return langPath;
+            }
+
+            return basePath;
         }
 
         public static string Sanitize(string input)

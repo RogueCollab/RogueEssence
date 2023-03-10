@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             Name = header.Name;
             Namespace = header.Namespace;
+            Author = header.Author;
+            Description = header.Description;
             UUID = header.UUID.ToString().ToUpper();
             Version = header.Version.ToString();
 
@@ -35,6 +37,20 @@ namespace RogueEssence.Dev.ViewModels
         {
             get => name;
             set => this.SetIfChanged(ref name, value);
+        }
+
+        private string author;
+        public string Author
+        {
+            get => author;
+            set => this.SetIfChanged(ref author, value);
+        }
+
+        private string description;
+        public string Description
+        {
+            get => description;
+            set => this.SetIfChanged(ref description, value);
         }
 
         private string editNamespace;

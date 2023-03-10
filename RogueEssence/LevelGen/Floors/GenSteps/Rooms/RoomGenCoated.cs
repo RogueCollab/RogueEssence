@@ -50,23 +50,26 @@ namespace RogueEssence.LevelGen
 
         public override Loc ProposeSize(IRandom rand)
         {
-            return Gen.ProposeSize(rand) + new Loc(AddWidth, AddHeight);
+            return Gen.ProposeSize(rand) + new Loc(AddWidth * 2, AddHeight * 2);
         }
 
         public override void PrepareSize(IRandom rand, Loc size)
         {
-            //TODO: transfer to internal roomgen
+            //transfer to internal roomgen
+            Gen.PrepareSize(rand, size - new Loc(AddWidth * 2, AddHeight * 2));
         }
 
         protected override void PrepareFulfillableBorders(IRandom rand)
         {
             //TODO: translate the already fulfilled borders
+            //Gen.GetFulfillableBorder
         }
 
         public override void DrawOnMap(T map)
         {
             //TODO: call internal room draw
             FulfillRoomBorders(map, FulfillAll);
+            //Gen.DrawOnMap(map);
             SetRoomBorders(map);
         }
 

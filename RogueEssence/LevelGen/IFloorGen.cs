@@ -43,7 +43,7 @@ namespace RogueEssence.LevelGen
             {
                 WaterStep<MapGenContext> waterStep = step as WaterStep<MapGenContext>;
                 if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<MapGenContext>(false, true, false);
+                    waterStep.TerrainStencil = new MapTerrainStencil<MapGenContext>(false, true, false, false);
             }
         }
     }
@@ -86,7 +86,7 @@ namespace RogueEssence.LevelGen
             {
                 WaterStep<ListMapGenContext> waterStep = step as WaterStep<ListMapGenContext>;
                 if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<ListMapGenContext>(false, true, false);
+                    waterStep.TerrainStencil = new MapTerrainStencil<ListMapGenContext>(false, true, false, false);
             }
         }
     }
@@ -127,7 +127,7 @@ namespace RogueEssence.LevelGen
             {
                 WaterStep<StairsMapGenContext> waterStep = step as WaterStep<StairsMapGenContext>;
                 if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<StairsMapGenContext>(false, true, false);
+                    waterStep.TerrainStencil = new MapTerrainStencil<StairsMapGenContext>(false, true, false, false);
             }
         }
     }
@@ -168,7 +168,7 @@ namespace RogueEssence.LevelGen
             {
                 WaterStep<MapLoadContext> waterStep = step as WaterStep<MapLoadContext>;
                 if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<MapLoadContext>(false, true, false);
+                    waterStep.TerrainStencil = new MapTerrainStencil<MapLoadContext>(false, true, false, false);
             }
         }
     }
@@ -218,6 +218,33 @@ namespace RogueEssence.LevelGen
             ApplyGenSteps(map, queue);
 
             map.FinishGen();
+
+            return map;
+        }
+    }
+
+
+    /// <summary>
+    /// Chooses one floorgen out of several possibilities.
+    /// </summary>
+    [Serializable]
+    public class ChanceFloorGen : IFloorGen
+    {
+        public SpawnList<IFloorGen> Spawns;
+
+        public ChanceFloorGen()
+        {
+            Spawns = new SpawnList<IFloorGen>();
+        }
+
+        public IGenContext GenMap(ZoneGenContext zoneContext)
+        {
+            //NOTE: initializing the seed like this means the genned map technically reuses the first roll used to pick its algorithm in the first place
+            //problem?
+            IRandom spawnRand = new ReRandom(zoneContext.Seed);
+            IFloorGen gen = Spawns.Pick(spawnRand);
+
+            IGenContext map = gen.GenMap(zoneContext);
 
             return map;
         }

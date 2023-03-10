@@ -353,7 +353,7 @@ namespace RogueEssence
                                 if (guidLookup.TryGetValue(rel.UUID, out depIdx))
                                     localOrders[preOrder[ii]].Add(depIdx);
                                 else
-                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", rel.Namespace, rel.UUID, new Version(), ModType.None, new RelatedMod[0] { }) }));
+                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", rel.Namespace, rel.UUID, new Version(), ModType.None, new RelatedMod[0] { }) }));
                             }
                             break;
                     }
@@ -624,18 +624,22 @@ namespace RogueEssence
         /// </summary>
         public string Path;
         public string Name;
+        public string Description;
+        public string Author;
         public string Namespace;
         public Guid UUID;
         public Version Version;
         public PathMod.ModType ModType;
         public RelatedMod[] Relationships;
 
-        public static readonly ModHeader Invalid = new ModHeader("", "", "", Guid.Empty, new Version(), PathMod.ModType.None, new RelatedMod[0] { });
+        public static readonly ModHeader Invalid = new ModHeader("", "", "", "", "", Guid.Empty, new Version(), PathMod.ModType.None, new RelatedMod[0] { });
 
-        public ModHeader(string path, string name, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
+        public ModHeader(string path, string name, string description, string author, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
         {
             Path = path;
             Name = name;
+            Description = description;
+            Author = author;
             Namespace = newNamespace;
             UUID = uuid;
             Version = version;

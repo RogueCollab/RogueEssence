@@ -51,15 +51,12 @@ namespace RogueEssence.LevelGen
                 if (connectionGrid[testLoc.X][testLoc.Y])
                     return true;
 
-                if (map.RoomTerrain.TileEquivalent(map.GetTile(testLoc)))
-                    return false;
-
                 foreach (ITile tile in AcceptedTiles)
                 {
                     if (tile.TileEquivalent(map.GetTile(testLoc)))
                         return false;
                 }
-                return true;
+                return map.TileBlocked(testLoc);
             },
             (Loc testLoc) =>
             {

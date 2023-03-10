@@ -175,6 +175,11 @@ namespace RogueEssence.Dungeon
 
         public InvItem EquippedItem;
 
+        /// <summary>
+        /// If turned on, this entity is considered NOT a part of the adventure for the duration of that adventure.
+        /// </summary>
+        public bool Absentee;
+
         public LuaTable LuaData
         {
             get { return LuaDataTable; }
@@ -236,6 +241,9 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(StatusDictConverter))]
         public Dictionary<string, StatusEffect> StatusEffects;
 
+        /// <summary>
+        /// Guaranteed to hit next attack
+        /// </summary>
         public bool MustHitNext;
 
         /// <summary>
@@ -263,10 +271,22 @@ namespace RogueEssence.Dungeon
         public bool CantWalk;
         //will prevent the passive item effects, as well as the "stick" effect
         //does not affect active use
+
+        /// <summary>
+        /// Will prevent the passive item effects.  Does not prevent active use.
+        /// </summary>
         public bool ItemDisabled;
+
+        /// <summary>
+        /// Prevents passive intrinsic effects
+        /// </summary>
         public bool IntrinsicDisabled;
         public bool CanRemoveStuck;
         public bool StopItemAtHit;
+
+        /// <summary>
+        /// Will move erratically
+        /// </summary>
         public bool MovesScrambled;
         public bool ChargeSaver;
 
@@ -298,7 +318,6 @@ namespace RogueEssence.Dungeon
         public bool SeeItems;
         public bool SeeWallItems;
         public bool SeeTraps;
-        public bool Unrecruitable;
 
         //miscellaneous traits
         public StateCollection<CharState> CharStates;
@@ -430,6 +449,7 @@ namespace RogueEssence.Dungeon
             character.MAtkBonus = this.MAtkBonus;
             character.MDefBonus = this.MDefBonus;
             character.SpeedBonus = this.SpeedBonus;
+            character.Unrecruitable = this.Unrecruitable;
 
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                 character.BaseSkills[ii] = new SlotSkill(this.BaseSkills[ii]);
@@ -825,7 +845,7 @@ namespace RogueEssence.Dungeon
                 InvItem heldItem = EquippedItem;
                 if (!String.IsNullOrEmpty(heldItem.ID))
                 {
-                    DequipItem();
+                    SilentDequipItem();
                     MapItem mapItem = new MapItem(heldItem);
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropMapItem(mapItem, CharLoc, CharLoc, true));
                 }
@@ -854,7 +874,7 @@ namespace RogueEssence.Dungeon
                     InvItem heldItem = EquippedItem;
                     if (!String.IsNullOrEmpty(heldItem.ID))
                     {
-                        DequipItem();
+                        yield return CoroutineManager.Instance.StartCoroutine(DequipItem());
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.DropItem(heldItem, CharLoc));
                     }
                 }
@@ -1444,27 +1464,37 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
         
-        public void EquipItem(InvItem item)
+        public IEnumerator<YieldInstruction> EquipItem(InvItem item)
         {
             ItemCheckContext context = new ItemCheckContext(this, new MapItem(item), new MapItem(EquippedItem));
 
+            SilentEquipItem(item);
+
+            yield return CoroutineManager.Instance.StartCoroutine(OnEquip(context));
+        }
+
+        public void SilentEquipItem(InvItem item)
+        {
             EquippedItem = item;
             RefreshTraits();
-
-            OnEquip(context);
         }
 
         /// <summary>
         /// Removes a character's held item, effectively deleting it.
         /// </summary>
-        public void DequipItem()
+        public IEnumerator<YieldInstruction> DequipItem()
         {
             ItemCheckContext context = new ItemCheckContext(this, new MapItem(), new MapItem(EquippedItem));
 
+            SilentDequipItem();
+
+            yield return CoroutineManager.Instance.StartCoroutine(OnEquip(context));
+        }
+
+        public void SilentDequipItem()
+        {
             EquippedItem = new InvItem();
             RefreshTraits();
-
-            OnEquip(context);
         }
 
         //find a way to prevent repeated calls to this method in various other methods
@@ -1903,7 +1933,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public void OnEquip(ItemCheckContext context)
+        public IEnumerator<YieldInstruction> OnEquip(ItemCheckContext context)
         {
             DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1916,13 +1946,13 @@ namespace RogueEssence.Dungeon
             };
             foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
             {
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel)
-                    return;
+                    yield break;
             }
         }
 
-        public void OnPickup(ItemCheckContext context)
+        public IEnumerator<YieldInstruction> OnPickup(ItemCheckContext context)
         {
             DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1934,9 +1964,9 @@ namespace RogueEssence.Dungeon
             };
             foreach (EventQueueElement<ItemGivenEvent> effect in DungeonScene.IterateEvents(function))
             {
-                effect.Event.Apply(effect.Owner, effect.OwnerChar, context);
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
                 if (context.CancelState.Cancel)
-                    return;
+                    yield break;
             }
         }
 

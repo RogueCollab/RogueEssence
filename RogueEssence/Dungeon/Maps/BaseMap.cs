@@ -38,8 +38,6 @@ namespace RogueEssence.Dungeon
 
         public int ID { get; set; }
 
-        public bool DropTitle;
-
         public List<MapLayer> Layers;
 
         public Tile[][] Tiles;

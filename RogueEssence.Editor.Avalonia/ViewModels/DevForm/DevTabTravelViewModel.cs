@@ -24,6 +24,25 @@ namespace RogueEssence.Dev.ViewModels
             floorIDs = new List<int>();
         }
 
+        public void ReloadZones()
+        {
+            Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
+            Zones.Clear();
+            foreach (string key in entry_names.Keys)
+                Zones.Add(key + ": " + entry_names[key]);
+            ChosenZone = -1;
+            ChosenZone = Math.Min(Math.Max(DevForm.GetConfig("ZoneChoice", 0), 0), Zones.Count - 1);
+
+            ChosenStructure = -1;
+            ChosenStructure = Math.Min(Math.Max(DevForm.GetConfig("StructChoice", 0), 0), Structures.Count - 1);
+
+            ChosenFloor = -1;
+            ChosenFloor = Math.Min(Math.Max(DevForm.GetConfig("FloorChoice", 0), 0), Floors.Count - 1);
+
+            ChosenGround = -1;
+            ChosenGround = Math.Min(Math.Max(DevForm.GetConfig("GroundChoice", 0), 0), Grounds.Count - 1);
+        }
+
 
         private bool debugGen;
         public bool DebugGen

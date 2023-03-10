@@ -25,6 +25,62 @@ namespace RogueEssence.Dev.ViewModels
             ItemKeys = new List<string>();
         }
 
+        public void ReloadSkills()
+        {
+            Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Skill].GetLocalStringArray(true);
+            Skills.Clear();
+            SkillKeys.Clear();
+            foreach (string key in entry_names.Keys)
+            {
+                Skills.Add(key + ": " + entry_names[key]);
+                SkillKeys.Add(key);
+            }
+            ChosenSkill = -1;
+            ChosenSkill = Math.Min(Math.Max(DevForm.GetConfig("SkillChoice", 0), 0), Skills.Count - 1);
+        }
+
+        public void ReloadIntrinsics()
+        {
+            Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Intrinsic].GetLocalStringArray(true);
+            Intrinsics.Clear();
+            IntrinsicKeys.Clear();
+            foreach (string key in entry_names.Keys)
+            {
+                Intrinsics.Add(key + ": " + entry_names[key]);
+                IntrinsicKeys.Add(key);
+            }
+            ChosenIntrinsic = -1;
+            ChosenIntrinsic = Math.Min(Math.Max(DevForm.GetConfig("IntrinsicChoice", 0), 0), Intrinsics.Count - 1);
+        }
+
+        public void ReloadStatuses()
+        {
+            Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Status].GetLocalStringArray(true);
+            Statuses.Clear();
+            StatusKeys.Clear();
+            foreach (string key in entry_names.Keys)
+            {
+                Statuses.Add(key + ": " + entry_names[key]);
+                StatusKeys.Add(key);
+            }
+            ChosenStatus = -1;
+            ChosenStatus = Math.Min(Math.Max(DevForm.GetConfig("StatusChoice", 0), 0), Statuses.Count - 1);
+        }
+
+        public void ReloadItems()
+        {
+            Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetLocalStringArray(true);
+            Items.Clear();
+            ItemKeys.Clear();
+            foreach (string key in entry_names.Keys)
+            {
+                Items.Add(key + ": " + entry_names[key]);
+                ItemKeys.Add(key);
+            }
+            ChosenItem = -1;
+            ChosenItem = Math.Min(Math.Max(DevForm.GetConfig("ItemChoice", 0), 0), Items.Count - 1);
+        }
+
         public ObservableCollection<string> Skills { get; }
 
         public List<string> SkillKeys;

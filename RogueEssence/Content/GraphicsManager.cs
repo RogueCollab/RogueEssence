@@ -421,17 +421,8 @@ namespace RogueEssence.Content
             SysFont = LoadFont("system");
         }
 
-        public static void InitStatic()
+        public static void loadStatic()
         {
-            DiagManager.Instance.LoadMsg = "Loading Graphics";
-
-            //load onepixel
-            Pixel = new BaseSheet(1, 1);
-            Pixel.BlitColor(Color.White, 1, 1, 0, 0);
-
-            //Load divider texture
-            DivTex = BaseSheet.Import(BASE_PATH + "Divider.png");
-
             //load menu data
             MenuBG = TileSheet.Import(BASE_PATH + "MenuBG.png", 8, 8);
 
@@ -463,8 +454,22 @@ namespace RogueEssence.Content
 
             Shadows = TileSheet.Import(BASE_PATH + "Shadows.png", 32, 16);
 
-            Title = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Title.png"));
-            Subtitle = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Enter.png"));
+            Title = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Title.png")));
+            Subtitle = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Enter.png")));
+        }
+
+        public static void InitStatic()
+        {
+            DiagManager.Instance.LoadMsg = "Loading Graphics";
+
+            //load onepixel
+            Pixel = new BaseSheet(1, 1);
+            Pixel.BlitColor(Color.White, 1, 1, 0, 0);
+
+            //Load divider texture
+            DivTex = BaseSheet.Import(BASE_PATH + "Divider.png");
+
+            loadStatic();
 
             LoadContentParams();
 
@@ -508,16 +513,15 @@ namespace RogueEssence.Content
 
         public static void ReloadStatic()
         {
-            //maybe add other graphics here later on
-            Title = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Title.png"));
-            Subtitle = BaseSheet.Import(PathMod.ModPath(UI_PATH + "Enter.png"));
+            unloadStatic();
+            loadStatic();
 
             LoadContentParams();
 
             ClearCaches(AssetType.All);
         }
 
-        public static void Unload()
+        private static void unloadStatic()
         {
             Subtitle.Dispose();
             Title.Dispose();
@@ -536,6 +540,11 @@ namespace RogueEssence.Content
             PicBorder.Dispose();
             MenuBorder.Dispose();
             MenuBG.Dispose();
+        }
+
+        public static void Unload()
+        {
+            unloadStatic();
 
             tileCache.Clear();
             //no need to clear tileIndexCache; it should happen automatically with all OnRemoves
@@ -583,8 +592,9 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllPortraits(PathMod.DEV_PATH + "Portrait/", PathMod.HardMod(PORTRAIT_PATTERN));
                 Dev.ImportHelper.BuildCharIndex(PORTRAIT_PATTERN);
             }
+
             if ((conversionFlags & AssetType.Tile) != AssetType.None)
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH+"Tile/", PathMod.HardMod(TILE_PATTERN), true, false);
+                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tile/", PathMod.HardMod(TILE_PATTERN));
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
@@ -600,9 +610,7 @@ namespace RogueEssence.Content
             if ((conversionFlags & AssetType.BG) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", PathMod.HardMod(BG_PATTERN));
 
-            if ((conversionFlags & AssetType.Autotile) != AssetType.None)
-                // Old format (image data):
-                Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tile/", PathMod.HardMod(TILE_PATTERN), false, true);
+
 
             if ((conversionFlags & AssetType.Autotile) != AssetType.None)
             {

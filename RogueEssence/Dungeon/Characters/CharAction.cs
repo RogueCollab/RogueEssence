@@ -279,16 +279,21 @@ namespace RogueEssence.Dungeon
             None,
             Spin,
             Drop,
-            Fly
+            Fly,
+            Kidnap
         }
 
         public ProcessType Process;
 
+        public int AnimOverride;
+
         public CharAnimProcess() { }
         public CharAnimProcess(ProcessType process) { Process = process; }
+        public CharAnimProcess(ProcessType process, int animFrameOverride) { Process = process; AnimOverride = animFrameOverride; }
         protected CharAnimProcess(CharAnimProcess other)
         {
             Process = other.Process;
+            AnimOverride = other.AnimOverride;
         }
         public override CharAnimData Clone() { return new CharAnimProcess(this); }
 
@@ -297,13 +302,15 @@ namespace RogueEssence.Dungeon
             switch (Process)
             {
                 case ProcessType.Spin:
-                    return new CharAnimSpin();
+                    return new CharAnimSpin(AnimOverride);
                 case ProcessType.Drop:
-                    return new CharAnimDrop();
+                    return new CharAnimDrop(AnimOverride);
                 case ProcessType.Fly:
-                    return new CharAnimFly();
+                    return new CharAnimFly(AnimOverride);
+                case ProcessType.Kidnap:
+                    return new CharAnimKidnap(AnimOverride);
                 default:
-                    return null;
+                    return new CharAnimNone();
             }
         }
     }
@@ -320,7 +327,7 @@ namespace RogueEssence.Dungeon
         public CharAnimData CharAnimData;
 
         //this action throws out no hitbox
-        public SelfAction() { CharAnimData = new CharAnimFrameType(0); }
+        public SelfAction() { CharAnimData = new CharAnimProcess(); }
         protected SelfAction(SelfAction other)
             : base(other)
         {
@@ -400,7 +407,7 @@ namespace RogueEssence.Dungeon
         public AttackAction()
         {
             Emitter = new EmptyFiniteEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected AttackAction(AttackAction other)
             : base(other)
@@ -582,7 +589,7 @@ namespace RogueEssence.Dungeon
         public AreaAction()
         {
             Emitter = new EmptyCircleSquareEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected AreaAction(AreaAction other)
             : base(other)
@@ -741,7 +748,7 @@ namespace RogueEssence.Dungeon
         public OffsetAction()
         {
             Emitter = new EmptyCircleSquareEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected OffsetAction(OffsetAction other)
             : base(other)
@@ -963,7 +970,7 @@ namespace RogueEssence.Dungeon
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             StreamEmitter = new EmptyShootingEmitter();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected ProjectileAction(ProjectileAction other)
             : base(other)
@@ -1151,7 +1158,7 @@ namespace RogueEssence.Dungeon
         public WaveMotionAction()
         {
             Anim = new BeamAnimData();
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected WaveMotionAction(WaveMotionAction other)
             : base(other)
@@ -1262,7 +1269,7 @@ namespace RogueEssence.Dungeon
             Anim = new AnimData();
             Emitter = new EmptyAttachEmitter();
             ItemSprite = "";
-            CharAnimData = new CharAnimFrameType(0);
+            CharAnimData = new CharAnimProcess();
         }
         protected ThrowAction(ThrowAction other)
             : base(other)
@@ -1449,7 +1456,8 @@ namespace RogueEssence.Dungeon
         {
             Normal,
             DropDown,
-            Invisible
+            Invisible,
+            Kidnap
         }
 
         public AnimData Anim;
@@ -1528,6 +1536,11 @@ namespace RogueEssence.Dungeon
                 case DashAppearance.Invisible:
                     {
                         rushAnim = new CharAnimGhostDash();
+                        break;
+                    }
+                case DashAppearance.Kidnap:
+                    {
+                        rushAnim = new CharAnimKidnapDash();
                         break;
                     }
             }

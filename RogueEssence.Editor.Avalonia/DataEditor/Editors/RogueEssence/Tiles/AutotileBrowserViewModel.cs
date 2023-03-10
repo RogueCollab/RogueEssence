@@ -90,7 +90,7 @@ namespace RogueEssence.Dev.ViewModels
             HashSet<string> associates = new HashSet<string>();
             foreach (string tile in Associates)
                 associates.Add(tile);
-            return new TileBrush(keys[Autotiles.InternalIndex], associates);
+            return new TileBrush(keys[Math.Max(Autotiles.InternalIndex, 0)], associates);
         }
 
         public void SetBrush(AutoTile autotile)

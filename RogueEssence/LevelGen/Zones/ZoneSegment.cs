@@ -110,8 +110,7 @@ namespace RogueEssence.LevelGen
         public override int FloorCount { get { return FloorSpan; } }
         public override IEnumerable<int> GetFloorIDs()
         {
-            for (int ii = 0; ii < FloorCount; ii++)
-                yield return ii;
+            yield return 0;
         }
 
 
@@ -122,7 +121,7 @@ namespace RogueEssence.LevelGen
 
         public override IGenContext GetMap(ZoneGenContext zoneContext)
         {
-            if (zoneContext.CurrentID < FloorSpan)
+            if (FloorSpan < 0 || zoneContext.CurrentID < FloorSpan)
                 return BaseFloor.GenMap(zoneContext);
             else
                 throw new Exception("Requested a map id out of range.");

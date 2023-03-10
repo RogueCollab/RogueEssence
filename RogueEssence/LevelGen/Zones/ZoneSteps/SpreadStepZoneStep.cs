@@ -12,48 +12,30 @@ namespace RogueEssence.LevelGen
     /// Spreads a map gen step randomly across the dungeon segment.
     /// </summary>
     [Serializable]
-    public class SpreadStepZoneStep : ZoneStep
+    public class SpreadStepZoneStep : SpreadZoneStep
     {
-        /// <summary>
-        /// Determines how many floors to distribute the step to, and how spread apart they are.
-        /// </summary>
-        public SpreadPlanBase SpreadPlan;
-
         /// <summary>
         /// The steps to distribute.
         /// </summary>
         public IRandPicker<IGenPriority> Spawns;
-
-        /// <summary>
-        /// Flags from the player's passives that will affect the appearance rate of the step.
-        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
-        /// The chance of the step appearing will be increased by the ModGenState's value.
-        /// </summary>
-        [StringTypeConstraint(1, typeof(ModGenState))]
-        public List<FlagType> ModStates;
 
         [NonSerialized]
         public List<IGenPriority> DropItems;
 
         public SpreadStepZoneStep()
         {
-            ModStates = new List<FlagType>();
         }
 
-        public SpreadStepZoneStep(SpreadPlanBase plan, IRandPicker<IGenPriority> spawns) : this()
+        public SpreadStepZoneStep(SpreadPlanBase plan, IRandPicker<IGenPriority> spawns) : base(plan)
         {
-            SpreadPlan = plan;
             Spawns = spawns;
         }
 
-        protected SpreadStepZoneStep(SpreadStepZoneStep other, ulong seed) : this()
+        protected SpreadStepZoneStep(SpreadStepZoneStep other, ulong seed) : base(other, seed)
         {
             Spawns = other.Spawns.CopyState();
-            SpreadPlan = other.SpreadPlan.Instantiate(seed);
-            ModStates.AddRange(other.ModStates);
 
             DropItems = new List<IGenPriority>();
-
             //Other SpredStep classes choose which step to place on which floor on the fly, but this one needs care, due to the potential of CanPick changing state
             for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
             {
@@ -68,46 +50,24 @@ namespace RogueEssence.LevelGen
         public override ZoneStep Instantiate(ulong seed) { return new SpreadStepZoneStep(this, seed); }
 
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
+        protected override bool ApplyToFloor(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue, int dropIdx)
         {
-            bool added = false;
-            for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
+            if (dropIdx < -1)
             {
-                if (SpreadPlan.DropPoints[ii] != zoneContext.CurrentID)
-                    continue;
-                if (ii >= DropItems.Count)
-                    continue;
-                IGenPriority genStep = DropItems[ii];
+                //we don't know if changing the state of this step in a non-instantiation phase can lead to problems, stay on the safe side for now
+                if (Spawns.ChangesState || !Spawns.CanPick)
+                    return false;
+                IGenPriority genStep = Spawns.Pick(context.Rand);
                 queue.Enqueue(genStep.Priority, genStep.GetItem());
-                added = true;
             }
-
-            if (added)
-                return;
-
-            GameProgress progress = DataManager.Instance.Save;
-            if (progress != null && progress.ActiveTeam != null)
+            else
             {
-                if (Spawns.CanPick)
-                {
-                    int totalMod = 0;
-                    foreach (Character chara in progress.ActiveTeam.Players)
-                    {
-                        foreach (FlagType state in ModStates)
-                        {
-                            CharState foundState;
-                            if (chara.CharStates.TryGet(state.FullType, out foundState))
-                                totalMod += ((ModGenState)foundState).Mod;
-                        }
-                    }
-                    if (context.Rand.Next(100) < totalMod)
-                    {
-                        IGenPriority genStep = Spawns.Pick(context.Rand);
-                        queue.Enqueue(genStep.Priority, genStep.GetItem());
-                        return;
-                    }
-                }
+                if (dropIdx >= DropItems.Count)
+                    return false;
+                IGenPriority genStep = DropItems[dropIdx];
+                queue.Enqueue(genStep.Priority, genStep.GetItem());
             }
+            return true;
         }
 
         public override string ToString()
@@ -126,106 +86,38 @@ namespace RogueEssence.LevelGen
     /// Spreads a map gen step randomly across the dungeon segment, allowing precise control over the spawn rate across different floors.
     /// </summary>
     [Serializable]
-    public class SpreadStepRangeZoneStep : ZoneStep
+    public class SpreadStepRangeZoneStep : SpreadZoneStep
     {
-        /// <summary>
-        /// Determines how many floors to distribute the step to, and how spread apart they are.
-        /// </summary>
-        public SpreadPlanBase SpreadPlan;
-
         /// <summary>
         /// The steps to distribute.  Probabilities can be customized across floors.
         /// </summary>
         public SpawnRangeList<IGenPriority> Spawns;
 
-        /// <summary>
-        /// Flags from the player's passives that will affect the appearance rate of the step.
-        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
-        /// The chance of the step appearing will be increased by the ModGenState's value.
-        /// </summary>
-        [StringTypeConstraint(1, typeof(ModGenState))]
-        public List<FlagType> ModStates;
 
-        [NonSerialized]
-        public List<IGenPriority> DropItems;
-        //spreads an item through the floors
-        //ensures that the space in floors between occurrences is kept tame
         public SpreadStepRangeZoneStep()
         {
-            ModStates = new List<FlagType>();
         }
 
-        public SpreadStepRangeZoneStep(SpreadPlanBase plan, SpawnRangeList<IGenPriority> spawns) : this()
+        public SpreadStepRangeZoneStep(SpreadPlanBase plan, SpawnRangeList<IGenPriority> spawns) : base(plan)
         {
-            SpreadPlan = plan;
             Spawns = spawns;
         }
 
-        protected SpreadStepRangeZoneStep(SpreadStepRangeZoneStep other, ulong seed) : this()
+        protected SpreadStepRangeZoneStep(SpreadStepRangeZoneStep other, ulong seed) : base(other, seed)
         {
             Spawns = other.Spawns.CopyState();
-            SpreadPlan = other.SpreadPlan.Instantiate(seed);
-            ModStates.AddRange(other.ModStates);
-
-            DropItems = new List<IGenPriority>();
-
-            //Other SpredStep classes choose which step to place on which floor on the fly, but this one needs care, due to the potential of CanPick changing state
-            for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
-            {
-                int floor = SpreadPlan.DropPoints[ii];
-                SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(floor);
-                if (!spawnList.CanPick)
-                    continue;
-
-                ReRandom rand = new ReRandom(seed);
-                IGenPriority genStep = spawnList.Pick(rand);
-                DropItems.Add(genStep);
-            }
         }
         public override ZoneStep Instantiate(ulong seed) { return new SpreadStepRangeZoneStep(this, seed); }
 
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
+        protected override bool ApplyToFloor(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue, int dropIdx)
         {
-            bool added = false;
-            for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
-            {
-                if (SpreadPlan.DropPoints[ii] != zoneContext.CurrentID)
-                    continue;
-                if (ii >= DropItems.Count)
-                    continue;
-                IGenPriority genStep = DropItems[ii];
-                queue.Enqueue(genStep.Priority, genStep.GetItem());
-                added = true;
-            }
-
-            if (added)
-                return;
-
-            GameProgress progress = DataManager.Instance.Save;
-            if (progress != null && progress.ActiveTeam != null)
-            {
-                SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(zoneContext.CurrentID);
-                if (spawnList.CanPick)
-                {
-                    int totalMod = 0;
-                    foreach (Character chara in progress.ActiveTeam.Players)
-                    {
-                        foreach (FlagType state in ModStates)
-                        {
-                            CharState foundState;
-                            if (chara.CharStates.TryGet(state.FullType, out foundState))
-                                totalMod += ((ModGenState)foundState).Mod;
-                        }
-                    }
-                    if (context.Rand.Next(100) < totalMod)
-                    {
-                        IGenPriority genStep = spawnList.Pick(context.Rand);
-                        queue.Enqueue(genStep.Priority, genStep.GetItem());
-                        return;
-                    }
-                }
-            }
+            SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(zoneContext.CurrentID);
+            if (!spawnList.CanPick)
+                return false;
+            IGenPriority genStep = spawnList.Pick(context.Rand);
+            queue.Enqueue(genStep.Priority, genStep.GetItem());
+            return true;
         }
 
         public override string ToString()

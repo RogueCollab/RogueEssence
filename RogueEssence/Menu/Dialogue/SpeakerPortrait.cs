@@ -1,4 +1,4 @@
-﻿using RogueElements;
+using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
@@ -19,11 +19,19 @@ namespace RogueEssence.Menu
             Speaker = speaker;
             SpeakerEmotion = emotion;
             Bordered = bordered;
-
             Loc = loc;
         }
 
         public static Loc DefaultLoc => new Loc(DialogueBox.SIDE_BUFFER, 132);
+        public SpeakerPortrait(SpeakerPortrait other, int emote)
+        {
+            Speaker = other.Speaker;
+            SpeakerEmotion = other.SpeakerEmotion;
+            SpeakerEmotion.Emote = emote;
+            SpeakerEmotion.Reverse = other.SpeakerEmotion.Reverse;
+            Bordered = other.Bordered;
+            Loc = other.Loc;
+        }
         
         //kind of like a menu, but not quite (uses borders)
         //draws the portrait
