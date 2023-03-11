@@ -138,6 +138,8 @@ namespace RogueEssence.Dev.ViewModels
                 string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+                else if (Path.GetFileName(result).Contains(" "))
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
