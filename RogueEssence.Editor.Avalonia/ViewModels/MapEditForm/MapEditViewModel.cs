@@ -390,7 +390,6 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(Map curmap, string filepath, string oldfname)
         {
-            ZoneManager.Instance.CurrentMap.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curmap);
 
             CurrentFile = filepath;

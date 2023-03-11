@@ -57,7 +57,8 @@ namespace RogueEssence.Dungeon
         /// the internal name of the map, no spaces or special characters, never localized.
         /// Used to refer to map data and script data for this map!
         /// </summary>
-        public string AssetName { get; set; }
+        [NonSerialized]
+        public string AssetName;
 
         public Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent> ScriptEvents;
 
