@@ -158,7 +158,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                if (chosenStructure == -1)
+                if (chosenZone == -1 || chosenStructure == -1)
                     return;
 
                 int temp = chosenFloor;

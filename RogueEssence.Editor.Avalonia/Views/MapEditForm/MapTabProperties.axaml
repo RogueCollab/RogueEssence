@@ -63,7 +63,7 @@
         <RowDefinition/>
         <RowDefinition Height="34"/>
       </Grid.RowDefinitions>
-      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">>Music:</TextBlock>
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Music:</TextBlock>
       <ListBox Name="lbxMusic" SelectionMode="AlwaysSelected" Items="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
       <Button Name="btnReloadMusic" Command="{Binding btnReloadMusic_Click}" Margin="4" Grid.Row="2">Reload Music</Button>
     </Grid>
