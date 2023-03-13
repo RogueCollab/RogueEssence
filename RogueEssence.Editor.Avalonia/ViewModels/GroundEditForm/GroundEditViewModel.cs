@@ -474,6 +474,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
+            ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.
