@@ -55,9 +55,9 @@ namespace RogueEssence.Ground
 
         /// <summary>
         /// the internal name of the map, no spaces or special characters, never localized.
-        /// Used to refer to map data and script data for this map!
+        /// Used to refer to map data and script data for this map.  This value is always set when loaded,
+        /// But must remain serialized for state saving
         /// </summary>
-        [NonSerialized]
         public string AssetName;
 
         public LocalText Name { get; set; }
@@ -111,6 +111,7 @@ namespace RogueEssence.Ground
         [JsonConstructor]
         public GroundMap(bool init)
         {
+            AssetName = "";
             scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
             //dummy constructor for json serialization
         }
