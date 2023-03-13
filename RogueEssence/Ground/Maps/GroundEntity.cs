@@ -142,16 +142,17 @@ namespace RogueEssence.Ground
                 entry.Value.DoCleanup();
             scriptEvents.Clear();
         }
-        
+
         /// <summary>
-        /// Returns the event with the same name as the string eventname.
-        /// Or return null if the event can't be found.
+        /// Returns true if there exists and event with the same name as the string eventname.
+        /// The script event doesn't need to be loaded.
         /// </summary>
-        /// <param name="eventname"></param>
+        /// <param name="ev"></param>
         /// <returns></returns>
         public virtual bool HasScriptEvent(LuaEngine.EEntLuaEventTypes ev)
         {
-            return scriptEvents.ContainsKey(ev);
+            string callback = LuaEngine.MakeLuaEntityCallbackName(EntName, ev);
+            return LuaEngine.Instance.DoesFunctionExists(callback);
         }
 
         /// <summary>
@@ -272,7 +273,7 @@ namespace RogueEssence.Ground
             List<LuaEngine.EEntLuaEventTypes> callbacks = new List<LuaEngine.EEntLuaEventTypes>();
             foreach (LuaEngine.EEntLuaEventTypes ev in LuaEngine.IterateLuaEntityEvents())
             {
-                if (HasScriptEvent(ev))
+                if (scriptEvents.ContainsKey(ev))
                     callbacks.Add(ev);
             }
             return callbacks;

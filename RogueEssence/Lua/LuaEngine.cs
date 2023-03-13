@@ -81,6 +81,21 @@ namespace RogueEssence.Script
             return String.Format("{0}.{1}", ZoneCurrentScriptSym, callback.ToString());
         }
 
+
+        public static string MakeZoneCallbackDef(string zonename, EZoneCallbacks type)
+        {
+            string args = "";
+            if (type == EZoneCallbacks.Init)
+                args = "zone";
+            else if (type == EZoneCallbacks.Rescued)
+                args = "zone, name, mail";
+            else if (type == EZoneCallbacks.EnterSegment)
+                args = "zone, rescuing, segmentID, mapID";
+            else if (type == EZoneCallbacks.ExitSegment)
+                args = "zone, result, rescue, segmentID, mapID";
+            return String.Format("{0}({1})", MakeZoneScriptCallbackName(zonename, type), args);
+        }
+
         #endregion
 
 
@@ -98,6 +113,8 @@ namespace RogueEssence.Script
             GameLoad,
             Invalid
         }
+
+
         //Name for common map callback functions
         public static readonly string MapCurrentScriptSym = "CURMAPSCR";
         //The last one is optional, and is called before the map script is unloaded, so the script may do any needed cleanup
@@ -129,6 +146,13 @@ namespace RogueEssence.Script
                 throw new Exception("LuaEngine.MakeMapScriptCallbackName(): Unknown callback!");
             return String.Format("{0}.{1}", mapname, callback.ToString());
         }
+
+
+        public static string MakeGroundMapCallbackDef(string mapname, EMapCallbacks type)
+        {
+            return String.Format("{0}(map)", MakeMapScriptCallbackName(mapname, type));
+        }
+
         #endregion
 
 
@@ -179,6 +203,11 @@ namespace RogueEssence.Script
             if (callback < 0 && callback >= EDungeonMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeDungeonMapScriptCallbackName(): Unknown callback!");
             return String.Format("{0}.{1}", floorname, callback.ToString());
+        }
+
+        public static string MakeDungeonMapCallbackDef(string floorname, EDungeonMapCallbacks type)
+        {
+            return String.Format("{0}(map)", MakeDungeonMapScriptCallbackName(floorname, type));
         }
 
         /// <summary>
@@ -237,7 +266,15 @@ namespace RogueEssence.Script
                 throw new Exception("LuaEngine.MakeLuaEntityCallbackName(): Invalid Lua entity event type!");
             return String.Format("{2}.{0}_{1}", entname, type.ToString(), MapCurrentScriptSym);
         }
-#endregion
+
+        public static string MakeEntLuaEventDef(string mapname, string entname, EEntLuaEventTypes type)
+        {
+            if (type < 0 && type >= EEntLuaEventTypes.Invalid)
+                throw new Exception("LuaEngine.MakeLuaEntityCallbackName(): Invalid Lua entity event type!");
+            string callback = String.Format("{2}.{0}_{1}", entname, type.ToString(), mapname);
+            return String.Format("{0}(obj, activator)", callback);
+        }
+        #endregion
 
 
         #region SERVICES_EVENTS
@@ -1272,8 +1309,8 @@ namespace RogueEssence.Script
                         //Insert the default map functions and comment header
                         foreach (EMapCallbacks fn in EnumerateCallbackTypes())
                         {
-                            string callbackname = MakeMapScriptCallbackName(mapassetname, fn);
-                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}(map)\n", callbackname);
+                            string callbackname = MakeGroundMapCallbackDef(mapassetname, fn);
+                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}\n", callbackname);
                             if (fn == EMapCallbacks.Init)
                             {
                                 //Add the map string loader
@@ -1354,18 +1391,9 @@ namespace RogueEssence.Script
                         //Insert the default map functions and comment header
                         foreach (EZoneCallbacks fn in EnumerateZoneCallbackTypes())
                         {
-                            string callbackname = MakeZoneScriptCallbackName(zoneassetname, fn);
-                            string args = "";
-                            if (fn == EZoneCallbacks.Init)
-                                args = "zone";
-                            else if (fn == EZoneCallbacks.Rescued)
-                                args = "zone, name, mail";
-                            else if (fn == EZoneCallbacks.EnterSegment)
-                                args = "zone, rescuing, segmentID, mapID";
-                            else if (fn == EZoneCallbacks.ExitSegment)
-                                args = "zone, result, rescue, segmentID, mapID";
+                            string callbackname = MakeZoneCallbackDef(zoneassetname, fn);
 
-                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}({1})\n", callbackname, args);
+                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}\n", callbackname);
                             // put comments for each function here
                             fstream.WriteLine("\nend\n");
                         }

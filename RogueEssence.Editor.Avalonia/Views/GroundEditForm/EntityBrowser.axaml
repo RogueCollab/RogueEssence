@@ -86,10 +86,24 @@
             <ItemsControl Items="{Binding ScriptItems}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <CheckBox Margin="4"
-                            IsChecked="{Binding IsChecked}"
-                            Content="{Binding EventType}"
-                            IsEnabled="False"/>
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="28"/>
+                      <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Margin="4" 
+                              IsEnabled="False"
+                              IsChecked="{Binding IsChecked}"/>
+                    <TextBlock Margin="0,4" Grid.Column="1" VerticalAlignment="Center"
+                      Text="{Binding EventType}"
+                      ToolTip.Tip="{Binding Definition}">
+                      <TextBlock.ContextMenu>
+                        <ContextMenu>
+                          <MenuItem Header="Copy Function" Command="{Binding mnuCopyFun_Click}"/>
+                        </ContextMenu>
+                      </TextBlock.ContextMenu>
+                    </TextBlock>
+                  </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>

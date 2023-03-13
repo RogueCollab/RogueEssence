@@ -1017,6 +1017,19 @@ namespace RogueEssence.Ground
             return list;
         }
 
+
+        /// <summary>
+        /// Returns true if there exists and event with the same name as the string eventname.
+        /// The script event doesn't need to be loaded.
+        /// </summary>
+        /// <param name="ev"></param>
+        /// <returns></returns>
+        public bool HasScriptEvent(LuaEngine.EMapCallbacks ev)
+        {
+            string callback = LuaEngine.MakeMapScriptCallbackName(LuaEngine.MapCurrentScriptSym, ev);
+            return LuaEngine.Instance.DoesFunctionExists(callback);
+        }
+
         public void ReloadEntLayer(int layer)
         {
 

@@ -1,7 +1,10 @@
-﻿using RogueEssence.Ground;
+﻿using Avalonia;
+using RogueEssence.Dungeon;
+using RogueEssence.Ground;
 using RogueEssence.Script;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace RogueEssence.Dev.ViewModels
@@ -25,6 +28,22 @@ namespace RogueEssence.Dev.ViewModels
             {
 
             }
+        }
+        public string Definition
+        {
+            get
+            {
+                return LuaEngine.MakeEntLuaEventDef(ZoneManager.Instance.CurrentGround.AssetName, baseEnt.EntName, EventType);
+            }
+            set
+            {
+
+            }
+        }
+
+        public async void mnuCopyFun_Click()
+        {
+            await Application.Current.Clipboard.SetTextAsync(Definition);
         }
 
         private GroundEntity baseEnt;
