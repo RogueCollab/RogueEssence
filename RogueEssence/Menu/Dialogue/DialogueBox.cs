@@ -56,7 +56,7 @@ namespace RogueEssence.Menu
         private bool scrolling;
         private bool centerH;
         private bool centerV;
-
+        private int totalLines;
         private int nextTextIndex;
 
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
@@ -105,7 +105,8 @@ namespace RogueEssence.Menu
 
             Sound = sound;
             message = msg;
-
+            totalLines = Bounds.Height / TEXT_HEIGHT;
+            
             Texts = new List<DialogueText>();
             this.centerH = centerH;
             this.centerV = centerV;
@@ -197,14 +198,14 @@ namespace RogueEssence.Menu
             else if (curTextIndex < Texts.Count - 1)
             {
                 if (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel] && TotalTextTime >= HOLD_CANCEL_TIME
-                    || input.JustPressed(FrameInput.InputType.LeftMouse))
+                                                                    || input.JustPressed(FrameInput.InputType.LeftMouse))
                 {
                     scrolling = true;
                     nextTextIndex = curTextIndex + 1;
-                    NextText.Rect.Start = CurrentText.Rect.Start + new Loc(0, TEXT_HEIGHT * MAX_LINES);
+                    NextText.Rect.Start = CurrentText.Rect.Start + new Loc(0, TEXT_HEIGHT * totalLines);
                 }
 
-                int scrollFrames = TEXT_HEIGHT * MAX_LINES / SCROLL_SPEED;
+                int scrollFrames = TEXT_HEIGHT * totalLines / SCROLL_SPEED;
                 if (CurrentScrollTime < FrameTick.FromFrames(scrollFrames))
                 {
                     if (scrolling)
