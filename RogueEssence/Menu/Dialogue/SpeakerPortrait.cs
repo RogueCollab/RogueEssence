@@ -1,4 +1,4 @@
-﻿using RogueElements;
+using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
@@ -21,6 +21,10 @@ namespace RogueEssence.Menu
             Bordered = bordered;
             Loc = loc;
         }
+
+        public static Loc DefaultLoc => new Loc(DialogueBox.SIDE_BUFFER,
+            GraphicsManager.ScreenHeight - (16 + DialogueBox.TEXT_HEIGHT * DialogueBox.MAX_LINES + DialogueBox.VERT_PAD * 2) - 56);
+
         public SpeakerPortrait(SpeakerPortrait other, int emote)
         {
             Speaker = other.Speaker;

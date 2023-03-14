@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
@@ -25,19 +25,24 @@ namespace RogueEssence.Menu
         const int SPEAK_FRAMES = 2;
 
         public const int SIDE_BUFFER = 8;
-        public const int TEXT_HEIGHT = 16;//14
-        public const int VERT_PAD = 2;//1
-        public const int VERT_OFFSET = -2;//-3
+        public const int TEXT_HEIGHT = 16; //14
+        public const int VERT_PAD = 2; //1
+        public const int VERT_OFFSET = -2; //-3
         public const int HORIZ_PAD = 4;
-        public const int MAX_LINES = 2;//3
+        public const int MAX_LINES = 2; //3
 
         public bool Skippable;
 
         public List<List<TextPause>> Pauses;
+
         protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
 
         public List<List<TextScript>> ScriptCalls;
-        protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
+
+        protected List<TextScript> CurrentScript
+        {
+            get { return ScriptCalls[curTextIndex]; }
+        }
 
         public List<List<TextSpeed>> Speeds;
         protected List<TextSpeed> CurrentSpeed { get { return Speeds[curTextIndex]; } }
@@ -71,21 +76,27 @@ namespace RogueEssence.Menu
 
         //optional speaker box
         private SpeakerPortrait speakerPic;
+
         //the speakername, alone
         private string speakerName;
+
         //message with pauses, without speaker name
         private string message;
 
         private double currSpeed;
 
         public bool IsCheckpoint { get { return false; } }
+        
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
+        public static Rect DefaultBounds => Rect.FromPoints(
+            new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)),
+            new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8)
+        );
 
-        public DialogueBox(string msg, bool sound, bool centerH, bool centerV)
+        public DialogueBox(string msg, bool sound, bool centerH, bool centerV, Rect bounds)
         {
-            Bounds = Rect.FromPoints(new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)), new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8));
-
+            Bounds = bounds;
             Pauses = new List<List<TextPause>>();
             ScriptCalls = new List<List<TextScript>>();
             Speeds = new List<List<TextSpeed>>();
@@ -229,7 +240,7 @@ namespace RogueEssence.Menu
                 //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
                 //the coordinates are relative to the string's position
                 Loc loc = Bounds.Start + CurrentText.GetTextProgress() + CurrentText.Rect.Start;
-
+                
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
                     GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(loc.X + 2, loc.Y), 0, 0);
             }
@@ -241,7 +252,7 @@ namespace RogueEssence.Menu
             if (CurrentBoxFinished && !Finished && !scrolling)
             {
                 if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.Center.X - 5, Bounds.End.Y - 6), 1, 0);
             }
         }
 
@@ -292,12 +303,11 @@ namespace RogueEssence.Menu
             return null;
         }
 
-        public void SetPortrait(MonsterID speaker, EmoteStyle emotion)
+        public void SetPortrait(MonsterID speaker, EmoteStyle emotion, Loc speakerLoc)
         {
             if (speaker.IsValid())
             {
-                Loc loc = new Loc(DialogueBox.SIDE_BUFFER, Bounds.Y - 56);
-                speakerPic = new SpeakerPortrait(speaker, emotion, loc, true);
+                speakerPic = new SpeakerPortrait(speaker, emotion, speakerLoc, true);
             }
             else
                 speakerPic = null;
@@ -311,9 +321,9 @@ namespace RogueEssence.Menu
             }
         }
 
-        public void SetSpeaker(MonsterID speaker, string name, EmoteStyle emotion)
+        public void SetSpeaker(MonsterID speaker, string name, EmoteStyle emotion, Loc speakerLoc)
         {
-            SetPortrait(speaker, emotion);
+            SetPortrait(speaker, emotion, speakerLoc);
 
             if (!String.IsNullOrEmpty(name))
                 speakerName = name;

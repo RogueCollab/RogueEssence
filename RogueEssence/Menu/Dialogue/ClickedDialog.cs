@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueElements;
 using RogueEssence.Content;
 
 namespace RogueEssence.Menu
@@ -10,8 +11,8 @@ namespace RogueEssence.Menu
     {
         private Action action;
 
-        public ClickedDialog(string message, bool sound, bool centerH, bool centerV, Action action)
-            : base(message, sound, centerH, centerV)
+        public ClickedDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, Action action)
+            : base(message, sound, centerH, centerV, bounds)
         {
             this.action = action;
         }
@@ -42,7 +43,7 @@ namespace RogueEssence.Menu
             TextPause textPause = getCurrentTextPause();
             //draw down-tick
             if (Finished && textPause == null && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.Center.X - 5, Bounds.End.Y - 6), 1, 0);
         }
     }
 }
