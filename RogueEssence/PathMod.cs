@@ -424,6 +424,16 @@ namespace RogueEssence
                             xmldoc.Load(filePath);
                             header.Name = xmldoc.SelectSingleNode("Header/Name").InnerText;
 
+                            //TODO: v1.1 remove null check
+                            XmlNode authorNode = xmldoc.SelectSingleNode("Header/Author");
+                            if (authorNode != null)
+                                header.Author = xmldoc.SelectSingleNode("Header/Author").InnerText;
+
+                            //TODO: v1.1 remove null check
+                            XmlNode descNode = xmldoc.SelectSingleNode("Header/Description");
+                            if (descNode != null)
+                                header.Description = xmldoc.SelectSingleNode("Header/Description").InnerText;
+
                             //TODO: v1.1 remove this
                             XmlNode namespaceNode = xmldoc.SelectSingleNode("Header/Namespace");
                             if (namespaceNode != null)
@@ -469,6 +479,8 @@ namespace RogueEssence
             xmldoc.AppendChild(docNode);
 
             docNode.AppendInnerTextChild(xmldoc, "Name", header.Name);
+            docNode.AppendInnerTextChild(xmldoc, "Author", header.Author);
+            docNode.AppendInnerTextChild(xmldoc, "Description", header.Description);
             docNode.AppendInnerTextChild(xmldoc, "Namespace", header.Namespace);
             docNode.AppendInnerTextChild(xmldoc, "UUID", header.UUID.ToString().ToUpper());
             docNode.AppendInnerTextChild(xmldoc, "Version", header.Version.ToString());
@@ -487,6 +499,8 @@ namespace RogueEssence
             docNode.AppendChild(relationships);
 
             xmldoc.Save(Path.Join(fullPath, "Mod.xml"));
+
+            //TODO: generate a README.md
         }
 
 
@@ -624,8 +638,8 @@ namespace RogueEssence
         /// </summary>
         public string Path;
         public string Name;
-        public string Description;
         public string Author;
+        public string Description;
         public string Namespace;
         public Guid UUID;
         public Version Version;
@@ -634,12 +648,12 @@ namespace RogueEssence
 
         public static readonly ModHeader Invalid = new ModHeader("", "", "", "", "", Guid.Empty, new Version(), PathMod.ModType.None, new RelatedMod[0] { });
 
-        public ModHeader(string path, string name, string description, string author, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
+        public ModHeader(string path, string name, string author, string description, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
         {
             Path = path;
             Name = name;
-            Description = description;
             Author = author;
+            Description = description;
             Namespace = newNamespace;
             UUID = uuid;
             Version = version;
