@@ -87,10 +87,10 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //Setup callback display without triggering events
                 for (int ii = 0; ii < ScriptItems.Count; ii++)
-                    ScriptItems[ii] = new ScriptItem(ScriptItems[ii].Callback, false);
+                    ScriptItems[ii] = new ScriptItem(ScriptItems[ii].EventType, false);
                 var scev = ZoneManager.Instance.CurrentGround.ActiveScriptEvent();
                 foreach (LuaEngine.EMapCallbacks s in scev)
-                    ScriptItems[(int)s] = new ScriptItem(ScriptItems[(int)s].Callback, true);
+                    ScriptItems[(int)s] = new ScriptItem(ScriptItems[(int)s].EventType, true);
             }
         }
 

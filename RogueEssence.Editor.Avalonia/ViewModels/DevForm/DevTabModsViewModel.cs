@@ -179,8 +179,9 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
+            string fullPath = PathMod.FromExe(chosenMod.Path);
             //delete folder
-            Directory.Delete(chosenMod.Path, true);
+            Directory.Delete(fullPath, true);
 
             //and then delete node
             Mods.Remove(chosenMod);
@@ -204,7 +205,7 @@ namespace RogueEssence.Dev.ViewModels
                 PathMod.SaveModDetails(fullPath, resultHeader);
 
                 reloadMods();
-                doSwitch();
+                DevForm.ExecuteOrPend(doSwitch);
             }
         }
 
@@ -213,11 +214,15 @@ namespace RogueEssence.Dev.ViewModels
             Mods.Clear();
             Mods.Add(new ModsNodeViewModel(null, PathMod.BaseNamespace, ""));
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+            ModsNodeViewModel chosenModel = null;
             foreach (string modPath in modsPath)
             {
                 ModHeader header = PathMod.GetModDetails(modPath);
                 Mods.Add(new ModsNodeViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+                if (PathMod.Quest.Path == header.Path)
+                    chosenModel = Mods[Mods.Count - 1];
             }
+            ChosenMod = chosenModel;
         }
 
         private static string getModName(ModHeader mod)

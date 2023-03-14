@@ -110,7 +110,8 @@ namespace RogueEssence.LevelGen
         public override int FloorCount { get { return FloorSpan; } }
         public override IEnumerable<int> GetFloorIDs()
         {
-            yield return 0;
+            for(int ii = 0; ii < FloorSpan; ii++)
+                yield return ii;
         }
 
 

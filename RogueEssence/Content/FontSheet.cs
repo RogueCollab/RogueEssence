@@ -228,6 +228,8 @@ namespace RogueEssence.Content
                     dX += SpaceWidth;
                 else if (text[ii] == '\u2060' || text[ii] == '\u202F')
                     dX++;
+                else if (text[ii] == '\r')
+                    continue;
                 //Newline
                 else if (text[ii] == '\n')
                 {
@@ -290,6 +292,8 @@ namespace RogueEssence.Content
                     subWidth += SpaceWidth;
                 else if (text[ii] == '\u2060' || text[ii] == '\u202F')
                     subWidth++;
+                else if (text[ii] == '\r')
+                    continue;
                 //Newline
                 else if (text[ii] == '\n')
                 {
@@ -347,6 +351,8 @@ namespace RogueEssence.Content
                     subWidth += SpaceWidth;
                 else if (substring[ii] == '\u2060' || substring[ii] == '\u202F')
                     subWidth++;
+                else if (substring[ii] == '\r')
+                    continue;
                 //Character
                 else
                 {
@@ -418,6 +424,8 @@ namespace RogueEssence.Content
 
                     width_since_breakable++;
                 }
+                else if (substring[ii] == '\r')
+                    continue;
                 //Character
                 else
                 {
@@ -475,6 +483,8 @@ namespace RogueEssence.Content
             if (glyph == ' ' || glyph == '　')
                 return true;
             else if (glyph == '\u2060' || glyph == '\u202F')
+                return true;
+            else if (glyph == '\r')
                 return true;
             else if (glyph == '\n')
                 return true;

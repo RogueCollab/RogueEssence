@@ -13,39 +13,40 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 7;
 
+        List<ModHeader> quests;
+        ModMiniSummary modSummary;
+
         public QuestsMenu()
         {
-            List<(string, string)> quests = GetEligibleQuests();
+            quests = PathMod.GetEligibleMods(PathMod.ModType.Quest);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            foreach ((string name, string dir) quest in quests)
-                flatChoices.Add(new MenuTextChoice(quest.name, () => { choose(quest.dir); }));
+            foreach (ModHeader quest in quests)
+                flatChoices.Add(new MenuTextChoice(quest.Name, () => { choose(quest.Path); }));
 
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_QUESTS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
+            modSummary = new ModMiniSummary(Rect.FromPoints(new Loc(8,
+                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 5 - 8),
+                new Loc(GraphicsManager.ScreenWidth - 8, GraphicsManager.ScreenHeight - 8)));
+
+            Initialize(new Loc(8, 8), 304, Text.FormatKey("MENU_QUESTS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
-        public static List<(string, string)> GetEligibleQuests()
+
+        protected override void ChoiceChanged()
         {
-            List<(string, string)> mods = new List<(string, string)>();
-            string[] files = Directory.GetDirectories(PathMod.MODS_PATH);
-
-            foreach (string modPath in files)
+            int totalChoice = CurrentChoice + CurrentPage * SLOTS_PER_PAGE;
+            if (totalChoice < quests.Count)
             {
-                string mod = Path.GetFileNameWithoutExtension(modPath);
-                if (mod != "")
-                {
-                    //check the config for mod type of Quest
-                    ModHeader header = PathMod.GetModDetails(modPath);
-
-                    if (header.IsValid() && header.ModType == PathMod.ModType.Quest)
-                        mods.Add((header.Name, Path.Join(PathMod.MODS_FOLDER, mod)));
-                }
+                modSummary.Visible = true;
+                modSummary.SetMod(quests[totalChoice]);
             }
-            return mods;
-        }
+            else
+                modSummary.Visible = false;
 
+            base.ChoiceChanged();
+        }
 
         private void choose(string dir)
         {
@@ -60,6 +61,14 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.ClearMenus();
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.GetModDetails(PathMod.FromExe(dir)), PathMod.Mods, loadOrder);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
+
+            //draw other windows
+            modSummary.Draw(spriteBatch);
         }
     }
 }

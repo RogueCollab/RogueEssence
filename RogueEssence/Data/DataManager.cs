@@ -727,6 +727,7 @@ namespace RogueEssence.Data
             try
             {
                 mapData = LoadNamespacedData<Map>(name, MAP_FOLDER, ".rsmap");
+                mapData.AssetName = name;
                 return mapData;
             }
             catch (Exception ex)
@@ -743,6 +744,7 @@ namespace RogueEssence.Data
             try
             {
                 mapData = LoadData<GroundMap>(name, GROUND_FOLDER, ".rsground");
+                mapData.AssetName = name;
                 return mapData;
             }
             catch (Exception ex)

@@ -15,31 +15,31 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 7;
 
-        string[] modDirs;
+        List<ModHeader> mods;
         bool[] modStatus;
+
+        ModMiniSummary modSummary;
 
         public ModsMenu()
         {
-            List<(string name, string dir)> mods = GetEligibleMods();
-            modDirs = new string[mods.Count];
+            mods = PathMod.GetEligibleMods(PathMod.ModType.Mod);
             modStatus = new bool[mods.Count];
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for(int ii = 0; ii < mods.Count; ii++)
             {
                 int index = ii;
-                modDirs[ii] = mods[ii].dir;
                 modStatus[ii] = false;
                 foreach (ModHeader header in PathMod.Mods)
                 {
-                    if (header.Path == modDirs[ii])
+                    if (header.Path == mods[ii].Path)
                     {
                         modStatus[ii] = true;
                         break;
                     }
                 }
 
-                MenuText modName = new MenuText(mods[ii].name, new Loc(10, 1), Color.White);
+                MenuText modName = new MenuText(mods[ii].Name, new Loc(10, 1), Color.White);
                 MenuText modChecked = new MenuText(modStatus[ii] ? "\uE10A" : "", new Loc(2, 1), Color.White);
                 flatChoices.Add(new MenuElementChoice(() => { chooseMod(index, modChecked); }, true, modName, modChecked));
             }
@@ -47,27 +47,25 @@ namespace RogueEssence.Menu
 
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_MODS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
+            modSummary = new ModMiniSummary(Rect.FromPoints(new Loc(8,
+                GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 5 - 8),
+                new Loc(GraphicsManager.ScreenWidth - 8, GraphicsManager.ScreenHeight - 8)));
+
+            Initialize(new Loc(8, 8), 304, Text.FormatKey("MENU_MODS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
-        public static List<(string, string)> GetEligibleMods()
+        protected override void ChoiceChanged()
         {
-            List<(string, string)> mods = new List<(string, string)>();
-            string[] files = Directory.GetDirectories(PathMod.MODS_PATH);
-
-            foreach (string modPath in files)
+            int totalChoice = CurrentChoice + CurrentPage * SLOTS_PER_PAGE;
+            if (totalChoice < mods.Count)
             {
-                string mod = Path.GetFileNameWithoutExtension(modPath);
-                if (mod != "")
-                {
-                    //check the config for mod type of Mod
-                    ModHeader header = PathMod.GetModDetails(modPath);
-                    
-                    if (header.IsValid() && header.ModType == PathMod.ModType.Mod)
-                        mods.Add((header.Name, Path.Join(PathMod.MODS_FOLDER, mod)));
-                }
+                modSummary.Visible = true;
+                modSummary.SetMod(mods[totalChoice]);
             }
-            return mods;
+            else
+                modSummary.Visible = false;
+
+            base.ChoiceChanged();
         }
 
         private void chooseMod(int index, MenuText checkText)
@@ -82,7 +80,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < modStatus.Length; ii++)
             {
                 if (modStatus[ii])
-                    chosenMods.Add(PathMod.GetModDetails(PathMod.FromExe(modDirs[ii])));
+                    chosenMods.Add(PathMod.GetModDetails(PathMod.FromExe(mods[ii].Path)));
             }
 
             List<int> loadOrder = new List<int>();
@@ -96,6 +94,14 @@ namespace RogueEssence.Menu
 
             MenuManager.Instance.ClearMenus();
             GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.Quest, chosenMods.ToArray(), loadOrder);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
+
+            //draw other windows
+            modSummary.Draw(spriteBatch);
         }
     }
 }

@@ -226,7 +226,7 @@ namespace RogueEssence.Menu
         private void ReturnToEditorAction()
         {
             MenuManager.Instance.ClearMenus();
-            MenuManager.Instance.NextAction = GameManager.Instance.ReturnToEditor();
+            GameManager.Instance.SceneOutcome = GameManager.Instance.ReturnToEditor();
         }
     }
 }
