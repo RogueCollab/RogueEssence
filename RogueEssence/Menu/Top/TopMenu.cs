@@ -48,14 +48,14 @@ namespace RogueEssence.Menu
             if (!inQuest)
             {
                 string[] questsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-                if (QuestsMenu.GetEligibleQuests().Count > 0)
+                if (PathMod.GetEligibleMods(PathMod.ModType.Quest).Count > 0)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_TITLE"), () => { MenuManager.Instance.AddMenu(new QuestsMenu(), false); }));
             }
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_EXIT"), exitQuest));
 
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-            if (ModsMenu.GetEligibleMods().Count > 0)
+            if (PathMod.GetEligibleMods(PathMod.ModType.Mod).Count > 0)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUIT_GAME"), exitGame));

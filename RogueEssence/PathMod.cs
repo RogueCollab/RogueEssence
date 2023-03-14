@@ -406,6 +406,27 @@ namespace RogueEssence
         }
 
 
+
+        public static List<ModHeader> GetEligibleMods(ModType modType)
+        {
+            List<ModHeader> mods = new List<ModHeader>();
+            string[] files = Directory.GetDirectories(MODS_PATH);
+
+            foreach (string modPath in files)
+            {
+                string mod = Path.GetFileNameWithoutExtension(modPath);
+                if (mod != "")
+                {
+                    //check the config for mod type of Mod
+                    ModHeader header = GetModDetails(modPath);
+
+                    if (header.IsValid() && header.ModType == modType)
+                        mods.Add(header);
+                }
+            }
+            return mods;
+        }
+
         public static ModHeader GetModDetails(string fullPath)
         {
             ModHeader header = ModHeader.Invalid;
