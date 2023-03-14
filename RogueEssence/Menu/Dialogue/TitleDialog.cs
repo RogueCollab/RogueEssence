@@ -373,7 +373,7 @@ namespace RogueEssence.Menu
                 if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && CurrentBoxFinished)
                 {
                     if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
-                        GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.Center.X, Bounds.End.Y - 6), 1, 0);
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.Center.X - 5, Bounds.End.Y - 6), 1, 0);
                 }
             }
 
