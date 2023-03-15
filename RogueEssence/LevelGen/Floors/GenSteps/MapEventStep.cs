@@ -37,7 +37,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}[{1}]", this.GetType().Name, this.Effect.GetTotalCount());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), this.Effect.GetTotalCount());
         }
     }
 }

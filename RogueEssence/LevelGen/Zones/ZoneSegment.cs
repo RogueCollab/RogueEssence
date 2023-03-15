@@ -238,7 +238,7 @@ namespace RogueEssence.LevelGen
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, FloorCount.ToString()).ToLocal().Replace('\n', ' ');
             }
-            return String.Format("[{0}] {1}F", this.GetType().Name, FloorCount);
+            return String.Format("[{0}] {1}F", this.GetType().GetFormattedTypeName(), FloorCount);
         }
     }
 

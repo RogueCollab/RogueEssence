@@ -31,7 +31,7 @@ namespace RogueEssence.Dev
         {
             //TODO: find a way to get member info without using a string literal of the member name
             PropertyInfo memberInfo = type.GetProperty("Picker");
-            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
     public class PickerSpawnerEditor : Editor<IPickerSpawner>
@@ -43,7 +43,7 @@ namespace RogueEssence.Dev
         {
             //TODO: find a way to get member info without using a string literal of the member name
             PropertyInfo memberInfo = type.GetProperty("Picker");
-            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
     public class ContextSpawnerEditor : Editor<IContextSpawner>
@@ -55,7 +55,7 @@ namespace RogueEssence.Dev
         {
             //TODO: find a way to get member info without using a string literal of the member name
             PropertyInfo memberInfo = type.GetProperty("Amount");
-            return string.Format("{0}: {1}", obj.GetType().Name, DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
 }

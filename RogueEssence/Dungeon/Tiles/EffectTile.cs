@@ -155,7 +155,7 @@ namespace RogueEssence.Dungeon
         public override string ToString()
         {
             string local = (!String.IsNullOrEmpty(ID)) ? DataManager.Instance.DataIndices[DataManager.DataType.Tile].Get(ID).Name.ToLocal() : "NULL";
-            return string.Format("{0}: {1}", this.GetType().Name, local);
+            return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), local);
         }
     }
 

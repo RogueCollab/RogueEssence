@@ -112,17 +112,18 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            ItemData entry = DataManager.Instance.GetItem(ID);
-            if (entry == null)
-                return ID;
-
             string nameStr = "";
+            if (Price > 0)
+                nameStr += String.Format("${0} ", Price);
             if (Cursed)
                 nameStr += "[X]";
 
-            nameStr += entry.Name.ToLocal();
-            if (entry.MaxStack > 1)
-                nameStr += " (" + Amount + ")";
+            nameStr += ID;
+            if (Amount > 0)
+                nameStr += String.Format("({0})", Amount);
+
+            if (!String.IsNullOrEmpty(HiddenValue))
+                nameStr += String.Format("[{0}]", HiddenValue);
 
             return nameStr;
         }

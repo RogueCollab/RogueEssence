@@ -151,7 +151,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, "[X]").ToLocal().Replace('\n', ' ');
             }
-            return String.Format("[{0}] {1}F", segment.GetType().Name, "[X]");
+            return String.Format("[{0}] {1}F", segment.GetType().GetFormattedTypeName(), "[X]");
         }
 
         private void StructureChanged()
@@ -186,7 +186,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, (floorID + 1).ToString()).ToLocal().Replace('\n', ' ');
             }
-            return String.Format("[{0}] {1}F", segment.GetType().Name, (floorID + 1).ToString());
+            return String.Format("[{0}] {1}F", segment.GetType().GetFormattedTypeName(), (floorID + 1).ToString());
         }
 
         public void btnEnterGround_Click()

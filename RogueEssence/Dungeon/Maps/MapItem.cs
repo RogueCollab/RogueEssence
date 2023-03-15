@@ -182,6 +182,24 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public override string ToString()
+        {
+            string nameStr = "";
+            if (Price > 0)
+                nameStr += String.Format("${0} ", Price);
+            if (Cursed)
+                nameStr += "[X]";
+
+            nameStr += Value;
+            if (Amount > 0)
+                nameStr += String.Format("({0})", Amount);
+
+            if (!String.IsNullOrEmpty(HiddenValue))
+                nameStr += String.Format("[{0}]", HiddenValue);
+
+            return nameStr;
+        }
+
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {

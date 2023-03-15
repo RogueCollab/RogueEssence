@@ -113,7 +113,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: Axis:{1}", this.GetType().Name, this.TierAxis);
+            return string.Format("{0}: Axis:{1}", this.GetType().GetFormattedTypeName(), this.TierAxis);
         }
     }
 }

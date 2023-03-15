@@ -32,7 +32,7 @@ namespace RogueEssence.LevelGen
                     break;
                 }
             }
-            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
 
         //TODO: Created v0.5.11, delete on v1.0.0
@@ -75,7 +75,7 @@ namespace RogueEssence.LevelGen
                     break;
                 }
             }
-            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
 
         //TODO: Created v0.5.11, delete on v1.0.0
@@ -116,7 +116,7 @@ namespace RogueEssence.LevelGen
                     break;
                 }
             }
-            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
 
         //TODO: Created v0.5.11, delete on v1.0.0
@@ -157,7 +157,7 @@ namespace RogueEssence.LevelGen
                     break;
                 }
             }
-            return String.Format("{0}: {1}", this.GetType().Name, startInfo);
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
 
         //TODO: Created v0.5.11, delete on v1.0.0

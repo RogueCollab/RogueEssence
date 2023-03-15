@@ -71,7 +71,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}x{1}", this.GetType().Name, this.Size.ToString());
+            return string.Format("{0}: {1}x{1}", this.GetType().GetFormattedTypeName(), this.Size.ToString());
         }
 
         protected override void PrepareFulfillableBorders(IRandom rand)

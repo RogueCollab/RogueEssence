@@ -24,7 +24,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0}: Amt:{1}", this.GetType().Name, MoneyRange.ToString());
+            return String.Format("{0}: Amt:{1}", this.GetType().GetFormattedTypeName(), MoneyRange.ToString());
         }
     }
 }

@@ -64,7 +64,7 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(Effect.ID))
                 values.Add(DataManager.Instance.DataIndices[DataManager.DataType.Tile].Get(Effect.ID).Name.ToLocal());
             string features = string.Join("/", values);
-            return string.Format("{0}: {1}", this.GetType().Name, features);
+            return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), features);
         }
     }
 }

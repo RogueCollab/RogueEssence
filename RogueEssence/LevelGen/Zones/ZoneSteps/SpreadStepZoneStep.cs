@@ -73,12 +73,18 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             int count = 0;
+            IGenPriority singleGen = null;
             if (Spawns != null)
             {
                 foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
+                {
                     count++;
+                    singleGen = gen;
+                }
             }
-            return string.Format("{0}[{1}]", this.GetType().Name, count);
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
     }
 
@@ -122,7 +128,19 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}[{1}]", this.GetType().Name, Spawns.Count.ToString());
+            int count = 0;
+            IGenPriority singleGen = null;
+            if (Spawns != null)
+            {
+                foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
+                {
+                    count++;
+                    singleGen = gen;
+                }
+            }
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
     }
 }

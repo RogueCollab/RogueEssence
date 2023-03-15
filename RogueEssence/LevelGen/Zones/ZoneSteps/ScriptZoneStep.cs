@@ -64,7 +64,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0}: {1}", this.GetType().Name, Script);
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), Script);
         }
     }
 }

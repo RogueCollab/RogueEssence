@@ -34,7 +34,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: Thick:{1}", this.GetType().Name, this.Thickness);
+            return string.Format("{0}: Thick:{1}", this.GetType().GetFormattedTypeName(), this.Thickness);
         }
     }
 
@@ -75,7 +75,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: Thick:{1}", this.GetType().Name, this.Thickness);
+            return string.Format("{0}: Thick:{1}", this.GetType().GetFormattedTypeName(), this.Thickness);
         }
     }
 }

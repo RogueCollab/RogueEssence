@@ -38,5 +38,13 @@ namespace RogueEssence.LevelGen
             }
             return result;
         }
+
+        public override string ToString()
+        {
+            if (Spawns == null)
+                return String.Format("{0}", this.GetType().GetFormattedTypeName());
+            else
+                return String.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), Spawns.Count);
+        }
     }
 }

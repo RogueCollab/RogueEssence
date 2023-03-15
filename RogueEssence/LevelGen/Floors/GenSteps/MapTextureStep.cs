@@ -97,7 +97,7 @@ namespace RogueEssence.LevelGen
             string ground = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(GroundTileset).Name.ToLocal();
             string wall = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(BlockTileset).Name.ToLocal();
             string secondary = DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].Get(WaterTileset).Name.ToLocal();
-            return String.Format("{0}: {1}/{2}/{3}", this.GetType().Name, ground, wall, secondary);
+            return String.Format("{0}: {1}/{2}/{3}", this.GetType().GetFormattedTypeName(), ground, wall, secondary);
         }
     }
 
@@ -178,7 +178,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0}[{1}]", this.GetType().Name, TextureMap.Count);
+            return String.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), TextureMap.Count);
         }
     }
 }

@@ -228,5 +228,10 @@ namespace RogueEssence.Dungeon
             }
         }
 
+
+        public override string ToString()
+        {
+            return BaseForm.Species;
+        }
     }
 }

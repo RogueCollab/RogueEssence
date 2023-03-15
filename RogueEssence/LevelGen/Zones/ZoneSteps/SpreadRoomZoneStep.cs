@@ -74,6 +74,23 @@ namespace RogueEssence.LevelGen
             }
             return true;
         }
+
+        public override string ToString()
+        {
+            int count = 0;
+            RoomGenOption singleGen = null;
+            if (Spawns != null)
+            {
+                foreach (RoomGenOption gen in Spawns.EnumerateOutcomes())
+                {
+                    count++;
+                    singleGen = gen;
+                }
+            }
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
+        }
     }
 
     [Serializable]
@@ -99,6 +116,16 @@ namespace RogueEssence.LevelGen
             GridOption = gridOption;
             ListOption = listOption;
             Filters = filters;
+        }
+
+        public override string ToString()
+        {
+            if (GridOption != null)
+                return GridOption.ToString();
+            if (ListOption != null)
+                return ListOption.ToString();
+
+            return string.Format("{0}: [EMPTY]", this.GetType().GetFormattedTypeName());
         }
     }
 }

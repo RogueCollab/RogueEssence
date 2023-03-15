@@ -33,7 +33,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: Map:{1}", this.GetType().Name, this.MapID);
+            return string.Format("{0}: Map:{1}", this.GetType().GetFormattedTypeName(), this.MapID);
         }
     }
 }
