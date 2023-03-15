@@ -215,7 +215,7 @@ namespace RogueEssence.Ground
             }
 
             RemoveChar(index);
-            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(player);
+            DataManager.Instance.Save.ActiveTeam.Assembly.Insert(0, player);
 
         }
 

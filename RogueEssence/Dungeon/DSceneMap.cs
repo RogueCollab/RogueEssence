@@ -987,7 +987,7 @@ namespace RogueEssence.Dungeon
             }
 
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
-            ActiveTeam.AddToSortedAssembly(player);
+            ActiveTeam.Assembly.Insert(0, player);
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(player);
             yield return new WaitForFrames(30);
@@ -1008,7 +1008,7 @@ namespace RogueEssence.Dungeon
             }
 
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
-            ActiveTeam.AddToSortedAssembly(player);
+            ActiveTeam.Assembly.Insert(0, player);
         }
 
         public IEnumerator<YieldInstruction> DropItem(InvItem item, Loc loc)

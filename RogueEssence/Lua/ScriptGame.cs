@@ -405,7 +405,7 @@ namespace RogueEssence.Script
 
         public void AddPlayerAssembly(Character character)
         {
-            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(character);
+            DataManager.Instance.Save.ActiveTeam.Assembly.Insert(0, character);
         }
 
         public void RemovePlayerAssembly(int slot)

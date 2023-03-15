@@ -571,18 +571,6 @@ namespace RogueEssence.Dungeon
             return invValue;
         }
 
-        public void AddToSortedAssembly(Character chara)
-        {
-            int idx = 0;
-            while (idx < Assembly.Count)
-            {
-                if (!Assembly[idx].IsFavorite)
-                    break;
-                idx++;
-            }
-            Assembly.Insert(idx, chara);
-        }
-
         public Character CreatePlayer(IRandom rand, MonsterID form, int level, string intrinsic, int personality)
         {
             MonsterID formData = form;
