@@ -36,6 +36,13 @@ namespace RogueEssence.LevelGen
             Tile checkTile = (Tile)map.GetTile(loc);
             return (String.IsNullOrEmpty(checkTile.Effect.ID) == this.Not);
         }
+
+        public override string ToString()
+        {
+            if (this.Not)
+                return string.Format("Tiles without Effects");
+            return string.Format("Tiles with Effects");
+        }
     }
 
     /// <summary>
@@ -64,6 +71,13 @@ namespace RogueEssence.LevelGen
         {
             Tile checkTile = (Tile)map.GetTile(loc);
             return (checkTile.Effect.ID == this.Effect);
+        }
+
+        public override string ToString()
+        {
+            if (this.Effect == null)
+                return string.Format("Match [EMPTY]");
+            return string.Format("Match {0}", this.Effect.ToString());
         }
     }
 }

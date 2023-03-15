@@ -44,5 +44,12 @@ namespace RogueEssence.LevelGen
 
             return this.Not;
         }
+
+        public override string ToString()
+        {
+            if (this.Not)
+                return string.Format("No Stairs within Blob");
+            return string.Format("Stairs within Blob");
+        }
     }
 }

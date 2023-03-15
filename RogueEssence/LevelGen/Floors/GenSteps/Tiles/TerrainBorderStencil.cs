@@ -149,5 +149,10 @@ namespace RogueEssence
 
             return false;
         }
+
+        public override string ToString()
+        {
+            return string.Format("Tiles in Blob at a Border");
+        }
     }
 }
