@@ -20,6 +20,19 @@ namespace RogueEssence.Dev
     // from Dictionary<string, CategorySpawn<InvItem>> to ICategoryZoneSpawn.  This way it can catch other spawn methods
     public class CategorySpawnEditor : Editor<Dictionary<string, CategorySpawn<InvItem>>>
     {
+        /// <summary>
+        /// Default display behavior of whether to treat 0s as 1s
+        /// </summary>
+        public bool Index1;
+
+
+        public CategorySpawnEditor(bool index1)
+        {
+            Index1 = index1;
+        }
+
+
+
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
@@ -102,6 +115,7 @@ namespace RogueEssence.Dev
             nudValueTestFloor.Margin = new Thickness(4, 4, 0, 0);
             nudValueTestFloor.Minimum = Int32.MinValue;
             nudValueTestFloor.Maximum = Int32.MaxValue;
+            nudValueTestFloor.Value = Index1 ? 1 : 0;
             innerPanel.Children.Add(nudValueTestFloor);
             nudValueTestFloor.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -112,6 +126,8 @@ namespace RogueEssence.Dev
             btnTest.Click += (object sender, RoutedEventArgs e) =>
             {
                 int floor = (int)nudValueTestFloor.Value;
+                if (Index1)
+                    floor--;
                 Dictionary<string, CategorySpawn<InvItem>> curSave = (Dictionary<string, CategorySpawn<InvItem>>)vm.GetDict(type);
                 SpawnDict<string, SpawnList<InvItem>> spawns = new SpawnDict<string, SpawnList<InvItem>>();
                 //contains all LISTS that intersect the current ID

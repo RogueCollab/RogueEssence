@@ -184,6 +184,9 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
+            if (IsMoney)
+                return String.Format("${0}", Amount);
+
             string nameStr = "";
             if (Price > 0)
                 nameStr += String.Format("${0} ", Price);

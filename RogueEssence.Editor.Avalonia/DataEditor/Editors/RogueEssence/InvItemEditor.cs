@@ -14,9 +14,9 @@ using System.Reactive.Subjects;
 
 namespace RogueEssence.Dev
 {
-    public class MapItemEditor : Editor<MapItem>
+    public class InvItemEditor : Editor<InvItem>
     {
-        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, MapItem member, Type[] subGroupStack)
+        public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, InvItem member, Type[] subGroupStack)
         {
             Avalonia.Controls.Grid innerPanel1 = getSharedRowPanel(2);
 
@@ -31,13 +31,9 @@ namespace RogueEssence.Dev
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Item];
             List<string> itemKeys = nameIndex.GetOrderedKeys(false);
-            int chosenItem = itemKeys.IndexOf(member.Value);
+            int chosenItem = itemKeys.IndexOf(member.ID);
 
             List<string> items = new List<string>();
-            {
-                items.Add("---: Money");
-                chosenItem++;
-            }
 
             for (int ii = 0; ii < itemKeys.Count; ii++)
                 items.Add(itemKeys[ii] + ": " + nameIndex.Get(itemKeys[ii]).GetLocalString(false));
@@ -62,29 +58,22 @@ namespace RogueEssence.Dev
 
             cbItem.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
-                if (cbItem.SelectedIndex == 0)
-                    populateStack(groupBoxPanel, MapItem.CreateMoney(1));
-                else
-                    populateStack(groupBoxPanel, new MapItem(itemKeys[cbItem.SelectedIndex - 1]));
+                populateStack(groupBoxPanel, new InvItem(itemKeys[cbItem.SelectedIndex]));
             };
             cbItem.SelectedIndex = Math.Min(Math.Max(0, chosenItem), items.Count - 1);
+
         }
 
-        private bool canShowAmount(MapItem member)
+        private bool canShowAmount(InvItem member)
         {
             bool showAmount = false;
-            if (member.IsMoney)
+            ItemData summary = DataManager.Instance.GetItem(member.ID);
+            if (summary.MaxStack > 1)
                 showAmount = true;
-            else
-            {
-                ItemData summary = DataManager.Instance.GetItem(member.Value);
-                if (summary.MaxStack > 1)
-                    showAmount = true;
-            }
             return showAmount;
         }
 
-        private void populateStack(StackPanel groupBoxPanel, MapItem member)
+        private void populateStack(StackPanel groupBoxPanel, InvItem member)
         {
             groupBoxPanel.Children.Clear();
 
@@ -111,11 +100,7 @@ namespace RogueEssence.Dev
                 innerPanel.Children.Add(nudAmount);
                 groupBoxPanel.Children.Add(innerPanel);
             }
-
-            if (member.IsMoney)
-                return;
-
-            if (!showAmount)
+            else
             {
                 Avalonia.Controls.Grid innerPanel = getSharedRowPanel(2);
 
@@ -145,9 +130,9 @@ namespace RogueEssence.Dev
         }
 
 
-        public override MapItem SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
+        public override InvItem SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            MapItem result = new MapItem();
+            InvItem result = new InvItem();
 
             int controlIndex = 0;
 
@@ -155,13 +140,8 @@ namespace RogueEssence.Dev
             ComboBox cbItem = (ComboBox)innerControl1.Children[1];
 
             List<string> itemKeys = DataManager.Instance.DataIndices[DataManager.DataType.Item].GetOrderedKeys(false);
-            itemKeys.Insert(0, "");
 
-            if (cbItem.SelectedIndex > 0)
-                result.Value = itemKeys[cbItem.SelectedIndex];
-            else
-                result.IsMoney = true;
-
+            result.ID = itemKeys[cbItem.SelectedIndex];
             controlIndex++;
 
             // read from the adjustable panel from here on
@@ -176,29 +156,23 @@ namespace RogueEssence.Dev
                 result.Amount = (int)nudAmount.Value;
                 controlIndex++;
             }
-
-            if (!result.IsMoney)
+            else
             {
-                if (!showAmount)
-                {
-                    Avalonia.Controls.Grid innerControl3 = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
-                    TextBox txtHidden = (TextBox)innerControl3.Children[1];
-                    result.HiddenValue = txtHidden.Text;
-                    controlIndex++;
-                }
-
-                CheckBox chkCursed = (CheckBox)adjustablePanel.Children[controlIndex];
-                result.Cursed = chkCursed.IsChecked.HasValue && chkCursed.IsChecked.Value;
+                Avalonia.Controls.Grid innerControl3 = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
+                TextBox txtHidden = (TextBox)innerControl3.Children[1];
+                result.HiddenValue = txtHidden.Text;
+                controlIndex++;
             }
+
+            CheckBox chkCursed = (CheckBox)adjustablePanel.Children[controlIndex];
+            result.Cursed = chkCursed.IsChecked.HasValue && chkCursed.IsChecked.Value;
 
             return result;
         }
 
-        public override string GetString(MapItem obj, Type type, object[] attributes)
+        public override string GetString(InvItem obj, Type type, object[] attributes)
         {
-            if (obj.IsMoney)
-                return String.Format("{0}P", obj.Amount);
-            else if (!String.IsNullOrEmpty(obj.Value))
+            if (!String.IsNullOrEmpty(obj.ID))
             {
                 string nameStr = "";
                 if (obj.Price > 0)
@@ -206,7 +180,7 @@ namespace RogueEssence.Dev
                 if (obj.Cursed)
                     nameStr += "[X]";
 
-                ItemData entry = DataManager.Instance.GetItem(obj.Value);
+                ItemData entry = DataManager.Instance.GetItem(obj.ID);
 
                 nameStr += entry.Name.ToLocal();
                 if (entry.MaxStack > 1)
