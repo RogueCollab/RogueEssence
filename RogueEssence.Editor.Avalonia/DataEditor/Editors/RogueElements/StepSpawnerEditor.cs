@@ -29,8 +29,7 @@ namespace RogueEssence.Dev
 
         public override string GetString(IMultiStepSpawner obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo memberInfo = type.GetProperty("Picker");
+            PropertyInfo memberInfo = type.GetProperty(nameof(obj.Picker));
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
@@ -41,8 +40,7 @@ namespace RogueEssence.Dev
 
         public override string GetString(IPickerSpawner obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo memberInfo = type.GetProperty("Picker");
+            PropertyInfo memberInfo = type.GetProperty(nameof(obj.Picker));
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
@@ -53,8 +51,7 @@ namespace RogueEssence.Dev
 
         public override string GetString(IContextSpawner obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo memberInfo = type.GetProperty("Amount");
+            PropertyInfo memberInfo = type.GetProperty(nameof(obj.Amount));
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }

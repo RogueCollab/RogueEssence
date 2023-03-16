@@ -20,9 +20,8 @@ namespace RogueEssence.Dev
     {
         public override string GetString(ISizedRoomGen obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo widthInfo = type.GetProperty("Width");
-            PropertyInfo heightInfo = type.GetProperty("Height");
+            PropertyInfo widthInfo = type.GetProperty(nameof(obj.Width));
+            PropertyInfo heightInfo = type.GetProperty(nameof(obj.Height));
             return string.Format("{0}: {1}x{2}", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.Width, widthInfo.GetMemberInfoType(), widthInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.Height, heightInfo.GetMemberInfoType(), heightInfo.GetCustomAttributes(false)));
@@ -33,11 +32,10 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IRoomGenCross obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo majorWidthInfo = type.GetProperty("MajorWidth");
-            PropertyInfo minorHeightInfo = type.GetProperty("MinorHeight");
-            PropertyInfo minorWidthInfo = type.GetProperty("MinorWidth");
-            PropertyInfo majorHeightInfo = type.GetProperty("MajorHeight");
+            PropertyInfo majorWidthInfo = type.GetProperty(nameof(obj.MajorWidth));
+            PropertyInfo minorHeightInfo = type.GetProperty(nameof(obj.MinorHeight));
+            PropertyInfo minorWidthInfo = type.GetProperty(nameof(obj.MinorWidth));
+            PropertyInfo majorHeightInfo = type.GetProperty(nameof(obj.MajorHeight));
 
             return string.Format("{0}: {1}x{2}+{3}x{4}", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.MajorWidth, majorWidthInfo.GetMemberInfoType(), majorWidthInfo.GetCustomAttributes(false)),

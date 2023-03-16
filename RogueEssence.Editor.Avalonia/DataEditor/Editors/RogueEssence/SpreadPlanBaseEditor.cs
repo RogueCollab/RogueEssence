@@ -20,9 +20,9 @@ namespace RogueEssence.Dev
     {
         public override string GetString(SpreadPlanBase obj, Type type, object[] attributes)
         {
-            MemberInfo floorRangeInfo = type.GetMember("FloorRange")[0];
+            MemberInfo[] floorRangeInfo = type.GetMember(nameof(obj.FloorRange));
             return string.Format("{0}F, {1}",
-                DataEditor.GetString(obj.FloorRange, floorRangeInfo.GetMemberInfoType(), floorRangeInfo.GetCustomAttributes(false)),
+                DataEditor.GetString(obj.FloorRange, floorRangeInfo[0].GetMemberInfoType(), floorRangeInfo[0].GetCustomAttributes(false)),
                 obj.ToString());
         }
     }
