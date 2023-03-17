@@ -84,6 +84,16 @@ namespace RogueEssence.Dungeon
                     return String.Format("[color=#009CFF]{0}[color]", name);
                 return String.Format("[color=#FFFF00]{0}[color]", name);
             }
+
+            string apparentSpecies = BaseForm.Species;
+            if (ProxySprite.IsValid() && ProxyName != "")
+                apparentSpecies = ProxySprite.Species;
+            GameProgress.UnlockState unlock;
+            if (DataManager.Instance.Save.Dex.TryGetValue(apparentSpecies, out unlock))
+            {
+                if (unlock == GameProgress.UnlockState.Completed)
+                    return String.Format("[color=#00FF00]{0}[color]", name);
+            }
             return String.Format("[color=#00FFFF]{0}[color]", name);
         }
 
