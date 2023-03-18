@@ -9,11 +9,11 @@ namespace RogueEssence.Data
     public class StartParams
     {
         public List<StartChar> Chars;
-        public List<string> Teams;
-        public int Level;
-        public int MaxLevel;
         public int Personality;
         public ZoneLoc Map;
+        public int Level;
+        public int MaxLevel;
+        public List<string> Teams;
     }
 
 

@@ -9,6 +9,7 @@ namespace RogueEssence.Dungeon
     public struct ZoneLoc
     {
         [JsonConverter(typeof(DungeonConverter))]
+        [DataType(0, DataManager.DataType.Zone, false)]
         public string ID;
         public SegLoc StructID;
         public int EntryPoint;
