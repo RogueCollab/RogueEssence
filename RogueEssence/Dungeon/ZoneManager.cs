@@ -53,10 +53,10 @@ namespace RogueEssence.Dungeon
         }
         public static void LoadDefaultState(GameState state)
         {
-            ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.StartMap.ID);
+            ZoneData zone = DataManager.Instance.GetZone(DataManager.Instance.Start.Map.ID);
             state.Zone = new ZoneManager();
-            state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.StartMap.ID);
-            state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.StartMap.StructID);
+            state.Zone.CurrentZone = zone.CreateActiveZone(0, DataManager.Instance.Start.Map.ID);
+            state.Zone.CurrentZone.SetCurrentMap(DataManager.Instance.Start.Map.StructID);
 
             //if it's a ground map, need to set the player
             if (state.Zone.CurrentGround != null)

@@ -93,7 +93,7 @@ namespace RogueEssence.Menu
             Level = new MenuText(player.Level.ToString(),  new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT")), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.Left);
             
             int expToNext = 0;
-            if (player.Level < DataManager.Instance.MaxLevel)
+            if (player.Level < DataManager.Instance.Start.MaxLevel)
             {
                 string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);

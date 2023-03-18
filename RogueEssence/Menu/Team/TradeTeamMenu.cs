@@ -38,7 +38,7 @@ namespace RogueEssence.Menu
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), tradeable ? Color.White : Color.Red);
                 MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, tradeable ? Color.White : Color.Red);
-                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1),
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1),
                     DirV.Up, DirH.Right, tradeable ? Color.White : Color.Red);
                 flatChoices.Add(new MenuElementChoice(() => { choose(index); }, tradeable, memberName, memberLvLabel, memberLv));
             }

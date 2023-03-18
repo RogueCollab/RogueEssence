@@ -84,7 +84,7 @@ namespace RogueEssence.Menu
             summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", DataManager.Instance.Save.ActiveTeam.Money)),
                 new Loc(GraphicsManager.MenuBG.TileWidth + 4, GraphicsManager.MenuBG.TileHeight)));
             
-            int level_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT") + $"{DataManager.Instance.MaxLevel}");
+            int level_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT") + $"{DataManager.Instance.Start.MaxLevel}");
             int hp_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HP") + $" {999}/{999}");
             int hunger_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HUNGER") + $" {Character.MAX_FULLNESS}/{Character.MAX_FULLNESS}");
 

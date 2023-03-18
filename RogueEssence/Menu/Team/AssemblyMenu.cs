@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
                 MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), enabled ? Color.Lime : TextIndigo);
                 MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, enabled ? Color.Lime : TextIndigo);
-                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1), 
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), 
                     DirV.Up, DirH.Right, enabled ? Color.Lime : TextIndigo);
                 flatChoices.Add(new MenuElementChoice(() => { Choose(index, false); }, true, memberName, memberLvLabel, memberLv));
             }
@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
                 MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), color);
                 MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, color);
-                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
                 
                 flatChoices.Add(new MenuElementChoice(() => { Choose(index, true); }, true, memberName, memberLvLabel, memberLv));
             }

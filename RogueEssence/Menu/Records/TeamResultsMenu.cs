@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
                 Stats[ii * 5 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
                     new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
                 Stats[ii * 5 + 2] = new MenuText(character.Level.ToString(),
-                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
                 if (Ending.UUID == character.OriginalUUID)
                 {
                     Stats[ii * 5 + 3] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),

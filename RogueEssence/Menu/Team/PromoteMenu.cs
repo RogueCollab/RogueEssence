@@ -29,7 +29,7 @@ namespace RogueEssence.Menu
 
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), Color.White);
                 MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 6, 1), DirV.Up, DirH.Right, Color.White);
-                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, Color.White);
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, Color.White);
                 team.Add(new MenuElementChoice(() => { choose(teamIndex); }, true, memberName, memberLvLabel, memberLv));
             }
 

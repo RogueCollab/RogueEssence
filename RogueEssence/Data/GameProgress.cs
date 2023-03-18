@@ -643,7 +643,7 @@ namespace RogueEssence.Data
                     }
                 }
                 //add the EXP to the character
-                if (character.Level < DataManager.Instance.MaxLevel)
+                if (character.Level < DataManager.Instance.Start.MaxLevel)
                 {
                     character.EXP += removedEXP;
 
@@ -652,7 +652,7 @@ namespace RogueEssence.Data
                         character.EXP -= growthData.GetExpToNext(character.Level);
                         character.Level++;
 
-                        if (character.Level >= DataManager.Instance.MaxLevel)
+                        if (character.Level >= DataManager.Instance.Start.MaxLevel)
                         {
                             character.EXP = 0;
                             break;
@@ -1006,7 +1006,7 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = DataManager.Instance.StartMap;
+                        NextDest = DataManager.Instance.Start.Map;
                 }
                 else if (result != ResultType.Cleared)
                 {
@@ -1025,7 +1025,7 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = DataManager.Instance.StartMap;
+                        NextDest = DataManager.Instance.Start.Map;
 
                 }
                 else
@@ -1041,7 +1041,7 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = DataManager.Instance.StartMap;
+                        NextDest = DataManager.Instance.Start.Map;
 
                 }
 
@@ -1427,7 +1427,7 @@ namespace RogueEssence.Data
             else
                 intrinsic = monsterData.Forms[formIndex].Intrinsic3;
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Starter, formIndex, config.SkinSetting, gender), DataManager.Instance.StartLevel, intrinsic, DataManager.Instance.StartPersonality);
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Starter, formIndex, config.SkinSetting, gender), DataManager.Instance.Start.Level, intrinsic, DataManager.Instance.Start.Personality);
             newChar.Nickname = config.Nickname;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
 
@@ -1487,7 +1487,7 @@ namespace RogueEssence.Data
         {
             RogueConfig config = new RogueConfig(oldConfig);
             if (config.TeamRandomized)
-                config.TeamName = DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)];
+                config.TeamName = DataManager.Instance.Start.Teams[MathUtils.Rand.Next(DataManager.Instance.Start.Teams.Count)];
 
             if (config.SeedRandomized)
                 config.Seed = MathUtils.Rand.NextUInt64();

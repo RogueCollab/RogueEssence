@@ -161,12 +161,7 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
-        public List<(MonsterID mon, string name)> StartChars;
-        public List<string> StartTeams;
-        public int StartLevel;
-        public int MaxLevel;
-        public int StartPersonality;
-        public ZoneLoc StartMap;
+        public StartParams Start;
 
         public MonsterID DefaultMonsterID { get { return new MonsterID(DefaultMonster, 0, DefaultSkin, Gender.Genderless); } }
         public string DefaultMonster;
@@ -403,14 +398,15 @@ namespace RogueEssence.Data
 
         private void LoadStartParams()
         {
+            Start = new StartParams();
             string path = PathMod.ModPath(DATA_PATH + "StartParams.xml");
             //try to load from file
             if (File.Exists(path))
             {
                 try
                 {
-                    StartChars = new List<(MonsterID, string)>();
-                    StartTeams = new List<string>();
+                    Start.Chars = new List<StartChar>();
+                    Start.Teams = new List<string>();
 
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -430,21 +426,21 @@ namespace RogueEssence.Data
                         XmlNode startName = startChar.SelectSingleNode("Name");
                         string name = startName.InnerText;
 
-                        StartChars.Add((new MonsterID(species, form, skin, gender), name));
+                        Start.Chars.Add(new StartChar(new MonsterID(species, form, skin, gender), name));
                     }
 
                     XmlNode startTeams = xmldoc.DocumentElement.SelectSingleNode("StartTeams");
                     foreach (XmlNode startTeam in startTeams.SelectNodes("StartTeam"))
-                        StartTeams.Add(startTeam.InnerText);
+                        Start.Teams.Add(startTeam.InnerText);
 
                     XmlNode startLevel = xmldoc.DocumentElement.SelectSingleNode("StartLevel");
-                    StartLevel = Int32.Parse(startLevel.InnerText);
+                    Start.Level = Int32.Parse(startLevel.InnerText);
 
                     XmlNode maxLevel = xmldoc.DocumentElement.SelectSingleNode("MaxLevel");
-                    MaxLevel = Int32.Parse(maxLevel.InnerText);
+                    Start.MaxLevel = Int32.Parse(maxLevel.InnerText);
 
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
-                    StartPersonality = Int32.Parse(startPersonality.InnerText);
+                    Start.Personality = Int32.Parse(startPersonality.InnerText);
 
                     DefaultZone = xmldoc.DocumentElement.SelectSingleNode("DefaultZone").InnerText;
                     DefaultRank = xmldoc.DocumentElement.SelectSingleNode("DefaultRank").InnerText;
@@ -458,7 +454,7 @@ namespace RogueEssence.Data
                     DefaultMonster = xmldoc.DocumentElement.SelectSingleNode("DefaultMonster").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
-                    StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
+                    Start.Map = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
                         new SegLoc(Int32.Parse(startMap.SelectSingleNode("Segment").InnerText), Int32.Parse(startMap.SelectSingleNode("ID").InnerText)),
                         Int32.Parse(startMap.SelectSingleNode("Entry").InnerText));
 
@@ -470,12 +466,77 @@ namespace RogueEssence.Data
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex);
+                    Start = new StartParams();
                 }
             }
-            StartChars = new List<(MonsterID, string)>();
-            StartTeams = new List<string>();
         }
 
+        public void SaveStartParams()
+        {
+            string path = PathMod.ModPath(DATA_PATH + "StartParams.xml");
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+
+                XmlNode docNode = xmldoc.CreateElement("root");
+                xmldoc.AppendChild(docNode);
+
+                XmlNode charsNode = xmldoc.CreateElement("StartChars");
+                docNode.AppendChild(charsNode);
+
+                foreach (StartChar startChar in Start.Chars)
+                {
+                    XmlNode charNode = xmldoc.CreateElement("StartChar");
+                    charsNode.AppendChild(charNode);
+
+                    charNode.AppendInnerTextChild(xmldoc, "Species", startChar.ID.Species.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Form", startChar.ID.Form.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Skin", startChar.ID.Skin.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Gender", startChar.ID.Gender.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Name", startChar.Name);
+                }
+
+                XmlNode teamsNode = xmldoc.CreateElement("StartTeams");
+                docNode.AppendChild(teamsNode);
+
+                foreach (string startTeam in Start.Teams)
+                    teamsNode.AppendInnerTextChild(xmldoc, "StartTeam", startTeam);
+
+                docNode.AppendInnerTextChild(xmldoc, "StartLevel", Start.Level.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "MaxLevel", Start.MaxLevel.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "StartPersonality", Start.Personality.ToString());
+
+                docNode.AppendInnerTextChild(xmldoc, "DefaultZone", DefaultZone.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultRank", DefaultRank.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultSkin", DefaultSkin.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultAI", DefaultAI.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultTile", DefaultTile.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultElement", DefaultElement.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultMapStatus", DefaultMapStatus.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultIntrinsic", DefaultIntrinsic.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultSkill", DefaultSkill.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultMonster", DefaultMonster.ToString());
+
+
+                XmlNode mapNode = xmldoc.CreateElement("StartMap");
+                docNode.AppendChild(mapNode);
+
+                mapNode.AppendInnerTextChild(xmldoc, "Zone", Start.Map.ID.ToString());
+                mapNode.AppendInnerTextChild(xmldoc, "Segment", Start.Map.StructID.Segment.ToString());
+                mapNode.AppendInnerTextChild(xmldoc, "ID", Start.Map.StructID.ID.ToString());
+                mapNode.AppendInnerTextChild(xmldoc, "Entry", Start.Map.EntryPoint.ToString());
+
+                docNode.AppendInnerTextChild(xmldoc, "GenFloor", GenFloor.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "GenWall", GenWall.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "GenUnbreakable", GenUnbreakable.ToString());
+
+                xmldoc.Save(path);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
 
         public void Unload()
         {
@@ -2274,4 +2335,5 @@ namespace RogueEssence.Data
                 yield return MsgLog[ii];
         }
     }
+
 }

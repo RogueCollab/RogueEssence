@@ -284,27 +284,27 @@ namespace RogueEssence.Menu
         {
             if (String.IsNullOrEmpty(monId.Species) || backPhase == 0)
             {
-                if (DataManager.Instance.StartChars.Count > 1)
+                if (DataManager.Instance.Start.Chars.Count > 1)
                 {
                     int startIndex = 0;
                     if (backPhase == 0)
-                        startIndex = DataManager.Instance.StartChars.FindIndex(start => start.mon == monId);
-                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), DataManager.Instance.StartChars, startIndex, (int index) =>
+                        startIndex = DataManager.Instance.Start.Chars.FindIndex(start => start.ID == monId);
+                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), DataManager.Instance.Start.Chars, startIndex, (int index) =>
                     {
                         string newName = null;
-                        if (DataManager.Instance.StartChars[index].name != "")
-                            newName = DataManager.Instance.StartChars[index].name;
-                        StartFlow(DataManager.Instance.StartChars[index].mon, newName, -1);
+                        if (DataManager.Instance.Start.Chars[index].Name != "")
+                            newName = DataManager.Instance.Start.Chars[index].Name;
+                        StartFlow(DataManager.Instance.Start.Chars[index].ID, newName, -1);
                     }, () => { }), false);
                     return;
                 }
                 else if (backPhase == 0)
                     return;
-                else if (DataManager.Instance.StartChars.Count == 1)
+                else if (DataManager.Instance.Start.Chars.Count == 1)
                 {
-                    monId = DataManager.Instance.StartChars[0].mon;
-                    if (DataManager.Instance.StartChars[0].name != "")
-                        name = DataManager.Instance.StartChars[0].name;
+                    monId = DataManager.Instance.Start.Chars[0].ID;
+                    if (DataManager.Instance.Start.Chars[0].Name != "")
+                        name = DataManager.Instance.Start.Chars[0].Name;
                 }
                 else
                 {
@@ -381,7 +381,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.StartLevel, "", DataManager.Instance.StartPersonality);
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.Start.Level, "", DataManager.Instance.Start.Personality);
             newChar.Nickname = name;
             newChar.IsFounder = true;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
@@ -397,7 +397,7 @@ namespace RogueEssence.Menu
                 DiagManager.Instance.LogError(ex);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap, true, false));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Start.Map, true, false));
         }
 
         private static IEnumerator<YieldInstruction> DefaultBegin()
@@ -406,7 +406,7 @@ namespace RogueEssence.Menu
 
             GameManager.Instance.NewGamePlus(MathUtils.Rand.NextUInt64());
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap, true, false));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Start.Map, true, false));
         }
 
     }

@@ -740,13 +740,13 @@ namespace RogueEssence.Dungeon
                 int levelDiff = 0;
                 int totalExp = 0;
 
-                if (!player.Dead && player.Level < DataManager.Instance.MaxLevel)
+                if (!player.Dead && player.Level < DataManager.Instance.Start.MaxLevel)
                 {
                     totalExp += GainedEXP[ii];
 
                     string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                     GrowthData growthData = DataManager.Instance.GetGrowth(growth);
-                    while (player.Level + levelDiff < DataManager.Instance.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
+                    while (player.Level + levelDiff < DataManager.Instance.Start.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
                         levelDiff++;
                     while (player.Level + levelDiff > 1 && player.EXP + totalExp < growthData.GetExpTo(player.Level, player.Level + levelDiff))
                         levelDiff--;
@@ -783,14 +783,14 @@ namespace RogueEssence.Dungeon
                 int oldMAtk = player.BaseMAtk;
                 int oldMDef = player.BaseMDef;
 
-                if (player.Level < DataManager.Instance.MaxLevel && player.EXP >= growthData.GetExpToNext(player.Level))
+                if (player.Level < DataManager.Instance.Start.MaxLevel && player.EXP >= growthData.GetExpToNext(player.Level))
                 {
                     while (player.EXP >= growthData.GetExpToNext(player.Level))
                     {
                         player.EXP -= growthData.GetExpToNext(player.Level);
                         player.Level++;
 
-                        if (player.Level >= DataManager.Instance.MaxLevel)
+                        if (player.Level >= DataManager.Instance.Start.MaxLevel)
                         {
                             player.EXP = 0;
                             break;

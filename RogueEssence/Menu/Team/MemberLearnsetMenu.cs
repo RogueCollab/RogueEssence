@@ -43,7 +43,7 @@ namespace RogueEssence.Menu
                 MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
                 MenuText levelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
                     new Loc(GraphicsManager.ScreenWidth - 88, 1), DirH.Right);
-                MenuText level = new MenuText(levelUpSkill.Level.ToString(), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 0), DirH.Right);
+                MenuText level = new MenuText(levelUpSkill.Level.ToString(), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirH.Right);
 
                 Skills.Add(skill);
                 flatChoices.Add(new MenuElementChoice(() => { }, true, levelLabel, level, skillText));

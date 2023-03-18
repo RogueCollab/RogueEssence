@@ -202,7 +202,7 @@ namespace RogueEssence.Menu
 
                 else if (DataManager.Instance.Save.GetRogueUnlock(key) && DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key).Released)
                     starters.Add(key);
-                else if (DataManager.Instance.StartChars.FindIndex(mon => mon.mon.Species == key) > -1)
+                else if (DataManager.Instance.Start.Chars.FindIndex(mon => mon.ID.Species == key) > -1)
                     starters.Add(key);
             }
 

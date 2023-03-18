@@ -23,7 +23,7 @@ namespace RogueEssence.Menu
                 randomized = true;
                 //tab will replace the current line with a suggestion
                 GameManager.Instance.SE("Menu/Skip");
-                Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
+                Text.SetText(DataManager.Instance.Start.Teams[MathUtils.Rand.Next(DataManager.Instance.Start.Teams.Count)]);
 
                 UpdatePickerPos();
             }
@@ -45,7 +45,7 @@ namespace RogueEssence.Menu
             if (Text.Text == "")
             {
                 randomized = true;
-                Text.SetText(DataManager.Instance.StartTeams[MathUtils.Rand.Next(DataManager.Instance.StartTeams.Count)]);
+                Text.SetText(DataManager.Instance.Start.Teams[MathUtils.Rand.Next(DataManager.Instance.Start.Teams.Count)]);
                 UpdatePickerPos();
             }
 

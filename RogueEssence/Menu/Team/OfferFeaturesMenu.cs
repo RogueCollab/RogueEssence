@@ -40,7 +40,7 @@ namespace RogueEssence.Menu
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
 
             LevelLabel = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
-            Level = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2), DirH.Left);
+            Level = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2), DirH.Left);
             Elements = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
 
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 - 2), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);

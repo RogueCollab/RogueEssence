@@ -1018,13 +1018,13 @@ namespace RogueEssence.Script
             {
                 m_choiceresult = null;
 
-                List<(MonsterID mon, string name)> monsters = new();
+                List<StartChar> monsters = new List<StartChar>();
 
                 for (int ii = 1; choices[ii] is not null; ii++)
                 {
                     var choice = choices[ii];
                     if (choice is MonsterID monster)
-                        monsters.Add((monster, ""));
+                        monsters.Add(new StartChar(monster, ""));
                     else
                         throw new ArgumentException($"Table must be array of '{nameof(MonsterID)}'", nameof(choices));
                 }
@@ -1034,7 +1034,7 @@ namespace RogueEssence.Script
 
                 void chooseAction(int slot)
                 {
-                    m_choiceresult = monsters[slot].mon;
+                    m_choiceresult = monsters[slot].ID;
                     MenuManager.Instance.RemoveMenu();
                 }
 

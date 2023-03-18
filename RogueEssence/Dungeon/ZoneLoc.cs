@@ -43,5 +43,10 @@ namespace RogueEssence.Dungeon
         {
             return (!String.IsNullOrEmpty(ID)) && StructID.IsValid();
         }
+
+        public override string ToString()
+        {
+            return String.Format("{0} {1} {2}", ID, StructID.ToString(), EntryPoint);
+        }
     }
 }

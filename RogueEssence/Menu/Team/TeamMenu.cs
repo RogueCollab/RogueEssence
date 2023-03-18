@@ -64,7 +64,7 @@ namespace RogueEssence.Menu
                 Color color = disabled ? Color.Red : Color.White;
                 MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), color);
                 MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1), DirV.Up, DirH.Right, color);
-                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
 
                 team.Add(new MenuElementChoice(() => { choose(teamIndex); }, !disabled, memberName, memberLvLabel, memberLv));
             }

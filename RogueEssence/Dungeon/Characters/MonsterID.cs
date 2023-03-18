@@ -70,5 +70,10 @@ namespace RogueEssence.Dungeon
             int skin = DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(Skin).SortOrder;
             return new Content.CharID(mon, Form, skin, (int)Gender);
         }
+
+        public override string ToString()
+        {
+            return String.Format("{0} {1} {2} {3}", Species, Form, Skin, Gender);
+        }
     }
 }

@@ -54,7 +54,7 @@ namespace RogueEssence.Menu
             Fullness.SetText(String.Format("{0}/{1}", character.Fullness, character.MaxFullness));
 
             int expToNext = 0;
-            if (character.Level < DataManager.Instance.MaxLevel)
+            if (character.Level < DataManager.Instance.Start.MaxLevel)
             {
                 string growth = DataManager.Instance.GetMonster(character.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);

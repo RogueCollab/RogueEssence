@@ -1046,7 +1046,7 @@ namespace RogueEssence
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(DataManager.Instance.DefaultRank);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), DataManager.Instance.StartLevel, "", 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), DataManager.Instance.Start.Level, "", 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 
