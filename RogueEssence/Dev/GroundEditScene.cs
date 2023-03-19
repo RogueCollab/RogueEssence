@@ -220,7 +220,7 @@ namespace RogueEssence.Dev
 
                 if (DecorationInProgress != null)
                 {
-                    DecorationInProgress.Draw(spriteBatch, ViewRect.Start, PendingStroke ? 1f : 0.75f);
+                    DecorationInProgress.DrawPreview(spriteBatch, ViewRect.Start, PendingStroke ? 1f : 0.75f);
                     if (ShowObjectBoxes)
                     {
                         Rect bounds = DecorationInProgress.GetBounds();
@@ -265,7 +265,7 @@ namespace RogueEssence.Dev
                 if (EntityInProgress != null)
                 {
                     GroundEntity entity = EntityInProgress;
-                    entity.Draw(spriteBatch, ViewRect.Start, PendingStroke ? 1f : 0.75f);
+                    entity.DrawPreview(spriteBatch, ViewRect.Start, PendingStroke ? 1f : 0.75f);
                     if (ShowEntityBoxes)
                     {
                         GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);

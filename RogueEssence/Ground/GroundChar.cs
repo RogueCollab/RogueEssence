@@ -383,16 +383,23 @@ namespace RogueEssence.Ground
 
             drawCross(spriteBatch, center - offset, centerColor);
         }
-        public override void Draw(SpriteBatch spriteBatch, Loc offset, float alpha)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
-            currentCharAction.Draw(spriteBatch, offset, sheet, 1f);
+            currentCharAction.Draw(spriteBatch, offset, sheet);
 
             if (currentEmote != null)
             {
                 Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
                 currentEmote.Draw(spriteBatch, offset - head - drawOffset);
             }
+        }
+
+        public override void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
+        {
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
+            Loc drawLoc = currentCharAction.GetDrawLoc(offset, sheet);
+            sheet.DrawChar(spriteBatch, GraphicsManager.IdleAction, false, CharDir, drawLoc.ToVector2(), CharSheet.DefaultFrame, Microsoft.Xna.Framework.Color.White * alpha);
         }
 
 

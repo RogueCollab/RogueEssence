@@ -159,7 +159,12 @@ namespace RogueEssence.Ground
                 blank.Draw(spriteBatch, new Rectangle(Collider.X - offset.X, Collider.Y - offset.Y, Collider.Width, Collider.Height), null, Color.Cyan * 0.7f);
             }
         }
-        public override void Draw(SpriteBatch spriteBatch, Loc offset, float alpha)
+
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
+        {
+            DrawPreview(spriteBatch, offset, 1f);
+        }
+        public override void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
         {
             if (CurrentAnim.AnimIndex != "")
             {

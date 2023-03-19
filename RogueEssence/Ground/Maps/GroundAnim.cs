@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace RogueEssence.Ground
 {
     [Serializable]
-    public class GroundAnim : IDrawableSprite
+    public class GroundAnim : IDrawableSprite, IPreviewable
     {
         public IPlaceableAnimData ObjectAnim;
         
@@ -41,10 +41,10 @@ namespace RogueEssence.Ground
 
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
-            Draw(spriteBatch, offset, 1f);
+            DrawPreview(spriteBatch, offset, 1f);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset, float alpha)
+        public void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
         {
             if (ObjectAnim.AnimIndex != "")
             {

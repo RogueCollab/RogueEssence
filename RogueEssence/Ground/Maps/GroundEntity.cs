@@ -14,7 +14,7 @@ namespace RogueEssence.Ground
     /// Parent class meant to be used to access things common to all ground entities.
     /// </summary>
     [Serializable]
-    public abstract class GroundEntity : IDrawableSprite
+    public abstract class GroundEntity : IDrawableSprite, IPreviewable
     {
 
         /// <summary>
@@ -291,8 +291,8 @@ namespace RogueEssence.Ground
         }
 
         public virtual void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
-        public void Draw(SpriteBatch spriteBatch, Loc offset) { Draw(spriteBatch, offset, 1f); }
-        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, float alpha) { }
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
+        public virtual void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha) { }
         public virtual Loc GetDrawLoc(Loc offset) { return Bounds.Start; }
         public virtual Loc GetDrawSize() { return Bounds.Size; }
 

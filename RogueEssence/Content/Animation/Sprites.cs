@@ -100,4 +100,9 @@ namespace RogueEssence.Content
         public abstract Loc GetDrawLoc(Loc offset);
         public abstract Loc GetDrawSize();
     }
+
+    public interface IPreviewable
+    {
+        void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha);
+    }
 }

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
+using static RogueEssence.Dungeon.GameAction;
 
 namespace RogueEssence.Content
 {
@@ -1563,6 +1564,16 @@ namespace RogueEssence.Content
                 else
                     return 0;
             }
+            return 0;
+        }
+
+        /// <summary>
+        /// A current frame always of 0
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int DefaultFrame(List<CharAnimFrame> frames)
+        {
             return 0;
         }
 
