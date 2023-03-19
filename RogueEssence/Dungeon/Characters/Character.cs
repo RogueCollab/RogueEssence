@@ -15,7 +15,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable
+    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable, IPreviewable
     {
 
         public const int MAX_FULLNESS = 100;
@@ -2666,6 +2666,15 @@ namespace RogueEssence.Dungeon
                     iconSheet.DrawDir(spriteBatch, frontDraw.ToVector2(), currentFrame);
                 }
             }
+        }
+
+        public void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
+        {
+            CharSheet sheet = GraphicsManager.GetChara(Appearance.ToCharID());
+            Loc mapLoc = CharLoc * GraphicsManager.TileSize;
+            Loc drawLoc = new Loc(mapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
+                mapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) - offset;
+            sheet.DrawChar(spriteBatch, GraphicsManager.IdleAction, false, CharDir, drawLoc.ToVector2(), CharSheet.DefaultFrame, Microsoft.Xna.Framework.Color.White * alpha);
         }
 
 

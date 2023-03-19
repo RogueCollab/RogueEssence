@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class MapItem : IDrawableSprite, ISpawnable
+    public class MapItem : IDrawableSprite, ISpawnable, IPreviewable
     {
         public bool IsMoney;
         public bool Cursed;
@@ -207,6 +207,11 @@ namespace RogueEssence.Dungeon
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Draw(spriteBatch, offset, Color.White);
+        }
+
+        public void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
+        {
+            Draw(spriteBatch, offset, Color.White * alpha);
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc offset, Color color)

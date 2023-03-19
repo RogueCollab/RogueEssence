@@ -46,6 +46,9 @@ namespace RogueEssence.Dev
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<TerrainTile> TerrainInProgress;
         public CanvasStroke<EffectTile> TileInProgress;
+        public MapItem ItemInProgress;
+        public Character CharacterInProgress;
+
         public bool ShowTerrain;
         public bool ShowEntrances;
 
@@ -270,6 +273,11 @@ namespace RogueEssence.Dev
                     }
                 }
             }
+
+            if (ItemInProgress != null)
+                ItemInProgress.DrawPreview(spriteBatch, ViewRect.Start, 0.75f);
+            if (CharacterInProgress != null)
+                CharacterInProgress.DrawPreview(spriteBatch, ViewRect.Start, 0.75f);
 
             spriteBatch.End();
         }
