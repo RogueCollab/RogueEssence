@@ -471,6 +471,17 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void TabbedIn()
+        {
+            animChanged();
+        }
+
+        public void TabbedOut()
+        {
+            DungeonEditScene.Instance.CharacterInProgress = null;
+        }
+
+
         public void ProcessUndo()
         {
             if (EntMode == EntEditMode.SelectEntity)

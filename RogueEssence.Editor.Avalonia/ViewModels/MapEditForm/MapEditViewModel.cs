@@ -420,9 +420,11 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case 3://Items
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Item;
+                    Items.TabbedIn();
                     break;
                 case 4://Entities
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entity;
+                    Entities.TabbedIn();
                     break;
                 case 5://Entrances
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entrance;
@@ -431,6 +433,10 @@ namespace RogueEssence.Dev.ViewModels
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Other;
                     break;
             }
+            if (selectedTabIndex != 3)
+                Items.TabbedOut();
+            if (selectedTabIndex != 4)
+                Entities.TabbedOut();
         }
 
         public void ProcessInput(InputManager input)

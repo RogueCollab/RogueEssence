@@ -541,17 +541,23 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case 1://Decorations
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Decoration;
+                    Decorations.TabbedIn();
                     break;
                 case 2://Walls
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Wall;
                     break;
                 case 3://Entities
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Entity;
+                    Entities.TabbedIn();
                     break;
                 default:
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Other;
                     break;
             }
+            if (selectedTabIndex != 1)
+                Decorations.TabbedOut();
+            if (selectedTabIndex != 3)
+                Entities.TabbedOut();
         }
 
         public void ProcessInput(InputManager input)

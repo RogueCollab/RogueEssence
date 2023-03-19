@@ -73,6 +73,16 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void TabbedIn()
+        {
+            EntBrowser_EntityChanged();
+        }
+
+        public void TabbedOut()
+        {
+            GroundEditScene.Instance.EntityInProgress = null;
+        }
+
         public void ProcessUndo()
         {
             if (EntMode == EntEditMode.SelectEntity)

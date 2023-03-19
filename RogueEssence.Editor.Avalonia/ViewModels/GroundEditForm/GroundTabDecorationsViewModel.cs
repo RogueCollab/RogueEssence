@@ -202,6 +202,16 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void TabbedIn()
+        {
+            animChanged();
+        }
+
+        public void TabbedOut()
+        {
+            GroundEditScene.Instance.DecorationInProgress = null;
+        }
+
         public void ProcessInput(InputManager input)
         {
             bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
